@@ -62,6 +62,16 @@ const config: Config = {
         'card-sm': '14px',
         pill: '999px',
       },
+      fontSize: {
+        // Fluide — voir docs/DESIGN-SYSTEM.md
+        hero: ['clamp(32px, 8vw, 72px)', { lineHeight: '1' }],
+        'display-lg': ['clamp(24px, 6vw, 40px)', { lineHeight: '1.05' }],
+        display: ['clamp(20px, 5vw, 32px)', { lineHeight: '1.1' }],
+        'body-lg': ['18px', { lineHeight: '1.5' }],
+        body: ['15px', { lineHeight: '1.55' }],
+        meta: ['10px', { lineHeight: '1.2', letterSpacing: '0.16em' }],
+        micro: ['8px', { lineHeight: '1.2', letterSpacing: '0.22em' }],
+      },
       transitionTimingFunction: {
         base: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
         spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
