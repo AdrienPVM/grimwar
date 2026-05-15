@@ -51,6 +51,14 @@ content-sources/extracted/*
 # Claude Code local settings
 .claude/settings.local.json
 
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# Local agent harness state (GSD, MCP, bg-shell)
+.gsd/
+.bg-shell/
+.mcp.json
+
 # OS
 Thumbs.db
 ehthumbs.db
