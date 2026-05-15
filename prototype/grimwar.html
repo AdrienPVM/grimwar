@@ -1,0 +1,3254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GrimWar — Lyralei</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #050309;
+  --bg: #08060e;
+  --bg-2: #100b18;
+  --bg-3: #181122;
+  --bg-elev: #221830;
+  /* glass opacities bumped from 0.55/0.45 → 0.82/0.72 for legible contrast over aurora */
+  --glass: rgba(16, 11, 24, 0.82);
+  --glass-2: rgba(24, 18, 36, 0.72);
+  --border: rgba(220,184,108,0.1);
+  --border-soft: rgba(220,184,108,0.2);
+  --border-glow: rgba(220,184,108,0.45);
+  --border-white: rgba(255,255,255,0.08);
+
+  /* Text tokens — WCAG AA compliant on dark glass */
+  --text: #f4ecd6;         /* primary body — ~15:1 */
+  --text-2: #d4cbb1;        /* secondary — ~11:1 */
+  --text-3: #a89e80;        /* tertiary / labels — ~6.5:1 */
+  --text-4: #8a8068;        /* faint accents only — 4.5:1 */
+
+  --gold: #d4b25e;
+  --gold-bright: #fde9b4;
+  --gold-lite: #f0d28a;
+  --gold-dim: #8a7140;      /* used ONLY for borders/decoration, never for text */
+  --gold-deep: #5e4d2c;
+  --gold-text: #e6c984;     /* gold variant for text — 8.5:1 contrast */
+  --gold-glow: rgba(220,184,108,0.45);
+
+  --ruby: #ff5c8a;
+  --sapphire: #5e8eb4;
+  --emerald: #5dab86;
+  --amethyst: #b5a8f5;
+  --amethyst-deep: #7c6cdb;
+  --crimson: #e85a5a;
+  --teal: #7ddcc0;
+
+  /* Mode accent — switched dynamically */
+  --accent: #d4b25e;
+  --accent-glow: rgba(220,184,108,0.35);
+
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --title: 'Cinzel', Georgia, serif;
+  --display: 'Cinzel Decorative', Georgia, serif;
+  --ui: 'Inter', system-ui, sans-serif;
+  --t: cubic-bezier(0.22,0.61,0.36,1);
+  --t-spring: cubic-bezier(0.34,1.56,0.64,1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { overflow-x: hidden; }
+html, body { font-family: var(--ui); background: var(--ink); color: var(--text); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; min-height: 100vh; overflow-x: hidden; max-width: 100vw; }
+
+/* ============================================================
+   AURORA BACKGROUND — animated gradient blobs
+   ============================================================ */
+.aurora {
+  position: fixed; inset: -10%; z-index: -2; pointer-events: none;
+  filter: blur(100px); opacity: 0.3;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, body::before { animation: none !important; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.aurora-blob {
+  position: absolute; width: 600px; height: 600px;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+.aurora-blob.b1 { background: #d4b25e; top: -10%; left: -10%; animation: drift1 25s ease-in-out infinite; }
+.aurora-blob.b2 { background: #7c6cdb; bottom: -10%; right: -10%; animation: drift2 30s ease-in-out infinite; }
+.aurora-blob.b3 { background: #ff5c8a; top: 40%; left: 50%; animation: drift3 35s ease-in-out infinite; opacity: 0.6; }
+@keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(100px,80px) scale(1.2); } 66% { transform: translate(-50px,150px) scale(0.9); } }
+@keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(-120px,-80px) scale(1.3); } 66% { transform: translate(60px,-100px) scale(0.95); } }
+@keyframes drift3 { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-30%,-60%) scale(1.4); } }
+
+/* Sacred geometry watermark */
+body::before {
+  content: '';
+  position: fixed; inset: -20%;
+  pointer-events: none; z-index: -1;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%23d4b25e' stroke-width='0.5'%3E%3Ccircle cx='300' cy='300' r='280'/%3E%3Ccircle cx='300' cy='300' r='220'/%3E%3Ccircle cx='300' cy='300' r='160'/%3E%3Cpolygon points='300,40 525,430 75,430'/%3E%3Cpolygon points='300,560 75,170 525,170'/%3E%3Cline x1='40' y1='300' x2='560' y2='300'/%3E%3Cline x1='300' y1='40' x2='300' y2='560'/%3E%3C/g%3E%3C/svg%3E");
+  background-position: center;
+  background-size: 130vmin 130vmin;
+  background-repeat: no-repeat;
+  animation: slowDrift 180s linear infinite;
+}
+@keyframes slowDrift { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Film grain */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 1;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+button { font-family: inherit; cursor: pointer; }
+input { font-family: inherit; }
+
+/* SVG icon utility */
+.ic { width: 1em; height: 1em; display: inline-block; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ic-f { fill: currentColor; stroke: none; }
+
+/* TOPBAR */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px;
+  background: rgba(8, 6, 14, 0.6);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-bottom: 1px solid var(--border-white);
+}
+.topbar::after {
+  content: ''; position: absolute; bottom: 0; left: 8%; right: 8%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--display); font-size: 17px; font-weight: 700;
+  letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--gold-bright);
+}
+.brand-mark { font-size: 22px; filter: drop-shadow(0 0 8px var(--gold-glow)); }
+.avatar {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold-dim));
+  color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 14px; font-weight: 700;
+  box-shadow: 0 4px 14px rgba(220,184,108,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.app { max-width: 100%; padding: 0 18px 150px; position: relative; z-index: 5; }
+@media (min-width: 768px) { .app { max-width: 1000px; margin: 0 auto; padding: 0 28px 130px; } }
+
+/* Status strip — floating glass chip */
+.status-strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 20px; margin: 20px 0 18px;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--border-white);
+  border-radius: 999px;
+  font-size: 11px; color: var(--text-2);
+  letter-spacing: 0.06em;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.status-left { display: flex; align-items: center; gap: 10px; font-family: var(--title); font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; font-size: 10px; }
+.status-pulse {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--teal);
+  position: relative; box-shadow: 0 0 12px var(--teal);
+}
+.status-pulse::before {
+  content: ''; position: absolute; inset: -3px; border-radius: 50%;
+  background: var(--teal); opacity: 0.4;
+  animation: pulse 2.5s ease-out infinite;
+}
+@keyframes pulse { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(3.5); opacity: 0; } }
+.status-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 999px;
+  background: rgba(181,168,245,0.12);
+  border: 1px solid rgba(181,168,245,0.35);
+  color: var(--amethyst);
+  font-family: var(--title); letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 9px; font-weight: 600;
+}
+
+/* ============================================================
+   HERO — Cinematic
+   ============================================================ */
+.hero {
+  position: relative;
+  padding: 40px 24px 32px;
+  background:
+    radial-gradient(ellipse 1000px 600px at 50% -20%, rgba(220,184,108,0.18), transparent 55%),
+    radial-gradient(ellipse 600px 500px at 50% 100%, rgba(124,108,219,0.12), transparent 60%),
+    var(--glass);
+  backdrop-filter: blur(40px) saturate(150%);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  border: 1px solid var(--border-white);
+  border-radius: 28px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+/* Light rays */
+.hero-rays {
+  position: absolute; top: -40%; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 700px;
+  opacity: 0.4; pointer-events: none;
+  animation: raysRotate 60s linear infinite;
+}
+@keyframes raysRotate { from { transform: translateX(-50%) rotate(0); } to { transform: translateX(-50%) rotate(360deg); } }
+
+/* Corner flourishes */
+.flourish { position: absolute; width: 64px; height: 64px; pointer-events: none; opacity: 0.6; }
+.flourish.tl { top: 18px; left: 18px; }
+.flourish.tr { top: 18px; right: 18px; transform: scaleX(-1); }
+.flourish.bl { bottom: 18px; left: 18px; transform: scaleY(-1); }
+.flourish.br { bottom: 18px; right: 18px; transform: scale(-1,-1); }
+
+.hero-inner {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 24px;
+}
+
+/* Diamond emblem — refined */
+.emblem {
+  position: relative; width: 200px; height: 200px;
+  flex-shrink: 0;
+}
+.emblem svg { width: 100%; height: 100%; }
+.emblem-bg { fill: url(#emGrad); }
+.emblem-ring { fill: none; stroke: rgba(220,184,108,0.1); }
+.emblem-hp {
+  fill: none; stroke: url(#hpGrad);
+  stroke-width: 4; stroke-linecap: round;
+  stroke-dasharray: 481;
+  stroke-dashoffset: 60.1;
+  filter: drop-shadow(0 0 10px var(--gold-glow));
+  transition: stroke-dashoffset 0.7s var(--t-spring);
+}
+.emblem-hp.low { stroke: var(--crimson); filter: drop-shadow(0 0 10px rgba(232,90,90,0.5)); }
+.emblem-deco { fill: var(--gold); }
+.emblem-letter {
+  font-family: var(--display); font-size: 100px; font-weight: 700;
+  fill: url(#letterGrad);
+  filter: drop-shadow(0 4px 16px rgba(220,184,108,0.5));
+}
+
+/* Mage hat illustration above L */
+.emblem-decoration { position: absolute; top: 50%; transform: translateY(-50%); font-size: 28px; color: var(--gold); filter: drop-shadow(0 0 8px var(--gold-glow)); opacity: 0.85; pointer-events: none; }
+.emblem-decoration.left { left: -22px; }
+.emblem-decoration.right { right: -22px; transform: translateY(-50%) scaleX(-1); }
+
+.hp-badge {
+  position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+  padding: 7px 20px;
+  background: linear-gradient(180deg, var(--bg-elev), var(--bg-2));
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  font-family: var(--serif);
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 24px rgba(220,184,108,0.2);
+  z-index: 3;
+  display: flex; align-items: baseline; gap: 4px;
+}
+.hp-badge .hp-cur { color: var(--gold-bright); font-weight: 600; font-size: 24px; letter-spacing: -0.02em; font-family: var(--display); }
+.hp-badge .hp-max { color: var(--text-3); font-size: 14px; font-style: italic; }
+
+/* Hero name */
+.hero-text {
+  text-align: center; position: relative; z-index: 2;
+}
+
+.hero-name {
+  font-family: var(--display);
+  font-size: clamp(32px, 8vw, 72px);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 60%, var(--gold-dim) 100%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 24px rgba(220,184,108,0.3));
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.hero-subtitle {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(18px, 4vw, 28px);
+  color: var(--gold-text);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  margin-bottom: 18px;
+}
+
+.divider {
+  display: flex; align-items: center; gap: 16px; justify-content: center;
+  margin: 14px 0 18px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 0 0 70px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.divider-mark {
+  color: var(--gold); font-size: 13px; letter-spacing: 0.5em;
+  filter: drop-shadow(0 0 8px var(--gold-glow));
+}
+
+.hero-class {
+  font-family: var(--title);
+  font-size: clamp(10px, 2.8vw, 13px);
+  letter-spacing: clamp(0.14em, 1vw, 0.32em);
+  text-transform: uppercase;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.hero-class strong { color: var(--gold-bright); font-weight: 800; }
+.hero-race {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(13px, 3vw, 15px);
+  color: var(--text-2); letter-spacing: 0.04em;
+}
+
+/* Vitals as floating glass tiles */
+.vitals {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  margin-top: 24px; width: 100%; max-width: 480px;
+}
+.vital {
+  position: relative;
+  padding: 14px 4px 12px;
+  background: var(--glass-2);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-white);
+  border-radius: 14px;
+  transition: all 0.3s var(--t); cursor: pointer;
+  text-align: center;
+  overflow: hidden;
+}
+.vital::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.vital::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(220,184,108,0.08), transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.vital:hover { transform: translateY(-3px); border-color: var(--gold-dim); box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 24px rgba(220,184,108,0.15); }
+.vital:hover::after { opacity: 1; }
+.vital-ic { color: var(--gold); font-size: 18px; margin-bottom: 4px; display: block; height: 18px; }
+.vital-l {
+  font-family: var(--title); font-size: 9px;
+  color: var(--text-3); letter-spacing: 0.22em; text-transform: uppercase;
+  margin-bottom: 4px; font-weight: 700;
+}
+.vital-v {
+  font-family: var(--display); font-size: 24px; font-weight: 700;
+  line-height: 1; color: var(--text); letter-spacing: -0.02em;
+}
+
+/* ============================================================
+   QUICK ACTIONS — Glass pills with custom icons
+   ============================================================ */
+.qa { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 22px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.qa::-webkit-scrollbar { display: none; }
+.qa-pill {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-white);
+  border-radius: 16px;
+  color: var(--text); white-space: nowrap; flex-shrink: 0;
+  transition: all 0.25s var(--t);
+  position: relative; overflow: hidden;
+}
+.qa-pill::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--gold-glow), transparent 50%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.qa-pill:hover { border-color: var(--gold-dim); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.qa-pill:hover::before { opacity: 0.5; }
+.qa-pill:active { transform: scale(0.96); }
+.qa-ico {
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, rgba(220,184,108,0.18), rgba(220,184,108,0.04));
+  border: 1px solid var(--border-soft);
+  color: var(--gold-bright);
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.qa-ico .ic { width: 20px; height: 20px; }
+.qa-ico.fire { background: linear-gradient(135deg, rgba(232,90,90,0.22), rgba(232,90,90,0.05)); border-color: rgba(232,90,90,0.35); color: var(--crimson); }
+.qa-ico.magic { background: linear-gradient(135deg, rgba(181,168,245,0.22), rgba(181,168,245,0.05)); border-color: rgba(181,168,245,0.35); color: var(--amethyst); }
+.qa-t { display: flex; flex-direction: column; align-items: flex-start; }
+.qa-n { font-family: var(--title); font-size: 10px; font-weight: 700; line-height: 1.2; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text); }
+.qa-b { font-family: var(--display); font-size: 16px; color: var(--gold-bright); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin-top: 2px; }
+
+/* ============================================================
+   MODE TABS
+   ============================================================ */
+.modes {
+  display: flex; gap: 4px; padding: 6px;
+  background: var(--glass);
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  border: 1px solid var(--border-white);
+  border-radius: 18px;
+  margin-bottom: 26px;
+  position: sticky; top: 76px; z-index: 30;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.mode {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 4px;
+  background: transparent; border: none;
+  color: var(--text-2);
+  border-radius: 12px;
+  transition: all 0.3s var(--t);
+  font-family: var(--title);
+  font-size: 9px; letter-spacing: 0.18em; font-weight: 700;
+  text-transform: uppercase;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.mode span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 380px) {
+  .mode span:last-child { display: none; }
+  .mode { padding: 12px 2px; }
+}
+.mode:hover { color: var(--text); }
+.mode.active {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink);
+  box-shadow: 0 6px 18px rgba(220,184,108,0.45), inset 0 1px 0 rgba(255,255,255,0.4);
+  font-weight: 800;
+}
+.mode-ic { font-size: 24px; line-height: 1; color: currentColor; }
+.mode-ic .ic { width: 24px; height: 24px; }
+.mode.active .mode-ic { filter: drop-shadow(0 1px 3px rgba(0,0,0,0.4)); }
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+.panel { display: none; animation: panelIn 0.5s var(--t); }
+.panel.active { display: block; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Glass card */
+.card {
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--border-white);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 14px;
+  position: relative;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+}
+.card-h {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.card-h h3 {
+  font-family: var(--display);
+  font-size: 13px;
+  color: var(--gold-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 12px;
+  text-shadow: 0 0 16px rgba(220,184,108,0.3);
+}
+.card-h h3::before, .card-h h3::after {
+  content: '✦'; color: var(--gold); font-size: 10px;
+  filter: drop-shadow(0 0 4px var(--gold-glow));
+}
+.card-action {
+  padding: 7px 16px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-white);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-family: var(--title);
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+  transition: all 0.18s;
+}
+.card-action:hover {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink); border-color: var(--gold);
+  box-shadow: 0 4px 14px rgba(220,184,108,0.35);
+}
+
+/* === COMBAT — BENTO ASYMMETRIC === */
+.combat-bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (max-width: 540px) { .combat-bento { grid-template-columns: 1fr; } }
+
+.combat-bento .card { margin-bottom: 0; }
+.combat-bento .span-2 { grid-column: span 2; }
+@media (max-width: 540px) { .combat-bento .span-2 { grid-column: span 1; } }
+
+.hp-mega-card {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 22px;
+  background:
+    radial-gradient(ellipse 400px 200px at 50% 0%, rgba(232,90,90,0.08), transparent 60%),
+    var(--glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--border-white);
+  border-radius: 20px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+  min-width: 0;
+  overflow: hidden;
+}
+@media (max-width: 540px) { .hp-mega-card { padding: 16px; border-radius: 16px; } }
+.hp-mega-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.hp-mega-header h3 {
+  font-family: var(--display); font-size: clamp(10px, 2.6vw, 12px);
+  color: var(--gold-bright); text-transform: uppercase;
+  letter-spacing: clamp(0.16em, 1vw, 0.3em); font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+  min-width: 0;
+}
+.hp-mega-header .card-action { white-space: nowrap; flex-shrink: 0; }
+.hp-mega-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hp-mega-mini > div {
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-white);
+  border-radius: 10px;
+  text-align: center;
+}
+.hp-mini-l { font-family: var(--title); font-size: 8px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+.hp-mini-v { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.hp-mini-v span { font-size: 12px; color: var(--text-3); font-style: italic; font-family: var(--serif); font-weight: 400; }
+
+.hp-adj { display: flex; align-items: center; gap: 10px; }
+.hp-btn {
+  width: 52px; height: 52px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-white);
+  color: var(--text); font-size: 24px; font-weight: 600;
+  transition: all 0.2s var(--t);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 14px;
+}
+.hp-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--gold-dim); transform: translateY(-1px); }
+.hp-btn:active { transform: scale(0.92); }
+.hp-btn.heal { color: var(--teal); }
+.hp-btn.heal:hover { border-color: var(--teal); box-shadow: 0 0 24px rgba(125,220,192,0.25); }
+.hp-btn.dmg { color: var(--crimson); }
+.hp-btn.dmg:hover { border-color: var(--crimson); box-shadow: 0 0 24px rgba(232,90,90,0.3); }
+
+.hp-inp {
+  flex: 1; height: 52px; padding: 0 16px;
+  background: rgba(0,0,0,0.3); border: 1px solid var(--border-white); border-radius: 14px;
+  color: var(--text); font-family: var(--display); font-size: 22px; font-weight: 700;
+  text-align: center; outline: none; letter-spacing: -0.02em;
+}
+.hp-inp:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(220,184,108,0.15); }
+
+.hp-quick { display: flex; gap: 6px; flex-wrap: wrap; }
+.hp-quick button { flex: 1 1 60px; min-width: 0; white-space: nowrap; padding: 6px 8px; }
+
+/* Conditions */
+.cond-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+.cond {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 999px;
+  background: rgba(232,90,90,0.1);
+  border: 1px solid rgba(232,90,90,0.3);
+  color: var(--crimson); font-size: 11px;
+  font-family: var(--title); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+}
+.cond.magic { background: rgba(181,168,245,0.12); border-color: rgba(181,168,245,0.35); color: var(--amethyst); box-shadow: 0 0 16px rgba(181,168,245,0.1); }
+.cond .ic { width: 14px; height: 14px; }
+.cond-t { font-size: 10px; opacity: 0.7; padding-left: 6px; border-left: 1px solid currentColor; margin-left: 4px; font-family: var(--serif); letter-spacing: 0; text-transform: none; font-style: italic; font-weight: 400; }
+.cond-add {
+  padding: 8px 16px; background: rgba(255,255,255,0.03);
+  border: 1px dashed var(--border-soft);
+  border-radius: 999px; color: var(--text-3); font-size: 11px;
+  font-family: var(--title); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+}
+.cond-add:hover { color: var(--gold); border-color: var(--gold); }
+
+/* Attack cards */
+.atk-list { display: flex; flex-direction: column; gap: 10px; }
+.atk {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 16px;
+  transition: all 0.25s var(--t); cursor: pointer; width: 100%; text-align: left;
+  position: relative; overflow: hidden;
+}
+.atk::after {
+  content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+  background: var(--gold); opacity: 0; transition: opacity 0.2s;
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+.atk:hover { border-color: var(--gold-dim); transform: translateX(4px); background: rgba(255,255,255,0.05); }
+.atk:hover::after { opacity: 1; }
+.atk:active { transform: scale(0.98); }
+.atk-ico {
+  display: flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, rgba(232,90,90,0.2), rgba(232,90,90,0.04));
+  border: 1px solid rgba(232,90,90,0.3);
+  color: var(--crimson);
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.atk-ico .ic { width: 22px; height: 22px; }
+.atk-ico.magic { background: linear-gradient(135deg, rgba(181,168,245,0.2), rgba(181,168,245,0.04)); border-color: rgba(181,168,245,0.3); color: var(--amethyst); }
+.atk-info { flex: 1; min-width: 0; overflow: hidden; }
+.atk-n { font-family: var(--serif); font-size: 19px; font-weight: 500; margin-bottom: 3px; color: var(--text); letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atk-m { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.atk-b {
+  font-family: var(--display); font-size: 30px;
+  color: var(--gold-bright); font-weight: 700;
+  text-shadow: 0 0 16px var(--gold-glow);
+  letter-spacing: -0.03em;
+}
+
+/* ============================================================
+   ESSENCE — HEXAGRAM with custom SVG ability icons
+   ============================================================ */
+.hexagram {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 1;
+  margin: 8px auto 20px;
+  --hex-point-size: clamp(56px, 22%, 96px);
+}
+@media (min-width: 480px) { .hexagram { max-width: 460px; } }
+
+.hex-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hex-line { fill: none; stroke: var(--gold-dim); stroke-width: 0.8; opacity: 0.7; }
+.hex-ring { fill: none; stroke: var(--gold-dim); stroke-width: 0.5; opacity: 0.4; }
+.hex-center-sigil { fill: var(--gold); opacity: 0.7; filter: drop-shadow(0 0 8px var(--gold-glow)); }
+
+.hex-point {
+  position: absolute;
+  width: var(--hex-point-size); height: var(--hex-point-size);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform 0.3s var(--t-spring);
+}
+.hex-point:hover { transform: translate(-50%, -50%) scale(1.08); }
+.hex-point:active { transform: translate(-50%, -50%) scale(0.95); }
+.hex-point > div {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(220,184,108,0.22), transparent 70%),
+    var(--glass-2);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--gold-dim);
+  border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(220,184,108,0.2);
+}
+.hex-point::before {
+  content: ''; position: absolute; inset: -5px;
+  border: 1px dashed var(--gold-dim); border-radius: 50%; opacity: 0.4;
+}
+.hex-point .hex-ic { color: var(--gold-text); font-size: clamp(12px, 3vw, 16px); margin-bottom: 1px; }
+.hex-point .hex-ic .ic { width: 1em; height: 1em; }
+.hex-mod { font-family: var(--display); font-size: clamp(22px, 6vw, 34px); font-weight: 700; line-height: 1; letter-spacing: -0.03em; text-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+.hex-mod.pos { color: var(--teal); }
+.hex-mod.neg { color: var(--crimson); }
+.hex-name { font-family: var(--title); font-size: clamp(7px, 1.8vw, 9px); color: var(--text-2); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+
+.hex-center {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none;
+}
+.hex-center-lbl { font-family: var(--title); font-size: 8px; color: var(--text-3); letter-spacing: 0.28em; text-transform: uppercase; font-weight: 700; }
+.hex-center-val { font-family: var(--display); font-size: 30px; color: var(--gold-bright); font-weight: 900; letter-spacing: -0.03em; text-shadow: 0 0 20px var(--gold-glow); }
+
+/* Saves */
+.saves { display: flex; gap: 8px; flex-wrap: wrap; }
+.save {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 999px;
+  font-size: 12px;
+  transition: all 0.2s; flex: 1; min-width: 100px;
+  justify-content: space-between;
+  font-weight: 500;
+}
+.save:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+.save.p {
+  background: linear-gradient(180deg, rgba(220,184,108,0.1), rgba(220,184,108,0.03));
+  border-color: var(--gold-dim);
+}
+.save-n { color: var(--text-2); font-family: var(--title); letter-spacing: 0.14em; text-transform: uppercase; font-size: 10px; font-weight: 700; }
+.save.p .save-n { color: var(--text); }
+.save-m { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--gold-bright); letter-spacing: -0.02em; }
+
+/* Search */
+.search {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-white); border-radius: 14px;
+  margin-bottom: 14px;
+  transition: all 0.25s;
+}
+.search:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(220,184,108,0.1); }
+.search input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 14px; outline: none; font-family: var(--serif); font-style: italic; }
+.search input::placeholder { color: var(--text-3); }
+.search .ic { width: 16px; height: 16px; color: var(--text-3); }
+
+/* Skills */
+.skills-list { display: flex; flex-direction: column; gap: 3px; }
+.skill {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  transition: all 0.18s var(--t);
+  width: 100%; text-align: left;
+}
+.skill:hover { background: rgba(255,255,255,0.05); border-color: var(--border-white); transform: translateX(3px); }
+.skill.p { background: rgba(220,184,108,0.05); }
+.skill.e { background: rgba(220,184,108,0.1); }
+.skill-d {
+  width: 10px; height: 10px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--text-4);
+  flex-shrink: 0; transition: all 0.2s;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.skill.p .skill-d { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
+.skill.e .skill-d { background: var(--gold); border: 2px solid var(--gold); box-shadow: 0 0 14px var(--gold-glow); }
+.skill-n { flex: 1; font-size: 13px; font-weight: 500; font-family: var(--serif); }
+.skill-a { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.2em; text-transform: uppercase; margin-right: 12px; font-weight: 700; }
+.skill-m { font-family: var(--display); font-size: 20px; font-weight: 700; color: var(--gold-bright); min-width: 38px; text-align: right; letter-spacing: -0.02em; }
+
+/* ============================================================
+   MAGIE — MAGIC CIRCLE
+   ============================================================ */
+.spell-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+.ss {
+  padding: 18px 12px;
+  background:
+    radial-gradient(ellipse at top, rgba(181,168,245,0.1), rgba(0,0,0,0.3));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(181,168,245,0.25);
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+}
+.ss::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 50%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--amethyst), transparent);
+  opacity: 0.6;
+}
+.ss-l { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+.ss-v {
+  font-family: var(--display); font-size: 32px; font-weight: 900;
+  line-height: 1; color: var(--gold-bright); letter-spacing: -0.03em;
+  text-shadow: 0 0 16px var(--gold-glow);
+}
+
+.magic-circle {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 1;
+  margin: 12px auto 20px;
+  --slot-size: clamp(24px, 8.5%, 36px);
+}
+.mc-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mc-ring { fill: none; stroke: var(--gold-dim); opacity: 0.5; }
+.mc-line { stroke: var(--gold-dim); opacity: 0.35; }
+.mc-deco { fill: var(--gold); opacity: 0.6; }
+.mc-deco-glow { fill: var(--gold-bright); filter: drop-shadow(0 0 6px var(--gold-glow)); }
+.mc-center {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none;
+}
+.mc-center-lbl { font-family: var(--title); font-size: 8px; color: var(--text-3); letter-spacing: 0.28em; text-transform: uppercase; font-weight: 700; }
+.mc-center-val { font-family: var(--display); font-size: 34px; color: var(--gold-bright); font-weight: 900; letter-spacing: -0.03em; text-shadow: 0 0 20px var(--gold-glow); margin: 4px 0; }
+.mc-center-sub { font-family: var(--serif); font-size: 12px; color: var(--text-3); font-style: italic; }
+
+.mc-slot {
+  position: absolute;
+  width: var(--slot-size); height: var(--slot-size);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform 0.25s var(--t-spring);
+}
+.mc-slot:hover { transform: translate(-50%, -50%) scale(1.25); }
+.mc-slot:active { transform: translate(-50%, -50%) scale(0.85); }
+.mc-slot::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(circle, var(--gold-glow), transparent 70%);
+}
+.mc-slot.full::after { opacity: 1; }
+.mc-slot svg { width: 100%; height: 100%; position: relative; z-index: 1; }
+.mc-slot .rs { fill: none; stroke: var(--gold-dim); stroke-width: 1.5; transition: all 0.3s; }
+.mc-slot.full .rs { fill: rgba(220,184,108,0.3); stroke: var(--gold-bright); filter: drop-shadow(0 0 8px var(--gold-glow)); }
+.mc-slot.full { animation: runeBreath 3.5s ease-in-out infinite; }
+@keyframes runeBreath { 0%,100% { filter: drop-shadow(0 0 0 transparent); } 50% { filter: drop-shadow(0 0 14px var(--gold-glow)); } }
+
+.mc-label {
+  position: absolute;
+  font-family: var(--title); font-size: 8px; color: var(--text-3);
+  letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.chips { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 999px;
+  color: var(--text-2);
+  font-family: var(--title); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.2s var(--t);
+}
+.chip:hover { color: var(--text); border-color: var(--gold-dim); }
+.chip.active {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink); border-color: var(--gold); font-weight: 800;
+  box-shadow: 0 4px 14px rgba(220,184,108,0.3);
+}
+
+.spell-list { display: flex; flex-direction: column; gap: 8px; }
+.spell {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 14px;
+  transition: all 0.25s var(--t); cursor: pointer;
+}
+.spell:hover { border-color: var(--gold-dim); transform: translateY(-1px); background: rgba(255,255,255,0.05); }
+.spell.prep {
+  background: linear-gradient(180deg, rgba(220,184,108,0.08), rgba(220,184,108,0.02));
+  border-color: rgba(220,184,108,0.25);
+}
+.spell-i {
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, rgba(181,168,245,0.2), rgba(181,168,245,0.05));
+  border: 1px solid rgba(181,168,245,0.3);
+  color: var(--amethyst);
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.spell-i .ic { width: 22px; height: 22px; }
+.spell-i .lvl { font-family: var(--display); font-weight: 800; font-size: 16px; }
+.spell.prep .spell-i {
+  background: linear-gradient(135deg, rgba(220,184,108,0.22), rgba(220,184,108,0.06));
+  border-color: var(--gold-dim); color: var(--gold-bright);
+}
+.spell-info { flex: 1; min-width: 0; }
+.spell-n { font-family: var(--serif); font-size: 16px; font-weight: 500; margin-bottom: 2px; color: var(--text); letter-spacing: -0.01em; }
+.spell-meta { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spell-cast {
+  padding: 7px 16px; background: transparent;
+  border: 1px solid var(--gold-dim); border-radius: 999px;
+  color: var(--gold);
+  font-family: var(--title); font-size: 10px; letter-spacing: 0.2em;
+  text-transform: uppercase; font-weight: 800;
+  transition: all 0.18s;
+}
+.spell-cast:hover {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink); border-color: var(--gold);
+  box-shadow: 0 4px 14px rgba(220,184,108,0.35);
+}
+
+/* === AVOIR === */
+.weight {
+  padding: 20px 24px;
+  background: var(--glass);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-white);
+  border-radius: 16px;
+  margin-bottom: 14px;
+}
+.weight-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.weight-l { font-family: var(--title); font-size: 10px; color: var(--text-3); letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; }
+.weight-v { font-family: var(--display); font-size: 22px; font-weight: 700; }
+.weight-v .cur { color: var(--gold-bright); letter-spacing: -0.02em; }
+.weight-v .max { color: var(--text-3); font-style: italic; font-weight: 400; font-family: var(--serif); }
+.weight-bar {
+  height: 10px; background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border-white);
+  border-radius: 999px; overflow: hidden;
+}
+.weight-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-bright));
+  border-radius: 999px;
+  transition: width 0.5s var(--t);
+  box-shadow: 0 0 20px var(--gold-glow);
+}
+
+.coins { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 12px; }
+.coin {
+  padding: 14px 6px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 14px;
+  text-align: center;
+  transition: all 0.2s; cursor: pointer;
+  position: relative;
+}
+.coin::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 40%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.coin:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+.coin-t { font-family: var(--display); font-size: 11px; color: var(--gold); margin-bottom: 4px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.22em; }
+.coin-a { font-family: var(--display); font-size: 26px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); }
+.coin-a.z { color: var(--text-4); }
+
+.items { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 480px) { .items { grid-template-columns: 1fr 1fr; } }
+.item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 14px;
+  transition: all 0.2s; cursor: pointer;
+}
+.item:hover { border-color: var(--gold-dim); transform: translateY(-1px); background: rgba(255,255,255,0.04); }
+.item-i {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, rgba(220,184,108,0.2), rgba(220,184,108,0.05));
+  border: 1px solid var(--border-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold-bright);
+  flex-shrink: 0;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.item-i .ic { width: 22px; height: 22px; }
+.item-info { flex: 1; min-width: 0; }
+.item-n { font-family: var(--serif); font-size: 16px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+.item-m { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin-top: 2px; }
+.item-q { font-family: var(--display); font-size: 22px; font-weight: 700; color: var(--gold-bright); letter-spacing: -0.02em; }
+
+/* === ÂME === */
+.soul-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+@media (max-width: 540px) { .soul-grid { grid-template-columns: 1fr; } }
+.soul {
+  padding: 22px 24px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(181,168,245,0.06), transparent 70%),
+    var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-white);
+  border-radius: 16px;
+  transition: all 0.25s;
+  position: relative;
+}
+.soul::before {
+  content: ''; position: absolute; top: 0; left: 24px; right: 24px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+}
+.soul:hover { border-color: var(--gold-dim); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.soul-h {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-size: 11px;
+  color: var(--gold-bright); text-transform: uppercase;
+  letter-spacing: 0.28em; margin-bottom: 14px;
+  font-weight: 800;
+}
+.soul-h .ic { color: var(--amethyst); width: 14px; height: 14px; filter: drop-shadow(0 0 4px rgba(181,168,245,0.4)); }
+.soul-t {
+  font-family: var(--serif); font-size: 17px; line-height: 1.55;
+  font-style: italic; color: var(--text);
+}
+
+.feat { padding: 16px 0; border-bottom: 1px solid var(--border-white); }
+.feat:last-child { border-bottom: none; padding-bottom: 0; }
+.feat:first-child { padding-top: 0; }
+.feat-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.feat-n { font-family: var(--serif); font-size: 19px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+.feat-s {
+  font-size: 9px; padding: 4px 12px;
+  background: rgba(255,255,255,0.04); color: var(--text-2);
+  border: 1px solid var(--border-white);
+  border-radius: 999px;
+  font-family: var(--title);
+  letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700;
+  white-space: nowrap; flex-shrink: 0;
+}
+.feat-d { font-size: 13px; color: var(--text-2); line-height: 1.65; font-family: var(--serif); }
+
+.prof-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 480px) { .prof-grid { grid-template-columns: 1fr 1fr; } }
+.prof {
+  padding: 16px 18px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--border-white); border-radius: 14px;
+}
+.prof-h { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+.prof-v { font-family: var(--serif); font-size: 14px; color: var(--text); line-height: 1.5; }
+
+.story {
+  font-family: var(--serif); font-style: italic;
+  font-size: 18px; line-height: 1.75; color: var(--text);
+}
+.story::first-letter {
+  font-family: var(--display); font-style: normal;
+  font-size: 4.5em; float: left;
+  line-height: 0.85; margin-right: 12px; margin-top: 6px;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+}
+
+/* ============================================================
+   DICE TRAY
+   ============================================================ */
+/* ============================================================
+   RADIAL FAB — Magic action wheel (quarter-arc, fits screen corner)
+   ============================================================ */
+.fab-radial {
+  position: fixed; bottom: 28px; right: 22px;
+  width: 64px; height: 64px;
+  z-index: 60;
+  touch-action: none;
+}
+@media (min-width: 768px) { .fab-radial { right: 32px; bottom: 32px; } }
+
+.fab {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, var(--gold-bright), var(--gold) 60%, var(--gold-dim));
+  color: var(--ink);
+  border: 2px solid rgba(255,255,255,0.25);
+  box-shadow:
+    0 8px 32px rgba(220,184,108,0.5),
+    0 0 0 6px rgba(220,184,108,0.08),
+    inset 0 2px 4px rgba(255,255,255,0.4),
+    inset 0 -2px 4px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: transform 0.25s var(--t-spring), box-shadow 0.25s;
+  z-index: 2;
+  user-select: none; -webkit-user-select: none;
+  touch-action: none;
+}
+.fab::before {
+  content: ''; position: absolute; inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-glow), transparent 70%);
+  animation: fabPulse 3s ease-in-out infinite;
+  pointer-events: none; z-index: -1;
+}
+@keyframes fabPulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.15); } }
+.fab .ic { width: 28px; height: 28px; stroke-width: 2; pointer-events: none; }
+.fab:active { transform: scale(0.92); }
+.fab-radial.open .fab {
+  transform: scale(0.75) rotate(135deg);
+  box-shadow: 0 4px 16px rgba(220,184,108,0.3);
+}
+
+/* Backdrop */
+.fab-backdrop {
+  position: fixed; inset: 0; z-index: 55;
+  background: radial-gradient(circle at var(--cx, 90%) var(--cy, 90%), transparent 0%, rgba(5,3,9,0.55) 35%, rgba(5,3,9,0.92) 100%);
+  backdrop-filter: blur(10px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s var(--t);
+}
+.fab-backdrop.open { opacity: 1; pointer-events: all; }
+
+/* Radial wedges — arc 90° (up to left) */
+.rw {
+  position: absolute; left: 50%; top: 50%;
+  width: 56px; height: 56px;
+  margin: -28px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(220,184,108,0.2), transparent 70%),
+    rgba(20, 14, 32, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--gold-dim);
+  border-radius: 50%;
+  color: var(--gold-text);
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.35s var(--t-spring), opacity 0.25s, background 0.2s, box-shadow 0.2s, border-color 0.2s;
+  pointer-events: none;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+  cursor: pointer;
+  --r: 130px;
+  z-index: 65;
+  touch-action: none;
+}
+@media (min-width: 768px) { .rw { --r: 150px; width: 60px; height: 60px; margin: -30px; } }
+.rw .ic { width: 22px; height: 22px; stroke-width: 1.8; pointer-events: none; }
+.rw-l {
+  font-family: var(--title); font-size: 7.5px;
+  letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;
+  white-space: nowrap; pointer-events: none;
+}
+.fab-radial.open .rw {
+  opacity: 1;
+  pointer-events: all;
+  transform: rotate(var(--angle)) translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--angle)));
+  transition-delay: calc(var(--idx) * 0.035s);
+}
+.rw.active {
+  background:
+    radial-gradient(ellipse at 50% 0%, var(--gold-bright), var(--gold));
+  border-color: var(--gold-bright);
+  color: var(--ink);
+  box-shadow: 0 0 28px var(--gold-glow), 0 0 56px rgba(220,184,108,0.35);
+}
+.fab-radial.open .rw.active {
+  transform: rotate(var(--angle)) translateY(calc(-1 * var(--r))) rotate(calc(-1 * var(--angle))) scale(1.22);
+}
+.rw.has-sub::after {
+  content: '›'; position: absolute; top: -3px; right: 6px;
+  font-size: 16px; color: var(--gold-bright);
+  font-family: var(--display); font-weight: 700;
+  filter: drop-shadow(0 0 4px var(--gold-glow));
+  pointer-events: none;
+}
+
+/* Decorative arc — positioned so its bottom-right corner is at FAB center, extending upper-left only */
+.fab-ring {
+  position: absolute;
+  right: 32px; bottom: 32px;
+  width: 145px; height: 145px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s var(--t), transform 0.4s var(--t-spring);
+  transform: scale(0.6) rotate(-30deg);
+  transform-origin: bottom right;
+  z-index: 56;
+}
+@media (min-width: 768px) { .fab-ring { width: 170px; height: 170px; } }
+.fab-radial.open .fab-ring { opacity: 1; transform: scale(1) rotate(0deg); }
+.fab-ring svg { width: 100%; height: 100%; }
+.fab-ring .r-circle { fill: none; stroke: var(--gold-dim); opacity: 0.5; }
+.fab-ring .r-dot { fill: var(--gold); filter: drop-shadow(0 0 4px var(--gold-glow)); }
+
+/* Hint */
+.fab-hint {
+  position: absolute;
+  bottom: 100%; right: 0;
+  margin-bottom: 12px;
+  padding: 8px 14px;
+  background: rgba(20, 14, 32, 0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--gold-dim);
+  border-radius: 999px;
+  font-family: var(--display); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold-bright);
+  text-shadow: 0 0 8px var(--gold-glow);
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.3s 0.15s, transform 0.3s 0.15s;
+  z-index: 62;
+}
+.fab-radial.open .fab-hint { opacity: 1; transform: translateY(0); }
+
+/* ============================================================
+   BATTLE HUD — Action economy, Initiative, Turn control
+   ============================================================ */
+.battle-hud {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--border-white);
+  border-radius: 16px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.econ-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.econ-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-white);
+  border-radius: 999px;
+  font-family: var(--title); font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer; transition: all 0.2s var(--t);
+  white-space: nowrap; min-width: 0;
+}
+.econ-chip:hover { border-color: var(--gold-dim); color: var(--text); }
+.econ-chip.used {
+  background: rgba(220,184,108,0.18);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+  text-decoration: line-through;
+  text-decoration-color: rgba(220,184,108,0.55);
+}
+.econ-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-4);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.econ-chip.used .econ-dot {
+  background: var(--gold); box-shadow: 0 0 8px var(--gold-glow);
+}
+.end-turn {
+  padding: 10px 16px;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink);
+  border: none;
+  border-radius: 12px;
+  font-family: var(--title); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(220,184,108,0.35);
+  transition: all 0.2s var(--t);
+}
+.end-turn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(220,184,108,0.45); }
+.end-turn:active { transform: scale(0.96); }
+.move-bar {
+  height: 8px; background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-white);
+  border-radius: 999px; overflow: hidden;
+  margin-top: 8px;
+}
+.move-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-bright));
+  border-radius: 999px;
+  transition: width 0.4s var(--t);
+}
+.move-label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-top: 6px;
+  font-family: var(--title); font-size: 8px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-3); font-weight: 700;
+}
+.move-label strong { color: var(--gold-bright); font-family: var(--display); font-size: 13px; letter-spacing: -0.01em; }
+
+/* ============================================================
+   INITIATIVE ORDER STRIP
+   ============================================================ */
+.init-strip {
+  display: flex; gap: 8px;
+  overflow-x: auto; scrollbar-width: none;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.init-strip::-webkit-scrollbar { display: none; }
+.init-tok {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 12px;
+  flex-shrink: 0; min-width: 70px;
+  position: relative;
+  transition: all 0.25s var(--t);
+}
+.init-tok.me {
+  background: linear-gradient(180deg, rgba(220,184,108,0.12), rgba(220,184,108,0.03));
+  border-color: var(--gold-dim);
+}
+.init-tok.enemy { background: rgba(232,90,90,0.08); border-color: rgba(232,90,90,0.25); }
+.init-tok.current {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 20px var(--gold-glow), inset 0 0 0 1px var(--gold-bright);
+  transform: translateY(-3px);
+}
+.init-tok.current::before {
+  content: '▼'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+  color: var(--gold-bright); font-size: 12px;
+  filter: drop-shadow(0 0 4px var(--gold-glow));
+  animation: bounce 1.6s ease-in-out infinite;
+}
+@keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(4px); } }
+.init-val {
+  font-family: var(--display); font-size: 18px; font-weight: 800;
+  color: var(--gold-bright); letter-spacing: -0.02em; line-height: 1;
+}
+.init-tok.enemy .init-val { color: var(--crimson); }
+.init-name {
+  font-family: var(--title); font-size: 8px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-2); font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   PARTY VIEW
+   ============================================================ */
+.party-row { display: flex; flex-direction: column; gap: 8px; }
+.ally {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 12px;
+}
+.ally-avatar {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(220,184,108,0.1);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold-bright);
+  font-family: var(--display); font-weight: 800; font-size: 14px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  flex-shrink: 0;
+}
+.ally-info { flex: 1; min-width: 0; }
+.ally-top {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin-bottom: 4px;
+}
+.ally-name {
+  font-family: var(--serif); font-size: 14px; color: var(--text); font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ally-role { font-family: var(--title); font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-3); font-weight: 700; }
+.ally-bar { height: 6px; background: rgba(0,0,0,0.4); border-radius: 999px; overflow: hidden; }
+.ally-fill { height: 100%; border-radius: 999px; transition: width 0.4s var(--t); }
+.ally-hp { font-family: var(--display); font-size: 12px; color: var(--text-2); font-weight: 700; }
+
+/* ============================================================
+   SPELL SLOTS — Compact in combat
+   ============================================================ */
+.slots-compact { display: flex; flex-direction: column; gap: 8px; }
+.slot-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-white);
+  border-radius: 10px;
+}
+.slot-lvl { font-family: var(--title); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); font-weight: 700; min-width: 60px; }
+.slot-dots { display: flex; gap: 5px; flex: 1; }
+.slot-dot {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--gold-dim);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.25s var(--t-spring);
+  background: transparent;
+}
+.slot-dot.full {
+  background: radial-gradient(circle, var(--gold-bright), var(--gold));
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 10px var(--gold-glow);
+}
+.slot-dot:hover { transform: scale(1.15); }
+.slot-dot:active { transform: scale(0.85); }
+
+/* ============================================================
+   STATUS STRIP additions
+   ============================================================ */
+.status-chip.insp {
+  background: rgba(220,184,108,0.12);
+  border-color: rgba(220,184,108,0.4);
+  color: var(--gold-bright);
+  cursor: pointer;
+}
+.status-chip.insp.on { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: var(--ink); border-color: var(--gold-bright); font-weight: 900; }
+.status-chip.exhaust { background: rgba(124,108,219,0.1); border-color: rgba(124,108,219,0.3); color: var(--amethyst); cursor: pointer; }
+.status-chip.exhaust .x-dots { display: inline-flex; gap: 2px; margin-left: 4px; }
+.status-chip.exhaust .x-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(181,168,245,0.25); }
+.status-chip.exhaust .x-dot.on { background: var(--amethyst); box-shadow: 0 0 4px var(--amethyst); }
+.status-chip.conc-active .conc-rounds { color: var(--gold-bright); font-family: var(--display); font-weight: 800; margin-left: 4px; }
+
+/* ============================================================
+   DEATH SAVES MODAL
+   ============================================================ */
+.death-modal {
+  position: fixed; inset: 0; z-index: 90;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+  background: rgba(5,3,9,0.92);
+  backdrop-filter: blur(20px);
+  animation: deathIn 0.4s var(--t);
+}
+.death-modal.open { display: flex; }
+@keyframes deathIn { from { opacity: 0; } to { opacity: 1; } }
+.death-content {
+  max-width: 420px; width: 100%;
+  padding: 32px 28px;
+  background: linear-gradient(180deg, rgba(40,8,8,0.85), rgba(20,4,4,0.95));
+  border: 1px solid rgba(232,90,90,0.4);
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 80px rgba(232,90,90,0.2);
+  animation: deathContentIn 0.5s var(--t-spring);
+}
+@keyframes deathContentIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.death-title {
+  font-family: var(--display);
+  font-size: clamp(20px, 5vw, 30px);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: var(--crimson);
+  text-shadow: 0 0 24px rgba(232,90,90,0.5);
+  margin-bottom: 8px;
+}
+.death-sub {
+  font-family: var(--serif); font-style: italic;
+  color: var(--text-2); font-size: 14px;
+  margin-bottom: 24px;
+}
+.death-saves { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.death-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border-white);
+  border-radius: 14px;
+}
+.death-label {
+  font-family: var(--title); font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; font-weight: 700;
+}
+.death-row.succ .death-label { color: var(--teal); }
+.death-row.fail .death-label { color: var(--crimson); }
+.death-dots { display: flex; gap: 8px; }
+.death-dot {
+  width: 18px; height: 18px;
+  border: 2px solid var(--text-4);
+  border-radius: 50%;
+  transition: all 0.3s var(--t-spring);
+}
+.death-row.succ .death-dot.on { background: var(--teal); border-color: var(--teal); box-shadow: 0 0 10px rgba(125,220,192,0.5); }
+.death-row.fail .death-dot.on { background: var(--crimson); border-color: var(--crimson); box-shadow: 0 0 10px rgba(232,90,90,0.5); }
+.death-roll {
+  width: 100%; padding: 16px;
+  background: linear-gradient(180deg, var(--crimson), #b73838);
+  border: 1px solid var(--crimson);
+  color: white;
+  font-family: var(--display); font-size: 16px; font-weight: 800;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  border-radius: 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 20px rgba(232,90,90,0.4);
+  transition: all 0.2s;
+}
+.death-roll:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,90,90,0.5); }
+.death-roll:active { transform: scale(0.97); }
+.death-actions { display: flex; gap: 8px; }
+.death-actions button {
+  flex: 1; padding: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-white);
+  color: var(--text-2);
+  font-family: var(--title); font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; font-weight: 700;
+  border-radius: 10px;
+  transition: all 0.18s;
+}
+.death-actions button:hover { background: rgba(255,255,255,0.08); color: var(--text); border-color: var(--text-3); }
+
+/* ============================================================
+   HP-BASED VISUAL STATES
+   ============================================================ */
+.hp-low .aurora-blob.b1 { background: var(--crimson); opacity: 0.5; }
+.hp-low .hero { box-shadow: 0 30px 80px rgba(232,90,90,0.2), 0 0 60px rgba(232,90,90,0.15); }
+.hp-critical .aurora { opacity: 0.6; animation: criticalPulse 1.8s ease-in-out infinite; }
+.hp-critical .hero::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(232,90,90,0.15) 100%);
+  animation: hbPulse 1.4s ease-in-out infinite;
+}
+@keyframes criticalPulse { 0%,100% { filter: blur(100px); } 50% { filter: blur(120px) hue-rotate(-10deg); } }
+@keyframes hbPulse { 0%,30%,100% { opacity: 0.3; } 15% { opacity: 0.8; } 50% { opacity: 0.5; } 65% { opacity: 0.9; } }
+.hp-down .hero { filter: saturate(0.4) brightness(0.7); }
+.hp-down .emblem-letter { fill: var(--text-3) !important; }
+
+/* ============================================================
+   FLASH OVERLAYS — crit, fumble, concentration break
+   ============================================================ */
+.flash {
+  position: fixed; inset: 0; z-index: 95;
+  pointer-events: none; opacity: 0;
+}
+.flash.crit {
+  background: radial-gradient(circle at center, var(--gold-glow) 0%, transparent 70%);
+  animation: flashCrit 0.7s var(--t) forwards;
+}
+.flash.fumble {
+  background: radial-gradient(circle at center, rgba(232,90,90,0.5) 0%, transparent 70%);
+  animation: flashFumble 0.6s var(--t) forwards;
+}
+.flash.conc-break {
+  background: radial-gradient(circle at center, rgba(181,168,245,0.45) 0%, transparent 60%);
+  animation: flashConc 1s var(--t) forwards;
+}
+@keyframes flashCrit { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes flashFumble { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes flashConc { 0% { opacity: 0; transform: scale(1); } 30% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1); } }
+
+.shake { animation: shakeIt 0.4s var(--t); }
+@keyframes shakeIt {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-0.3deg); }
+  75% { transform: translateX(4px) rotate(0.3deg); }
+}
+
+/* Spell cast burst — particles emanating from a slot */
+.cast-burst {
+  position: fixed; pointer-events: none; z-index: 88;
+  width: 1px; height: 1px;
+}
+.cast-burst::before, .cast-burst::after {
+  content: ''; position: absolute; left: 0; top: 0;
+  width: 60px; height: 60px;
+  margin: -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-bright), transparent 60%);
+  animation: castBurst 0.8s ease-out forwards;
+}
+.cast-burst::after { animation-delay: 0.1s; background: radial-gradient(circle, rgba(181,168,245,0.7), transparent 60%); }
+@keyframes castBurst {
+  0% { opacity: 0; transform: scale(0.2); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: scale(3); }
+}
+
+/* ============================================================
+   STATS DASHBOARD (Âme mode)
+   ============================================================ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+@media (max-width: 540px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-tile {
+  padding: 16px 8px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border-white);
+  border-radius: 14px;
+  text-align: center;
+  position: relative;
+}
+.stat-tile::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 40%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+}
+.stat-val { font-family: var(--display); font-size: clamp(20px, 6vw, 30px); font-weight: 800; color: var(--gold-bright); letter-spacing: -0.03em; line-height: 1; }
+.stat-lbl { font-family: var(--title); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-top: 6px; }
+.stat-tile.crit .stat-val { color: var(--teal); }
+.stat-tile.fumble .stat-val { color: var(--crimson); }
+.most-used {
+  padding: 12px 16px;
+  background: rgba(220,184,108,0.06);
+  border: 1px solid rgba(220,184,108,0.2);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--serif); font-style: italic; font-size: 14px;
+  color: var(--text-2);
+}
+.most-used strong { color: var(--gold-bright); font-family: var(--display); font-style: normal; font-weight: 700; }
+
+/* ============================================================
+   SESSION JOURNAL
+   ============================================================ */
+.journal-area {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px 16px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-white);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.25s;
+}
+.journal-area:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(220,184,108,0.1); }
+.journal-area::placeholder { color: var(--text-4); font-style: italic; }
+.journal-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px;
+  font-family: var(--title); font-size: 9px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--text-3); font-weight: 700;
+}
+
+/* ============================================================
+   ARC RECOVERY pill
+   ============================================================ */
+.arc-recovery {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  background: rgba(181,168,245,0.1);
+  border: 1px solid rgba(181,168,245,0.35);
+  border-radius: 999px;
+  color: var(--amethyst);
+  font-family: var(--title); font-size: 9px; letter-spacing: 0.16em;
+  text-transform: uppercase; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  white-space: nowrap;
+}
+.arc-recovery:hover { background: rgba(181,168,245,0.18); }
+.arc-recovery.used { opacity: 0.4; cursor: not-allowed; text-decoration: line-through; }
+
+.tray {
+  position: fixed; bottom: 18px; left: 18px;
+  right: 100px;
+  max-width: 380px;
+  background: rgba(20, 14, 32, 0.92);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--border-white);
+  border-radius: 22px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(220,184,108,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.08);
+  z-index: 40; overflow: hidden;
+  transition: all 0.4s var(--t);
+}
+@media (min-width: 768px) { .tray { left: 28px; right: auto; width: 360px; bottom: 28px; } }
+.tray-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  cursor: pointer; width: 100%;
+  background: transparent; border: none; color: var(--text); text-align: left;
+  transition: background 0.2s;
+}
+.tray-bar:hover { background: rgba(220,184,108,0.04); }
+.tray-ico {
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 18px rgba(220,184,108,0.5);
+  transition: transform 0.4s var(--t-spring);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+.tray-ico .ic { width: 22px; height: 22px; }
+.tray-bar:hover .tray-ico { transform: rotate(180deg); }
+.tray-text { flex: 1; min-width: 0; }
+.tray-l { font-family: var(--title); font-size: 9px; color: var(--text-3); letter-spacing: 0.26em; text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+.tray-r { font-family: var(--serif); font-size: 17px; line-height: 1.1; }
+.tray-r strong { color: var(--gold-bright); font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.03em; text-shadow: 0 0 12px var(--gold-glow); }
+.tray-chev { color: var(--text-3); font-size: 12px; transition: transform 0.3s; }
+.tray.open .tray-chev { transform: rotate(180deg); }
+.tray-exp { max-height: 0; overflow: hidden; transition: max-height 0.45s var(--t); }
+.tray.open .tray-exp { max-height: 600px; }
+.tray-in { padding: 16px 20px 20px; border-top: 1px solid var(--border-white); }
+
+.adv-row { display: flex; gap: 6px; margin-bottom: 16px; }
+.adv-b {
+  flex: 1; padding: 10px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border-white); border-radius: 12px;
+  color: var(--text-2);
+  font-family: var(--title);
+  font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; font-weight: 700;
+  transition: all 0.18s;
+}
+.adv-b.active {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink); border-color: var(--gold); font-weight: 800;
+  box-shadow: 0 2px 10px rgba(220,184,108,0.35);
+}
+.adv-b:hover:not(.active) { color: var(--text); border-color: var(--gold-dim); }
+
+.qd { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.qd-b {
+  padding: 9px 16px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border-white); border-radius: 999px;
+  color: var(--text); font-family: var(--display); font-size: 15px; font-weight: 700;
+  transition: all 0.15s; letter-spacing: -0.01em;
+}
+.qd-b:hover {
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: var(--ink); border-color: var(--gold);
+  box-shadow: 0 3px 12px rgba(220,184,108,0.3);
+}
+
+.hist-h { font-family: var(--title); font-size: 9px; color: var(--text-3); margin-bottom: 10px; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid var(--border-white); }
+.hist-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; font-size: 12px; border-bottom: 1px solid var(--border-white); }
+.hist-item:last-child { border-bottom: none; }
+.hist-l { color: var(--text-2); font-family: var(--serif); }
+.hist-r { font-family: var(--display); color: var(--gold-bright); font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+.hist-r.crit { color: var(--teal); }
+.hist-r.fumble { color: var(--crimson); }
+
+/* TOAST */
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: 130px; padding: 24px 40px;
+  background: rgba(34, 24, 48, 0.85);
+  backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid var(--gold);
+  border-radius: 22px;
+  font-family: var(--serif); font-size: 18px;
+  box-shadow:
+    0 28px 80px rgba(0,0,0,0.8),
+    0 0 60px var(--gold-glow);
+  z-index: 100;
+  animation: toastIn 2.3s var(--t) forwards;
+  pointer-events: none; text-align: center;
+}
+.toast strong {
+  color: var(--gold-bright);
+  font-family: var(--display); font-weight: 900; font-size: 42px;
+  display: block; margin: 8px 0; letter-spacing: -0.03em;
+  text-shadow: 0 0 24px var(--gold-glow);
+}
+.toast .crit, .toast .fumble, .toast .heal, .toast .dmg {
+  font-family: var(--title); font-weight: 800; letter-spacing: 0.24em;
+  font-size: 11px; text-transform: uppercase; display: block;
+}
+.toast .crit { color: var(--teal); }
+.toast .fumble { color: var(--crimson); }
+.toast .heal { color: var(--teal); }
+.toast .dmg { color: var(--crimson); }
+.toast .sub { font-size: 12px; color: var(--text-3); font-family: var(--ui); font-style: normal; letter-spacing: 0.04em; display: block; margin-top: 8px; }
+@keyframes toastIn {
+  0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.92); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.98); }
+}
+
+/* Floating particles */
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.particle {
+  position: absolute; width: 2px; height: 2px;
+  background: var(--gold-bright); border-radius: 50%;
+  opacity: 0; box-shadow: 0 0 6px var(--gold);
+  animation: float linear infinite;
+}
+@keyframes float {
+  0% { opacity: 0; transform: translateY(100vh) translateX(0); }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-100px) translateX(50px); }
+}
+
+@media (max-width: 540px) {
+  .topbar { padding: 12px 16px; }
+  .brand { font-size: 13px; letter-spacing: 0.18em; }
+  .hero { padding: 28px 18px 24px; }
+  .emblem { width: 170px; height: 170px; }
+  .emblem-letter { font-size: 95px; }
+  .vitals { gap: 8px; }
+  .vital { padding: 12px 4px 10px; }
+  .vital-v { font-size: 20px; }
+  .mode { padding: 10px 2px; font-size: 8px; gap: 3px; }
+  .mode-ic { font-size: 20px; }
+  .mode-ic .ic { width: 20px; height: 20px; }
+  .card { padding: 18px; border-radius: 16px; }
+  .card-h h3 { font-size: 12px; letter-spacing: 0.22em; }
+  .saves .save { min-width: 78px; padding: 9px 12px; }
+  .save-m { font-size: 17px; }
+  .tray-bar { padding: 14px 16px; gap: 10px; }
+  .tray-ico { width: 40px; height: 40px; }
+  .toast { padding: 18px 24px; font-size: 16px; max-width: calc(100vw - 32px); }
+  .toast strong { font-size: 34px; }
+  .ab-grid, .abs-grid { grid-template-columns: repeat(2, 1fr); }
+  .qd-b { font-size: 13px; padding: 8px 12px; }
+}
+
+@media (max-width: 380px) {
+  .app { padding: 0 14px 130px; }
+  .hero { padding: 22px 14px 20px; }
+  .emblem { width: 150px; height: 150px; }
+  .emblem-letter { font-size: 82px; }
+  /* Vitals 2x2 instead of 4x1 on tiny screens — text stays readable */
+  .vitals { grid-template-columns: 1fr 1fr; }
+  .hero-name { letter-spacing: 0.02em; }
+  .mode { padding: 9px 1px; font-size: 7.5px; letter-spacing: 0.12em; }
+  .mode-ic { font-size: 18px; }
+  .mode-ic .ic { width: 18px; height: 18px; }
+  .hex-mod { font-size: 22px; }
+  .hp-grid { gap: 8px; }
+  .hp-btn { width: 46px; height: 46px; font-size: 22px; }
+  .hp-inp { font-size: 20px; height: 46px; }
+  .coins { gap: 6px; }
+  .coin { padding: 10px 4px; }
+  .coin-a { font-size: 20px; }
+  .card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SVG ICON SPRITE -->
+<svg style="display: none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Abilities -->
+    <symbol id="i-for" viewBox="0 0 24 24"><path d="M5 13L12 6L19 13M8 19V11M16 19V11M6 19H18"/></symbol>
+    <symbol id="i-dex" viewBox="0 0 24 24"><path d="M19 5C18 9 14 13 9 16C7 17 5 18 5 18M5 18L8 18M5 18V15M19 5L13 11M16 8L9 15"/></symbol>
+    <symbol id="i-con" viewBox="0 0 24 24"><path d="M12 3L20 6V12C20 16.5 16.5 20 12 21C7.5 20 4 16.5 4 12V6L12 3Z"/><path d="M9 12L11 14L15 10"/></symbol>
+    <symbol id="i-int" viewBox="0 0 24 24"><path d="M4 5C4 4 5 3 6 3H18C19 3 20 4 20 5V19C20 20 19 21 18 21H6C5 21 4 20 4 19V5Z"/><path d="M4 5C4 6 5 7 6 7H20"/><path d="M8 11H16M8 15H14"/></symbol>
+    <symbol id="i-sag" viewBox="0 0 24 24"><path d="M21 12.5C21 17 17 21 12 21C7 21 3 17 3 12.5C3 8 7 4 12 4C14 4 16 4.5 17 5.5C15 5.5 13 7 13 9C13 11.5 16 12 18 11C19.5 10.5 20.5 11.5 21 12.5Z"/></symbol>
+    <symbol id="i-cha" viewBox="0 0 24 24"><path d="M12 21C16 21 19 18 19 14C19 12 18 10 17 9C17 11 16 12 14 12C15 8 13 5 10 3C11 6 9 8 7 10C5 11 4 13 4 15C4 18 7 21 12 21Z"/></symbol>
+    <!-- Vitals -->
+    <symbol id="i-init" viewBox="0 0 24 24"><path d="M13 3L4 14H11L10 21L19 10H12L13 3Z"/></symbol>
+    <symbol id="i-ac" viewBox="0 0 24 24"><path d="M12 3L20 6V12C20 16.5 16.5 20 12 21C7.5 20 4 16.5 4 12V6L12 3Z"/></symbol>
+    <symbol id="i-speed" viewBox="0 0 24 24"><path d="M5 12H19M19 12L13 6M19 12L13 18"/></symbol>
+    <symbol id="i-spell" viewBox="0 0 24 24"><path d="M12 2L14 8L20 10L14 12L12 18L10 12L4 10L10 8L12 2Z"/></symbol>
+    <!-- Actions -->
+    <symbol id="i-sword" viewBox="0 0 24 24"><path d="M19 3L14 8L18 12L21 9L19 3Z"/><path d="M14 8L4 18L6 20L16 10"/><path d="M3 19L5 21"/></symbol>
+    <symbol id="i-bow" viewBox="0 0 24 24"><path d="M4 4C4 4 14 6 18 18M4 4C4 4 6 14 18 18"/><path d="M14 10L18 6M16 8L19 5"/></symbol>
+    <symbol id="i-dagger" viewBox="0 0 24 24"><path d="M12 3L9 12L12 15L15 12L12 3Z"/><path d="M12 15V21M9 18H15"/></symbol>
+    <symbol id="i-staff" viewBox="0 0 24 24"><path d="M6 3L6 21M3 6L9 6M6 3C6 3 7 5 9 6"/><circle cx="6" cy="3" r="2"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2C14 6 16 7 16 11C16 13 15 14 13 14C14 12 14 10 12 10C12 14 8 14 8 18C8 20 10 22 12 22C16 22 18 18 18 14C18 8 14 6 12 2Z"/></symbol>
+    <symbol id="i-magic" viewBox="0 0 24 24"><path d="M12 3L13 9L19 10L13 11L12 17L11 11L5 10L11 9L12 3Z"/><circle cx="19" cy="5" r="1.5"/><circle cx="5" cy="18" r="1"/><circle cx="20" cy="18" r="1"/></symbol>
+    <!-- Other -->
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12C4 7 8 4 12 4C16 4 20 7 22 12C20 17 16 20 12 20C8 20 4 17 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4C4 3 5 2 6 2H18C19 2 20 3 20 4V22L12 18L4 22V4Z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2L20 5V12C20 16.5 16.5 20 12 22C7.5 20 4 16.5 4 12V5L12 2Z"/></symbol>
+    <symbol id="i-potion" viewBox="0 0 24 24"><path d="M9 3H15M10 3V8L7 13V20C7 21 8 21 9 21H15C16 21 17 21 17 20V13L14 8V3"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8H19L18 21H6L5 8Z"/><path d="M9 8V5C9 4 10 3 12 3C14 3 15 4 15 5V8"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21L16 16"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><path d="M4 6L12 2L20 6V18L12 22L4 18V6Z"/><path d="M4 6L12 10L20 6M12 10V22"/><circle cx="8" cy="10" r="0.5" fill="currentColor"/><circle cx="16" cy="10" r="0.5" fill="currentColor"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 21C7 17 3 13 3 9C3 6 5 4 8 4C10 4 11 5 12 7C13 5 14 4 16 4C19 4 21 6 21 9C21 13 17 17 12 21Z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5V19M5 12H19"/></symbol>
+    <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20 4C20 4 16 4 12 8C8 12 8 16 8 16M20 4L4 20M20 4C20 4 18 10 14 14"/></symbol>
+    <symbol id="i-skull" viewBox="0 0 24 24"><path d="M4 11C4 6 7 3 12 3C17 3 20 6 20 11V16C20 17 19 18 18 18V21H15V18H9V21H6V18C5 18 4 17 4 16V11Z"/><circle cx="9" cy="12" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<!-- AURORA BACKGROUND -->
+<div class="aurora">
+  <div class="aurora-blob b1"></div>
+  <div class="aurora-blob b2"></div>
+  <div class="aurora-blob b3"></div>
+</div>
+
+<!-- PARTICLES -->
+<div class="particles" id="particles"></div>
+
+<nav class="topbar">
+  <div class="brand"><span class="brand-mark">⚔</span>GrimWar</div>
+  <div class="avatar">A</div>
+</nav>
+
+<div class="app">
+
+  <div class="status-strip">
+    <div class="status-left"><span class="status-pulse"></span><span>Tour <span id="turnNum">3</span></span></div>
+    <span class="status-chip insp" id="inspChip" onclick="toggleInspiration()">
+      <svg class="ic" style="width:11px;height:11px"><use href="#i-spell"/></svg>Inspiration
+    </span>
+    <span class="status-chip exhaust" id="exhaustChip" onclick="cycleExhaustion()">
+      <svg class="ic" style="width:11px;height:11px"><use href="#i-skull"/></svg>Épuis.
+      <span class="x-dots" id="exhaustDots"></span>
+    </span>
+    <span class="status-chip conc-active" id="concChip" onclick="endConcentration()">
+      <svg class="ic" style="width:11px;height:11px"><use href="#i-magic"/></svg>Concent. <span id="concSpell">Toile</span><span class="conc-rounds" id="concRounds">9t</span>
+    </span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <svg class="hero-rays" viewBox="0 0 700 700">
+      <defs><radialGradient id="rayGrad"><stop offset="0%" stop-color="rgba(220,184,108,0.5)"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs>
+      <g fill="url(#rayGrad)" opacity="0.6">
+        <polygon points="350,350 340,0 360,0"/><polygon points="350,350 700,340 700,360"/>
+        <polygon points="350,350 360,700 340,700"/><polygon points="350,350 0,360 0,340"/>
+        <polygon points="350,350 90,90 110,70"/><polygon points="350,350 630,90 610,70"/>
+        <polygon points="350,350 630,630 610,650"/><polygon points="350,350 90,630 110,650"/>
+      </g>
+    </svg>
+
+    <div class="flourish tl"><svg viewBox="0 0 64 64" fill="none" stroke="#d4b25e" stroke-width="0.8" stroke-linecap="round"><path d="M4 32 Q4 4 32 4"/><path d="M4 4 L12 12"/><path d="M16 4 L4 16"/><path d="M4 24 Q14 14 24 4"/><circle cx="4" cy="4" r="1.5" fill="#d4b25e"/><circle cx="16" cy="16" r="1" fill="#d4b25e"/><path d="M10 10 Q14 10 14 14"/></svg></div>
+    <div class="flourish tr"><svg viewBox="0 0 64 64" fill="none" stroke="#d4b25e" stroke-width="0.8" stroke-linecap="round"><path d="M4 32 Q4 4 32 4"/><path d="M4 4 L12 12"/><path d="M16 4 L4 16"/><path d="M4 24 Q14 14 24 4"/><circle cx="4" cy="4" r="1.5" fill="#d4b25e"/><circle cx="16" cy="16" r="1" fill="#d4b25e"/><path d="M10 10 Q14 10 14 14"/></svg></div>
+    <div class="flourish bl"><svg viewBox="0 0 64 64" fill="none" stroke="#d4b25e" stroke-width="0.8" stroke-linecap="round"><path d="M4 32 Q4 4 32 4"/><path d="M4 4 L12 12"/><path d="M16 4 L4 16"/><path d="M4 24 Q14 14 24 4"/><circle cx="4" cy="4" r="1.5" fill="#d4b25e"/><circle cx="16" cy="16" r="1" fill="#d4b25e"/><path d="M10 10 Q14 10 14 14"/></svg></div>
+    <div class="flourish br"><svg viewBox="0 0 64 64" fill="none" stroke="#d4b25e" stroke-width="0.8" stroke-linecap="round"><path d="M4 32 Q4 4 32 4"/><path d="M4 4 L12 12"/><path d="M16 4 L4 16"/><path d="M4 24 Q14 14 24 4"/><circle cx="4" cy="4" r="1.5" fill="#d4b25e"/><circle cx="16" cy="16" r="1" fill="#d4b25e"/><path d="M10 10 Q14 10 14 14"/></svg></div>
+
+    <div class="hero-inner">
+      <div class="emblem">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="emGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#221830"/>
+              <stop offset="100%" stop-color="#100b18"/>
+            </linearGradient>
+            <linearGradient id="hpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fde9b4"/>
+              <stop offset="50%" stop-color="#d4b25e"/>
+              <stop offset="100%" stop-color="#fde9b4"/>
+            </linearGradient>
+            <linearGradient id="letterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#fde9b4"/>
+              <stop offset="100%" stop-color="#d4b25e"/>
+            </linearGradient>
+          </defs>
+          <polygon class="emblem-ring" points="100,2 198,100 100,198 2,100" stroke-width="1.5"/>
+          <polygon class="emblem-bg" points="100,14 186,100 100,186 14,100"/>
+          <polygon class="emblem-hp" id="hpEmblem" points="100,14 186,100 100,186 14,100"/>
+          <circle class="emblem-deco" cx="100" cy="6" r="3.5"/>
+          <circle class="emblem-deco" cx="194" cy="100" r="3.5"/>
+          <circle class="emblem-deco" cx="100" cy="194" r="3.5"/>
+          <circle class="emblem-deco" cx="6" cy="100" r="3.5"/>
+          <circle class="emblem-ring" cx="100" cy="100" r="62" stroke-width="0.8"/>
+          <text class="emblem-letter" x="100" y="138" text-anchor="middle">L</text>
+        </svg>
+        <span class="emblem-decoration left">⚜</span>
+        <span class="emblem-decoration right">⚜</span>
+        <div class="hp-badge">
+          <span class="hp-cur" id="hpNum">28</span>
+          <span class="hp-max">/ 32</span>
+        </div>
+      </div>
+
+      <div class="hero-text">
+        <h1 class="hero-name">LYRALEI</h1>
+        <div class="hero-subtitle">Crinière-de-Lune</div>
+        <div class="divider"><span class="divider-mark">✦ ⚜ ✦</span></div>
+        <div class="hero-class"><strong>Magicienne</strong> · Évocation · Niveau 5</div>
+        <div class="hero-race">Demi-elfe · Neutre bon · Sage</div>
+      </div>
+
+      <div class="vitals">
+        <button class="vital" onclick="rollD20('Initiative', 3)">
+          <span class="vital-ic"><svg class="ic"><use href="#i-init"/></svg></span>
+          <div class="vital-l">Init</div>
+          <div class="vital-v">+3</div>
+        </button>
+        <div class="vital">
+          <span class="vital-ic"><svg class="ic"><use href="#i-shield"/></svg></span>
+          <div class="vital-l">Armure</div>
+          <div class="vital-v">14</div>
+        </div>
+        <div class="vital">
+          <span class="vital-ic"><svg class="ic"><use href="#i-speed"/></svg></span>
+          <div class="vital-l">Vitesse</div>
+          <div class="vital-v">9m</div>
+        </div>
+        <div class="vital">
+          <span class="vital-ic"><svg class="ic"><use href="#i-spell"/></svg></span>
+          <div class="vital-l">DD sort</div>
+          <div class="vital-v">15</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="qa">
+    <button class="qa-pill" onclick="rollD20('Initiative', 3)"><span class="qa-ico"><svg class="ic"><use href="#i-init"/></svg></span><span class="qa-t"><span class="qa-n">Initiative</span><span class="qa-b">+3</span></span></button>
+    <button class="qa-pill" onclick="rollAtk('Trait de feu', 7, '2d10 feu')"><span class="qa-ico fire"><svg class="ic"><use href="#i-flame"/></svg></span><span class="qa-t"><span class="qa-n">Trait de feu</span><span class="qa-b">+7 · 2d10</span></span></button>
+    <button class="qa-pill" onclick="rollAtk('Proj. magique', 0, '3d4+3 force')"><span class="qa-ico magic"><svg class="ic"><use href="#i-magic"/></svg></span><span class="qa-t"><span class="qa-n">Proj. magique</span><span class="qa-b">auto · 3d4+3</span></span></button>
+    <button class="qa-pill" onclick="rollD20('Perception', 4)"><span class="qa-ico"><svg class="ic"><use href="#i-eye"/></svg></span><span class="qa-t"><span class="qa-n">Perception</span><span class="qa-b">+4</span></span></button>
+    <button class="qa-pill" onclick="rollD20('Arcanes', 7)"><span class="qa-ico"><svg class="ic"><use href="#i-book"/></svg></span><span class="qa-t"><span class="qa-n">Arcanes</span><span class="qa-b">+7</span></span></button>
+  </div>
+
+  <nav class="modes">
+    <button class="mode active" data-mode="combat"><span class="mode-ic"><svg class="ic"><use href="#i-sword"/></svg></span><span>Combat</span></button>
+    <button class="mode" data-mode="essence"><span class="mode-ic"><svg class="ic"><use href="#i-spell"/></svg></span><span>Essence</span></button>
+    <button class="mode" data-mode="magie"><span class="mode-ic"><svg class="ic"><use href="#i-magic"/></svg></span><span>Magie</span></button>
+    <button class="mode" data-mode="avoir"><span class="mode-ic"><svg class="ic"><use href="#i-bag"/></svg></span><span>Avoir</span></button>
+    <button class="mode" data-mode="ame"><span class="mode-ic"><svg class="ic"><use href="#i-heart"/></svg></span><span>Âme</span></button>
+  </nav>
+
+  <!-- COMBAT — BENTO -->
+  <section class="panel active" data-mode="combat">
+    <!-- Battle HUD: action economy + end turn -->
+    <div class="battle-hud">
+      <div>
+        <div class="econ-row">
+          <button class="econ-chip" id="econAction" onclick="toggleEcon('action')"><span class="econ-dot"></span>Action</button>
+          <button class="econ-chip" id="econBonus" onclick="toggleEcon('bonus')"><span class="econ-dot"></span>Bonus</button>
+          <button class="econ-chip" id="econReaction" onclick="toggleEcon('reaction')"><span class="econ-dot"></span>Réaction</button>
+        </div>
+        <div class="move-bar"><div class="move-fill" id="moveFill" style="width:0%"></div></div>
+        <div class="move-label">
+          <span>Mouvement</span>
+          <span><strong id="moveUsed">0</strong> / <span id="moveTotal">9</span> m</span>
+        </div>
+      </div>
+      <button class="end-turn" onclick="endTurn()">Fin du tour ⟳</button>
+    </div>
+
+    <!-- Initiative order -->
+    <div class="card">
+      <div class="card-h">
+        <h3>Initiative</h3>
+        <button class="card-action" onclick="rollD20('Initiative', 3)">Relancer</button>
+      </div>
+      <div class="init-strip" id="initStrip"></div>
+    </div>
+
+    <div class="combat-bento">
+      <div class="hp-mega-card span-2">
+        <div class="hp-mega-header">
+          <h3>✦ Vitalité ✦</h3>
+          <button class="card-action" onclick="longRest()">Repos long</button>
+        </div>
+        <div class="hp-mega-mini">
+          <div><div class="hp-mini-l">PV temp.</div><div class="hp-mini-v" id="tempHpDisp">0</div></div>
+          <div><div class="hp-mini-l">Dés de vie</div><div class="hp-mini-v">3<span> / 5 d6</span></div></div>
+        </div>
+        <div class="hp-adj">
+          <button class="hp-btn dmg" onclick="adjustHP(-getDelta())">−</button>
+          <input type="number" class="hp-inp" id="hpDelta" value="5" min="1">
+          <button class="hp-btn heal" onclick="adjustHP(getDelta())">+</button>
+        </div>
+        <div class="hp-quick">
+          <button class="card-action" onclick="adjustHP(-1)">−1</button>
+          <button class="card-action" onclick="adjustHP(-5)">−5</button>
+          <button class="card-action" onclick="adjustHP(5)">+5</button>
+          <button class="card-action" onclick="setHP(32)">Plein</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Conditions</h3></div>
+        <div class="cond-grid" id="condGrid">
+          <button class="cond-add">+ État</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>Sortilèges</h3></div>
+        <div class="slots-compact" id="slotsCompact"></div>
+        <button class="arc-recovery" id="arcRecBtn" onclick="useArcRecovery()" style="margin-top:10px;">
+          <svg class="ic" style="width:11px;height:11px"><use href="#i-magic"/></svg>Restauration arcanique
+        </button>
+      </div>
+
+      <div class="card span-2">
+        <div class="card-h"><h3>Attaques</h3></div>
+        <div class="atk-list">
+          <button class="atk" onclick="rollAtk('Trait de feu', 7, '2d10 feu')"><div class="atk-ico magic"><svg class="ic"><use href="#i-flame"/></svg></div><div class="atk-info"><div class="atk-n">Trait de feu</div><div class="atk-m">Tour · 36m · 2d10 feu</div></div><div class="atk-b">+7</div></button>
+          <button class="atk" onclick="rollAtk('Proj. magique', 0, '3d4+3 force')"><div class="atk-ico magic"><svg class="ic"><use href="#i-magic"/></svg></div><div class="atk-info"><div class="atk-n">Projectile magique</div><div class="atk-m">Sort niv.1 · 36m · 3 × (1d4+1)</div></div><div class="atk-b">auto</div></button>
+          <button class="atk" onclick="rollAtk('Dague', 5, '1d4+3 perforants')"><div class="atk-ico"><svg class="ic"><use href="#i-dagger"/></svg></div><div class="atk-info"><div class="atk-n">Dague</div><div class="atk-m">Courante · 1,5m / 6m lancée</div></div><div class="atk-b">+5</div></button>
+          <button class="atk" onclick="rollAtk('Bâton de combat', 1, '1d8−1 contondants')"><div class="atk-ico"><svg class="ic"><use href="#i-staff"/></svg></div><div class="atk-info"><div class="atk-n">Bâton de combat</div><div class="atk-m">Versatile · contact · 1d8−1</div></div><div class="atk-b">+1</div></button>
+        </div>
+      </div>
+
+      <div class="card span-2">
+        <div class="card-h"><h3>Compagnons</h3></div>
+        <div class="party-row" id="partyRow"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESSENCE -->
+  <section class="panel" data-mode="essence">
+    <div class="card">
+      <div class="card-h"><h3>Hexagramme</h3></div>
+      <div class="hexagram">
+        <svg class="hex-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+          <circle class="hex-ring" cx="200" cy="200" r="190"/>
+          <circle class="hex-ring" cx="200" cy="200" r="160"/>
+          <polygon class="hex-line" points="200,40 339,265 61,265"/>
+          <polygon class="hex-line" points="200,360 61,135 339,135"/>
+          <polygon class="hex-line" points="200,80 305,140 305,260 200,320 95,260 95,140"/>
+          <circle class="hex-line" cx="200" cy="200" r="40"/>
+          <polygon class="hex-center-sigil" points="200,170 207,194 232,194 212,209 220,232 200,218 180,232 188,209 168,194 193,194"/>
+        </svg>
+
+        <button class="hex-point" style="left: 50%; top: 13.75%;" onclick="rollD20('Intelligence', 4)">
+          <div><span class="hex-ic"><svg class="ic"><use href="#i-int"/></svg></span><div class="hex-mod pos">+4</div><div class="hex-name">Intel.</div></div>
+        </button>
+        <button class="hex-point" style="left: 81.25%; top: 31.75%;" onclick="rollD20('Sagesse', 1)">
+          <div><span class="hex-ic"><svg class="ic"><use href="#i-sag"/></svg></span><div class="hex-mod pos">+1</div><div class="hex-name">Sagesse</div></div>
+        </button>
+        <button class="hex-point" style="left: 81.25%; top: 68%;" onclick="rollD20('Charisme', 2)">
+          <div><span class="hex-ic"><svg class="ic"><use href="#i-cha"/></svg></span><div class="hex-mod pos">+2</div><div class="hex-name">Charisme</div></div>
+        </button>
+        <button class="hex-point" style="left: 50%; top: 86.25%;" onclick="rollD20('Force', -1)">
+          <div><span class="hex-ic"><svg class="ic"><use href="#i-for"/></svg></span><div class="hex-mod neg">−1</div><div class="hex-name">Force</div></div>
+        </button>
+        <button class="hex-point" style="left: 18.75%; top: 68%;" onclick="rollD20('Constitution', 2)">
+          <div><span class="hex-ic"><svg class="ic"><use href="#i-con"/></svg></span><div class="hex-mod pos">+2</div><div class="hex-name">Const.</div></div>
+        </button>
+        <button class="hex-point" style="left: 18.75%; top: 31.75%;" onclick="rollD20('Dextérité', 3)">
+          <div><span class="hex-ic"><svg class="ic"><use href="#i-dex"/></svg></span><div class="hex-mod pos">+3</div><div class="hex-name">Dextér.</div></div>
+        </button>
+
+        <div class="hex-center">
+          <div class="hex-center-lbl">Maîtrise</div>
+          <div class="hex-center-val">+3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Sauvegardes</h3></div>
+      <div class="saves">
+        <button class="save" onclick="rollD20('JS Force', -1)"><span class="save-n">For</span><span class="save-m">−1</span></button>
+        <button class="save" onclick="rollD20('JS Dex', 3)"><span class="save-n">Dex</span><span class="save-m">+3</span></button>
+        <button class="save" onclick="rollD20('JS Con', 2)"><span class="save-n">Con</span><span class="save-m">+2</span></button>
+        <button class="save p" onclick="rollD20('JS Int', 7)"><span class="save-n">Int</span><span class="save-m">+7</span></button>
+        <button class="save p" onclick="rollD20('JS Sag', 4)"><span class="save-n">Sag</span><span class="save-m">+4</span></button>
+        <button class="save" onclick="rollD20('JS Cha', 2)"><span class="save-n">Cha</span><span class="save-m">+2</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Compétences</h3></div>
+      <div class="search"><svg class="ic"><use href="#i-search"/></svg><input type="text" placeholder="Que veux-tu faire ?" id="skillSearch"></div>
+      <div class="skills-list" id="skillsList"></div>
+    </div>
+  </section>
+
+  <!-- MAGIE -->
+  <section class="panel" data-mode="magie">
+    <div class="spell-stats">
+      <div class="ss"><div class="ss-l">Caract.</div><div class="ss-v" style="font-size:20px;">INT</div></div>
+      <div class="ss"><div class="ss-l">DD du sort</div><div class="ss-v">15</div></div>
+      <div class="ss"><div class="ss-l">+ attaque</div><div class="ss-v">+7</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Cercle d'invocation</h3><button class="card-action" onclick="restoreAll()">Restaurer</button></div>
+
+      <div class="magic-circle">
+        <svg class="mc-svg" viewBox="0 0 360 360">
+          <circle class="mc-ring" cx="180" cy="180" r="160" stroke-width="0.8"/>
+          <circle class="mc-ring" cx="180" cy="180" r="115" stroke-width="0.8"/>
+          <circle class="mc-ring" cx="180" cy="180" r="70" stroke-width="0.8"/>
+          <circle class="mc-ring" cx="180" cy="180" r="38" stroke-width="0.5"/>
+          <line class="mc-line" x1="180" y1="20" x2="180" y2="340" stroke-width="0.4" stroke-dasharray="2 4"/>
+          <line class="mc-line" x1="20" y1="180" x2="340" y2="180" stroke-width="0.4" stroke-dasharray="2 4"/>
+          <line class="mc-line" x1="68" y1="68" x2="292" y2="292" stroke-width="0.4" stroke-dasharray="2 4"/>
+          <line class="mc-line" x1="292" y1="68" x2="68" y2="292" stroke-width="0.4" stroke-dasharray="2 4"/>
+          <circle class="mc-deco" cx="180" cy="20" r="3"/>
+          <circle class="mc-deco" cx="340" cy="180" r="3"/>
+          <circle class="mc-deco" cx="180" cy="340" r="3"/>
+          <circle class="mc-deco" cx="20" cy="180" r="3"/>
+          <polygon class="mc-deco-glow" points="180,158 184,175 202,175 188,186 193,203 180,193 167,203 172,186 158,175 176,175"/>
+        </svg>
+
+        <div class="mc-slot full" data-lvl="1" onclick="this.classList.toggle('full')" style="left: 50%; top: 30.5%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 28,9 28,23 16,29 4,23 4,9"/></svg></div>
+        <div class="mc-slot full" data-lvl="1" onclick="this.classList.toggle('full')" style="left: 69.4%; top: 50%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 28,9 28,23 16,29 4,23 4,9"/></svg></div>
+        <div class="mc-slot" data-lvl="1" onclick="this.classList.toggle('full')" style="left: 50%; top: 69.4%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 28,9 28,23 16,29 4,23 4,9"/></svg></div>
+        <div class="mc-slot" data-lvl="1" onclick="this.classList.toggle('full')" style="left: 30.5%; top: 50%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 28,9 28,23 16,29 4,23 4,9"/></svg></div>
+
+        <div class="mc-slot full" data-lvl="2" onclick="this.classList.toggle('full')" style="left: 50%; top: 18%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 29,16 16,29 3,16"/></svg></div>
+        <div class="mc-slot" data-lvl="2" onclick="this.classList.toggle('full')" style="left: 77.7%; top: 66%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 29,16 16,29 3,16"/></svg></div>
+        <div class="mc-slot" data-lvl="2" onclick="this.classList.toggle('full')" style="left: 22.3%; top: 66%;"><svg viewBox="0 0 32 32"><polygon class="rs" points="16,3 29,16 16,29 3,16"/></svg></div>
+
+        <div class="mc-slot" data-lvl="3" onclick="this.classList.toggle('full')" style="left: 13.9%; top: 27.8%;"><svg viewBox="0 0 32 32"><circle class="rs" cx="16" cy="16" r="12"/><line class="rs" x1="16" y1="3" x2="16" y2="29"/><line class="rs" x1="3" y1="16" x2="29" y2="16"/></svg></div>
+        <div class="mc-slot" data-lvl="3" onclick="this.classList.toggle('full')" style="left: 86.1%; top: 27.8%;"><svg viewBox="0 0 32 32"><circle class="rs" cx="16" cy="16" r="12"/><line class="rs" x1="16" y1="3" x2="16" y2="29"/><line class="rs" x1="3" y1="16" x2="29" y2="16"/></svg></div>
+
+        <div class="mc-label" style="left: 50%; top: 7%;">Niveau 3</div>
+        <div class="mc-label" style="left: 50%; top: 93%;">Niveau 1</div>
+
+        <div class="mc-center">
+          <div class="mc-center-lbl">DD du sort</div>
+          <div class="mc-center-val">15</div>
+          <div class="mc-center-sub">+7 attaque</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>GrimWar</h3></div>
+      <div class="search"><svg class="ic"><use href="#i-search"/></svg><input type="text" placeholder="Rechercher un sort…" id="spellSearch"></div>
+      <div class="chips">
+        <button class="chip active" data-f="all">Tous · 15</button>
+        <button class="chip" data-f="prep">Préparés · 9</button>
+        <button class="chip" data-f="cantrip">Tours · 4</button>
+        <button class="chip" data-f="ritual">Rituels · 1</button>
+      </div>
+      <div class="spell-list" id="spellList"></div>
+    </div>
+  </section>
+
+  <!-- AVOIR -->
+  <section class="panel" data-mode="avoir">
+    <div class="weight">
+      <div class="weight-h"><span class="weight-l">Poids transporté</span><span class="weight-v"><span class="cur">11,5</span> <span class="max">/ 60 kg</span></span></div>
+      <div class="weight-bar"><div class="weight-fill" style="width:19%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Bourse</h3></div>
+      <div class="coins">
+        <div class="coin"><div class="coin-t">Cu</div><div class="coin-a">42</div></div>
+        <div class="coin"><div class="coin-t">Ar</div><div class="coin-a">15</div></div>
+        <div class="coin"><div class="coin-t">Él</div><div class="coin-a z">0</div></div>
+        <div class="coin"><div class="coin-t">Or</div><div class="coin-a">87</div></div>
+        <div class="coin"><div class="coin-t">Pl</div><div class="coin-a">2</div></div>
+      </div>
+      <div style="font-family:var(--serif); font-style:italic; font-size:13px; color:var(--text-3); text-align:center;">Valeur totale ≈ 96 po</div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Inventaire</h3><button class="card-action">+ Objet</button></div>
+      <div class="search"><svg class="ic"><use href="#i-search"/></svg><input type="text" placeholder="Rechercher…"></div>
+      <div class="items">
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-book"/></svg></div><div class="item-info"><div class="item-n">GrimWar de Lyralei</div><div class="item-m">1,5 kg · Focaliseur</div></div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-staff"/></svg></div><div class="item-info"><div class="item-n">Bâton de combat</div><div class="item-m">2 kg · 1d8 versatile</div></div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-dagger"/></svg></div><div class="item-info"><div class="item-n">Dagues</div><div class="item-m">0,5 kg · perforantes</div></div><div class="item-q">×2</div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-bag"/></svg></div><div class="item-info"><div class="item-n">Sac à composantes</div><div class="item-m">1 kg</div></div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-potion"/></svg></div><div class="item-info"><div class="item-n">Potion de soins</div><div class="item-m">0,25 kg · 2d4+2 PV</div></div><div class="item-q">×3</div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-feather"/></svg></div><div class="item-info"><div class="item-n">Parchemins vierges</div><div class="item-m">— · pour copier</div></div><div class="item-q">×10</div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-bag"/></svg></div><div class="item-info"><div class="item-n">Sac à dos d'érudit</div><div class="item-m">3 kg</div></div></div>
+        <div class="item"><div class="item-i"><svg class="ic"><use href="#i-magic"/></svg></div><div class="item-info"><div class="item-n">Composantes</div><div class="item-m">— · matérielles</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ÂME -->
+  <section class="panel" data-mode="ame">
+    <div class="card">
+      <div class="card-h"><h3>Personnalité</h3></div>
+      <div class="soul-grid">
+        <div class="soul"><div class="soul-h"><svg class="ic"><use href="#i-heart"/></svg>Trait</div><div class="soul-t">Je suis convaincue qu'il existe une réponse à toute question — il suffit de chercher dans le bon livre.</div></div>
+        <div class="soul"><div class="soul-h"><svg class="ic"><use href="#i-spell"/></svg>Idéal</div><div class="soul-t">Connaissance. Comprendre, c'est se libérer.</div></div>
+        <div class="soul"><div class="soul-h"><svg class="ic"><use href="#i-eye"/></svg>Lien</div><div class="soul-t">Mon ancien maître Aldric a disparu. Je le retrouverai.</div></div>
+        <div class="soul"><div class="soul-h"><svg class="ic"><use href="#i-flame"/></svg>Défaut</div><div class="soul-t">Je néglige l'évidence par excès d'analyse.</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Aptitudes & traits</h3></div>
+      <div class="feat"><div class="feat-h"><span class="feat-n">Restauration arcanique</span><span class="feat-s">Magicien · 1</span></div><div class="feat-d">Une fois par jour, durant un repos court, récupérez des emplacements de sorts dont la somme des niveaux est inférieure ou égale au niveau du magicien divisé par 2.</div></div>
+      <div class="feat"><div class="feat-h"><span class="feat-n">Évocation puissante</span><span class="feat-s">Évoc. · 2</span></div><div class="feat-d">Ajoute votre modificateur d'Intelligence aux dégâts d'un des coups portés par un sort d'évocation.</div></div>
+      <div class="feat"><div class="feat-h"><span class="feat-n">Évocation sculptée</span><span class="feat-s">Évoc. · 2</span></div><div class="feat-d">Protège 1 + niveau du sort créatures des dégâts d'aire de vos sorts d'évocation.</div></div>
+      <div class="feat"><div class="feat-h"><span class="feat-n">Lignée féerique</span><span class="feat-s">Demi-elfe</span></div><div class="feat-d">Avantage aux jets de sauvegarde contre l'état charmé. Ne peut être endormie magiquement.</div></div>
+      <div class="feat"><div class="feat-h"><span class="feat-n">Chercheur</span><span class="feat-s">Sage</span></div><div class="feat-d">Sait toujours où trouver une information précise ou la personne qui la détient.</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Maîtrises</h3></div>
+      <div class="prof-grid">
+        <div class="prof"><div class="prof-h">Armures</div><div class="prof-v">Aucune</div></div>
+        <div class="prof"><div class="prof-h">Armes</div><div class="prof-v">Dague, fléchette, fronde, bâton, arbalète légère</div></div>
+        <div class="prof"><div class="prof-h">Outils</div><div class="prof-v">Outils de calligraphe</div></div>
+        <div class="prof"><div class="prof-h">Langues</div><div class="prof-v">Commun, Elfique, Draconique, Céleste</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Histoire</h3></div>
+      <div class="story">Née dans une bibliothèque-monastère du Cercle des Sept, Lyralei a passé sa jeunesse à copier des grimwars anciens. Son talent pour l'évocation s'est révélé tôt — un peu trop tôt selon les anciens, qui l'ont éloignée après l'incendie accidentel de l'aile sud. Depuis la disparition de son maître Aldric il y a deux ans, elle parcourt les terres en quête d'indices, persuadée que la vérité se trouve dans un livre qu'elle n'a pas encore lu.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Bilan de campagne</h3></div>
+      <div class="stat-grid">
+        <div class="stat-tile"><div class="stat-val" id="statRolls">0</div><div class="stat-lbl">Jets</div></div>
+        <div class="stat-tile"><div class="stat-val" id="statAvg">—</div><div class="stat-lbl">Moy.&nbsp;d20</div></div>
+        <div class="stat-tile crit"><div class="stat-val" id="statCrits">0</div><div class="stat-lbl">Critiques</div></div>
+        <div class="stat-tile fumble"><div class="stat-val" id="statFumbles">0</div><div class="stat-lbl">Échecs&nbsp;crit.</div></div>
+      </div>
+      <div class="most-used" id="mostUsed">
+        <span>Compétence la plus sollicitée</span><strong id="mostUsedName">—</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h3>Journal de session</h3><button class="card-action" onclick="saveJournal()">Sauvegarder</button></div>
+      <textarea class="journal-area" id="journalArea" placeholder="Ce qui s'est passé cette session… souvenirs, indices, PNJ rencontrés, butin, intrigues."></textarea>
+      <div class="journal-footer">
+        <span id="journalStatus">Non sauvegardé</span>
+        <span id="journalLen">0 mots</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- DEATH SAVES MODAL -->
+<div class="death-modal" id="deathModal">
+  <div class="death-content">
+    <div class="death-title">⚰ Inconscient ⚰</div>
+    <div class="death-sub">Tu es à 0 PV. Trois succès pour te stabiliser, trois échecs et tu pars.</div>
+    <div class="death-saves">
+      <div class="death-row succ">
+        <span class="death-label">Succès</span>
+        <div class="death-dots" id="deathSuccDots">
+          <div class="death-dot"></div><div class="death-dot"></div><div class="death-dot"></div>
+        </div>
+      </div>
+      <div class="death-row fail">
+        <span class="death-label">Échecs</span>
+        <div class="death-dots" id="deathFailDots">
+          <div class="death-dot"></div><div class="death-dot"></div><div class="death-dot"></div>
+        </div>
+      </div>
+    </div>
+    <button class="death-roll" onclick="rollDeathSave()">🎲 Jet de sauvegarde</button>
+    <div class="death-actions">
+      <button onclick="stabilize()">Stabiliser</button>
+      <button onclick="revive()">Soigné (+1 PV)</button>
+    </div>
+  </div>
+</div>
+
+<!-- RADIAL FAB MENU -->
+<div class="fab-backdrop" id="fabBackdrop"></div>
+<div class="fab-radial" id="fabRadial">
+  <div class="fab-ring">
+    <svg viewBox="0 0 145 145" preserveAspectRatio="xMaxYMax meet">
+      <!-- arcs centered on bottom-right corner (145, 145), drawn in upper-left -->
+      <path class="r-circle" d="M 145 5 A 140 140 0 0 0 5 145" stroke-width="0.8" fill="none"/>
+      <path class="r-circle" d="M 145 25 A 120 120 0 0 0 25 145" stroke-width="0.5" fill="none" stroke-dasharray="2 5"/>
+      <path class="r-circle" d="M 145 60 A 85 85 0 0 0 60 145" stroke-width="0.6" fill="none"/>
+      <circle class="r-dot" cx="145" cy="5" r="3"/>
+      <circle class="r-dot" cx="5" cy="145" r="3"/>
+      <circle class="r-dot" cx="48" cy="48" r="2"/>
+    </svg>
+  </div>
+  <div class="fab-hint" id="fabHint">Glissez vers une action</div>
+
+  <button class="rw" style="--idx:0; --angle:0deg" data-label="Initiative" data-action='rollD20("Initiative", 3)'>
+    <svg class="ic"><use href="#i-init"/></svg><span class="rw-l">Init.</span>
+  </button>
+  <button class="rw" style="--idx:1; --angle:-22.5deg" data-label="Attaque" data-action='rollAtk("Trait de feu", 7, "2d10 feu")'>
+    <svg class="ic"><use href="#i-flame"/></svg><span class="rw-l">Atk</span>
+  </button>
+  <button class="rw has-sub" style="--idx:2; --angle:-45deg" data-label="Sortilèges" data-submenu="spells">
+    <svg class="ic"><use href="#i-magic"/></svg><span class="rw-l">Sorts</span>
+  </button>
+  <button class="rw has-sub" style="--idx:3; --angle:-67.5deg" data-label="Outils" data-submenu="tools">
+    <svg class="ic"><use href="#i-heart"/></svg><span class="rw-l">Outils</span>
+  </button>
+  <button class="rw has-sub" style="--idx:4; --angle:-90deg" data-label="Navigation" data-submenu="nav">
+    <svg class="ic"><use href="#i-book"/></svg><span class="rw-l">Aller à</span>
+  </button>
+
+  <button class="fab" id="fab" aria-label="Menu radial">
+    <svg class="ic"><use href="#i-magic"/></svg>
+  </button>
+</div>
+
+<div class="tray" id="tray">
+  <button class="tray-bar" onclick="document.getElementById('tray').classList.toggle('open')">
+    <div class="tray-ico"><svg class="ic"><use href="#i-dice"/></svg></div>
+    <div class="tray-text"><div class="tray-l">Dernier jet</div><div class="tray-r" id="trayLast">Touche pour lancer</div></div>
+    <span class="tray-chev">⌃</span>
+  </button>
+  <div class="tray-exp">
+    <div class="tray-in">
+      <div class="adv-row">
+        <button class="adv-b" id="advBtn" onclick="setAdv('adv')">Avantage</button>
+        <button class="adv-b active" id="normBtn" onclick="setAdv('normal')">Normal</button>
+        <button class="adv-b" id="disBtn" onclick="setAdv('dis')">Désavant.</button>
+      </div>
+      <div class="qd">
+        <button class="qd-b" onclick="rollCustom('d20')">d20</button>
+        <button class="qd-b" onclick="rollCustom('d12')">d12</button>
+        <button class="qd-b" onclick="rollCustom('d10')">d10</button>
+        <button class="qd-b" onclick="rollCustom('d8')">d8</button>
+        <button class="qd-b" onclick="rollCustom('d6')">d6</button>
+        <button class="qd-b" onclick="rollCustom('d4')">d4</button>
+        <button class="qd-b" onclick="rollCustom('2d6')">2d6</button>
+        <button class="qd-b" onclick="rollCustom('4d6kh3')">4d6 ↓1</button>
+      </div>
+      <div class="hist-h">Historique des jets</div>
+      <div id="histList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let hp = 28, hpMax = 32;
+let tempHp = 0;
+let advMode = 'normal';
+let diceHist = [];
+const HPC = 481;
+
+// === New D&D state ===
+let inspiration = false;
+let exhaustion = 0;
+let actionUsed = false, bonusUsed = false, reactionUsed = false;
+let movementUsed = 0;
+const movementMax = 9;
+let currentTurn = 3;
+let deathSuccess = 0, deathFail = 0;
+let isUnconscious = false;
+let arcRecoveryUsed = false;
+let concentrating = true;
+let concentratingSpell = 'Toile d\'araignée';
+let concentrationRounds = 9;
+let stats = { totalRolls: 0, totalSum: 0, crits: 0, fumbles: 0, skillUses: {} };
+let sessionNotes = '';
+// Party (mock data — would sync from Foundry / DM in production)
+const party = [
+  { name: 'Aldric', role: 'Paladin', hp: 32, hpMax: 38, color: '#e6c984', init: 15 },
+  { name: 'Sariel', role: 'Clerc', hp: 28, hpMax: 30, color: '#7ddcc0', init: 10 },
+  { name: 'Kraz',   role: 'Barbare', hp: 19, hpMax: 52, color: '#e85a5a', init: 8 }
+];
+// Initiative — current turn marked
+const initiative = [
+  { name: 'Lyralei', init: 18, me: true },
+  { name: 'Aldric', init: 15 },
+  { name: 'Orc brute', init: 12, enemy: true },
+  { name: 'Sariel', init: 10 },
+  { name: 'Kraz', init: 8 },
+  { name: 'Orc shaman', init: 5, enemy: true }
+];
+let turnIdx = 0;
+
+// Animated number counter
+function animateNumber(el, from, to, duration = 600) {
+  const start = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function updateHp(animate = true) {
+  const r = document.getElementById('hpEmblem');
+  r.setAttribute('stroke-dashoffset', HPC * (1 - hp / hpMax));
+  r.classList.toggle('low', hp / hpMax < 0.3);
+  const el = document.getElementById('hpNum');
+  if (animate) {
+    const cur = parseInt(el.textContent) || hp;
+    animateNumber(el, cur, hp);
+  } else el.textContent = hp;
+}
+function setHP(v) { hp = Math.max(0, Math.min(hpMax, v)); updateHp(); }
+function adjustHP(d) {
+  const old = hp; setHP(hp + d);
+  const actual = hp - old;
+  if (actual !== 0) toast(actual > 0 ? `+${actual} PV` : `${actual} PV`, actual > 0 ? 'heal' : 'damage');
+}
+function getDelta() { return parseInt(document.getElementById('hpDelta').value) || 1; }
+function longRest() { setHP(hpMax); document.querySelectorAll('.mc-slot').forEach(r => r.classList.add('full')); toast('Repos long terminé', 'crit'); }
+function restoreAll() { document.querySelectorAll('.mc-slot').forEach(r => r.classList.add('full')); toast('Emplacements restaurés', 'heal'); }
+
+document.querySelectorAll('.mode').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.mode').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelector(`.panel[data-mode="${t.dataset.mode}"]`).classList.add('active');
+    window.scrollTo({top: document.querySelector('.modes').offsetTop - 90, behavior: 'smooth'});
+  });
+});
+
+function d20() { return Math.floor(Math.random() * 20) + 1; }
+function rollD20(label, mod) {
+  let result, rolls;
+  if (advMode === 'adv') { const r1 = d20(), r2 = d20(); result = Math.max(r1, r2); rolls = [r1, r2]; }
+  else if (advMode === 'dis') { const r1 = d20(), r2 = d20(); result = Math.min(r1, r2); rolls = [r1, r2]; }
+  else { result = d20(); rolls = [result]; }
+  const total = result + mod;
+  const kind = result === 20 ? 'crit' : result === 1 ? 'fumble' : '';
+  addHist(label, total, kind);
+  toast(`${label}<br><strong>${total}</strong><span class="sub">d20 : ${rolls.join(' / ')}${mod !== 0 ? ` · mod ${mod >= 0 ? '+' : ''}${mod}` : ''}</span>`, kind);
+}
+function rollAtk(name, bonus, dmg) {
+  const r = d20(), total = r + bonus;
+  const kind = r === 20 ? 'crit' : r === 1 ? 'fumble' : '';
+  addHist(name, total, kind);
+  toast(`${name}<br><strong>${total}</strong> pour toucher<span class="sub">d20 : ${r}${bonus !== 0 ? ` · ${bonus >= 0 ? '+' : ''}${bonus}` : ''} · ${dmg}</span>`, kind);
+}
+function rollCustom(spec) {
+  const s = spec.toLowerCase().trim();
+  let rolls = [], result = 0;
+  const kh = s.match(/^(\d+)d(\d+)kh(\d+)$/);
+  if (kh) {
+    const [, n, sides, keep] = kh.map(Number);
+    for (let i = 0; i < n; i++) rolls.push(Math.floor(Math.random() * sides) + 1);
+    rolls.sort((a, b) => b - a);
+    result = rolls.slice(0, keep).reduce((s, v) => s + v, 0);
+    toast(`${spec}<br><strong>${result}</strong><span class="sub">gardé [${rolls.slice(0, keep).join(', ')}]</span>`);
+    addHist(spec, result);
+    return;
+  }
+  const m = s.match(/^(\d+)?d(\d+)([+\-]\d+)?$/);
+  if (m) {
+    const n = parseInt(m[1] || '1'), sides = parseInt(m[2]), mod = parseInt(m[3] || '0');
+    for (let i = 0; i < n; i++) rolls.push(Math.floor(Math.random() * sides) + 1);
+    result = rolls.reduce((s, v) => s + v, 0) + mod;
+    toast(`${spec}<br><strong>${result}</strong><span class="sub">[${rolls.join(', ')}]${mod !== 0 ? ` ${mod >= 0 ? '+' : ''}${mod}` : ''}</span>`);
+    addHist(spec, result);
+  }
+}
+function setAdv(m) { advMode = m; document.querySelectorAll('.adv-b').forEach(b => b.classList.remove('active')); document.getElementById(m === 'adv' ? 'advBtn' : m === 'dis' ? 'disBtn' : 'normBtn').classList.add('active'); }
+
+function addHist(label, total, kind) {
+  diceHist.unshift({label, total, kind, time: new Date()});
+  if (diceHist.length > 8) diceHist.pop();
+  document.getElementById('trayLast').innerHTML = `<strong>${total}</strong> · ${label}`;
+  const el = document.getElementById('histList');
+  if (el) el.innerHTML = diceHist.slice(0, 6).map(h => {
+    const t = h.time.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+    return `<div class="hist-item"><span class="hist-l">${h.label} <span style="color:var(--text-3); font-size:10px;">${t}</span></span><span class="hist-r ${h.kind || ''}">${h.total}</span></div>`;
+  }).join('');
+}
+
+function toast(html, kind) {
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast';
+  let pre = '';
+  if (kind === 'crit') pre = '<div class="crit">⚂ Critique</div>';
+  else if (kind === 'fumble') pre = '<div class="fumble">⚂ Échec</div>';
+  else if (kind === 'heal') pre = '<div class="heal">Soin</div>';
+  else if (kind === 'damage') pre = '<div class="dmg">Dégâts</div>';
+  t.innerHTML = pre + html;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2400);
+}
+
+const SKILLS = [
+  {k:'acrobaties',n:'Acrobaties',a:'Dex',m:3,p:0},{k:'arcanes',n:'Arcanes',a:'Int',m:7,p:1},{k:'athletisme',n:'Athlétisme',a:'For',m:-1,p:0},
+  {k:'dressage',n:'Dressage',a:'Sag',m:1,p:0},{k:'escamotage',n:'Escamotage',a:'Dex',m:3,p:0},{k:'furtivite',n:'Discrétion',a:'Dex',m:3,p:0},
+  {k:'histoire',n:'Histoire',a:'Int',m:10,p:2},{k:'intimidation',n:'Intimidation',a:'Cha',m:2,p:0},{k:'investigation',n:'Investigation',a:'Int',m:7,p:1},
+  {k:'medecine',n:'Médecine',a:'Sag',m:1,p:0},{k:'nature',n:'Nature',a:'Int',m:7,p:1},{k:'perception',n:'Perception',a:'Sag',m:4,p:1},
+  {k:'perspicacite',n:'Perspicacité',a:'Sag',m:1,p:0},{k:'persuasion',n:'Persuasion',a:'Cha',m:2,p:0},{k:'religion',n:'Religion',a:'Int',m:4,p:0},
+  {k:'representation',n:'Représentation',a:'Cha',m:2,p:0},{k:'survie',n:'Survie',a:'Sag',m:1,p:0},{k:'tromperie',n:'Tromperie',a:'Cha',m:2,p:0}
+];
+function renderSkills(f = '') {
+  const q = f.toLowerCase();
+  document.getElementById('skillsList').innerHTML = SKILLS.filter(s => !q || s.n.toLowerCase().includes(q))
+    .map(s => `<button class="skill ${s.p === 2 ? 'e' : s.p === 1 ? 'p' : ''}" onclick="rollD20('${s.n}', ${s.m})"><span class="skill-d"></span><span class="skill-n">${s.n}</span><span class="skill-a">${s.a}</span><span class="skill-m">${s.m >= 0 ? '+' : ''}${s.m}</span></button>`).join('');
+}
+renderSkills();
+document.getElementById('skillSearch').addEventListener('input', e => renderSkills(e.target.value));
+
+const SPELLS = [
+  {n:'Trait de feu',l:0,s:'évocation',p:1},{n:'Lumière',l:0,s:'évocation',p:1},{n:'Main du mage',l:0,s:'invocation',p:1},{n:'Prestidigitation',l:0,s:'transmutation',p:1},
+  {n:'Bouclier',l:1,s:'abjuration',p:1},{n:'Mains brûlantes',l:1,s:'évocation',p:1},{n:'Projectile magique',l:1,s:'évocation',p:1},{n:'Détection magie',l:1,s:'divination',r:1,p:0},{n:'Charme-personne',l:1,s:'enchantement',p:0},
+  {n:'Image miroir',l:2,s:'illusion',p:1},{n:'Toile d\'araignée',l:2,s:'invocation',p:1},{n:'Invisibilité',l:2,s:'illusion',p:0},
+  {n:'Boule de feu',l:3,s:'évocation',p:1},{n:'Contresort',l:3,s:'abjuration',p:1},{n:'Vol',l:3,s:'transmutation',p:0}
+];
+let spellFilter = 'all', spellQ = '';
+function renderSpells() {
+  const filtered = SPELLS.filter(s => {
+    if (spellQ && !s.n.toLowerCase().includes(spellQ.toLowerCase())) return false;
+    if (spellFilter === 'prep' && !s.p && s.l > 0) return false;
+    if (spellFilter === 'cantrip' && s.l !== 0) return false;
+    if (spellFilter === 'ritual' && !s.r) return false;
+    return true;
+  });
+  document.getElementById('spellList').innerHTML = filtered.map(s => {
+    const lvl = s.l === 0 ? 'C' : s.l;
+    return `<div class="spell ${s.p || s.l === 0 ? 'prep' : ''}" onclick="castSpell('${s.n}', ${s.l})"><div class="spell-i"><span class="lvl">${lvl}</span></div><div class="spell-info"><div class="spell-n">${s.n}</div><div class="spell-meta">${s.l === 0 ? 'Tour' : 'Niv. ' + s.l} · ${s.s}${s.r ? ' · rituel' : ''}</div></div><button class="spell-cast" onclick="event.stopPropagation(); castSpell('${s.n}', ${s.l})">Lancer</button></div>`;
+  }).join('');
+}
+renderSpells();
+function castSpell(name, lvl) {
+  if (lvl > 0) {
+    const slots = document.querySelectorAll(`.mc-slot[data-lvl="${lvl}"]`);
+    let used = false;
+    for (const s of slots) {
+      if (s.classList.contains('full')) { s.classList.remove('full'); used = true; break; }
+    }
+    if (used) toast(`${name} lancé<span class="sub">Emplacement niveau ${lvl} consommé</span>`, 'crit');
+    else toast(`Aucun emplacement niveau ${lvl}`, 'fumble');
+  } else toast(`${name} lancé<span class="sub">Tour · à volonté</span>`, 'crit');
+}
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => {
+  document.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+  c.classList.add('active'); spellFilter = c.dataset.f; renderSpells();
+}));
+document.getElementById('spellSearch').addEventListener('input', e => { spellQ = e.target.value; renderSpells(); });
+
+// Generate floating particles
+const particlesContainer = document.getElementById('particles');
+for (let i = 0; i < 20; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.style.left = Math.random() * 100 + '%';
+  p.style.animationDuration = (15 + Math.random() * 20) + 's';
+  p.style.animationDelay = -Math.random() * 30 + 's';
+  particlesContainer.appendChild(p);
+}
+
+// ============================================================
+// NEW MECHANICS — Death saves, action economy, inspiration, etc.
+// ============================================================
+
+// === HP state visualization ===
+function updateHpVisuals() {
+  const pct = hp / hpMax;
+  document.body.classList.toggle('hp-low', hp > 0 && pct < 0.5);
+  document.body.classList.toggle('hp-critical', hp > 0 && pct < 0.25);
+  document.body.classList.toggle('hp-down', hp === 0);
+  // Death saves modal
+  if (hp === 0 && !isUnconscious) {
+    isUnconscious = true;
+    document.getElementById('deathModal').classList.add('open');
+    toast('Vous tombez inconscient', 'fumble');
+  } else if (hp > 0 && isUnconscious) {
+    isUnconscious = false;
+    document.getElementById('deathModal').classList.remove('open');
+    deathSuccess = 0; deathFail = 0;
+    renderDeathDots();
+  }
+}
+
+// === Death saves ===
+function renderDeathDots() {
+  const sd = document.getElementById('deathSuccDots').children;
+  const fd = document.getElementById('deathFailDots').children;
+  for (let i = 0; i < 3; i++) {
+    sd[i].classList.toggle('on', i < deathSuccess);
+    fd[i].classList.toggle('on', i < deathFail);
+  }
+}
+function rollDeathSave() {
+  const r = d20();
+  if (r === 20) {
+    deathSuccess = 0; deathFail = 0;
+    setHP(1);
+    renderDeathDots();
+    toast('20 naturel — Vous revenez à 1 PV', 'crit');
+    screenFlash('crit');
+    return;
+  }
+  if (r === 1) {
+    deathFail = Math.min(3, deathFail + 2);
+  } else if (r >= 10) {
+    deathSuccess = Math.min(3, deathSuccess + 1);
+  } else {
+    deathFail = Math.min(3, deathFail + 1);
+  }
+  renderDeathDots();
+  addHist('Mort (' + r + ')', r, r >= 10 ? 'crit' : 'fumble');
+  if (deathFail >= 3) {
+    toast('Vous succombez à vos blessures', 'fumble');
+    screenFlash('fumble');
+  } else if (deathSuccess >= 3) {
+    toast('Stabilisé', 'heal');
+    deathSuccess = 0; deathFail = 0;
+    setTimeout(() => {
+      isUnconscious = false;
+      document.getElementById('deathModal').classList.remove('open');
+      renderDeathDots();
+    }, 1200);
+  }
+}
+function stabilize() {
+  deathSuccess = 0; deathFail = 0;
+  renderDeathDots();
+  isUnconscious = false;
+  document.getElementById('deathModal').classList.remove('open');
+  toast('Stabilisé · 0 PV', 'heal');
+}
+function revive() {
+  setHP(1);
+  toast('Réanimée à 1 PV', 'heal');
+}
+
+// === Action economy ===
+function toggleEcon(kind) {
+  if (kind === 'action') actionUsed = !actionUsed;
+  if (kind === 'bonus') bonusUsed = !bonusUsed;
+  if (kind === 'reaction') reactionUsed = !reactionUsed;
+  renderEcon();
+}
+function renderEcon() {
+  document.getElementById('econAction').classList.toggle('used', actionUsed);
+  document.getElementById('econBonus').classList.toggle('used', bonusUsed);
+  document.getElementById('econReaction').classList.toggle('used', reactionUsed);
+  document.getElementById('moveFill').style.width = (movementUsed / movementMax * 100) + '%';
+  document.getElementById('moveUsed').textContent = movementUsed;
+}
+function endTurn() {
+  actionUsed = false; bonusUsed = false; movementUsed = 0;
+  // reaction resets at start of NEXT turn so keep it
+  currentTurn++;
+  document.getElementById('turnNum').textContent = currentTurn;
+  if (concentrating) {
+    concentrationRounds--;
+    if (concentrationRounds <= 0) endConcentration();
+    else document.getElementById('concRounds').textContent = concentrationRounds + 't';
+  }
+  // Advance initiative order
+  turnIdx = (turnIdx + 1) % initiative.length;
+  if (turnIdx === 0) reactionUsed = false; // new round
+  renderInit();
+  renderEcon();
+  toast('Tour terminé', 'heal');
+}
+
+// === Inspiration ===
+function toggleInspiration() {
+  inspiration = !inspiration;
+  document.getElementById('inspChip').classList.toggle('on', inspiration);
+  toast(inspiration ? 'Inspiration héroïque gagnée' : 'Inspiration dépensée');
+}
+
+// === Exhaustion ===
+function cycleExhaustion() {
+  exhaustion = (exhaustion + 1) % 7;
+  renderExhaustion();
+  if (exhaustion === 6) toast('Niveau 6 — Mort', 'fumble');
+}
+function renderExhaustion() {
+  const wrap = document.getElementById('exhaustDots');
+  wrap.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const d = document.createElement('span');
+    d.className = 'x-dot' + (i < exhaustion ? ' on' : '');
+    wrap.appendChild(d);
+  }
+}
+
+// === Concentration ===
+function endConcentration() {
+  if (!concentrating) return;
+  concentrating = false;
+  document.getElementById('concChip').style.display = 'none';
+  screenFlash('conc-break');
+  toast('Concentration rompue', 'fumble');
+}
+function checkConcentration(damage) {
+  if (!concentrating || damage <= 0) return;
+  const dc = Math.max(10, Math.floor(damage / 2));
+  setTimeout(() => {
+    if (confirm(`Concentration · jet de sauvegarde DC ${dc} (Con +2)`)) {
+      const r = d20() + 2;
+      addHist('JS Concentration', r, r >= dc ? 'crit' : 'fumble');
+      if (r < dc) endConcentration();
+      else toast(`Concentration maintenue (${r} vs ${dc})`, 'heal');
+    }
+  }, 100);
+}
+
+// === Restauration arcanique ===
+function useArcRecovery() {
+  if (arcRecoveryUsed) return;
+  arcRecoveryUsed = true;
+  document.getElementById('arcRecBtn').classList.add('used');
+  // Restore slot of level 1 + 2 (sum = 3 ≤ floor(5/2) = 2... actually rules: ≤ half level rounded up = 3)
+  const slots = document.querySelectorAll('.mc-slot');
+  let restored = 0;
+  for (const s of slots) {
+    if (!s.classList.contains('full') && restored < 2) {
+      s.classList.add('full');
+      restored++;
+    }
+  }
+  renderSlotsCompact();
+  toast(`${restored} emplacement(s) restauré(s)`, 'crit');
+}
+
+// === Spell slots compact widget ===
+function renderSlotsCompact() {
+  const wrap = document.getElementById('slotsCompact');
+  if (!wrap) return;
+  const allSlots = document.querySelectorAll('.mc-slot');
+  const byLvl = {};
+  allSlots.forEach(s => {
+    const lvl = s.dataset.lvl;
+    if (!byLvl[lvl]) byLvl[lvl] = [];
+    byLvl[lvl].push(s.classList.contains('full'));
+  });
+  let html = '';
+  Object.keys(byLvl).sort().forEach(lvl => {
+    const dots = byLvl[lvl].map((full, i) =>
+      `<div class="slot-dot ${full ? 'full' : ''}" data-lvl="${lvl}" data-i="${i}" onclick="toggleSlotCompact(${lvl}, ${i})"></div>`
+    ).join('');
+    html += `<div class="slot-row"><span class="slot-lvl">Niv. ${lvl}</span><div class="slot-dots">${dots}</div></div>`;
+  });
+  wrap.innerHTML = html;
+}
+function toggleSlotCompact(lvl, i) {
+  const slots = document.querySelectorAll(`.mc-slot[data-lvl="${lvl}"]`);
+  if (slots[i]) {
+    slots[i].classList.toggle('full');
+    renderSlotsCompact();
+  }
+}
+
+// === Initiative order ===
+function renderInit() {
+  const wrap = document.getElementById('initStrip');
+  if (!wrap) return;
+  wrap.innerHTML = initiative.map((c, i) => {
+    let cls = 'init-tok';
+    if (c.me) cls += ' me';
+    if (c.enemy) cls += ' enemy';
+    if (i === turnIdx) cls += ' current';
+    return `<div class="${cls}"><div class="init-val">${c.init}</div><div class="init-name">${c.name}</div></div>`;
+  }).join('');
+}
+
+// === Party view ===
+function renderParty() {
+  const wrap = document.getElementById('partyRow');
+  if (!wrap) return;
+  wrap.innerHTML = party.map(a => {
+    const pct = (a.hp / a.hpMax) * 100;
+    const hue = pct < 25 ? '#e85a5a' : pct < 60 ? '#e6c984' : a.color;
+    return `<div class="ally">
+      <div class="ally-avatar" style="color:${a.color};border-color:${a.color}">${a.name[0]}</div>
+      <div class="ally-info">
+        <div class="ally-top"><span class="ally-name">${a.name}</span><span class="ally-role">${a.role}</span></div>
+        <div class="ally-bar"><div class="ally-fill" style="width:${pct}%;background:linear-gradient(90deg, ${hue}, ${a.color})"></div></div>
+      </div>
+      <div class="ally-hp">${a.hp}<span style="color:var(--text-3);font-weight:400;font-style:italic;font-family:var(--serif);font-size:11px"> / ${a.hpMax}</span></div>
+    </div>`;
+  }).join('');
+}
+
+// === Stats ===
+function trackRoll(label, total, naturalD20) {
+  stats.totalRolls++;
+  if (naturalD20 !== undefined) {
+    stats.totalSum += naturalD20;
+    if (naturalD20 === 20) stats.crits++;
+    if (naturalD20 === 1) stats.fumbles++;
+  }
+  stats.skillUses[label] = (stats.skillUses[label] || 0) + 1;
+  renderStats();
+}
+function renderStats() {
+  const sr = document.getElementById('statRolls');
+  if (!sr) return;
+  sr.textContent = stats.totalRolls;
+  const avg = stats.totalRolls > 0 ? (stats.totalSum / stats.totalRolls) : 0;
+  document.getElementById('statAvg').textContent = avg ? avg.toFixed(1) : '—';
+  document.getElementById('statCrits').textContent = stats.crits;
+  document.getElementById('statFumbles').textContent = stats.fumbles;
+  let max = 0, name = '—';
+  for (const k in stats.skillUses) {
+    if (stats.skillUses[k] > max) { max = stats.skillUses[k]; name = `${k} (${max})`; }
+  }
+  document.getElementById('mostUsedName').textContent = name;
+}
+
+// === Journal ===
+function saveJournal() {
+  sessionNotes = document.getElementById('journalArea').value;
+  document.getElementById('journalStatus').textContent = 'Sauvegardé ✓';
+  setTimeout(() => {
+    document.getElementById('journalStatus').textContent = 'Sauvegardé · ' + new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+  }, 1500);
+}
+
+// === Screen flashes ===
+function screenFlash(kind) {
+  const f = document.createElement('div');
+  f.className = 'flash ' + kind;
+  document.body.appendChild(f);
+  if (kind === 'crit') document.body.classList.add('shake');
+  setTimeout(() => { f.remove(); document.body.classList.remove('shake'); }, kind === 'conc-break' ? 1100 : 700);
+}
+
+// === Spell cast particle burst ===
+function castBurst(x, y) {
+  const b = document.createElement('div');
+  b.className = 'cast-burst';
+  b.style.left = x + 'px'; b.style.top = y + 'px';
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 900);
+}
+
+// === Hook into existing fns: track stats, trigger flashes ===
+const _origRollD20 = rollD20;
+rollD20 = function(label, mod) {
+  let result, rolls, natural;
+  if (advMode === 'adv') { const r1 = d20(), r2 = d20(); result = Math.max(r1, r2); rolls = [r1, r2]; natural = result; }
+  else if (advMode === 'dis') { const r1 = d20(), r2 = d20(); result = Math.min(r1, r2); rolls = [r1, r2]; natural = result; }
+  else { result = d20(); rolls = [result]; natural = result; }
+  const total = result + mod;
+  const kind = natural === 20 ? 'crit' : natural === 1 ? 'fumble' : '';
+  trackRoll(label, total, natural);
+  addHist(label, total, kind);
+  toast(`${label}<br><strong>${total}</strong><span class="sub">d20 : ${rolls.join(' / ')}${mod !== 0 ? ` · mod ${mod >= 0 ? '+' : ''}${mod}` : ''}</span>`, kind);
+  if (kind === 'crit') screenFlash('crit');
+  else if (kind === 'fumble') screenFlash('fumble');
+};
+
+const _origRollAtk = rollAtk;
+rollAtk = function(name, bonus, dmg) {
+  const r = d20(), total = r + bonus;
+  const kind = r === 20 ? 'crit' : r === 1 ? 'fumble' : '';
+  trackRoll(name, total, r);
+  addHist(name, total, kind);
+  toast(`${name}<br><strong>${total}</strong> pour toucher<span class="sub">d20 : ${r}${bonus !== 0 ? ` · ${bonus >= 0 ? '+' : ''}${bonus}` : ''} · ${dmg}</span>`, kind);
+  if (kind === 'crit') screenFlash('crit');
+  else if (kind === 'fumble') screenFlash('fumble');
+  if (!actionUsed) { actionUsed = true; renderEcon(); }
+};
+
+const _origCastSpell = castSpell;
+castSpell = function(name, lvl) {
+  if (lvl > 0) {
+    const slots = document.querySelectorAll(`.mc-slot[data-lvl="${lvl}"]`);
+    let used = false, slotEl = null;
+    for (const s of slots) {
+      if (s.classList.contains('full')) { s.classList.remove('full'); used = true; slotEl = s; break; }
+    }
+    if (used) {
+      toast(`${name} lancé<span class="sub">Emplacement niveau ${lvl} consommé</span>`, 'crit');
+      if (slotEl) {
+        const r = slotEl.getBoundingClientRect();
+        castBurst(r.left + r.width / 2, r.top + r.height / 2);
+      }
+      renderSlotsCompact();
+      if (!actionUsed) { actionUsed = true; renderEcon(); }
+    } else toast(`Aucun emplacement niveau ${lvl}`, 'fumble');
+  } else {
+    toast(`${name} lancé<span class="sub">Tour · à volonté</span>`, 'crit');
+    if (!actionUsed) { actionUsed = true; renderEcon(); }
+  }
+};
+
+const _origAdjustHP = adjustHP;
+adjustHP = function(d) {
+  const old = hp;
+  setHP(hp + d);
+  const actual = hp - old;
+  if (actual !== 0) toast(actual > 0 ? `+${actual} PV` : `${actual} PV`, actual > 0 ? 'heal' : 'damage');
+  if (actual < 0) checkConcentration(-actual);
+};
+
+const _origSetHP = setHP;
+setHP = function(v) {
+  hp = Math.max(0, Math.min(hpMax, v));
+  updateHp();
+  updateHpVisuals();
+};
+
+updateHp(false);
+updateHpVisuals();
+renderExhaustion();
+renderInit();
+renderParty();
+renderSlotsCompact();
+renderStats();
+
+// ============================================================
+// RADIAL FAB — press, hold, drag-to-select (90° arc, upper-left)
+// ============================================================
+const SUBMENUS = {
+  spells: [
+    { label: 'Trait feu', icon: 'i-flame', action: 'rollAtk("Trait de feu", 7, "2d10 feu")' },
+    { label: 'Proj. mag', icon: 'i-magic', action: 'castSpell("Projectile magique", 1)' },
+    { label: 'Bouclier', icon: 'i-shield', action: 'castSpell("Bouclier", 1)' },
+    { label: 'Boule feu', icon: 'i-flame', action: 'castSpell("Boule de feu", 3)' },
+    { label: 'Retour', icon: 'i-search', back: true }
+  ],
+  tools: [
+    { label: '+5 PV', icon: 'i-heart', action: 'adjustHP(5)' },
+    { label: '−5 PV', icon: 'i-skull', action: 'adjustHP(-5)' },
+    { label: 'Plein', icon: 'i-plus', action: 'setHP(32); toast("PV restaurés", "heal")' },
+    { label: 'Repos', icon: 'i-potion', action: 'longRest()' },
+    { label: 'Retour', icon: 'i-search', back: true }
+  ],
+  nav: [
+    { label: 'Combat', icon: 'i-sword', action: 'switchMode("combat")' },
+    { label: 'Essence', icon: 'i-spell', action: 'switchMode("essence")' },
+    { label: 'Magie', icon: 'i-magic', action: 'switchMode("magie")' },
+    { label: 'Avoir', icon: 'i-bag', action: 'switchMode("avoir")' },
+    { label: 'Âme', icon: 'i-heart', action: 'switchMode("ame")' }
+  ]
+};
+
+function switchMode(m) {
+  const tab = document.querySelector(`.mode[data-mode="${m}"]`);
+  if (tab) tab.click();
+}
+
+const fab = document.getElementById('fab');
+const fabRadial = document.getElementById('fabRadial');
+const fabBackdrop = document.getElementById('fabBackdrop');
+const fabHint = document.getElementById('fabHint');
+const HINT_DEFAULT = 'Glissez vers une action';
+let pressTimer = null;
+let radialOpen = false;
+let activeIdx = -1;
+let savedMainHTML = null;
+let currentSubmenu = null;
+let activePointerId = null;
+let lastPointerX = 0, lastPointerY = 0;
+let currentWedgeAngles = []; // populated based on count
+
+function getFabCenter() {
+  const r = fab.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+function computeWedgeAnglesForCount(n) {
+  // 90° arc from 0 (up) to -90 (left). Going CCW.
+  // For n wedges, spacing = 90/(n-1) for n>1, else just [0]
+  if (n <= 1) return [0];
+  const spacing = 90 / (n - 1);
+  return Array.from({length: n}, (_, i) => (360 - i * spacing) % 360);
+}
+
+function pointerToWedge(clientX, clientY) {
+  const c = getFabCenter();
+  const dx = clientX - c.x;
+  const dy = clientY - c.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist < 30) return -1; // small dead zone at center
+  // angle: 0=up, 90=right, 180=down, 270=left
+  let a = Math.atan2(dy, dx) * 180 / Math.PI;
+  a = (a + 90 + 360) % 360;
+  // Find nearest wedge angle (no arc constraint — most permissive)
+  let best = -1, bestDist = Infinity;
+  for (let i = 0; i < currentWedgeAngles.length; i++) {
+    let d = Math.abs(a - currentWedgeAngles[i]);
+    if (d > 180) d = 360 - d;
+    if (d < bestDist) { bestDist = d; best = i; }
+  }
+  // Only return wedge if reasonably close (within 60° of its angle)
+  return bestDist <= 60 ? best : -1;
+}
+
+function refreshWedgeAngles() {
+  const wedges = fabRadial.querySelectorAll('.rw');
+  currentWedgeAngles = computeWedgeAnglesForCount(wedges.length);
+}
+
+function highlightWedge(idx) {
+  if (idx === activeIdx) return;
+  activeIdx = idx;
+  const wedges = fabRadial.querySelectorAll('.rw');
+  wedges.forEach((w, i) => w.classList.toggle('active', i === idx));
+  if (idx >= 0 && wedges[idx]) {
+    fabHint.textContent = wedges[idx].dataset.label;
+  } else {
+    fabHint.textContent = currentSubmenu ? '↑ Retour, ← Action' : HINT_DEFAULT;
+  }
+}
+
+function openRadial() {
+  const c = getFabCenter();
+  fabBackdrop.style.setProperty('--cx', c.x + 'px');
+  fabBackdrop.style.setProperty('--cy', c.y + 'px');
+  fabBackdrop.classList.add('open');
+  fabRadial.classList.add('open');
+  radialOpen = true;
+  refreshWedgeAngles();
+  highlightWedge(-1);
+  // Immediately check pointer if available
+  if (lastPointerX || lastPointerY) {
+    const idx = pointerToWedge(lastPointerX, lastPointerY);
+    highlightWedge(idx);
+  }
+}
+
+function closeRadial() {
+  fabBackdrop.classList.remove('open');
+  fabRadial.classList.remove('open');
+  radialOpen = false;
+  activeIdx = -1;
+  fabRadial.querySelectorAll('.rw').forEach(w => w.classList.remove('active'));
+  if (currentSubmenu && savedMainHTML) {
+    setTimeout(restoreMainMenu, 320);
+  }
+  fabHint.textContent = HINT_DEFAULT;
+}
+
+function buildSubmenuWedges(items) {
+  const fabEl = fabRadial.querySelector('.fab');
+  const n = items.length;
+  const spacing = n > 1 ? 90 / (n - 1) : 0;
+  items.forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'rw' + (item.back ? ' is-back' : '');
+    const ang = -i * spacing;
+    btn.style.setProperty('--idx', i);
+    btn.style.setProperty('--angle', ang + 'deg');
+    btn.dataset.label = item.label;
+    if (item.back) btn.dataset.back = '1';
+    else if (item.action) btn.dataset.action = item.action;
+    btn.innerHTML = `<svg class="ic"><use href="#${item.icon}"/></svg><span class="rw-l">${item.label}</span>`;
+    fabRadial.insertBefore(btn, fabEl);
+  });
+}
+
+function openSubmenu(name) {
+  const items = SUBMENUS[name];
+  if (!items) return;
+  if (!savedMainHTML) {
+    savedMainHTML = Array.from(fabRadial.querySelectorAll('.rw')).map(w => w.outerHTML).join('');
+  }
+  fabRadial.querySelectorAll('.rw').forEach(w => w.remove());
+  buildSubmenuWedges(items);
+  currentSubmenu = name;
+  fabRadial.classList.remove('open');
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    fabRadial.classList.add('open');
+    refreshWedgeAngles();
+    highlightWedge(-1);
+  }));
+}
+
+function restoreMainMenu() {
+  if (!savedMainHTML) return;
+  fabRadial.querySelectorAll('.rw').forEach(w => w.remove());
+  const fabEl = fabRadial.querySelector('.fab');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = savedMainHTML;
+  Array.from(tmp.children).forEach(c => fabRadial.insertBefore(c, fabEl));
+  currentSubmenu = null;
+  savedMainHTML = null;
+  refreshWedgeAngles();
+}
+
+function triggerWedge(idx) {
+  const wedges = fabRadial.querySelectorAll('.rw');
+  const wedge = wedges[idx];
+  if (!wedge) return false;
+  if (wedge.dataset.back) {
+    fabRadial.querySelectorAll('.rw').forEach(w => w.remove());
+    const fabEl = fabRadial.querySelector('.fab');
+    const tmp = document.createElement('div');
+    tmp.innerHTML = savedMainHTML;
+    Array.from(tmp.children).forEach(c => fabRadial.insertBefore(c, fabEl));
+    currentSubmenu = null;
+    savedMainHTML = null;
+    fabRadial.classList.remove('open');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fabRadial.classList.add('open');
+      refreshWedgeAngles();
+      highlightWedge(-1);
+    }));
+    return true;
+  }
+  if (wedge.dataset.submenu) {
+    openSubmenu(wedge.dataset.submenu);
+    return true;
+  }
+  if (wedge.dataset.action) {
+    try { (new Function(wedge.dataset.action))(); } catch (e) { console.error(e); }
+  }
+  return false;
+}
+
+// Press gesture — menu opens INSTANTLY on touch, document-level listeners for reliability
+let pressStartX = 0, pressStartY = 0, pressMoved = false, pressTime = 0;
+
+fab.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (radialOpen) {
+    // Already open — pressing FAB again closes it
+    closeRadial();
+    return;
+  }
+  activePointerId = e.pointerId;
+  pressStartX = lastPointerX = e.clientX;
+  pressStartY = lastPointerY = e.clientY;
+  pressMoved = false;
+  pressTime = Date.now();
+  // Try pointer capture (best effort)
+  try { fab.setPointerCapture(e.pointerId); } catch {}
+  // Open menu IMMEDIATELY — no delay
+  openRadial();
+});
+
+// Document-level pointermove — catches events regardless of where the pointer is
+document.addEventListener('pointermove', (e) => {
+  if (activePointerId === null || e.pointerId !== activePointerId) return;
+  lastPointerX = e.clientX;
+  lastPointerY = e.clientY;
+  const dx = e.clientX - pressStartX;
+  const dy = e.clientY - pressStartY;
+  if (Math.sqrt(dx*dx + dy*dy) > 10) pressMoved = true;
+  if (!radialOpen) return;
+  const idx = pointerToWedge(e.clientX, e.clientY);
+  highlightWedge(idx);
+}, { passive: false });
+
+document.addEventListener('pointerup', (e) => {
+  if (activePointerId === null || e.pointerId !== activePointerId) return;
+  try { fab.releasePointerCapture(e.pointerId); } catch {}
+  const wasQuickTap = !pressMoved && (Date.now() - pressTime) < 250;
+  activePointerId = null;
+  if (!radialOpen) return;
+  if (wasQuickTap) {
+    // Quick tap — leave menu open in "tap mode" for user to tap wedges
+    return;
+  }
+  // Drag-and-release — trigger highlighted wedge
+  const stay = activeIdx >= 0 ? triggerWedge(activeIdx) : false;
+  if (!stay) closeRadial();
+});
+
+document.addEventListener('pointercancel', (e) => {
+  if (activePointerId === null || e.pointerId !== activePointerId) return;
+  try { fab.releasePointerCapture(e.pointerId); } catch {}
+  activePointerId = null;
+  if (radialOpen) closeRadial();
+});
+
+// Tap on wedge after menu is open in tap mode
+fabRadial.addEventListener('click', (e) => {
+  const wedge = e.target.closest('.rw');
+  if (!wedge || !radialOpen) return;
+  if (activePointerId !== null) return;
+  e.stopPropagation();
+  const wedges = Array.from(fabRadial.querySelectorAll('.rw'));
+  const idx = wedges.indexOf(wedge);
+  if (idx < 0) return;
+  const stay = triggerWedge(idx);
+  if (!stay) closeRadial();
+});
+
+fabBackdrop.addEventListener('click', closeRadial);
+fabBackdrop.addEventListener('pointerdown', (e) => {
+  // close on tap on backdrop, but only if FAB isn't pressing
+  if (activePointerId === null && radialOpen) closeRadial();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && radialOpen) closeRadial();
+});
+</script>
+</body>
+</html>

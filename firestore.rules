@@ -1,0 +1,287 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════════
+    // Helpers
+    // ═══════════════════════════════════════════════════════════
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isDMOf(campaignId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/campaigns/$(campaignId))
+        && get(/databases/$(database)/documents/campaigns/$(campaignId)).data.dmUserId == request.auth.uid;
+    }
+
+    function isMemberOf(campaignId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/campaigns/$(campaignId)/memberships/$(request.auth.uid));
+    }
+
+    function memberRole(campaignId) {
+      return get(/databases/$(database)/documents/campaigns/$(campaignId)/memberships/$(request.auth.uid)).data.role;
+    }
+
+    // DM of any campaign that the character has joined?
+    // The character doc has `presentInCampaigns: string[]`.
+    // We iterate via .hasAny (allowed in rules).
+    function isDMOfAnyCampaignFor(character) {
+      return character.presentInCampaigns is list
+        && character.presentInCampaigns.size() > 0
+        && character.presentInCampaigns.hasAny(getDMCampaignsForRequester());
+    }
+
+    // The set of campaigns the requesting user is DM of cannot be cheaply enumerated.
+    // We rely on a different predicate: the character's owning user can write freely;
+    // the DM check is done by reading EACH campaign in presentInCampaigns and seeing
+    // if dmUserId matches. Use `someCampaignHasMeAsDM`.
+    function someCampaignHasMeAsDM(character) {
+      // Caller responsibility: presentInCampaigns must be ≤ 10 (Firestore array limit
+      // for membership-style queries). For S2+ we add a Cloud Function for >10 campaigns.
+      // For now, validate via iteration is not directly possible in rules;
+      // we instead require the WRITER to pass a campaignId in a special way:
+      // by writing through a Cloud Function for DM-authority edits.
+      //
+      // For S1 (no campaigns yet): only owners can write. Returns false.
+      // For S2+: a Cloud Function checks DM authority and writes via Admin SDK.
+      return false;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // /users/{userId}
+    // ═══════════════════════════════════════════════════════════
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId)
+        // Prevent client from setting subscription tier directly (only Cloud Function via Stripe webhook)
+        && (!('tier' in request.resource.data) || request.resource.data.tier == resource.data.tier);
+      allow delete: if isOwner(userId);
+
+      // ── Characters ─────────────────────────────────────────────
+      match /characters/{characterId} {
+        // Read: owner OR co-member in a campaign where the character is also a member
+        allow read: if isOwner(userId)
+          || requestUserSharesACampaignWith(userId, characterId);
+
+        // Write: owner only via direct client write.
+        // DM-authority edits go through a Cloud Function (Admin SDK) post-S2.
+        allow create: if isOwner(userId)
+          && characterShapeOK(request.resource.data);
+        allow update: if isOwner(userId)
+          && characterShapeOK(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      // ── Custom content (DMG extracts, homebrew) ────────────────
+      match /customContent/{type}/{contentId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // ── User-level sessions cache (rare; mostly campaign-scoped)
+      match /sessions/{sessionId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    function requestUserSharesACampaignWith(characterOwnerId, characterId) {
+      // To check this cheaply, we use a denormalized field on the character:
+      // character.presentInCampaigns: string[]
+      // and we check that the request.auth.uid has a membership in any of those campaigns.
+      // Without rule iteration, we approximate: the character doc must include the
+      // requesting user's membership at the time of read.
+      //
+      // For simplicity in v1, this allows any authenticated user to read characters
+      // referenced in their own memberships path. The client passes the campaignId
+      // explicitly via a query, and rules can verify it via the path. Practical
+      // implementation: we'll use a Cloud Function for cross-character reads
+      // post-S2 to avoid rules complexity here.
+      //
+      // For S1 (no campaigns): only owner reads. Returns false.
+      return false;
+    }
+
+    function characterShapeOK(data) {
+      // Basic shape gates. Detailed validation in Zod client-side.
+      return data.keys().hasAll(['name', 'level', 'classId', 'ancestryId', 'backgroundId', 'abilities', 'hp', 'schemaVersion'])
+        && data.level is int && data.level >= 1 && data.level <= 20
+        && data.hp.current is int && data.hp.max is int
+        && data.abilities.for is int && data.abilities.dex is int && data.abilities.con is int
+        && data.abilities.int is int && data.abilities.sag is int && data.abilities.cha is int;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // /campaigns/{campaignId}
+    // ═══════════════════════════════════════════════════════════
+
+    match /campaigns/{campaignId} {
+      // Read: any signed-in member
+      allow read: if isSignedIn() && (isDMOf(campaignId) || isMemberOf(campaignId));
+
+      // Create: any signed-in user (they become DM)
+      allow create: if isSignedIn()
+        && request.resource.data.dmUserId == request.auth.uid
+        && request.resource.data.status == 'active'
+        && request.resource.data.schemaVersion is int;
+
+      // Update / delete: DM only
+      allow update: if isDMOf(campaignId)
+        // Prevent transferring DM away (post-v1 feature)
+        && request.resource.data.dmUserId == resource.data.dmUserId;
+      allow delete: if isDMOf(campaignId);
+
+      // ── Memberships ───────────────────────────────────────────
+      match /memberships/{userId} {
+        // Read: members of campaign can see the roster
+        allow read: if isMemberOf(campaignId) || isDMOf(campaignId);
+
+        // Create: the user themselves (via invite acceptance), or DM directly adding
+        allow create: if (isOwner(userId) || isDMOf(campaignId))
+          && request.resource.data.userId == userId
+          && request.resource.data.role in ['dm', 'player', 'spectator']
+          && request.resource.data.status == 'active';
+
+        // Update: the user (e.g. to leave, status: 'left') or DM (any field)
+        allow update: if isDMOf(campaignId)
+          || (isOwner(userId)
+              && request.resource.data.role == resource.data.role          // can't self-promote
+              && request.resource.data.userId == resource.data.userId);
+
+        // Delete: DM only
+        allow delete: if isDMOf(campaignId);
+      }
+
+      // ── Sessions ──────────────────────────────────────────────
+      match /sessions/{sessionId} {
+        allow read: if isMemberOf(campaignId);
+        allow create, update, delete: if isDMOf(campaignId);
+      }
+
+      // ── Events ────────────────────────────────────────────────
+      match /events/{eventId} {
+        // Read: members can read events visible to them
+        // (visibility filter applied client-side; rules allow members to read all,
+        // we trust client to filter. Tightening this requires more denormalization.)
+        allow read: if isMemberOf(campaignId)
+          && (resource.data.visibility == 'all'
+              || (resource.data.visibility == 'dm' && isDMOf(campaignId))
+              || (resource.data.visibility == 'self'
+                  && (resource.data.actorUserId == request.auth.uid
+                      || resource.data.actorCharacterId in getMyCharacterIds(campaignId)
+                      || resource.data.targetCharacterId in getMyCharacterIds(campaignId))));
+
+        // Create: any member can log their own events; DM can log anything
+        allow create: if isMemberOf(campaignId)
+          && request.resource.data.actorUserId == request.auth.uid
+          && request.resource.data.kind is string
+          && request.resource.data.createdAt == request.time;
+
+        // Events are immutable
+        allow update: if false;
+        allow delete: if isDMOf(campaignId);   // DM can prune very old events
+      }
+
+      // ── Campaign-scoped custom content ────────────────────────
+      match /customContent/{type}/{contentId} {
+        allow read: if isMemberOf(campaignId);
+        allow write: if isDMOf(campaignId);
+      }
+
+      // ── Encounters ────────────────────────────────────────────
+      match /encounters/{encounterId} {
+        allow read: if isMemberOf(campaignId);
+        allow create, update, delete: if isDMOf(campaignId);
+      }
+
+      // ── Maps ──────────────────────────────────────────────────
+      match /maps/{mapId} {
+        allow read: if isMemberOf(campaignId);
+        allow create, update, delete: if isDMOf(campaignId);
+      }
+
+      // ── Handouts (S3, plan 27) ────────────────────────────────
+      match /handouts/{handoutId} {
+        // Members can read handouts they are recipients of (or 'all')
+        allow read: if isMemberOf(campaignId)
+          && (isDMOf(campaignId)
+              || resource.data.recipients == 'all'
+              || request.auth.uid in resource.data.recipients);
+        allow create, update, delete: if isDMOf(campaignId);
+      }
+
+      // ── NPCs (S3, plan 28) ────────────────────────────────────
+      match /npcs/{npcId} {
+        // Players read only NPCs visible to all; DM reads everything
+        allow read: if isDMOf(campaignId)
+          || (isMemberOf(campaignId) && resource.data.visibility == 'all');
+        allow create, update, delete: if isDMOf(campaignId);
+      }
+    }
+
+    function getMyCharacterIds(campaignId) {
+      // The membership doc has `characterId` (single character per campaign).
+      // Returns a single-element list or empty if no character.
+      return [get(/databases/$(database)/documents/campaigns/$(campaignId)/memberships/$(request.auth.uid)).data.characterId];
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // /inviteCodes/{code}
+    // ═══════════════════════════════════════════════════════════
+
+    match /inviteCodes/{code} {
+      // Read: any signed-in user (to look up by code when accepting an invite)
+      allow read: if isSignedIn();
+
+      // Create / delete: only the DM of the referenced campaign
+      // (must be done via Cloud Function `createInviteCode` for race-free uniqueness)
+      allow create: if isSignedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && isDMOf(request.resource.data.campaignId);
+
+      // Update: only the DM (to revoke / change maxUses)
+      allow update: if isDMOf(resource.data.campaignId);
+
+      allow delete: if isDMOf(resource.data.campaignId);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Public content (rarely used at runtime — most content bundled in app)
+    // ═══════════════════════════════════════════════════════════
+
+    match /publicContent/{document=**} {
+      allow read: if true;
+      allow write: if false;   // admin only via Admin SDK
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // /publicStats/{slug} (S5, plan 39) — public no-auth read
+    // ═══════════════════════════════════════════════════════════
+
+    match /publicStats/{slug} {
+      allow read: if true;
+      allow write: if false;   // Cloud Function only via Admin SDK
+    }
+
+    match /publicStatsSlugs/{slug} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // Default deny
+    // ═══════════════════════════════════════════════════════════
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
