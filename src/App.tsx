@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
+
 import { AuthProvider } from '@/features/auth/auth-provider';
 import { useAuth } from '@/features/auth/use-auth';
+import { DebugContent } from '@/features/debug/debug-content';
 import { Aurora } from '@/shared/components/aurora';
 import { IconSprite } from '@/shared/components/icon-sprite';
 import { Particles } from '@/shared/components/particles';
@@ -24,9 +27,25 @@ export function App(): JSX.Element {
   );
 }
 
+function useHashRoute(): string {
+  const [hash, setHash] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.hash,
+  );
+  useEffect(() => {
+    const onChange = (): void => setHash(window.location.hash);
+    window.addEventListener('hashchange', onChange);
+    return (): void => window.removeEventListener('hashchange', onChange);
+  }, []);
+  return hash;
+}
+
 function AppShell(): JSX.Element {
   const { isReady } = useAuth();
+  const hash = useHashRoute();
   if (!isReady) return <Splash />;
+
+  // Route #debug-content : overlay temporaire (plan 04 step 22).
+  if (hash === '#debug-content') return <DebugContent />;
 
   return (
     <main className="relative z-10 flex min-h-screen items-center justify-center px-6 py-24">

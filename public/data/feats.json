@@ -1,0 +1,16 @@
+[
+  {
+    "id": "lutteur",
+    "name": {
+      "fr": "Lutteur"
+    },
+    "prerequisite": {
+      "fr": "Prérequis : 13 ou plus en Force"
+    },
+    "summary": null,
+    "description": {
+      "fr": "Vous avez développé les compétences nécessaires pour vous défendre tout seul dans les combats de rues. Vous obtenez les avantages suivants&nbsp;:\n\nVous avez un avantage aux jets d'attaque contre une créature avec laquelle vous êtes engagé dans une lutte.Vous pouvez utiliser votre action pour tenter de bloquer une créature avec qui vous avez engagé une lutte. Dans ce cas, faites un nouveau jet de lutte. Si vous réussissez, vous et la créature êtes tous deux entravés jusqu'à ce que la lutte se termine."
+    },
+    "source": "srd-5.2.1"
+  }
+]
