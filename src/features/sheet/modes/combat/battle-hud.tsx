@@ -51,7 +51,9 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
   async function rollInitiative(): Promise<void> {
     if (readOnly) return;
     // Le pivot rollWithFlags émet déjà le toast avec crit/fumble/advantage.
-    await dice.rollD20Plus(character.initiative, {
+    // Plan 12.5 : en mode physique, `result` peut être `null` (joueur a Passé).
+    // Aucune action à entreprendre dans ce cas — le pivot n'a rien loggé.
+    const result = await dice.rollD20Plus(character.initiative, {
       character,
       label: 'Initiative',
       kind: 'init',
@@ -59,6 +61,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
         await updateCharacter({ inspiration: false });
       },
     });
+    if (!result) return;
   }
 
   return (

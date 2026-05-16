@@ -1,9 +1,8 @@
 /**
- * Types du moteur de dés — plan 12.
+ * Types du moteur de dés — plan 12 (digital) + plan 12.5 (physique).
  *
- * Le shape `RollResult` est forward-compat avec plan 12.5 : `mode` est ici
- * forcé à `'digital'`. Plan 12.5 élargira le type union à `'digital' | 'physical'`
- * sans casser les paths digitaux existants.
+ * Le shape `RollResult` est partagé : `mode: 'digital' | 'physical'` distingue
+ * les jets roulés par l'app et les jets saisis depuis des vrais dés.
  */
 
 export type Advantage = 'normal' | 'advantage' | 'disadvantage';
@@ -41,10 +40,13 @@ export type RollKind =
   | 'custom';
 
 /**
- * Mode de dés. En plan 12 (digital), forcé à `'digital'`. Plan 12.5 élargit à
- * `'digital' | 'physical'` — le shape reste compatible.
+ * Mode de dés. Plan 12 a livré `'digital'` ; plan 12.5 ajoute `'physical'`.
+ *
+ * Le type vit côté `dice/types.ts` (proche du shape de résultat). Le helper
+ * `effectiveDiceMode(user, campaign)` qui résout le mode applicable vit côté
+ * `rules/dice-mode.ts` (proche de la règle).
  */
-export type DiceMode = 'digital';
+export type DiceMode = 'digital' | 'physical';
 
 /**
  * Résultat unifié d'un jet — utilisé par le pivot, l'historique Dexie, le toast

@@ -37,12 +37,17 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
     // Jet de mort : silent → on émet le toast détaillé en fonction de l'outcome
     // (succès / échec / revive / stabilisé / mort confirmée), pas le toast d20
     // générique du pivot.
+    // Plan 12.5 : en mode physique, `roll === null` si le joueur a Passé. Dans
+    // ce cas l'état (deathSaves, status) reste inchangé — comportement
+    // intentionnel : un joueur peut refuser de logger un jet de mort sans que
+    // l'app n'avance arbitrairement le compteur.
     const roll = await dice.rollD20Plus(0, {
       character,
       label: 'Jet de mort',
       kind: 'death-save',
       silent: true,
     });
+    if (!roll) return;
     const natural = roll.keptFaces[0] ?? 0;
     const outcome = applyDeathSaveOutcome(character.deathSaves, natural);
     if (outcome.kind === 'revived') {

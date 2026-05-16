@@ -53,7 +53,9 @@ export function Hexagram({ character, readOnly }: HexagramProps): JSX.Element {
   async function performRoll(ability: AbilityCode, advantage: Advantage): Promise<void> {
     if (readOnly) return;
     const mod = abilityModifier(character.abilities[ability]);
-    await rollWithFlags({
+    // Plan 12.5 : `result === null` si le joueur Passe en mode physique. Pas de
+    // side-effect attendu — le pivot émet déjà toast + log ou rien selon le cas.
+    const result = await rollWithFlags({
       character,
       baseMod: mod,
       label: `Test de ${t(`ability.${ability}`)}`,
@@ -62,6 +64,7 @@ export function Hexagram({ character, readOnly }: HexagramProps): JSX.Element {
         await updateCharacter({ inspiration: false });
       },
     });
+    if (!result) return;
   }
 
   return (

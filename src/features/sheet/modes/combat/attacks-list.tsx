@@ -77,6 +77,11 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
   ): Promise<void> {
     if (readOnly) return;
     const name = localize(entry.weapon.name);
+    // Plan 12.5 : `rollAttackDamage` peut renvoyer `{attack:null, damage:null}`
+    // en mode physique si le joueur « Passe » le prompt. Aucun side-effect
+    // additionnel n'est attendu côté UI (le pivot émet déjà un toast adéquat
+    // ou rien selon le chemin). Pas d'early return nécessaire — toute future
+    // logique post-roll (HP, statut, etc.) DOIT guard sur `attack === null`.
     await dice.rollAttackDamage(entry.attackBonus, entry.damageFormula, {
       character,
       label: name,

@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 
+import { useAuth } from '@/features/auth/use-auth';
 import { Icon } from '@/shared/components/icon';
 import { cn } from '@/shared/lib/cn';
 import type { DiceHistoryRow } from '@/shared/lib/dexie-db';
+import { setDiceMode, useUserSettingsStore } from '@/shared/lib/slices/user-settings-slice';
+import type { DiceMode } from '@/shared/lib/dice/types';
+import { showToast } from '@/shared/lib/slices/toast-slice';
 
 import { readRollHistory } from './persist-history';
 
@@ -62,22 +66,25 @@ export function RollHistoryPanel({
       >
         <header
           data-slot="dice-history-header"
-          className="flex items-center justify-between gap-3 border-b border-white-8 px-5 py-3"
+          className="flex flex-col gap-3 border-b border-white-8 px-5 py-3"
         >
-          <div className="flex items-center gap-2">
-            <Icon name="i-dice" className="h-4 w-4 text-gold-bright" />
-            <h2 className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-text">
-              Historique des jets
-            </h2>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Icon name="i-dice" className="h-4 w-4 text-gold-bright" />
+              <h2 className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-text">
+                Historique des jets
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fermer l'historique"
+              className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
+            >
+              ✕
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fermer l'historique"
-            className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
-          >
-            ✕
-          </button>
+          <DiceModeToggle />
         </header>
 
         <div className="flex-1 overflow-y-auto px-5 py-3">
@@ -163,4 +170,86 @@ function formatTime(ts: number): string {
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${hh}:${mm}`;
+}
+
+/**
+ * Toggle Digital / Physique — plan 12.5 step 15.
+ *
+ * Foyer minimal en S1 : un segment 2 options avec un court tooltip FR. Écrit
+ * dans `users/{uid}.settings.diceMode` via `setDiceMode`. Plan 35 (S5) reprend
+ * ce toggle dans un vrai settings screen + ajoute `followCampaignDiceMode`.
+ */
+function DiceModeToggle(): JSX.Element {
+  const { user } = useAuth();
+  const diceMode = useUserSettingsStore((s) => s.diceMode);
+  const hydrated = useUserSettingsStore((s) => s.hydrated);
+  const disabled = !user || !hydrated;
+
+  async function set(next: DiceMode): Promise<void> {
+    if (!user || disabled || next === diceMode) return;
+    try {
+      await setDiceMode(user.uid, next);
+    } catch (err) {
+      showToast({
+        kind: 'fumble',
+        title: 'Mode de dés non sauvegardé',
+        sub: err instanceof Error ? err.message : 'Erreur Firestore',
+        durationMs: 3500,
+      });
+    }
+  }
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Mode de dés"
+      className="flex items-center justify-between gap-1 rounded-pill border border-white-8 bg-ink/40 px-1 py-1"
+    >
+      <ToggleOption
+        active={diceMode === 'digital'}
+        disabled={disabled}
+        label="Digital"
+        hint="L'app lance pour toi."
+        onClick={() => void set('digital')}
+      />
+      <ToggleOption
+        active={diceMode === 'physical'}
+        disabled={disabled}
+        label="Physique"
+        hint="L'app indique quoi lancer, tu saisis les faces de tes vrais dés."
+        onClick={() => void set('physical')}
+      />
+    </div>
+  );
+}
+
+interface ToggleOptionProps {
+  active: boolean;
+  disabled: boolean;
+  label: string;
+  hint: string;
+  onClick: () => void;
+}
+
+function ToggleOption({ active, disabled, label, hint, onClick }: ToggleOptionProps): JSX.Element {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      aria-disabled={disabled}
+      disabled={disabled}
+      title={hint}
+      onClick={onClick}
+      className={cn(
+        'flex-1 rounded-pill px-3 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.16em] transition-colors',
+        active
+          ? 'bg-gradient-to-b from-gold-bright to-gold text-ink shadow-[0_0_12px_var(--gold-glow)]'
+          : 'text-text-secondary hover:text-gold-bright',
+        disabled && 'cursor-not-allowed opacity-40',
+      )}
+    >
+      {label}
+    </button>
+  );
 }

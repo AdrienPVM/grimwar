@@ -52,7 +52,8 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
       profBonus: pb,
       proficiencyLevel: profLevel,
     });
-    await rollWithFlags({
+    // Plan 12.5 : `result === null` si Passer en mode physique. Pas de side-effect.
+    const result = await rollWithFlags({
       character,
       baseMod: mod,
       label: localize(skill.name),
@@ -60,6 +61,7 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
         await updateCharacter({ inspiration: false });
       },
     });
+    if (!result) return;
   }
 
   return (

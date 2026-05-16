@@ -2,6 +2,8 @@ import type { JSX } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { AuthProvider } from '@/features/auth/auth-provider';
+import { HitMissGateModal } from '@/features/dice/hit-miss-gate-modal';
+import { PhysicalRollModal } from '@/features/dice/physical-roll-modal';
 import { useAuth } from '@/features/auth/use-auth';
 import { AppRoutes } from '@/routes';
 import { Aurora } from '@/shared/components/aurora';
@@ -26,6 +28,8 @@ export function App(): JSX.Element {
       <BrowserRouter>
         <AppShell />
       </BrowserRouter>
+      <PhysicalRollModal />
+      <HitMissGateModal />
       <ToastHost />
     </AuthProvider>
   );

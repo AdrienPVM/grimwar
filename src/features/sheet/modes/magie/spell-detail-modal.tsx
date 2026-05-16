@@ -125,11 +125,18 @@ export function SpellDetailModal({
         // Plan 12 : route les dégâts via le pivot mode-aware (toast + history
         // + log gérés dans `rollDamageWithMode`). Le toast `crit` initial est
         // remplacé par le toast `damage` du pivot avec les rawFaces.
-        await dice.rollDamageWithMode(damageFormula, {
+        // Plan 12.5 (Option A — décision Adrien) : si le joueur Passe le prompt
+        // de dégâts physique, on garde **le slot consommé** (déjà patché plus
+        // haut). Raison : le joueur a effectivement lancé le sort, il a juste
+        // choisi de ne pas logger le nombre de dégâts. C'est intentionnel ;
+        // pas de rollback de slot, pas de toast de dégâts dupliqué.
+        const damage = await dice.rollDamageWithMode(damageFormula, {
           label: `${spellName}${isCantrip ? '' : ` · niv. ${chosenLevel}`}`,
           characterId: character.id,
           kind: 'damage',
         });
+        // `damage === null` → joueur a Passé. Aucune action — slot reste consommé.
+        void damage;
       } else {
         const pb = proficiencyBonus(character.totalLevel);
         const ability = activeClass?.ability;
@@ -155,7 +162,9 @@ export function SpellDetailModal({
     if (readOnly || !activeClass) return;
     const mod = abilityModifier(character.abilities[activeClass.ability]);
     const pb = proficiencyBonus(character.totalLevel);
-    await rollWithFlags({
+    // Plan 12.5 : retour `RollResult | null` (null = joueur a Passé en physique).
+    // Pas d'action additionnelle — le pivot gère toast + log + history.
+    const result = await rollWithFlags({
       character,
       baseMod: pb + mod,
       label: `Attaque · ${localize(spell.name)}`,
@@ -163,6 +172,7 @@ export function SpellDetailModal({
         await updateCharacter({ inspiration: false });
       },
     });
+    if (!result) return;
   }
 
   return (

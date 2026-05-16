@@ -40,7 +40,8 @@ export function SavesRow({ character, readOnly }: SavesRowProps): JSX.Element {
     if (readOnly) return;
     const proficient = character.saves[ability];
     const mod = abilityModifier(character.abilities[ability]) + (proficient ? pb : 0);
-    await rollWithFlags({
+    // Plan 12.5 : `result === null` si Passer en mode physique. Pas de side-effect.
+    const result = await rollWithFlags({
       character,
       baseMod: mod,
       label: `JS ${ABILITY_SHORT[ability]}`,
@@ -49,6 +50,7 @@ export function SavesRow({ character, readOnly }: SavesRowProps): JSX.Element {
         await updateCharacter({ inspiration: false });
       },
     });
+    if (!result) return;
   }
 
   return (
