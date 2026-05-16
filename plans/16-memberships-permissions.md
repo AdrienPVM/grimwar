@@ -71,3 +71,8 @@ Plans 14-15 complete.
 
 ## Notes for next plan
 - Plan 17 (wizard creation) replaces the manual form from plan 05. Keep schema, replace UX.
+
+## Inherited context (from plan 03/05/06 firestore fix, 2026-05)
+- `firestore.rules` `characterShapeOK` was patched at the end of plan 05 to match the multi-class schema (`totalLevel`/`classes[]`/`primaryClassId`/`status`).
+- Owner-locked field enforcement (`name`, `personality.*`, `homeCampaignId`) is **not** at the rule level — the rule denies all non-owner writes outright (S1). DM-authority edits route through the Cloud Function `editPlayerCharacterAsDM` (step 4), which is the correct place to filter owner-locked fields. **Don't add field-level rule lockdown** — would be redundant with the Cloud Function filter and would also block the owner.
+- If post-v1 we ever allow direct DM writes from client (no Cloud Function), we'd need rule-level field-locks: `request.resource.data.name == resource.data.name` etc. for non-owner writers. Park.

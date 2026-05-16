@@ -111,9 +111,30 @@ service cloud.firestore {
     }
 
     function characterShapeOK(data) {
-      // Basic shape gates. Detailed validation in Zod client-side.
-      return data.keys().hasAll(['name', 'level', 'classId', 'ancestryId', 'backgroundId', 'abilities', 'hp', 'schemaVersion'])
-        && data.level is int && data.level >= 1 && data.level <= 20
+      // Invariants minimaux anti-corruption. Validation détaillée côté Zod (client).
+      //
+      // Schéma multi-class verrouillé (CLAUDE.md + docs/DATA-MODEL.md) :
+      //   - classes: [{ classId, subclassId, level }] (1..4 entrées)
+      //   - totalLevel: somme dénormalisée (1..20)
+      //   - primaryClassId: id de la classe principale
+      //
+      // Cette fonction est appelée pour CREATE et pour UPDATE. Sémantique Firestore :
+      //   - create : `data` = nouveau document complet → hasAll([...]) force la présence.
+      //   - update : `data` = document MERGÉ (état actuel + patch), pas le patch seul.
+      //     hasAll([...]) protège donc contre une update qui supprimerait une clé
+      //     requise via deleteField() — comportement voulu.
+      //   - Validation fine (types items, clés skills/saves, structure inventory…)
+      //     reste côté Zod ; la rule garde uniquement la forme structurelle.
+      return data.keys().hasAll([
+          'name', 'status',
+          'totalLevel', 'classes', 'primaryClassId',
+          'ancestryId', 'backgroundId',
+          'abilities', 'hp', 'schemaVersion'
+        ])
+        && data.status in ['alive', 'dead']
+        && data.primaryClassId is string
+        && data.totalLevel is int && data.totalLevel >= 1 && data.totalLevel <= 20
+        && data.classes is list && data.classes.size() >= 1 && data.classes.size() <= 4
         && data.hp.current is int && data.hp.max is int
         && data.abilities.for is int && data.abilities.dex is int && data.abilities.con is int
         && data.abilities.int is int && data.abilities.sag is int && data.abilities.cha is int;
