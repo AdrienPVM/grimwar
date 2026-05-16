@@ -14,17 +14,35 @@
       "Religion"
     ],
     "toolProficiencies": [
-      "Calligrapher's Supplies"
+      "calligraphers-supplies"
     ],
     "languages": 0,
     "equipment": [
-      "Calligrapher's Supplies",
-      "Book (prayers)",
-      "Holy Symbol",
-      "Parchment (10 sheets)",
-      "Robe",
-      "8 GP"
+      {
+        "itemId": "calligraphers-supplies",
+        "qty": 1
+      },
+      {
+        "itemId": "book",
+        "qty": 1
+      },
+      {
+        "itemId": "holy-symbol",
+        "qty": 1
+      },
+      {
+        "itemId": "parchment",
+        "qty": 10
+      },
+      {
+        "itemId": "robe",
+        "qty": 1
+      }
     ],
+    "startingCoins": {
+      "qty": 8,
+      "unit": "gp"
+    },
     "feature": {
       "name": {
         "fr": "Don : Initié à la magie (Clerc)",
@@ -52,17 +70,35 @@
       "Stealth"
     ],
     "toolProficiencies": [
-      "Thieves' Tools"
+      "thieves-tools"
     ],
     "languages": 0,
     "equipment": [
-      "2 Daggers",
-      "Thieves' Tools",
-      "Crowbar",
-      "2 Pouches",
-      "Traveler's Clothes",
-      "16 GP"
+      {
+        "itemId": "dagger",
+        "qty": 2
+      },
+      {
+        "itemId": "thieves-tools",
+        "qty": 1
+      },
+      {
+        "itemId": "crowbar",
+        "qty": 1
+      },
+      {
+        "itemId": "pouch",
+        "qty": 2
+      },
+      {
+        "itemId": "clothes-travelers",
+        "qty": 1
+      }
     ],
+    "startingCoins": {
+      "qty": 16,
+      "unit": "gp"
+    },
     "feature": {
       "name": {
         "fr": "Don : Vigilant",
@@ -90,17 +126,35 @@
       "History"
     ],
     "toolProficiencies": [
-      "Calligrapher's Supplies"
+      "calligraphers-supplies"
     ],
     "languages": 0,
     "equipment": [
-      "Quarterstaff",
-      "Calligrapher's Supplies",
-      "Book (history)",
-      "Parchment (8 sheets)",
-      "Robe",
-      "8 GP"
+      {
+        "itemId": "quarterstaff",
+        "qty": 1
+      },
+      {
+        "itemId": "calligraphers-supplies",
+        "qty": 1
+      },
+      {
+        "itemId": "book",
+        "qty": 1
+      },
+      {
+        "itemId": "parchment",
+        "qty": 8
+      },
+      {
+        "itemId": "robe",
+        "qty": 1
+      }
     ],
+    "startingCoins": {
+      "qty": 8,
+      "unit": "gp"
+    },
     "feature": {
       "name": {
         "fr": "Don : Initié à la magie (Magicien)",
@@ -128,19 +182,43 @@
       "Intimidation"
     ],
     "toolProficiencies": [
-      "Gaming Set"
+      "gaming-set"
     ],
     "languages": 0,
     "equipment": [
-      "Spear",
-      "Shortbow",
-      "20 Arrows",
-      "Gaming Set",
-      "Healer's Kit",
-      "Quiver",
-      "Traveler's Clothes",
-      "14 GP"
+      {
+        "itemId": "spear",
+        "qty": 1
+      },
+      {
+        "itemId": "shortbow",
+        "qty": 1
+      },
+      {
+        "itemId": "ammunition-arrows",
+        "qty": 20
+      },
+      {
+        "itemId": "gaming-set",
+        "qty": 1
+      },
+      {
+        "itemId": "healers-kit",
+        "qty": 1
+      },
+      {
+        "itemId": "quiver",
+        "qty": 1
+      },
+      {
+        "itemId": "clothes-travelers",
+        "qty": 1
+      }
     ],
+    "startingCoins": {
+      "qty": 14,
+      "unit": "gp"
+    },
     "feature": {
       "name": {
         "fr": "Don : Sauvagerie martiale",

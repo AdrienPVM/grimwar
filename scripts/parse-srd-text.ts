@@ -38,8 +38,14 @@ import {
   type Ancestry,
   type Background,
   type Condition,
+  type StartingEquipment,
+  type StartingEquipmentItemRef,
+  type StartingCoins,
+  type CoinUnit,
 } from '../src/shared/types/content.js';
 import { z } from 'zod';
+import { resolveStartingItemId } from './maps/starting-equipment-name-map.js';
+import { parseEquipment } from './parse-srd-equipment.js';
 
 // ─────────────────────────────────────────────────────────────────────
 // Constants
@@ -278,6 +284,134 @@ function isEnLabelLike(ln: string): boolean {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Starting Equipment parser (per class)
+// ─────────────────────────────────────────────────────────────────────
+
+const COIN_RE = /^(\d+)\s*(CP|SP|EP|GP|PP)$/i;
+
+/** Strip the "Choose A or B/C: " prefix from the raw text. */
+function stripChoosePrefix(s: string): string {
+  return s
+    .replace(/^Choose\s+A,\s*B,?\s*or\s+C\s*:\s*/i, '')
+    .replace(/^Choose\s+A\s+or\s+B\s*:\s*/i, '')
+    .replace(/^Choose\s+A\s+or\s+B,\s*or\s+C\s*:\s*/i, '');
+}
+
+/** Split the joined text into options A, B, [C]. Each option starts with "(X) ". */
+function splitChoiceOptions(s: string): string[] {
+  // Split on "; or (X)" / "; (X)" boundaries.
+  const parts = s.split(/\s*;\s*(?:or\s+)?(?=\([A-C]\))/);
+  return parts.map((p) => p.trim());
+}
+
+/** Parse one option string like "(A) Greataxe, 4 Handaxes, Explorer's Pack, and 15 GP". */
+function parseStartingEquipmentOption(raw: string, source: string): {
+  items: StartingEquipmentItemRef[];
+  coins: StartingCoins | null;
+} {
+  // Strip the "(A) " / "(B) " / "(C) " prefix.
+  const stripped = raw.replace(/^\([A-C]\)\s*/, '').trim();
+  // Tokenize on commas + " and " (handle Oxford comma "...item, and 15 GP").
+  // Replace " and " with ", " to unify, then split on commas.
+  const flat = stripped.replace(/,?\s+and\s+/g, ', ').replace(/\s+/g, ' ').trim();
+  const tokens = flat.split(/,\s*/).map((t) => t.trim()).filter((t) => t.length > 0);
+  const items: StartingEquipmentItemRef[] = [];
+  let coins: StartingCoins | null = null;
+  for (const token of tokens) {
+    // Detect "<N> GP" / "<N> SP" coin token.
+    const cm = token.match(COIN_RE);
+    if (cm) {
+      coins = {
+        qty: Number(cm[1]),
+        unit: cm[2].toLowerCase() as CoinUnit,
+      };
+      continue;
+    }
+    // Detect "<N> <itemName>" (qty prefix, e.g. "4 Handaxes" or "8 Javelins" or "20 Arrows").
+    let qty = 1;
+    let name = token;
+    const qm = token.match(/^(\d+)\s+(.+)$/);
+    if (qm) {
+      qty = Number(qm[1]);
+      name = qm[2];
+    }
+    // Strip parenthetical descriptor like "Book (occult lore)" → "Book".
+    // BUT keep parenthetical for "Druidic Focus (Quarterstaff)" / "Arcane Focus (crystal)" etc.
+    const focusKeep = /^(Druidic Focus|Arcane Focus)\s*\(/.test(name);
+    let resolveName = name;
+    if (!focusKeep) {
+      resolveName = name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    }
+    // Strip descriptive suffixes that don't change item identity.
+    resolveName = resolveName
+      .replace(/\s+of your choice\b.*$/i, '')
+      .replace(/\s+chosen for the tool proficiency above\b.*$/i, '')
+      .trim();
+    // Handle "X or Y" choice tokens by resolving to the first option (canonical).
+    if (/\s+or\s+/.test(resolveName)) {
+      const firstOpt = resolveName.split(/\s+or\s+/)[0].trim();
+      resolveName = firstOpt;
+    }
+    // Resolve via map.
+    const itemId = resolveStartingItemId(resolveName);
+    if (!itemId) {
+      throw new Error(
+        `[${source}] Unknown starting equipment token: "${token}" (resolved to "${resolveName}"). Add it to scripts/maps/starting-equipment-name-map.ts.`,
+      );
+    }
+    items.push({ itemId, qty });
+  }
+  return { items, coins };
+}
+
+/** Walk a class section, find the Starting Equipment block, parse to StartingEquipment. */
+function extractStartingEquipment(en: Lines, section: ClassSection, validItemIds: Set<string>): StartingEquipment {
+  // Find "Starting Equipment" label inside the EN class core-traits block.
+  const labelIdx = findIndex(
+    en,
+    (l) => l.trim() === 'Starting Equipment',
+    section.enClassStart,
+  );
+  if (labelIdx < 0 || labelIdx >= section.enCoreTraitsEnd) {
+    throw new Error(`EN: Starting Equipment label not found in class section (${section.cls.id})`);
+  }
+  // Accumulate lines after the label until "Becoming a X" marker.
+  const out: string[] = [];
+  for (let i = labelIdx + 1; i < section.enCoreTraitsEnd; i++) {
+    const ln = en.raw[i];
+    if (/^Becoming a /.test(ln.trim())) break;
+    out.push(ln.trim());
+  }
+  const joined = out.join(' ').replace(/\s+/g, ' ').trim();
+  // Normalize kerning + line-wrap artifacts:
+  //   "110   G P" → "110 GP", "En- tertainer’s" → "Entertainer’s", "Short sword" handled in resolver.
+  const normalized = joined
+    .replace(/([A-Za-zà-ÿ])-\s+([a-zà-ÿ])/g, '$1$2') // line-wrap hyphenation (En- tertainer → Entertainer)
+    .replace(/(\d+)\s+G\s+P\b/g, '$1 GP')
+    .replace(/(\d+)\s+S\s+P\b/g, '$1 SP')
+    .replace(/(\d+)\s+C\s+P\b/g, '$1 CP');
+  const text = stripChoosePrefix(normalized);
+  const optionsText = splitChoiceOptions(text);
+  const parsed = optionsText.map((opt) => parseStartingEquipmentOption(opt, `class:${section.cls.id}`));
+
+  // Cross-validate that every itemId exists in items.json.
+  for (const opt of parsed) {
+    for (const it of opt.items) {
+      if (!validItemIds.has(it.itemId)) {
+        throw new Error(
+          `[class:${section.cls.id}] startingEquipment references unknown itemId "${it.itemId}". Cross-check with items.json.`,
+        );
+      }
+    }
+  }
+
+  if (parsed.length === 0) {
+    throw new Error(`[class:${section.cls.id}] startingEquipment parsed 0 options from text: "${text}"`);
+  }
+  return { options: parsed };
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Class features parser (EN + FR share structure; only header marker differs)
 // ─────────────────────────────────────────────────────────────────────
 
@@ -497,7 +631,7 @@ const SPELLCASTING_BY_CLASS: Record<ClassKey, ClassEntity['spellcasting']> = {
   wizard: { ability: 'int', progression: 'full' },
 };
 
-function buildClassEntity(section: ClassSection, en: Lines, fr: Lines): ClassEntity {
+function buildClassEntity(section: ClassSection, en: Lines, fr: Lines, validItemIds: Set<string>): ClassEntity {
   const cls = section.cls;
 
   // Core traits (both languages).
@@ -535,6 +669,8 @@ function buildClassEntity(section: ClassSection, en: Lines, fr: Lines): ClassEnt
     });
   }
 
+  const startingEquipment = extractStartingEquipment(en, section, validItemIds);
+
   return {
     id: cls.id,
     name: { fr: cls.fr, en: cls.en },
@@ -555,6 +691,7 @@ function buildClassEntity(section: ClassSection, en: Lines, fr: Lines): ClassEnt
       .filter((s) => s.length > 0 && s.length < 80),
     skillChoices: parseSkillChoices(enTraits.skillProficiencies),
     spellcasting: SPELLCASTING_BY_CLASS[cls.id],
+    startingEquipment,
     description: { fr: frDescription.slice(0, 4000), en: enDescription.slice(0, 4000) },
     features,
     source: SOURCE,
@@ -782,7 +919,14 @@ function zipTraits(
 // Hand-authored: Backgrounds (SRD 2024 — 4 entries)
 // ─────────────────────────────────────────────────────────────────────
 
-function handAuthorBackgrounds(): Background[] {
+function handAuthorBackgrounds(validItemIds: Set<string>): Background[] {
+  // Helper qui valide chaque itemId au build (fail-loud).
+  const ref = (itemId: string, qty: number = 1): StartingEquipmentItemRef => {
+    if (!validItemIds.has(itemId)) {
+      throw new Error(`Background equipment references unknown itemId "${itemId}". Update items DB or fix reference.`);
+    }
+    return { itemId, qty };
+  };
   return [
     {
       id: 'acolyte',
@@ -792,9 +936,17 @@ function handAuthorBackgrounds(): Background[] {
         en: 'An Acolyte serves a god, pantheon, or sacred cause. Raised in a temple or religious order, the Acolyte knows the rites, liturgy, and sacred writings.',
       },
       skillProficiencies: ['Insight', 'Religion'],
-      toolProficiencies: ["Calligrapher's Supplies"],
+      toolProficiencies: ['calligraphers-supplies'],
       languages: 0,
-      equipment: ["Calligrapher's Supplies", 'Book (prayers)', 'Holy Symbol', 'Parchment (10 sheets)', 'Robe', '8 GP'],
+      // SRD prose: Calligrapher’s Supplies, Book (prayers), Holy Symbol, Parchment (10 sheets), Robe, 8 GP.
+      equipment: [
+        ref('calligraphers-supplies'),
+        ref('book'), // book of prayers
+        ref('holy-symbol'),
+        ref('parchment', 10),
+        ref('robe'),
+      ],
+      startingCoins: { qty: 8, unit: 'gp' },
       feature: {
         name: { fr: 'Don : Initié à la magie (Clerc)', en: 'Feat: Magic Initiate (Cleric)' },
         description: {
@@ -812,9 +964,17 @@ function handAuthorBackgrounds(): Background[] {
         en: 'The Criminal has survived by their wits in the underworld: pickpocket, smuggler, or burglar, you operate in the margins of society.',
       },
       skillProficiencies: ['Sleight of Hand', 'Stealth'],
-      toolProficiencies: ["Thieves' Tools"],
+      toolProficiencies: ['thieves-tools'],
       languages: 0,
-      equipment: ['2 Daggers', "Thieves' Tools", 'Crowbar', '2 Pouches', "Traveler's Clothes", '16 GP'],
+      // SRD prose: 2 Daggers, Thieves’ Tools, Crowbar, 2 Pouches, Traveler’s Clothes, 16 GP.
+      equipment: [
+        ref('dagger', 2),
+        ref('thieves-tools'),
+        ref('crowbar'),
+        ref('pouch', 2),
+        ref('clothes-travelers'),
+      ],
+      startingCoins: { qty: 16, unit: 'gp' },
       feature: {
         name: { fr: 'Don : Vigilant', en: 'Feat: Alert' },
         description: {
@@ -832,9 +992,17 @@ function handAuthorBackgrounds(): Background[] {
         en: 'The Sage has spent years studying ancient writings, travelling between libraries and academies, and questioning scholars about the mysteries of the world.',
       },
       skillProficiencies: ['Arcana', 'History'],
-      toolProficiencies: ["Calligrapher's Supplies"],
+      toolProficiencies: ['calligraphers-supplies'],
       languages: 0,
-      equipment: ['Quarterstaff', "Calligrapher's Supplies", 'Book (history)', 'Parchment (8 sheets)', 'Robe', '8 GP'],
+      // SRD prose: Quarterstaff, Calligrapher’s Supplies, Book (history), Parchment (8 sheets), Robe, 8 GP.
+      equipment: [
+        ref('quarterstaff'),
+        ref('calligraphers-supplies'),
+        ref('book'),
+        ref('parchment', 8),
+        ref('robe'),
+      ],
+      startingCoins: { qty: 8, unit: 'gp' },
       feature: {
         name: { fr: 'Don : Initié à la magie (Magicien)', en: 'Feat: Magic Initiate (Wizard)' },
         description: {
@@ -852,9 +1020,19 @@ function handAuthorBackgrounds(): Background[] {
         en: 'The Soldier served in an army, militia, or mercenary band. You know the weight of command, the discipline of rank, and the brutality of the battlefield.',
       },
       skillProficiencies: ['Athletics', 'Intimidation'],
-      toolProficiencies: ['Gaming Set'],
+      toolProficiencies: ['gaming-set'],
       languages: 0,
-      equipment: ['Spear', 'Shortbow', '20 Arrows', 'Gaming Set', "Healer's Kit", 'Quiver', "Traveler's Clothes", '14 GP'],
+      // SRD prose: Spear, Shortbow, 20 Arrows, Gaming Set, Healer’s Kit, Quiver, Traveler’s Clothes, 14 GP.
+      equipment: [
+        ref('spear'),
+        ref('shortbow'),
+        ref('ammunition-arrows', 20),
+        ref('gaming-set'),
+        ref('healers-kit'),
+        ref('quiver'),
+        ref('clothes-travelers'),
+      ],
+      startingCoins: { qty: 14, unit: 'gp' },
       feature: {
         name: { fr: 'Don : Sauvagerie martiale', en: 'Feat: Savage Attacker' },
         description: {
@@ -1071,8 +1249,13 @@ async function main(): Promise<void> {
   const sections = findClassSections(en, fr);
   console.log(`  Found ${sections.length} class sections`);
 
+  console.log('\nParsing equipment first (required for class startingEquipment cross-references)...');
+  const equipmentResult = await parseEquipment();
+  const validItemIds = new Set<string>(equipmentResult.byId.keys());
+  console.log(`  ✓ ${validItemIds.size} item IDs available for cross-reference`);
+
   console.log('\nBuilding classes...');
-  const classes = sections.map((s) => buildClassEntity(s, en, fr));
+  const classes = sections.map((s) => buildClassEntity(s, en, fr, validItemIds));
   await writeJsonValidated('classes', classes, ClassSchema, summary);
   summary.classes = classes.length;
 
@@ -1089,8 +1272,8 @@ async function main(): Promise<void> {
   console.log('\nWriting subancestries (intentionally empty — SRD 2024 uses in-trait choices)...');
   await writeJsonValidated('subancestries', [], z.never(), summary);
 
-  console.log('\nWriting hand-authored backgrounds...');
-  const backgrounds = handAuthorBackgrounds();
+  console.log('\nWriting hand-authored backgrounds (with itemId references)...');
+  const backgrounds = handAuthorBackgrounds(validItemIds);
   await writeJsonValidated('backgrounds', backgrounds, BackgroundSchema, summary);
   summary.backgrounds = backgrounds.length;
 
@@ -1099,10 +1282,11 @@ async function main(): Promise<void> {
   await writeJsonValidated('conditions', conditions, ConditionSchema, summary);
   summary.conditions = conditions.length;
 
-  // Items + rules deferred to a follow-up session — keep stubs so build-public-content has files.
-  console.log('\nWriting deferred stubs (items, rules)...');
-  await writeFile(join(OUT_DIR, 'items.json'), '[]\n', 'utf8');
+  // items.json was already written by parseEquipment() above (190 items). Keep it.
+  // rules deferred to a follow-up session — keep stub.
+  console.log('\nWriting deferred stub (rules)...');
   await writeFile(join(OUT_DIR, 'rules.json'), '[]\n', 'utf8');
+  summary.items = equipmentResult.items.length;
 
   console.log('\n──────────────────────────────────────────');
   console.log(`Summary:`);
@@ -1112,7 +1296,7 @@ async function main(): Promise<void> {
   console.log(`  subancestries: 0 (intentional)`);
   console.log(`  backgrounds  : ${summary.backgrounds}`);
   console.log(`  conditions   : ${summary.conditions}`);
-  console.log(`  items        : 0 (deferred, see EXTRACTION-NOTES.md)`);
+  console.log(`  items        : ${summary.items}`);
   console.log(`  rules        : 0 (deferred, see EXTRACTION-NOTES.md)`);
   if (summary.errors.length > 0) {
     console.log(`\n⚠ Errors:`);

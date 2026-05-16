@@ -17,6 +17,7 @@
     "content:parse-aidedd": "tsx scripts/parse-aidedd.ts",
     "content:extract-pdf": "tsx scripts/extract-pdf.ts",
     "content:parse-srd": "tsx scripts/parse-srd-text.ts",
+    "content:parse-equipment": "tsx scripts/parse-srd-equipment.ts",
     "content:build": "tsx scripts/build-public-content.ts",
     "content:upload-private": "tsx scripts/upload-dmg-to-firestore.ts",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules",

@@ -126,9 +126,54 @@ Tout le reste (`Player´s Handbook` sans suffixe, `Monster Manual` sans suffixe,
 **Toujours en stub (livrés vides mais valides Zod)** :
 
 - `subancestries` : SRD 2024 modélise les sub-races comme choix in-trait (lignages, héritages, ascendances). Pas d'entités séparées.
-- `items` (équipement non-magique : armes, armures, packs) : ~150 entités à extraire depuis SRD section Equipment. Plan dédié.
 - `rules` (glossaire complet) : ~200 entrées (actions, attitudes, hazards, etc.). Corpus large, plan dédié.
 - `monsters` : parser AideDD partiel (id/name/source seulement). Stat blocks demandent travail dédié — bloqueur S3 plan 24, pas plan 05.
+
+## Items DB strict (réouverture plan 04 post-MVP-classes)
+
+Le bundle initial de plan 04 a livré classes/subclasses/ancestries/backgrounds/conditions mais **pas items.json**, ce qui bloquait plan 05 (équipement de départ). Réouverture propre + parser dédié `parse-srd-equipment.ts` ajouté.
+
+**Couvert (190 items validés Zod)** :
+
+| Bloc | Compte | Stratégie |
+|---|---|---|
+| `weapons` | 38 (10 simple melee + 4 simple ranged + 18 martial melee + 6 martial ranged) | Tuple-match strict FR↔EN sur `(damage_dice, damage_type_canonical, mastery_canonical, cost)` au sein de chaque catégorie. Fail-loud sur orphelin/collision. Canonicalisation via dicts fermés `weapon-properties-fr-en.ts` (8 masteries SRD 2024, 9 properties, 3 damage types). |
+| `armor` | 12 + 1 shield | Tuple-match `(tier, ac_formula_canonical, str_req, stealth_disadvantage, cost)`. Idem fail-loud. |
+| `gear` | 82 du tableau Adventuring Gear | Name map explicite hand-authored `gear-fr-en.ts` — le tuple `(weight, cost)` n'est pas unique (~20% de collisions). Couverture exhaustive : chaque ligne FR↔EN doit avoir un match, fail-loud sinon. |
+| `gear` (variants Ammunition) | 5 (Arrows, Bolts, Firearm Bullets, Sling Bullets, Needles) | Name map `AMMUNITION_VARIANTS_MAP`. |
+| `gear` (variants Arcane Focus) | 5 (Crystal, Orb, Rod, Staff, Wand) | Name map `ARCANE_FOCUS_VARIANTS_MAP`. |
+| `gear` (variants Druidic Focus) | 3 (Mistletoe, Wooden staff, Yew wand) | Name map `DRUIDIC_FOCUS_VARIANTS_MAP`. |
+| `gear` (variants Holy Symbol) | 3 (Amulet, Emblem, Reliquary) | Name map `HOLY_SYMBOL_VARIANTS_MAP`. |
+| `tools` | 25 (17 Artisan + 8 Other) | Section format key:value (pas table) — name map `tools-fr-en.ts`. |
+| `tools` (Gaming Set variants) | 4 (Dice, Dragonchess, Playing cards, Three-dragon ante) | Inline data table (cost+weight) + name map. |
+| `tools` (Musical Instrument variants) | 10 (Bagpipes…Viol) | Inline data table + name map. |
+
+**2 items synthétiques** ajoutés à `items.json` car référencés par class startingEquipment mais absents du tableau Adventuring Gear :
+- `spellbook` : aptitude de classe Magicien, décrit en prose (3 lb, 100 pages, lisible uniquement par le propriétaire ou via Identification).
+- `artisans-tools` : placeholder pour « Outils d'artisan au choix » (Moine SRD). À substituer par un outil spécifique au character creation.
+
+### Class startingEquipment (ajout au ClassSchema)
+
+`ClassSchema.startingEquipment` est un objet `{ options: StartingEquipmentChoice[] }` avec 1+ options.
+
+Chaque `StartingEquipmentChoice` : `{ items: { itemId, qty }[], coins: { qty, unit } | null }`. Validation cross-bundle : chaque `itemId` doit exister dans `items.json` (parser fail-loud sinon).
+
+Le parser scanne la section "Starting Equipment" de chaque classe (12), normalise les artefacts kerning ("110 G P" → "110 GP", "En- tertainer's Pack" → "Entertainer's Pack"), tokenize sur virgules + "and", résout chaque token via `scripts/maps/starting-equipment-name-map.ts` (~50 entrées). Les modificateurs de prose (« of your choice », « chosen for the tool proficiency above ») sont strippés ; les choix « X or Y » résolvent à l'option canonique X (à raffiner dans plan 17 wizard).
+
+Particularité : **Guerrier a 3 options A/B/C** dans le SRD ; le schema accepte `options: StartingEquipmentChoice[]` (min 1) donc supporte ce cas nativement.
+
+### Background equipment (BackgroundSchema mise à jour)
+
+`BackgroundSchema.equipment` passe de `string[]` (free-string) à `StartingEquipmentItemRef[]` (itemId réel). Champ `startingCoins: { qty, unit } | null` ajouté pour séparer les pièces des items. Les 4 backgrounds hand-authorés (Acolyte, Criminel, Sage, Soldat) sont re-mappés vers des itemIds réels — ex : "Holy Symbol" devient `{ itemId: 'holy-symbol', qty: 1 }`, "8 GP" devient `startingCoins: { qty: 8, unit: 'gp' }`.
+
+L'invariant **items DB strict** de CLAUDE.md est maintenant respecté de bout en bout : aucun free-string nulle part dans le pipeline (classes, backgrounds).
+
+### Tracks différés (notes de continuité)
+
+- **Monsters parser partiel** : id/name/source seulement. Pas bloquant pour plan 05. Session dédiée requise avant S3 plan 24 (combat tracker / DM dashboard) — extension de `parseMonster()` dans `parse-aidedd.ts` pour `.red`/`.carac`/`.rub` divs.
+- **DMG inextractible** : 642 chars sur 321 pages (fonts custom/scan via pdf-parse). Privé + optionnel — on l'oublie. Si Adrien veut du contenu DMG plus tard, il fournira un PDF texte ou OCR ciblé.
+- **Couche EN sur ancestries traits** : différée à plan 34 (i18n-EN), avec maps FR↔EN explicites par ancestry. Plan 34 inscrit cette tâche.
+- **Spells source-inconsistency** : 330 sorts viennent d'AideDD HTML (parsing structuré, plus fiable que SRD text), pas du SRD FR PDF. Mécaniques identiques (AideDD reflète SRD), mais source field reste `aidedd-homebrew` ou `srd-5.2.1` selon `<div class="source">`. Décision actée : "if it works, don't touch it" — pas de re-parse depuis SRD FR PDF.
 
 ## Erreurs PDF rencontrées
 

@@ -152,6 +152,7 @@ export const itemCategorySchema = z.enum([
 export type ItemCategory = z.infer<typeof itemCategorySchema>;
 
 const coinUnitSchema = z.enum(['cp', 'sp', 'ep', 'gp', 'pp']);
+export type CoinUnit = z.infer<typeof coinUnitSchema>;
 
 export const ItemSchema = z.object({
   id: slug,
@@ -213,6 +214,33 @@ export type MagicItem = z.infer<typeof MagicItemSchema>;
 // Classes / subclasses / ancestries / subancestries / backgrounds
 // ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Starting Equipment — items DB strict.
+ * Chaque entrée référence un id de items.json (validé cross-bundle au build).
+ */
+export const StartingEquipmentItemRefSchema = z.object({
+  itemId: slug,
+  qty: z.number().int().positive(),
+});
+export type StartingEquipmentItemRef = z.infer<typeof StartingEquipmentItemRefSchema>;
+
+export const StartingCoinsSchema = z.object({
+  qty: z.number().int().nonnegative(),
+  unit: coinUnitSchema,
+});
+export type StartingCoins = z.infer<typeof StartingCoinsSchema>;
+
+/** SRD 2024 : chaque classe propose 1+ options (A, B et parfois C pour Guerrier). */
+export const StartingEquipmentChoiceSchema = z.object({
+  items: z.array(StartingEquipmentItemRefSchema),
+  coins: StartingCoinsSchema.nullable(),
+});
+export type StartingEquipmentChoice = z.infer<typeof StartingEquipmentChoiceSchema>;
+export const StartingEquipmentSchema = z.object({
+  options: z.array(StartingEquipmentChoiceSchema).min(1),
+});
+export type StartingEquipment = z.infer<typeof StartingEquipmentSchema>;
+
 export const ClassSchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -232,6 +260,7 @@ export const ClassSchema = z.object({
       progression: z.enum(['full', 'half', 'third', 'pact']),
     })
     .nullable(),
+  startingEquipment: StartingEquipmentSchema,
   description: I18nSchema,
   features: z.array(
     z.object({
@@ -301,7 +330,14 @@ export const BackgroundSchema = z.object({
   skillProficiencies: z.array(z.string()),
   toolProficiencies: z.array(z.string()),
   languages: z.number().int().nonnegative(),
-  equipment: z.array(z.string()),
+  /**
+   * Items DB strict : chaque entrée référence un itemId réel de items.json
+   * (validé cross-bundle au build). Plus de chaînes libres "Holy Symbol" — un
+   * symbole sacré devient { itemId: 'holy-symbol-amulet', qty: 1 }.
+   */
+  equipment: z.array(StartingEquipmentItemRefSchema),
+  /** Pièces de départ séparées (le « 8 GP » des backgrounds SRD). */
+  startingCoins: StartingCoinsSchema.nullable(),
   feature: z.object({
     name: I18nSchema,
     description: I18nSchema,

@@ -35,6 +35,37 @@
       ]
     },
     "spellcasting": null,
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "greataxe",
+              "qty": 1
+            },
+            {
+              "itemId": "handaxe",
+              "qty": 4
+            },
+            {
+              "itemId": "explorers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 15,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 75,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Barbare...",
       "en": "Barbarian class from the SRD 5.2.1."
@@ -294,6 +325,41 @@
       "ability": "cha",
       "progression": "full"
     },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "leather-armor",
+              "qty": 1
+            },
+            {
+              "itemId": "dagger",
+              "qty": 2
+            },
+            {
+              "itemId": "musical-instrument",
+              "qty": 1
+            },
+            {
+              "itemId": "entertainers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 19,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 90,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Barde...",
       "en": "Bard class from the SRD 5.2.1."
@@ -471,6 +537,45 @@
       "ability": "sag",
       "progression": "full"
     },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "chain-shirt",
+              "qty": 1
+            },
+            {
+              "itemId": "shield",
+              "qty": 1
+            },
+            {
+              "itemId": "mace",
+              "qty": 1
+            },
+            {
+              "itemId": "holy-symbol",
+              "qty": 1
+            },
+            {
+              "itemId": "priests-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 7,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 110,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Clerc...",
       "en": "Cleric class from the SRD 5.2.1."
@@ -640,6 +745,49 @@
     "spellcasting": {
       "ability": "sag",
       "progression": "full"
+    },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "leather-armor",
+              "qty": 1
+            },
+            {
+              "itemId": "shield",
+              "qty": 1
+            },
+            {
+              "itemId": "sickle",
+              "qty": 1
+            },
+            {
+              "itemId": "druidic-focus-wooden-staff",
+              "qty": 1
+            },
+            {
+              "itemId": "explorers-pack",
+              "qty": 1
+            },
+            {
+              "itemId": "herbalism-kit",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 9,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 50,
+            "unit": "gp"
+          }
+        }
+      ]
     },
     "description": {
       "fr": "Devenir Druide...",
@@ -833,6 +981,81 @@
       ]
     },
     "spellcasting": null,
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "chain-mail",
+              "qty": 1
+            },
+            {
+              "itemId": "greatsword",
+              "qty": 1
+            },
+            {
+              "itemId": "flail",
+              "qty": 1
+            },
+            {
+              "itemId": "javelin",
+              "qty": 8
+            },
+            {
+              "itemId": "dungeoneers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 4,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [
+            {
+              "itemId": "studded-leather-armor",
+              "qty": 1
+            },
+            {
+              "itemId": "scimitar",
+              "qty": 1
+            },
+            {
+              "itemId": "shortsword",
+              "qty": 1
+            },
+            {
+              "itemId": "longbow",
+              "qty": 1
+            },
+            {
+              "itemId": "ammunition-arrows",
+              "qty": 20
+            },
+            {
+              "itemId": "quiver",
+              "qty": 1
+            },
+            {
+              "itemId": "dungeoneers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 11,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 155,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Guerrier...",
       "en": "Fighter class from the SRD 5.2.1."
@@ -1044,6 +1267,41 @@
       ]
     },
     "spellcasting": null,
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "spear",
+              "qty": 1
+            },
+            {
+              "itemId": "dagger",
+              "qty": 5
+            },
+            {
+              "itemId": "artisans-tools",
+              "qty": 1
+            },
+            {
+              "itemId": "explorers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 11,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 50,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Moine...",
       "en": "Monk class from the SRD 5.2.1."
@@ -1335,6 +1593,49 @@
       "ability": "cha",
       "progression": "half"
     },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "chain-mail",
+              "qty": 1
+            },
+            {
+              "itemId": "shield",
+              "qty": 1
+            },
+            {
+              "itemId": "longsword",
+              "qty": 1
+            },
+            {
+              "itemId": "javelin",
+              "qty": 6
+            },
+            {
+              "itemId": "holy-symbol",
+              "qty": 1
+            },
+            {
+              "itemId": "priests-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 9,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 150,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Paladin...",
       "en": "Paladin class from the SRD 5.2.1."
@@ -1572,6 +1873,57 @@
       "ability": "sag",
       "progression": "half"
     },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "studded-leather-armor",
+              "qty": 1
+            },
+            {
+              "itemId": "scimitar",
+              "qty": 1
+            },
+            {
+              "itemId": "shortsword",
+              "qty": 1
+            },
+            {
+              "itemId": "longbow",
+              "qty": 1
+            },
+            {
+              "itemId": "ammunition-arrows",
+              "qty": 20
+            },
+            {
+              "itemId": "quiver",
+              "qty": 1
+            },
+            {
+              "itemId": "druidic-focus-mistletoe",
+              "qty": 1
+            },
+            {
+              "itemId": "explorers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 7,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 150,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Rôdeur...",
       "en": "Ranger class from the SRD 5.2.1."
@@ -1808,6 +2160,57 @@
       ]
     },
     "spellcasting": null,
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "leather-armor",
+              "qty": 1
+            },
+            {
+              "itemId": "dagger",
+              "qty": 2
+            },
+            {
+              "itemId": "shortsword",
+              "qty": 1
+            },
+            {
+              "itemId": "shortbow",
+              "qty": 1
+            },
+            {
+              "itemId": "ammunition-arrows",
+              "qty": 20
+            },
+            {
+              "itemId": "quiver",
+              "qty": 1
+            },
+            {
+              "itemId": "thieves-tools",
+              "qty": 1
+            },
+            {
+              "itemId": "burglars-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 8,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 100,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Roublard...",
       "en": "Rogue class from the SRD 5.2.1."
@@ -2050,6 +2453,41 @@
       "ability": "cha",
       "progression": "full"
     },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "spear",
+              "qty": 1
+            },
+            {
+              "itemId": "dagger",
+              "qty": 2
+            },
+            {
+              "itemId": "arcane-focus-crystal",
+              "qty": 1
+            },
+            {
+              "itemId": "dungeoneers-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 28,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 50,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Ensorceleur...",
       "en": "Sorcerer class from the SRD 5.2.1."
@@ -2205,6 +2643,49 @@
       "ability": "cha",
       "progression": "pact"
     },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "leather-armor",
+              "qty": 1
+            },
+            {
+              "itemId": "sickle",
+              "qty": 1
+            },
+            {
+              "itemId": "dagger",
+              "qty": 2
+            },
+            {
+              "itemId": "arcane-focus-orb",
+              "qty": 1
+            },
+            {
+              "itemId": "book",
+              "qty": 1
+            },
+            {
+              "itemId": "scholars-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 15,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 100,
+            "unit": "gp"
+          }
+        }
+      ]
+    },
     "description": {
       "fr": "Devenir Occultiste...",
       "en": "Warlock class from the SRD 5.2.1."
@@ -2348,6 +2829,45 @@
     "spellcasting": {
       "ability": "int",
       "progression": "full"
+    },
+    "startingEquipment": {
+      "options": [
+        {
+          "items": [
+            {
+              "itemId": "dagger",
+              "qty": 2
+            },
+            {
+              "itemId": "arcane-focus-staff",
+              "qty": 1
+            },
+            {
+              "itemId": "robe",
+              "qty": 1
+            },
+            {
+              "itemId": "spellbook",
+              "qty": 1
+            },
+            {
+              "itemId": "scholars-pack",
+              "qty": 1
+            }
+          ],
+          "coins": {
+            "qty": 5,
+            "unit": "gp"
+          }
+        },
+        {
+          "items": [],
+          "coins": {
+            "qty": 55,
+            "unit": "gp"
+          }
+        }
+      ]
     },
     "description": {
       "fr": "Devenir Magicien...",
