@@ -1,5 +1,5 @@
 import { lazy, Suspense, type JSX } from 'react';
-import { Navigate, Route, Routes, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { DebugContent } from '@/features/debug/debug-content';
 import { HeroEmblem } from '@/features/sheet/hero/hero-emblem';
@@ -10,18 +10,10 @@ const ManualCharacterScreen = lazy(async () => {
   return { default: mod.ManualCharacterScreen };
 });
 
-/** Stub temporaire — la vraie sheet arrive en plan 06. */
-function CharacterPlaceholder(): JSX.Element {
-  const params = useParams<{ id: string }>();
-  return (
-    <main className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-4 px-6">
-      <HeroEmblem hp={28} hpMax={32} letter={(params.id?.[0] ?? '?').toUpperCase()} />
-      <p className="font-serif text-body-sm text-text-tertiary">
-        Personnage <code>{params.id}</code> — fiche complète en plan 06.
-      </p>
-    </main>
-  );
-}
+const SheetScreen = lazy(async () => {
+  const mod = await import('@/features/sheet/sheet-screen');
+  return { default: mod.SheetScreen };
+});
 
 function Home(): JSX.Element {
   return (
@@ -37,7 +29,7 @@ export function AppRoutes(): JSX.Element {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/create" element={<ManualCharacterScreen />} />
-        <Route path="/character/:id" element={<CharacterPlaceholder />} />
+        <Route path="/character/:id" element={<SheetScreen />} />
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

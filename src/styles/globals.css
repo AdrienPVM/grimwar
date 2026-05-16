@@ -114,3 +114,49 @@ body {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* ===========================================================================
+   HP-driven sheet states — appliquées sur la root de <SheetScreen />.
+   Seuils calculés dans src/features/sheet/hp-state.ts.
+   Effet : module l'intensité aurora (fond) + ajoute une pulsation crimson
+   discrète sur les bords quand on bascule en critique/down. Reduced-motion
+   est respecté via la règle globale ci-dessus.
+   =========================================================================== */
+.sheet-state {
+  position: relative;
+  isolation: isolate;
+  transition: filter 0.7s var(--t), opacity 0.5s var(--t);
+}
+.sheet-state.hp-healthy {
+  /* aurora pleine — aucune altération */
+}
+.sheet-state.hp-wounded {
+  filter: saturate(0.85);
+}
+.sheet-state.hp-critical {
+  filter: saturate(0.6) brightness(0.92);
+}
+.sheet-state.hp-critical::before,
+.sheet-state.hp-down::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+  border: 2px solid var(--crimson);
+  box-shadow: inset 0 0 80px rgba(232, 90, 90, 0.18);
+  opacity: 0.35;
+  animation: hpCriticalPulse 2.4s ease-in-out infinite;
+}
+.sheet-state.hp-down {
+  filter: saturate(0.4) brightness(0.7);
+}
+.sheet-state.hp-down::before {
+  /* down = bord crimson fixe, pas de pulse (état terminal) */
+  animation: none;
+  opacity: 0.6;
+}
+@keyframes hpCriticalPulse {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 0.45; }
+}

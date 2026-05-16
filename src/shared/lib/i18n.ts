@@ -90,7 +90,24 @@ export type StringKey =
   | 'wizard.error.backgroundRequired'
   | 'wizard.error.spellcasterIncomplete'
   | 'wizard.notice.spellcasterOnly'
-  | 'wizard.notice.draftSaved';
+  | 'wizard.notice.draftSaved'
+  // Sheet
+  | 'sheet.notFound'
+  | 'sheet.notFound.hint'
+  | 'sheet.backHome'
+  | 'sheet.error.title'
+  | 'sheet.statusStrip.aria'
+  | 'sheet.modeTabs.aria'
+  | 'sheet.stat.hp'
+  | 'sheet.stat.ac'
+  | 'sheet.stat.init'
+  | 'sheet.stat.speed'
+  | 'sheet.mode.combat'
+  | 'sheet.mode.essence'
+  | 'sheet.mode.magie'
+  | 'sheet.mode.avoir'
+  | 'sheet.mode.ame'
+  | 'sheet.placeholder.todo';
 
 type Dict = Record<StringKey, string>;
 
@@ -180,6 +197,23 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.error.spellcasterIncomplete': 'Choisis tes sorts.',
     'wizard.notice.spellcasterOnly': 'Section disponible si la classe est lanceuse de sorts.',
     'wizard.notice.draftSaved': 'Brouillon sauvegardé localement.',
+    // Sheet
+    'sheet.notFound': 'Personnage introuvable',
+    'sheet.notFound.hint': "Aucune fiche à cet emplacement. Elle a peut-être été supprimée.",
+    'sheet.backHome': 'Retour à la bibliothèque',
+    'sheet.error.title': 'Erreur de chargement',
+    'sheet.statusStrip.aria': 'Statistiques vitales',
+    'sheet.modeTabs.aria': 'Sections de la fiche',
+    'sheet.stat.hp': 'PV',
+    'sheet.stat.ac': 'CA',
+    'sheet.stat.init': 'Init',
+    'sheet.stat.speed': 'Vit.',
+    'sheet.mode.combat': 'Combat',
+    'sheet.mode.essence': 'Essence',
+    'sheet.mode.magie': 'Magie',
+    'sheet.mode.avoir': 'Avoir',
+    'sheet.mode.ame': 'Âme',
+    'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -261,6 +295,23 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.error.spellcasterIncomplete': 'Pick your spells.',
     'wizard.notice.spellcasterOnly': 'Section available if the class is a spellcaster.',
     'wizard.notice.draftSaved': 'Draft saved locally.',
+    // Sheet
+    'sheet.notFound': 'Character not found',
+    'sheet.notFound.hint': "No character at this location. It may have been deleted.",
+    'sheet.backHome': 'Back to library',
+    'sheet.error.title': 'Loading error',
+    'sheet.statusStrip.aria': 'Vital statistics',
+    'sheet.modeTabs.aria': 'Sheet sections',
+    'sheet.stat.hp': 'HP',
+    'sheet.stat.ac': 'AC',
+    'sheet.stat.init': 'Init',
+    'sheet.stat.speed': 'Spd',
+    'sheet.mode.combat': 'Combat',
+    'sheet.mode.essence': 'Essence',
+    'sheet.mode.magie': 'Magic',
+    'sheet.mode.avoir': 'Inv.',
+    'sheet.mode.ame': 'Soul',
+    'sheet.placeholder.todo': 'Section coming in a later plan.',
   },
 };
 
