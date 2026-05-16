@@ -72,6 +72,8 @@ Example:
     soundOn: boolean,
     diceTheme: 'gold' | 'amethyst' | 'crimson',
     sheetDefaultMode: 'combat' | 'essence' | 'magie' | 'avoir' | 'ame',
+    diceMode: 'digital' | 'physical',         // default 'digital'
+    followCampaignDiceMode: boolean,          // default true; inerte tant qu'il n'y a pas de campagne (S1 = solo)
   },
   createdAt: Timestamp,
   lastSeenAt: Timestamp,
@@ -214,6 +216,31 @@ The player owns and edits this. **DMs of joined campaigns can also write** (enfo
 - **DM revive**: a DM-only button on a dead character's sheet → flips `status: 'alive'`, sets `hp.current = 1`, resets `deathSaves`, logs `revival` event (visibility: 'all')
 - A dead character cannot be removed from `presentInCampaigns` automatically — DM/owner decides whether to retire
 
+#### Dice mode resolution
+
+Helper `effectiveDiceMode(user, campaign | null)` lives in `src/shared/lib/rules/dice-mode.ts` :
+
+```ts
+function effectiveDiceMode(
+  user: { settings: { diceMode: 'digital' | 'physical'; followCampaignDiceMode: boolean } },
+  campaign: { settings: { diceMode: 'digital' | 'physical' } } | null,
+): 'digital' | 'physical' {
+  if (!campaign) return user.settings.diceMode;                       // S1 / solo
+  if (user.settings.followCampaignDiceMode) return campaign.settings.diceMode;
+  return user.settings.diceMode;                                      // override personnel
+}
+```
+
+- En S1, il n'y a pas de campagne → toujours `user.settings.diceMode`.
+- En S2+, le défaut est de suivre la campagne (`followCampaignDiceMode: true`) : le MJ décide pour la table. Un joueur peut décrocher (`followCampaignDiceMode: false`) pour utiliser son propre mode (ex. un joueur en distanciel sans dés physiques).
+
+Le mode physique :
+- L'app affiche la formule à lancer (`1d20`, `2d6+3`, etc.).
+- Le joueur saisit la/les face(s) brute(s) (valeur par dé, validation stricte 1..N).
+- L'app applique modificateurs, détecte nat 20 / nat 1 sur les d20, gère avantage/désavantage (2 saisies, garde la bonne).
+- Saisir est **optionnel** : le joueur peut « Passer » et fermer sans rien logger.
+- Les dégâts produits remontent au MJ qui sélectionne la cible et applique. **Le joueur ne cible jamais.** Hand-off MJ implémenté en plan 24 (encounters S3) ; en S1, résultat local-only (toast + historique).
+
 ### `users/{userId}/customContent/{type}/{contentId}`
 
 Private user homebrew + DMG extracts. `type` ∈ `spells | monsters | items | magicItems | feats | rules`.
@@ -250,6 +277,7 @@ Private user homebrew + DMG extracts. `type` ∈ `spells | monsters | items | ma
       slowHealing: boolean,                // default false — long rest restores hit-dice spent, not full HP
       grittyRealism: boolean,              // default false — short rest = 8h, long rest = 7d (labels + timers change)
     },
+    diceMode: 'digital' | 'physical',      // default 'digital' — defaut de table du MJ (effectif S2 via plan 14)
   },
   status: 'active' | 'paused' | 'archived',
   schemaVersion: number,
@@ -578,7 +606,21 @@ Standard 5e entities with `I18n` shape for prose fields. Mechanical data unchang
 ```ts
 class GrimWarDB extends Dexie {
   content: Table<{ id: string, type: string, data: unknown, fetchedAt: number }, [string, string]>;
-  diceHistory: Table<{ id: string, characterId: string, label: string, total: number, rolls: number[], kind: string, timestamp: number }, string>;
+  diceHistory: Table<{
+    id: string,
+    characterId: string,
+    label: string,
+    total: number,
+    rolls: number[],                       // (legacy) valeurs naturelles retenues
+    kind: string,
+    timestamp: number,
+    // Plan 12 — dice mode dual
+    mode: 'digital' | 'physical',
+    rawFaces: number[],                    // faces brutes saisies (physical) ou rollées (digital)
+    keptFaces: number[],                   // sous-ensemble retenu (advantage/disadvantage)
+    crit: boolean,
+    fumble: boolean,
+  }, string>;
   settings: Table<{ key: string, value: unknown }, string>;
   
   constructor() {

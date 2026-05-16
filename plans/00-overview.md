@@ -18,8 +18,8 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 08 | [Sheet Essence mode](./08-sheet-essence.md) — hexagram, saves, skills | TODO |
 | 09 | [Sheet Magie mode](./09-sheet-magie.md) — magic circle, slot runes, spell list (multi-class slots) | TODO |
 | 10 | [Sheet Avoir mode](./10-sheet-avoir.md) — inventory strict, weight, coins | TODO |
-| 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus | TODO |
-| 12 | [Dice + roll engine](./12-dice-engine.md) — parser, advantage, history, toasts | TODO |
+| 12 | [Dice + roll engine](./12-dice-engine.md) — **mode-aware** (digital + physique), parser, advantage, history, toasts | **SWAPPED (avant 11)** |
+| 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
 ## Sprint 2 — Campaigns + wizard (7 plans)
@@ -84,6 +84,10 @@ i18n EN, account, GDPR, legal, PDF export, spell sigils, public stats, prod.
 - **Run checkpoints** every 3-5 steps: `pnpm typecheck && pnpm test && pnpm lint`.
 - **DoD must pass** before marking the plan complete.
 - **Architectural surprises** → stop and ask Adrien before improvising.
+
+## Swaps actés
+
+- **12 avant 11** (acté 2026-05-16) : la feature dés a grossi (mode physique mode-aware) ; le radial FAB consomme le moteur. Autant le construire une seule fois mode-aware contre un moteur fini plutôt que stub + retrofit. La règle « plus petit numéro non terminé » cède devant ce swap délibéré documenté.
 
 ## Plan template
 

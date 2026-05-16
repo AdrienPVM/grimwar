@@ -19,7 +19,7 @@ Plans 14-16 (campaigns + permissions). Most gameplay code from S1 that currently
     - All functions read `useActiveCampaign().campaignId` from the Zustand slice.
 
 ### Hook into existing actions
-- [ ] 2. Update `src/features/dice/use-dice.ts` — replace the `logRollIfCampaign` stub with the real `logRoll`.
+- [ ] 2. Update `src/features/dice/use-dice.ts` — replace the `logRollIfCampaign` stub with the real `logRoll`. **Le payload doit inclure** `mode: 'digital' | 'physical'`, `rawFaces: number[]`, `keptFaces: number[]`, `total`, `crit`, `fumble`, `advantage`, en plus du label/kind/characterId (cf. shape `RollResult` plan 12). Les jets physiques sont des événements de plein droit ; le compilateur de journal plan 25 distinguera mode physique/digital pour la prose.
 - [ ] 3. Update `useUpdateCharacter` — after a successful patch, diff what changed and log appropriate events:
     - `hp.current` changed → `logHpChange`
     - `conditions` added/removed → `logConditionAdd` / `logConditionRemove`
@@ -59,4 +59,5 @@ Plans 14-16 (campaigns + permissions). Most gameplay code from S1 that currently
 - [ ] Cross-account verified: player sees own private rolls, DM sees all (including 'dm' visibility)
 
 ## Notes for next plan
-- Plan 25 (journal compiler) reads events and turns them into prose.
+- Plan 25 (journal compiler) reads events and turns them into prose. Les events `roll`/`attack`/`damage` portent `mode` + `rawFaces` — le compilateur peut ajouter une note de couleur pour les tables physiques (« lancé sur les vrais dés de Lyralei »).
+- Plan 24 (encounters) consomme les events `damage` mode physique pour le hand-off MJ → cible.

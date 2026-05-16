@@ -101,6 +101,7 @@ These are LOCKED. Override only with Adrien's explicit instruction.
 | DMG / PHB / MM | Private only. Never bundled, never published. |
 | Roll engine | Custom (~150 lines, prototyped). 3D dice deferred to S5. |
 | Map / VTT | Sprint 4. PixiJS + .dd2vtt import. |
+| Dice mode | Deux modes : **digital** (l'app lance) et **physique** (l'app indique quoi lancer IRL, le joueur saisit les faces brutes, l'app calcule). Réglage par utilisateur `users/{uid}.settings.diceMode` + `settings.followCampaignDiceMode`. Défaut de table = `campaigns/{id}.settings.diceMode` (effectif S2). Mode physique : saisie des faces brutes, l'app applique modificateurs + détecte nat 20/1 + avantage. Les dégâts remontent au MJ qui applique sur une créature cible (le MJ choisit la cible, jamais le joueur). |
 | Real-time sync | Firestore `onSnapshot` listeners on active campaign + character + recent events |
 | Event logging | Auto on every gameplay action. See `docs/EVENT-LOG.md`. |
 | GDPR | Export endpoint + account deletion endpoint mandatory before public launch (S5) |

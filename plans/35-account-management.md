@@ -16,7 +16,7 @@ Sprint 5 plan 31 done.
 - [ ] 2. Sections:
     - **Profil**: displayName edit, photoURL upload (Firebase Storage)
     - **Compte**: email change (re-auth required), password change, email verification status, link Google
-    - **Préférences**: locale, reducedMotion, soundOn, diceTheme, sheetDefaultMode
+    - **Préférences**: locale, reducedMotion, soundOn, diceTheme, sheetDefaultMode, **diceMode** (Digital / Physique), **followCampaignDiceMode** (suit le défaut de table — désactiver pour forcer son mode personnel quand on est en campagne)
     - **Mes données**: "Exporter mes données" button, "Supprimer mon compte" button (red, requires confirmation)
 - [ ] 3. Email change: re-auth flow (Firebase requires recent sign-in for email update). Sends verification to new email.
 - [ ] 4. Password change: re-auth + `updatePassword`.

@@ -7,7 +7,7 @@ The signature press-hold-drag radial menu: hold the FAB, drag toward a wedge to 
 Read `prototype/grimwar.html` (the radial FAB animation in detail). The gesture is the soul of the app — get it right.
 
 ## Prerequisites
-Plans 01-10. Plans 07, 09, 10 use this menu's actions.
+Plans 01-10 **et plan 12** (swap d'ordre acté dans `plans/00-overview.md`). Plans 07, 09, 10 utilisent les actions de ce menu. **Tous les wedges qui déclenchent un jet (Lancer, Sorts, …) DOIVENT router via `useDice()` / `rollWithFlags` du plan 12 — jamais `dice.ts` en direct** — pour hériter du mode physique transparent.
 
 ## Steps
 
@@ -32,7 +32,7 @@ Plans 01-10. Plans 07, 09, 10 use this menu's actions.
 - [ ] 7. **Aller à** (icon: compass) — opens sub-menu: Combat, Essence, Magie, Avoir, Âme (switch sheet mode). Sub-menu uses dynamic-angle layout: 5 wedges arranged.
 - [ ] 8. **Sorts** (icon: sparkle) — opens sub-menu showing favorite/recent spells (top 5). Tap-drag on one fires `castSpell(spellId)`.
 - [ ] 9. **Outils** (icon: hammer) — sub-menu: Long Rest, Short Rest, Lancer d20 custom, Toggle Inspiration.
-- [ ] 10. **Lancer** (icon: die) — fires immediate `useDice().rollD20Plus(0, { label: 'd20 vif' })`. No sub-menu, just rolls.
+- [ ] 10. **Lancer** (icon: die) — fires immediate `useDice().rollD20Plus(0, { label: 'd20 vif' })`. No sub-menu, just rolls. **Mode-aware via le pivot plan 12** : en mode physique, le `<PhysicalRollModal />` s'ouvre automatiquement.
 - [ ] 11. **Repos** (icon: moon) — opens sub-menu: Repos court, Repos long, Annuler. Applies the rest effects (HP, slot restoration per class rules).
 
 ### Sub-menus
@@ -68,3 +68,4 @@ Plans 01-10. Plans 07, 09, 10 use this menu's actions.
 
 ## Notes for next plan
 - The radial FAB will get more entries in S2-S3 (Sessions, DM-specific actions if user is DM). Keep the wedge config data-driven, not hard-coded.
+- **Dice mode** : tous les wedges qui produisent un jet routent via `useDice()` / `rollWithFlags` du plan 12. Aucun wedge ne doit appeler `dice.ts` ou `rollD20`/`rollDamage` directement — sinon le mode physique est court-circuité. Un test unitaire ou e2e devrait verrouiller ce contrat.
