@@ -135,14 +135,21 @@ export async function addItemToInventory(
     return character;
   }
 
-  character.inventory.items.push({
+  // contentSource n'est posé QUE si scopeId est défini.
+  // Pour scope='public' (cas du wizard 100% du temps), scopeId est undefined :
+  // poser `contentSource: undefined` ferait crasher setDoc côté Firestore en
+  // mode strict (cf. plans/DEBT.md > D3 bug #1).
+  const newItem: InventoryItem = {
     contentId,
     contentScope: scope,
-    contentSource: scopeId,
     qty,
     equipped: options.equipped ?? false,
     attuned: options.attuned ?? false,
     notes: options.notes ?? '',
-  });
+  };
+  if (scopeId !== undefined) {
+    newItem.contentSource = scopeId;
+  }
+  character.inventory.items.push(newItem);
   return character;
 }

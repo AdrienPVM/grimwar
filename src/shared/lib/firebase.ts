@@ -30,7 +30,7 @@ import {
 } from 'firebase/auth';
 import {
   enableIndexedDbPersistence,
-  getFirestore,
+  initializeFirestore,
   type Firestore,
 } from 'firebase/firestore';
 import {
@@ -81,7 +81,11 @@ export function getFirebaseAuth(): Auth {
 
 export function getDb(): Firestore {
   if (!cachedDb) {
-    cachedDb = getFirestore(ensureApp());
+    // ignoreUndefinedProperties : Firestore refuse les champs `undefined` par
+    // défaut, ce qui fait crasher un setDoc si un schéma Zod `.optional()` laisse
+    // passer une clé absente sous forme d'undefined. Belt-and-braces vs. la
+    // discipline manuelle d'omettre les clés à la construction (cf. inventory.ts).
+    cachedDb = initializeFirestore(ensureApp(), { ignoreUndefinedProperties: true });
     // Persistence offline : best-effort. Échec attendu si plusieurs onglets
     // ouverts ou si le navigateur ne supporte pas IndexedDB.
     enableIndexedDbPersistence(cachedDb).catch((err: unknown) => {

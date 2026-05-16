@@ -84,4 +84,37 @@ describe('inventory — strict items DB', () => {
     ).rejects.toThrow(/introuvable/);
     expect(character.inventory.items).toHaveLength(0);
   });
+
+  it("addItemToInventory n'écrit PAS la clé contentSource quand scopeId est undefined (Firestore strict)", async () => {
+    // Régression de plans/DEBT.md > D3 bug #1 : Firestore rejette les champs
+    // `undefined` en mode strict. Pour scope='public' (cas du wizard 100% du
+    // temps), scopeId est undefined et la clé doit être ABSENTE de l'objet,
+    // pas posée à undefined. Sinon setDoc crash.
+    const character = emptyCharacter();
+    await addItemToInventory(
+      character,
+      'amulette-de-protection-physique',
+      'public',
+    );
+    const item = character.inventory.items[0];
+    expect(item).toBeDefined();
+    expect('contentSource' in (item as object)).toBe(false);
+  });
+
+  it('addItemToInventory écrit contentSource quand scopeId est fourni (scope user/campaign)', async () => {
+    const character = emptyCharacter();
+    // On évite ensureContentExists pour ce cas en mockant resolveContent côté
+    // user/campaign via le chemin direct : on vérifie juste le shape produit
+    // sur un scope public + scopeId fourni explicitement (cas pathologique
+    // toléré pour le test de shape).
+    await addItemToInventory(
+      character,
+      'amulette-de-protection-physique',
+      'public',
+      undefined,
+      'campaign-abc',
+    );
+    const item = character.inventory.items[0];
+    expect(item?.contentSource).toBe('campaign-abc');
+  });
 });
