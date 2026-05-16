@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { maxHp, proficiencyBonus, totalLevel } from '../multiclass';
+import {
+  casterLevel,
+  maxHp,
+  proficiencyBonus,
+  spellSlotsForCasterLevel,
+  totalLevel,
+} from '../multiclass';
 
 describe('proficiencyBonus', () => {
   it('matches SRD table', () => {
@@ -51,5 +57,73 @@ describe('maxHp', () => {
       conMod: -10,
     });
     expect(hp).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('casterLevel', () => {
+  it('mono full caster compte 1:1', () => {
+    expect(casterLevel([{ level: 5, progression: 'full' }])).toBe(5);
+  });
+  it('mono half caster (paladin/ranger) = floor(level/2)', () => {
+    expect(casterLevel([{ level: 1, progression: 'half' }])).toBe(0);
+    expect(casterLevel([{ level: 2, progression: 'half' }])).toBe(1);
+    expect(casterLevel([{ level: 5, progression: 'half' }])).toBe(2);
+  });
+  it('mono third caster (arcane trickster/eldritch knight) = floor(level/3)', () => {
+    expect(casterLevel([{ level: 2, progression: 'third' }])).toBe(0);
+    expect(casterLevel([{ level: 3, progression: 'third' }])).toBe(1);
+    expect(casterLevel([{ level: 7, progression: 'third' }])).toBe(2);
+  });
+  it('multi-class : somme des contributions par progression', () => {
+    // 5 wizard (full=5) + 2 paladin (half=1) = 6
+    expect(
+      casterLevel([
+        { level: 5, progression: 'full' },
+        { level: 2, progression: 'half' },
+      ]),
+    ).toBe(6);
+  });
+  it('pact (warlock) est exclu de la table unifiée', () => {
+    expect(casterLevel([{ level: 10, progression: 'pact' }])).toBe(0);
+    // 3 wizard + 5 warlock → table unifiée = 3
+    expect(
+      casterLevel([
+        { level: 3, progression: 'full' },
+        { level: 5, progression: 'pact' },
+      ]),
+    ).toBe(3);
+  });
+  it('non-caster sans progression compte 0', () => {
+    expect(casterLevel([{ level: 5, progression: null }])).toBe(0);
+  });
+});
+
+describe('spellSlotsForCasterLevel', () => {
+  it('niveau 0 ou négatif = aucun emplacement', () => {
+    expect(spellSlotsForCasterLevel(0)).toEqual({
+      1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0,
+    });
+    expect(spellSlotsForCasterLevel(-3)).toEqual({
+      1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0,
+    });
+  });
+  it('niveau 1 = 2 slots de niveau 1', () => {
+    expect(spellSlotsForCasterLevel(1)[1]).toBe(2);
+    expect(spellSlotsForCasterLevel(1)[2]).toBe(0);
+  });
+  it('niveau 5 full caster = 4/3/2', () => {
+    const slots = spellSlotsForCasterLevel(5);
+    expect(slots[1]).toBe(4);
+    expect(slots[2]).toBe(3);
+    expect(slots[3]).toBe(2);
+    expect(slots[4]).toBe(0);
+  });
+  it('niveau 20 max table', () => {
+    expect(spellSlotsForCasterLevel(20)).toEqual({
+      1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1,
+    });
+  });
+  it('niveau > 20 clamp sur 20', () => {
+    expect(spellSlotsForCasterLevel(30)).toEqual(spellSlotsForCasterLevel(20));
   });
 });
