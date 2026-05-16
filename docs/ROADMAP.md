@@ -1,6 +1,6 @@
 # Roadmap
 
-Five sprints, **43 plans**, milestone-driven. (Plan 12 split en 12 « digital » + 12.5 « physique » ; plans 13.6 « LibraryScreen + nav shell » et 13.5 « Playwright smoke » insérés après 12.5 suite à la première UAT navigateur — voir `plans/00-overview.md` > Swaps actés.)
+Five sprints, **42 plans**, milestone-driven. (Plan 12 split en 12 « digital » + 12.5 « physique » ; plans 13.6 « LibraryScreen + nav shell » et 13.5 « Playwright smoke » insérés après 12.5 suite à la première UAT navigateur ; **plan 17 « Wizard creation » absorbé par le plan 05 réécrit en wizard unique multi-step pédagogique** (acté 2026-05-16) — voir `plans/00-overview.md` > Swaps actés et `plans/DEBT.md > D3`.)
 
 ## Milestones at-a-glance
 
@@ -23,9 +23,9 @@ Ordre effectif S1 (swaps actés) : 01 → 02 → 03 → 04 → 05 → 06 → 07 
 
 End of S1: l'app est jouable solo à table, en digital ou en physique. Adrien la déploie sur son téléphone. Le mode Âme manque encore (S2), le wizard est manuel, mais c'est jouable. Filet automatique e2e Playwright en place.
 
-## Sprint 2 — Campaigns + wizard (plans 14-20)
+## Sprint 2 — Campaigns + wizard level-up (plans 14-20, plan 17 absorbé en S1 plan 05)
 
-Goal: tes copains rejoignent une campagne via code/lien, créent leur PJ via le wizard (avec multi-class), level up via le wizard. Variants 5e configurables dès la création de campagne.
+Goal: tes copains rejoignent une campagne via code/lien, créent leur PJ via le wizard unifié S1 (plan 05), level up via le wizard de level-up (plan 18). Variants 5e configurables dès la création de campagne (plan 14 lit `settings.variants` — y compris `featAtLevel1` qui réinjectera une étape Don dans le wizard de création, cf. `plans/DEBT.md > D4`).
 
 End of S2: tu invites tes joueurs, ils se créent eux-mêmes, vous jouez ensemble. Sync temps réel via Firestore.
 

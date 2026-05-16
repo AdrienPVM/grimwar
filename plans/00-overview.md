@@ -1,6 +1,6 @@
 # Plans overview
 
-43 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
+42 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
 
 ## Sprint 1 — Table-ready MVP (16 plans)
 
@@ -12,7 +12,7 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 02 | [Design system](./02-design-system.md) — tokens, atomic components, sprite, aurora, particles | TODO |
 | 03 | [Firebase setup](./03-firebase-setup.md) — Auth (anon+Google+email), Firestore eu-west1, App Check, baseline rules | TODO |
 | 04 | [Content pipeline](./04-content-pipeline.md) — PDFs (truth #1), AideDD translations, i18n shape, items DB strict | TODO |
-| 05 | [Manual character form](./05-manual-character.md) — formulaire rapide pour créer un PJ | TODO |
+| 05 | [Character creation wizard](./05-character-creation-wizard.md) — wizard unique multi-step pédagogique, multi-class, responsive | **RÉÉCRIT (fusion 05+17, 2026-05-16)** |
 | 06 | [Sheet foundation](./06-sheet-foundation.md) — routes, layout, hero card, mode tabs, status strip | TODO |
 | 07 | [Sheet Combat mode](./07-sheet-combat.md) — battle HUD, HP, conditions, attacks, death saves, revive | TODO |
 | 08 | [Sheet Essence mode](./08-sheet-essence.md) — hexagram, saves, skills | TODO |
@@ -25,7 +25,7 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12/12.5) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
-## Sprint 2 — Campaigns + wizard (7 plans)
+## Sprint 2 — Campaigns + wizard (6 plans, plan 17 absorbé en S1 plan 05)
 
 Tes copains rejoignent, créent leur PJ via wizard.
 
@@ -34,7 +34,7 @@ Tes copains rejoignent, créent leur PJ via wizard.
 | 14 | [Campaigns model](./14-campaigns-model.md) — Firestore campaigns + memberships + variant toggles | TODO |
 | 15 | [Invitation system](./15-invitations.md) — link + 6-char code, accept flow, Cloud Function | TODO |
 | 16 | [Memberships + permissions](./16-memberships-permissions.md) — DM authority, security rules | TODO |
-| 17 | [Wizard creation](./17-wizard-creation.md) — 7 étapes guidées, multi-class, feat-at-lvl-1 variant | TODO |
+| 17 | [Wizard creation](./17-wizard-creation.md) — **ABANDONNÉ (fusionné dans plan 05, 2026-05-16)** | — |
 | 18 | [Wizard level-up](./18-wizard-levelup.md) — pick class, HP, sous-classe, ASI/feat | TODO |
 | 19 | [Bibliothèque](./19-bibliotheque.md) — content browser, recherche, filtres | TODO |
 | 20 | [Sheet Âme mode](./20-sheet-ame.md) — personality, features, stats dashboard | TODO |
@@ -93,6 +93,7 @@ i18n EN, account, GDPR, legal, PDF export, spell sigils, public stats, prod.
 - **12 avant 11** (acté 2026-05-16) : la feature dés a grossi (mode physique mode-aware) ; le radial FAB consomme le moteur. Autant le construire une seule fois mode-aware contre un moteur fini plutôt que stub + retrofit. La règle « plus petit numéro non terminé » cède devant ce swap délibéré documenté.
 - **Split 12 / 12.5** (acté 2026-05-16) : plan 12 originel scindé en plan 12 « digital » (scope original, livrable + jouable seul) et plan 12.5 « physique » (couche par-dessus). Raison : ~1200 lignes mélangeant réécriture moteur + nouvelle modale + slice + migration Dexie + 8 refactors = trop pour une seule passe d'UAT. Deux commits = rollback isolable + deux UAT ciblées. Ordre : 10 → 12 → UAT digital → 12.5 → UAT physique → 11 → 13.
 - **Insertion 13.6 + 13.5** (acté 2026-05-16) : la première UAT navigateur de plan 12.5 a révélé que `/` rendait un placeholder (emblème HP Lyralei hardcodé). Le S1 avait livré `SheetScreen` (plans 06-10) et le wizard `/create` (plan 05) sans jamais bâtir l'écran d'accueil ni un nav shell persistant — l'app n'avait pas de point d'entrée. 13.6 comble le trou (LibraryScreen + nav shell sticky), 13.5 verrouille la régression via Playwright headless. Tracé en `plans/DEBT.md > D2` (cause-racine + leçon de process). Ordre effectif S1 : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 12 → 12.5 → **13.6 → 13.5** → 11 → 13.
+- **Fusion 05 + 17 → 05 (acté 2026-05-16)** : l'UAT navigateur du plan 05 originel (formulaire monopage) a immédiatement révélé 3 bugs structurels (`setDoc(undefined)`, sorts vides pour lanceurs, inputs blanc-sur-blanc) **et** un défaut de conception (one-page non pédagogique, layout desktop non exploité). Décision Adrien : un seul parcours de création de PJ, wizard guidé multi-step, pédagogique pour débutant total, responsive mobile + desktop. Le plan 17 disparaît en tant que plan séparé (réduit à un stub de redirection). Le plan 05 est intégralement réécrit (`plans/05-character-creation-wizard.md`). Cause-racine + diagnostic des 3 bugs en `plans/DEBT.md > D3`. Dette `featAtLevel1` (variant lié à campagne) transférée au plan 14 — `plans/DEBT.md > D4`. Ordre effectif S1 inchangé (le 05 reste en place dans la séquence). Total plans 43 → 42.
 
 ## Plan template
 
