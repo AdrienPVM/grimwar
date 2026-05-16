@@ -42,7 +42,55 @@ export type StringKey =
   | 'item.category.tool'
   | 'item.category.pack'
   | 'item.category.mount'
-  | 'item.category.vehicle';
+  | 'item.category.vehicle'
+  // Wizard manual
+  | 'wizard.title'
+  | 'wizard.section.identity'
+  | 'wizard.section.lineage'
+  | 'wizard.section.class'
+  | 'wizard.section.background'
+  | 'wizard.section.abilities'
+  | 'wizard.section.combat'
+  | 'wizard.section.proficiencies'
+  | 'wizard.section.spells'
+  | 'wizard.section.equipment'
+  | 'wizard.field.name'
+  | 'wizard.field.level'
+  | 'wizard.field.alignment'
+  | 'wizard.field.ancestry'
+  | 'wizard.field.subancestry'
+  | 'wizard.field.class'
+  | 'wizard.field.subclass'
+  | 'wizard.field.background'
+  | 'wizard.field.method'
+  | 'wizard.field.hp'
+  | 'wizard.field.ac'
+  | 'wizard.field.speed'
+  | 'wizard.field.initiative'
+  | 'wizard.method.standard-array'
+  | 'wizard.method.point-buy'
+  | 'wizard.method.manual'
+  | 'wizard.label.modifier'
+  | 'wizard.label.afterAncestry'
+  | 'wizard.label.pointsRemaining'
+  | 'wizard.label.cantrips'
+  | 'wizard.label.level1Spells'
+  | 'wizard.label.option'
+  | 'wizard.label.startingCoins'
+  | 'wizard.label.from'
+  | 'wizard.label.skillsToPick'
+  | 'wizard.placeholder.name'
+  | 'wizard.placeholder.choose'
+  | 'wizard.button.create'
+  | 'wizard.button.creating'
+  | 'wizard.button.reset'
+  | 'wizard.error.nameRequired'
+  | 'wizard.error.classRequired'
+  | 'wizard.error.ancestryRequired'
+  | 'wizard.error.backgroundRequired'
+  | 'wizard.error.spellcasterIncomplete'
+  | 'wizard.notice.spellcasterOnly'
+  | 'wizard.notice.draftSaved';
 
 type Dict = Record<StringKey, string>;
 
@@ -84,6 +132,54 @@ const STRINGS: Record<Locale, Dict> = {
     'item.category.pack': 'Sac',
     'item.category.mount': 'Monture',
     'item.category.vehicle': 'Véhicule',
+    // Wizard manual
+    'wizard.title': 'Créer un personnage',
+    'wizard.section.identity': 'Identité',
+    'wizard.section.lineage': 'Lignée',
+    'wizard.section.class': 'Classe',
+    'wizard.section.background': 'Historique',
+    'wizard.section.abilities': 'Caractéristiques',
+    'wizard.section.combat': 'Combat de base',
+    'wizard.section.proficiencies': 'Maîtrises',
+    'wizard.section.spells': 'Sorts',
+    'wizard.section.equipment': 'Équipement de départ',
+    'wizard.field.name': 'Nom',
+    'wizard.field.level': 'Niveau',
+    'wizard.field.alignment': 'Alignement',
+    'wizard.field.ancestry': 'Espèce',
+    'wizard.field.subancestry': 'Sous-espèce',
+    'wizard.field.class': 'Classe',
+    'wizard.field.subclass': 'Sous-classe',
+    'wizard.field.background': 'Historique',
+    'wizard.field.method': 'Méthode',
+    'wizard.field.hp': 'PV max',
+    'wizard.field.ac': 'CA',
+    'wizard.field.speed': 'Vitesse',
+    'wizard.field.initiative': 'Initiative',
+    'wizard.method.standard-array': 'Tableau standard',
+    'wizard.method.point-buy': 'Achat de points',
+    'wizard.method.manual': 'Manuel',
+    'wizard.label.modifier': 'Mod.',
+    'wizard.label.afterAncestry': 'Après lignée',
+    'wizard.label.pointsRemaining': 'Points restants',
+    'wizard.label.cantrips': 'Sorts mineurs',
+    'wizard.label.level1Spells': 'Sorts de niveau 1',
+    'wizard.label.option': 'Option',
+    'wizard.label.startingCoins': 'Pièces de départ',
+    'wizard.label.from': 'parmi',
+    'wizard.label.skillsToPick': 'Compétences à choisir',
+    'wizard.placeholder.name': "Nom de l'aventurier",
+    'wizard.placeholder.choose': 'Choisir…',
+    'wizard.button.create': 'Créer le personnage',
+    'wizard.button.creating': 'Création…',
+    'wizard.button.reset': 'Réinitialiser',
+    'wizard.error.nameRequired': 'Le nom est requis.',
+    'wizard.error.classRequired': 'Choisis une classe.',
+    'wizard.error.ancestryRequired': 'Choisis une espèce.',
+    'wizard.error.backgroundRequired': 'Choisis un historique.',
+    'wizard.error.spellcasterIncomplete': 'Choisis tes sorts.',
+    'wizard.notice.spellcasterOnly': 'Section disponible si la classe est lanceuse de sorts.',
+    'wizard.notice.draftSaved': 'Brouillon sauvegardé localement.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -118,6 +214,53 @@ const STRINGS: Record<Locale, Dict> = {
     'item.category.pack': 'Pack',
     'item.category.mount': 'Mount',
     'item.category.vehicle': 'Vehicle',
+    'wizard.title': 'Create a character',
+    'wizard.section.identity': 'Identity',
+    'wizard.section.lineage': 'Lineage',
+    'wizard.section.class': 'Class',
+    'wizard.section.background': 'Background',
+    'wizard.section.abilities': 'Ability scores',
+    'wizard.section.combat': 'Combat basics',
+    'wizard.section.proficiencies': 'Proficiencies',
+    'wizard.section.spells': 'Spells',
+    'wizard.section.equipment': 'Starting equipment',
+    'wizard.field.name': 'Name',
+    'wizard.field.level': 'Level',
+    'wizard.field.alignment': 'Alignment',
+    'wizard.field.ancestry': 'Species',
+    'wizard.field.subancestry': 'Subspecies',
+    'wizard.field.class': 'Class',
+    'wizard.field.subclass': 'Subclass',
+    'wizard.field.background': 'Background',
+    'wizard.field.method': 'Method',
+    'wizard.field.hp': 'Max HP',
+    'wizard.field.ac': 'AC',
+    'wizard.field.speed': 'Speed',
+    'wizard.field.initiative': 'Initiative',
+    'wizard.method.standard-array': 'Standard Array',
+    'wizard.method.point-buy': 'Point Buy',
+    'wizard.method.manual': 'Manual',
+    'wizard.label.modifier': 'Mod.',
+    'wizard.label.afterAncestry': 'After lineage',
+    'wizard.label.pointsRemaining': 'Points remaining',
+    'wizard.label.cantrips': 'Cantrips',
+    'wizard.label.level1Spells': 'Level-1 spells',
+    'wizard.label.option': 'Option',
+    'wizard.label.startingCoins': 'Starting coins',
+    'wizard.label.from': 'from',
+    'wizard.label.skillsToPick': 'Skills to pick',
+    'wizard.placeholder.name': 'Adventurer name',
+    'wizard.placeholder.choose': 'Choose…',
+    'wizard.button.create': 'Create character',
+    'wizard.button.creating': 'Creating…',
+    'wizard.button.reset': 'Reset',
+    'wizard.error.nameRequired': 'Name is required.',
+    'wizard.error.classRequired': 'Pick a class.',
+    'wizard.error.ancestryRequired': 'Pick a species.',
+    'wizard.error.backgroundRequired': 'Pick a background.',
+    'wizard.error.spellcasterIncomplete': 'Pick your spells.',
+    'wizard.notice.spellcasterOnly': 'Section available if the class is a spellcaster.',
+    'wizard.notice.draftSaved': 'Draft saved locally.',
   },
 };
 
