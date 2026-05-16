@@ -30,8 +30,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -68,7 +68,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les points de vie de chaque cible augmentent de 5 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -104,8 +104,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien",
-      "rodeur"
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -137,7 +137,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -174,10 +174,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "ensorceleur"
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer"
     ],
     "source": "srd-5.2.1"
   },
@@ -212,10 +212,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "basic-rules"
   },
@@ -252,9 +252,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez charmer une bête supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "druide",
-      "rodeur"
+      "bard",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -288,9 +288,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, vous pouvez animer deux objets supplémentaires pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -327,8 +327,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, vous animez ou réaffirmez votre contrôle sur deux créatures mortes-vivantes additionnelles pour chaque niveau d'emplacement au-delà du niveau 3. Chaque créature doit provenir d'un cadavre ou d'un tas d'ossements différent."
     },
     "classes": [
-      "clerc",
-      "magicien"
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -363,9 +363,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien",
-      "rodeur"
+      "bard",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -397,8 +397,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc"
+      "bard",
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -430,9 +430,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -499,7 +499,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -533,7 +533,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts augmentent de 1d10 pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -567,7 +567,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, le bonus augmente à +2. Lorsque vous utilisez un emplacement de sort de niveau 6 ou supérieur, le bonus augmente à +3."
     },
     "classes": [
-      "magicien",
+      "wizard",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -602,7 +602,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts infligés augmentent de 1d8 pour chaque niveau d'emplacement pair supérieur au niveau 2."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -639,7 +639,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les points de vie temporaires et les dégâts de froid augmentent de 5 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "occultiste"
+      "warlock"
     ],
     "source": "basic-rules"
   },
@@ -674,8 +674,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -707,8 +707,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -740,8 +740,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -775,7 +775,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, les dégâts sont augmentés de 1d10 pour chaque niveau d'emplacement au-delà du niveau 4."
     },
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -807,8 +807,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -843,7 +843,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -878,7 +878,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -913,7 +913,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -948,8 +948,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "magicien"
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -981,8 +981,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "occultiste"
+      "bard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -1017,8 +1017,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -1055,10 +1055,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 4."
     },
     "classes": [
-      "clerc",
-      "ensorceleur",
-      "magicien",
-      "occultiste",
+      "cleric",
+      "sorcerer",
+      "wizard",
+      "warlock",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -1091,7 +1091,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -1128,7 +1128,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -1163,7 +1163,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts augmentent de 1d10 chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -1198,8 +1198,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1231,8 +1231,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1267,7 +1267,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1302,7 +1302,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -1335,10 +1335,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -1375,8 +1375,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts sont augmentés de 1d6 pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1413,8 +1413,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 8 ou supérieur, les dégâts de base augmentent de 1d6 pour chaque niveau d'emplacement au-delà du niveau 7."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1449,9 +1449,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1485,8 +1485,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1521,9 +1521,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien",
-      "occultiste"
+      "bard",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -1557,10 +1557,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1597,9 +1597,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, les dégâts augmentent de 2d6 pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -1634,9 +1634,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1673,9 +1673,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort niveau 4 ou supérieur, la durée augmente de 1 heure pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "clerc",
-      "magicien",
-      "occultiste",
+      "cleric",
+      "wizard",
+      "warlock",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -1713,8 +1713,8 @@
       "fr": "Lorsque vous lancez ce sort avec un emplacement de sort de niveau 7 ou supérieur, un trait additionnel s'élance de la première cible vers une autre cible pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1749,8 +1749,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "magicien"
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1785,8 +1785,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "magicien"
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1821,11 +1821,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -1859,11 +1859,11 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1. Les créatures doivent se trouver à 9 mètres maximum les unes des autres lorsque vous les ciblez."
     },
     "classes": [
-      "barde",
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -1932,7 +1932,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -1967,10 +1967,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2002,8 +2002,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2038,7 +2038,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2073,7 +2073,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2110,7 +2110,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, les dégâts de feu ou les dégâts radiants (selon votre choix) sont augmentés de 1d6 pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -2145,9 +2145,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "magicien"
+      "bard",
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2179,9 +2179,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "rodeur"
+      "bard",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -2216,8 +2216,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc"
+      "bard",
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -2249,9 +2249,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "rodeur"
+      "bard",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -2286,7 +2286,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -2318,8 +2318,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -2354,10 +2354,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -2389,7 +2389,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde"
+      "bard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2426,8 +2426,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2464,10 +2464,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, le rayon de la sphère augmente de 1,50 mètre pour chaque niveau d'emplacement au-delà du niveau 4."
     },
     "classes": [
-      "barde",
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2499,8 +2499,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien",
-      "occultiste"
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -2532,9 +2532,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -2566,8 +2566,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -2599,7 +2599,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -2636,10 +2636,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau supérieur, la durée du sort passe à 10 jours avec un emplacement de niveau 6, à 30 jours pour un niveau 7, à 180 jours pour un niveau 8, et elle passe à 1 an et 1 jour en utilisant un emplacement de niveau 9."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "magicien"
+      "bard",
+      "cleric",
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2673,9 +2673,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, le sort interrompu n'a aucun effet si son niveau est inférieur ou égal à celui du niveau de l'emplacement de sort utilisé."
     },
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -2710,9 +2710,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "magicien"
+      "cleric",
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2747,9 +2747,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "magicien"
+      "cleric",
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2784,7 +2784,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2816,7 +2816,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -2851,7 +2851,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2888,8 +2888,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, ajoutez 2d10 au lancer initial pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2921,10 +2921,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -2961,8 +2961,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, les arêtes du cube augmentent de 1,50 mètre pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -2999,9 +2999,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7, vous pouvez animer ou réaffirmer votre contrôle sur quatre goules. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 8, vous pouvez animer ou réaffirmer votre contrôle sur cinq goules ou deux blêmes ou deux nécrophages. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 9, vous pouvez animer ou réaffirmer votre contrôle sur six goules ou trois blêmes ou trois nécrophages ou deux momies."
     },
     "classes": [
-      "clerc",
-      "magicien",
-      "occultiste"
+      "cleric",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3033,7 +3033,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -3071,8 +3071,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous créez ou détruisez 40 litres d'eau supplémentaires, ou augmentez la taille du cube de 1,50 mètre d'arête, pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -3107,8 +3107,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -3140,9 +3140,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "rodeur"
+      "bard",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -3174,8 +3174,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3207,9 +3207,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3241,7 +3241,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "occultiste"
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3273,7 +3273,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3305,9 +3305,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3339,9 +3339,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "magicien",
-      "occultiste",
+      "cleric",
+      "wizard",
+      "warlock",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -3374,8 +3374,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien",
-      "occultiste"
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3412,8 +3412,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, les dégâts sont augmentés de 3d6 pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3445,13 +3445,13 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "magicien",
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -3486,9 +3486,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3520,7 +3520,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -3556,10 +3556,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
+      "cleric",
+      "druid",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -3591,8 +3591,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "occultiste"
+      "bard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3627,7 +3627,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3662,7 +3662,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3696,12 +3696,12 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les effets d'un sort actif sur la cible prennent automatiquement fin si le niveau du sort est égal ou inférieur au niveau de l'emplacement de sort utilisé."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "occultiste",
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard",
+      "warlock",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -3737,7 +3737,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -3773,7 +3773,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -3805,9 +3805,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3841,8 +3841,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5, vous pouvez maintenir votre concentration sur ce sort pendant 10 minutes. Lorsque vous utilisez un emplacement de sort de niveau 6, vous pouvez maintenir votre concentration sur ce sort pendant 1 heure. Et en utilisant un emplacement de sort de niveau 7, vous pouvez maintenir votre concentration pendant 8 heures."
     },
     "classes": [
-      "druide",
-      "ensorceleur"
+      "druid",
+      "sorcerer"
     ],
     "source": "srd-5.2.1"
   },
@@ -3876,10 +3876,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 9, la durée du sort sous concentration augmente jusqu'à 8 heures."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3913,9 +3913,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6, la durée du sort sous concentration augmente jusqu'à 10 minutes. Avec un emplacement de sort de niveau 7, la durée du sort sous concentration augmente jusqu'à 1 heure. Avec un emplacement de sort de niveau 8 ou supérieur, la durée du sort sous concentration augmente jusqu'à 8 heures."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -3950,11 +3950,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -3986,8 +3986,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4019,7 +4019,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -4056,8 +4056,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts augmentent de 1d6 pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4091,7 +4091,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts infligés augmentent de 1d6 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -4126,9 +4126,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4163,8 +4163,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien",
-      "occultiste"
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -4196,7 +4196,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -4228,7 +4228,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4263,8 +4263,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4299,10 +4299,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "magicien",
-      "occultiste"
+      "bard",
+      "druid",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -4334,8 +4334,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4372,7 +4372,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -4407,8 +4407,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide"
+      "bard",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -4440,7 +4440,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4475,9 +4475,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "magicien"
+      "cleric",
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4544,8 +4544,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -4580,9 +4580,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4617,8 +4617,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "magicien"
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4650,7 +4650,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -4682,7 +4682,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -4719,8 +4719,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "clerc"
+      "bard",
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -4757,9 +4757,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, les dégâts augmentent de 1d10 pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur"
+      "cleric",
+      "druid",
+      "sorcerer"
     ],
     "source": "srd-5.2.1"
   },
@@ -4796,7 +4796,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts (initiaux et à retardement) sont augmentés de 1d4 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4830,10 +4830,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, les dégâts sont augmentés de 1d8 pour chaque niveau d'emplacement au-delà du niveau 4."
     },
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -4865,8 +4865,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -4901,9 +4901,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "basic-rules"
   },
@@ -4937,11 +4937,11 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 8 ou supérieur, vous pouvez cibler jusqu'à trois créatures consentantes (vous y compris) pour chaque niveau d'emplacement au-delà du niveau 7. Les créatures doivent être dans un rayon de 3 mètres autour de vous lorsque vous lancez le sort."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -4976,9 +4976,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5010,7 +5010,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -5045,8 +5045,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5081,7 +5081,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "basic-rules"
   },
@@ -5113,9 +5113,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5152,10 +5152,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts du sort augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5187,8 +5187,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -5220,7 +5220,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -5257,8 +5257,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, la barrière bloque les sorts d'un niveau supérieur pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5295,9 +5295,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts des runes explosives augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 3. Si vous créez un sort glyphique, vous pouvez emmagasiner un sort dont le niveau est équivalent ou moindre à l'emplacement de sort utilisé pour le glyphe de protection."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "magicien"
+      "bard",
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5332,7 +5332,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -5367,7 +5367,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5404,10 +5404,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "druide",
-      "magicien",
-      "rodeur"
+      "bard",
+      "druid",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -5441,8 +5441,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, la quantité de points de vie récupérés est augmentée de 10 pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -5474,7 +5474,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -5509,8 +5509,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5544,7 +5544,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
+      "bard",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -5580,8 +5580,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5616,10 +5616,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5654,8 +5654,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5692,10 +5692,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, le sort persiste jusqu'au moment de sa dissipation, sans requérir de concentration."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5727,9 +5727,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5764,9 +5764,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -5803,10 +5803,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 5. Les créatures doivent toutes être à 9 mètres les unes des autres quand vous les ciblez."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5843,12 +5843,12 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous pouvez cibler un humanoïde supplémentaire pour chaque niveau d'emplacement au-delà du niveau 2. Les humanoïdes doivent être situés à 9 mètres ou moins les uns des autres."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -5882,7 +5882,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous pouvez affecter une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 1. Les créatures que vous ciblez doivent toutes être dans un rayon de 9 mètres."
     },
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -5915,7 +5915,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -5950,7 +5950,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -5985,9 +5985,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6024,10 +6024,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous pouvez cibler une créature supplémentaire pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -6059,9 +6059,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6095,8 +6095,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant certains niveaux d'emplacement de sort, vous choisissez l'option d'invocation ci-dessus, et plus de créatures apparaissent : deux fois plus de créatures invoquées avec un emplacement de sort de niveau 5, trois fois plus avec un emplacement de sort de niveau 7, et quatre fois plus avec un emplacement de sort de niveau 9."
     },
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6133,8 +6133,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, le FP de l'élémentaire invoqué augmente de 1 pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "druide",
-      "magicien"
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6168,8 +6168,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant certains niveaux d'emplacements de sorts supérieurs, vous choisissez l'une des options d'invocations ci-dessus, et un nombre plus important de créatures apparaîtra ; deux fois plus avec un emplacement de sort de niveau 6 et trois fois plus avec un emplacement de sort de niveau 8."
     },
     "classes": [
-      "druide",
-      "magicien"
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6206,8 +6206,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant des niveaux d'emplacements de sorts supérieurs, vous choisissez l'une des options d'invocation ci-dessus, et un nombre plus important de créatures apparaîtra ; deux fois plus avec un emplacement de sort de niveau 6 et trois fois plus avec un emplacement de sort de niveau 8."
     },
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6241,7 +6241,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 9, vous invoquez un céleste de FP 5 ou inférieur."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -6275,8 +6275,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, le FP augmente de 1 pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "druide",
-      "occultiste"
+      "druid",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -6313,7 +6313,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts augmentent de 1d6 tous les 2 niveaux d'emplacement au-dessus du niveau 2."
     },
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -6348,8 +6348,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6384,8 +6384,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6420,10 +6420,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "rodeur"
+      "bard",
+      "cleric",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6458,7 +6458,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -6493,7 +6493,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6528,9 +6528,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "rodeur"
+      "bard",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6565,12 +6565,12 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "magicien",
+      "bard",
+      "cleric",
+      "druid",
+      "wizard",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6605,12 +6605,12 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "magicien",
+      "bard",
+      "cleric",
+      "druid",
+      "wizard",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6642,7 +6642,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -6674,8 +6674,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide"
+      "bard",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -6710,10 +6710,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6745,11 +6745,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur",
+      "cleric",
+      "druid",
+      "sorcerer",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -6784,9 +6784,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6823,7 +6823,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, les dégâts du Poing de Bigby augmentent de 2d8 et les dégâts de la Main broyeuse de Bigby augmentent de 2d6, et ce pour chaque emplacement de niveau supérieur au 5eme."
     },
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6855,10 +6855,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -6892,8 +6892,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts augmentent de 1d6 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6927,9 +6927,9 @@
       "fr": "Si vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, la durée de concentration maximale monte à 10 minutes. Si vous utilisez un emplacement de sort de niveau 5 ou supérieur, le sort dure 8 heures. Si vous utilisez un emplacement de sort de niveau 7 ou supérieur, le sort dure 24 heures. Si vous utilisez un emplacement de sort de niveau 9, le sort dure jusqu'à ce qu'il soit dissipé. Utiliser un emplacement de sort de niveau 5 ou supérieur permet de s'affranchir de la concentration en ce qui concerne la durée du sort."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "magicien"
+      "bard",
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -6966,7 +6966,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou 4, vous pouvez maintenir votre concentration sur ce sort pendant 8 heures. Si vous utilisez un emplacement de sort de niveau 5 ou supérieur, vous pouvez maintenir votre concentration sur ce sort pendant 24 heures."
     },
     "classes": [
-      "occultiste"
+      "warlock"
     ],
     "source": "basic-rules"
   },
@@ -7001,8 +7001,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7037,10 +7037,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "rodeur"
+      "cleric",
+      "druid",
+      "sorcerer",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -7075,7 +7075,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -7109,7 +7109,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou 4, vous pouvez maintenir votre concentration sur ce sort pendant 8 heures maximum. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, vous pouvez maintenir votre concentration sur ce sort pendant 24 heures maximum."
     },
     "classes": [
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -7141,10 +7141,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -7179,9 +7179,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7218,9 +7218,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, la durée du sort augmente de 48 heures pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "druide",
-      "rodeur"
+      "bard",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -7257,8 +7257,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts sont augmentés de 1d8 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "druide"
+      "bard",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -7293,10 +7293,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7331,9 +7331,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien",
-      "occultiste"
+      "bard",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -7365,9 +7365,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "magicien"
+      "bard",
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7399,8 +7399,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7434,8 +7434,8 @@
       "fr": "Si vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, vous pouvez modifier la mémoire de la cible concernant un événement datant de 7 jours maximum (niveau 6), 30 jours maximum (niveau 7), 1 an maximum (niveau 8), ou de n'importe quelle période du passé de la créature (niveau 9)."
     },
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7467,7 +7467,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7499,7 +7499,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde"
+      "bard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7533,9 +7533,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les points de vie récupérés augmentent de 1d4 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide"
+      "bard",
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -7569,7 +7569,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les points de vie récupérés augmentent de 1d4 pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -7601,10 +7601,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -7636,10 +7636,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -7671,7 +7671,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -7706,10 +7706,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -7746,7 +7746,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, les deux types de dégâts sont augmentés de 1d8 pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -7783,9 +7783,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, les dégâts du sort augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 4."
     },
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7820,7 +7820,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7857,7 +7857,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, les dégâts qu'inflige le mur lorsqu'il apparaît augmentent de 2d6, et les dégâts infligés aux créatures qui traversent le voile d'air glacial augmentent de 1d6, pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7892,9 +7892,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7929,8 +7929,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -7962,7 +7962,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -7996,7 +7996,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts sont augmentés de 1d6 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde"
+      "bard"
     ],
     "source": "basic-rules"
   },
@@ -8031,9 +8031,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "magicien"
+      "bard",
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8067,10 +8067,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, le rayon de la sphère augmente de 6 mètres pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "rodeur"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -8102,8 +8102,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8138,9 +8138,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8177,10 +8177,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts augmentent de 2d4 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "basic-rules"
   },
@@ -8212,8 +8212,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8248,7 +8248,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8285,8 +8285,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "basic-rules"
   },
@@ -8318,7 +8318,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -8350,8 +8350,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -8386,8 +8386,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -8422,7 +8422,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8457,9 +8457,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -8494,8 +8494,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -8530,10 +8530,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "rodeur"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -8568,8 +8568,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8604,8 +8604,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien",
-      "occultiste"
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -8640,10 +8640,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -8675,8 +8675,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8711,9 +8711,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "ensorceleur",
-      "magicien"
+      "cleric",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8745,10 +8745,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -8783,10 +8783,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "magicien",
-      "occultiste"
+      "bard",
+      "druid",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -8821,8 +8821,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "magicien"
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8854,10 +8854,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -8892,7 +8892,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8926,7 +8926,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les points de vie récupérés augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -8960,8 +8960,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, il crée une fléchette additionnelle pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -8996,9 +8996,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "magicien",
-      "occultiste"
+      "cleric",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -9033,8 +9033,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9066,7 +9066,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -9102,9 +9102,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "magicien",
-      "occultiste",
+      "cleric",
+      "wizard",
+      "warlock",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -9137,10 +9137,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
+      "cleric",
+      "druid",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -9172,10 +9172,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "basic-rules"
   },
@@ -9207,11 +9207,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "rodeur"
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -9246,8 +9246,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien"
+      "bard",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9279,8 +9279,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
+      "cleric",
+      "druid",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -9315,10 +9315,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou 8, la durée du sort passe à 1 an. Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 9, le sort persiste jusqu'à ce qu'il soit dissipé par l'un des sorts mentionnés ci-dessus."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "magicien",
+      "bard",
+      "cleric",
+      "druid",
+      "wizard",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -9354,8 +9354,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
+      "bard",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -9388,8 +9388,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien",
-      "occultiste"
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -9423,8 +9423,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, vous générez un rayon supplémentaire pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9456,8 +9456,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9494,7 +9494,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts augmentent de 1d10 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -9529,9 +9529,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9563,8 +9563,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9599,9 +9599,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide"
+      "bard",
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -9636,7 +9636,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -9671,11 +9671,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "cleric",
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -9707,9 +9707,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -9743,7 +9743,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts sont augmentés de 1d10 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "occultiste"
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -9778,8 +9778,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -9814,10 +9814,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "rodeur"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -9849,11 +9849,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
+      "bard",
+      "cleric",
+      "druid",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -9888,9 +9888,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide"
+      "bard",
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -9925,8 +9925,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc"
+      "bard",
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -9961,8 +9961,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide"
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -9997,7 +9997,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"
@@ -10033,7 +10033,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -10068,7 +10068,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -10105,7 +10105,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, vous pouvez augmenter la taille du cube de 30 mètres pour chaque niveau d'emplacement au-delà du niveau 4. Ainsi vous pourriez protéger un cube de 60 mètres d'arête en utilisant un emplacement de sort de niveau 5."
     },
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10140,10 +10140,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "rodeur"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -10178,11 +10178,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
-      "magicien",
-      "occultiste"
+      "bard",
+      "cleric",
+      "druid",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -10214,8 +10214,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "rodeur"
+      "druid",
+      "ranger"
     ],
     "source": "basic-rules"
   },
@@ -10250,9 +10250,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "druide"
+      "bard",
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -10284,9 +10284,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "rodeur"
+      "cleric",
+      "druid",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -10321,9 +10321,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien",
-      "occultiste"
+      "bard",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -10355,9 +10355,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "rodeur"
+      "bard",
+      "cleric",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -10392,7 +10392,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10429,8 +10429,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, vous gagnez 5 points de vie temporaires supplémentaires pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10464,11 +10464,11 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, la quantité de points de vie récupérés est augmentée de 1d8 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide",
+      "bard",
+      "cleric",
+      "druid",
       "paladin",
-      "rodeur"
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -10502,9 +10502,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 6 ou supérieur, la quantité de points de vie récupérés est augmentée de 1d8 pour chaque niveau d'emplacement au-delà du niveau 5."
     },
     "classes": [
-      "barde",
-      "clerc",
-      "druide"
+      "bard",
+      "cleric",
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -10541,9 +10541,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, lancez 2d8 supplémentaires pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10578,9 +10578,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien",
-      "occultiste"
+      "bard",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -10612,8 +10612,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10650,8 +10650,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 3 ou supérieur, les dégâts sont augmentés de 1d6 pour chaque niveau d'emplacement au-delà du niveau 2."
     },
     "classes": [
-      "druide",
-      "magicien"
+      "druid",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10688,7 +10688,7 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7 ou supérieur, les dégâts augmentent de 1d6 pour chaque niveau d'emplacement au-delà du niveau 6."
     },
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10723,7 +10723,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10755,7 +10755,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -10790,10 +10790,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -10830,10 +10830,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 7, la durée du sort augmente à 10 jours. Avec un emplacement de sort de niveau 8, la durée du sort augmente à 30 jours. Avec un emplacement de sort de niveau 9, la durée du sort augmente à une année plus un jour."
     },
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -10868,9 +10868,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "magicien"
+      "bard",
+      "cleric",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10902,8 +10902,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10935,9 +10935,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -10969,9 +10969,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur"
+      "cleric",
+      "druid",
+      "sorcerer"
     ],
     "source": "srd-5.2.1"
   },
@@ -11008,9 +11008,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 5 ou supérieur, les dégâts contondants augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 4."
     },
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11045,9 +11045,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11079,7 +11079,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -11114,9 +11114,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -11151,7 +11151,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11186,9 +11186,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11223,10 +11223,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "druide",
-      "magicien",
-      "occultiste"
+      "bard",
+      "druid",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -11261,9 +11261,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "magicien",
-      "occultiste"
+      "bard",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -11295,7 +11295,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc"
+      "cleric"
     ],
     "source": "srd-5.2.1"
   },
@@ -11330,8 +11330,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11365,8 +11365,8 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, les dégâts augmentent de 1d6 pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "magicien",
-      "occultiste"
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -11398,8 +11398,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "ensorceleur",
-      "magicien"
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11436,9 +11436,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts initiaux sont augmentés de 1d12 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "basic-rules"
   },
@@ -11473,9 +11473,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "clerc",
-      "druide",
-      "ensorceleur"
+      "cleric",
+      "druid",
+      "sorcerer"
     ],
     "source": "srd-5.2.1"
   },
@@ -11510,7 +11510,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11544,10 +11544,10 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 2 ou supérieur, les dégâts augmentent de 1d8 pour chaque niveau d'emplacement au-delà du niveau 1."
     },
     "classes": [
-      "barde",
-      "druide",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "druid",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11582,7 +11582,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "magicien"
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11617,10 +11617,10 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide",
-      "ensorceleur",
-      "magicien",
-      "rodeur"
+      "druid",
+      "sorcerer",
+      "wizard",
+      "ranger"
     ],
     "source": "srd-5.2.1"
   },
@@ -11655,11 +11655,11 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "bard",
+      "cleric",
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -11691,7 +11691,7 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "druide"
+      "druid"
     ],
     "source": "srd-5.2.1"
   },
@@ -11726,9 +11726,9 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "ensorceleur",
-      "magicien"
+      "bard",
+      "sorcerer",
+      "wizard"
     ],
     "source": "srd-5.2.1"
   },
@@ -11765,9 +11765,9 @@
       "fr": "Lorsque vous lancez ce sort en utilisant un emplacement de sort de niveau 4 ou supérieur, vous pouvez cibler une créature additionnelle pour chaque niveau d'emplacement au-delà du niveau 3."
     },
     "classes": [
-      "ensorceleur",
-      "magicien",
-      "occultiste"
+      "sorcerer",
+      "wizard",
+      "warlock"
     ],
     "source": "srd-5.2.1"
   },
@@ -11799,8 +11799,8 @@
     },
     "atHigherLevels": null,
     "classes": [
-      "barde",
-      "clerc",
+      "bard",
+      "cleric",
       "paladin"
     ],
     "source": "srd-5.2.1"

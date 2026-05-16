@@ -25,6 +25,24 @@ import {
   type ContentTypeKey,
 } from '../src/shared/types/content.js';
 import { z } from 'zod';
+import { CLASS_FR_TO_EN_ID } from './maps/class-fr-to-en.js';
+
+// Belt-and-braces vs. plans/DEBT.md > D3 bug #2 (mismatch FR/EN entre
+// spell.classes[*] et classes.json[*].id). Le fix-à-la-source vit dans
+// parse-aidedd.ts, mais on normalise aussi au build pour qu'un
+// intermédiaire AideDD stale qui aurait gardé les anciennes valeurs FR ne
+// poison pas le bundle public.
+function normalizeSpellEntity(ent: unknown): unknown {
+  if (typeof ent !== 'object' || ent === null) return ent;
+  const e = ent as { classes?: unknown };
+  if (!Array.isArray(e.classes)) return ent;
+  e.classes = e.classes.map((c) => {
+    if (typeof c !== 'string') return c;
+    const mapped = CLASS_FR_TO_EN_ID[c.toLowerCase()];
+    return mapped ?? c;
+  });
+  return ent;
+}
 
 const SRD_DIR = 'content-sources/extracted/srd';
 const AIDEDD_DIR = 'content-sources/extracted/aidedd';
@@ -97,7 +115,9 @@ async function main(): Promise<void> {
       if (typeof e.id !== 'string') continue;
       byId.set(e.id, ent); // overrides AideDD
     }
-    const merged = [...byId.values()];
+    const rawMerged = [...byId.values()];
+    // Normalisation post-merge des champs cross-bundle (cf. CLASS_FR_TO_EN_ID).
+    const merged = type === 'spells' ? rawMerged.map(normalizeSpellEntity) : rawMerged;
 
     // Validate
     const schema = ContentTypeSchemas[type];

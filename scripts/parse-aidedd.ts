@@ -21,6 +21,7 @@ import { readFile, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { join, basename, extname } from 'node:path';
 import { existsSync } from 'node:fs';
 import * as cheerio from 'cheerio';
+import { CLASS_FR_TO_EN_ID } from './maps/class-fr-to-en.js';
 
 // Bloc = type returned by cheerio's API ($('.bloc') / $(el)).
 // Inferred from the API to avoid a direct domhandler import (transitive dep of cheerio).
@@ -141,23 +142,6 @@ const SCHOOL_FR_TO_KEY: Record<string, string> = {
   transmutation: 'transmutation',
 };
 
-const CLASS_FR_TO_KEY: Record<string, string> = {
-  barbare: 'barbare',
-  barde: 'barde',
-  clerc: 'clerc',
-  druide: 'druide',
-  ensorceleur: 'ensorceleur',
-  guerrier: 'guerrier',
-  magicien: 'magicien',
-  moine: 'moine',
-  occultiste: 'occultiste',
-  paladin: 'paladin',
-  rôdeur: 'rodeur',
-  rodeur: 'rodeur',
-  roublard: 'roublard',
-  artificier: 'artificier',
-};
-
 function parseSpellSchoolAndLevel(ecole: string): {
   school: string;
   level: number;
@@ -233,7 +217,7 @@ function parseSpell($: cheerio.CheerioAPI, $bloc: Bloc, source: string): Partial
   const classes: string[] = [];
   $bloc.find('.classe').each((_, el) => {
     const cls = $(el).text().trim();
-    const key = CLASS_FR_TO_KEY[cls.toLowerCase()];
+    const key = CLASS_FR_TO_EN_ID[cls.toLowerCase()];
     if (key) classes.push(key);
   });
 
