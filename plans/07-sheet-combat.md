@@ -28,7 +28,7 @@ Plans 01-06 complete.
 ### Attacks list
 - [x] 7. `attacks-list.tsx`: dérive depuis `character.inventory.items` filtrés `equipped + category:'weapon'`. Class features attaques (ex: ranger/monk natural weapons) sont déferred plan 17 (level-up + class features) — S1 manual form ne supporte que des armes équipées.
 - [x] 8. Tap = attaque + dégâts en séquence, toast combiné (att total + damage total + sub avec détail nat/mod/formule).
-- [x] 9. Long-press → menu inline (Avantage / Désav. / Crit / ✕). `rollD20(mod, advantage)` + `rollDamage(formula, crit)` viennent de `src/shared/lib/dice.ts`. Le crit double les dés (pas le modificateur), SRD-conform.
+- [x] 9. Long-press → menu inline (Avantage / Désav. / Crit / ✕). `rollD20(mod, advantage)` + `rollDamage(formula, crit)` viennent de `src/shared/lib/dice.ts`. Le crit double les dés (pas le modificateur), SRD-conform. **NOTE post-plan 12** : à l'époque de plan 07, `performRoll` by-passait `rollWithFlags` (pas d'inspiration consommée sur attaque). Plan 12 step 15 a corrigé cela en routant les attaques via le pivot — **inspiration est désormais consommée sur une attaque, c'est intentionnel et plus 5e-correct** (validé par Adrien en UAT plan 12 digital, 2026-05-16). Pas une régression.
 
 ### Party view (preparatory)
 - [x] 10. `party-strip.tsx`: shows other PCs in the active campaign (S2-aware but no-op for S1). For S1, render an empty placeholder if no campaign joined yet.
@@ -61,6 +61,7 @@ Plans 01-06 complete.
 
 ## Notes for next plan
 - Plan 12 (dice engine) doit remplacer le stub `src/shared/lib/dice.ts`. Surface actuelle : `rollD20(mod, advantage)`, `rollDamage(formula, crit)`. Tous les call sites passent par ces deux fonctions — pas de Math.random ailleurs. Le moteur custom plan 12 peut garder la même signature ou exposer un hook `useDice()` qui les wrappe.
+- **Refinement inspiration sur attaques (acté post-UAT plan 12 digital, 2026-05-16)** : plan 07 avait by-passé `rollWithFlags` côté `attacks-list.tsx` (l'inspiration n'était pas consommée sur une attaque). Plan 12 step 15 a corrigé en routant les attaques via le pivot — l'inspiration est désormais consommée. **Changement intentionnel et plus 5e-correct, validé par Adrien.** À garder à l'œil si quelqu'un reprend `attacks-list.tsx` plus tard : ne pas restaurer le by-pass en pensant que c'est une régression.
 - Plan 16 (memberships sync) câblera `isDM` dans `usePermissionContext()`. Aujourd'hui forcé à `false`. Le bouton "Ressusciter" est gardé `data-revive="true"` pour qu'il reste interactif sous `[data-readonly="true"]`. Owner-lock (`name`/`personality.*`/`homeCampaignId` non-éditables pour le MJ) reste au layer Cloud Function comme annoté dans plan 16.
 - Plan 22 (event-logger) câblera : death event sur `applyDeathSaveOutcome === 'dead'`, revival event sur revive(). Aujourd'hui aucun event n'est loggé — uniquement les toasts UX. Les call sites sont concentrés dans `death-saves-modal.tsx` (~3 endroits).
 - Toast system : `src/shared/lib/slices/toast-slice.ts` + `<ToastHost />` global. Surface stable : `showToast({ kind, title, big?, sub?, durationMs? })`. Si plan 22 veut convertir des toasts en events Firestore, c'est le seul point d'entrée à intercepter.
