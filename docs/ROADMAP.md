@@ -1,6 +1,6 @@
 # Roadmap
 
-Five sprints, **41 plans**, milestone-driven. (Plan 12 split en 12 « digital » + 12.5 « physique » — voir `plans/00-overview.md` > Swaps actés.)
+Five sprints, **43 plans**, milestone-driven. (Plan 12 split en 12 « digital » + 12.5 « physique » ; plans 13.6 « LibraryScreen + nav shell » et 13.5 « Playwright smoke » insérés après 12.5 suite à la première UAT navigateur — voir `plans/00-overview.md` > Swaps actés.)
 
 ## Milestones at-a-glance
 
@@ -15,13 +15,13 @@ Five sprints, **41 plans**, milestone-driven. (Plan 12 split en 12 « digital »
 
 Rythme **soirs/weekends (~10h/sem)** : doubler → ~10-12 mois. Rythme **full-time** : ~3 mois.
 
-## Sprint 1 — Table-ready MVP (plans 01-13, dont 12.5)
+## Sprint 1 — Table-ready MVP (plans 01-13, dont 12.5, 13.6, 13.5)
 
 Goal: Adrien charge l'app sur son téléphone à la prochaine session, ouvre la fiche de Lyralei, joue tap-to-roll (digital ou physique), fonctionne offline.
 
-Ordre effectif S1 (swap acté) : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → **12 (digital)** → **12.5 (physique)** → **11 (radial FAB)** → 13.
+Ordre effectif S1 (swaps actés) : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → **12 (digital)** → **12.5 (physique)** → **13.6 (LibraryScreen + nav shell)** → **13.5 (Playwright smoke)** → **11 (radial FAB)** → 13.
 
-End of S1: l'app est jouable solo à table, en digital ou en physique. Adrien la déploie sur son téléphone. Le mode Âme manque encore (S2), le wizard est manuel, mais c'est jouable.
+End of S1: l'app est jouable solo à table, en digital ou en physique. Adrien la déploie sur son téléphone. Le mode Âme manque encore (S2), le wizard est manuel, mais c'est jouable. Filet automatique e2e Playwright en place.
 
 ## Sprint 2 — Campaigns + wizard (plans 14-20)
 

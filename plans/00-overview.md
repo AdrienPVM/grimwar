@@ -1,8 +1,8 @@
 # Plans overview
 
-41 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
+43 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
 
-## Sprint 1 — Table-ready MVP (14 plans)
+## Sprint 1 — Table-ready MVP (16 plans)
 
 Adrien joue Lyralei sur son téléphone à la prochaine session.
 
@@ -20,6 +20,8 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 10 | [Sheet Avoir mode](./10-sheet-avoir.md) — inventory strict, weight, coins | TODO |
 | 12 | [Dice + roll engine (digital)](./12-dice-engine.md) — parser, roller, pivot mode-ready, 8 call sites migrés, history, toasts | **SWAPPED (avant 11)** |
 | 12.5 | [Dice mode — physical](./12.5-dice-physical.md) — `effectiveDiceMode`, `<PhysicalRollModal />`, settings user, pivot mode-aware, null-guards | **NEW (split de plan 12)** |
+| 13.6 | [LibraryScreen + nav shell](./13.6-library-and-nav-shell.md) — point d'entrée S1 + header sticky persistant, élimine Lyralei hardcodée | **NEW (avant 11)** |
+| 13.5 | [Playwright smoke e2e + purge dette](./13.5-playwright-smoke.md) — config Playwright + smoke headless + purge dette e2e S1 | **NEW (avant 11)** |
 | 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12/12.5) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
@@ -90,6 +92,7 @@ i18n EN, account, GDPR, legal, PDF export, spell sigils, public stats, prod.
 
 - **12 avant 11** (acté 2026-05-16) : la feature dés a grossi (mode physique mode-aware) ; le radial FAB consomme le moteur. Autant le construire une seule fois mode-aware contre un moteur fini plutôt que stub + retrofit. La règle « plus petit numéro non terminé » cède devant ce swap délibéré documenté.
 - **Split 12 / 12.5** (acté 2026-05-16) : plan 12 originel scindé en plan 12 « digital » (scope original, livrable + jouable seul) et plan 12.5 « physique » (couche par-dessus). Raison : ~1200 lignes mélangeant réécriture moteur + nouvelle modale + slice + migration Dexie + 8 refactors = trop pour une seule passe d'UAT. Deux commits = rollback isolable + deux UAT ciblées. Ordre : 10 → 12 → UAT digital → 12.5 → UAT physique → 11 → 13.
+- **Insertion 13.6 + 13.5** (acté 2026-05-16) : la première UAT navigateur de plan 12.5 a révélé que `/` rendait un placeholder (emblème HP Lyralei hardcodé). Le S1 avait livré `SheetScreen` (plans 06-10) et le wizard `/create` (plan 05) sans jamais bâtir l'écran d'accueil ni un nav shell persistant — l'app n'avait pas de point d'entrée. 13.6 comble le trou (LibraryScreen + nav shell sticky), 13.5 verrouille la régression via Playwright headless. Tracé en `plans/DEBT.md > D2` (cause-racine + leçon de process). Ordre effectif S1 : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 12 → 12.5 → **13.6 → 13.5** → 11 → 13.
 
 ## Plan template
 

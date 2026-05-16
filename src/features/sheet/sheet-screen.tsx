@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { RollHistoryPanel } from '@/features/dice/roll-history-panel';
+import { Button } from '@/shared/components/button';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Icon } from '@/shared/components/icon';
 import { Splash } from '@/shared/components/splash';
@@ -45,17 +46,18 @@ export function SheetScreen(): JSX.Element {
 
   if (error) {
     return (
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-[420px] flex-col items-center justify-center gap-4 px-6 py-12">
+      <main className="relative z-10 mx-auto flex min-h-[60vh] max-w-[420px] flex-col items-center justify-center gap-4 px-6 py-12">
         <GlassPanel className="w-full px-6 py-8 text-center">
           <h1 className="font-title text-body uppercase tracking-[0.18em] text-crimson">
             {t('sheet.error.title')}
           </h1>
           <p className="mt-3 font-serif text-body-sm text-text-secondary">{error.message}</p>
-          <Link
-            to="/"
-            className="mt-6 inline-block font-title text-[10px] uppercase tracking-[0.18em] text-gold-bright hover:text-gold-lite"
-          >
-            {t('sheet.backHome')}
+          {/* CTA secondaire conservé en + du nav shell pour ne pas obliger
+              à viser le bouton ← du header depuis un état d'erreur centré. */}
+          <Link to="/" className="mt-6 inline-block">
+            <Button variant="secondary" size="sm">
+              {t('sheet.backHome')}
+            </Button>
           </Link>
         </GlassPanel>
       </main>
@@ -64,7 +66,7 @@ export function SheetScreen(): JSX.Element {
 
   if (!character) {
     return (
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-[420px] flex-col items-center justify-center gap-4 px-6 py-12">
+      <main className="relative z-10 mx-auto flex min-h-[60vh] max-w-[420px] flex-col items-center justify-center gap-4 px-6 py-12">
         <GlassPanel className="w-full px-6 py-8 text-center">
           <h1 className="font-display text-xl uppercase tracking-[0.18em] text-gold-bright">
             {t('sheet.notFound')}
@@ -72,11 +74,10 @@ export function SheetScreen(): JSX.Element {
           <p className="mt-3 font-serif text-body-sm italic text-text-tertiary">
             {t('sheet.notFound.hint')}
           </p>
-          <Link
-            to="/"
-            className="mt-6 inline-block font-title text-[10px] uppercase tracking-[0.18em] text-gold-bright hover:text-gold-lite"
-          >
-            {t('sheet.backHome')}
+          <Link to="/" className="mt-6 inline-block">
+            <Button variant="secondary" size="sm">
+              {t('sheet.backHome')}
+            </Button>
           </Link>
         </GlassPanel>
       </main>

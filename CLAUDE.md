@@ -103,6 +103,7 @@ These are LOCKED. Override only with Adrien's explicit instruction.
 | Map / VTT | Sprint 4. PixiJS + .dd2vtt import. |
 | Dice mode | Deux modes : **digital** (l'app lance) et **physique** (l'app indique quoi lancer IRL, le joueur saisit les faces brutes, l'app calcule). Réglage par utilisateur `users/{uid}.settings.diceMode` + `settings.followCampaignDiceMode`. Défaut de table = `campaigns/{id}.settings.diceMode` (effectif S2). Mode physique : saisie des faces brutes, l'app applique modificateurs + détecte nat 20/1 + avantage. Les dégâts remontent au MJ qui applique sur une créature cible (le MJ choisit la cible, jamais le joueur). |
 | Real-time sync | Firestore `onSnapshot` listeners on active campaign + character + recent events |
+| e2e environment | Tous les tests Playwright tournent contre la **Firebase Local Emulator Suite** (Firestore + Auth), **jamais** contre la base eu-west1 réelle. Vaut pour S1 (plan 13.5) et tous les sprints suivants (campaigns/memberships S2+ idem). Connexion émulateur conditionnée à `VITE_USE_FIREBASE_EMULATOR=true`, off par défaut (un build de prod qui pointerait sur localhost serait une catastrophe). `firestore.rules` chargées dans l'émulateur — les e2e s'exécutent contre les vraies security rules, jamais en open-bar. Acté 2026-05-16. |
 | Event logging | Auto on every gameplay action. See `docs/EVENT-LOG.md`. |
 | GDPR | Export endpoint + account deletion endpoint mandatory before public launch (S5) |
 | Visual fidelity | Faithful to `prototype/grimwar.html` (mobile-first), small refinements OK |
@@ -194,6 +195,7 @@ grimwar/
 - `pnpm typecheck` clean
 - `pnpm test` green
 - `pnpm lint` clean
+- **`pnpm dev` UAT navigateur obligatoire sur tout plan qui produit ou modifie de l'UI visible** (route, screen, mode de fiche, composant rendu). La triple gate ne prouve pas que l'app se rend ; jusqu'à plan 13.5 (Playwright), un humain doit ouvrir `http://localhost:5173/` et valider visuellement. Acté 2026-05-16 suite au bug "rien ne s'affiche" sur `/` détecté à la première UAT navigateur réelle du plan 12.5 — cf. `plans/DEBT.md > D2`.
 - Conventional commit message: `feat(scope): summary` or `fix(scope): summary`
 
 ## References

@@ -107,7 +107,29 @@ export type StringKey =
   | 'sheet.mode.magie'
   | 'sheet.mode.avoir'
   | 'sheet.mode.ame'
-  | 'sheet.placeholder.todo';
+  | 'sheet.placeholder.todo'
+  // Nav shell (header sticky persistant — plan 13.6)
+  | 'nav.aria'
+  | 'nav.brand.aria'
+  | 'nav.back'
+  | 'nav.back.aria'
+  | 'nav.avatar.aria'
+  // Library (point d'entrée S1 — plan 13.6)
+  | 'library.title'
+  | 'library.subtitle'
+  | 'library.cta.create'
+  | 'library.empty.title'
+  | 'library.empty.body'
+  | 'library.error.title'
+  | 'library.error.body'
+  | 'library.error.retry'
+  | 'library.list.aria'
+  | 'library.card.open'
+  | 'library.card.level'
+  | 'library.card.aliveLabel'
+  | 'library.card.deadLabel'
+  // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
+  | 'avoir.customItem.placeholder';
 
 type Dict = Record<StringKey, string>;
 
@@ -214,6 +236,30 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.avoir': 'Avoir',
     'sheet.mode.ame': 'Âme',
     'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
+    // Nav shell
+    'nav.aria': 'Navigation principale',
+    'nav.brand.aria': "Retour à l'accueil",
+    'nav.back': 'Retour',
+    'nav.back.aria': 'Retour à la bibliothèque',
+    'nav.avatar.aria': 'Compte (à venir)',
+    // Library
+    'library.title': 'Bibliothèque',
+    'library.subtitle': 'Tes héros et héroïnes',
+    'library.cta.create': 'Créer un personnage',
+    'library.empty.title': 'Aucun héros pour l’instant',
+    'library.empty.body':
+      "Crée ton premier personnage pour commencer l'aventure. Une fiche, une voix, un nom à graver sur le grimoire.",
+    'library.error.title': 'Lecture impossible',
+    'library.error.body':
+      'Impossible de récupérer tes personnages. Vérifie ta connexion et réessaye.',
+    'library.error.retry': 'Réessayer',
+    'library.list.aria': 'Liste des personnages',
+    'library.card.open': 'Ouvrir la fiche de',
+    'library.card.level': 'Niveau',
+    'library.card.aliveLabel': 'En vie',
+    'library.card.deadLabel': 'Mort.e',
+    // Avoir
+    'avoir.customItem.placeholder': 'Mon trésor personnel',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -312,6 +358,27 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.avoir': 'Inv.',
     'sheet.mode.ame': 'Soul',
     'sheet.placeholder.todo': 'Section coming in a later plan.',
+    'nav.aria': 'Main navigation',
+    'nav.brand.aria': 'Back to home',
+    'nav.back': 'Back',
+    'nav.back.aria': 'Back to library',
+    'nav.avatar.aria': 'Account (coming soon)',
+    'library.title': 'Library',
+    'library.subtitle': 'Your heroes and heroines',
+    'library.cta.create': 'Create a character',
+    'library.empty.title': 'No heroes yet',
+    'library.empty.body':
+      'Create your first character to begin the adventure. A sheet, a voice, a name to carve on the grimoire.',
+    'library.error.title': 'Cannot load',
+    'library.error.body':
+      'Could not fetch your characters. Check your connection and try again.',
+    'library.error.retry': 'Retry',
+    'library.list.aria': 'Character list',
+    'library.card.open': 'Open sheet of',
+    'library.card.level': 'Level',
+    'library.card.aliveLabel': 'Alive',
+    'library.card.deadLabel': 'Dead',
+    'avoir.customItem.placeholder': 'My personal treasure',
   },
 };
 

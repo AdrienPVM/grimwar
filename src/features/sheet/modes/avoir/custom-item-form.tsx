@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
 import { invalidateUserContent } from '@/shared/lib/content-loader';
 import { getDb } from '@/shared/lib/firebase';
+import { t } from '@/shared/lib/i18n';
 import { addItemToInventory } from '@/shared/lib/inventory';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
@@ -148,7 +149,7 @@ export function CustomItemForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={60}
-            placeholder="Grimoire personnel de Lyralei"
+            placeholder={t('avoir.customItem.placeholder')}
             className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2 font-serif text-body text-text placeholder:text-text-tertiary focus:border-gold-dim focus:outline-none"
           />
         </label>

@@ -8,6 +8,7 @@ import { useAuth } from '@/features/auth/use-auth';
 import { AppRoutes } from '@/routes';
 import { Aurora } from '@/shared/components/aurora';
 import { IconSprite } from '@/shared/components/icon-sprite';
+import { NavShell } from '@/shared/components/nav-shell';
 import { Particles } from '@/shared/components/particles';
 import { SacredGeometry } from '@/shared/components/sacred-geometry';
 import { Splash } from '@/shared/components/splash';
@@ -28,6 +29,8 @@ export function App(): JSX.Element {
       <BrowserRouter>
         <AppShell />
       </BrowserRouter>
+      {/* PhysicalRollModal et HitMissGateModal sont singletons globaux —
+          rendus hors du Routes pour rester montés au switch de route. */}
       <PhysicalRollModal />
       <HitMissGateModal />
       <ToastHost />
@@ -38,5 +41,10 @@ export function App(): JSX.Element {
 function AppShell(): JSX.Element {
   const { isReady } = useAuth();
   if (!isReady) return <Splash />;
-  return <AppRoutes />;
+  return (
+    <>
+      <NavShell />
+      <AppRoutes />
+    </>
+  );
 }
