@@ -26,7 +26,7 @@ interface ModeProps {
 
 const MODE_COMPONENTS: Record<SheetMode, (props: ModeProps) => JSX.Element> = {
   combat: CombatMode,
-  essence: () => <EssenceMode />,
+  essence: EssenceMode,
   magie: () => <MagieMode />,
   avoir: () => <AvoirMode />,
   ame: () => <AmeMode />,
