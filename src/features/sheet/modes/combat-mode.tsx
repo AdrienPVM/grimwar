@@ -1,6 +1,45 @@
-import { ModePlaceholder } from './mode-placeholder';
+import type { Character } from '@/shared/types/character';
 
-/** Mode Combat — TODO plan 07. Wrapper temporaire vers le placeholder partagé. */
-export function CombatMode(): JSX.Element {
-  return <ModePlaceholder mode="combat" />;
+import { AttacksList } from './combat/attacks-list';
+import { BattleHud } from './combat/battle-hud';
+import { ConditionsRow } from './combat/conditions-row';
+import { DeathSavesModal } from './combat/death-saves-modal';
+import { HpMegaCard } from './combat/hp-mega-card';
+import { isSheetReadOnly } from './combat/hp-combat';
+import { PartyStrip } from './combat/party-strip';
+import { SlotsCompact } from './combat/slots-compact';
+
+interface CombatModeProps {
+  character: Character;
+}
+
+/**
+ * Mode Combat : HP mega-card + battle HUD + conditions + emplacements
+ * (si spellcaster) + attaques + compagnons. La modale Death Saves s'auto-monte
+ * dès `hp.current === 0` ou `status === 'dead'`.
+ *
+ * Read-only : déclenché sur `status === 'dead'`. Les contrôles sont désactivés
+ * via `disabled` côté props ET via la règle CSS `[data-readonly="true"]` sur
+ * <main>, double rideau pour empêcher les patches Firestore tant que le PJ
+ * n'est pas ressuscité.
+ */
+export function CombatMode({ character }: CombatModeProps): JSX.Element {
+  const readOnly = isSheetReadOnly(character);
+  const hasSpellSlots = Object.keys(character.spellSlots).length > 0;
+  return (
+    <section
+      role="tabpanel"
+      id="sheet-mode-panel-combat"
+      aria-labelledby="sheet-mode-tab-combat"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4"
+    >
+      <BattleHud character={character} readOnly={readOnly} />
+      <HpMegaCard character={character} readOnly={readOnly} />
+      <ConditionsRow character={character} readOnly={readOnly} />
+      {hasSpellSlots && <SlotsCompact character={character} readOnly={readOnly} />}
+      <AttacksList character={character} readOnly={readOnly} />
+      <PartyStrip character={character} />
+      <DeathSavesModal character={character} />
+    </section>
+  );
 }

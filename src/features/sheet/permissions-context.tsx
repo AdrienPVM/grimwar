@@ -6,9 +6,16 @@ import { useAuth } from '@/features/auth/use-auth';
 
 interface PermissionContextValue {
   canEdit: boolean;
+  /**
+   * True si le viewer est MJ d'une campagne où vit ce PJ. En S1 toujours
+   * false — la DM authority arrive en plan 16 (memberships + Cloud Function).
+   * Forward-compat : les composants qui dépendent de ce flag (bouton
+   * "Ressusciter", actions DM) sont déjà câblés via `usePermissionContext()`.
+   */
+  isDM: boolean;
 }
 
-const PermissionContext = createContext<PermissionContextValue>({ canEdit: false });
+const PermissionContext = createContext<PermissionContextValue>({ canEdit: false, isDM: false });
 
 /**
  * Hook S1 minimaliste : en S1 la fiche vit sous /users/{uid}/characters/ donc
@@ -18,8 +25,8 @@ const PermissionContext = createContext<PermissionContextValue>({ canEdit: false
  */
 export function usePermissions(character: Character | null): PermissionContextValue {
   const { user } = useAuth();
-  if (!user || !character) return { canEdit: false };
-  return { canEdit: true };
+  if (!user || !character) return { canEdit: false, isDM: false };
+  return { canEdit: true, isDM: false };
 }
 
 export function PermissionProvider({

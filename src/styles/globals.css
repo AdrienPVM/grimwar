@@ -160,3 +160,40 @@ body {
   0%, 100% { opacity: 0.18; }
   50% { opacity: 0.45; }
 }
+
+/* ===========================================================================
+   Toast — anim entrée + sortie (en bas centre). Durée alignée sur le timeout
+   `durationMs` de toast-slice (défaut 2300ms). prefers-reduced-motion neutralise.
+   =========================================================================== */
+.toast-anim {
+  animation: toastIn 2.3s var(--t) forwards;
+}
+@keyframes toastIn {
+  0% { opacity: 0; transform: translateY(20px) scale(0.92); }
+  10% { opacity: 1; transform: translateY(0) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+}
+
+/* ===========================================================================
+   Death modal — fade-in + scale spring, ambiance crimson. Sheet en read-only
+   quand `data-readonly="true"` est porté par <main>.
+   =========================================================================== */
+.death-overlay {
+  animation: deathOverlayIn 0.4s var(--t) forwards;
+}
+@keyframes deathOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.death-card {
+  animation: deathCardIn 0.5s var(--t-spring) forwards;
+}
+@keyframes deathCardIn {
+  from { opacity: 0; transform: scale(0.92) translateY(18px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.sheet-state[data-readonly='true'] :is(button, input, [role='button']):not([data-revive='true']) {
+  pointer-events: none;
+  opacity: 0.5;
+}

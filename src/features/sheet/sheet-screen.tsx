@@ -11,19 +11,25 @@ import { ModeTabs } from './mode-tabs/mode-tabs';
 import { AmeMode } from './modes/ame-mode';
 import { AvoirMode } from './modes/avoir-mode';
 import { CombatMode } from './modes/combat-mode';
+import { isSheetReadOnly } from './modes/combat/hp-combat';
 import { EssenceMode } from './modes/essence-mode';
 import { MagieMode } from './modes/magie-mode';
 import { PermissionProvider, usePermissions } from './permissions-context';
 import { StatusStrip } from './status/status-strip';
 import { useCharacter } from './use-character';
 import { useSheetMode, type SheetMode } from './use-sheet-mode';
+import type { Character } from '@/shared/types/character';
 
-const MODE_COMPONENTS: Record<SheetMode, () => JSX.Element> = {
+interface ModeProps {
+  character: Character;
+}
+
+const MODE_COMPONENTS: Record<SheetMode, (props: ModeProps) => JSX.Element> = {
   combat: CombatMode,
-  essence: EssenceMode,
-  magie: MagieMode,
-  avoir: AvoirMode,
-  ame: AmeMode,
+  essence: () => <EssenceMode />,
+  magie: () => <MagieMode />,
+  avoir: () => <AvoirMode />,
+  ame: () => <AmeMode />,
 };
 
 /** Écran principal de fiche : route /character/:id. */
@@ -86,17 +92,21 @@ export function SheetScreen(): JSX.Element {
  * seulement quand on a un personnage chargé — pas pendant splash/erreur.
  * `character` est passé en prop pour éviter une seconde souscription onSnapshot.
  */
-function CharacterSheet({ character }: { character: import('@/shared/types/character').Character }): JSX.Element {
+function CharacterSheet({ character }: { character: Character }): JSX.Element {
   const { mode, setMode } = useSheetMode(character.id);
   const hpClass = hpStateFor(character.hp.current, character.hp.max);
   const ActiveMode = MODE_COMPONENTS[mode];
+  const readOnly = isSheetReadOnly(character);
 
   return (
-    <main className={cn('sheet-state relative min-h-screen pb-32', hpClass)}>
+    <main
+      className={cn('sheet-state relative min-h-screen pb-32', hpClass)}
+      data-readonly={readOnly ? 'true' : 'false'}
+    >
       <HeroCard character={character} />
       <StatusStrip character={character} />
       <ModeTabs active={mode} onChange={setMode} />
-      <ActiveMode />
+      <ActiveMode character={character} />
     </main>
   );
 }

@@ -9,6 +9,7 @@ import { IconSprite } from '@/shared/components/icon-sprite';
 import { Particles } from '@/shared/components/particles';
 import { SacredGeometry } from '@/shared/components/sacred-geometry';
 import { Splash } from '@/shared/components/splash';
+import { ToastHost } from '@/shared/components/toast-host';
 
 /**
  * Coquille app : monte le sprite + l'ambiance + l'AuthProvider + le router.
@@ -25,6 +26,7 @@ export function App(): JSX.Element {
       <BrowserRouter>
         <AppShell />
       </BrowserRouter>
+      <ToastHost />
     </AuthProvider>
   );
 }

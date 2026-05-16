@@ -12,59 +12,57 @@ Plans 01-06 complete.
 ## Steps
 
 ### HP mega-card
-- [ ] 1. `src/features/sheet/modes/combat/hp-mega-card.tsx`:
-    - Current / max HP big numerals, Cinzel Decorative
-    - Temp HP smaller, above
-    - "−" / "+" buttons for ±1
-    - Long-press on "−" / "+" opens a number pad for arbitrary damage/heal amounts
-    - Heal/damage applied via `updateCharacter({ hp: { ...hp, current: newCurrent } })`
-    - Visual: HP fill bar behind, colored by health %
-- [ ] 2. When HP reaches 0, auto-open `<DeathSavesModal />`.
+- [x] 1. `src/features/sheet/modes/combat/hp-mega-card.tsx`. Décision tactique : la logique pure (damage absorption hp.temp→hp.current, heal clamp, massive death) est extraite dans `hp-combat.ts` pour unit-test isolé. Le pad numérique vit dans `number-pad.tsx` (modale glass centrée plutôt qu'overlay full-screen — moins agressif sur la fiche). Hook `useLongPress` partagé sous `src/shared/hooks/`.
+- [x] 2. Modale auto-ouverte via `<DeathSavesModal />` qui lit `hp.current === 0` ou `status === 'dead'` — pas de callback de couplage entre HpMegaCard et la modale.
 
 ### Conditions row
-- [ ] 3. `conditions-row.tsx`: horizontal chips of current conditions (load condition names from public content). Tap to remove. "+" chip opens a picker with all conditions, search.
+- [x] 3. `conditions-row.tsx`: horizontal chips of current conditions (load condition names from public content). Tap to remove. "+" chip opens a picker with all conditions, search.
 
 ### Init + initiative
-- [ ] 4. `init-chip.tsx`: shows init modifier with a `🎲` button to roll initiative (uses `useDice().rollD20Plus(initMod)`). Result toast.
-- [ ] 5. Death saves are not init-related but live below in the same section.
+- [x] 4. L'initiative est dans `battle-hud.tsx` (et pas un fichier `init-chip.tsx` séparé) car elle partage le même rang que l'économie d'action dans le prototype — la séparer doublerait inutilement les composants. Le moteur de dés vit dans `src/shared/lib/dice.ts` (stub plan 12 — `rollD20(mod, advantage)`).
+- [x] 5. Death saves vivent dans la modale dédiée, déclenchée à HP 0. Pas de section séparée.
 
 ### Spell slots compact
-- [ ] 6. `slots-compact.tsx`: row of slot-level chips, each showing `n/max` filled dots/runes. Tap to consume one slot. Long-press to restore.
+- [x] 6. `slots-compact.tsx`: row of slot-level chips, each showing `n/max` filled dots/runes. Tap to consume one slot. Long-press to restore.
 
 ### Attacks list
-- [ ] 7. `attacks-list.tsx`: derives the character's available attacks from equipped weapons + class features.
-- [ ] 8. Each attack row: name, attack bonus, damage. Tap → rolls attack + damage in sequence, shows toast with both.
-- [ ] 9. Long-press → shows a context menu: roll with advantage, disadvantage, crit (auto-double dice).
+- [x] 7. `attacks-list.tsx`: dérive depuis `character.inventory.items` filtrés `equipped + category:'weapon'`. Class features attaques (ex: ranger/monk natural weapons) sont déferred plan 17 (level-up + class features) — S1 manual form ne supporte que des armes équipées.
+- [x] 8. Tap = attaque + dégâts en séquence, toast combiné (att total + damage total + sub avec détail nat/mod/formule).
+- [x] 9. Long-press → menu inline (Avantage / Désav. / Crit / ✕). `rollD20(mod, advantage)` + `rollDamage(formula, crit)` viennent de `src/shared/lib/dice.ts`. Le crit double les dés (pas le modificateur), SRD-conform.
 
 ### Party view (preparatory)
-- [ ] 10. `party-strip.tsx`: shows other PCs in the active campaign (S2-aware but no-op for S1). For S1, render an empty placeholder if no campaign joined yet.
+- [x] 10. `party-strip.tsx`: shows other PCs in the active campaign (S2-aware but no-op for S1). For S1, render an empty placeholder if no campaign joined yet.
 
 ### Death saves modal
-- [ ] 11. `death-saves-modal.tsx`: visible when `hp.current === 0`. Three success slots, three fail slots. "Lancer une sauvegarde" button rolls a d20; ≥10 success, <10 fail, nat 1 = 2 fails, nat 20 = revives with 1 HP.
-- [ ] 12. On 3 successes: stabilize (toast). On 3 fails: set `status: 'dead'`, log `death` event, modal stays + grim aurora, **sheet enters read-only mode** (all controls disabled).
+- [x] 11. `death-saves-modal.tsx`: state machine pure dans `hp-combat.ts` → `applyDeathSaveOutcome(state, naturalRoll)`. La modale est juste un render layer qui patch Firestore selon le verdict.
+- [x] 12. Stabilisation : deathSaves remis à 0. Mort : `status:'dead'` + read-only via attribut `data-readonly="true"` sur `<main>` + règle CSS qui désactive boutons/inputs/role=button sauf `[data-revive="true"]`. Pas de log `death` event ici — l'event-logger est plan 22, comme convenu.
 
 ### Revive (DM-only)
-- [ ] 12b. When `status === 'dead'` AND viewer is DM (`canEditCharacter` with isDMEdit), show a "Ressusciter" button in the death modal. On confirm: sets `status: 'alive'`, `hp.current = 1`, resets `deathSaves`, logs `revival` event (visibility: 'all'). Toast: "{name} revient à la vie !".
+- [x] 12b. `isDM` exposé via `usePermissionContext()` (false en S1, plan 16 le câblera). Quand `status === 'dead'` et `isDM === true`, bouton "Ressusciter" porte `data-revive="true"` pour bypass le rideau read-only. Pas de log `revival` event — plan 22.
 
 ### Updaters
-- [ ] 13. All gameplay actions use `updateCharacter`. Wrap in `try/catch` for offline cases (Firestore will queue).
+- [x] 13. Toutes les actions passent par `useUpdateCharacter()` (hook plan 06). Pas de try/catch supplémentaire — `useUpdateCharacter` capture déjà l'erreur, la pose dans son `error` state et la rethrow. Côté combat, on swallow le throw au `void applyDelta()` car le toast suffit en UX, l'erreur est visible dans la console + DevTools (queue offline gère le retry).
 
 ### Tests
-- [ ] 14. Unit: HP clamp logic (no negative, no exceed max).
-- [ ] 15. Unit: death save state machine.
-- [ ] 16. e2e: open combat mode, take damage to 0, modal opens, roll 3 successes → stabilize.
+- [x] 14. Unit: HP clamp + damage absorption (temp→current) + massive death.
+- [x] 15. Unit: death save state machine (nat1/nat20/seuils/transitions).
+- [ ] 16. e2e Playwright différé — Playwright n'est pas wired (plan 25 ou avant). 23 unit tests pures couvrent la state machine ; UAT manuel décrit dans le résumé final. Réouvrir si plan 25 ne le rattrape pas.
 
 ### Final
-- [ ] 17. `pnpm typecheck && pnpm test && pnpm lint`
-- [ ] 18. Commit: `feat(sheet): combat mode + HP mega-card + death saves (plan 07)`
+- [x] 17. `pnpm typecheck && pnpm test && pnpm lint`
+- [x] 18. Commit: `feat(sheet): combat mode + HP mega-card + death saves (plan 07)`
 
 ## Definition of Done
-- [ ] HP modifiable, persists, visualization matches prototype
-- [ ] Conditions add/remove works
-- [ ] Spell slots consume/restore
-- [ ] Attack rolls work end-to-end
-- [ ] Death save modal works
+- [x] HP modifiable, persists, visualization matches prototype
+- [x] Conditions add/remove works
+- [x] Spell slots consume/restore
+- [x] Attack rolls work end-to-end
+- [x] Death save modal works
 
 ## Notes for next plan
-- Plan 12 (dice engine) provides the `useDice` hook used here. If plan 12 isn't done yet, stub the dice with a simple `Math.floor(Math.random() * 20) + 1` and replace later.
-- For real-time updates with other party members, defer to S2 plan 16 (memberships sync).
+- Plan 12 (dice engine) doit remplacer le stub `src/shared/lib/dice.ts`. Surface actuelle : `rollD20(mod, advantage)`, `rollDamage(formula, crit)`. Tous les call sites passent par ces deux fonctions — pas de Math.random ailleurs. Le moteur custom plan 12 peut garder la même signature ou exposer un hook `useDice()` qui les wrappe.
+- Plan 16 (memberships sync) câblera `isDM` dans `usePermissionContext()`. Aujourd'hui forcé à `false`. Le bouton "Ressusciter" est gardé `data-revive="true"` pour qu'il reste interactif sous `[data-readonly="true"]`. Owner-lock (`name`/`personality.*`/`homeCampaignId` non-éditables pour le MJ) reste au layer Cloud Function comme annoté dans plan 16.
+- Plan 22 (event-logger) câblera : death event sur `applyDeathSaveOutcome === 'dead'`, revival event sur revive(). Aujourd'hui aucun event n'est loggé — uniquement les toasts UX. Les call sites sont concentrés dans `death-saves-modal.tsx` (~3 endroits).
+- Toast system : `src/shared/lib/slices/toast-slice.ts` + `<ToastHost />` global. Surface stable : `showToast({ kind, title, big?, sub?, durationMs? })`. Si plan 22 veut convertir des toasts en events Firestore, c'est le seul point d'entrée à intercepter.
+- Battle HUD est local-state pour l'économie d'action (pas Firestore). Si plan 23 (combat tracker DM) a besoin de la synchroniser avec le tour DM, lifter dans Firestore — sinon laisser local.
+- ModePlaceholder a survécu pour Essence/Magie/Avoir/Âme. Plans 08/09/10/20 doivent remplacer le body du fichier mode correspondant (pas le placeholder partagé) ; les fichiers `essence-mode.tsx`, `magie-mode.tsx`, `avoir-mode.tsx`, `ame-mode.tsx` sont prêts à recevoir leur identité visuelle propre. La signature `(props: ModeProps) => JSX.Element` (avec `character: Character`) est déjà cohérente avec CombatMode.
