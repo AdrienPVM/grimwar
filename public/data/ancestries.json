@@ -1,1 +1,454 @@
-[]
+[
+  {
+    "id": "dragonborn",
+    "name": {
+      "fr": "Drakéide",
+      "en": "Dragonborn"
+    },
+    "size": "medium",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Drakéide (SRD 5.2.1).",
+      "en": "Dragonborn species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Ascendance draconique"
+        },
+        "description": {
+          "fr": "Votre lignée remonte à un géniteur dragon. Choisissez le type de dragon dans la table « Ancêtres draconiques ». Ce choix affecte vos traits Souffle et Résistance aux dégâts, ainsi que votre apparence. Ancêtres draconiques Dragon Type de dégâtsDragon Type de dégâts AirainFeuCuivreAcide ArgentFroidNoirAcide BlancFroidOrFeu BleuFoudreRougeFeu BronzeFoudreVer tPoison"
+        }
+      },
+      {
+        "name": {
+          "fr": "Résistance aux dégâts"
+        },
+        "description": {
+          "fr": "Vous bénéficiez de la résistance au type de dégâts déterminé par votre trait Ascendance draconique."
+        }
+      },
+      {
+        "name": {
+          "fr": "Souffle"
+        },
+        "description": {
+          "fr": "Lorsque vous entreprenez l’action Attaque à votre tour, vous pouvez remplacer l’une de vos attaques par une expiration d’énergie magique sous la forme d’un Cône de 4,50 m ou d’une Ligne de 9 m de long et 1,50 m de large (choisissez la forme à chaque fois). Chaque créature prise dans la zone effectue un jet de sauvegarde de Dextérité (DD 8 + votre modificateur de Constitution + votre bonus de maîtrise). En cas d’échec, la créature subit 1d10 dégâts du type déterminé par votre trait Ascendance draconique. En cas de réussite, elle ne subit que la moitié de ces dégâts. Les dégâts augmentent de 1d10 lorsque vous atteignez les niveaux de personnage 5 (2d10), 11 (3d10) et 17 (4 d10). Vous pouvez recourir à ce Souffle autant de fois que votre bonus de maîtrise, et récupérez ce quota en terminant un Repos long."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vision dans le noir"
+        },
+        "description": {
+          "fr": "Vous disposez de la Vision dans le noir sur 18 m."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vol draconique"
+        },
+        "description": {
+          "fr": "Lorsque vous atteignez le niveau de personnage 5, vous pouvez canaliser la magie draconique pour vous octroyer le vol de façon temporaire. Par une action Bonus, il vous pousse des ailes spectrales dans le dos qui persistent 10 minutes ou jusqu’à ce que vous rétractiez ces ailes (pas d’action requise) ou subissiez l’état Neutralisé. Pour toute la durée, vous disposez d’une Vitesse de vol égale à votre Vitesse. Ces ailes semblent être faites de la même énergie que votre souffle. Une fois ce trait utilisé, vous devez terminer un Repos long pour pouvoir y recourir de nouveau."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "dwarf",
+    "name": {
+      "fr": "Nain",
+      "en": "Dwarf"
+    },
+    "size": "medium",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Nain (SRD 5.2.1).",
+      "en": "Dwarf species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Connaissance de la pierre"
+        },
+        "description": {
+          "fr": "Par une action Bonus, vous recevez la Perception des vibrations à 18 m pendant 10 minutes. Cette Perception des vibrations nécessite que vous soyez sur une surface en pierre ou en contact physique avec une telle surface. Cette pierre peut être naturelle ou façonnée. Vous pouvez recourir à cette action Bonus autant de fois que votre bonus de maîtrise, et récupérez ce quota en terminant un Repos long."
+        }
+      },
+      {
+        "name": {
+          "fr": "Résistance naine"
+        },
+        "description": {
+          "fr": "Vous bénéficiez de la Résistance aux dégâts de poison. Vous avez en outre l’Avantage aux jets de sauvegarde visant à éviter l’état Empoisonné ou à y mettre un terme sur vous-même."
+        }
+      },
+      {
+        "name": {
+          "fr": "Ténacité naine"
+        },
+        "description": {
+          "fr": "Votre maximum de points de vie augmente de 1, et augmente encore de 1 chaque fois que vous gagnez un niveau."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vision dans le noir"
+        },
+        "description": {
+          "fr": "Vous disposez de la Vision dans le noir sur 36 m."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "elf",
+    "name": {
+      "fr": "Elfe",
+      "en": "Elf"
+    },
+    "size": "medium",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Elfe (SRD 5.2.1).",
+      "en": "Elf species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Ascendance féerique"
+        },
+        "description": {
+          "fr": "Vous avez l’Avantage aux jets de sauvegarde visant à éviter l’état Charmé ou à y mettre un terme."
+        }
+      },
+      {
+        "name": {
+          "fr": "Lignage elfique"
+        },
+        "description": {
+          "fr": "Vous appartenez à un lignage qui vous octroie des aptitudes surnaturelles. Choisissez-en un dans la table « Lignages elfiques ». Vous recevez le bénéfice du niveau 1 de ce lignage. Lorsque vous atteignez les niveaux de personnage 3 et 5, vous apprenez un sort de niveau supérieur, comme indiqué sur la table. Ce sort est toujours considéré comme préparé pour vous. Vous pouvez le lancer une fois sans dépenser d’emplacement de sort et récupérez cette aptitude en terminant un Repos long. Vous pouvez également le lancer avec vos éventuels emplacements de sort de niveau adéquat. L’Intelligence, la Sagesse ou le Charisme est votre caractéristique d’incantation pour les sorts que vous lancez avec ce trait (décidez de la caractéristique lors de la sélection du lignage)."
+        }
+      },
+      {
+        "name": {
+          "fr": "Sens aiguisés"
+        },
+        "description": {
+          "fr": "Vous bénéficiez de la maîtrise de la compétence Intuition, Perception ou Survie au choix."
+        }
+      },
+      {
+        "name": {
+          "fr": "Transe"
+        },
+        "description": {
+          "fr": "Vous vous passez de sommeil et la magie ne peut pas vous endormir. Vous pouvez terminer un Repos long en 4 heures si vous les passez en transe méditative durant laquelle vous restez en éveil."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vision dans le noir"
+        },
+        "description": {
+          "fr": "Vous disposez de la Vision dans le noir sur 18 m."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "gnome",
+    "name": {
+      "fr": "Gnome",
+      "en": "Gnome"
+    },
+    "size": "small",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Gnome (SRD 5.2.1).",
+      "en": "Gnome species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Lignage gnome"
+        },
+        "description": {
+          "fr": "Vous appartenez à un lignage qui vous octroie des aptitudes surnaturelles. Choisissez l’une des options ci-après ; quelle que soit celle que vous choisissez, l’Intelligence, la Sagesse ou le Charisme est votre caractéristique d’incantation pour les sorts que vous lancez avec ce trait (décidez de la caractéristique lors de la sélection du lignage) :"
+        }
+      },
+      {
+        "name": {
+          "fr": "Gnome des forêts"
+        },
+        "description": {
+          "fr": "Vous connaissez le sort mineur illusion mineure. Le sort communication avec les animaux est en outre considéré pour vous comme toujours préparé. Vous pouvez le lancer sans emplacement de sort autant de fois que votre bonus de maîtrise, et récupérez ce quota en terminant un"
+        }
+      },
+      {
+        "name": {
+          "fr": "Repos long"
+        },
+        "description": {
+          "fr": "Vous pouvez en outre dépenser les emplacements de sort adaptés dont vous disposez pour lancer ce sort."
+        }
+      },
+      {
+        "name": {
+          "fr": "Gnome des roches"
+        },
+        "description": {
+          "fr": "Vous connaissez les sorts mineurs prestidigitation et réparation. Vous pouvez en outre consacrer 10 minutes à lancer prestidigitation pour créer un appareil mécanique de taille TP (CA 5, 1 pv) tel qu’un jouet, un allume-feu ou une boîte à musique. Lorsque vous créez l’appareil, vous déterminez sa fonction en choisissant un effet parmi ceux de prestidigitation ; l’appareil produit cet effet chaque fois que vous-même ou une autre créature entreprenez une action Bonus pour l’activer par simple contact. Lorsque l’effet choisi comporte des options, vous devez en choisir une pour l’appareil à sa création. Si vous choisissez l’effet « allumage-extinction » du sort, par exemple, vous devez déterminer si l’appareil allume ou éteint le feu ; il ne peut pas faire les deux. Vous pouvez avoir trois appareils actifs de ce type à la fois, et chacun tombe en morceaux 8 heures après sa création ou lorsque vous le démantelez par simple contact en entreprenant l’action Utilisation."
+        }
+      },
+      {
+        "name": {
+          "fr": "Ruse gnome"
+        },
+        "description": {
+          "fr": "Vous avez l’Avantage aux jets de sauvegarde d’Intelligence, de Sagesse et de Charisme."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vision dans le noir"
+        },
+        "description": {
+          "fr": "Vous disposez de la Vision dans le noir sur 18 m."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "goliath",
+    "name": {
+      "fr": "Goliath",
+      "en": "Goliath"
+    },
+    "size": "medium",
+    "speed": 35,
+    "description": {
+      "fr": "Espèce Goliath (SRD 5.2.1).",
+      "en": "Goliath species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Ascendance gigante"
+        },
+        "description": {
+          "fr": "Vous êtes un lointain descendant des géants. Choisissez l’un des bénéfices ci-après, une faveur surnaturelle liée à vos ancêtres ; vous pouvez recourir à ce bénéfice autant de fois que votre bonus de maîtrise et récupérez ce quota en terminant un Repos long :"
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "halfling",
+    "name": {
+      "fr": "Halfelin",
+      "en": "Halfling"
+    },
+    "size": "small",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Halfelin (SRD 5.2.1).",
+      "en": "Halfling species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Agilité halfeline"
+        },
+        "description": {
+          "fr": "Vous pouvez vous déplacer dans l’espace de toute créature d’une catégorie de taille supérieure à la vôtre, mais ne pouvez pas vous arrêter dans le même espace que celle-ci."
+        }
+      },
+      {
+        "name": {
+          "fr": "Brave"
+        },
+        "description": {
+          "fr": "Vous avez l’Avantage aux jets de sauvegarde visant à éviter l’état Effrayé ou à y mettre un terme."
+        }
+      },
+      {
+        "name": {
+          "fr": "Chance"
+        },
+        "description": {
+          "fr": "Lorsque vous obtenez un 1 au d20 d’un Test d20, vous pouvez relancer le dé, mais devez utiliser le nouveau résultat."
+        }
+      },
+      {
+        "name": {
+          "fr": "Discrétion naturelle"
+        },
+        "description": {
+          "fr": "Il vous suffit d’être dans l’ombre d’une créature dont la catégorie de taille est d’au moins un cran supérieure à la vôtre pour pouvoir entreprendre l’action Furtivité."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "human",
+    "name": {
+      "fr": "Humain",
+      "en": "Human"
+    },
+    "size": "small",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Humain (SRD 5.2.1).",
+      "en": "Human species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Compétent"
+        },
+        "description": {
+          "fr": "Vous recevez la maîtrise d’une compétence de votre choix."
+        }
+      },
+      {
+        "name": {
+          "fr": "Ingénieux"
+        },
+        "description": {
+          "fr": "Vous recevez l’Inspiration héroïque chaque fois que vous terminez un Repos long."
+        }
+      },
+      {
+        "name": {
+          "fr": "Polyvalent"
+        },
+        "description": {
+          "fr": "Vous recevez le don d’origines de votre choix (cf. « Dons »). Doué est recommandé."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "orc",
+    "name": {
+      "fr": "Orc",
+      "en": "Orc"
+    },
+    "size": "medium",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Orc (SRD 5.2.1).",
+      "en": "Orc species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Acharnement"
+        },
+        "description": {
+          "fr": "Si vous tombez à 0 point de vie sans être tué sur le coup, vous pouvez en fait vous retrouver à 1 point de vie. Une fois ce trait utilisé, vous devez terminer un Repos long pour pouvoir y recourir de nouveau."
+        }
+      },
+      {
+        "name": {
+          "fr": "Poussée d’adrénaline"
+        },
+        "description": {
+          "fr": "Vous pouvez entreprendre l’action Pointe par une action Bonus. Quand vous faites ainsi, vous recevez un nombre de points de vie temporaires égal à votre bonus de maîtrise. Vous pouvez recourir à ce trait autant de fois que votre bonus de maîtrise, et récupérez ce quota en terminant un Repos court ou long."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vision dans le noir"
+        },
+        "description": {
+          "fr": "Vous disposez de la Vision dans le noir sur 36 m."
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "tiefling",
+    "name": {
+      "fr": "Tieffelin",
+      "en": "Tiefling"
+    },
+    "size": "small",
+    "speed": 30,
+    "description": {
+      "fr": "Espèce Tieffelin (SRD 5.2.1).",
+      "en": "Tiefling species (SRD 5.2.1)."
+    },
+    "abilityScoreIncrease": [],
+    "traits": [
+      {
+        "name": {
+          "fr": "Héritage fiélon"
+        },
+        "description": {
+          "fr": "Votre héritage vous octroie des aptitudes surnaturelles. Choisissez un héritage dans la table Héritages fiélons. Vous recevez le bénéfice de niveau 1 de l’héritage choisi. Lorsque vous atteignez les niveaux de personnage 3 et 5, vous apprenez un sort de niveau supérieur, comme indiqué sur la table. Ce sort est toujours considéré comme préparé pour vous. Vous pouvez le lancer une fois sans dépenser d’emplacement de sort et récupérez cette aptitude en terminant un Repos long. Vous pouvez également le lancer avec vos éventuels emplacements de sort de niveau adéquat. L’Intelligence, la Sagesse ou le Charisme est votre caractéristique d’incantation pour les sorts que vous lancez avec ce trait (décidez de la caractéristique lors de la sélection de l’héritage)."
+        }
+      },
+      {
+        "name": {
+          "fr": "Présence d’outre-monde"
+        },
+        "description": {
+          "fr": "Vous connaissez le sort mineur thaumaturgie. Lorsque vous le lancez avec ce trait, le sort utilise la même caractéristique d’incantation que celle du trait Héritage fiélon."
+        }
+      },
+      {
+        "name": {
+          "fr": "Vision dans le noir"
+        },
+        "description": {
+          "fr": "Vous disposez de la Vision dans le noir sur 18 m. Héritages fiélons HéritageNiveau 1Niveau 3Niveau 5"
+        }
+      }
+    ],
+    "languages": [
+      "common"
+    ],
+    "source": "srd-5.2.1"
+  }
+]

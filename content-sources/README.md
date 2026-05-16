@@ -35,16 +35,15 @@ Put each PDF here:
 
 ```
 pdfs/
-├── srd-5.1.pdf                  # SRD 5.1 (legally redistributable)
-├── free-rules-2024.pdf          # Free Rules 2024 (legally redistributable)
-└── dmg.pdf                      # Dungeon Master's Guide (private, not for redistribution)
+├── SRD_CC_v5.2.1.pdf            # SRD 5.2.1 EN (Creative Commons, legally redistributable)
+├── FR_SRD_CC_v5.2.1.pdf         # SRD 5.2.1 FR (Creative Commons, legally redistributable)
+└── *.pdf                        # any other WotC content (PHB / MM / DMG / adventures) — private only
 ```
 
 **Important**:
-- `srd-5.1.pdf` and `free-rules-2024.pdf` → extracted content goes into `public/data/` (committed, shipped publicly).
-- `dmg.pdf` → extracted content goes into `content-sources/extracted/dmg/` (gitignored) and gets uploaded to **your private Firestore collection** only. It's never bundled in the app.
-
-If you add other PDFs (PHB, MM, etc.), the parser will need new mappings. Either teach `scripts/parse-srd-text.ts` or upload them as private content like DMG.
+- `SRD_CC_v5.2.1.pdf` (EN) is the **single source of truth** for mechanics and the EN layer.
+- `FR_SRD_CC_v5.2.1.pdf` is the **same ruleset in French** — used for the FR overlay only. Both PDFs share the same entities, same order; the parser maps them 1:1 by structural index, not by fuzzy matching.
+- All other WotC PDFs (PHB, MM, DMG, adventure modules) → extracted content goes into `content-sources/extracted/private/` (gitignored) and is uploaded to **your private Firestore collection** only. Never bundled, never published.
 
 ### `extracted/` — Pipeline output
 
@@ -84,7 +83,7 @@ For details, see `plans/04-content-pipeline.md`.
 
 ## Legal note
 
-- **SRD 5.1** and **Free Rules 2024** content is freely redistributable under the OGL / WotC's free distribution license. Parsed output goes into `public/data/` and ships with the app.
+- **SRD 5.2.1** (EN + FR Creative Commons editions) is freely redistributable under the CC BY 4.0 license used by WotC for the SRD. Parsed output goes into `public/data/` and ships with the app.
 - **DMG / PHB / MM** content is **copyrighted by Wizards of the Coast**. For personal use only. The pipeline keeps it strictly in your private Firestore collection (`users/{your_uid}/customContent/`) — accessible to you when you're logged in, but never bundled, never published.
 - **AideDD translations**: the French translations are AideDD's editorial work. They map onto SRD entity IDs in the public data, so what ships is "an SRD entity, with the AideDD translation as one of its names". If AideDD's terms object to this, the pipeline can be adapted to use machine translations or no translations.
 

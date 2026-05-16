@@ -1,1 +1,156 @@
-[]
+[
+  {
+    "id": "acolyte",
+    "name": {
+      "fr": "Acolyte",
+      "en": "Acolyte"
+    },
+    "description": {
+      "fr": "L'Acolyte sert un dieu, un panthéon ou une cause sacrée. Élevé au sein d'un temple ou d'un ordre religieux, l'Acolyte connaît les rituels, la liturgie et les écrits sacrés.",
+      "en": "An Acolyte serves a god, pantheon, or sacred cause. Raised in a temple or religious order, the Acolyte knows the rites, liturgy, and sacred writings."
+    },
+    "skillProficiencies": [
+      "Insight",
+      "Religion"
+    ],
+    "toolProficiencies": [
+      "Calligrapher's Supplies"
+    ],
+    "languages": 0,
+    "equipment": [
+      "Calligrapher's Supplies",
+      "Book (prayers)",
+      "Holy Symbol",
+      "Parchment (10 sheets)",
+      "Robe",
+      "8 GP"
+    ],
+    "feature": {
+      "name": {
+        "fr": "Don : Initié à la magie (Clerc)",
+        "en": "Feat: Magic Initiate (Cleric)"
+      },
+      "description": {
+        "fr": "L'Acolyte reçoit le don d'origines Initié à la magie (Clerc), qui octroie deux sorts mineurs et un sort de niveau 1 puisés dans la liste de Clerc.",
+        "en": "The Acolyte gains the Magic Initiate (Cleric) Origin feat, which grants two cantrips and one level-1 spell from the Cleric list."
+      }
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "criminal",
+    "name": {
+      "fr": "Criminel",
+      "en": "Criminal"
+    },
+    "description": {
+      "fr": "Le Criminel a appris à survivre par la débrouillardise dans les bas-fonds : pickpocket, contrebandier ou cambrioleur, vous évoluez dans les marges de la société.",
+      "en": "The Criminal has survived by their wits in the underworld: pickpocket, smuggler, or burglar, you operate in the margins of society."
+    },
+    "skillProficiencies": [
+      "Sleight of Hand",
+      "Stealth"
+    ],
+    "toolProficiencies": [
+      "Thieves' Tools"
+    ],
+    "languages": 0,
+    "equipment": [
+      "2 Daggers",
+      "Thieves' Tools",
+      "Crowbar",
+      "2 Pouches",
+      "Traveler's Clothes",
+      "16 GP"
+    ],
+    "feature": {
+      "name": {
+        "fr": "Don : Vigilant",
+        "en": "Feat: Alert"
+      },
+      "description": {
+        "fr": "Le Criminel reçoit le don d'origines Vigilant : ajoutez votre bonus de maîtrise à vos jets d'Initiative et échangez votre rang d'initiative avec un allié consentant.",
+        "en": "The Criminal gains the Alert Origin feat: add your Proficiency Bonus to Initiative rolls and swap your initiative count with a willing ally."
+      }
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "sage",
+    "name": {
+      "fr": "Sage",
+      "en": "Sage"
+    },
+    "description": {
+      "fr": "Le Sage a passé des années à étudier les écrits anciens, à voyager entre bibliothèques et académies, et à interroger des érudits sur les mystères du monde.",
+      "en": "The Sage has spent years studying ancient writings, travelling between libraries and academies, and questioning scholars about the mysteries of the world."
+    },
+    "skillProficiencies": [
+      "Arcana",
+      "History"
+    ],
+    "toolProficiencies": [
+      "Calligrapher's Supplies"
+    ],
+    "languages": 0,
+    "equipment": [
+      "Quarterstaff",
+      "Calligrapher's Supplies",
+      "Book (history)",
+      "Parchment (8 sheets)",
+      "Robe",
+      "8 GP"
+    ],
+    "feature": {
+      "name": {
+        "fr": "Don : Initié à la magie (Magicien)",
+        "en": "Feat: Magic Initiate (Wizard)"
+      },
+      "description": {
+        "fr": "Le Sage reçoit le don Initié à la magie (Magicien), qui octroie deux sorts mineurs et un sort de niveau 1 puisés dans la liste de Magicien.",
+        "en": "The Sage gains the Magic Initiate (Wizard) feat, granting two cantrips and one level-1 spell from the Wizard list."
+      }
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "soldier",
+    "name": {
+      "fr": "Soldat",
+      "en": "Soldier"
+    },
+    "description": {
+      "fr": "Le Soldat a servi dans une armée, une milice ou une bande mercenaire. Vous connaissez le poids du commandement, la discipline du rang, et la brutalité du champ de bataille.",
+      "en": "The Soldier served in an army, militia, or mercenary band. You know the weight of command, the discipline of rank, and the brutality of the battlefield."
+    },
+    "skillProficiencies": [
+      "Athletics",
+      "Intimidation"
+    ],
+    "toolProficiencies": [
+      "Gaming Set"
+    ],
+    "languages": 0,
+    "equipment": [
+      "Spear",
+      "Shortbow",
+      "20 Arrows",
+      "Gaming Set",
+      "Healer's Kit",
+      "Quiver",
+      "Traveler's Clothes",
+      "14 GP"
+    ],
+    "feature": {
+      "name": {
+        "fr": "Don : Sauvagerie martiale",
+        "en": "Feat: Savage Attacker"
+      },
+      "description": {
+        "fr": "Le Soldat reçoit le don Sauvagerie martiale : une fois par tour, vous pouvez relancer les dés de dégâts d'une attaque d'arme et garder le meilleur résultat.",
+        "en": "The Soldier gains the Savage Attacker feat: once per turn, you can reroll the damage dice of one weapon attack and use the higher result."
+      }
+    },
+    "source": "srd-5.2.1"
+  }
+]

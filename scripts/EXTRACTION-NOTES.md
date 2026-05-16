@@ -103,18 +103,32 @@ Tout le reste (`Player´s Handbook` sans suffixe, `Monster Manual` sans suffixe,
 - Description : `.description`
 - Source : `.source`
 
-## Parsers SRD (à itérer en plans futurs)
+## Parsers SRD — état actuel
 
-Pour ces types, AideDD est insuffisant. Plan 04 livre **stubs validés vides** + warning :
+`scripts/parse-srd-text.ts` est un parser réel (plus un stub). Il consomme les deux extracts SRD 5.2.1 (EN + FR) et produit du JSON Zod-validé.
 
-- **Classes** : ~12 entités complexes avec features par niveau, sous-classes, multi-class — parser dédié à écrire en plan séparé.
-- **Ancestries (races)** : ~9-10 — disponibles dans SRD FR/EN via headers `## Race`.
-- **Backgrounds** : ~13-15 — disponibles dans SRD FR/EN via section "Backgrounds".
-- **Conditions** : ~15 — disponibles dans SRD via Appendix A.
-- **Rules** : pages de règles générales — corpus large, à scoper.
-- **Items basiques** : armes/armures/équipement non-magique — disponibles dans SRD.
+**Couvert (livrés, validés, bundlés dans `public/data/`)** :
 
-Les fichiers `public/data/{type}.json` correspondants sont créés **vides mais valides Zod** (array vide), avec note dans plan 04 sur la dette.
+| Type | Stratégie | Compte |
+|---|---|---|
+| `classes` | Parsing programmatique : 12 classes avec core traits + features par niveau extraits depuis SRD EN+FR. Pairing FR↔EN par index dans la liste de features (les deux langues présentent les features dans le même ordre par niveau). | 12 |
+| `subclasses` | 1 sous-classe par classe (le SRD n'en publie qu'une par classe) — Path of the Berserker, College of Lore, etc. Même stratégie que classes. | 12 |
+| `ancestries` | Extraction des 9 espèces (Drakéide → Tieffelin) avec size, speed et traits. **FR-only sur les traits** (voir limitations ci-dessous). | 9 |
+| `backgrounds` | **Hand-author** complet (4 entrées : Acolyte, Criminel, Sage, Soldat) — texte intégral en FR + EN, lu depuis le SRD. Tolérance Adrien acceptée car corpus court et stable. | 4 |
+| `conditions` | **Hand-author** complet (15 entrées : Aveuglé → Inconscient). Idem tolérance. | 15 |
+
+**Limitations connues** :
+
+1. **Trait FR↔EN pairing pour ancestries** : les traits sont listés alphabétiquement à l'intérieur de chaque langue, et les alphabets diffèrent (Darkvision/Stonecunning en EN ≠ Connaissance/Vision en FR). Le pairing par position est faux — on émet donc **FR-only pour les traits d'ancestry**. Le schema Zod accepte `en` optionnel, l'app par défaut est en FR, donc inoffensif. Plan 34 (i18n EN) devra fournir une table de mapping FR↔EN explicite par ancestry (~45 entrées) pour activer EN.
+2. **Schema Background ne modélise pas l'ASI 2024** : SRD 2024 met l'ASI sur les backgrounds (pas les ancestries) et donne un Origin feat plutôt qu'un feature classique. Le parser hand-authore avec `feature.name` = nom du don et `feature.description` = effet du don. L'`abilityScoreIncrease` du Background n'est pas dans le schema actuel — à ajouter avant plan 05 si le wizard veut afficher les bonus d'historique. Tracker dans plan 04 notes.
+3. **PDF artifacts mineurs** : "Na- ture" → "Nature" (espace résiduel après césure mid-mot dans certaines listes), tables de proficiency parfois en chaînes concaténées. Post-process regex dans le parser nettoie la majorité.
+
+**Toujours en stub (livrés vides mais valides Zod)** :
+
+- `subancestries` : SRD 2024 modélise les sub-races comme choix in-trait (lignages, héritages, ascendances). Pas d'entités séparées.
+- `items` (équipement non-magique : armes, armures, packs) : ~150 entités à extraire depuis SRD section Equipment. Plan dédié.
+- `rules` (glossaire complet) : ~200 entrées (actions, attitudes, hazards, etc.). Corpus large, plan dédié.
+- `monsters` : parser AideDD partiel (id/name/source seulement). Stat blocks demandent travail dédié — bloqueur S3 plan 24, pas plan 05.
 
 ## Erreurs PDF rencontrées
 

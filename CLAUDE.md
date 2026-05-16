@@ -97,7 +97,7 @@ These are LOCKED. Override only with Adrien's explicit instruction.
 | **5e variants** | 4 per-campaign toggles in `settings.variants`: `featAtLevel1`, `flanking`, `slowHealing`, `grittyRealism`. All default `false`. Wizard + sheet + rest mechanics respect these toggles. |
 | Subscription tier | Schema field `tier: 'free' \| 'pro'` on user (placeholder, no paywall yet) |
 | Items in inventory | **Strict reference to items DB** — no free-string items |
-| Content source priority | **PDFs are source of truth #1**. Mechanics come from PDFs (SRD 5.1 / Free Rules 2024). AideDD provides French translations only. PDF wins in any conflict. |
+| Content source priority | **PDFs are source of truth #1**. Mechanics come from the SRD 5.2.1 PDF (Creative Commons, EN edition `SRD_CC_v5.2.1.pdf`). FR overlay comes from the SRD 5.2.1 FR edition (`FR_SRD_CC_v5.2.1.pdf`) — same ruleset, two languages, 1:1 structural mapping. AideDD HTML provides FR translations for entities not present in SRD (filtered to SRD-equivalent only). PDF wins in any conflict. |
 | DMG / PHB / MM | Private only. Never bundled, never published. |
 | Roll engine | Custom (~150 lines, prototyped). 3D dice deferred to S5. |
 | Map / VTT | Sprint 4. PixiJS + .dd2vtt import. |

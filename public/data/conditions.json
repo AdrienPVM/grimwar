@@ -1,1 +1,182 @@
-[]
+[
+  {
+    "id": "blinded",
+    "name": {
+      "fr": "Aveuglé",
+      "en": "Blinded"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Aveuglé, vous ne voyez rien et ratez automatiquement tout test de caractéristique reposant sur la vue. Les jets d'attaque contre vous ont l'Avantage, et vos jets d'attaque subissent le Désavantage.",
+      "en": "While you have the Blinded condition, you can't see and automatically fail any ability check that requires sight. Attack rolls against you have Advantage, and your attack rolls have Disadvantage."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "charmed",
+    "name": {
+      "fr": "Charmé",
+      "en": "Charmed"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Charmé, vous ne pouvez pas attaquer votre charmeur ni le cibler avec des aptitudes ou effets magiques qui infligent des dégâts. Le charmeur a l'Avantage aux tests de caractéristique d'interaction sociale avec vous.",
+      "en": "While you have the Charmed condition, you can't attack the charmer or target the charmer with damaging abilities or magical effects. The charmer has Advantage on any ability check to interact with you socially."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "deafened",
+    "name": {
+      "fr": "Assourdi",
+      "en": "Deafened"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Assourdi, vous n'entendez rien et ratez automatiquement tout test de caractéristique reposant sur l'ouïe.",
+      "en": "While you have the Deafened condition, you can't hear and automatically fail any ability check that requires hearing."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "exhaustion",
+    "name": {
+      "fr": "Épuisement",
+      "en": "Exhaustion"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Épuisement, vous accumulez des niveaux d'Épuisement (cumulables). Lorsque vous effectuez un Test d20, le résultat est réduit de 2 fois votre niveau actuel d'Épuisement. Votre Vitesse est réduite de 1,50 m × votre niveau d'Épuisement. À 6 niveaux, vous mourez. Terminer un Repos long retire 1 niveau.",
+      "en": "While you have the Exhaustion condition, you accumulate Exhaustion levels. When you make a D20 Test, the roll is reduced by 2 times your Exhaustion level. Your Speed is reduced by 5 feet × your Exhaustion level. You die at level 6. Finishing a Long Rest removes 1 level."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "frightened",
+    "name": {
+      "fr": "Effrayé",
+      "en": "Frightened"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Effrayé, vous subissez le Désavantage aux tests de caractéristique et aux jets d'attaque tant que la source de votre effroi est dans votre champ de vision. Vous ne pouvez pas vous rapprocher volontairement de la source de votre effroi.",
+      "en": "While you have the Frightened condition, you have Disadvantage on ability checks and attack rolls while the source of fear is within line of sight. You can’t willingly move closer to the source of fear."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "grappled",
+    "name": {
+      "fr": "Agrippé",
+      "en": "Grappled"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Agrippé, votre Vitesse est de 0 et ne peut pas augmenter. Vous subissez le Désavantage aux jets d'attaque contre toute cible autre que celui qui vous agrippe. Celui qui vous agrippe peut vous traîner ou vous porter, mais chaque mètre de déplacement lui coûte 30 cm supplémentaires.",
+      "en": "While you have the Grappled condition, your Speed is 0 and can't increase. You have Disadvantage on attack rolls against any target other than the grappler. The grappler can drag or carry you when it moves, but every foot of movement costs it 1 extra foot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "incapacitated",
+    "name": {
+      "fr": "Neutralisé",
+      "en": "Incapacitated"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Neutralisé, vous ne pouvez entreprendre aucune action, action Bonus ou Réaction. Votre Concentration est rompue. Vous ne pouvez pas parler. Si vous êtes Neutralisé au moment de lancer l'Initiative, vous subissez le Désavantage à ce jet.",
+      "en": "While you have the Incapacitated condition, you can't take any action, Bonus Action, or Reaction. Your Concentration is broken. You can't speak. If you're Incapacitated when you roll Initiative, you have Disadvantage on the roll."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "invisible",
+    "name": {
+      "fr": "Invisible",
+      "en": "Invisible"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Invisible, vous obtenez l'Avantage à l'Initiative. Vous n'êtes pas affecté par tout effet qui requiert que sa cible soit visible, sauf si son créateur peut vous voir d'une manière quelconque. Les jets d'attaque contre vous subissent le Désavantage et vos jets d'attaque ont l'Avantage.",
+      "en": "While you have the Invisible condition, you have Advantage on Initiative rolls. You aren't affected by any effect that requires its target to be seen unless the effect's creator can somehow see you. Attack rolls against you have Disadvantage, and your attack rolls have Advantage."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "paralyzed",
+    "name": {
+      "fr": "Paralysé",
+      "en": "Paralyzed"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Paralysé, vous subissez l'état Neutralisé. Votre Vitesse est de 0. Vous ratez automatiquement les jets de sauvegarde de Force et de Dextérité. Les jets d'attaque contre vous ont l'Avantage. Tout jet d'attaque qui vous touche est un Coup critique si l'assaillant est dans un rayon de 1,50 m de vous.",
+      "en": "While you have the Paralyzed condition, you have the Incapacitated condition. Your Speed is 0. You automatically fail Strength and Dexterity saving throws. Attack rolls against you have Advantage. Any attack roll that hits you is a Critical Hit if the attacker is within 5 feet of you."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "petrified",
+    "name": {
+      "fr": "Pétrifié",
+      "en": "Petrified"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Pétrifié, vous êtes transformé, vous-même et tous les objets non magiques que vous portez, en une substance solide et inanimée (généralement de la pierre). Votre poids est multiplié par dix, vous ne vieillissez plus, vous subissez l'état Neutralisé et votre Vitesse est de 0. Vous ratez automatiquement les jets de sauvegarde de Force et de Dextérité, les attaques contre vous ont l'Avantage, vous bénéficiez de la Résistance à tous les dégâts et de l'Immunité à l'état Empoisonné.",
+      "en": "While you have the Petrified condition, you are transformed (along with any nonmagical objects you are wearing and carrying) into a solid inanimate substance (usually stone). Your weight is multiplied by ten and you cease aging. You have the Incapacitated condition and your Speed is 0. You automatically fail Strength and Dexterity saving throws, attack rolls against you have Advantage, you have Resistance to all damage, and you have Immunity to the Poisoned condition."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "poisoned",
+    "name": {
+      "fr": "Empoisonné",
+      "en": "Poisoned"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Empoisonné, vous subissez le Désavantage aux jets d'attaque et aux tests de caractéristique.",
+      "en": "While you have the Poisoned condition, you have Disadvantage on attack rolls and ability checks."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "prone",
+    "name": {
+      "fr": "À terre",
+      "en": "Prone"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état À terre, vos seuls modes de déplacement sont ramper ou consacrer la moitié de votre Vitesse (arrondi à l'inférieur) à vous relever pour mettre fin à l'état. Vous subissez le Désavantage aux jets d'attaque. Les attaques contre vous ont l'Avantage si l'assaillant est à 1,50 m ou moins, sinon Désavantage.",
+      "en": "While you have the Prone condition, your only movement options are to crawl or to spend an amount of movement equal to half your Speed (round down) to right yourself and end the condition. You have Disadvantage on attack rolls. Attacks against you have Advantage if the attacker is within 5 feet, otherwise Disadvantage."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "restrained",
+    "name": {
+      "fr": "Entravé",
+      "en": "Restrained"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Entravé, votre Vitesse est de 0 et ne peut pas augmenter. Les jets d'attaque contre vous ont l'Avantage et vos jets d'attaque subissent le Désavantage. Vous subissez le Désavantage aux jets de sauvegarde de Dextérité.",
+      "en": "While you have the Restrained condition, your Speed is 0 and can't increase. Attack rolls against you have Advantage, and your attack rolls have Disadvantage. You have Disadvantage on Dexterity saving throws."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "stunned",
+    "name": {
+      "fr": "Étourdi",
+      "en": "Stunned"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Étourdi, vous subissez l'état Neutralisé. Vous ratez automatiquement les jets de sauvegarde de Force et de Dextérité. Les jets d'attaque contre vous ont l'Avantage.",
+      "en": "While you have the Stunned condition, you have the Incapacitated condition. You automatically fail Strength and Dexterity saving throws. Attack rolls against you have Advantage."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "unconscious",
+    "name": {
+      "fr": "Inconscient",
+      "en": "Unconscious"
+    },
+    "description": {
+      "fr": "Tant que vous avez l'état Inconscient, vous subissez les états Neutralisé et À terre, et vous lâchez tout ce que vous tenez. Quand l'état prend fin, vous restez À terre. Votre Vitesse est de 0. Les attaques contre vous ont l'Avantage. Vous ratez automatiquement les jets de sauvegarde de Force et de Dextérité. Tout jet d'attaque qui vous touche est un Coup critique si l'assaillant est à 1,50 m ou moins. Vous êtes inconscient de votre environnement.",
+      "en": "While you have the Unconscious condition, you have the Incapacitated and Prone conditions, and you drop whatever you're holding. When the condition ends, you remain Prone. Your Speed is 0. Attack rolls against you have Advantage. You automatically fail Strength and Dexterity saving throws. Any attack roll that hits you is a Critical Hit if the attacker is within 5 feet of you. You're unaware of your surroundings."
+    },
+    "source": "srd-5.2.1"
+  }
+]
