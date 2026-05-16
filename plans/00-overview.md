@@ -1,8 +1,8 @@
 # Plans overview
 
-40 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
+41 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
 
-## Sprint 1 — Table-ready MVP (13 plans)
+## Sprint 1 — Table-ready MVP (14 plans)
 
 Adrien joue Lyralei sur son téléphone à la prochaine session.
 
@@ -18,8 +18,9 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 08 | [Sheet Essence mode](./08-sheet-essence.md) — hexagram, saves, skills | TODO |
 | 09 | [Sheet Magie mode](./09-sheet-magie.md) — magic circle, slot runes, spell list (multi-class slots) | TODO |
 | 10 | [Sheet Avoir mode](./10-sheet-avoir.md) — inventory strict, weight, coins | TODO |
-| 12 | [Dice + roll engine](./12-dice-engine.md) — **mode-aware** (digital + physique), parser, advantage, history, toasts | **SWAPPED (avant 11)** |
-| 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12) | TODO |
+| 12 | [Dice + roll engine (digital)](./12-dice-engine.md) — parser, roller, pivot mode-ready, 8 call sites migrés, history, toasts | **SWAPPED (avant 11)** |
+| 12.5 | [Dice mode — physical](./12.5-dice-physical.md) — `effectiveDiceMode`, `<PhysicalRollModal />`, settings user, pivot mode-aware, null-guards | **NEW (split de plan 12)** |
+| 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12/12.5) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
 ## Sprint 2 — Campaigns + wizard (7 plans)
@@ -88,6 +89,7 @@ i18n EN, account, GDPR, legal, PDF export, spell sigils, public stats, prod.
 ## Swaps actés
 
 - **12 avant 11** (acté 2026-05-16) : la feature dés a grossi (mode physique mode-aware) ; le radial FAB consomme le moteur. Autant le construire une seule fois mode-aware contre un moteur fini plutôt que stub + retrofit. La règle « plus petit numéro non terminé » cède devant ce swap délibéré documenté.
+- **Split 12 / 12.5** (acté 2026-05-16) : plan 12 originel scindé en plan 12 « digital » (scope original, livrable + jouable seul) et plan 12.5 « physique » (couche par-dessus). Raison : ~1200 lignes mélangeant réécriture moteur + nouvelle modale + slice + migration Dexie + 8 refactors = trop pour une seule passe d'UAT. Deux commits = rollback isolable + deux UAT ciblées. Ordre : 10 → 12 → UAT digital → 12.5 → UAT physique → 11 → 13.
 
 ## Plan template
 
