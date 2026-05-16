@@ -9,9 +9,9 @@ const LibraryScreen = lazy(async () => {
   return { default: mod.LibraryScreen };
 });
 
-const ManualCharacterScreen = lazy(async () => {
-  const mod = await import('@/features/wizard/manual-character-screen');
-  return { default: mod.ManualCharacterScreen };
+const WizardScreen = lazy(async () => {
+  const mod = await import('@/features/wizard/wizard-screen');
+  return { default: mod.WizardScreen };
 });
 
 const SheetScreen = lazy(async () => {
@@ -24,7 +24,7 @@ export function AppRoutes(): JSX.Element {
     <Suspense fallback={<Splash />}>
       <Routes>
         <Route path="/" element={<LibraryScreen />} />
-        <Route path="/create" element={<ManualCharacterScreen />} />
+        <Route path="/create" element={<WizardScreen />} />
         <Route path="/character/:id" element={<SheetScreen />} />
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="*" element={<Navigate to="/" replace />} />

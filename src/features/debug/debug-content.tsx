@@ -83,8 +83,8 @@ export function DebugContent(): JSX.Element {
   }, []);
 
   return (
-    <main className="relative z-10 mx-auto min-h-screen max-w-3xl px-6 py-16 font-serif text-text-primary">
-      <h1 className="font-display text-section-title text-gold-bright">
+    <main className="relative z-10 mx-auto min-h-screen max-w-3xl px-6 py-16 font-serif text-text">
+      <h1 className="font-display text-display-lg text-gold-bright">
         Contenu public — debug
       </h1>
       <p className="mt-2 text-body text-text-tertiary">
