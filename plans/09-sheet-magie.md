@@ -66,6 +66,7 @@ Le cast flow actuel détecte une formule "NdX" dans la description FR via regex 
 | 07 | 16 | Combat — HP, death saves, conditions, slots, attaques |
 | 08 | 16 | Essence — tap petal/save/skill → toast, inspiration consommée, exhaustion appliquée |
 | **09** | **15** | **Magie — open un wizard 5, consomme un slot, cast un sort → slot −1 + toast ; cast un sort concentration → brise une concentration précédente** |
+| **10** | **14** | **Avoir — ajoute un objet du DB → liste mise à jour ; équipe une armure → AC recalculé ; retire l'objet → liste vidée. Refus free-string : tester qu'aucun chemin UI ne permet d'entrer un nom libre d'item.** |
 | 11 | 21 | Radial FAB — tap, voir menu, fire action (déjà annoncé inline) |
 
 **Décision e2e (Adrien) : Option A approuvée — plan 13.5 dédié entre plan 13 (PWA deploy) et plan 14 (campaigns).** Tant qu'il n'est pas créé, chaque plan ajoute systématiquement sa ligne à cette table. La coquille de plan 13.5 sera proposée à la fin de plan 13 ; en attendant, ne pas insérer dans `00-overview.md` ni `ROADMAP.md` (la renumérotation entre suffixe .5 vs renumérotation .14-shift sera tranchée au moment de la création).

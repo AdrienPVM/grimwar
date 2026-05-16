@@ -98,6 +98,14 @@ export async function invalidatePublicContent(type: ContentTypeKey): Promise<voi
   await dexie.content.delete(cacheKey('public', type));
 }
 
+/** Invalide le cache user (utile après création d'un objet maison). */
+export async function invalidateUserContent(
+  type: ContentTypeKey,
+  userId: string,
+): Promise<void> {
+  await dexie.content.delete(cacheKey('user', type, userId));
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // User & campaign content (Firestore)
 // ─────────────────────────────────────────────────────────────────────

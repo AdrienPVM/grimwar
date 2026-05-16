@@ -28,7 +28,7 @@ const MODE_COMPONENTS: Record<SheetMode, (props: ModeProps) => JSX.Element> = {
   combat: CombatMode,
   essence: EssenceMode,
   magie: MagieMode,
-  avoir: () => <AvoirMode />,
+  avoir: AvoirMode,
   ame: () => <AmeMode />,
 };
 
