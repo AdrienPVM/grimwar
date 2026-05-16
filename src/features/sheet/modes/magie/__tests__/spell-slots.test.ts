@@ -8,6 +8,7 @@ import {
   consumeSlot,
   deriveCasterEntries,
   expectedSpellSlots,
+  hasPactProgression,
   restoreSlot,
   spellcastingClasses,
   unlockedSlotLevels,
@@ -192,6 +193,34 @@ describe('restoreSlot', () => {
   it('retourne null si déjà au max', () => {
     const slots = { '1': { current: 4, max: 4 } };
     expect(restoreSlot(slots, 1)).toBeNull();
+  });
+});
+
+describe('hasPactProgression', () => {
+  it('true pour un Warlock pur', () => {
+    const character = baseCharacter();
+    character.classes = [{ classId: 'warlock', subclassId: null, level: 3 }];
+    expect(hasPactProgression(character, [warlock])).toBe(true);
+  });
+
+  it('true pour un multi-class Wizard + Warlock', () => {
+    const character = baseCharacter();
+    character.classes = [
+      { classId: 'wizard', subclassId: null, level: 3 },
+      { classId: 'warlock', subclassId: null, level: 2 },
+    ];
+    expect(hasPactProgression(character, [wizard, warlock])).toBe(true);
+  });
+
+  it('false pour un Wizard pur', () => {
+    const character = baseCharacter();
+    expect(hasPactProgression(character, [wizard])).toBe(false);
+  });
+
+  it('false si le catalogue ne contient pas encore la classe (chargement async)', () => {
+    const character = baseCharacter();
+    character.classes = [{ classId: 'warlock', subclassId: null, level: 3 }];
+    expect(hasPactProgression(character, [])).toBe(false);
   });
 });
 

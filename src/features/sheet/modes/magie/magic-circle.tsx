@@ -10,6 +10,7 @@ import type { Character } from '@/shared/types/character';
 import { useUpdateCharacter } from '../../use-update-character';
 import {
   consumeSlot,
+  hasPactProgression,
   restoreSlot,
   unlockedSlotLevels,
 } from './spell-slots';
@@ -42,6 +43,10 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
   const { data: classCatalog } = useContent('classes');
   const levels = useMemo(
     () => unlockedSlotLevels(character, classCatalog),
+    [character, classCatalog],
+  );
+  const hasPact = useMemo(
+    () => hasPactProgression(character, classCatalog),
     [character, classCatalog],
   );
 
@@ -104,9 +109,20 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
         <CardHeader>
           <h3>Cercle d'invocation</h3>
         </CardHeader>
-        <p className="font-serif text-body-sm italic text-text-tertiary">
-          Aucun emplacement de sort débloqué pour le moment.
-        </p>
+        {hasPact ? (
+          <div className="flex flex-col gap-2">
+            <p className="font-serif text-body-sm italic text-text-secondary">
+              Magie de pacte — bientôt disponible.
+            </p>
+            <p className="font-serif text-body-sm italic text-text-tertiary">
+              Les emplacements d'Occultiste suivent une progression indépendante qui sera intégrée prochainement. En attendant, les sorts mineurs (tours) restent jouables.
+            </p>
+          </div>
+        ) : (
+          <p className="font-serif text-body-sm italic text-text-tertiary">
+            Aucun emplacement de sort débloqué pour le moment.
+          </p>
+        )}
       </Card>
     );
   }

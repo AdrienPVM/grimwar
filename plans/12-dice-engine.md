@@ -36,6 +36,10 @@ Plans 01-06. Used by 07/08/09/11.
 ### Event-logging hook (forward-compat)
 - [ ] 7. Inside `useDice`, after a roll succeeds, call `await logRollIfCampaign(rollResult)` — a no-op function for S1 that becomes the real event-logger entry point in plan 22. Stub it out for now so the wiring is in place.
 
+### Spell damage canonical mapping (remplace l'heuristique regex de plan 09)
+- [ ] 7b. Pendant `scripts/build-public-content`, extraire pour chaque sort une liste structurée de dégâts depuis le SRD : `damage: Array<{ formula: string, type: DamageType, atHigherLevels?: { perLevel: string } }>`. Persister dans `public/data/spells.json` à côté de la description.
+- [ ] 7c. Remplacer `extractDamageFormula` (regex sur description FR) dans `src/features/sheet/modes/magie/spell-detail-modal.tsx` par une lecture directe de `spell.damage[]`. Garder le toast actuel comme fallback si `damage` est absent (sorts utilitaires sans dégâts). Couvre les dés multiples, les dégâts par-niveau-supérieur, et les types de dégâts. Mettre à jour le test correspondant.
+
 ### Visual feedback
 - [ ] 8. `<DiceToast />` component: top-center toast with:
     - Label of the roll

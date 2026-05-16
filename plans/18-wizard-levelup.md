@@ -19,6 +19,7 @@ Plan 17 complete.
 - [ ] 5. Step (conditional): **Augmentation de caractéristiques ou Don** — appears at levels 4/8/12/16/19. Two tabs: +2 to one stat (or +1/+1), OR pick a feat.
 - [ ] 6. Step: **Aptitudes de classe** — show the new features granted at this level (read-only, just info). Auto-applied (additional class resources, etc.).
 - [ ] 7. Step (conditional): **Sorts** — show new spell slots gained, allow adjustments to prepared spells, allow learning new spells (for known-spells classes).
+- [ ] 7b. **Pact magic (Warlock)** — implémenter la table de pact slots indépendante. Choix de design (à trancher ici) : (a) étendre `character.spellSlots` avec clés `pact-<level>`, ou (b) champ séparé `pactSlots: { current: number, max: number, level: number }`. Mettre à jour `MagicCircle` pour afficher un second anneau (visuellement distinct, ex. crimson au lieu d'or) au-dessus du cercle unifié, et `SpellDetailModal` pour permettre au Warlock pur de choisir un pact slot. **Retirer le fallback** « Magie de pacte — bientôt disponible » ajouté post-UAT plan 09 dans `MagicCircle` une fois implémenté. Cette feature débloque les Occultistes purs créés via formulaire manuel (plan 05) ou wizard de création (plan 17) — actuellement leurs slots niveau 1+ sont inaccessibles dans l'UI.
 - [ ] 8. Step: **Récap** — show before/after diff. "Confirmer" button.
 - [ ] 9. On confirm:
     - Atomic Firestore write with `level: level + 1, hp: { ... new max ... }, spellSlots: ..., featureUsage: ..., classResources: ...`

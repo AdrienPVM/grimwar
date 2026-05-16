@@ -123,6 +123,24 @@ export function restoreSlot(
   };
 }
 
+/**
+ * `true` si le personnage a au moins une classe à progression `pact` (Warlock).
+ * Sert à afficher un état dédié dans `MagicCircle` tant que plan 18 n'a pas livré
+ * la table de pact magic — sinon l'utilisateur voit un "aucun emplacement débloqué"
+ * trompeur (un Occultiste niveau 1 a normalement 1 slot pact L1).
+ */
+export function hasPactProgression(
+  character: Character,
+  classCatalog: readonly ClassEntity[],
+): boolean {
+  const byId = new Map(classCatalog.map((c) => [c.id, c]));
+  for (const entry of character.classes) {
+    const def = byId.get(entry.classId);
+    if (def?.spellcasting?.progression === 'pact') return true;
+  }
+  return false;
+}
+
 /** Liste des classes du personnage qui sont effectivement lanceuses de sorts. */
 export interface SpellcastingClassEntry {
   classId: string;
