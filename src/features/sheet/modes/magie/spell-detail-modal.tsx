@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 
+import { rollWithFlags } from '@/features/dice/roll-with-flags';
+import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
-import { rollDamage } from '@/shared/lib/dice';
 import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
@@ -9,7 +10,6 @@ import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
-import { rollWithFlags } from '../essence/roll-with-flags';
 import { useUpdateCharacter } from '../../use-update-character';
 import { consumeSlot, type SpellcastingClassEntry } from './spell-slots';
 
@@ -31,9 +31,10 @@ const DAMAGE_RE = /(\d+d\d+(?:[+-]\d+)?)/i;
  * d'emplacement disponible). À l'envoi :
  *
  *  1. Consomme le slot choisi (sauf cantrip).
- *  2. Si une formule de dégâts est détectée dans le texte, fait un roll de
- *     dégâts via dice.ts. Les jets d'attaque (d20) sont gérés en aval par
- *     `rollWithFlags` pour respecter le pivot d'exhaustion/inspiration.
+ *  2. Si `spell.damage[]` est présent (canonical SRD) ou si la regex de fallback
+ *     détecte une formule, fait un roll de dégâts via `useDice().rollDamageWithMode`
+ *     — historique + log automatiques. Les jets d'attaque (d20) sont gérés en
+ *     aval par `rollWithFlags` pour respecter le pivot d'exhaustion/inspiration.
  *  3. Si le sort est `concentration: true`, set `currentConcentration` et casse
  *     toute concentration précédente avec un toast d'avertissement.
  *
@@ -65,6 +66,7 @@ export function SpellDetailModal({
   );
 
   const { updateCharacter } = useUpdateCharacter(character.id);
+  const dice = useDice();
   const [busy, setBusy] = useState<boolean>(false);
 
   async function handleCast(): Promise<void> {
@@ -114,16 +116,19 @@ export function SpellDetailModal({
       // Pour V1 on garde simple : on n'auto-trigger pas le d20 — le joueur fait
       // ses jets à la main via le radial (plan 11) ; ici on roule juste les
       // éventuels dégâts trouvés dans le texte.
-      const damageFormula = extractDamageFormula(localize(spell.description));
+      // Plan 12 : lit en priorité `spell.damage[]` (mapping canonical) — fallback
+      // regex sur description FR tant que le pipeline SRD n'a pas populé la struct.
+      const canonical = spell.damage && spell.damage.length > 0 ? spell.damage[0]!.formula : null;
+      const damageFormula = canonical ?? extractDamageFormula(localize(spell.description));
       const spellName = localize(spell.name);
       if (damageFormula) {
-        const dmg = rollDamage(damageFormula);
-        showToast({
-          kind: 'crit',
-          title: spellName,
-          big: `${dmg.total}`,
-          sub: `${damageFormula} → ${dmg.rolls.join(' + ')}${isCantrip ? '' : ` · slot niv. ${chosenLevel}`}`,
-          durationMs: 2800,
+        // Plan 12 : route les dégâts via le pivot mode-aware (toast + history
+        // + log gérés dans `rollDamageWithMode`). Le toast `crit` initial est
+        // remplacé par le toast `damage` du pivot avec les rawFaces.
+        await dice.rollDamageWithMode(damageFormula, {
+          label: `${spellName}${isCantrip ? '' : ` · niv. ${chosenLevel}`}`,
+          characterId: character.id,
+          kind: 'damage',
         });
       } else {
         const pb = proficiencyBonus(character.totalLevel);

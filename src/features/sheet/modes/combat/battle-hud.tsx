@@ -1,9 +1,11 @@
 import { useState } from 'react';
 
+import { useDice } from '@/features/dice/use-dice';
 import { cn } from '@/shared/lib/cn';
-import { rollD20 } from '@/shared/lib/dice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
+
+import { useUpdateCharacter } from '../../use-update-character';
 
 interface BattleHudProps {
   character: Character;
@@ -27,6 +29,8 @@ const ECON_LABELS: Record<EconKind, string> = {
  */
 export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element {
   const [used, setUsed] = useState<Set<EconKind>>(new Set());
+  const dice = useDice();
+  const { updateCharacter } = useUpdateCharacter(character.id);
 
   function toggle(kind: EconKind): void {
     if (readOnly) return;
@@ -44,15 +48,16 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
     showToast({ kind: 'info', title: 'Fin du tour', sub: 'Économie d\'action réinitialisée' });
   }
 
-  function rollInitiative(): void {
+  async function rollInitiative(): Promise<void> {
     if (readOnly) return;
-    const result = rollD20(character.initiative);
-    const sign = character.initiative >= 0 ? '+' : '';
-    showToast({
-      kind: result.natural === 20 ? 'crit' : result.natural === 1 ? 'fumble' : 'roll',
-      title: 'Initiative',
-      big: `${result.total}`,
-      sub: `1d20 (${result.natural}) ${sign}${character.initiative}`,
+    // Le pivot rollWithFlags émet déjà le toast avec crit/fumble/advantage.
+    await dice.rollD20Plus(character.initiative, {
+      character,
+      label: 'Initiative',
+      kind: 'init',
+      consumeInspiration: async () => {
+        await updateCharacter({ inspiration: false });
+      },
     });
   }
 
@@ -95,7 +100,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
         <button
           type="button"
           disabled={readOnly}
-          onClick={rollInitiative}
+          onClick={() => void rollInitiative()}
           aria-label="Lancer l'initiative"
           className="ml-1 inline-flex items-center gap-1.5 rounded-pill border border-soft bg-gold/10 px-3 py-1.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-gold-bright transition-all hover:bg-gold/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
         >

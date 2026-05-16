@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { RollHistoryPanel } from '@/features/dice/roll-history-panel';
 import { GlassPanel } from '@/shared/components/glass-panel';
+import { Icon } from '@/shared/components/icon';
 import { Splash } from '@/shared/components/splash';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
@@ -97,6 +100,10 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
   const hpClass = hpStateFor(character.hp.current, character.hp.max);
   const ActiveMode = MODE_COMPONENTS[mode];
   const readOnly = isSheetReadOnly(character);
+  // Entry point S1 du RollHistoryPanel — autonome de plan 11 (le radial FAB
+  // ajoutera le wedge dédié plus tard, mais le panel doit être ouvrable
+  // dès maintenant pour héberger le toggle Digital/Physique (plan 12.5).
+  const [historyOpen, setHistoryOpen] = useState<boolean>(false);
 
   return (
     <main
@@ -107,6 +114,19 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
       <StatusStrip character={character} />
       <ModeTabs active={mode} onChange={setMode} />
       <ActiveMode character={character} />
+      <button
+        type="button"
+        onClick={() => setHistoryOpen(true)}
+        aria-label="Ouvrir l'historique des jets"
+        className="fixed bottom-6 right-6 z-[60] inline-flex h-12 w-12 items-center justify-center rounded-full border border-soft bg-glass-2 shadow-card backdrop-blur-2xl transition-all hover:border-gold-bright hover:bg-gold-bright/10 active:scale-95"
+      >
+        <Icon name="i-dice" className="h-5 w-5 text-gold-bright" />
+      </button>
+      <RollHistoryPanel
+        open={historyOpen}
+        characterId={character.id}
+        onClose={() => setHistoryOpen(false)}
+      />
     </main>
   );
 }

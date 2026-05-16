@@ -7,9 +7,10 @@ import { t } from '@/shared/lib/i18n';
 import type { AbilityCode, Character } from '@/shared/types/character';
 import { useState } from 'react';
 
+import { rollWithFlags } from '@/features/dice/roll-with-flags';
+import type { Advantage } from '@/shared/lib/dice/types';
+
 import { useUpdateCharacter } from '../../use-update-character';
-import { rollWithFlags } from './roll-with-flags';
-import type { Advantage } from '@/shared/lib/dice';
 
 interface SavesRowProps {
   character: Character;

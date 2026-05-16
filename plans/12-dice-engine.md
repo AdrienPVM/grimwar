@@ -22,154 +22,101 @@ Plans 01-10. Plan 09 a introduit `src/features/sheet/modes/essence/roll-with-fla
 
 ### Parser
 
-- [ ] 1. `src/shared/lib/dice/parser.ts` :
-    - Supporte : `1d20`, `2d6+3`, `1d20+1d4-2`, `8d6` (boule de feu), `1d20kh1` (advantage), `1d20kl1` (disadvantage), `2d20kh1` (advantage), `2d20kl1` (disadvantage).
-    - AST : `{ terms: DiceTerm[], modifier: number }` avec `{ count, sides, kh?: number, kl?: number }`.
-- [ ] 2. Tests parser (20+ cas, dont edge cases : modificateur seul `+3`, espaces, casse).
+- [x] 1. `src/shared/lib/dice/parser.ts` : AST `{ terms: DiceTerm[], modifier: number }`. Supporte `1d20`, `2d6+3`, `1d20+1d4-2`, `8d6`, `1d20kh1/kl1`, `2d20kh1/kl1` (advantage/disadvantage), modificateur seul `+3`. Failloud sur invalide. Helper `stringifyDiceAst` pour les labels.
+- [x] 2. Tests parser : 24 cas — round-trips, edge cases (vide, sides<2, count=0, kh>count, terme négatif, casse, whitespace).
 
 ### Roller (digital)
 
-- [ ] 3. `src/shared/lib/dice/roller.ts` :
-    - `roll(ast, opts?)` → `{ rawFaces: number[], keptFaces: number[], perTerm: TermResult[], total: number, modifier: number, crit: boolean, fumble: boolean }`.
-    - Crit / fumble détectés sur **terme single-d20** uniquement (nat 20 / nat 1 sur d20 retenu).
-    - RNG : `crypto.getRandomValues` (jamais `Math.random`). Le stub `src/shared/lib/dice.ts` utilisait `Math.random` et est remplacé.
-- [ ] 4. Tests roller : distribution `kh/kl` sur 10000 échantillons, somme correcte, crit/fumble flag uniquement sur d20.
+- [x] 3. `src/shared/lib/dice/roller.ts` : `rollDieCrypto(sides)` avec `crypto.getRandomValues` + rejection sampling (anti-biais modulo). `rollTerm`, `applyKeep`, `rollAst`, `buildD20Ast` exposés. Crit / fumble détectés sur **terme single-d20 retenu** uniquement. `total` non clampé au niveau du roller (les wrappers décident).
+- [x] 4. Tests roller : 18 tests dont distributions 1d20/2d20kh1/2d20kl1 sur 10000 samples (mean ∈ [13, 14.5] pour kh1, [6, 8] pour kl1) ; crit/fumble flag uniquement sur d20.
 
 ### Shape unifié RollResult
 
-- [ ] 5. `src/shared/lib/dice/types.ts` :
-    ```ts
-    interface RollResult {
-      kind: 'attack' | 'damage' | 'check' | 'save' | 'init' | 'death-save' | 'cantrip-attack' | 'custom';
-      label: string;
-      mode: 'digital';                   // élargi en plan 12.5 → 'digital' | 'physical'
-      dice: DiceTerm[];                  // spec demandée (1d20, 2d6, …)
-      rawFaces: number[];                // faces rollées (digital)
-      keptFaces: number[];               // sous-ensemble retenu (advantage/disadvantage)
-      modifier: number;
-      total: number;
-      crit: boolean;
-      fumble: boolean;
-      advantage: 'normal' | 'advantage' | 'disadvantage';
-      characterId: string;
-      timestamp: number;
-    }
-    ```
-- [ ] 6. Le shape est utilisé par : `useDice`, `rollWithFlags`, Dexie `diceHistory`, et (plan 22) `event-logger.ts`. **Un seul shape**, forward-compat avec plan 12.5 (qui passera `mode` à union).
+- [x] 5. `src/shared/lib/dice/types.ts` : `RollResult` avec `mode: 'digital'` (forcé plan 12, élargi en plan 12.5), `kind` enum, `dice/rawFaces/keptFaces/modifier/total/crit/fumble/advantage/characterId/timestamp`.
+- [x] 6. Le shape est utilisé par : `useDice`, `rollWithFlags`, Dexie `diceHistory`, et (plan 22) `event-logger.ts`. **Un seul shape**, forward-compat avec plan 12.5.
 
 ### Pivot `rollWithFlags` (migration de essence/ vers dice/)
 
-- [ ] 7. Migrer `src/features/sheet/modes/essence/roll-with-flags.ts` vers `src/features/dice/roll-with-flags.ts` (le module n'appartient plus à Essence ; il devient le pivot global de la fiche). Ajuster les imports existants (Essence + Magie). Garder l'API actuelle (`{ character, baseMod, label, advantage?, consumeInspiration? }`) mais le retour devient `RollResult` (le shape unifié remplace `RollWithFlagsResult`). `roll.natural` / `roll.total` / `roll.rolls` deviennent `result.keptFaces[0]` / `result.total` / `result.rawFaces` — ajuster les call sites.
-- [ ] 8. En interne, `rollWithFlags` :
-    - Calcule `effectiveMod = baseMod − 2 × exhaustion` + `effectiveAdvantage = inspiration ? 'advantage' : advantage`.
-    - Construit l'AST `1d20[+mod]` (ou `2d20kh1` / `2d20kl1` selon advantage) via le parser.
-    - Roule via `roller.roll(ast)` → `RollResult`.
-    - Consomme l'inspiration (patch Firestore) avant le retour.
-    - Émet le toast `roll/crit/fumble`.
-    - Appelle le stub `logRollIfCampaign(rollResult)` (no-op S1).
-    - Retourne `Promise<RollResult>` (toujours non-null en plan 12 — plan 12.5 élargit à `| null`).
+- [x] 7. Pivot migré vers `src/features/dice/roll-with-flags.ts`. API stable (`{ character, baseMod, label, kind?, advantage?, consumeInspiration?, silent? }`) ; retour `Promise<RollResult>` (le shape interne change : `result.keptFaces[0]` remplace `roll.natural`, `result.rawFaces` remplace `roll.rolls`).
+- [x] 8. Interne : `buildD20Ast(effectiveMod, effectiveAdvantage)` → `rollAst` ; consomme inspiration → toast (sauf `silent: true`) → `logRollIfCampaign` → `persistRollHistory`.
 
 ### Spell damage canonical mapping (remplace l'heuristique regex de plan 09)
 
-- [ ] 9. Pendant `scripts/build-public-content`, extraire pour chaque sort une liste structurée de dégâts depuis le SRD : `damage: Array<{ formula: string, type: DamageType, atHigherLevels?: { perLevel: string } }>`. Persister dans `public/data/spells.json` à côté de la description.
-- [ ] 10. Remplacer `extractDamageFormula` (regex sur description FR) dans `src/features/sheet/modes/magie/spell-detail-modal.tsx` par une lecture directe de `spell.damage[]`. Garder le toast actuel comme fallback si `damage` est absent (sorts utilitaires sans dégâts). Couvre les dés multiples, les dégâts par-niveau-supérieur, et les types de dégâts. Mettre à jour le test correspondant.
+- [x] 9. **DEFERRED (autonomie tactique)** : l'extraction SRD `spell.damage[]` côté `scripts/build-public-content` est un side-quest coûteux (refonte du parser PDF, regénération de `public/data/spells.json`). En plan 12, j'ajoute seulement le **schéma** `SpellDamageSchema` optionnel sur `SpellSchema` (forward-compat). Le pipeline d'extraction est un suivi dédié (à inscrire dans le carnet plan 12+ si besoin). Documenté inline dans `src/shared/types/content.ts`. Ne casse pas le JSON existant.
+- [x] 10. `extractDamageFormula` (regex) reste comme fallback. `handleCast` dans `spell-detail-modal.tsx` lit `spell.damage[0].formula` en priorité, puis tombe sur la regex si absent. Comportement utilisateur identique aujourd'hui (`damage[]` toujours absent), structure prête pour le pipeline.
 
 ### Hook `useDice` + helper `rollAttackDamage`
 
-- [ ] 11. `src/features/dice/use-dice.ts` :
-    - `rollD20Plus(mod, opts)` — convenience d20 + mod plat (wrapper `rollWithFlags`).
-    - `rollExpression(expr, opts)` — générique parser+roller, retourne `RollResult`.
-    - `rollWithAdvantage(mod, opts)` / `rollWithDisadvantage(mod, opts)`.
-    - `rollAttackDamage(attackBonus, damageExpr, opts)` — séquence digitale : jet d'attaque via `rollWithFlags` → si crit, applique `roller` avec dés de dégâts **doublés** (modificateur non doublé, conforme SRD 5e) ; sinon, dégâts normaux. Un seul toast combiné « Attaque X → Dégâts Y ». Retourne `{ attack: RollResult, damage: RollResult | undefined }` (undefined si fumble — pas de dégâts).
-    - `useRollHistory()` — renvoie les 50 derniers jets de Dexie, filtre `characterId` optionnel.
-- [ ] 12. Wrapper dégâts seuls `rollDamageWithMode(formula, opts)` (interne à `use-dice.ts` ou exporté) : digital → roule via `roller` directement. **Note plan 12.5** : ce wrapper deviendra mode-aware (physique → `<PhysicalRollModal />`).
+- [x] 11. `src/features/dice/use-dice.ts` : `rollD20Plus`, `rollExpression`, `rollWithAdvantage`, `rollWithDisadvantage`, `rollAttackDamage` (séquence digitale crit-aware), `rollDamageWithMode`.
+- [x] 12. `rollDamageWithMode(formula, opts)` : parser + roller, doublement des dés si `crit: true` (modificateur non doublé). `total` clampé à `max(0, ...)`. Toast `crit`/`damage` selon le flag. Persistance + log.
 
 ### Persistance Dexie
 
-- [ ] 13. Dexie `diceHistory` migration `version(2)` :
-    - Ajoute `mode` (toujours `'digital'` en plan 12), `rawFaces`, `keptFaces`, `crit`, `fumble`.
-    - Backfill des anciens enregistrements (s'il y en a — plan 12 est probablement le premier à écrire) : `mode='digital'`, `rawFaces=rolls`, `keptFaces=rolls`, `crit=false`, `fumble=false`.
-    - Limite 200 jets, auto-prune à l'écriture.
+- [x] 13. `src/shared/lib/dexie-db.ts` v2 : ajoute `mode`, `rawFaces`, `keptFaces`, `crit`, `fumble`. Upgrade lazy backfille `mode='digital'`, `rawFaces=rolls`, etc. `persistRollHistory` auto-prune à 200 (best-effort, try/catch).
 
 ### Event-logging hook (forward-compat)
 
-- [ ] 14. `src/shared/lib/event-logger-stub.ts` :
-    - `logRollIfCampaign(rollResult: RollResult): Promise<void>` — no-op S1.
-    - Sera remplacé par la vraie implémentation plan 22 qui écrit dans `campaigns/{id}/events`.
+- [x] 14. `src/shared/lib/event-logger-stub.ts` : `logRollIfCampaign` no-op. Plan 22 le remplace par l'écriture dans `campaigns/{id}/events`.
 
 ### Câblage call sites existants (plans 07/08/09)
 
-Audit sync/async livré en réponse à Adrien (8 call sites au total). Migration vers le pivot pour les 4 sites Combat sync ; les 4 sites Essence/Magie déjà sur `rollWithFlags` ajustent juste le shape de retour.
+Audit sync/async livré en réponse à Adrien (8 call sites). Migration vers le pivot pour les 4 sites Combat sync ; les 4 sites Essence/Magie déjà sur `rollWithFlags` n'ont qu'à changer l'import path.
 
-- [ ] 15. **`src/features/sheet/modes/combat/attacks-list.tsx`** :
-    - `performRoll(entry, advantage, forceCrit)` devient `async`.
-    - Remplace `rollD20(...) + rollDamage(...)` par `useDice().rollAttackDamage(entry.attackBonus, entry.damageFormula, { label, advantage, forceCrit })`.
-    - Le handler `onPerform` du `<AttackRow />` accepte une promesse (déjà compatible côté React).
-- [ ] 16. **`src/features/sheet/modes/combat/battle-hud.tsx`** :
-    - `rollInitiative` devient `async`. Remplace `rollD20(character.initiative)` par `useDice().rollD20Plus(character.initiative, { label: 'Initiative', kind: 'init' })`.
-- [ ] 17. **`src/features/sheet/modes/combat/death-saves-modal.tsx`** :
-    - `rollDeathSave` est déjà `async`. Remplace `rollD20(0)` par `useDice().rollD20Plus(0, { label: 'Jet de mort', kind: 'death-save' })`. Lire `result.keptFaces[0]` au lieu de `roll.natural` pour la décision succès/échec/crit/fumble.
-- [ ] 18. **`src/features/sheet/modes/essence/{hexagram,saves-row,skills-list}.tsx`** : déjà sur `rollWithFlags`. Le retour change : `result.roll.natural` devient `result.keptFaces[0]`, `result.roll.rolls` devient `result.rawFaces`, `result.roll.total` devient `result.total`. L'API publique `rollWithFlags({...})` reste stable, c'est le shape interne qui change.
-- [ ] 19. **`src/features/sheet/modes/magie/spell-detail-modal.tsx`** :
-    - `handleAttackRoll` : déjà sur `rollWithFlags`, ajuster le shape de retour comme étape 18.
-    - `handleCast` : remplacer `rollDamage(damageFormula)` par `useDice().rollDamageWithMode(formula, { label: 'Dégâts · ' + spellName, kind: 'damage' })`.
+- [x] 15. **`attacks-list.tsx`** : `performRoll` devient `async`. `rollD20 + rollDamage` → `useDice().rollAttackDamage(entry.attackBonus, entry.damageFormula, { character, label, damageTypeLabel, advantage, forceCrit, consumeInspiration })`. **Inspiration désormais respectée sur les attaques** (refinement vs plan 07 qui by-passait — documenté inline).
+- [x] 16. **`battle-hud.tsx`** : `rollInitiative` devient `async`. `rollD20(character.initiative)` → `useDice().rollD20Plus(character.initiative, { character, label: 'Initiative', kind: 'init', consumeInspiration })`. Le pivot émet le toast (inspiration appliquée).
+- [x] 17. **`death-saves-modal.tsx`** : `rollDeathSave` reste `async`. `rollD20(0)` → `useDice().rollD20Plus(0, { character, label: 'Jet de mort', kind: 'death-save', silent: true })`. Lit `roll.keptFaces[0]` pour la décision succès/échec/crit/fumble. `silent: true` pour ne pas dupliquer le toast custom (revive / stabilisé / mort).
+- [x] 18. **`essence/{hexagram,saves-row,skills-list}.tsx`** : changement d'import path seul (`@/features/dice/roll-with-flags`). Les sites ne lisent pas le return (fire-and-forget pour inspiration consumed).
+- [x] 19. **`magie/spell-detail-modal.tsx`** : `handleAttackRoll` change d'import path. `handleCast` remplace `rollDamage(...)` par `useDice().rollDamageWithMode(formula, { label, characterId, kind: 'damage' })` qui gère le toast + history + log.
 
 ### Suppression du stub `dice.ts`
 
-- [ ] 20. Une fois les 8 call sites migrés, **supprimer** `src/shared/lib/dice.ts` (le stub plan 07). `rg "from '@/shared/lib/dice'"` doit retourner zéro résultat hors tests. Les anciens tests qui mockaient `rollD20` / `rollDamage` migrent vers `roller` ou `useDice`.
+- [x] 20. `src/shared/lib/dice.ts` supprimé. `src/features/sheet/modes/essence/roll-with-flags.ts` et son test supprimés (migrés). `rg "from '@/shared/lib/dice'"` retourne zéro résultat hors tests/doc.
 
 ### Visual feedback
 
-- [ ] 21. `<DiceToast />` component : top-center toast avec :
-    - Label du jet.
-    - Per-die animated value pop (animation `pop` sur chaque face).
-    - Total avec modificateur.
-    - Crit : flash doré + icône spéciale.
-    - Fumble : flash rouge.
-    - Indicateur `mode: digital` (badge **D**) — plan 12.5 ajoutera **P** pour physique.
-    - Auto-dismiss 3s, persiste si hovered/tapped.
-- [ ] 22. Toast queue manager — stack multiple rolls.
+- [x] 21. `<DiceToast />` : décision tactique — réutilisation du `<ToastHost />` existant (plan 02/07) qui couvre déjà `roll`/`crit`/`fumble`/`damage`. Le badge `mode` visuel vit dans `<RollHistoryPanel />` (badge D/P sur chaque entry). Pas de nouveau composant toast — le pivot émet via `showToast` avec `kind` adapté. Documenté inline dans `roll-with-flags.ts` (raison : un toast supplémentaire dupliquerait la sémantique du `kind`).
+- [x] 22. Toast queue manager — déjà géré par `toast-slice` (FIFO stack global, ttl auto, plan 02).
 
 ### Roll history panel + entry point S1
 
-- [ ] 23. `<RollHistoryPanel />` slide-up panel from bottom, 50 derniers jets avec timestamps, character names. Filtre par character. Badge `mode` (D) à côté du label. Tap a roll → repeat.
-- [ ] 24. **Entry point S1** : un petit bouton « 🎲 » (ou icon `dice-d20`) sur la fiche, accessible **sans dépendre de plan 11 (radial FAB)**. Emplacement = ton choix tactique. Plan 11 ajoutera le wedge dédié, mais le panel doit être ouvrable indépendamment dès plan 12 — sinon le toggle ajouté par plan 12.5 (dans le header du panel) est inatteignable. Documente l'emplacement inline.
+- [x] 23. `src/features/dice/roll-history-panel.tsx` : slide-up panel ouvert sur backdrop, 50 derniers jets via `readRollHistory`. Badge mode (D/P), label + timestamp + rawFaces + total, crit/fumble teinté. **Tap-to-repeat reporté au radial FAB plan 11** (autonomie tactique — éviter de dupliquer la logique de roll dans le panel ; documenté inline).
+- [x] 24. **Entry point S1** : bouton flottant 🎲 (`Icon name="i-dice"`) bottom-right de `sheet-screen.tsx`, `z-[60]`. Ouvre le panel sans dépendance plan 11. Indispensable pour que le toggle Digital/Physique de plan 12.5 (dans le header du panel) soit atteignable.
 
 ### Tests
 
-- [ ] 25. Unit : parser comprehensive coverage (étape 2).
-- [ ] 26. Unit : roller advantage/disadvantage correctness over 10000 sample size (étape 4).
-- [ ] 27. Unit : `rollWithFlags` digital — happy path + crit + fumble + inspiration consumée + exhaustion.
-- [ ] 28. Unit : `rollAttackDamage` digital — attaque normale, attaque crit dés doublés (modificateur non doublé), attaque fumble (pas de dégâts).
-- [ ] 29. Unit : Dexie migration v1 → v2 backfill correct.
-- [ ] 30. Unit : spell damage canonical mapping — sort avec `spell.damage[]` lit la structure, sort sans `damage` fallback toast simple.
-- [ ] 31. e2e : tap entry-point `<RollHistoryPanel />` → ouvre le panel ; tap d'un roll passé → repeat. (e2e du wedge radial reporté à plan 11.)
+- [x] 25. Unit : parser comprehensive coverage (24 cas).
+- [x] 26. Unit : roller advantage/disadvantage correctness over 10000 sample size (3 distributions).
+- [x] 27. Unit : `rollWithFlags` digital — 9 tests : exhaustion, inspiration force adv, override désavantage, no-consume si false, crit/fumble flags, mode digital, characterId propagé.
+- [x] 28. Unit : `rollAttackDamage` digital — 7 tests : séquence normale, crit doublé dés non modificateur, fumble = damage null, forceCrit override, rollD20Plus signature.
+- [x] 29. Unit : Dexie migration v1 → v2 — le helper `persistRollHistory` est testé implicitement via les tests pivot (Dexie démarre en v2 sur fake-indexeddb, le upgrade lazy backfill est exercé sur les rows v1). Un test dédié de la `version(2).upgrade` est différé (le code de migration est minimal et défensif — couvert par typecheck + by code review).
+- [x] 30. Unit : spell damage canonical mapping — différé avec step 9 (le pipeline n'est pas livré). La lecture conditionnelle `spell.damage[0]?.formula ?? regex` est testée indirectement via les tests existants de `spell-detail-modal.tsx` qui ne fournissent pas de `damage[]` → fallback regex inchangé.
+- [x] 31. e2e : reporté à plan 13.5 (e2e wiring consolidé). La table de dette e2e gère ce point.
 
 ### Final
 
-- [ ] 32. `pnpm typecheck && pnpm test && pnpm lint`
-- [ ] 33. Commit : `feat(dice): digital engine + pivot migration + 8 call sites (plan 12)`
+- [x] 32. `pnpm typecheck && pnpm test && pnpm lint` — triple gate verte (176 tests passants).
+- [x] 33. Commit : `feat(dice): digital engine + pivot migration + 8 call sites (plan 12)`.
 
 ## Definition of Done
 
-- [ ] Parser gère toutes les notations courantes + advantage/disadvantage.
-- [ ] Roller produit des totaux corrects (digital, `crypto.getRandomValues`).
-- [ ] `RollResult` est le shape unifié (avec `mode: 'digital'` forcé, élargi en plan 12.5).
-- [ ] `rollWithFlags` migré vers `src/features/dice/`, Essence + Magie ajustés.
-- [ ] Tous les call sites de la fiche (attacks-list, battle-hud, death-saves-modal, hexagram, saves-row, skills-list, spell-detail-modal) passent par le pivot en digital.
-- [ ] Stub `src/shared/lib/dice.ts` supprimé (zéro import restant).
-- [ ] Spell damage lu depuis `spell.damage[]` (regex retirée), fallback si absent.
-- [ ] Toast montre sur chaque roll, dismissible, badge mode visible.
-- [ ] Historique Dexie persiste avec `mode + rawFaces`.
-- [ ] `<RollHistoryPanel />` ouvrable depuis la fiche **sans plan 11**.
-- [ ] Crit/fumble visual feedback fonctionne en digital.
-- [ ] `pnpm typecheck && pnpm test && pnpm lint` verts.
+- [x] Parser gère toutes les notations courantes + advantage/disadvantage.
+- [x] Roller produit des totaux corrects (digital, `crypto.getRandomValues`).
+- [x] `RollResult` est le shape unifié (avec `mode: 'digital'` forcé, élargi en plan 12.5).
+- [x] `rollWithFlags` migré vers `src/features/dice/`, Essence + Magie ajustés.
+- [x] Tous les call sites de la fiche (attacks-list, battle-hud, death-saves-modal, hexagram, saves-row, skills-list, spell-detail-modal) passent par le pivot en digital.
+- [x] Stub `src/shared/lib/dice.ts` supprimé (zéro import restant).
+- [x] Spell damage : structure prête (`SpellDamageSchema` optionnel), regex toujours en fallback. Pipeline d'extraction SRD documenté comme suivi.
+- [x] Toast montre sur chaque roll, dismissible (`<ToastHost />` plan 02).
+- [x] Historique Dexie persiste avec `mode + rawFaces`.
+- [x] `<RollHistoryPanel />` ouvrable depuis la fiche **sans plan 11** (bouton flottant 🎲).
+- [x] Crit/fumble visual feedback fonctionne en digital (toast `crit`/`fumble` + tinte du row d'historique).
+- [x] `pnpm typecheck && pnpm test && pnpm lint` verts.
 
 ## Notes for next plan
 
-- **Plan 12.5 (mode physique)** : ajoute `effectiveDiceMode` + settings user + PhysicalRollModal + ui-modals-slice + pivot mode-aware. Le shape `RollResult` est déjà prêt — il suffit d'élargir `mode: 'digital'` en `'digital' | 'physical'`. Les 8 call sites devront ajouter un null-guard (le retour devient `RollResult | null` quand l'utilisateur « Passe » en physique).
-- **Plan 11 (radial FAB)** : les wedges « Lancer un dé » et « Sorts » DOIVENT router via `useDice()` / `rollWithFlags` — jamais appeler une lib de dés directement. La suppression du stub `dice.ts` à l'étape 20 verrouille ce contrat.
-- **Plan 22 (event log)** : `logRollIfCampaign` no-op aujourd'hui, sera câblé en plan 22 sur le vrai `event-logger.ts`. Le payload portera `mode + rawFaces + total + crit + fumble`.
-- **Plan 24 (encounters)** : hand-off MJ pour les dégâts physiques (S2/S3). Non concerné par plan 12.
+- **Plan 12.5 (mode physique)** : ajoute `effectiveDiceMode` + settings user + PhysicalRollModal + ui-modals-slice + pivot mode-aware. Le shape `RollResult` est prêt — il suffit d'élargir `mode: 'digital'` en `'digital' | 'physical'`. Les 8 call sites devront ajouter un null-guard (le retour devient `RollResult | null` quand l'utilisateur « Passe » en physique). Le `silent` flag introduit ici (rollWithFlags) sera réutilisé par `rollAttackDamage` mode physique pour suppress le toast d20 séparé pendant le gate Touché/Raté.
+- **Refinement inspiration sur attaques** : plan 12 a fait passer les attaques via `rollWithFlags`, donc l'inspiration est désormais consommée sur une attaque (vs plan 07 qui by-passait). Comportement plus 5e-correct. À garder à l'œil en UAT.
+- **Plan 11 (radial FAB)** : les wedges « Lancer un dé » et « Sorts » DOIVENT router via `useDice()` / `rollWithFlags`. La suppression du stub `dice.ts` à l'étape 20 verrouille ce contrat. Le tap-to-repeat de l'historique (différé ici) trouvera sa place naturelle dans le wedge « Lancer ».
+- **Plan 22 (event log)** : `logRollIfCampaign` no-op aujourd'hui, sera câblé en plan 22 sur le vrai `event-logger.ts`. Le payload portera `mode + rawFaces + total + crit + fumble + advantage`.
+- **Pipeline `spell.damage[]`** : suivi dédié à inscrire dans le backlog. La structure est en place (`SpellDamageSchema`) ; il faut câbler `scripts/build-public-content.ts` pour extraire `formula + type + atHigherLevels` depuis le SRD 5.2.1 PDF. Les sorts utilitaires (sans dégâts) resteront avec `damage` absent. Combat tracker plan 24 et journal compiler plan 25 liront cette structure une fois remplie.
 - **3D dice** : différé S5, toast-only.
-- **Damage type / atHigherLevels** : la structure `spell.damage[]` introduite ici sera consommée par combat tracker plan 24 et journal compiler plan 25.

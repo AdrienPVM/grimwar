@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react';
 
+import { useDice } from '@/features/dice/use-dice';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
-import { rollD20, rollDamage, type Advantage } from '@/shared/lib/dice';
+import type { Advantage } from '@/shared/lib/dice/types';
 import { localize } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
-import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 import type { Item } from '@/shared/types/content';
+
+import { useUpdateCharacter } from '../../use-update-character';
 
 interface AttacksListProps {
   character: Character;
@@ -40,6 +42,8 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
   const pb = proficiencyBonus(character.totalLevel);
   const forMod = abilityModifier(character.abilities.for);
   const dexMod = abilityModifier(character.abilities.dex);
+  const dice = useDice();
+  const { updateCharacter } = useUpdateCharacter(character.id);
 
   const attacks = useMemo<AttackEntry[]>(() => {
     return character.inventory.items
@@ -66,23 +70,24 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
 
   const [menuFor, setMenuFor] = useState<string | null>(null);
 
-  function performRoll(entry: AttackEntry, advantage: Advantage, forceCrit: boolean): void {
+  async function performRoll(
+    entry: AttackEntry,
+    advantage: Advantage,
+    forceCrit: boolean,
+  ): Promise<void> {
     if (readOnly) return;
-    const attack = rollD20(entry.attackBonus, advantage);
-    const isCrit = forceCrit || attack.natural === 20;
-    const isFumble = attack.natural === 1;
-    const damage = rollDamage(entry.damageFormula, isCrit && !isFumble);
     const name = localize(entry.weapon.name);
-    if (isFumble) {
-      showToast({ kind: 'fumble', title: name, big: '✗ Échec', sub: `1d20 (1) ${signed(entry.attackBonus)} = ${attack.total}` });
-      return;
-    }
-    showToast({
-      kind: isCrit ? 'crit' : 'roll',
-      title: name,
-      big: `${attack.total} → ${damage.total}`,
-      sub: `Att ${attack.natural}${attack.advantage !== 'normal' ? ' (' + (attack.advantage === 'advantage' ? 'av' : 'dés') + ')' : ''} ${signed(entry.attackBonus)} · Dgt ${damage.formula}${isCrit ? ' ×2 dés' : ''} → ${damage.total} ${entry.damageTypeLabel}`,
-      durationMs: 2800,
+    await dice.rollAttackDamage(entry.attackBonus, entry.damageFormula, {
+      character,
+      label: name,
+      damageTypeLabel: entry.damageTypeLabel,
+      advantage,
+      forceCrit,
+      // Plan 12 : les attaques routent désormais via rollWithFlags ; l'inspiration
+      // est respectée comme pour les autres jets d20 (vs plan 07 qui by-passait).
+      consumeInspiration: async () => {
+        await updateCharacter({ inspiration: false });
+      },
     });
   }
 
@@ -115,7 +120,7 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
             onCloseMenu={() => setMenuFor(null)}
             onPerform={(advantage, crit) => {
               setMenuFor(null);
-              performRoll(entry, advantage, crit);
+              void performRoll(entry, advantage, crit);
             }}
           />
         ))}

@@ -9,10 +9,10 @@ import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
 import { t } from '@/shared/lib/i18n';
 import type { Character, AbilityCode } from '@/shared/types/character';
 
-import type { Advantage } from '@/shared/lib/dice';
+import { rollWithFlags } from '@/features/dice/roll-with-flags';
+import type { Advantage } from '@/shared/lib/dice/types';
 
 import { useUpdateCharacter } from '../../use-update-character';
-import { rollWithFlags } from './roll-with-flags';
 
 interface HexagramProps {
   character: Character;

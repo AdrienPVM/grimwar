@@ -1,6 +1,6 @@
+import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
-import { rollD20 } from '@/shared/lib/dice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -18,7 +18,7 @@ interface DeathSavesModalProps {
  *
  * Architecture : la state machine pure vit dans hp-combat.ts. Cette modale est
  * un mince render layer qui :
- *  1. lance un d20 via rollD20()
+ *  1. lance un d20 via useDice().rollD20Plus() (silent — toast custom infra)
  *  2. délègue à applyDeathSaveOutcome() pour calculer le prochain état
  *  3. patch Firestore via useUpdateCharacter()
  *  4. toast le résultat
@@ -26,6 +26,7 @@ interface DeathSavesModalProps {
 export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Element | null {
   const { updateCharacter } = useUpdateCharacter(character.id);
   const { isDM } = usePermissionContext();
+  const dice = useDice();
 
   const isDead = character.status === 'dead';
   const isDying = character.hp.current <= 0 && !isDead;
@@ -33,8 +34,17 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
   if (!isDying && !isDead) return null;
 
   async function rollDeathSave(): Promise<void> {
-    const roll = rollD20(0);
-    const outcome = applyDeathSaveOutcome(character.deathSaves, roll.natural);
+    // Jet de mort : silent → on émet le toast détaillé en fonction de l'outcome
+    // (succès / échec / revive / stabilisé / mort confirmée), pas le toast d20
+    // générique du pivot.
+    const roll = await dice.rollD20Plus(0, {
+      character,
+      label: 'Jet de mort',
+      kind: 'death-save',
+      silent: true,
+    });
+    const natural = roll.keptFaces[0] ?? 0;
+    const outcome = applyDeathSaveOutcome(character.deathSaves, natural);
     if (outcome.kind === 'revived') {
       await updateCharacter({
         deathSaves: outcome.deathSaves,
@@ -73,12 +83,12 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
     }
     await updateCharacter({ deathSaves: outcome.deathSaves });
     showToast({
-      kind: roll.natural === 1 ? 'fumble' : roll.natural >= 10 ? 'roll' : 'damage',
+      kind: natural === 1 ? 'fumble' : natural >= 10 ? 'roll' : 'damage',
       title: 'Jet de mort',
-      big: `${roll.natural}`,
-      sub: roll.natural === 1
+      big: `${natural}`,
+      sub: natural === 1
         ? '+2 échecs'
-        : roll.natural >= 10
+        : natural >= 10
           ? '+1 succès'
           : '+1 échec',
     });

@@ -39,6 +39,25 @@ export const spellSchoolSchema = z.enum([
 ]);
 export type SpellSchool = z.infer<typeof spellSchoolSchema>;
 
+/**
+ * Mapping canonical des dégâts de sort. Introduit en plan 12 comme champ
+ * **optionnel** pour ne pas casser `spells.json` existant. Le pipeline
+ * d'extraction (`scripts/build-public-content`) populera ces structures dans
+ * un suivi dédié — la regex fallback `extractDamageFormula` dans
+ * `spell-detail-modal.tsx` continue de tourner pour les sorts sans `damage[]`
+ * (étape 9 de plan 12 explicitement deferred au pipeline, voir Notes).
+ */
+export const SpellDamageSchema = z.object({
+  formula: z.string(),
+  type: z.string(),
+  atHigherLevels: z
+    .object({
+      perLevel: z.string(),
+    })
+    .optional(),
+});
+export type SpellDamage = z.infer<typeof SpellDamageSchema>;
+
 export const SpellSchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -58,6 +77,9 @@ export const SpellSchema = z.object({
   description: I18nSchema,
   atHigherLevels: I18nSchema.nullable(),
   classes: z.array(slug),
+  /** Dégâts canoniques structurés. Optionnel — fallback regex tant que le
+   * pipeline d'extraction SRD n'est pas câblé (suivi plan 12+). */
+  damage: z.array(SpellDamageSchema).optional(),
   source: sourceTag,
 });
 export type Spell = z.infer<typeof SpellSchema>;

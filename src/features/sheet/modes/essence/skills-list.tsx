@@ -9,8 +9,9 @@ import { getSkillProficiency, SKILLS, skillModifier } from '@/shared/lib/rules/s
 import { localize } from '@/shared/lib/i18n';
 import type { Character, SkillProf } from '@/shared/types/character';
 
+import { rollWithFlags } from '@/features/dice/roll-with-flags';
+
 import { useUpdateCharacter } from '../../use-update-character';
-import { rollWithFlags } from './roll-with-flags';
 
 interface SkillsListProps {
   character: Character;
