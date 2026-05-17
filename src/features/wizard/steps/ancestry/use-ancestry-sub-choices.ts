@@ -157,6 +157,19 @@ export function isAncestrySubChoicesCompleted(
   return keys.every((key) => subChoices[key] !== null);
 }
 
+/**
+ * Liste des sous-choix encore manquants pour l'ascendance courante. Utile
+ * pour afficher l'erreur de step en UI ou pour la garde de submit
+ * (commit 4).
+ */
+export function getMissingAncestrySubChoiceKeys(
+  ancestryId: string | null,
+  subChoices: AncestrySubChoices,
+): readonly AncestrySubChoiceKey[] {
+  const keys = getAncestrySubChoiceKeys(ancestryId);
+  return keys.filter((key) => subChoices[key] === null);
+}
+
 export interface UseAncestrySubChoicesResult {
   /** Sous-choix requis dans l'ordre d'affichage, avec valeurs admises lues du bundle. */
   requirements: readonly AncestrySubChoiceRequirement[];

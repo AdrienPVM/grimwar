@@ -19,6 +19,8 @@ import type {
 } from '@/shared/types/content';
 import type { WizardDraft } from '@/shared/lib/slices/wizard-slice';
 
+import { getMissingAncestrySubChoiceKeys } from './steps/ancestry/use-ancestry-sub-choices';
+
 /**
  * Submit wizard → Firestore (plan 05 §F).
  *
@@ -68,6 +70,20 @@ export async function buildCharacterFromWizard(
 
   if (draft.classes.length === 0 || !draft.primaryClassId) {
     throw new Error('[wizard] aucune classe sélectionnée');
+  }
+
+  // Sous-choix d'ascendance niveau 1 SRD 5.2.1 (plan 13.8) — garde de submit.
+  // Le wizard désactive déjà 'Suivant' via isAncestryValid, mais on double-checke
+  // au submit pour parer une éventuelle bypass du flag (ex. autofill ancien
+  // draft persisté) — c'est le même contrat que ce qu'on impose côté Firestore.
+  const missing = getMissingAncestrySubChoiceKeys(
+    ancestry.id,
+    draft.ancestrySubChoices,
+  );
+  if (missing.length > 0) {
+    throw new Error(
+      `[wizard] sous-choix d'ascendance manquant(s) pour ${ancestry.id} : ${missing.join(', ')}`,
+    );
   }
 
   const primaryClass = classes.find((c) => c.id === draft.primaryClassId);
