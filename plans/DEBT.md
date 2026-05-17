@@ -57,7 +57,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D3 — Wizard de création abandonné + 3 bugs structurels exposés
 
 - **Owner** : plan 05 (le nouveau, `plans/05-character-creation-wizard.md`).
-- **Statut** : ouverte. Sera close au commit `feat(wizard): unified pedagogical character creation (plan 05)`.
+- **Statut** : **résolue** en commit `023c451` (`feat(wizard): unified pedagogical character creation (plan 05)`). Cette entrée reste ici pour la trace de cause-racine ; voir aussi section `## Résolu` ci-dessous.
 - **Cause-racine** : l'ancien plan 05 (`manual-character-screen.tsx`, formulaire monopage) a été UAT par Adrien en navigateur réel le 2026-05-16. 3 bugs structurels bloquants + 1 défaut de conception ont été constatés :
   1. **`setDoc(undefined)`** — `src/shared/lib/inventory.ts > addItemToInventory` écrit `contentSource: scopeId` où `scopeId === undefined` pour scope `'public'` (cas du wizard 100 % du temps). `src/shared/lib/firebase.ts > getDb` initialise Firestore en mode strict (`getFirestore()` sans `ignoreUndefinedProperties`). Zod `optional()` ne distingue pas « absent » de « undefined ». → Création crash pour tout perso.
   2. **Sorts non listés pour un lanceur** — `public/data/classes.json` a des IDs **EN** (`wizard`, `sorcerer`, …) ; `public/data/spells.json > spell.classes[]` a des IDs **FR** (`magicien`, `ensorceleur`, …). Le filtre `s.classes.includes('wizard')` matche `['magicien']` → 0 sort. Pipeline AideDD écrit du FR dans un champ qui doit être EN canonique (cf. CLAUDE.md « PDFs source of truth #1 »).
@@ -112,6 +112,74 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   4. Test e2e Playwright : créer un PJ dans une campagne `featAtLevel1: false` (défaut) → l'étape Don est skippée.
   5. Cette entrée bascule en `## Résolu` avec le hash du commit.
 
+## D5 — Discipline « rules + indexes : modif disque ⇒ deploy »
+
+- **Owner** : ce document + `CLAUDE.md` (règle de process, pas une feature à livrer).
+- **Statut** : **résolue de process** au commit qui ajoute la règle dans `CLAUDE.md` + `pnpm test:rules`. Reste ouverte tant qu'elle ne fait pas partie d'un check automatisable (pre-deploy hook ou CI gate).
+- **Cause-racine** : `firestore.rules` a été corrigé en local au commit `89c7e09` (`fix(firestore): align character rules with multi-class schema`, 2026-05-16) sans `firebase deploy --only firestore:rules` à la suite. Pendant la session UAT plan 05 du 16 mai, la création de personnage en prod a échoué avec « Missing or insufficient permissions » alors que `characterShapeOK` côté disque acceptait le payload. La triple gate locale ne pouvait rien détecter — c'est un décalage **disque ↔ live**, pas un bug applicatif.
+- **Conséquence** : 1 session de debug d'environ 1h, fausse piste « setDoc(undefined) bis » au début. Production cassée sur la fonctionnalité critique (création perso) tant que le deploy n'a pas eu lieu.
+- **Règle de process (mise en place)** :
+  1. **Tout changement de `firestore.rules` DOIT être suivi de `pnpm firebase:deploy:rules`** avant le commit qui se réclame "livré". Le commit qui livre la modif documente le deploy dans son corps.
+  2. **Tout changement de `firestore.indexes.json` DOIT être suivi de `pnpm firebase:deploy:indexes`**.
+  3. Avant tout `firebase deploy --only firestore:rules`, **exécuter `pnpm test:rules`** (rules-unit-testing contre l'émulateur). Bloque les régressions structurelles sur le schéma de characters.
+  4. Ajout d'un test rules-unit-testing dans `tests/firestore-rules.test.ts` qui vérifie : payload multi-class accepté, payload ancien schéma refusé, payload incomplet refusé, écriture cross-uid refusée, accès non-auth refusé.
+  5. Le test skip propre quand l'émulateur Firestore n'est pas joignable (warning visible dans la sortie). Pour exécuter pour de vrai : `pnpm test:rules` (requiert Firebase CLI + Java/JRE 11+ pour la JVM de l'émulateur).
+- **Surface impactée** :
+  - `CLAUDE.md` — section « Required at every commit » et nouveau bloc « Firebase deploy discipline » qui pointent ici.
+  - `tests/firestore-rules.test.ts` — nouveau, charge `firestore.rules` dans l'émulateur via `@firebase/rules-unit-testing`.
+  - `package.json` — script `test:rules`, dev-dep `@firebase/rules-unit-testing@^4`.
+- **Reste ouvert** :
+  - Pas de hook git ou de gate CI qui REFUSE le commit si `firestore.rules` change sans deploy. Pour S5 : ajouter un `pre-push` qui compare hash disque vs hash live (`firebase firestore:rules:get`), bloque si écart.
+- **Critère de fermeture** :
+  1. Règle dans `CLAUDE.md`. ✅
+  2. Test rules-unit en place et exécutable via `pnpm test:rules`. ✅
+  3. Hook/CI automatisant la détection du décalage. ⏳ S5.
+
+## D6 — Fiche de personnage non responsive desktop
+
+- **Owner** : nouveau plan à créer, probablement en fin de S1 ou début S2. Adrien fera l'audit détaillé mode par mode avant cadrage.
+- **Statut** : ouverte. Détectée lors de l'UAT plan 05 du 16 mai 2026, à l'atterrissage sur la fiche après création de personnage.
+- **Cause-racine** : les 5 modes de la fiche (`combat` / `essence` / `magie` / `avoir` / `ame`, plans 06-12) ont été construits **mobile-first** sans pass desktop. À large viewport, le layout mobile s'étire (cards pleine largeur, padding sous-utilisé) au lieu d'exploiter l'espace disponible (2 cols, sticky sidebar, dense par endroit).
+- **Conséquence** : la fiche est utilisable mais ergonomiquement sous-optimale sur écran large. Pas bloquant pour le MJ qui joue sur téléphone (cas nominal), gênant pour les usages annexes (préparation de session sur PC).
+- **Surface impactée (à confirmer après audit)** :
+  - `src/features/sheet/sheet-screen.tsx` — coquille.
+  - `src/features/sheet/modes/*-mode.tsx` — chaque mode à reprendre.
+  - `src/features/sheet/hero/`, `src/features/sheet/mode-tabs/`, `src/features/sheet/status/` — composants partagés.
+- **Hors scope du wizard (plan 05)** : aucune correction de la fiche dans le lot wizard. La dette est seulement **tracée** ici pour que la mémoire de projet la garde.
+- **Critère de complétion** :
+  1. Audit mode-par-mode par Adrien (PC + grand écran).
+  2. Plan dédié créé et numéroté.
+  3. Chaque mode revu avec breakpoints `md:` + `lg:` (et `xl:` quand pertinent).
+  4. UAT navigateur 1024 + 1440 + 1920 px validée par Adrien.
+  5. Cette entrée bascule en `## Résolu` avec le hash du commit final.
+
+## D7 — Cache Dexie du contenu public sans invalidation cross-build
+
+- **Owner** : ce document + commit qui ajoute `contentHash` à `index.json` et l'invalidation côté loader.
+- **Statut** : **résolue de mécanisme** en commit `9559b9b` (`fix(content): dexie cache invalidation by contentHash`). Reste ouverte en vigilance jusqu'à au moins une session UAT post-déploiement qui confirme l'auto-flush en condition réelle.
+- **Cause-racine** : `src/shared/lib/content-loader.ts > loadPublicContent` cache les bundles `public/data/*.json` dans Dexie avec un TTL **7 jours** sans aucun mécanisme d'invalidation par version. Quand un build régénère un bundle (ex. `spells.json` migré FR→EN au commit `70f7a4d`), le cache Dexie d'une session ouverte avant ce build garde l'ancienne version pendant 7j. Symptôme observé en UAT plan 05 (2026-05-16) : Magicien + Occultiste avec liste de cantrips **vide à l'écran** alors que `public/data/spells.json` sur disque contenait 16 cantrips wizard. Le test d'intégrité ajouté à `70f7a4d` (`content-integrity.test.ts:70-75`) **lisait le fichier disque directement** et ne traversait pas le cache Dexie → faussement vert.
+- **Conséquence** : 1 session de debug sur la deuxième occurrence du bug « sorts vides ». Pire, le test correctif initial était aveugle au mode runtime — la classe de bug pouvait re-frapper à chaque build de contenu.
+- **Fix** :
+  1. `scripts/build-public-content.ts` écrit un `contentHash` (sha-256 stable sur le contenu sérialisé de tous les bundles, types triés) dans `public/data/index.json`. Pas un timestamp — un hash change ssi le contenu change, et détecte aussi les rollbacks.
+  2. `content-loader.ts > ensurePublicCacheFreshness` : au premier `loadPublicContent` d'une session, fetch `index.json`, compare au hash stocké dans `dexie.settings['public:contentHash']`. Si différent → `clearAllPublicContent()` (purge **toutes** les rows publiques, tous types confondus) + écrit le nouveau hash.
+  3. Mémoïsation par module → 1 round-trip réseau par session, partagé entre tous les callers concurrents.
+  4. Offline-safe : si `fetch('/data/index.json')` échoue (réseau coupé), on sert le cache existant sans crasher — c'est une PWA, le boot doit fonctionner en mode airplane.
+  5. Test rouge-puis-vert dans `src/features/wizard/steps/__tests__/spells-step-cache.test.tsx` : pré-pollue Dexie avec un spells.json FR + un contentHash périmé, mock le fetch sur le nouveau hash + le bundle EN canonique, rend `<SpellsStep />` pour un Magicien niveau 1, attend que la liste contienne au moins « Rayon de givre ». **Vu rouge** sur le code pré-fix (liste vide), **vu vert** après le fix.
+- **Surface impactée** :
+  - `scripts/build-public-content.ts` — calcul + écriture du `contentHash`.
+  - `src/shared/lib/content-loader.ts` — `ensurePublicCacheFreshness` + appel depuis `loadPublicContent`.
+  - `public/data/index.json` — nouveau champ `contentHash` (optionnel pour compat builds antérieurs).
+  - `src/features/wizard/steps/__tests__/spells-step-cache.test.tsx` — test correctif d'intégration.
+  - `CLAUDE.md` — règle « tester le comportement runtime, pas l'état disque » ajoutée à la section testing.
+- **Leçon de process** :
+  - **Un test qui lit `public/data/*.json` directement NE reflète PAS l'état runtime servi à l'utilisateur.** Le contenu visible passe par le cache Dexie. Pour tester un bug user-visible côté contenu, il faut passer par le cache (ou au moins par le loader). Cette leçon est consignée dans `CLAUDE.md` pour ne pas reproduire le pattern « test d'intégrité disque faussement vert pendant que l'écran est cassé ».
+  - **Hash, pas timestamp.** Un timestamp change à chaque build même si le contenu est identique (flushes inutiles) et ne détecte pas un rollback (timestamp plus ancien mais contenu différent → comparaison « strictement plus récent » rate le retour en arrière). Un hash stable change ssi le contenu change.
+- **Critère de fermeture** :
+  1. Mécanisme `contentHash` + invalidation en place. ✅
+  2. Test rouge-puis-vert vert dans la triple gate. ✅
+  3. UAT navigateur Adrien : Magicien niveau 1 voit ses cantrips, Occultiste niveau 1 idem.
+  4. Une session UAT post-déploiement confirme l'auto-flush sur build régénéré.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
@@ -122,3 +190,5 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## Résolu
 
 - **D2 — Point d'entrée S1 manquant** — résolu par commit `b522775` (`feat(library): library screen + nav shell (plan 13.6)`, 2026-05-16). Route `/` monte désormais une `<LibraryScreen />` réelle (query Firestore + grille de cards + empty state + CTA Créer), `<NavShell />` sticky persistant sur `/`, `/create`, `/character/:id`. Grep `Lyralei` / `letter="L"` / `hp={28}` / `hpMax={32}` à zéro dans le code de prod. Verrou de process « UAT navigateur obligatoire » ajouté à `CLAUDE.md`. Playwright (plan 13.5) à exécuter ensuite pour automatiser ce filet. Détails dans la section D2 ci-dessus.
+- **D3 — Wizard de création abandonné + 3 bugs structurels exposés** — résolu par commit `023c451` (`feat(wizard): unified pedagogical character creation (plan 05)`, 2026-05-17). Wizard guidé multi-step pédagogique livré, plan 17 absorbé. Les 3 bugs structurels (`setDoc(undefined)`, mismatch FR/EN spell.classes, classes Tailwind inexistantes) sont structurellement absents par construction (form-kit canonique, IDs EN, ignoreUndefinedProperties). Détails dans la section D3 ci-dessus.
+- **D7 — Cache Dexie du contenu public sans invalidation cross-build** — résolu (mécanisme) par commit `9559b9b` (`fix(content): dexie cache invalidation by contentHash`, 2026-05-17). `index.json` porte un `contentHash` sha-256, le loader purge le cache Dexie quand le hash change ; offline-safe, mémoïsé par session. Vigilance UAT post-déploiement encore due. Détails dans la section D7 ci-dessus.
