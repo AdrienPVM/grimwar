@@ -92,17 +92,41 @@ The player owns and edits this. **DMs of joined campaigns can also write** (enfo
   
   // Mechanical refs (all keys, resolve via content)
   // Multi-class supported v1: an array of classes with per-class levels.
+  // v2 (plan 13.7): chaque entrée porte ses 7 sous-choix SRD niveau 1.
   classes: Array<{
     classId: string,
     subclassId: string | null,
     level: number,                         // class level (1-20)
+    // Sous-choix L1 SRD 5.2.1 (plan 13.7 §0.1). Sentinelles si non-applicable.
+    clericDivineOrder: 'protector' | 'thaumaturge' | null,
+    druidPrimalOrder: 'magician' | 'warden' | null,
+    fighterFightingStyle: 'archery' | 'defense' | 'great-weapon-fighting' | 'two-weapon-fighting' | null,
+    weaponMasteries: string[],             // weapon ids (count selon la classe)
+    expertiseSkills: string[],             // skill ids (Roublard L1 = 2)
+    eldritchInvocations: string[],         // invocation ids (Warlock L1 = 1)
+    wizardSpellbookL1: string[],           // 6 spell ids inscrits (Wizard L1)
   }>,
   totalLevel: number,                      // denormalized sum (for fast queries + 5e prof bonus)
   primaryClassId: string,                  // for saves proficiency (5e rule: only first class grants saves)
-  
+
   ancestryId: string,
-  subancestryId: string | null,
+  // v2 (plan 13.7) : sous-objet groupé pour les sous-choix d'ascendance L1.
+  // Discriminé sémantiquement par ancestryId (la validation conditionnelle vit
+  // dans wizard-validation.ts, pas dans Zod). Sentinelles `null` si non-applicable.
+  ancestrySubChoices: {
+    dragonAncestry: 'black' | 'blue' | 'brass' | 'bronze' | 'copper' | 'gold' | 'green' | 'red' | 'silver' | 'white' | null,
+    tieflingLegacy: 'abyssal' | 'chthonic' | 'infernal' | null,
+    elfLineage: 'drow' | 'high-elf' | 'wood-elf' | null,
+    gnomeLineage: 'forest' | 'rock' | null,
+    goliathAncestry: 'cloud' | 'fire' | 'frost' | 'hill' | 'stone' | 'storm' | null,
+    ancestryCastingAbility: 'int' | 'sag' | 'cha' | null,
+    ancestryExtraSkill: string | null,     // skill id (Elfe Sens Aiguisés, Humain Skillful)
+    ancestrySize: 'small' | 'medium' | null,
+  },
+  // v2 (plan 13.7) : retiré, remplacé par `ancestrySubChoices.{elfLineage|gnomeLineage|...}`.
+  // subancestryId: string | null,
   backgroundId: string,
+  extraLanguages: string[],                // v2 (plan 13.7) : racine, agrège plusieurs sources
   
   experience: number,
   alignment: string,                       // e.g. 'NB'
@@ -669,4 +693,22 @@ function migrateCharacter(raw: unknown): Character {
 }
 ```
 
-Each migration documented in `docs/MIGRATIONS.md` (created when first migration ships).
+### v1 → v2 (plan 13.7, 2026-05-17)
+
+Helper : `src/features/sheet/upgrade-character-v1-to-v2.ts`. Appelé par `useCharacter` à la lecture Firestore — si `schemaVersion === 1`, le doc est upgradé en mémoire avec sentinelles + ré-écrit immédiatement (`setDoc` fire-and-forget).
+
+**Ce que la migration ajoute** :
+- `ancestrySubChoices: { ... }` (sous-objet groupé, 8 champs `null` par défaut).
+- `extraLanguages: []` à la racine.
+- Sur chaque entrée de `classes[]` : 7 sous-choix de classe (sentinelles `null` / `[]`).
+- `schemaVersion: 2`.
+
+**Ce que la migration retire** : `subancestryId` (SRD ne modélise pas les lignages comme sous-ascendances ; les vrais sous-choix sont dans `ancestrySubChoices`).
+
+**Décisions actées** :
+- **Pas de step de rattrapage UI** dans le wizard pour compléter les vieilles fiches : les rares fiches v1 (Lyralei + persos UAT) sont supprimées et recréées à neuf. Construire un mécanisme de migration UI pour 3 fiches jetables = sur-effort rejeté.
+- **Tolérance des sentinelles dans tous les modes de fiche** (Combat / Magie / Essence / Avoir / Âme) : robustesse non négociable.
+- **Wizard durci** : `wizard-validation.ts` (étendu en 13.8/13.9) refuse de submit un perso avec un sous-choix SRD requis en sentinelle. Garantie : on ne crée jamais de perso SRD-incomplet.
+- **firestore.rules option (b) tolérante** : `characterShapeOK` accepte v1 ET v2 en shape-only. Aucun deploy rules urgent.
+
+Migration documentée dans ce fichier (pas de `docs/MIGRATIONS.md` séparé pour le moment ; le pattern est suffisamment simple pour vivre ici).

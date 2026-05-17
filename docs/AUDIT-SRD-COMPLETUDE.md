@@ -5,6 +5,14 @@
 > **Sources de vérité** : `content-sources/extracted/raw/SRD_CC_v5.2.1.txt` (EN, source #1) + `content-sources/extracted/raw/FR_SRD_CC_v5.2.1.txt` (FR, traduction officielle).
 > **Statut** : constat seul, aucun code produit. Sert de base au cadrage du plan de comblage (jalon 1 = personnage L1 intégralement conforme).
 > **Périmètre** : tout ce qui est imposé à un personnage **niveau 1**. Sous-classes (L3) et progression sont hors-périmètre (couverts par le plan 18 level-up).
+>
+> **Statut adressage 2026-05-17 (plan 13.7 livré)** :
+> - Section A (sous-choix d'ascendance L1) — **adressé schéma + extraction** par plan 13.7 (`ancestrySubChoices` + `public/data/ancestries.json` enrichi). UI wizard à venir plan 13.8.
+> - Section B (sous-choix de classe L1) — **adressé schéma + extraction** par plan 13.7 (sous-choix portés par `classes[]` + `public/data/classes.json` enrichi). UI wizard à venir plan 13.9.
+> - Section C (tables transverses Mastery / Fighting Style / Invocations / Origin Feats) — **adressé extraction** par plan 13.7 (`feats.json` 17 entrées, `invocations.json` 28 entrées NOUVEAU, `items.json` `masteryProperty` sur 38 armes). Consommation UI : 13.8/13.9.
+> - Section D.3 (spells cleanup) — **plan 13.10**.
+> - Section D.4/D.5 (monsters, rules) — **hors périmètre L1**, S3 dédié.
+> - Système d'import custom pour contenu hors-SRD — **plan 13.11**.
 
 ---
 
