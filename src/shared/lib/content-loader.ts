@@ -26,6 +26,91 @@ const PRIVATE_TTL_MS = 1000 * 60 * 60; // 1h pour user/campaign
 
 const PUBLIC_CACHE_ID = '__public__';
 
+/**
+ * Invalidation du cache public par hash de contenu.
+ *
+ * Pourquoi : le TTL 7 jours ne détecte pas les changements de bundle. Adrien
+ * a vécu le bug une fois (plans/DEBT.md > D7 — "Page Sorts vide pour les
+ * lanceurs") : le bundle disque avait été régénéré FR → EN, mais le cache
+ * Dexie servait toujours l'ancien FR pendant 7j → SpellsStep filtrait sur
+ * `'wizard'` contre des `classes: ['magicien']` → liste vide.
+ *
+ * Solution : `scripts/build-public-content.ts` écrit un sha-256 du bundle
+ * dans `public/data/index.json` (clé `contentHash`). Au premier
+ * `loadPublicContent` d'une session, on fetch `index.json`, on compare au
+ * hash stocké dans Dexie. Différent → on vide les rows publiques.
+ *
+ * Mémoisé par module — un seul round-trip réseau par session, partagé entre
+ * tous les appels concurrents. Le TTL 7j reste comme garde-fou secondaire.
+ *
+ * Offline-safe : si `fetch('/data/index.json')` échoue (réseau coupé), on
+ * sert le cache existant sans crasher. C'est une PWA, le boot doit marcher
+ * sur "phone in a cave" (CLAUDE.md > Project overview).
+ */
+const PUBLIC_HASH_SETTINGS_KEY = 'public:contentHash';
+
+let publicCacheFreshnessPromise: Promise<void> | null = null;
+
+async function clearAllPublicContent(): Promise<void> {
+  // On ne peut pas filtrer par `where('id').equals(PUBLIC_CACHE_ID)` parce que
+  // la PK composite est `[type+id]`. On scanne toutes les rows et on supprime
+  // celles dont l'id correspond au scope public — c'est borné par le nombre
+  // de types (~12), pas de souci de perf.
+  const rows = await dexie.content.toArray();
+  const toDelete: [string, string][] = [];
+  for (const row of rows) {
+    if (row.id === PUBLIC_CACHE_ID) toDelete.push([row.type, row.id]);
+  }
+  if (toDelete.length > 0) {
+    await dexie.content.bulkDelete(toDelete);
+  }
+}
+
+async function ensurePublicCacheFreshness(): Promise<void> {
+  if (publicCacheFreshnessPromise) return publicCacheFreshnessPromise;
+  publicCacheFreshnessPromise = (async (): Promise<void> => {
+    let response: Response;
+    try {
+      response = await fetch('/data/index.json', { cache: 'no-cache' });
+    } catch {
+      // Réseau coupé — on garde le cache existant. C'est une PWA, le boot
+      // hors-ligne doit fonctionner.
+      console.warn('[content-loader] index.json indisponible (offline?) — cache public servi tel quel');
+      return;
+    }
+    if (!response.ok) {
+      console.warn(
+        `[content-loader] index.json HTTP ${response.status} — cache public servi tel quel`,
+      );
+      return;
+    }
+    let index: { contentHash?: unknown };
+    try {
+      index = (await response.json()) as { contentHash?: unknown };
+    } catch {
+      console.warn('[content-loader] index.json JSON invalide — cache public servi tel quel');
+      return;
+    }
+    const remoteHash = typeof index.contentHash === 'string' ? index.contentHash : null;
+    if (!remoteHash) {
+      // Index sans contentHash — fallback comportement legacy (TTL only).
+      // Garde-fou pour les déploiements pré-fix.
+      return;
+    }
+    const stored = await dexie.settings.get(PUBLIC_HASH_SETTINGS_KEY);
+    const localHash = typeof stored?.value === 'string' ? stored.value : null;
+    if (localHash === remoteHash) return;
+    await clearAllPublicContent();
+    await dexie.settings.put({ key: PUBLIC_HASH_SETTINGS_KEY, value: remoteHash });
+  })();
+  return publicCacheFreshnessPromise;
+}
+
+/** Reset hook — utilisé par les tests pour rejouer la freshness check entre cas. */
+export function __resetPublicCacheFreshness(): void {
+  publicCacheFreshnessPromise = null;
+}
+
 export type ContentScope = 'public' | 'user' | 'campaign';
 
 function cacheKey(scope: ContentScope, type: ContentTypeKey, scopeId?: string): [string, string] {
@@ -62,6 +147,11 @@ async function writeCache(
 export async function loadPublicContent<K extends ContentTypeKey>(
   type: K,
 ): Promise<ContentEntityByKey[K][]> {
+  // Première étape de chaque session : vérifier qu'un build récent ne nous a
+  // pas laissés sur un cache obsolète. Si le hash a changé, on vide tout le
+  // scope public avant de servir la moindre requête (cf. plans/DEBT.md > D7).
+  await ensurePublicCacheFreshness();
+
   const cached = await readCache('public', type);
   if (cached && Date.now() - cached.fetchedAt < ttlFor('public')) {
     return cached.data as ContentEntityByKey[K][];
@@ -229,10 +319,14 @@ export async function searchContent<K extends ContentTypeKey>(
   });
 }
 
-// Index file — counts per type, useful for the debug route + dashboards.
+// Index file — counts per type + contentHash for cache invalidation, also used
+// by the debug route + dashboards.
 export interface ContentIndex {
   generatedAt: string;
   counts: Record<string, number>;
+  /** sha-256 du bundle (cf. ensurePublicCacheFreshness). Optionnel pour
+   * compat avec les builds antérieurs au fix D7. */
+  contentHash?: string;
 }
 
 export async function loadContentIndex(): Promise<ContentIndex> {

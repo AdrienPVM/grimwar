@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-16T15:42:47.239Z",
+  "generatedAt": "2026-05-16T18:27:15.651Z",
   "counts": {
     "spells": 330,
     "monsters": 0,
@@ -13,5 +13,6 @@
     "feats": 1,
     "conditions": 15,
     "rules": 0
-  }
+  },
+  "contentHash": "a5cd583d6a253224ec92075372dde8e320f4b3cfab59f4d77cc6e305346023d8"
 }

@@ -20,6 +20,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import {
   ContentTypeSchemas,
   type ContentTypeKey,
@@ -93,6 +94,10 @@ async function main(): Promise<void> {
 
   let totalErrors = 0;
   const counts: Record<string, number> = {};
+  // Buffer pour calculer un hash stable du bundle complet. Voir plus bas
+  // (écriture d'index.json) — utilisé côté runtime par content-loader pour
+  // invalider le cache Dexie quand le contenu change.
+  const writtenByType: Record<string, string> = {};
 
   for (const type of TYPES) {
     const srdPath = join(SRD_DIR, `${type}.json`);
@@ -137,31 +142,52 @@ async function main(): Promise<void> {
       // Write what we can — non-validating entries are excluded
       const valid = merged.filter((e) => schema.safeParse(e).success);
       const outPath = join(OUT_DIR, `${type}.json`);
-      await writeFile(outPath, JSON.stringify(valid, null, 2), 'utf8');
+      const body = JSON.stringify(valid, null, 2);
+      await writeFile(outPath, body, 'utf8');
+      writtenByType[type] = body;
       counts[type] = valid.length;
       console.log(
         `  → ${outPath}: ${valid.length} valid (${merged.length - valid.length} dropped)`,
       );
     } else {
       const outPath = join(OUT_DIR, `${type}.json`);
-      await writeFile(outPath, JSON.stringify(result.data, null, 2), 'utf8');
+      const body = JSON.stringify(result.data, null, 2);
+      await writeFile(outPath, body, 'utf8');
+      writtenByType[type] = body;
       counts[type] = result.data.length;
       console.log(`  ✓ ${outPath}: ${result.data.length} entities`);
     }
   }
 
-  // Index file with counts (used by content-loader and debug route)
+  // Hash stable du bundle complet (sha-256 sur le contenu sérialisé, types
+  // triés pour reproductibilité). Permet à content-loader.ts d'invalider le
+  // cache Dexie quand le contenu change — sans dépendre d'un timestamp qui
+  // bouge à chaque build et qui ne détecterait pas un rollback. Décision
+  // ack'd 2026-05-16 (Adrien : "hash, pas timestamp" — un timestamp ne capte
+  // pas un retour en arrière).
+  const hash = createHash('sha256');
+  for (const type of [...TYPES].sort()) {
+    hash.update(type);
+    hash.update('\0');
+    hash.update(writtenByType[type] ?? '');
+    hash.update('\0');
+  }
+  const contentHash = hash.digest('hex');
+
+  // Index file with counts + contentHash (used by content-loader and debug route)
   const indexPath = join(OUT_DIR, 'index.json');
   await writeFile(
     indexPath,
     JSON.stringify(
-      { generatedAt: new Date().toISOString(), counts },
+      { generatedAt: new Date().toISOString(), counts, contentHash },
       null,
       2,
     ),
     'utf8',
   );
-  console.log(`\n  → ${indexPath}: ${Object.keys(counts).length} types indexed`);
+  console.log(
+    `\n  → ${indexPath}: ${Object.keys(counts).length} types indexed (hash ${contentHash.slice(0, 12)}…)`,
+  );
 
   if (totalErrors > 0) {
     console.error(`\n⚠ Total validation errors: ${totalErrors} (entries dropped)`);
