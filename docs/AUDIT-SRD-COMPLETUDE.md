@@ -42,24 +42,26 @@
 
 ### A.1 — Tableau ascendance × sous-choix
 
+> Statut « Géré wizard ? » mis à jour 2026-05-17 après livraison plan 13.8 (commits `84101bd` form-kit + hook, `558dd63` choosers, `46e5bec` help, `844631d` validation, `9deacc6` sheet renders, `adcb8cd` e2e). Le seul reste est `Human Versatile` (Origin Feat = variante `featAtLevel1`, owner = plan 14 cf. DEBT.md > D4).
+
 | Ascendance | Sous-choix imposé SRD | Géré wizard ? | Donnée présente ? | Note |
 |---|---|---|---|---|
-| **Dragonborn** | Draconic Ancestry — 10 types de dragon | **NON** | NON (prose `traits[].description`) | Souffle injouable sans type |
+| **Dragonborn** | Draconic Ancestry — 10 types de dragon | **OUI** (13.8) | OUI (`options.dragonAncestries`) | Souffle rendu en mode Combat (`breath-weapon-card`) |
 | Dwarf | aucun | N/A | N/A | OK |
-| **Elf** | Elven Lineage (3 options) | **PARTIEL** (UI `subancestryId` existe) | NON (`subancestries.json` = `[]`) | Pattern UI prêt mais données absentes |
-| Elf | Spellcasting Ability pour Elven Lineage (Int / Wis / Cha) | **NON** | NON | — |
-| Elf | Keen Senses skill (Insight / Perception / Survival) | **NON** | NON | — |
-| **Gnome** | Gnomish Lineage (2 options) | **NON** | NON | — |
-| Gnome | Spellcasting Ability pour Gnomish Lineage | **NON** | NON | — |
-| **Goliath** | Giant Ancestry — 6 options (Cloud/Fire/Frost/Hill/Stone/Storm) | **NON** | NON | Trait inutilisable sans choix |
+| **Elf** | Elven Lineage (3 options) | **OUI** (13.8) | OUI (`options.elfLineages`) | Cantrips de lignage rendus en mode Magie (`ancestry-spells-card`) |
+| Elf | Spellcasting Ability pour Elven Lineage (Int / Wis / Cha) | **OUI** (13.8) | constantes hardcodées | Sous-choix `ancestryCastingAbility` |
+| Elf | Keen Senses skill (Insight / Perception / Survival) | **OUI** (13.8) | constante `ELF_KEEN_SENSES_SKILLS` | Sous-choix `ancestryExtraSkill` (3 cartes) |
+| **Gnome** | Gnomish Lineage (2 options) | **OUI** (13.8) | OUI (`options.gnomeLineages`) | Cantrips rendus en mode Magie |
+| Gnome | Spellcasting Ability pour Gnomish Lineage | **OUI** (13.8) | constantes hardcodées | Sous-choix `ancestryCastingAbility` |
+| **Goliath** | Giant Ancestry — 6 options (Cloud/Fire/Frost/Hill/Stone/Storm) | **OUI** (13.8) | OUI (`options.giantAncestries`) | Carte d'effet rendue en mode Combat (`giant-ancestry-card`) ; compteur d'utilisations différé (TODO post-13.8) |
 | Halfling | aucun | N/A | N/A | OK |
-| **Human** | Size (Medium / Small) | **NON** | NON (à vérifier presence champ `size` dans character schema) | — |
-| Human | Skillful (1 skill au choix parmi 18) | **NON** | NON (peut-être hardcodé via étape Skills, à vérifier) | — |
-| Human | Versatile (1 Origin Feat parmi 4 — voir D4) | **NON** | NON | Recoupe variante featAtLevel1 mais distinct |
+| **Human** | Size (Medium / Small) | **OUI** (13.8) | constante `ANCESTRY_SIZE_VALUES` | Sous-choix `ancestrySize` |
+| Human | Skillful (1 skill au choix parmi 18) | **OUI** (13.8) | OUI (`options.skillfulOptions`) | Sous-choix `ancestryExtraSkill` (18 cartes) |
+| Human | Versatile (1 Origin Feat parmi 4 — voir D4) | **NON** | NON | Recoupe variante featAtLevel1 — owner plan 14, cf. DEBT.md > D4 |
 | Orc | aucun | N/A | N/A | OK |
-| **Tiefling** | Size (Medium / Small) | **NON** | NON | — |
-| **Tiefling** | Fiendish Legacy (3 options : Abyssal / Chthonic / Infernal) | **NON** | NON | Sorts d'héritage + résistance absents |
-| Tiefling | Spellcasting Ability pour Fiendish Legacy + Otherworldly Presence | **NON** | NON | Cantrip Thaumaturgy injouable sans elle |
+| **Tiefling** | Size (Medium / Small) | **OUI** (13.8) | constante `ANCESTRY_SIZE_VALUES` | Sous-choix `ancestrySize` |
+| **Tiefling** | Fiendish Legacy (3 options : Abyssal / Chthonic / Infernal) | **OUI** (13.8) | OUI (`options.tieflingLegacies`) | Cantrip + L3/L5 inscrits dans `knownSpells.ancestry`, rendus en mode Magie |
+| Tiefling | Spellcasting Ability pour Fiendish Legacy + Otherworldly Presence | **OUI** (13.8) | constantes hardcodées | Sous-choix `ancestryCastingAbility` partagé entre Héritage fiélon + Thaumaturgie |
 
 ### A.2 — Listes exactes (à intégrer dans `ancestries.json` après extension schema)
 
