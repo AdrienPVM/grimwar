@@ -217,10 +217,10 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - Visual regression / snapshots : non inclus en S1 (Percy/Argos en option S5).
 - **Critère de fermeture** :
   1. Suite Playwright livrée et fonctionnelle. ✅
-  2. Smoke central vert + sanity-check step 9 vérifié manuellement. ✅ (à confirmer à la livraison)
+  2. Step 9 sanity-check vérifié (LibraryScreen cassé → library-render.spec.ts FAILED ; reverté → vert). ✅
   3. Modal invariant vert même sans émulateur. ✅
   4. Tous les items différés tracés en `test.fixme()` (ne se perdent pas silencieusement). ✅
-  5. Cette entrée bascule en `## Résolu` avec le hash du commit `feat(e2e): playwright smoke + S1 deferred tests (plan 13.5)`. ⏳
+  5. Cette entrée bascule en `## Résolu` avec le hash du commit. ✅ — commit `f79aacb` (`feat(e2e): playwright smoke + S1 deferred tests (plan 13.5)`).
 
 ## Conventions de ce registre
 
@@ -234,3 +234,4 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **D2 — Point d'entrée S1 manquant** — résolu par commit `b522775` (`feat(library): library screen + nav shell (plan 13.6)`, 2026-05-16). Route `/` monte désormais une `<LibraryScreen />` réelle (query Firestore + grille de cards + empty state + CTA Créer), `<NavShell />` sticky persistant sur `/`, `/create`, `/character/:id`. Grep `Lyralei` / `letter="L"` / `hp={28}` / `hpMax={32}` à zéro dans le code de prod. Verrou de process « UAT navigateur obligatoire » ajouté à `CLAUDE.md`. Playwright (plan 13.5) à exécuter ensuite pour automatiser ce filet. Détails dans la section D2 ci-dessus.
 - **D3 — Wizard de création abandonné + 3 bugs structurels exposés** — résolu par commit `023c451` (`feat(wizard): unified pedagogical character creation (plan 05)`, 2026-05-17). Wizard guidé multi-step pédagogique livré, plan 17 absorbé. Les 3 bugs structurels (`setDoc(undefined)`, mismatch FR/EN spell.classes, classes Tailwind inexistantes) sont structurellement absents par construction (form-kit canonique, IDs EN, ignoreUndefinedProperties). Détails dans la section D3 ci-dessus.
 - **D7 — Cache Dexie du contenu public sans invalidation cross-build** — résolu (mécanisme) par commit `9559b9b` (`fix(content): dexie cache invalidation by contentHash`, 2026-05-17). `index.json` porte un `contentHash` sha-256, le loader purge le cache Dexie quand le hash change ; offline-safe, mémoïsé par session. Vigilance UAT post-déploiement encore due. Détails dans la section D7 ci-dessus.
+- **D8 — Suite e2e Playwright S1 livrée, dette détaillée S1 différée en placeholders** — résolu (filet) par commit `f79aacb` (`feat(e2e): playwright smoke + S1 deferred tests (plan 13.5)`, 2026-05-17). Suite Playwright câblée ; 2 specs UI-only (`library-render.spec.ts` + `wizard-modal.spec.ts`) tournent sans Java ; smoke + wizard se skippent proprement sans émulateur ; 7 areas plus profondes tracées en `test.fixme()`. Sanity-check step 9 vérifié. Détails dans la section D8 ci-dessus.
