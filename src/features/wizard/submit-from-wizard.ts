@@ -6,6 +6,7 @@ import { maxHp, totalLevel } from '@/shared/lib/rules/multiclass';
 import { getDb } from '@/shared/lib/firebase';
 import {
   CharacterSchema,
+  createEmptyClassSubChoices,
   type Character,
   type CharacterClassEntry,
 } from '@/shared/types/character';
@@ -84,6 +85,10 @@ export async function buildCharacterFromWizard(
     classId: c.classId,
     subclassId: null, // sous-classe choisie au level-up (plan 18)
     level: c.level,
+    // Sous-choix de classe niveau 1 SRD (plan 13.7 §0.1) — sentinelles ici.
+    // Le wizard 13.9 ajoutera des sous-étapes qui peupleront ces champs et
+    // refusera de submit si requis (Fighter Style, Rogue Expertise, etc.).
+    ...createEmptyClassSubChoices(),
   }));
   const computedTotalLevel = totalLevel(characterClasses);
 
@@ -186,8 +191,9 @@ export async function buildCharacterFromWizard(
     totalLevel: computedTotalLevel,
     primaryClassId: primaryClass.id,
     ancestryId: ancestry.id,
-    subancestryId: draft.subancestryId,
+    ancestrySubChoices: { ...draft.ancestrySubChoices },
     backgroundId: background.id,
+    extraLanguages: [],
     experience: 0,
     alignment: draft.alignment,
     abilities: { ...draft.abilities },
@@ -227,7 +233,7 @@ export async function buildCharacterFromWizard(
       skillUses: {},
     },
     portrait: { type: 'letter', value: (draft.name.trim()[0] ?? '?').toUpperCase() },
-    schemaVersion: 1,
+    schemaVersion: 2,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     updatedBy: uid,

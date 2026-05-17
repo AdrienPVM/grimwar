@@ -21,12 +21,136 @@ export type CharacterStatus = z.infer<typeof characterStatusSchema>;
 export const hitDieSchema = z.enum(['d6', 'd8', 'd10', 'd12']);
 export type HitDie = z.infer<typeof hitDieSchema>;
 
+/**
+ * Sous-choix de classe niveau 1 (SRD 5.2.1). Portés par chaque entrée du tableau
+ * `classes[]` (décision 13.7 §0.1) — sémantiquement correct en multi-classe.
+ *
+ * Toutes les valeurs sont `null` / `[]` par défaut (sentinelles). Le wizard
+ * 13.8/13.9 refusera de submit si un sous-choix requis pour la classe reste en
+ * sentinelle. La fiche tolère les sentinelles sans planter.
+ */
+export const fightingStyleSchema = z.enum([
+  'archery',
+  'defense',
+  'great-weapon-fighting',
+  'two-weapon-fighting',
+]);
+export type FightingStyle = z.infer<typeof fightingStyleSchema>;
+
+export const divineOrderSchema = z.enum(['protector', 'thaumaturge']);
+export type DivineOrder = z.infer<typeof divineOrderSchema>;
+
+export const primalOrderSchema = z.enum(['magician', 'warden']);
+export type PrimalOrder = z.infer<typeof primalOrderSchema>;
+
 export const characterClassEntrySchema = z.object({
   classId: slug,
   subclassId: slug.nullable(),
   level: z.number().int().min(1).max(20),
+  clericDivineOrder: divineOrderSchema.nullable(),
+  druidPrimalOrder: primalOrderSchema.nullable(),
+  fighterFightingStyle: fightingStyleSchema.nullable(),
+  weaponMasteries: z.array(slug),
+  expertiseSkills: z.array(slug),
+  eldritchInvocations: z.array(slug),
+  wizardSpellbookL1: z.array(slug),
 });
 export type CharacterClassEntry = z.infer<typeof characterClassEntrySchema>;
+
+/**
+ * Sous-choix d'ascendance niveau 1 (SRD 5.2.1). Groupés dans un sous-objet pour
+ * lisibilité racine + migration en un bloc (décision 13.7 §0.1).
+ *
+ * Tous les champs sont nullable. La validation conditionnelle « si Drakéide alors
+ * dragonAncestry requis » est portée par `wizard-validation.ts` au plan 13.8, pas
+ * par ce schéma — qui reste tolérant pour permettre les fiches v1 migrées et les
+ * ascendances sans sous-choix imposé (Nain, Halfling, Orc, etc.).
+ */
+export const dragonAncestrySchema = z.enum([
+  'black',
+  'blue',
+  'brass',
+  'bronze',
+  'copper',
+  'gold',
+  'green',
+  'red',
+  'silver',
+  'white',
+]);
+export type DragonAncestry = z.infer<typeof dragonAncestrySchema>;
+
+export const tieflingLegacySchema = z.enum(['abyssal', 'chthonic', 'infernal']);
+export type TieflingLegacy = z.infer<typeof tieflingLegacySchema>;
+
+export const elfLineageSchema = z.enum(['drow', 'high-elf', 'wood-elf']);
+export type ElfLineage = z.infer<typeof elfLineageSchema>;
+
+export const gnomeLineageSchema = z.enum(['forest', 'rock']);
+export type GnomeLineage = z.infer<typeof gnomeLineageSchema>;
+
+export const goliathAncestrySchema = z.enum([
+  'cloud',
+  'fire',
+  'frost',
+  'hill',
+  'stone',
+  'storm',
+]);
+export type GoliathAncestry = z.infer<typeof goliathAncestrySchema>;
+
+export const ancestrySizeSchema = z.enum(['small', 'medium']);
+export type AncestrySize = z.infer<typeof ancestrySizeSchema>;
+
+export const ancestrySubChoicesSchema = z.object({
+  dragonAncestry: dragonAncestrySchema.nullable(),
+  tieflingLegacy: tieflingLegacySchema.nullable(),
+  elfLineage: elfLineageSchema.nullable(),
+  gnomeLineage: gnomeLineageSchema.nullable(),
+  goliathAncestry: goliathAncestrySchema.nullable(),
+  ancestryCastingAbility: z.enum(['int', 'sag', 'cha']).nullable(),
+  ancestryExtraSkill: slug.nullable(),
+  ancestrySize: ancestrySizeSchema.nullable(),
+});
+export type AncestrySubChoices = z.infer<typeof ancestrySubChoicesSchema>;
+
+/** Sentinelle vide pour un perso fresh sans sous-choix d'ascendance posé. */
+export const EMPTY_ANCESTRY_SUB_CHOICES: AncestrySubChoices = {
+  dragonAncestry: null,
+  tieflingLegacy: null,
+  elfLineage: null,
+  gnomeLineage: null,
+  goliathAncestry: null,
+  ancestryCastingAbility: null,
+  ancestryExtraSkill: null,
+  ancestrySize: null,
+};
+
+/**
+ * Sentinelles pour les sous-choix de classe — factory qui retourne un objet
+ * mutable frais à chaque appel. Évite tout partage d'arrays entre entrées
+ * `classes[]` (un push dans `weaponMasteries` de la classe 0 ne doit jamais
+ * polluer la classe 1).
+ */
+export function createEmptyClassSubChoices(): {
+  clericDivineOrder: DivineOrder | null;
+  druidPrimalOrder: PrimalOrder | null;
+  fighterFightingStyle: FightingStyle | null;
+  weaponMasteries: string[];
+  expertiseSkills: string[];
+  eldritchInvocations: string[];
+  wizardSpellbookL1: string[];
+} {
+  return {
+    clericDivineOrder: null,
+    druidPrimalOrder: null,
+    fighterFightingStyle: null,
+    weaponMasteries: [],
+    expertiseSkills: [],
+    eldritchInvocations: [],
+    wizardSpellbookL1: [],
+  };
+}
 
 export const hitDicePoolSchema = z.object({
   classId: slug,
@@ -98,8 +222,9 @@ export const CharacterSchema = z.object({
   primaryClassId: slug,
 
   ancestryId: slug,
-  subancestryId: slug.nullable(),
+  ancestrySubChoices: ancestrySubChoicesSchema,
   backgroundId: slug,
+  extraLanguages: z.array(slug),
 
   experience: z.number().int().nonnegative(),
   alignment: z.string().max(8),
@@ -191,7 +316,7 @@ export const CharacterSchema = z.object({
 
   portrait: portraitSchema,
 
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(2),
   createdAt: z.unknown(),
   updatedAt: z.unknown(),
   updatedBy: z.string(),

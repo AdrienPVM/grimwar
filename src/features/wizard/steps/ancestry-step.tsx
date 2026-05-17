@@ -1,7 +1,6 @@
 import { useMemo, useState, type JSX } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
-import { Select } from '@/shared/components/form';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -18,7 +17,6 @@ export function AncestryStep(): JSX.Element {
   const setField = useWizardStore((s) => s.setField);
 
   const ancestries = useContent('ancestries');
-  const subancestries = useContent('subancestries');
 
   // Sélection persistante du panneau desktop (UAT post-plan 05). Ne se vide
   // jamais sur mouseleave/blur — bascule uniquement quand un autre item
@@ -35,11 +33,6 @@ export function AncestryStep(): JSX.Element {
     if (!modalId) return null;
     return ancestries.data.find((a) => a.id === modalId) ?? null;
   }, [modalId, ancestries.data]);
-
-  const subOptions = useMemo(() => {
-    if (!draft.ancestryId) return [];
-    return subancestries.data.filter((sa) => sa.ancestryId === draft.ancestryId);
-  }, [draft.ancestryId, subancestries.data]);
 
   return (
     <section className="flex flex-col gap-6">
@@ -60,7 +53,10 @@ export function AncestryStep(): JSX.Element {
                     type="button"
                     onClick={() => {
                       setField('ancestryId', a.id);
-                      setField('subancestryId', null);
+                      // Sous-choix d'ascendance niveau 1 (Drakéide / Tieffelin /
+                      // Elfe / Gnome / Goliath / Humain) sont posés par les
+                      // sous-étapes 13.8. À 13.7, ce step pose seulement
+                      // l'ancestryId — `ancestrySubChoices` reste en sentinelle.
                       setPreviewId(a.id);
                     }}
                     onMouseEnter={() => setPreviewId(a.id)}
@@ -123,24 +119,6 @@ export function AncestryStep(): JSX.Element {
           </div>
         ) : null}
       </DetailModal>
-
-      {subOptions.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <p className="font-title text-meta uppercase tracking-[0.18em] text-text-secondary">
-            {t('wizard.field.subancestry')}
-          </p>
-          <Select
-            placeholder={t('wizard.placeholder.choose')}
-            value={draft.subancestryId ?? ''}
-            onValueChange={(v) => setField('subancestryId', v || null)}
-            options={subOptions.map((sa) => ({
-              value: sa.id,
-              label: localize(sa.name),
-            }))}
-            aria-label={t('wizard.field.subancestry')}
-          />
-        </div>
-      ) : null}
     </section>
   );
 }

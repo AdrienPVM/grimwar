@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Character } from '@/shared/types/character';
+import type { Character, CharacterClassEntry } from '@/shared/types/character';
+import { createEmptyClassSubChoices } from '@/shared/types/character';
 import type { ClassEntity } from '@/shared/types/content';
+
+/** Helper local : entrée `classes[]` minimale avec sentinelles v2 (plan 13.7). */
+const mkClassEntry = (classId: string, level: number): CharacterClassEntry => ({
+  classId,
+  subclassId: null,
+  level,
+  ...createEmptyClassSubChoices(),
+});
 
 import {
   characterCasterLevel,
@@ -35,12 +44,35 @@ const baseCharacter = (): Character => ({
   id: 'lyralei',
   name: 'Lyralei',
   status: 'alive',
-  classes: [{ classId: 'wizard', subclassId: null, level: 5 }],
+  classes: [
+    {
+      classId: 'wizard',
+      subclassId: null,
+      level: 5,
+      clericDivineOrder: null,
+      druidPrimalOrder: null,
+      fighterFightingStyle: null,
+      weaponMasteries: [],
+      expertiseSkills: [],
+      eldritchInvocations: [],
+      wizardSpellbookL1: [],
+    },
+  ],
   totalLevel: 5,
   primaryClassId: 'wizard',
   ancestryId: 'elf',
-  subancestryId: null,
+  ancestrySubChoices: {
+    dragonAncestry: null,
+    tieflingLegacy: null,
+    elfLineage: null,
+    gnomeLineage: null,
+    goliathAncestry: null,
+    ancestryCastingAbility: null,
+    ancestryExtraSkill: null,
+    ancestrySize: null,
+  },
   backgroundId: 'sage',
+  extraLanguages: [],
   experience: 0,
   alignment: 'NB',
   abilities: { for: 8, dex: 14, con: 12, int: 16, sag: 12, cha: 10 },
@@ -73,7 +105,7 @@ const baseCharacter = (): Character => ({
   homeCampaignId: null,
   stats: { totalRolls: 0, totalD20Sum: 0, crits: 0, fumbles: 0, skillUses: {} },
   portrait: { type: 'letter', value: 'L' },
-  schemaVersion: 1,
+  schemaVersion: 2,
   createdAt: null,
   updatedAt: null,
   updatedBy: 'lyralei',
@@ -88,8 +120,8 @@ describe('deriveCasterEntries', () => {
   it('mappe les classes du perso vers leur progression depuis le catalogue', () => {
     const character = baseCharacter();
     character.classes = [
-      { classId: 'wizard', subclassId: null, level: 5 },
-      { classId: 'fighter', subclassId: null, level: 2 },
+      mkClassEntry('wizard', 5),
+      mkClassEntry('fighter', 2),
     ];
     const entries = deriveCasterEntries(character.classes, [wizard, fighter]);
     expect(entries).toEqual([
@@ -114,8 +146,8 @@ describe('characterCasterLevel', () => {
   it('Wizard 5 + Paladin 2 = 6 (5 + floor(2/2))', () => {
     const character = baseCharacter();
     character.classes = [
-      { classId: 'wizard', subclassId: null, level: 5 },
-      { classId: 'paladin', subclassId: null, level: 2 },
+      mkClassEntry('wizard', 5),
+      mkClassEntry('paladin', 2),
     ];
     expect(characterCasterLevel(character, [wizard, paladin])).toBe(6);
   });
@@ -123,8 +155,8 @@ describe('characterCasterLevel', () => {
   it('Wizard 3 + Warlock 5 = 3 (pact exclu)', () => {
     const character = baseCharacter();
     character.classes = [
-      { classId: 'wizard', subclassId: null, level: 3 },
-      { classId: 'warlock', subclassId: null, level: 5 },
+      mkClassEntry('wizard', 3),
+      mkClassEntry('warlock', 5),
     ];
     expect(characterCasterLevel(character, [wizard, warlock])).toBe(3);
   });
@@ -148,7 +180,7 @@ describe('unlockedSlotLevels', () => {
 
   it('inclut un niveau présent sur la fiche mais pas dans la table (cas custom)', () => {
     const character = baseCharacter();
-    character.classes = [{ classId: 'fighter', subclassId: null, level: 2 }];
+    character.classes = [mkClassEntry('fighter', 2)];
     character.totalLevel = 2;
     character.primaryClassId = 'fighter';
     character.spellSlots = { '1': { current: 0, max: 1 } };
@@ -199,15 +231,15 @@ describe('restoreSlot', () => {
 describe('hasPactProgression', () => {
   it('true pour un Warlock pur', () => {
     const character = baseCharacter();
-    character.classes = [{ classId: 'warlock', subclassId: null, level: 3 }];
+    character.classes = [mkClassEntry('warlock', 3)];
     expect(hasPactProgression(character, [warlock])).toBe(true);
   });
 
   it('true pour un multi-class Wizard + Warlock', () => {
     const character = baseCharacter();
     character.classes = [
-      { classId: 'wizard', subclassId: null, level: 3 },
-      { classId: 'warlock', subclassId: null, level: 2 },
+      mkClassEntry('wizard', 3),
+      mkClassEntry('warlock', 2),
     ];
     expect(hasPactProgression(character, [wizard, warlock])).toBe(true);
   });
@@ -219,7 +251,7 @@ describe('hasPactProgression', () => {
 
   it('false si le catalogue ne contient pas encore la classe (chargement async)', () => {
     const character = baseCharacter();
-    character.classes = [{ classId: 'warlock', subclassId: null, level: 3 }];
+    character.classes = [mkClassEntry('warlock', 3)];
     expect(hasPactProgression(character, [])).toBe(false);
   });
 });
@@ -228,8 +260,8 @@ describe('spellcastingClasses', () => {
   it('retourne uniquement les classes lanceuses du perso avec l\'ability résolue', () => {
     const character = baseCharacter();
     character.classes = [
-      { classId: 'wizard', subclassId: null, level: 5 },
-      { classId: 'fighter', subclassId: null, level: 2 },
+      mkClassEntry('wizard', 5),
+      mkClassEntry('fighter', 2),
     ];
     const out = spellcastingClasses(character, [wizard, fighter], (n) => n.fr);
     expect(out).toHaveLength(1);

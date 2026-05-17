@@ -144,8 +144,7 @@ export function RecapStep(): JSX.Element {
 
       <Block step="ancestry" onJump={goToStep} title={t('wizard.recap.ancestry')}>
         <p>
-          {t('wizard.recap.ancestryYou')} {localize(ancestry.name)}
-          {draft.subancestryId ? ` (${draft.subancestryId})` : ''}.
+          {t('wizard.recap.ancestryYou')} {localize(ancestry.name)}.
         </p>
         <p>
           {t('wizard.recap.speed')} : {ancestry.speed}m.

@@ -7,6 +7,18 @@ import {
   spellSlotsForCasterLevel,
   totalLevel,
 } from '../multiclass';
+import {
+  createEmptyClassSubChoices,
+  type CharacterClassEntry,
+} from '@/shared/types/character';
+
+/** Helper local : entrée `classes[]` minimale avec sentinelles v2 (plan 13.7). */
+const mk = (classId: string, level: number): CharacterClassEntry => ({
+  classId,
+  subclassId: null,
+  level,
+  ...createEmptyClassSubChoices(),
+});
 
 describe('proficiencyBonus', () => {
   it('matches SRD table', () => {
@@ -23,11 +35,11 @@ describe('proficiencyBonus', () => {
 
 describe('totalLevel', () => {
   it('sums multiclass levels', () => {
-    expect(totalLevel([{ classId: 'a', subclassId: null, level: 3 }])).toBe(3);
+    expect(totalLevel([mk('a', 3)])).toBe(3);
     expect(
       totalLevel([
-        { classId: 'a', subclassId: null, level: 5 },
-        { classId: 'b', subclassId: null, level: 2 },
+        mk('a', 5),
+        mk('b', 2),
       ]),
     ).toBe(7);
   });

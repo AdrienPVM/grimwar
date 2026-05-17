@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import type { AbilityCode } from '@/shared/types/character';
+import {
+  EMPTY_ANCESTRY_SUB_CHOICES,
+  type AbilityCode,
+  type AncestrySubChoices,
+} from '@/shared/types/character';
 
 /**
  * Slice du wizard de création de personnage (plan 05 v2).
@@ -51,7 +55,12 @@ export interface WizardDraft {
 
   // Étape 3 — Ascendance
   ancestryId: string | null;
-  subancestryId: string | null;
+  /**
+   * Sous-choix d'ascendance niveau 1 SRD (plan 13.7). Sentinelles (`null`) ici ;
+   * peuplées par les sous-étapes 13.8 (chooser par ascendance). Le wizard refuse
+   * de soumettre si un sous-choix requis pour l'ascendance choisie reste `null`.
+   */
+  ancestrySubChoices: AncestrySubChoices;
 
   // Étape 4 — Caractéristiques
   method: AbilityMethod;
@@ -93,7 +102,7 @@ export const EMPTY_DRAFT: WizardDraft = {
   classes: [],
   primaryClassId: null,
   ancestryId: null,
-  subancestryId: null,
+  ancestrySubChoices: { ...EMPTY_ANCESTRY_SUB_CHOICES },
   method: 'standard-array',
   abilities: { ...DEFAULT_ABILITIES },
   backgroundId: null,
@@ -157,6 +166,7 @@ function cloneDraft(): WizardDraft {
     spellsByClass: [],
     pickedSkills: [],
     personality: { ...EMPTY_DRAFT.personality },
+    ancestrySubChoices: { ...EMPTY_ANCESTRY_SUB_CHOICES },
   };
 }
 
@@ -293,10 +303,11 @@ export const useWizardStore = create<WizardStore>()(
       },
     }),
     {
-      // Clé bumpée vs v1 (`grimwar-wizard-draft`) → invalide les drafts du
-      // formulaire monopage abandonné, sans hook de migration nécessaire.
-      name: 'grimwar-wizard-draft-v2',
-      version: 2,
+      // Clé bumpée vs v2 (`grimwar-wizard-draft-v2`) → invalide les drafts qui
+      // contenaient encore `subancestryId` (retiré au plan 13.7). Pas de
+      // migration locale nécessaire : un draft incomplet est jetable.
+      name: 'grimwar-wizard-draft-v3',
+      version: 3,
     },
   ),
 );

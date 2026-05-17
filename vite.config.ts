@@ -85,6 +85,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
     css: false,
+    // `pool: 'forks'` contourne un bug tinypool 1.x ↔ Node 22 sur Windows
+    // (`TINYPOOL_WORKER_ID` undefined → crash au démarrage). Plan 13.7
+    // 2026-05-17. Bénin sur les autres plateformes ; on perd un peu de
+    // parallélisme mais la suite tourne en ~6 s.
+    pool: 'forks',
     // Exclut les specs Playwright (tests/e2e/) du runner Vitest. Sans ça, vitest
     // tente de charger `@playwright/test` dans jsdom et crash. Les e2e tournent
     // via `pnpm test:e2e`, jamais via `pnpm test`.
