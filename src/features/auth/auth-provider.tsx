@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
+import { env } from '@/shared/lib/env';
 import {
   signInAnonymouslyAndPersist,
   subscribeToAuthChanges,
@@ -33,6 +34,18 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     const unsubscribe = subscribeToAuthChanges((fbUser) => {
       setUser(fbUser ? toAuthUser(fbUser) : null);
       setReady(true);
+
+      // Hook e2e : quand on tourne contre l'émulateur Firebase, on expose le
+      // UID courant sur `window` pour que le fixture Playwright `seedCharacter`
+      // puisse écrire dans `users/{uid}/characters/{charId}` via l'Admin SDK
+      // sans inventer un user (qui forcerait un sign-in custom-token + un hook
+      // d'app supplémentaire). Strictement gated par `useFirebaseEmulator` :
+      // un build de prod (flag à `false`) n'expose rien. Cf. plan 13.5 §
+      // « seedCharacter fixture ».
+      if (env.useFirebaseEmulator && typeof window !== 'undefined') {
+        (window as Window & { __e2eAuthUid?: string | null }).__e2eAuthUid =
+          fbUser?.uid ?? null;
+      }
 
       if (settingsUnsubRef.current) {
         settingsUnsubRef.current();

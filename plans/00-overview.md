@@ -38,6 +38,7 @@ Tes copains rejoignent, créent leur PJ via wizard.
 | 18 | [Wizard level-up](./18-wizard-levelup.md) — pick class, HP, sous-classe, ASI/feat | TODO |
 | 19 | [Bibliothèque](./19-bibliotheque.md) — content browser, recherche, filtres | TODO |
 | 20 | [Sheet Âme mode](./20-sheet-ame.md) — personality, features, stats dashboard | TODO |
+| 20.5 | [E2e expansion S2 close](./20.5-e2e-expansion-s2-close.md) — purge des 4 dernières specs e2e S1 (sheet/essence/avoir/dice-digital) via le fixture `seedCharacter` | **NEW (close-out S2, owner DEBT.md > D8)** |
 
 ## Sprint 3 — DM tools + auto-journal + handouts + NPCs (8 plans)
 

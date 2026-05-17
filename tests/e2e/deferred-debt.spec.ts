@@ -1,83 +1,63 @@
 import { test } from '@playwright/test';
 
 /**
- * Specs e2e différés (plan 13.5 step 18-19 — purge dette consolidée).
+ * Specs e2e différées (plan 13.5 + complément 2026-05-17).
  *
- * Périmètre S1 acté avec Adrien (cf. brief 13.5) : on livre les **filets
- * golden-path** (smoke central + modal invariant + régression library) ET
- * la création rapide (`wizard.spec.ts`). Les couvertures plus profondes par
- * feature (combat, essence, magie, avoir, dice digital/physique) ne sont PAS
- * livrées comme suite exhaustive — elles seraient sur-dimensionnées pour S1.
+ * **État après complément 13.5** — 3 features e2e ont été extraites en specs
+ * réelles grâce au fixture `seedCharacter` (cf. `tests/e2e/seed-character.ts`)
+ * et ne figurent PLUS ici :
+ *   - Combat (HP ± + switch mode) → `combat.spec.ts`
+ *   - Magie (slots + spell list) → `magie.spec.ts`
+ *   - Dice physique (gate Touché/Raté) → `dice-physical.spec.ts`
  *
- * Chaque ligne ci-dessous est un placeholder `test.fixme()` :
- *   - L'entrée apparaît dans le rapport Playwright comme **TODO** (n'échoue
- *     pas la suite, ne se vert pas faussement).
- *   - Le commentaire précise le plan-cible où chaque test sera implémenté.
+ * **Les 4 placeholders restants ci-dessous** ne sont plus bloqués
+ * structurellement par l'absence du fixture (il existe). Ils sont
+ * explicitement assignés au **plan 20.5 (close-out S2)** — cf.
+ * `plans/20.5-e2e-expansion-s2-close.md` + `plans/DEBT.md > D8`. Si tu lis ce
+ * fichier après la clôture du sprint 2, ce module devrait avoir été
+ * supprimé (step 5 du plan 20.5).
  *
- * Note : ces fixmes ne ferment **pas** la dette e2e dans l'absolu ; ils la
- * **tracent** dans la suite Playwright pour qu'aucun item ne se perde
- * silencieusement. Cf. `plans/DEBT.md > D8` pour la trace consolidée et
- * `plans/13.5-playwright-smoke.md` section « Dette e2e S1 — purge ».
+ * Date de péremption explicite : avant la livraison du plan 21 (DM
+ * dashboard, premier plan S3). Si plan 21 atterrit sans que ces 4 specs
+ * soient verts, on aura encore raté une opportunité de purge.
  */
-test.describe('Dette e2e S1 différée — tracée mais non implémentée', () => {
+test.describe('Dette e2e S1 résiduelle — owner plan 20.5 close-out S2', () => {
   test.fixme(
-    'Sheet — /character/:id rend hero card, status strip 4 stats, switch modes (plan 06 step 17)',
+    'Sheet foundation — /character/:id rend hero card + status strip + 5 mode tabs + switch effectif (plan 06 step 17 → plan 20.5 step 1)',
     async () => {
-      // À implémenter quand la fiche est retravaillée (D6 — fiche desktop non
-      // responsive) OU dans un plan e2e dédié S5 avec CI. Le smoke teste déjà
-      // que la fiche RENDS (hero card + 2 mode tabs).
+      // Fixture seedCharacter disponible (cf. tests/e2e/seed-character.ts).
+      // Spec à écrire : seed fighterL3, navigate /character/:id, assert hero
+      // card + ≥4 chips status strip + 5 mode tabs, puis tap Combat → Magie
+      // → Essence et vérifier le panel id correspondant rendu.
     },
   );
 
   test.fixme(
-    'Combat — HP +/-, death saves modal, ressusciter, inspiration toggle (plan 07 step 16)',
+    'Essence — tap petal/save/skill → toast roll + toggle inspiration (plan 08 step 16 → plan 20.5 step 2)',
     async () => {
-      // À implémenter avec un fixture seedCharacter qui pré-pose une fiche
-      // Magicien niv. 5 via SDK admin contre l'émulateur. Cf. note dans
-      // fixtures.ts. Plan-cible : e2e expansion S5 ou plan dédié.
+      // Fixture disponible. Spec à écrire : seed fighterL3, onglet Essence,
+      // tap petal FOR, vérifier toast roll OU entrée dans historique des
+      // jets. Toggle inspiration → état persisté.
     },
   );
 
   test.fixme(
-    'Essence — tap petal/save/skill → toast roll, inspiration + advantage, exhaustion (plan 08 step 16)',
+    'Avoir — ajout/équipement item DB + refus structural free-string (plan 10 step 14 → plan 20.5 step 3)',
     async () => {
-      // Même contrainte (seedCharacter). Le toast d'historique des jets est
-      // déjà testé unitairement dans `roll-with-flags.test.ts`.
+      // Fixture disponible. Spec à écrire : seed fighterL3 avec inventory
+      // minimal, onglet Avoir, ouvrir « Ajouter item », sélectionner depuis
+      // DB (ex. quarterstaff). Anti-régression : aucun TextInput libre pour
+      // le slug item dans la modale d'ajout.
     },
   );
 
   test.fixme(
-    'Magie — cast un sort consomme un slot, concentration brise la précédente (plan 09 step 15)',
+    'Dice digital — cycle attaque + dégâts + badge D dans l\'historique (plan 12 step 31 → plan 20.5 step 4)',
     async () => {
-      // Comme ci-dessus. Tests unitaires `spell-slots.test.ts` couvrent déjà
-      // la mécanique de slots ; l'e2e validerait le câblage UI + Firestore.
-    },
-  );
-
-  test.fixme(
-    'Avoir — ajout/équipement/retrait item DB, refus free-string (plan 10 step 14)',
-    async () => {
-      // Tests unitaires `inventory-rules.test.ts` couvrent déjà le refus
-      // free-string côté logique ; l'e2e validerait qu'aucun chemin UI
-      // n'expose un TextInput libre pour le slug.
-    },
-  );
-
-  test.fixme(
-    'Dice digital — cycle attaque + dégâts + badge D dans l\'historique (plan 12 step 31)',
-    async () => {
-      // Tests unitaires `roll-with-flags.test.ts` + `use-dice.test.ts`
-      // couvrent déjà la mécanique. L'e2e validerait l'integration tray +
-      // toast + badge.
-    },
-  );
-
-  test.fixme(
-    'Dice physique — gate Touché/Raté manuel, Passer idempotent, badge P (plan 12.5 step 24)',
-    async () => {
-      // Tests unitaires `roll-with-flags-physical.test.ts` +
-      // `use-dice-physical.test.ts` couvrent déjà la mécanique. UAT physique
-      // d'Adrien valide le path E2E manuellement.
+      // Fixture disponible. Spec à écrire : seed fighterL3 (mode digital par
+      // défaut), onglet Combat, tap attaque, vérifier qu'aucune modale
+      // physique n'apparaît (= l'invariant clé du mode digital), ouvrir
+      // l'historique → entrée avec badge `D`.
     },
   );
 });

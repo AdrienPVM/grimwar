@@ -190,10 +190,10 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   3. UAT navigateur Adrien : Magicien niveau 1 voit ses cantrips, Occultiste niveau 1 idem.
   4. Une session UAT post-déploiement confirme l'auto-flush sur build régénéré.
 
-## D8 — Suite e2e Playwright S1 livrée, dette détaillée S1 différée en placeholders
+## D8 — Suite e2e Playwright S1 — filet livré + purge partielle (3/7), résiduel ownerisé plan 20.5
 
-- **Owner** : ce document + commit qui ajoute la suite Playwright (plan 13.5).
-- **Statut** : **résolue de filet** — les **filets golden-path** sont en place (smoke central + modal invariant + création rapide wizard). La dette plus profonde par feature (combat / essence / magie / avoir / dice digital + physique) est tracée mais différée — explicitement requalifiée par Adrien (« ne sur-dimensionne pas 13.5, son but est le FILET, pas une suite exhaustive »).
+- **Owner** : **plan 20.5** (`plans/20.5-e2e-expansion-s2-close.md`) — date de péremption explicite avant la livraison du plan 21 (DM dashboard, premier plan S3).
+- **Statut** : **purge partielle** (3/7 livrés). Le filet golden-path est en place (smoke + modal + library) ET le fixture `seedCharacter` (Admin SDK contre l'émulateur) débloque structurellement la dette résiduelle. 3 specs ont été livrées immédiatement par le complément 13.5 (2026-05-17) en utilisant ce fixture. Les 4 specs restantes ne sont plus structurellement bloquées — elles attendent leur plan owner pour être livrées.
 - **Cause-racine** : les plans 05 à 12.5 ont successivement différé leurs tests e2e en attendant un wiring Playwright dédié (option A — plan 13.5). Le wizard plan 05 nous a fait chasser à la main des bugs structurels (modale dans le flux du parent, white-on-white form-kit) qu'un e2e navigateur aurait attrapés avant l'UAT humain. Le filet automatique manquait.
 - **Conséquence** : tant que Playwright n'était pas câblé, chaque plan UI rejouait le rôle « UAT navigateur humain obligatoire » côté Adrien.
 - **Surface livrée par plan 13.5** :
@@ -207,20 +207,37 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - `firebase.json` : bloc `emulators` (auth 9099, firestore 8080, ui 4000).
   - Scripts : `pnpm test:e2e`, `pnpm e2e:install`, `pnpm e2e:emulators`.
   - `CLAUDE.md` : nouveau gate « `pnpm test:e2e` vert sur tout plan UI » + reformulation D5 (esprit vs lettre).
+- **Surface livrée par le complément 13.5 (2026-05-17)** — purge partielle 3/7 :
+  - `tests/e2e/seed-character.ts` — fixture central. Crée un perso pré-peuplé dans Firestore via Admin SDK (bypass rules) à `users/{uid}/characters/{charId}`, où `uid` est l'anon UID de la page courante exposé sur `window.__e2eAuthUid` par `auth-provider.tsx` quand `VITE_USE_FIREBASE_EMULATOR=true` (hook strictement test-only, jamais en prod). Exporte 2 presets : `fighterL3` (Guerrier dague équipée, cas Combat + dice physique) et `wizardL3` (Magicien 4 sorts connus, cas Magie). Extensible par ajout de presets.
+  - `tests/e2e/combat.spec.ts` — golden path Combat : seed → /character/:id → tab Combat → tap −1 PV → tap +1 PV. Vérifie le cycle Firestore round-trip HpMegaCard.
+  - `tests/e2e/magie.spec.ts` — golden path Magie : seed Magicien L3 → tab Magie → barre stats + au moins 2 sorts de la liste known visibles. Valide le câblage cache Dexie spells.json + Firestore knownSpells + rendu UI.
+  - `tests/e2e/dice-physical.spec.ts` — invariant clé du mode physique : seed Guerrier mode physique → tap attaque → `PhysicalRollModal` → face d20=12 (neutre) → Valider → `HitMissGateModal` apparaît → tap Raté → tout se ferme. Vérifie que la chain digital-style n'a pas été réintroduite par erreur.
+  - `src/features/auth/auth-provider.tsx` — hook `window.__e2eAuthUid` ajouté, gated par `env.useFirebaseEmulator` (jamais alimenté en prod).
+  - `tests/e2e/deferred-debt.spec.ts` — re-écrit : ne contient plus que les 4 placeholders résiduels (sheet/essence/avoir/dice-digital), tous re-targetés sur plan 20.5.
+  - `plans/20.5-e2e-expansion-s2-close.md` — stub de plan créé. Owner explicite des 4 specs restantes ; date de péremption = avant plan 21.
+  - `plans/00-overview.md` — ligne plan 20.5 ajoutée à la liste S2.
 - **Java/JRE requis** : OUI pour la majorité de la suite — l'émulateur Firebase tourne sur JVM. Sans Java :
   - `wizard-modal.spec.ts` → **tourne** (UI-only, lit `public/data/*.json`, ne fait pas d'écriture Firestore).
   - `smoke.spec.ts`, `wizard.spec.ts` → **skip propre** avec message visible (« Firestore emulator unreachable on 127.0.0.1:8080 »). Pas de faux-vert.
   - `deferred-debt.spec.ts` → TODO, n'échoue pas, n'a pas besoin de Java.
-- **Reste ouvert (différé)** :
-  - 6 areas e2e détaillées (`combat`, `essence`, `magie`, `avoir`, `dice-digital`, `dice-physical`) — tracées en `test.fixme()` dans `deferred-debt.spec.ts`. Ces tests unitaires des mêmes mécaniques (`hp-combat.test.ts`, `roll-with-flags.test.ts`, `spell-slots.test.ts`, `inventory-rules.test.ts`, `use-dice-physical.test.ts`, etc.) couvrent la logique pure. L'e2e validerait le câblage UI + Firestore complet — sera ajouté soit dans un plan e2e dédié S5 (quand CI atterrit, plan 40), soit feature-par-feature quand chacune est retouchée.
+- **Reste ouvert (4 specs, ownerisées plan 20.5)** :
+  - **Sheet foundation** (plan 06 step 17) — `/character/:id` rend hero card + status strip + 5 mode tabs + switch effectif entre modes. Pure lecture du doc Firestore après seed.
+  - **Essence mode** (plan 08 step 16) — tap petal/save/skill déclenche un toast roll + une entrée dans l'historique ; toggle inspiration persiste.
+  - **Avoir mode** (plan 10 step 14) — ajout d'item depuis la DB + équiper/retirer ; assertion structurale : aucun TextInput libre pour le slug item dans la modale d'ajout (refus free-string by construction).
+  - **Dice digital** (plan 12 step 31) — cycle attaque + dégâts SANS modale physique (invariant clé du mode digital) ; entrée historique avec badge `D`.
+  - Owner précis : **plan 20.5** (`plans/20.5-e2e-expansion-s2-close.md`). Date de péremption : avant la livraison du plan 21 (DM dashboard, premier plan S3) — si plan 21 atterrit sans ces 4 specs, la dette aura migré dans S3 et il faudra ré-ownerer.
+  - Tests unitaires des mêmes mécaniques (`hp-combat.test.ts`, `roll-with-flags.test.ts`, `spell-slots.test.ts`, `inventory-rules.test.ts`, `use-dice.test.ts`) couvrent déjà la logique pure ; ce qui manque, c'est le câblage UI + Firestore round-trip que seul un e2e prouve.
+- **Reste ouvert (transverse, non-bloquant pour la purge)** :
   - CI GH Actions pour automatiser les e2e à chaque PR : plan 40 (production deploy + perf).
   - Visual regression / snapshots : non inclus en S1 (Percy/Argos en option S5).
 - **Critère de fermeture** :
   1. Suite Playwright livrée et fonctionnelle. ✅
   2. Step 9 sanity-check vérifié (LibraryScreen cassé → library-render.spec.ts FAILED ; reverté → vert). ✅
   3. Modal invariant vert même sans émulateur. ✅
-  4. Tous les items différés tracés en `test.fixme()` (ne se perdent pas silencieusement). ✅
-  5. Cette entrée bascule en `## Résolu` avec le hash du commit. ✅ — commit `f79aacb` (`feat(e2e): playwright smoke + S1 deferred tests (plan 13.5)`).
+  4. Fixture `seedCharacter` livré et utilisable. ✅ — complément 13.5.
+  5. Combat / Magie / Dice physique purgés. ✅ — complément 13.5.
+  6. Sheet / Essence / Avoir / Dice digital purgés. ⏳ — plan 20.5.
+  7. Cette entrée bascule en « ## Résolu » quand 6 ✅. À ne PAS faire avant — actuellement la purge est partielle et la dette doit rester visible.
 
 ## Conventions de ce registre
 
@@ -234,4 +251,5 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **D2 — Point d'entrée S1 manquant** — résolu par commit `b522775` (`feat(library): library screen + nav shell (plan 13.6)`, 2026-05-16). Route `/` monte désormais une `<LibraryScreen />` réelle (query Firestore + grille de cards + empty state + CTA Créer), `<NavShell />` sticky persistant sur `/`, `/create`, `/character/:id`. Grep `Lyralei` / `letter="L"` / `hp={28}` / `hpMax={32}` à zéro dans le code de prod. Verrou de process « UAT navigateur obligatoire » ajouté à `CLAUDE.md`. Playwright (plan 13.5) à exécuter ensuite pour automatiser ce filet. Détails dans la section D2 ci-dessus.
 - **D3 — Wizard de création abandonné + 3 bugs structurels exposés** — résolu par commit `023c451` (`feat(wizard): unified pedagogical character creation (plan 05)`, 2026-05-17). Wizard guidé multi-step pédagogique livré, plan 17 absorbé. Les 3 bugs structurels (`setDoc(undefined)`, mismatch FR/EN spell.classes, classes Tailwind inexistantes) sont structurellement absents par construction (form-kit canonique, IDs EN, ignoreUndefinedProperties). Détails dans la section D3 ci-dessus.
 - **D7 — Cache Dexie du contenu public sans invalidation cross-build** — résolu (mécanisme) par commit `9559b9b` (`fix(content): dexie cache invalidation by contentHash`, 2026-05-17). `index.json` porte un `contentHash` sha-256, le loader purge le cache Dexie quand le hash change ; offline-safe, mémoïsé par session. Vigilance UAT post-déploiement encore due. Détails dans la section D7 ci-dessus.
-- **D8 — Suite e2e Playwright S1 livrée, dette détaillée S1 différée en placeholders** — résolu (filet) par commit `f79aacb` (`feat(e2e): playwright smoke + S1 deferred tests (plan 13.5)`, 2026-05-17). Suite Playwright câblée ; 2 specs UI-only (`library-render.spec.ts` + `wizard-modal.spec.ts`) tournent sans Java ; smoke + wizard se skippent proprement sans émulateur ; 7 areas plus profondes tracées en `test.fixme()`. Sanity-check step 9 vérifié. Détails dans la section D8 ci-dessus.
+
+> Note : D8 a été basculé en « ## Résolu » en commit `5df68b4` lors de la livraison initiale du plan 13.5, puis **ré-ouvert** au complément 2026-05-17 quand Adrien a refusé le report intégral en `test.fixme()`. La purge est désormais partielle (3/7), avec owner précis = plan 20.5. Cf. section D8 ci-dessus.
