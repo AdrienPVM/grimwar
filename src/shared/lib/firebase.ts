@@ -13,6 +13,7 @@ import {
   GoogleAuthProvider,
   EmailAuthProvider,
   browserLocalPersistence,
+  connectAuthEmulator,
   createUserWithEmailAndPassword,
   getAuth,
   linkWithCredential,
@@ -29,6 +30,7 @@ import {
   type User,
 } from 'firebase/auth';
 import {
+  connectFirestoreEmulator,
   enableIndexedDbPersistence,
   initializeFirestore,
   type Firestore,
@@ -56,6 +58,10 @@ function ensureApp(): FirebaseApp {
 
 function initAppCheck(app: FirebaseApp): void {
   if (cachedAppCheck) return;
+  // App Check n'est pas joignable depuis l'émulateur — l'activer ferait
+  // échouer toutes les requêtes en e2e. On le coupe explicitement en mode
+  // émulateur, même si une clé recaptcha est présente.
+  if (env.useFirebaseEmulator) return;
   if (!env.recaptchaSiteKey) {
     console.warn(
       '[firebase] App Check désactivé (VITE_RECAPTCHA_SITE_KEY absente). ' +
@@ -75,6 +81,15 @@ export function getFirebaseAuth(): Auth {
     // setPersistence est async ; on retourne immédiatement, la promesse se
     // résout avant le premier sign-in puisqu'on l'attend dans
     // signInAnonymouslyAndPersist.
+    if (env.useFirebaseEmulator) {
+      // `disableWarnings: true` évite la bannière jaune permanente côté SDK
+      // qui pollue les snapshots Playwright. Le host est codé en dur pour S1 ;
+      // si on doit le rendre paramétrable plus tard (CI multi-instance),
+      // exposer un VITE_FIREBASE_AUTH_EMULATOR_HOST.
+      connectAuthEmulator(cachedAuth, 'http://127.0.0.1:9099', {
+        disableWarnings: true,
+      });
+    }
   }
   return cachedAuth;
 }
@@ -86,6 +101,12 @@ export function getDb(): Firestore {
     // passer une clé absente sous forme d'undefined. Belt-and-braces vs. la
     // discipline manuelle d'omettre les clés à la construction (cf. inventory.ts).
     cachedDb = initializeFirestore(ensureApp(), { ignoreUndefinedProperties: true });
+    if (env.useFirebaseEmulator) {
+      // Doit être appelé AVANT la première opération Firestore. C'est garanti
+      // ici car `getDb()` lazy-init le client et l'émulateur est branché dans
+      // la même passe que le `initializeFirestore`.
+      connectFirestoreEmulator(cachedDb, '127.0.0.1', 8080);
+    }
     // Persistence offline : best-effort. Échec attendu si plusieurs onglets
     // ouverts ou si le navigateur ne supporte pas IndexedDB.
     enableIndexedDbPersistence(cachedDb).catch((err: unknown) => {

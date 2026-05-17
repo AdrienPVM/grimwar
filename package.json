@@ -13,6 +13,8 @@
     "test:watch": "vitest",
     "test:rules": "firebase emulators:exec --only firestore --project demo-grimwar \"vitest run tests/firestore-rules.test.ts\"",
     "test:e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps chromium",
+    "e2e:emulators": "firebase emulators:start --only firestore,auth --project demo-grimwar",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\" \"docs/**/*.md\" \"plans/**/*.md\"",
     "content:parse-aidedd": "tsx scripts/parse-aidedd.ts",

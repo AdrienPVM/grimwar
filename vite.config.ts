@@ -85,5 +85,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
     css: false,
+    // Exclut les specs Playwright (tests/e2e/) du runner Vitest. Sans ça, vitest
+    // tente de charger `@playwright/test` dans jsdom et crash. Les e2e tournent
+    // via `pnpm test:e2e`, jamais via `pnpm test`.
+    exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**'],
   },
 });

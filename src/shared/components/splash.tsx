@@ -8,6 +8,7 @@ export function Splash(): JSX.Element {
       className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-6 px-6"
       role="status"
       aria-live="polite"
+      data-splash="true"
     >
       <h1 className="font-display text-hero text-gold-bright drop-shadow-[0_0_24px_rgba(220,184,108,0.45)]">
         {t('splash.brand')}

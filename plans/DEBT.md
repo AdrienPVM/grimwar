@@ -118,12 +118,22 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **Statut** : **résolue de process** au commit qui ajoute la règle dans `CLAUDE.md` + `pnpm test:rules`. Reste ouverte tant qu'elle ne fait pas partie d'un check automatisable (pre-deploy hook ou CI gate).
 - **Cause-racine** : `firestore.rules` a été corrigé en local au commit `89c7e09` (`fix(firestore): align character rules with multi-class schema`, 2026-05-16) sans `firebase deploy --only firestore:rules` à la suite. Pendant la session UAT plan 05 du 16 mai, la création de personnage en prod a échoué avec « Missing or insufficient permissions » alors que `characterShapeOK` côté disque acceptait le payload. La triple gate locale ne pouvait rien détecter — c'est un décalage **disque ↔ live**, pas un bug applicatif.
 - **Conséquence** : 1 session de debug d'environ 1h, fausse piste « setDoc(undefined) bis » au début. Production cassée sur la fonctionnalité critique (création perso) tant que le deploy n'a pas eu lieu.
-- **Règle de process (mise en place)** :
-  1. **Tout changement de `firestore.rules` DOIT être suivi de `pnpm firebase:deploy:rules`** avant le commit qui se réclame "livré". Le commit qui livre la modif documente le deploy dans son corps.
-  2. **Tout changement de `firestore.indexes.json` DOIT être suivi de `pnpm firebase:deploy:indexes`**.
-  3. Avant tout `firebase deploy --only firestore:rules`, **exécuter `pnpm test:rules`** (rules-unit-testing contre l'émulateur). Bloque les régressions structurelles sur le schéma de characters.
-  4. Ajout d'un test rules-unit-testing dans `tests/firestore-rules.test.ts` qui vérifie : payload multi-class accepté, payload ancien schéma refusé, payload incomplet refusé, écriture cross-uid refusée, accès non-auth refusé.
-  5. Le test skip propre quand l'émulateur Firestore n'est pas joignable (warning visible dans la sortie). Pour exécuter pour de vrai : `pnpm test:rules` (requiert Firebase CLI + Java/JRE 11+ pour la JVM de l'émulateur).
+- **Règle de process (mise en place + reformulée 2026-05-17 plan 13.5)** :
+  1. **Toute modification de `firestore.rules` ou `firestore.indexes.json` doit être déployée AVANT la livraison du code applicatif qui la consomme** — c'est l'esprit, pas la lettre « avant le commit qui se réclame livré ». Les indexes peuvent être déclarés sur disque en avance (doc anticipée pour S2/S3) ; déployer un index vide est du bruit. Ne jamais livrer un code de prod qui REQUIERT une rule ou un index pas encore live.
+  2. Avant tout `firebase deploy --only firestore:rules`, **exécuter `pnpm test:rules`** (rules-unit-testing contre l'émulateur). Bloque les régressions structurelles sur le schéma de characters.
+  3. Ajout d'un test rules-unit-testing dans `tests/firestore-rules.test.ts` qui vérifie : payload multi-class accepté, payload ancien schéma refusé, payload incomplet refusé, écriture cross-uid refusée, accès non-auth refusé.
+  4. Le test skip propre quand l'émulateur Firestore n'est pas joignable (warning visible dans la sortie). Pour exécuter pour de vrai : `pnpm test:rules` (requiert Firebase CLI + Java/JRE 11+ pour la JVM de l'émulateur).
+- **Table de correspondance index → plan consommateur** (pour mémoire des déploiements à faire au moment où chaque plan atterrit) :
+  | Indexes déclarés | Plan consommateur (à déployer alors) |
+  |---|---|
+  | `campaigns` (composites) | Plan 14 — Campaigns model |
+  | `memberships` (composites) | Plan 14 — Campaigns model (+ plan 16 Memberships permissions) |
+  | `events` (composites) | Plan 22 — Event log |
+  | `sessions` (composites) | Plan 23 — Sessions |
+  | `encounters` (composites) | Plan 24 — Encounters |
+  | `handouts` (composites) | Plan 27 — Handouts |
+  | `npcs` (composites) | Plan 28 — NPCs |
+  Aucune query S1 (plans 01-13.6) ne dépend d'un index composite — `users/{uid}/characters/` utilise un seul orderBy `updatedAt desc` qui est auto-créé par Firestore. Donc aucun deploy d'indexes n'est requis tant que les plans S2+ ne sont pas livrés.
 - **Surface impactée** :
   - `CLAUDE.md` — section « Required at every commit » et nouveau bloc « Firebase deploy discipline » qui pointent ici.
   - `tests/firestore-rules.test.ts` — nouveau, charge `firestore.rules` dans l'émulateur via `@firebase/rules-unit-testing`.
@@ -179,6 +189,38 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   2. Test rouge-puis-vert vert dans la triple gate. ✅
   3. UAT navigateur Adrien : Magicien niveau 1 voit ses cantrips, Occultiste niveau 1 idem.
   4. Une session UAT post-déploiement confirme l'auto-flush sur build régénéré.
+
+## D8 — Suite e2e Playwright S1 livrée, dette détaillée S1 différée en placeholders
+
+- **Owner** : ce document + commit qui ajoute la suite Playwright (plan 13.5).
+- **Statut** : **résolue de filet** — les **filets golden-path** sont en place (smoke central + modal invariant + création rapide wizard). La dette plus profonde par feature (combat / essence / magie / avoir / dice digital + physique) est tracée mais différée — explicitement requalifiée par Adrien (« ne sur-dimensionne pas 13.5, son but est le FILET, pas une suite exhaustive »).
+- **Cause-racine** : les plans 05 à 12.5 ont successivement différé leurs tests e2e en attendant un wiring Playwright dédié (option A — plan 13.5). Le wizard plan 05 nous a fait chasser à la main des bugs structurels (modale dans le flux du parent, white-on-white form-kit) qu'un e2e navigateur aurait attrapés avant l'UAT humain. Le filet automatique manquait.
+- **Conséquence** : tant que Playwright n'était pas câblé, chaque plan UI rejouait le rôle « UAT navigateur humain obligatoire » côté Adrien.
+- **Surface livrée par plan 13.5** :
+  - `playwright.config.ts` — Chromium émulation Pixel 7, webServer `pnpm dev` avec `VITE_USE_FIREBASE_EMULATOR=true`, retain trace + screenshot + video on failure.
+  - `tests/e2e/fixtures.ts` — `expectModalInViewport(page)` (la primitive qui aurait attrapé le bug modale du wizard), `expectBodyScrollRestored`, `isEmulatorReachable`, `waitForAppReady`, helpers wizard.
+  - `tests/e2e/smoke.spec.ts` — smoke central : `/ rend LibraryScreen + CTA → /create wizard → submit Magicien → /character/:id rend → retour /`. **Étape 9 du plan : sanity-check « si LibraryScreen redevient placeholder, smoke casse » vérifié à la livraison.**
+  - `tests/e2e/wizard-modal.spec.ts` — invariant viewport/scroll de la `DetailModal` au tap `?` sur une carte de classe. **Tourne SANS émulateur** (la spec n'écrit pas en Firestore) → seul spec exécutable sans Java/JRE chez Adrien.
+  - `tests/e2e/wizard.spec.ts` — création < 2min (dette plan 05 step 24).
+  - `tests/e2e/deferred-debt.spec.ts` — `test.fixme()` placeholders pour les 6 areas plus profondes (sheet/combat/essence/magie/avoir/dice-digital/dice-physical), apparaissent comme TODO dans le rapport Playwright pour que rien ne se perde silencieusement.
+  - Émulateur wiring : `src/shared/lib/firebase.ts` connecte `connectAuthEmulator` + `connectFirestoreEmulator` quand `VITE_USE_FIREBASE_EMULATOR=true`. App Check désactivé en mode émulateur (sinon les requêtes échouent).
+  - `firebase.json` : bloc `emulators` (auth 9099, firestore 8080, ui 4000).
+  - Scripts : `pnpm test:e2e`, `pnpm e2e:install`, `pnpm e2e:emulators`.
+  - `CLAUDE.md` : nouveau gate « `pnpm test:e2e` vert sur tout plan UI » + reformulation D5 (esprit vs lettre).
+- **Java/JRE requis** : OUI pour la majorité de la suite — l'émulateur Firebase tourne sur JVM. Sans Java :
+  - `wizard-modal.spec.ts` → **tourne** (UI-only, lit `public/data/*.json`, ne fait pas d'écriture Firestore).
+  - `smoke.spec.ts`, `wizard.spec.ts` → **skip propre** avec message visible (« Firestore emulator unreachable on 127.0.0.1:8080 »). Pas de faux-vert.
+  - `deferred-debt.spec.ts` → TODO, n'échoue pas, n'a pas besoin de Java.
+- **Reste ouvert (différé)** :
+  - 6 areas e2e détaillées (`combat`, `essence`, `magie`, `avoir`, `dice-digital`, `dice-physical`) — tracées en `test.fixme()` dans `deferred-debt.spec.ts`. Ces tests unitaires des mêmes mécaniques (`hp-combat.test.ts`, `roll-with-flags.test.ts`, `spell-slots.test.ts`, `inventory-rules.test.ts`, `use-dice-physical.test.ts`, etc.) couvrent la logique pure. L'e2e validerait le câblage UI + Firestore complet — sera ajouté soit dans un plan e2e dédié S5 (quand CI atterrit, plan 40), soit feature-par-feature quand chacune est retouchée.
+  - CI GH Actions pour automatiser les e2e à chaque PR : plan 40 (production deploy + perf).
+  - Visual regression / snapshots : non inclus en S1 (Percy/Argos en option S5).
+- **Critère de fermeture** :
+  1. Suite Playwright livrée et fonctionnelle. ✅
+  2. Smoke central vert + sanity-check step 9 vérifié manuellement. ✅ (à confirmer à la livraison)
+  3. Modal invariant vert même sans émulateur. ✅
+  4. Tous les items différés tracés en `test.fixme()` (ne se perdent pas silencieusement). ✅
+  5. Cette entrée bascule en `## Résolu` avec le hash du commit `feat(e2e): playwright smoke + S1 deferred tests (plan 13.5)`. ⏳
 
 ## Conventions de ce registre
 

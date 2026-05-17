@@ -36,6 +36,11 @@ export const env = {
   // App Check est optionnel : si absent, on log un warning et on continue.
   // À activer avant déploiement public (plan 13).
   recaptchaSiteKey: optional('VITE_RECAPTCHA_SITE_KEY'),
+  // Émulateur Firebase : `true` ssi on tourne contre la Local Emulator Suite
+  // (e2e Playwright + dev local sans Internet). Off par défaut — un build de
+  // prod qui pointerait sur localhost serait une catastrophe. Cf. CLAUDE.md
+  // decision log (« e2e environment »).
+  useFirebaseEmulator: optional('VITE_USE_FIREBASE_EMULATOR') === 'true',
 } as const;
 
 export type Env = typeof env;
