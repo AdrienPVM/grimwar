@@ -1,6 +1,6 @@
 # Roadmap
 
-Five sprints, **42 plans**, milestone-driven. (Plan 12 split en 12 « digital » + 12.5 « physique » ; plans 13.6 « LibraryScreen + nav shell » et 13.5 « Playwright smoke » insérés après 12.5 suite à la première UAT navigateur ; **plan 17 « Wizard creation » absorbé par le plan 05 réécrit en wizard unique multi-step pédagogique** (acté 2026-05-16) — voir `plans/00-overview.md` > Swaps actés et `plans/DEBT.md > D3`.)
+Five sprints, **47 plans**, milestone-driven. (Plan 12 split en 12 « digital » + 12.5 « physique » ; plans 13.6 « LibraryScreen + nav shell » et 13.5 « Playwright smoke » insérés après 12.5 suite à la première UAT navigateur ; **plan 17 « Wizard creation » absorbé par le plan 05 réécrit en wizard unique multi-step pédagogique** (acté 2026-05-16) ; **5 plans de comblage SRD 5.2.1 « jalon 1 » insérés en `13.7→13.11` en fin de S1** (acté 2026-05-17 suite à `docs/AUDIT-SRD-COMPLETUDE.md` — un personnage L1 doit être intégralement conforme au SRD avant que les campagnes S2 aient du sens) — voir `plans/00-overview.md` > Swaps actés et `plans/DEBT.md > D3`.)
 
 ## Milestones at-a-glance
 
@@ -15,13 +15,13 @@ Five sprints, **42 plans**, milestone-driven. (Plan 12 split en 12 « digital »
 
 Rythme **soirs/weekends (~10h/sem)** : doubler → ~10-12 mois. Rythme **full-time** : ~3 mois.
 
-## Sprint 1 — Table-ready MVP (plans 01-13, dont 12.5, 13.6, 13.5)
+## Sprint 1 — Table-ready MVP (plans 01-13, dont 12.5, 13.6, 13.5, 13.7-13.11)
 
-Goal: Adrien charge l'app sur son téléphone à la prochaine session, ouvre la fiche de Lyralei, joue tap-to-roll (digital ou physique), fonctionne offline.
+Goal: Adrien charge l'app sur son téléphone à la prochaine session, ouvre la fiche d'un perso intégralement conforme au SRD 5.2.1 niveau 1, joue tap-to-roll (digital ou physique), fonctionne offline. **Politique de contenu lockée : bundle SRD-only** (voir `CLAUDE.md` decision log) ; le système d'import de contenu custom (plan 13.11) est livré comme mécanisme générique, vide de contenu.
 
-Ordre effectif S1 (swaps actés) : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → **12 (digital)** → **12.5 (physique)** → **13.6 (LibraryScreen + nav shell)** → **13.5 (Playwright smoke)** → **11 (radial FAB)** → 13.
+Ordre effectif S1 (swaps actés) : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → **12 (digital)** → **12.5 (physique)** → **13.6 (LibraryScreen + nav shell)** → **13.5 (Playwright smoke)** → **13.7 (SRD schema + scripts)** → **13.8 (sous-choix ascendance)** → **13.9 (sous-choix classe + Weapon Mastery)** → **13.10 (cleanup spells SRD)** → **13.11 (système d'import custom)** → **11 (radial FAB)** → 13.
 
-End of S1: l'app est jouable solo à table, en digital ou en physique. Adrien la déploie sur son téléphone. Le mode Âme manque encore (S2), le wizard est manuel, mais c'est jouable. Filet automatique e2e Playwright en place.
+End of S1: l'app est jouable solo à table, en digital ou en physique, avec un personnage **mécaniquement complet** selon le SRD 5.2.1 (souffle Drakéide jouable, Tieffelin avec ses sorts d'héritage, Clerc avec son Ordre divin, etc.). Adrien la déploie sur son téléphone. Le mode Âme manque encore (S2). Filet automatique e2e Playwright en place. Mécanisme d'import de contenu custom prêt, sans contenu bundlé au-delà du SRD.
 
 ## Sprint 2 — Campaigns + wizard level-up (plans 14-20, plan 17 absorbé en S1 plan 05)
 

@@ -1,8 +1,8 @@
 # Plans overview
 
-42 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
+47 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
 
-## Sprint 1 — Table-ready MVP (16 plans)
+## Sprint 1 — Table-ready MVP (21 plans)
 
 Adrien joue Lyralei sur son téléphone à la prochaine session.
 
@@ -22,6 +22,11 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 12.5 | [Dice mode — physical](./12.5-dice-physical.md) — `effectiveDiceMode`, `<PhysicalRollModal />`, settings user, pivot mode-aware, null-guards | **NEW (split de plan 12)** |
 | 13.6 | [LibraryScreen + nav shell](./13.6-library-and-nav-shell.md) — point d'entrée S1 + header sticky persistant, élimine Lyralei hardcodée | **NEW (avant 11)** |
 | 13.5 | [Playwright smoke e2e + purge dette](./13.5-playwright-smoke.md) — config Playwright + smoke headless + purge dette e2e S1 | **NEW (avant 11)** |
+| 13.7 | [SRD schema + scripts d'extraction](./13.7-srd-schema-and-extraction.md) — extension `Character` schema + scripts `extract-srd-*.ts` reproductibles + migration Dexie/Firestore | **NEW (comblage SRD jalon 1, point d'arrêt schéma)** |
+| 13.8 | [Sous-choix d'ascendance L1](./13.8-srd-ancestry-sub-choices.md) — Drakéide/Tieffelin/Elfe/Gnome/Goliath/Humain : embranchements wizard + render fiche + e2e | **NEW (comblage SRD jalon 1)** |
+| 13.9 | [Sous-choix de classe L1 + Weapon Mastery](./13.9-srd-class-sub-choices.md) — Divine Order / Primal Order / Fighting Style / Weapon Mastery (5 classes) / Expertise / Eldritch Invocations / langues | **NEW (comblage SRD jalon 1)** |
+| 13.10 | [Cleanup spells.json SRD strict](./13.10-srd-spells-cleanup.md) — 44 renames PHB 2014→SRD 5.2.1 + 21 ajouts + 18 retraits hors-SRD via script déterministe | **NEW (comblage SRD jalon 1)** |
+| 13.11 | [Système d'import de contenu custom](./13.11-custom-content-import.md) — format `grimwar-content-pack.json` + validateur + UI campagne (mécanisme générique vide de contenu) | **NEW (jalon 1 — mécanisme, pas de contenu)** |
 | 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12/12.5) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
@@ -95,6 +100,7 @@ i18n EN, account, GDPR, legal, PDF export, spell sigils, public stats, prod.
 - **Split 12 / 12.5** (acté 2026-05-16) : plan 12 originel scindé en plan 12 « digital » (scope original, livrable + jouable seul) et plan 12.5 « physique » (couche par-dessus). Raison : ~1200 lignes mélangeant réécriture moteur + nouvelle modale + slice + migration Dexie + 8 refactors = trop pour une seule passe d'UAT. Deux commits = rollback isolable + deux UAT ciblées. Ordre : 10 → 12 → UAT digital → 12.5 → UAT physique → 11 → 13.
 - **Insertion 13.6 + 13.5** (acté 2026-05-16) : la première UAT navigateur de plan 12.5 a révélé que `/` rendait un placeholder (emblème HP Lyralei hardcodé). Le S1 avait livré `SheetScreen` (plans 06-10) et le wizard `/create` (plan 05) sans jamais bâtir l'écran d'accueil ni un nav shell persistant — l'app n'avait pas de point d'entrée. 13.6 comble le trou (LibraryScreen + nav shell sticky), 13.5 verrouille la régression via Playwright headless. Tracé en `plans/DEBT.md > D2` (cause-racine + leçon de process). Ordre effectif S1 : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 12 → 12.5 → **13.6 → 13.5** → 11 → 13.
 - **Fusion 05 + 17 → 05 (acté 2026-05-16)** : l'UAT navigateur du plan 05 originel (formulaire monopage) a immédiatement révélé 3 bugs structurels (`setDoc(undefined)`, sorts vides pour lanceurs, inputs blanc-sur-blanc) **et** un défaut de conception (one-page non pédagogique, layout desktop non exploité). Décision Adrien : un seul parcours de création de PJ, wizard guidé multi-step, pédagogique pour débutant total, responsive mobile + desktop. Le plan 17 disparaît en tant que plan séparé (réduit à un stub de redirection). Le plan 05 est intégralement réécrit (`plans/05-character-creation-wizard.md`). Cause-racine + diagnostic des 3 bugs en `plans/DEBT.md > D3`. Dette `featAtLevel1` (variant lié à campagne) transférée au plan 14 — `plans/DEBT.md > D4`. Ordre effectif S1 inchangé (le 05 reste en place dans la séquence). Total plans 43 → 42.
+- **Insertion 13.7 → 13.11 (acté 2026-05-17)** : l'audit SRD 5.2.1 (`docs/AUDIT-SRD-COMPLETUDE.md`) a constaté que le wizard ne pose pas ~20 sous-choix imposés par le SRD au niveau 1 (type de dragon Drakéide, héritage Tieffelin, Ordre divin Clerc, Style de combat Guerrier, Weapon Mastery 5 classes, Expertise Roublard, etc.) et que `feats.json`/`spells.json` ont des trous + des entrées hors-SRD à purger. Décision Adrien : un personnage L1 doit être **intégralement conforme au SRD avant que les campagnes S2 aient du sens** — c'est de la finition S1, comme `13.5` et `13.6`. 5 plans insérés en suffixe sans renommer aucun plan existant : `13.7` (schema + scripts d'extraction, **point d'arrêt schéma avant code**), `13.8` (sous-choix ascendance), `13.9` (sous-choix classe + Weapon Mastery), `13.10` (cleanup spells SRD strict), `13.11` (système d'import de contenu custom — mécanisme uniquement, vide de contenu). Politique de contenu **bundle SRD-only** actée en parallèle dans `CLAUDE.md` decision log. Total plans 42 → 47. Sprint 1 passe à 21 plans. Aucun plan 14-40 renommé, aucune référence croisée à repister.
 
 ## Plan template
 
