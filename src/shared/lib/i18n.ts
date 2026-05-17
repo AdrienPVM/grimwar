@@ -126,6 +126,36 @@ export type StringKey =
   | 'wizard.spells.preparedDaily'
   | 'wizard.spells.helpHint'
   | 'wizard.spells.bundleEmpty'
+  // Sous-choix d'ascendance (plan 13.8)
+  | 'wizard.subchoice.section.title'
+  | 'wizard.subchoice.section.helper'
+  | 'wizard.subchoice.dragonAncestry.legend'
+  | 'wizard.subchoice.dragonAncestry.helper'
+  | 'wizard.subchoice.dragonAncestry.impactPrefix'
+  | 'wizard.subchoice.tieflingLegacy.legend'
+  | 'wizard.subchoice.tieflingLegacy.helper'
+  | 'wizard.subchoice.tieflingLegacy.resistancePrefix'
+  | 'wizard.subchoice.elfLineage.legend'
+  | 'wizard.subchoice.elfLineage.helper'
+  | 'wizard.subchoice.gnomeLineage.legend'
+  | 'wizard.subchoice.gnomeLineage.helper'
+  | 'wizard.subchoice.goliathAncestry.legend'
+  | 'wizard.subchoice.goliathAncestry.helper'
+  | 'wizard.subchoice.ancestryCastingAbility.legend'
+  | 'wizard.subchoice.ancestryCastingAbility.helper'
+  | 'wizard.subchoice.ancestryCastingAbility.int.description'
+  | 'wizard.subchoice.ancestryCastingAbility.sag.description'
+  | 'wizard.subchoice.ancestryCastingAbility.cha.description'
+  | 'wizard.subchoice.ancestryExtraSkill.legend'
+  | 'wizard.subchoice.ancestryExtraSkill.elfHelper'
+  | 'wizard.subchoice.ancestryExtraSkill.humanHelper'
+  | 'wizard.subchoice.ancestrySize.legend'
+  | 'wizard.subchoice.ancestrySize.helper'
+  | 'wizard.subchoice.ancestrySize.small.title'
+  | 'wizard.subchoice.ancestrySize.small.impact'
+  | 'wizard.subchoice.ancestrySize.medium.title'
+  | 'wizard.subchoice.ancestrySize.medium.impact'
+  | 'wizard.subchoice.unmet.aria'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -363,6 +393,52 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.spells.helpHint': 'Survole un sort pour voir ce qu’il fait.',
     'wizard.spells.bundleEmpty':
       "Aucun sort n’a été trouvé dans le grimoire pour cette classe. Le contenu n’a pas été chargé correctement — recharge la page. Si le problème persiste, signale-le.",
+    // Sous-choix d'ascendance — plan 13.8
+    'wizard.subchoice.section.title': 'Précise ton ascendance',
+    'wizard.subchoice.section.helper':
+      'Quelques choix supplémentaires affinent ton personnage. Ils déterminent des aptitudes que tu utiliseras à la fiche.',
+    'wizard.subchoice.dragonAncestry.legend': 'Type de dragon',
+    'wizard.subchoice.dragonAncestry.helper':
+      'Choisis le dragon dont tu descends. Cela fixe le type de dégâts de ton souffle et la résistance que tu possèdes.',
+    'wizard.subchoice.dragonAncestry.impactPrefix': 'Dégâts et résistance',
+    'wizard.subchoice.tieflingLegacy.legend': 'Héritage fiélon',
+    'wizard.subchoice.tieflingLegacy.helper':
+      'Trois lignées infernales possibles. Chacune débloque un sort mineur (cantrip) au niveau 1 et des sorts plus puissants aux niveaux 3 et 5, avec une résistance correspondante.',
+    'wizard.subchoice.tieflingLegacy.resistancePrefix': 'Résistance',
+    'wizard.subchoice.elfLineage.legend': 'Lignage elfique',
+    'wizard.subchoice.elfLineage.helper':
+      'Trois lignages possibles : Drow (vision dans le noir étendue), Haut-elfe (sortilèges arcaniques) ou Elfe sylvestre (mobilité accrue). Chacun apporte son propre cantrip.',
+    'wizard.subchoice.gnomeLineage.legend': 'Lignage gnome',
+    'wizard.subchoice.gnomeLineage.helper':
+      "Forêts (illusion + parler aux animaux) ou Roches (réparation + petits appareils mécaniques).",
+    'wizard.subchoice.goliathAncestry.legend': 'Ascendance gigante',
+    'wizard.subchoice.goliathAncestry.helper':
+      "Tu descends d'une lignée de géants. Choisis laquelle — chacune débloque un effet utilisable un nombre limité de fois par repos long.",
+    'wizard.subchoice.ancestryCastingAbility.legend': "Caractéristique d'incantation",
+    'wizard.subchoice.ancestryCastingAbility.helper':
+      "Cette caractéristique détermine la puissance des sorts liés à ton ascendance. Choisis selon le personnage que tu joues.",
+    'wizard.subchoice.ancestryCastingAbility.int.description':
+      "Savoir étudié, analyse, théorie magique.",
+    'wizard.subchoice.ancestryCastingAbility.sag.description':
+      "Intuition, instinct, perception de l’invisible.",
+    'wizard.subchoice.ancestryCastingAbility.cha.description':
+      "Présence, force de persuasion, conviction.",
+    'wizard.subchoice.ancestryExtraSkill.legend': 'Compétence supplémentaire',
+    'wizard.subchoice.ancestryExtraSkill.elfHelper':
+      "Sens Aiguisés (Elfe) : choisis une compétence parmi Perspicacité, Perception ou Survie.",
+    'wizard.subchoice.ancestryExtraSkill.humanHelper':
+      "Compétent (Humain) : maîtrise une compétence supplémentaire de ton choix.",
+    'wizard.subchoice.ancestrySize.legend': 'Taille',
+    'wizard.subchoice.ancestrySize.helper':
+      'Influence ton encombrement en combat, les armes lourdes que tu peux manier et la monture qui peut te porter.',
+    'wizard.subchoice.ancestrySize.small.title': 'Petite (P)',
+    'wizard.subchoice.ancestrySize.small.impact':
+      "Tu peux te déplacer dans l'espace d'une créature plus grande, mais tu utilises les armes lourdes avec désavantage.",
+    'wizard.subchoice.ancestrySize.medium.title': 'Moyenne (M)',
+    'wizard.subchoice.ancestrySize.medium.impact':
+      "Aucune restriction sur les armes. Taille humaine standard.",
+    'wizard.subchoice.unmet.aria':
+      "Certains sous-choix d'ascendance restent à poser avant de continuer.",
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -595,6 +671,52 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.spells.helpHint': 'Hover a spell to see what it does.',
     'wizard.spells.bundleEmpty':
       'No spells found in the grimoire for this class. The content failed to load — reload the page. If it persists, report it.',
+    // Ancestry sub-choices — plan 13.8
+    'wizard.subchoice.section.title': 'Refine your ancestry',
+    'wizard.subchoice.section.helper':
+      'A few extra choices shape your character. They unlock abilities you will use on your sheet.',
+    'wizard.subchoice.dragonAncestry.legend': 'Dragon type',
+    'wizard.subchoice.dragonAncestry.helper':
+      'Pick the dragon you descend from. This sets your breath damage type and the matching resistance.',
+    'wizard.subchoice.dragonAncestry.impactPrefix': 'Damage and resistance',
+    'wizard.subchoice.tieflingLegacy.legend': 'Fiendish legacy',
+    'wizard.subchoice.tieflingLegacy.helper':
+      'Three infernal lineages. Each grants a level 1 cantrip and stronger spells at levels 3 and 5, plus a matching resistance.',
+    'wizard.subchoice.tieflingLegacy.resistancePrefix': 'Resistance',
+    'wizard.subchoice.elfLineage.legend': 'Elven lineage',
+    'wizard.subchoice.elfLineage.helper':
+      'Three options: Drow (extended darkvision), High Elf (arcane spell flexibility), or Wood Elf (extra speed). Each grants its own cantrip.',
+    'wizard.subchoice.gnomeLineage.legend': 'Gnomish lineage',
+    'wizard.subchoice.gnomeLineage.helper':
+      'Forest (illusion + speak with animals) or Rock (mending + tiny clockwork devices).',
+    'wizard.subchoice.goliathAncestry.legend': 'Giant ancestry',
+    'wizard.subchoice.goliathAncestry.helper':
+      'You descend from a giant lineage. Pick which one — each unlocks an effect usable a limited number of times per long rest.',
+    'wizard.subchoice.ancestryCastingAbility.legend': 'Spellcasting ability',
+    'wizard.subchoice.ancestryCastingAbility.helper':
+      'This ability sets the power of the spells tied to your ancestry. Pick to match your character concept.',
+    'wizard.subchoice.ancestryCastingAbility.int.description':
+      'Studied knowledge, analysis, magical theory.',
+    'wizard.subchoice.ancestryCastingAbility.sag.description':
+      'Intuition, instinct, awareness of the unseen.',
+    'wizard.subchoice.ancestryCastingAbility.cha.description':
+      'Presence, conviction, force of personality.',
+    'wizard.subchoice.ancestryExtraSkill.legend': 'Extra skill',
+    'wizard.subchoice.ancestryExtraSkill.elfHelper':
+      'Keen Senses (Elf): pick one skill among Insight, Perception or Survival.',
+    'wizard.subchoice.ancestryExtraSkill.humanHelper':
+      'Skillful (Human): proficiency in one additional skill of your choice.',
+    'wizard.subchoice.ancestrySize.legend': 'Size',
+    'wizard.subchoice.ancestrySize.helper':
+      'Affects your combat footprint, heavy-weapon handling, and which mounts can carry you.',
+    'wizard.subchoice.ancestrySize.small.title': 'Small (S)',
+    'wizard.subchoice.ancestrySize.small.impact':
+      "You can move through a larger creature's space, but you wield heavy weapons with disadvantage.",
+    'wizard.subchoice.ancestrySize.medium.title': 'Medium (M)',
+    'wizard.subchoice.ancestrySize.medium.impact':
+      'No restriction on weapons. Standard human-size build.',
+    'wizard.subchoice.unmet.aria':
+      "Some ancestry sub-choices remain to be set before you can continue.",
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel

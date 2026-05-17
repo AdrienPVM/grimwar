@@ -7,6 +7,8 @@ import {
 } from '@/shared/lib/rules/abilities';
 import type { WizardDraft, WizardStepId } from '@/shared/lib/slices/wizard-slice';
 
+import { isAncestrySubChoicesCompleted } from './steps/ancestry/use-ancestry-sub-choices';
+
 /**
  * Validation per-step (plan 05 §C.3.c).
  *
@@ -44,7 +46,11 @@ export function isClassValid({ draft }: ValidationContext): boolean {
 }
 
 export function isAncestryValid({ draft }: ValidationContext): boolean {
-  return Boolean(draft.ancestryId);
+  if (!draft.ancestryId) return false;
+  // Les sous-choix d'ascendance niveau 1 SRD (plan 13.8) sont obligatoires
+  // quand l'ascendance en impose. Pour Nain/Halfelin/Orc le check est
+  // automatiquement vrai (aucun sous-choix requis).
+  return isAncestrySubChoicesCompleted(draft.ancestryId, draft.ancestrySubChoices);
 }
 
 export function isAbilitiesValid({ draft }: ValidationContext): boolean {

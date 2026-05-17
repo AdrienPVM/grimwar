@@ -12,6 +12,8 @@ import { HelpPanel, StepIntro } from '../help/help-panel';
 import { HelpTriggerButton } from '../help/help-trigger-button';
 import { ListWithHelpPanel } from '../help/list-with-help-panel';
 
+import { AncestrySubChoicesSection } from './ancestry/ancestry-sub-choices-section';
+
 export function AncestryStep(): JSX.Element {
   const draft = useWizardStore((s) => s.draft);
   const setField = useWizardStore((s) => s.setField);
@@ -53,10 +55,14 @@ export function AncestryStep(): JSX.Element {
                     type="button"
                     onClick={() => {
                       setField('ancestryId', a.id);
-                      // Sous-choix d'ascendance niveau 1 (Drakéide / Tieffelin /
-                      // Elfe / Gnome / Goliath / Humain) sont posés par les
-                      // sous-étapes 13.8. À 13.7, ce step pose seulement
-                      // l'ancestryId — `ancestrySubChoices` reste en sentinelle.
+                      // Les sous-choix de l'ascendance niveau 1 sont rendus
+                      // par <AncestrySubChoicesSection> ci-dessous (plan 13.8).
+                      // Le simple changement d'`ancestryId` ne purge PAS
+                      // `ancestrySubChoices` côté state — c'est volontaire :
+                      // si l'utilisateur revient sur Drakéide après avoir
+                      // essayé Tieffelin, ses anciens sous-choix Drakéide
+                      // sont retrouvés. La sentinelle reste là quand un
+                      // sous-choix n'a jamais été posé.
                       setPreviewId(a.id);
                     }}
                     onMouseEnter={() => setPreviewId(a.id)}
@@ -99,6 +105,8 @@ export function AncestryStep(): JSX.Element {
           ) : null
         }
       />
+
+      <AncestrySubChoicesSection />
 
       <DetailModal
         open={modalAncestry !== null}
