@@ -131,6 +131,8 @@ export function WizardScreen(): JSX.Element {
             steps={visibleSteps.map((m) => m.id)}
             current={currentStep}
             visited={visitedSteps}
+            currentOrder={currentOrder}
+            totalVisible={totalVisible}
             onJump={(id) => visitedSteps.includes(id) && goToStep(id)}
           />
         </header>
@@ -204,47 +206,90 @@ function ProgressBar({
   steps,
   current,
   visited,
+  currentOrder,
+  totalVisible,
   onJump,
 }: {
   steps: WizardStepId[];
   current: WizardStepId;
   visited: WizardStepId[];
+  currentOrder: number;
+  totalVisible: number;
   onJump: (id: WizardStepId) => void;
 }): JSX.Element {
+  /*
+   * UAT plan 05 §5 : sur mobile, les bulles « ronde » étaient illisibles
+   * (vides + jaunes). Nouvelle approche :
+   *   - ligne de texte explicite « Étape N/M — Nom » au-dessus,
+   *   - barre fine sous le texte avec segment courant éclairé,
+   *   - les segments restent cliquables (44px) pour revenir aux étapes
+   *     visitées. Le texte clarifie le contexte, la barre donne la
+   *     progression visuelle.
+   */
   return (
-    <div
-      className="mt-4 flex items-center gap-1"
-      role="progressbar"
-      aria-label={t('wizard.progress.aria')}
-      aria-valuemin={1}
-      aria-valuemax={steps.length}
-      aria-valuenow={steps.indexOf(current) + 1}
-    >
-      {steps.map((id) => {
-        const isCurrent = id === current;
-        const isVisited = visited.includes(id);
-        return (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onJump(id)}
-            disabled={!isVisited}
-            aria-label={`${t(STEP_TITLE_KEY[id])}`}
-            className={cn(
-              'h-1.5 flex-1 rounded-full transition-colors duration-200 ease-base',
-              'min-h-[44px] sm:min-h-[12px] py-[20px] sm:py-0 -mx-0.5 px-0.5',
-              'disabled:cursor-not-allowed',
-              isCurrent
-                ? 'bg-gold-bright shadow-[0_0_12px_rgba(253,233,180,0.5)]'
-                : isVisited
-                  ? 'bg-gold-dim hover:bg-gold cursor-pointer'
-                  : 'bg-white/[0.08]',
-            )}
-          >
-            <span className="sr-only">{t(STEP_TITLE_KEY[id])}</span>
-          </button>
-        );
-      })}
+    <div className="mt-4 flex flex-col gap-2">
+      <p className="font-title text-meta uppercase tracking-[0.18em] text-gold-bright">
+        <span className="text-text-tertiary">{t('wizard.progress.label')}</span>{' '}
+        <span aria-hidden="true">{currentOrder}</span>
+        <span aria-hidden="true" className="text-text-tertiary">
+          {' / '}
+        </span>
+        <span aria-hidden="true">{totalVisible}</span>
+        <span aria-hidden="true" className="mx-2 text-text-tertiary">
+          —
+        </span>
+        <span>{t(STEP_TITLE_KEY[current])}</span>
+        <span className="sr-only">
+          {currentOrder} / {totalVisible}
+        </span>
+      </p>
+      <div
+        className="flex items-stretch gap-1.5"
+        role="progressbar"
+        aria-label={t('wizard.progress.aria')}
+        aria-valuemin={1}
+        aria-valuemax={steps.length}
+        aria-valuenow={steps.indexOf(current) + 1}
+      >
+        {steps.map((id) => {
+          const isCurrent = id === current;
+          const isVisited = visited.includes(id);
+          // UAT plan 05 §6 : les segments coloraient le touch target (44px de
+          // haut sur mobile via min-h), donc visuellement écrasants. On
+          // sépare maintenant le touch target (button avec padding invisible)
+          // de la barre colorée (span fin h-1.5). Discret à l'œil, accessible
+          // au doigt.
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onJump(id)}
+              disabled={!isVisited}
+              aria-label={t(STEP_TITLE_KEY[id])}
+              className={cn(
+                'group flex flex-1 items-center justify-stretch',
+                'min-h-[44px] sm:min-h-0 py-[19px] sm:py-0',
+                'disabled:cursor-not-allowed',
+                'focus-visible:outline-none',
+              )}
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'block h-[3px] w-full rounded-full transition-colors duration-200 ease-base',
+                  isCurrent
+                    ? 'bg-gold-bright shadow-[0_0_8px_rgba(253,233,180,0.35)]'
+                    : isVisited
+                      ? 'bg-gold-dim group-hover:bg-gold'
+                      : 'bg-white/[0.06]',
+                  'group-focus-visible:ring-2 group-focus-visible:ring-gold-bright/40 group-focus-visible:ring-offset-0',
+                )}
+              />
+              <span className="sr-only">{t(STEP_TITLE_KEY[id])}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

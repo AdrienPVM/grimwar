@@ -1,6 +1,7 @@
 import { useMemo, useState, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
+import { DetailModal } from '@/shared/components/detail-modal';
 import { NumberInput } from '@/shared/components/form';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
@@ -10,13 +11,18 @@ import type { ClassEntity } from '@/shared/types/content';
 
 import { HelpPanel, StepIntro } from '../help/help-panel';
 import { CLASS_HELP } from '../help/class-help';
+import { HelpTriggerButton } from '../help/help-trigger-button';
+import { ListWithHelpPanel } from '../help/list-with-help-panel';
 
 /**
  * Étape 2 — Classe (+ multi-class conditionnel) (plan 05 §E.2).
  *
- * UX :
+ * UX (UAT post-plan 05) :
  *   - cards des 12 classes, sélection unique pour la classe primaire.
- *   - panneau pédagogique adjacent (desktop = colonne droite, mobile = sous la liste).
+ *   - Desktop : panneau pédagogique persistant à droite, piloté par
+ *     `previewClassId` (le dernier hover/focus). Pas de retour à null sur
+ *     mouseleave — le panneau reste collé au dernier choix consulté.
+ *   - Mobile : bouton « ? » par carte → ouvre `<DetailModal>` partagée.
  *   - si `level ≥ 2` et 1 classe choisie : bouton « Ajouter une autre classe ».
  *   - la somme des niveaux par classe doit égaler `draft.level`.
  */
@@ -28,19 +34,30 @@ export function ClassStep(): JSX.Element {
   const setPrimaryClass = useWizardStore((s) => s.setPrimaryClass);
 
   const classes = useContent('classes');
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  // Sélection persistante du dernier item consulté côté desktop. Ne se vide
+  // pas sur mouseleave/blur — bascule uniquement quand un autre item devient
+  // actif (hover, focus, clic).
+  const [previewClassId, setPreviewClassId] = useState<string | null>(null);
+  // Modal mobile : ouverte par tap sur le bouton « ? » d'une ligne.
+  const [modalClassId, setModalClassId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
   const totalAssigned = draft.classes.reduce((acc, c) => acc + c.level, 0);
   const remaining = draft.level - totalAssigned;
 
-  const focusedClass = useMemo<ClassEntity | null>(() => {
-    const id = hoveredId ?? draft.primaryClassId ?? draft.classes[0]?.classId ?? null;
+  const previewClass = useMemo<ClassEntity | null>(() => {
+    const id = previewClassId ?? draft.primaryClassId ?? draft.classes[0]?.classId ?? null;
     if (!id) return null;
     return classes.data.find((c) => c.id === id) ?? null;
-  }, [hoveredId, draft.primaryClassId, draft.classes, classes.data]);
+  }, [previewClassId, draft.primaryClassId, draft.classes, classes.data]);
+
+  const modalClass = useMemo<ClassEntity | null>(() => {
+    if (!modalClassId) return null;
+    return classes.data.find((c) => c.id === modalClassId) ?? null;
+  }, [modalClassId, classes.data]);
 
   const handlePickPrimary = (classId: string): void => {
+    setPreviewClassId(classId);
     if (draft.classes.length === 0) {
       addClass(classId, draft.level);
       setPrimaryClass(classId);
@@ -70,56 +87,84 @@ export function ClassStep(): JSX.Element {
     <section className="flex flex-col gap-6">
       <StepIntro>{t('wizard.help.class.intro')}</StepIntro>
 
-      <div className="grid gap-6 md:grid-cols-[1fr_minmax(0,360px)]">
-        <ul
-          className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
-          aria-label={t('wizard.class.list.aria')}
-        >
-          {classes.data.map((c) => {
-            const isPrimary = draft.primaryClassId === c.id;
-            const isSecondary =
-              !isPrimary && draft.classes.some((x) => x.classId === c.id);
-            return (
-              <li key={c.id}>
-                <button
-                  type="button"
-                  onClick={() => handlePickPrimary(c.id)}
-                  onMouseEnter={() => setHoveredId(c.id)}
-                  onFocus={() => setHoveredId(c.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                  className={cn(
-                    'group flex w-full min-h-[68px] flex-col items-start gap-1 rounded-card border p-3 text-left transition-all duration-150',
-                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40',
-                    isPrimary
-                      ? 'border-gold-bright bg-gold-bright/10 shadow-gold-glow'
-                      : isSecondary
-                        ? 'border-gold bg-gold/[0.06]'
-                        : 'border-soft bg-bg-3/30 hover:border-glow hover:bg-bg-3/50',
-                  )}
-                  aria-pressed={isPrimary}
-                >
-                  <span className="font-display text-[15px] text-gold-bright">
-                    {localize(c.name)}
-                  </span>
-                  <span className="font-serif text-[12px] text-text-tertiary">
-                    {CLASS_HELP[c.id]?.tagline ?? ''}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+      <ListWithHelpPanel
+        list={
+          <ul
+            className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
+            aria-label={t('wizard.class.list.aria')}
+          >
+            {classes.data.map((c) => {
+              const isPrimary = draft.primaryClassId === c.id;
+              const isSecondary =
+                !isPrimary && draft.classes.some((x) => x.classId === c.id);
+              const name = localize(c.name);
+              return (
+                <li key={c.id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => handlePickPrimary(c.id)}
+                    onMouseEnter={() => setPreviewClassId(c.id)}
+                    onFocus={() => setPreviewClassId(c.id)}
+                    className={cn(
+                      'group flex w-full min-h-[68px] flex-col items-start gap-1 rounded-card border p-3 pr-12 text-left transition-all duration-150',
+                      'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40',
+                      isPrimary
+                        ? 'border-gold-bright bg-gold-bright/10 shadow-gold-glow'
+                        : isSecondary
+                          ? 'border-gold bg-gold/[0.06]'
+                          : 'border-soft bg-bg-3/30 hover:border-glow hover:bg-bg-3/50',
+                    )}
+                    aria-pressed={isPrimary}
+                  >
+                    <span className="font-display text-[15px] text-gold-bright">
+                      {name}
+                    </span>
+                    <span className="font-serif text-[12px] text-text-tertiary">
+                      {CLASS_HELP[c.id]?.tagline ?? ''}
+                    </span>
+                  </button>
+                  <HelpTriggerButton
+                    ariaLabel={`${t('wizard.helpPanel.viewDetail')} · ${name}`}
+                    onClick={() => setModalClassId(c.id)}
+                    className="absolute top-2 right-2"
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        }
+        panel={
+          previewClass ? (
+            <HelpPanel
+              title={localize(previewClass.name)}
+              tagline={CLASS_HELP[previewClass.id]?.tagline}
+              whyChoose={CLASS_HELP[previewClass.id]?.whyChoose}
+              inGame={CLASS_HELP[previewClass.id]?.inGame}
+              difficulty={CLASS_HELP[previewClass.id]?.difficulty}
+            />
+          ) : null
+        }
+      />
 
-        {focusedClass ? (
-          <HelpPanel
-            title={localize(focusedClass.name)}
-            tagline={CLASS_HELP[focusedClass.id]?.tagline}
-            whyChoose={CLASS_HELP[focusedClass.id]?.whyChoose}
-            inGame={CLASS_HELP[focusedClass.id]?.inGame}
-            difficulty={CLASS_HELP[focusedClass.id]?.difficulty}
-          />
+      <DetailModal
+        open={modalClass !== null}
+        onClose={() => setModalClassId(null)}
+        titleId="class-detail-modal-title"
+        closeLabel={t('wizard.helpPanel.close')}
+      >
+        {modalClass ? (
+          <div className="p-4 sm:p-5">
+            <HelpPanel
+              title={localize(modalClass.name)}
+              tagline={CLASS_HELP[modalClass.id]?.tagline}
+              whyChoose={CLASS_HELP[modalClass.id]?.whyChoose}
+              inGame={CLASS_HELP[modalClass.id]?.inGame}
+              difficulty={CLASS_HELP[modalClass.id]?.difficulty}
+              headingId="class-detail-modal-title"
+            />
+          </div>
         ) : null}
-      </div>
+      </DetailModal>
 
       {/* Multi-class — visible uniquement si level >= 2 et une classe choisie */}
       {draft.level >= 2 && draft.classes.length >= 1 ? (

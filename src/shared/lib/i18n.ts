@@ -81,6 +81,7 @@ export type StringKey =
   | 'wizard.nav.invalidStep'
   | 'wizard.progress.aria'
   | 'wizard.toc.aria'
+  | 'wizard.progress.label'
   | 'wizard.aria.decrement'
   | 'wizard.aria.increment'
   | 'wizard.action.autofill'
@@ -101,6 +102,7 @@ export type StringKey =
   | 'wizard.help.equipment.intro'
   | 'wizard.help.spells.intro'
   | 'wizard.help.recap.intro'
+  | 'wizard.helpPanel.hint'
   // Lists & UI
   | 'wizard.class.list.aria'
   | 'wizard.class.primary'
@@ -122,6 +124,29 @@ export type StringKey =
   | 'wizard.equipment.noItems'
   | 'wizard.spells.noCaster'
   | 'wizard.spells.preparedDaily'
+  | 'wizard.spells.helpHint'
+  // Mobile : déclencheur explicite « ? » + label de fermeture modale
+  | 'wizard.helpPanel.viewDetail'
+  | 'wizard.helpPanel.close'
+  // Spell detail panel (étape Sorts du wizard — réutilisé partout où on rend un sort)
+  | 'spell.level.cantrip'
+  | 'spell.level.prefix'
+  | 'spell.meta.castingTime'
+  | 'spell.meta.range'
+  | 'spell.meta.duration'
+  | 'spell.meta.components'
+  | 'spell.meta.atHigherLevels'
+  | 'spell.flag.concentration'
+  | 'spell.flag.ritual'
+  // Composantes développées + gloses pour novices (UAT post-plan 05)
+  | 'spell.component.verbal.label'
+  | 'spell.component.verbal.hint'
+  | 'spell.component.somatic.label'
+  | 'spell.component.somatic.hint'
+  | 'spell.component.material.label'
+  | 'spell.component.material.hint'
+  | 'spell.gloss.concentration'
+  | 'spell.gloss.ritual'
   // Recap
   | 'wizard.recap.identity'
   | 'wizard.recap.class'
@@ -273,6 +298,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.nav.invalidStep': 'Termine cette étape pour continuer.',
     'wizard.progress.aria': 'Progression du wizard',
     'wizard.toc.aria': 'Étapes du wizard',
+    'wizard.progress.label': 'Étape',
     'wizard.aria.decrement': 'Diminuer',
     'wizard.aria.increment': 'Augmenter',
     'wizard.action.autofill': 'Choisir pour moi',
@@ -304,9 +330,11 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.help.equipment.intro':
       "Ton paquetage de départ. Chaque classe propose une ou deux options — choisis celle qui te ressemble. L'historique ajoute quelques objets en plus.",
     'wizard.help.spells.intro':
-      "Tu peux lancer des sorts ! Choisis quelques « sorts mineurs » (cantrips, illimités) et quelques sorts de niveau 1 (limités par tes emplacements quotidiens).",
+      "Tu peux lancer des sorts ! Les sorts mineurs (cantrips) sont gratuits et illimités. Les sorts de niveau 1 consomment un emplacement à chaque lancement — tu en récupères tous au repos long. Survole un sort pour lire ses effets avant de choisir.",
     'wizard.help.recap.intro':
       "Voici ton personnage en clair. Tu peux modifier une section en cliquant sur ✎, ou créer la fiche directement.",
+    'wizard.helpPanel.hint':
+      'Survole un choix pour voir son aide.',
     // Lists / UI
     'wizard.class.list.aria': 'Liste des classes',
     'wizard.class.primary': 'Classe principale',
@@ -323,14 +351,38 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.background.list.aria': 'Liste des historiques',
     'wizard.background.personality': 'Personnalité',
     'wizard.skills.toPick': 'Compétences à choisir',
-    'wizard.skills.fromBackground': 'historique',
-    'wizard.skills.notAllowed': 'hors classe',
+    'wizard.skills.fromBackground': 'Historique',
+    'wizard.skills.notAllowed': 'Hors classe',
     'wizard.equipment.fromClass': 'Au choix',
     'wizard.equipment.fromBackground': 'Accordé par ton historique',
     'wizard.equipment.noItems': "Aucun objet — uniquement de l'or",
     'wizard.spells.noCaster': "Aucune classe lanceuse — pas de sorts à choisir.",
     'wizard.spells.preparedDaily':
       "Tu prépares tes sorts chaque matin (au repos long) — rien à choisir à la création.",
+    'wizard.spells.helpHint': 'Survole un sort pour voir ce qu’il fait.',
+    'wizard.helpPanel.viewDetail': 'Voir le détail',
+    'wizard.helpPanel.close': 'Fermer',
+    // Spell detail panel
+    'spell.level.cantrip': 'Sort mineur (cantrip)',
+    'spell.level.prefix': 'Niveau',
+    'spell.meta.castingTime': 'Temps d’incantation',
+    'spell.meta.range': 'Portée',
+    'spell.meta.duration': 'Durée',
+    'spell.meta.components': 'Composantes',
+    'spell.meta.atHigherLevels': 'À niveau supérieur',
+    'spell.flag.concentration': 'Concentration',
+    'spell.flag.ritual': 'Rituel',
+    // Gloses débutant — expliquent V/S/M et les drapeaux sans jargon D&D
+    'spell.component.verbal.label': 'Verbale',
+    'spell.component.verbal.hint': 'tu prononces une formule à voix haute',
+    'spell.component.somatic.label': 'Somatique',
+    'spell.component.somatic.hint': 'tu fais un geste précis de la main',
+    'spell.component.material.label': 'Matérielle',
+    'spell.component.material.hint': 'tu manipules un composant',
+    'spell.gloss.concentration':
+      "Tu dois te concentrer pour maintenir l'effet — un seul sort de concentration à la fois, et tu perds la concentration si tu subis des dégâts (jet de sauvegarde).",
+    'spell.gloss.ritual':
+      "Tu peux le lancer en 10 minutes supplémentaires sans consommer d'emplacement de sort.",
     // Recap (langage débutant — plan 05 §E.9)
     'wizard.recap.identity': 'Qui tu es',
     'wizard.recap.class': 'Ta classe',
@@ -483,6 +535,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.nav.invalidStep': 'Finish this step to continue.',
     'wizard.progress.aria': 'Wizard progress',
     'wizard.toc.aria': 'Wizard steps',
+    'wizard.progress.label': 'Step',
     'wizard.aria.decrement': 'Decrease',
     'wizard.aria.increment': 'Increase',
     'wizard.action.autofill': 'Choose for me',
@@ -511,8 +564,9 @@ const STRINGS: Record<Locale, Dict> = {
       'The specific things you are trained in.',
     'wizard.help.equipment.intro': 'Your starting kit.',
     'wizard.help.spells.intro':
-      'You can cast spells! Pick a few cantrips and level-1 spells.',
+      'You can cast spells! Cantrips are free and unlimited. Level-1 spells consume a slot each cast — you recover them all on a long rest. Hover a spell to read its effects before choosing.',
     'wizard.help.recap.intro': 'Your character in plain words.',
+    'wizard.helpPanel.hint': 'Hover a choice to see its help.',
     'wizard.class.list.aria': 'Class list',
     'wizard.class.primary': 'Primary class',
     'wizard.class.multiclass.title': 'Multi-classing (optional)',
@@ -527,14 +581,37 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.background.list.aria': 'Background list',
     'wizard.background.personality': 'Personality',
     'wizard.skills.toPick': 'Skills to pick',
-    'wizard.skills.fromBackground': 'background',
-    'wizard.skills.notAllowed': 'off-class',
+    'wizard.skills.fromBackground': 'Background',
+    'wizard.skills.notAllowed': 'Off-class',
     'wizard.equipment.fromClass': 'Choose',
     'wizard.equipment.fromBackground': 'Granted by your background',
     'wizard.equipment.noItems': 'No items — gold only',
     'wizard.spells.noCaster': 'No spellcasting class.',
     'wizard.spells.preparedDaily':
       'You prepare your spells each long rest — nothing to pick at creation.',
+    'wizard.spells.helpHint': 'Hover a spell to see what it does.',
+    'wizard.helpPanel.viewDetail': 'See details',
+    'wizard.helpPanel.close': 'Close',
+    // Spell detail panel
+    'spell.level.cantrip': 'Cantrip',
+    'spell.level.prefix': 'Level',
+    'spell.meta.castingTime': 'Casting time',
+    'spell.meta.range': 'Range',
+    'spell.meta.duration': 'Duration',
+    'spell.meta.components': 'Components',
+    'spell.meta.atHigherLevels': 'At higher levels',
+    'spell.flag.concentration': 'Concentration',
+    'spell.flag.ritual': 'Ritual',
+    'spell.component.verbal.label': 'Verbal',
+    'spell.component.verbal.hint': 'you speak the spell aloud',
+    'spell.component.somatic.label': 'Somatic',
+    'spell.component.somatic.hint': 'you make a precise hand gesture',
+    'spell.component.material.label': 'Material',
+    'spell.component.material.hint': 'you handle a component',
+    'spell.gloss.concentration':
+      'You must concentrate to keep the effect — only one concentration spell at a time, and damage forces a save to keep it.',
+    'spell.gloss.ritual':
+      'Can be cast in 10 extra minutes without spending a spell slot.',
     'wizard.recap.identity': 'Who you are',
     'wizard.recap.class': 'Your class',
     'wizard.recap.classSingular': 'You play',

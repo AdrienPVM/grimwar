@@ -144,8 +144,8 @@ export function AbilitiesStep(): JSX.Element {
               {draft.method === 'standard-array' ? (
                 <Select
                   value={String(value)}
-                  onChange={(e) =>
-                    handleStandardArrayChange(code, Number(e.target.value))
+                  onValueChange={(v) =>
+                    handleStandardArrayChange(code, Number(v))
                   }
                   options={STANDARD_ARRAY.map((v) => ({
                     value: String(v),

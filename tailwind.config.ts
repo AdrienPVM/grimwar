@@ -113,6 +113,12 @@ const config: Config = {
           '0%, 100%': { filter: 'drop-shadow(0 0 0 transparent)' },
           '50%': { filter: 'drop-shadow(0 0 14px rgba(220,184,108,0.45))' },
         },
+        // Apparition douce des panneaux (cf. CLAUDE.md > transitions douces) :
+        // léger fade + slide vertical de 4px pour éviter le pop visuel.
+        fadeIn: {
+          from: { opacity: '0', transform: 'translateY(4px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         drift1: 'drift1 25s ease-in-out infinite',
@@ -123,6 +129,7 @@ const config: Config = {
         rays: 'raysRotate 60s linear infinite',
         slowDrift: 'slowDrift 180s linear infinite',
         runeBreath: 'runeBreath 3.5s ease-in-out infinite',
+        fadeIn: 'fadeIn 220ms cubic-bezier(0.22, 0.61, 0.36, 1) both',
       },
     },
   },

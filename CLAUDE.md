@@ -175,6 +175,8 @@ grimwar/
 - **Tailwind first.** Custom CSS only when Tailwind can't express it. Prefer CSS modules over global.
 - **`cn()` helper** in `src/shared/lib/cn.ts` wrapping `clsx` + `tailwind-merge` for all conditional classes.
 - **All UI strings via `t(key)`** from `src/shared/lib/i18n.ts`. FR default.
+- **Transitions douces partout via les tokens du design system.** Toute apparition, disparition ou changement d'état visible (panneau d'aide, hover, ouverture de combobox, fade, slide, etc.) DOIT utiliser les tokens `ease-base` / `ease-spring` + une `duration-*` Tailwind explicite. Pas d'apparition instantanée brutale — c'est une exigence de qualité perçue, pas du polish optionnel. Acté 2026-05-16 suite au panneau d'aide « Historique » qui clignote au survol parce qu'il s'affiche sans transition.
+- **Rédaction i18n : majuscule en début de phrase + ponctuation correcte + zéro anglicisme en FR.** Toute chaîne `t()` visible utilisateur (label, item de liste, intro, helper) commence par une majuscule. Pas d'argot anglais dans le contenu pédagogique FR (`fence` → `receleur`, etc.). Acté 2026-05-16 suite à la passe pédagogique du wizard.
 
 ## Forbidden patterns
 
@@ -196,6 +198,9 @@ grimwar/
 - `pnpm test` green
 - `pnpm lint` clean
 - **`pnpm dev` UAT navigateur obligatoire sur tout plan qui produit ou modifie de l'UI visible** (route, screen, mode de fiche, composant rendu). La triple gate ne prouve pas que l'app se rend ; jusqu'à plan 13.5 (Playwright), un humain doit ouvrir `http://localhost:5173/` et valider visuellement. Acté 2026-05-16 suite au bug "rien ne s'affiche" sur `/` détecté à la première UAT navigateur réelle du plan 12.5 — cf. `plans/DEBT.md > D2`.
+- **Firebase deploy discipline — toute modif `firestore.rules` ou `firestore.indexes.json` DOIT être suivie du deploy correspondant** (`pnpm firebase:deploy:rules` ou `pnpm firebase:deploy:indexes`) **avant** le commit qui se réclame "livré". La triple gate locale ne détecte pas le décalage disque/live — c'est un bug d'environnement, pas d'application. Acté 2026-05-16 suite au bug « Missing or insufficient permissions » sur création de personnage (`firestore.rules` corrigé en local, jamais déployé) — cf. `plans/DEBT.md > D5`. Avant tout deploy de rules : `pnpm test:rules` (rules-unit-testing contre l'émulateur ; requiert Java/JRE 11+).
+- **Principe « rouge avant vert » pour les tests anti-régression** — tout test censé prévenir un bug visuel ou comportemental DOIT être vu échouer sur le code cassé AVANT de passer après fix. Un test qui asserte juste la présence d'une classe CSS pendant que le bug est à l'écran est inutile. Acté 2026-05-16 suite à 2 occurrences du pattern « test vert / bug visible » (form-kit blanc-sur-blanc UAT plan 05 + Button text-ink évincé par tailwind-merge).
+- **Tester le runtime, pas l'état disque (cache Dexie).** Le contenu public (`public/data/*.json`) est caché dans IndexedDB via Dexie (TTL 7j) et invalidé par `contentHash` dans `index.json` (cf. `plans/DEBT.md > D7`). Tout changement de `public/data/` régénère ce hash → flush automatique au prochain boot de session utilisateur. Conséquence pour les tests : **un test qui lit directement `public/data/*.json` ne reflète PAS l'état runtime servi à l'utilisateur** — pour tester un bug user-visible côté contenu, le test doit passer par le cache (ou au moins par `loadPublicContent`). Acté 2026-05-16 suite à la 2e occurrence du bug « sorts vides pour les lanceurs » que le test d'intégrité disque (`content-integrity.test.ts`) ne pouvait pas attraper.
 - Conventional commit message: `feat(scope): summary` or `fix(scope): summary`
 
 ## References

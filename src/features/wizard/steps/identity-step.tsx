@@ -76,7 +76,7 @@ export function IdentityStep(): JSX.Element {
           <Select
             {...fieldProps}
             value={draft.alignment}
-            onChange={(e) => setField('alignment', e.target.value)}
+            onValueChange={(v) => setField('alignment', v)}
             options={ALIGNMENT_OPTIONS}
           />
         )}

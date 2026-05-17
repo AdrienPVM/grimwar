@@ -1,6 +1,7 @@
-import { useMemo, type JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
+import { DetailModal } from '@/shared/components/detail-modal';
 import { Checkbox } from '@/shared/components/form';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
@@ -10,15 +11,26 @@ import type { ClassEntity, Spell } from '@/shared/types/content';
 
 import { applyReferenceSpells } from '../reference-builds/builds';
 import { StepIntro } from '../help/help-panel';
+import { HelpTriggerButton } from '../help/help-trigger-button';
+import { ListWithHelpPanel } from '../help/list-with-help-panel';
+import { SpellHelpPanel } from '../help/spell-help-panel';
 
 /**
- * Étape 8 — Sorts (plan 05 §E.8). Visible uniquement si au moins une classe
- * choisie est lanceuse. Le shell route déjà autour si non-applicable — on peut
- * supposer ici que `caster classes >= 1`.
+ * Étape 8 — Sorts (plan 05 §E.8 + UAT post-plan 05 ajustements 1 + 2).
+ *
+ * Visible uniquement si au moins une classe choisie est lanceuse. Le shell
+ * route déjà autour si non-applicable — on peut supposer ici que
+ * `caster classes >= 1`.
  *
  * Pour chaque classe lanceuse : une section avec cantrips + sorts de niveau 1.
- * Multi-class : les picks sont conservés par classe pour respecter le data
- * model (knownSpells / preparedSpells keyés par classId).
+ *
+ * Modèle d'interaction (UAT post-plan 05) :
+ *   - Desktop : panneau pédagogique persistant à droite. Le dernier sort
+ *     survolé/focusé reste affiché ; mouseleave NE remet PAS la sélection à
+ *     null (sinon le panneau clignote au moindre mouvement).
+ *   - Mobile : tap sur le bouton « ? » d'une ligne ouvre une `<DetailModal>`
+ *     partagée avec la description SRD. Tap sur la ligne (label de Checkbox)
+ *     = cocher/décocher le sort ; les deux gestes sont strictement séparés.
  */
 export function SpellsStep(): JSX.Element {
   const draft = useWizardStore((s) => s.draft);
@@ -31,6 +43,15 @@ export function SpellsStep(): JSX.Element {
     const ids = new Set(draft.classes.map((c) => c.classId));
     return classes.data.filter((c) => ids.has(c.id) && Boolean(c.spellcasting));
   }, [draft.classes, classes.data]);
+
+  // Modale mobile partagée par TOUTES les sections (multi-class). On stocke
+  // simplement l'id du sort à afficher ; null = modale fermée. Le sort est
+  // résolu dans la collection complète `spells.data`.
+  const [modalSpellId, setModalSpellId] = useState<string | null>(null);
+  const modalSpell = useMemo<Spell | null>(() => {
+    if (!modalSpellId) return null;
+    return spells.data.find((s) => s.id === modalSpellId) ?? null;
+  }, [modalSpellId, spells.data]);
 
   if (casterClasses.length === 0) {
     return (
@@ -59,8 +80,25 @@ export function SpellsStep(): JSX.Element {
           onChange={(cantrips, level1) =>
             setSpellsForClass(cls.id, cantrips, level1)
           }
+          onRequestDetail={setModalSpellId}
         />
       ))}
+
+      <DetailModal
+        open={modalSpell !== null}
+        onClose={() => setModalSpellId(null)}
+        titleId="spell-detail-modal-title"
+        closeLabel={t('wizard.helpPanel.close')}
+      >
+        {modalSpell ? (
+          <div className="p-4 sm:p-5">
+            <SpellHelpPanel
+              spell={modalSpell}
+              headingId="spell-detail-modal-title"
+            />
+          </div>
+        ) : null}
+      </DetailModal>
     </section>
   );
 }
@@ -70,6 +108,12 @@ interface CasterSectionProps {
   spells: Spell[];
   picked: { classId: string; cantrips: string[]; level1: string[] };
   onChange: (cantrips: string[], level1: string[]) => void;
+  /**
+   * Remonte au parent l'id du sort dont l'utilisateur veut consulter la
+   * description (tap mobile sur « ? »). Le parent ouvre la `<DetailModal>`
+   * partagée — une seule modale pour toutes les sections multi-class.
+   */
+  onRequestDetail: (spellId: string) => void;
 }
 
 /**
@@ -111,6 +155,7 @@ function CasterSection({
   spells,
   picked,
   onChange,
+  onRequestDetail,
 }: CasterSectionProps): JSX.Element {
   const cantripList = useMemo(
     () =>
@@ -129,6 +174,19 @@ function CasterSection({
 
   const cantripsQuota = CANTRIP_QUOTA[characterClass.id] ?? 0;
   const level1Quota = LEVEL1_QUOTA[characterClass.id] ?? 0;
+
+  // Sélection persistante locale à la section (panneau desktop). Bascule
+  // uniquement quand un AUTRE sort devient actif — pas de retour à null.
+  const [previewSpellId, setPreviewSpellId] = useState<string | null>(null);
+
+  const previewSpell = useMemo<Spell | null>(() => {
+    if (!previewSpellId) return null;
+    return (
+      cantripList.find((s) => s.id === previewSpellId) ??
+      level1List.find((s) => s.id === previewSpellId) ??
+      null
+    );
+  }, [previewSpellId, cantripList, level1List]);
 
   const toggleCantrip = (spellId: string): void => {
     const has = picked.cantrips.includes(spellId);
@@ -164,7 +222,7 @@ function CasterSection({
     onChange(next.cantrips, next.level1);
   };
 
-  return (
+  const sectionList = (
     <div className="flex flex-col gap-4 rounded-card border border-soft bg-bg-3/30 p-5">
       <header className="flex flex-wrap items-baseline justify-between gap-3">
         <h3 className="font-display text-display text-gold-bright">
@@ -182,6 +240,8 @@ function CasterSection({
           chosen={picked.cantrips}
           options={cantripList}
           onToggle={toggleCantrip}
+          onPreviewChange={setPreviewSpellId}
+          onRequestDetail={onRequestDetail}
         />
       ) : null}
 
@@ -192,6 +252,8 @@ function CasterSection({
           chosen={picked.level1}
           options={level1List}
           onToggle={toggleLevel1}
+          onPreviewChange={setPreviewSpellId}
+          onRequestDetail={onRequestDetail}
         />
       ) : (
         <p className="font-serif text-[13px] italic text-text-tertiary">
@@ -199,6 +261,14 @@ function CasterSection({
         </p>
       )}
     </div>
+  );
+
+  return (
+    <ListWithHelpPanel
+      list={sectionList}
+      panel={previewSpell ? <SpellHelpPanel spell={previewSpell} /> : null}
+      panelKey={previewSpell ? `spell:${previewSpell.id}` : undefined}
+    />
   );
 }
 
@@ -208,12 +278,22 @@ function SpellPickGroup({
   chosen,
   options,
   onToggle,
+  onPreviewChange,
+  onRequestDetail,
 }: {
   title: string;
   quota: number;
   chosen: string[];
   options: Spell[];
   onToggle: (id: string) => void;
+  /**
+   * Remonte le sort survolé/focusé au CasterSection parent pour piloter le
+   * SpellHelpPanel persistant côté desktop. Pas de retour à null — la
+   * sélection est collante.
+   */
+  onPreviewChange: (id: string) => void;
+  /** Tap sur « ? » → ouverture modale mobile. */
+  onRequestDetail: (id: string) => void;
 }): JSX.Element {
   return (
     <div>
@@ -224,13 +304,25 @@ function SpellPickGroup({
         {options.map((s) => {
           const isChecked = chosen.includes(s.id);
           const disabled = !isChecked && chosen.length >= quota;
+          const name = localize(s.name);
           return (
-            <li key={s.id}>
+            <li
+              key={s.id}
+              className="relative"
+              onMouseEnter={() => onPreviewChange(s.id)}
+              onFocus={() => onPreviewChange(s.id)}
+            >
               <Checkbox
                 checked={isChecked}
                 disabled={disabled}
                 onChange={() => onToggle(s.id)}
-                label={localize(s.name)}
+                label={name}
+                className="pr-12"
+              />
+              <HelpTriggerButton
+                ariaLabel={`${t('wizard.helpPanel.viewDetail')} · ${name}`}
+                onClick={() => onRequestDetail(s.id)}
+                className="absolute top-1/2 right-2 -translate-y-1/2"
               />
             </li>
           );

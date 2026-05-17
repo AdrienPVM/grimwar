@@ -122,10 +122,11 @@ describe('<NumberInput>', () => {
 });
 
 describe('<Select>', () => {
-  it('rend les options et le placeholder désactivé', () => {
+  it('rend un trigger combobox affichant le placeholder quand vide', () => {
     render(
       <Select
-        defaultValue=""
+        value=""
+        onValueChange={() => undefined}
         placeholder="Choisir…"
         options={[
           { value: 'a', label: 'Alpha' },
@@ -134,9 +135,11 @@ describe('<Select>', () => {
         aria-label="Test"
       />,
     );
-    const placeholder = screen.getByRole('option', { name: 'Choisir…' });
-    expect(placeholder).toBeDisabled();
-    expect(screen.getByRole('option', { name: 'Alpha' })).toBeInTheDocument();
+    // Pas de <select> natif (rules-unit du form-kit, plan 05 UAT).
+    expect(document.querySelector('select')).toBeNull();
+    const combobox = screen.getByRole('combobox', { name: 'Test' });
+    expect(combobox.tagName).toBe('BUTTON');
+    expect(combobox.textContent).toContain('Choisir…');
   });
 });
 

@@ -34,6 +34,11 @@ interface HelpPanelProps {
   inGame?: ReadonlyArray<string>;
   /** Slot libre pour des chips ou détails additionnels (ex. stats clés). */
   extra?: ReactNode;
+  /**
+   * ID DOM optionnel posé sur le titre `<h3>`. Branché par `<DetailModal>` à
+   * `aria-labelledby` pour annoncer la modale aux lecteurs d'écran.
+   */
+  headingId?: string;
   className?: string;
 }
 
@@ -44,6 +49,7 @@ export function HelpPanel({
   whyChoose,
   inGame,
   extra,
+  headingId,
   className,
 }: HelpPanelProps): JSX.Element {
   return (
@@ -56,7 +62,9 @@ export function HelpPanel({
       )}
     >
       <header className="flex flex-col gap-1">
-        <h3 className="font-display text-display text-gold-bright">{title}</h3>
+        <h3 id={headingId} className="font-display text-display text-gold-bright">
+          {title}
+        </h3>
         {tagline ? (
           <p className="font-serif italic text-text-secondary text-[15px]">{tagline}</p>
         ) : null}
