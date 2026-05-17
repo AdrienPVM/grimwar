@@ -92,6 +92,42 @@ function makeMulticlassPayload(): Record<string, unknown> {
   };
 }
 
+// Payload v2 (plan 13.7 §0.3 option b). Mêmes invariants structurels que v1,
+// avec en plus le sous-objet `ancestrySubChoices` groupé + les 7 sous-choix
+// SRD portés par chaque entrée `classes[]`. La rule shape-only DOIT l'accepter
+// — l'enforcement « si Drakéide alors dragonAncestry » est côté Zod + wizard.
+function makeMulticlassPayloadV2(): Record<string, unknown> {
+  return {
+    ...makeMulticlassPayload(),
+    schemaVersion: 2,
+    classes: [
+      {
+        classId: 'fighter',
+        subclassId: null,
+        level: 1,
+        clericDivineOrder: null,
+        druidPrimalOrder: null,
+        fighterFightingStyle: null,
+        weaponMasteries: [],
+        expertiseSkills: [],
+        eldritchInvocations: [],
+        wizardSpellbookL1: [],
+      },
+    ],
+    ancestrySubChoices: {
+      dragonAncestry: null,
+      tieflingLegacy: null,
+      elfLineage: null,
+      gnomeLineage: null,
+      goliathAncestry: null,
+      ancestryCastingAbility: null,
+      ancestryExtraSkill: null,
+      ancestrySize: null,
+    },
+    extraLanguages: [],
+  };
+}
+
 // Payload de l'ancien schéma — mono-classe avec `level` + `classId` au top
 // niveau. C'est ce que le wizard PRODUISAIT avant le verrou multi-class, et
 // c'est ce que les vieilles `firestore.rules` exigeaient via `hasAll`. Les
@@ -191,5 +227,26 @@ describeIfEmulator('firestore.rules — caractères (multi-class)', () => {
     const db = ctx.firestore();
     const ref = doc(db, 'users', UID, 'characters', 'char-007');
     await assertFails(setDoc(ref, makeMulticlassPayload()));
+  });
+
+  // Plan 13.7 §0.3 — option (b) tolérante. La rule shape-only doit accepter
+  // les deux versions de schéma : v1 (anciennes fiches type Lyralei) et v2
+  // (nouvelles fiches enrichies). L'enforcement des sous-choix SRD requis est
+  // côté wizard 13.8/13.9, pas dans `characterShapeOK`.
+  it("ACCEPTE un payload v2 (avec ancestrySubChoices + sous-choix de classe)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const ctx = env.authenticatedContext(UID);
+    const db = ctx.firestore();
+    const ref = doc(db, 'users', UID, 'characters', 'char-v2-001');
+    await assertSucceeds(setDoc(ref, makeMulticlassPayloadV2()));
+  });
+
+  it("ACCEPTE un payload v1 (rétro-compat avant migration runtime)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const ctx = env.authenticatedContext(UID);
+    const db = ctx.firestore();
+    const ref = doc(db, 'users', UID, 'characters', 'char-v1-001');
+    // makeMulticlassPayload() émet schemaVersion: 1 sans les sous-objets v2.
+    await assertSucceeds(setDoc(ref, makeMulticlassPayload()));
   });
 });

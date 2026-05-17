@@ -114,9 +114,16 @@ service cloud.firestore {
       // Invariants minimaux anti-corruption. Validation détaillée côté Zod (client).
       //
       // Schéma multi-class verrouillé (CLAUDE.md + docs/DATA-MODEL.md) :
-      //   - classes: [{ classId, subclassId, level }] (1..4 entrées)
+      //   - classes: [{ classId, subclassId, level, ...sous-choix SRD v2 }] (1..4 entrées)
       //   - totalLevel: somme dénormalisée (1..20)
       //   - primaryClassId: id de la classe principale
+      //
+      // schemaVersion 1 ET 2 sont acceptés en shape-only (plan 13.7 §0.3, option b).
+      // La rule ne valide ni `ancestrySubChoices` ni les sous-choix de `classes[]`
+      // — c'est Zod côté client + le wizard 13.8/13.9 qui imposent les sous-choix
+      // SRD requis (« si Drakéide alors dragonAncestry ») avant le setDoc. Acté
+      // 2026-05-17 : pas de durcissement (a) tant qu'on n'a pas de stratégie de
+      // migration prod (cf. D5 + 13.7 §0.2 — pas de step de rattrapage UI).
       //
       // Cette fonction est appelée pour CREATE et pour UPDATE. Sémantique Firestore :
       //   - create : `data` = nouveau document complet → hasAll([...]) force la présence.
