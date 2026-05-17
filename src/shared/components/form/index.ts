@@ -4,3 +4,4 @@ export { NumberInput } from './number-input';
 export { Select, type SelectOption } from './select';
 export { Checkbox } from './checkbox';
 export { RadioGroup, type RadioOption } from './radio-group';
+export { RadioCardGroup, type RadioCardOption } from './radio-card-group';

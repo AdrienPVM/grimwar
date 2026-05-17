@@ -895,6 +895,11 @@ function buildAncestries(en: Lines, fr: Lines): Ancestry[] {
       traits: zipTraits(enParsed.traits, frParsed.traits),
       languages: ['common'],
       source: SOURCE,
+      // Sous-objet enrichi à part par `scripts/extract-srd-ancestries.ts`
+      // (dragonAncestries / tieflingLegacies / elfLineages / gnomeLineages /
+      // giantAncestries / versatileFeatIds / skillfulOptions). Ce parseur
+      // texte legacy ne les peuple pas — sentinelle vide volontaire.
+      options: {},
     });
   }
   return out;

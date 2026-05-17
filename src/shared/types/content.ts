@@ -311,6 +311,73 @@ export const SubclassSchema = z.object({
 });
 export type Subclass = z.infer<typeof SubclassSchema>;
 
+/**
+ * Options enrichies des ascendances SRD 5.2.1 (plan 13.7 + consommé 13.8).
+ * Chaque liste est `optional` car la majorité des ascendances n'en n'expose
+ * qu'une seule (Drakéide → `dragonAncestries`, Tieffelin → `tieflingLegacies`,
+ * etc.). Le wizard 13.8 lit ces options pour construire les radio cards et le
+ * hook `useAncestrySubChoices` les expose en valeurs admises.
+ */
+export const AncestryDragonOptionSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  damageType: z.string(),
+  damageTypeLabel: I18nSchema,
+});
+export type AncestryDragonOption = z.infer<typeof AncestryDragonOptionSchema>;
+
+export const AncestryTieflingLegacyOptionSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  resistance: I18nSchema,
+  cantripSpellId: slug,
+  level3SpellId: slug,
+  level5SpellId: slug,
+});
+export type AncestryTieflingLegacyOption = z.infer<
+  typeof AncestryTieflingLegacyOptionSchema
+>;
+
+export const AncestryElfLineageOptionSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  benefit: I18nSchema,
+  cantripSpellId: slug,
+  level3SpellId: slug,
+  level5SpellId: slug,
+});
+export type AncestryElfLineageOption = z.infer<typeof AncestryElfLineageOptionSchema>;
+
+export const AncestryGnomeLineageOptionSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  benefit: I18nSchema,
+  cantripSpellIds: z.array(slug),
+});
+export type AncestryGnomeLineageOption = z.infer<
+  typeof AncestryGnomeLineageOptionSchema
+>;
+
+export const AncestryGiantOptionSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  effect: I18nSchema,
+});
+export type AncestryGiantOption = z.infer<typeof AncestryGiantOptionSchema>;
+
+export const AncestryOptionsSchema = z
+  .object({
+    dragonAncestries: z.array(AncestryDragonOptionSchema).optional(),
+    tieflingLegacies: z.array(AncestryTieflingLegacyOptionSchema).optional(),
+    elfLineages: z.array(AncestryElfLineageOptionSchema).optional(),
+    gnomeLineages: z.array(AncestryGnomeLineageOptionSchema).optional(),
+    giantAncestries: z.array(AncestryGiantOptionSchema).optional(),
+    versatileFeatIds: z.array(slug).optional(),
+    skillfulOptions: z.array(slug).optional(),
+  })
+  .default({});
+export type AncestryOptions = z.infer<typeof AncestryOptionsSchema>;
+
 export const AncestrySchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -326,6 +393,7 @@ export const AncestrySchema = z.object({
   traits: z.array(namedDescription),
   languages: z.array(z.string()),
   source: sourceTag,
+  options: AncestryOptionsSchema,
 });
 export type Ancestry = z.infer<typeof AncestrySchema>;
 
