@@ -2,8 +2,10 @@ import type { Character } from '@/shared/types/character';
 
 import { AttacksList } from './combat/attacks-list';
 import { BattleHud } from './combat/battle-hud';
+import { BreathWeaponCard } from './combat/breath-weapon-card';
 import { ConditionsRow } from './combat/conditions-row';
 import { DeathSavesModal } from './combat/death-saves-modal';
+import { GiantAncestryCard } from './combat/giant-ancestry-card';
 import { HpMegaCard } from './combat/hp-mega-card';
 import { isSheetReadOnly } from './combat/hp-combat';
 import { PartyStrip } from './combat/party-strip';
@@ -38,6 +40,8 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
       <ConditionsRow character={character} readOnly={readOnly} />
       {hasSpellSlots && <SlotsCompact character={character} readOnly={readOnly} />}
       <AttacksList character={character} readOnly={readOnly} />
+      <BreathWeaponCard character={character} readOnly={readOnly} />
+      <GiantAncestryCard character={character} readOnly={readOnly} />
       <PartyStrip character={character} />
       <DeathSavesModal character={character} />
     </section>

@@ -49,6 +49,44 @@ export interface SubmitFromWizardResult {
   character: Character;
 }
 
+/**
+ * Construit la liste des sortIds liés à l'ascendance d'un perso fresh
+ * (plan 13.8). Pour Tieffelin / Elfe / Gnome : cantrip de niveau 1 +
+ * sorts L3/L5 (« toujours considérés comme préparés » dès qu'on atteint
+ * le niveau requis, SRD 5.2.1). Ils sont inscrits dans `knownSpells.ancestry`
+ * dès la création — la fiche les rend lockés tant que `totalLevel < N`.
+ */
+export function buildAncestrySpellIds(
+  draft: WizardDraft,
+  ancestry: Ancestry,
+): string[] {
+  const sc = draft.ancestrySubChoices;
+  const out: string[] = [];
+  if (ancestry.id === 'tiefling' && sc.tieflingLegacy) {
+    const legacy = ancestry.options.tieflingLegacies?.find(
+      (o) => o.id === sc.tieflingLegacy,
+    );
+    if (legacy) {
+      out.push(legacy.cantripSpellId, legacy.level3SpellId, legacy.level5SpellId);
+    }
+  } else if (ancestry.id === 'elf' && sc.elfLineage) {
+    const lineage = ancestry.options.elfLineages?.find(
+      (o) => o.id === sc.elfLineage,
+    );
+    if (lineage) {
+      out.push(lineage.cantripSpellId, lineage.level3SpellId, lineage.level5SpellId);
+    }
+  } else if (ancestry.id === 'gnome' && sc.gnomeLineage) {
+    const lineage = ancestry.options.gnomeLineages?.find(
+      (o) => o.id === sc.gnomeLineage,
+    );
+    if (lineage) {
+      out.push(...lineage.cantripSpellIds);
+    }
+  }
+  return out;
+}
+
 /** Slug du nom + suffix random ; même algo qu'avant pour rester déterministe. */
 export function generateCharacterId(name: string): string {
   const slug =
@@ -197,6 +235,18 @@ export async function buildCharacterFromWizard(
       if (allKnown.length > 0) knownSpells[cls.id] = allKnown;
       if (picks.level1.length > 0) preparedSpells[cls.id] = picks.level1;
     }
+  }
+
+  // Sorts liés à l'ascendance (plan 13.8) — Tieffelin, Elfe et Gnome.
+  // Tous trois utilisent la même clé synthétique 'ancestry' pour
+  // grouper leurs sorts dans la fiche. La caractéristique d'incantation
+  // commune est posée par le sous-choix ancestryCastingAbility.
+  const ancestrySpells = buildAncestrySpellIds(draft, ancestry);
+  if (ancestrySpells.length > 0) {
+    knownSpells.ancestry = ancestrySpells;
+  }
+  if (draft.ancestrySubChoices.ancestryCastingAbility) {
+    spellcastingAbility.ancestry = draft.ancestrySubChoices.ancestryCastingAbility;
   }
 
   const character: Character = {

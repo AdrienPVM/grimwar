@@ -227,6 +227,11 @@ export type StringKey =
   | 'sheet.mode.avoir'
   | 'sheet.mode.ame'
   | 'sheet.placeholder.todo'
+  // Sorts d'ascendance — plan 13.8
+  | 'sheet.magie.ancestry.tieflingTitle'
+  | 'sheet.magie.ancestry.elfTitle'
+  | 'sheet.magie.ancestry.gnomeTitle'
+  | 'sheet.magie.ancestry.genericTitle'
   // Nav shell (header sticky persistant — plan 13.6)
   | 'nav.aria'
   | 'nav.brand.aria'
@@ -518,6 +523,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.avoir': 'Avoir',
     'sheet.mode.ame': 'Âme',
     'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
+    'sheet.magie.ancestry.tieflingTitle': "Sorts d'héritage fiélon",
+    'sheet.magie.ancestry.elfTitle': 'Sorts de lignage elfique',
+    'sheet.magie.ancestry.gnomeTitle': 'Sorts de lignage gnome',
+    'sheet.magie.ancestry.genericTitle': "Sorts d'ascendance",
     // Nav shell
     'nav.aria': 'Navigation principale',
     'nav.brand.aria': "Retour à l'accueil",
@@ -791,6 +800,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.avoir': 'Inv.',
     'sheet.mode.ame': 'Soul',
     'sheet.placeholder.todo': 'Section coming in a later plan.',
+    'sheet.magie.ancestry.tieflingTitle': 'Fiendish legacy spells',
+    'sheet.magie.ancestry.elfTitle': 'Elven lineage spells',
+    'sheet.magie.ancestry.gnomeTitle': 'Gnomish lineage spells',
+    'sheet.magie.ancestry.genericTitle': 'Ancestry spells',
     'nav.aria': 'Main navigation',
     'nav.brand.aria': 'Back to home',
     'nav.back': 'Back',

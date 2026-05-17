@@ -6,6 +6,7 @@ import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
 import { isSheetReadOnly } from './combat/hp-combat';
+import { AncestrySpellsCard } from './magie/ancestry-spells-card';
 import { MagicCircle } from './magie/magic-circle';
 import { SpellDetailModal } from './magie/spell-detail-modal';
 import { SpellList } from './magie/spell-list';
@@ -42,7 +43,12 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
 
   const [activeSpell, setActiveSpell] = useState<Spell | null>(null);
 
-  if (castingClasses.length === 0) {
+  // Sorts d'ascendance (plan 13.8) : un perso peut être « lanceur » sans classe
+  // lanceuse — un Tieffelin Roublard L1 connaît Fire Bolt par exemple. On
+  // n'affiche le placeholder « aucun art arcanique » que si NI classe lanceuse
+  // NI sorts d'ascendance ne sont présents.
+  const hasAncestrySpells = (character.knownSpells.ancestry ?? []).length > 0;
+  if (castingClasses.length === 0 && !hasAncestrySpells) {
     return (
       <section
         role="tabpanel"
@@ -64,14 +70,21 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       aria-labelledby="sheet-mode-tab-magie"
       className="mx-auto mt-4 flex w-full max-w-[460px] flex-col gap-3 px-4"
     >
-      <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
-      <MagicCircle character={character} readOnly={readOnly} />
-      <SpellList
-        character={character}
-        spells={spells}
-        spellcasterClassIds={castingClassIds}
-        onSpellSelect={(spell) => setActiveSpell(spell)}
-      />
+      {castingClasses.length > 0 ? (
+        <>
+          <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
+          <MagicCircle character={character} readOnly={readOnly} />
+        </>
+      ) : null}
+      <AncestrySpellsCard character={character} />
+      {castingClasses.length > 0 ? (
+        <SpellList
+          character={character}
+          spells={spells}
+          spellcasterClassIds={castingClassIds}
+          onSpellSelect={(spell) => setActiveSpell(spell)}
+        />
+      ) : null}
       {activeSpell && (
         <SpellDetailModal
           character={character}
