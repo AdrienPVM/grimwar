@@ -90,6 +90,21 @@ function getAdmin(): { app: App; db: Firestore } {
 export type AbilityCode = 'for' | 'dex' | 'con' | 'int' | 'sag' | 'cha';
 export type DiceMode = 'digital' | 'physical';
 
+/**
+ * Sous-choix d'ascendance niveau 1 SRD 5.2.1 (plan 13.7 §0.1 + 13.8).
+ * Tous nullable — la fiche tolère les sentinelles via la migration v1→v2.
+ */
+export interface SeedAncestrySubChoices {
+  dragonAncestry?: string;
+  tieflingLegacy?: string;
+  elfLineage?: string;
+  gnomeLineage?: string;
+  goliathAncestry?: string;
+  ancestryCastingAbility?: 'int' | 'sag' | 'cha';
+  ancestryExtraSkill?: string;
+  ancestrySize?: 'small' | 'medium';
+}
+
 export interface SeedPreset {
   /** Nom affiché en hero card. */
   name: string;
@@ -97,6 +112,12 @@ export interface SeedPreset {
   classes: { classId: string; subclassId: string | null; level: number }[];
   primaryClassId: string;
   ancestryId: string;
+  /**
+   * Si défini → le doc est écrit en schemaVersion: 2 avec ces sous-choix
+   * (et `classes[]` étendu avec les sub-choice sentinels). Si absent → doc
+   * v1 legacy (cas des presets fighterL3 / wizardL3 d'origine).
+   */
+  ancestrySubChoices?: SeedAncestrySubChoices;
   backgroundId: string;
   abilities: Record<AbilityCode, number>;
   hp: { current: number; max: number; temp?: number };
@@ -109,6 +130,8 @@ export interface SeedPreset {
   knownSpells?: Record<string, string[]>;
   preparedSpells?: Record<string, string[]>;
   spellcastingAbility?: Record<string, AbilityCode>;
+  /** Skills pré-maîtrisés (slug, valeur = 1). */
+  skills?: Record<string, 1 | 2>;
   /** Items pré-équipés (slug items.json) — utile pour tester les attaques. */
   inventory?: { items: { contentId: string; equipped: boolean; qty?: number }[] };
 }
@@ -144,6 +167,135 @@ export const fighterL3: SeedPreset = {
       { contentId: 'club', equipped: false, qty: 1 },
     ],
   },
+};
+
+/**
+ * Drakéide Rouge niv. 1 (plan 13.8). Cas de test du Souffle draconique
+ * en mode Combat : carte breath-weapon visible, type Feu, DC = 12.
+ */
+export const dragonbornL1Red: SeedPreset = {
+  name: 'Pyrra de la Forge',
+  classes: [{ classId: 'fighter', subclassId: null, level: 1 }],
+  primaryClassId: 'fighter',
+  ancestryId: 'dragonborn',
+  ancestrySubChoices: { dragonAncestry: 'red' },
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 12, con: 14, int: 10, sag: 10, cha: 12 },
+  hp: { current: 12, max: 12 },
+  ac: 14,
+  hitDice: [{ classId: 'fighter', current: 1, max: 1, die: 'd10' }],
+  saves: { for: true, con: true },
+};
+
+/**
+ * Tieffelin Infernal niv. 1 (plan 13.8). Cas de test des Sorts d'héritage
+ * en mode Magie : `Trait de feu` visible dans la liste ancestry-spells.
+ */
+export const tieflingL1Infernal: SeedPreset = {
+  name: 'Maelstrom Skye',
+  classes: [{ classId: 'rogue', subclassId: null, level: 1 }],
+  primaryClassId: 'rogue',
+  ancestryId: 'tiefling',
+  ancestrySubChoices: {
+    tieflingLegacy: 'infernal',
+    ancestryCastingAbility: 'cha',
+    ancestrySize: 'medium',
+  },
+  backgroundId: 'criminal',
+  abilities: { for: 10, dex: 16, con: 12, int: 12, sag: 10, cha: 14 },
+  hp: { current: 9, max: 9 },
+  ac: 13,
+  hitDice: [{ classId: 'rogue', current: 1, max: 1, die: 'd8' }],
+  saves: { dex: true, int: true },
+  knownSpells: { ancestry: ['fire-bolt', 'hellish-rebuke', 'darkness'] },
+  spellcastingAbility: { ancestry: 'cha' },
+};
+
+/**
+ * Elfe Drow niv. 1 (plan 13.8). Cas de test des Sorts de lignage en mode
+ * Magie : `Danses lumineuses` visible.
+ */
+export const elfL1Drow: SeedPreset = {
+  name: 'Vaelarie Nightveil',
+  classes: [{ classId: 'ranger', subclassId: null, level: 1 }],
+  primaryClassId: 'ranger',
+  ancestryId: 'elf',
+  ancestrySubChoices: {
+    elfLineage: 'drow',
+    ancestryCastingAbility: 'int',
+    ancestryExtraSkill: 'perception',
+  },
+  backgroundId: 'outlander',
+  abilities: { for: 12, dex: 16, con: 13, int: 12, sag: 14, cha: 10 },
+  hp: { current: 11, max: 11 },
+  ac: 13,
+  hitDice: [{ classId: 'ranger', current: 1, max: 1, die: 'd10' }],
+  saves: { for: true, dex: true },
+  knownSpells: { ancestry: ['dancing-lights', 'faerie-fire', 'darkness'] },
+  spellcastingAbility: { ancestry: 'int' },
+};
+
+/**
+ * Gnome des forêts niv. 1 (plan 13.8). Cas de test : `Illusion mineure`
+ * visible en mode Magie.
+ */
+export const gnomeL1Forest: SeedPreset = {
+  name: 'Pip Tweedleblossom',
+  classes: [{ classId: 'rogue', subclassId: null, level: 1 }],
+  primaryClassId: 'rogue',
+  ancestryId: 'gnome',
+  ancestrySubChoices: {
+    gnomeLineage: 'forest',
+    ancestryCastingAbility: 'int',
+  },
+  backgroundId: 'guild-artisan',
+  abilities: { for: 8, dex: 16, con: 12, int: 14, sag: 10, cha: 12 },
+  hp: { current: 9, max: 9 },
+  ac: 13,
+  hitDice: [{ classId: 'rogue', current: 1, max: 1, die: 'd8' }],
+  saves: { dex: true, int: true },
+  knownSpells: { ancestry: ['minor-illusion'] },
+  spellcastingAbility: { ancestry: 'int' },
+};
+
+/**
+ * Goliath Storm niv. 1 (plan 13.8). Cas de test : carte Ascendance gigante
+ * visible en mode Combat avec l'effet Tonnerre.
+ */
+export const goliathL1Storm: SeedPreset = {
+  name: 'Bjorn Tonnerre-Lointain',
+  classes: [{ classId: 'barbarian', subclassId: null, level: 1 }],
+  primaryClassId: 'barbarian',
+  ancestryId: 'goliath',
+  ancestrySubChoices: { goliathAncestry: 'storm' },
+  backgroundId: 'outlander',
+  abilities: { for: 16, dex: 12, con: 16, int: 8, sag: 12, cha: 10 },
+  hp: { current: 15, max: 15 },
+  ac: 13,
+  hitDice: [{ classId: 'barbarian', current: 1, max: 1, die: 'd12' }],
+  saves: { for: true, con: true },
+};
+
+/**
+ * Humain Skillful niv. 1 (plan 13.8). Cas de test : skill Perception en
+ * plus apparaît dans essence-mode.
+ */
+export const humanL1Skillful: SeedPreset = {
+  name: 'Tara Stormwatch',
+  classes: [{ classId: 'fighter', subclassId: null, level: 1 }],
+  primaryClassId: 'fighter',
+  ancestryId: 'human',
+  ancestrySubChoices: {
+    ancestrySize: 'medium',
+    ancestryExtraSkill: 'perception',
+  },
+  backgroundId: 'soldier',
+  abilities: { for: 14, dex: 14, con: 14, int: 10, sag: 12, cha: 10 },
+  hp: { current: 12, max: 12 },
+  ac: 13,
+  hitDice: [{ classId: 'fighter', current: 1, max: 1, die: 'd10' }],
+  saves: { for: true, con: true },
+  skills: { perception: 1 },
 };
 
 /**
@@ -186,15 +338,44 @@ export const wizardL3: SeedPreset = {
 function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Record<string, unknown> {
   const totalLevel = preset.classes.reduce((s, c) => s + c.level, 0);
   const initial = preset.name.trim()[0] ?? '?';
-  return {
+  const writeV2 = preset.ancestrySubChoices !== undefined;
+
+  // Classes : v2 ajoute les 7 sentinelles de sous-choix par entrée.
+  const classes = writeV2
+    ? preset.classes.map((c) => ({
+        ...c,
+        clericDivineOrder: null,
+        druidPrimalOrder: null,
+        fighterFightingStyle: null,
+        weaponMasteries: [],
+        expertiseSkills: [],
+        eldritchInvocations: [],
+        wizardSpellbookL1: [],
+      }))
+    : preset.classes;
+
+  const ancestrySubChoices = writeV2
+    ? {
+        dragonAncestry: preset.ancestrySubChoices?.dragonAncestry ?? null,
+        tieflingLegacy: preset.ancestrySubChoices?.tieflingLegacy ?? null,
+        elfLineage: preset.ancestrySubChoices?.elfLineage ?? null,
+        gnomeLineage: preset.ancestrySubChoices?.gnomeLineage ?? null,
+        goliathAncestry: preset.ancestrySubChoices?.goliathAncestry ?? null,
+        ancestryCastingAbility:
+          preset.ancestrySubChoices?.ancestryCastingAbility ?? null,
+        ancestryExtraSkill: preset.ancestrySubChoices?.ancestryExtraSkill ?? null,
+        ancestrySize: preset.ancestrySubChoices?.ancestrySize ?? null,
+      }
+    : undefined;
+
+  const base: Record<string, unknown> = {
     id: charId,
     name: preset.name,
     status: 'alive',
-    classes: preset.classes,
+    classes,
     totalLevel,
     primaryClassId: preset.primaryClassId,
     ancestryId: preset.ancestryId,
-    subancestryId: null,
     backgroundId: preset.backgroundId,
     experience: 0,
     alignment: 'N',
@@ -207,7 +388,7 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
       sag: preset.saves?.sag ?? false,
       cha: preset.saves?.cha ?? false,
     },
-    skills: {},
+    skills: preset.skills ?? {},
     hp: { current: preset.hp.current, max: preset.hp.max, temp: preset.hp.temp ?? 0 },
     ac: preset.ac,
     speed: preset.speed ?? 30,
@@ -242,11 +423,19 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
     homeCampaignId: null,
     stats: { totalRolls: 0, totalD20Sum: 0, crits: 0, fumbles: 0, skillUses: {} },
     portrait: { type: 'letter', value: initial.toUpperCase() },
-    schemaVersion: 1,
+    schemaVersion: writeV2 ? 2 : 1,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
     updatedBy: uid,
   };
+
+  // v2 only : ancestrySubChoices. v1 legacy : subancestryId (sentinelle).
+  if (writeV2) {
+    base.ancestrySubChoices = ancestrySubChoices;
+  } else {
+    base.subancestryId = null;
+  }
+  return base;
 }
 
 /**
