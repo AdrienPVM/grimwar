@@ -47,6 +47,11 @@ interface ItemEntry {
   masteryProperty?: string | null;
 }
 
+interface SpellEntry {
+  id: string;
+  classes?: string[];
+}
+
 describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
   describe('ancestries.json', () => {
     it('a 9 ascendances bundlées (= count SRD)', async () => {
@@ -169,6 +174,68 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
           'pact-of-the-tome',
         ].sort(),
       );
+    });
+  });
+
+  describe('spells.json — couverture par classe lanceuse (Hardening D, post-13.7)', () => {
+    /**
+     * Garde anti-régression sur la couverture spells par classe.
+     *
+     * Pourquoi : c'est la 3e occurrence du bug « sorts vides pour une
+     * classe lanceuse » (cf. plans/DEBT.md > D7). Un compteur exact attrape
+     * une régression silencieuse (un re-build qui perd une classe d'une
+     * liste de filtres) AVANT que le SpellsStep affiche un écran vide.
+     *
+     * Si ces nombres divergent à la baisse : enquêter le pipeline, ne pas
+     * relâcher l'attente. Si à la hausse : confirmer qu'un sort SRD a bien
+     * été ajouté et bumper le seuil. Vu rouge à coup sûr quand on supprime
+     * intentionnellement une entrée wizard de spells.json.
+     */
+    // Plage indicative (post-13.7, source AideDD + SRD mappings) — à
+    // ré-aligner quand le plan 13.10 ré-extrait spells.json depuis le SRD
+    // PDF (cf. plans/DEBT.md > D9). Note : ces compteurs vivent ICI parce
+    // que c'est la seule garde anti-régression structurelle entre les
+    // bundles et l'UI. Tant que 13.10 n'a pas livré, on conserve les
+    // valeurs observées dans le bundle AideDD courant.
+    const EXPECTED_PER_CLASS: Record<string, number> = {
+      bard: 117,
+      cleric: 105,
+      druid: 107,
+      paladin: 31,
+      ranger: 38,
+      sorcerer: 126,
+      warlock: 70,
+      wizard: 210,
+    };
+
+    it('chaque classe lanceuse SRD a au moins le volume attendu de sorts (anti-régression silencieuse)', async () => {
+      const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
+      const counts: Record<string, number> = {};
+      for (const sp of spells) {
+        for (const c of sp.classes ?? []) {
+          counts[c] = (counts[c] ?? 0) + 1;
+        }
+      }
+      for (const [classId, expected] of Object.entries(EXPECTED_PER_CLASS)) {
+        const actual = counts[classId] ?? 0;
+        expect(
+          actual,
+          `Classe ${classId} : ${actual} sort(s) trouvé(s), attendu ≥ ${expected}.`,
+        ).toBeGreaterThanOrEqual(expected);
+      }
+    });
+
+    it('aucune classe lanceuse SRD n\'a 0 sort (la garde la plus minimale, redondante mais explicite)', async () => {
+      const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
+      const emptyClasses: string[] = [];
+      for (const classId of Object.keys(EXPECTED_PER_CLASS)) {
+        const count = spells.filter((s) => (s.classes ?? []).includes(classId)).length;
+        if (count === 0) emptyClasses.push(classId);
+      }
+      expect(
+        emptyClasses,
+        `Classes lanceuses sans aucun sort : ${emptyClasses.join(', ')}`,
+      ).toEqual([]);
     });
   });
 

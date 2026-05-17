@@ -125,6 +125,7 @@ export type StringKey =
   | 'wizard.spells.noCaster'
   | 'wizard.spells.preparedDaily'
   | 'wizard.spells.helpHint'
+  | 'wizard.spells.bundleEmpty'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -360,6 +361,8 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.spells.preparedDaily':
       "Tu prépares tes sorts chaque matin (au repos long) — rien à choisir à la création.",
     'wizard.spells.helpHint': 'Survole un sort pour voir ce qu’il fait.',
+    'wizard.spells.bundleEmpty':
+      "Aucun sort n’a été trouvé dans le grimoire pour cette classe. Le contenu n’a pas été chargé correctement — recharge la page. Si le problème persiste, signale-le.",
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -590,6 +593,8 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.spells.preparedDaily':
       'You prepare your spells each long rest — nothing to pick at creation.',
     'wizard.spells.helpHint': 'Hover a spell to see what it does.',
+    'wizard.spells.bundleEmpty':
+      'No spells found in the grimoire for this class. The content failed to load — reload the page. If it persists, report it.',
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel

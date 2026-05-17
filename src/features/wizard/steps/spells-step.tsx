@@ -175,6 +175,14 @@ function CasterSection({
   const cantripsQuota = CANTRIP_QUOTA[characterClass.id] ?? 0;
   const level1Quota = LEVEL1_QUOTA[characterClass.id] ?? 0;
 
+  // Garde anti-régression Hardening A (post-13.7) : si le bundle ne contient
+  // AUCUN sort pour cette classe lanceuse, l'utilisateur DOIT voir une
+  // bannière — pas un écran muet qui masque un cache figé / pipeline cassé /
+  // mismatch de filtre. Couvre par construction les 8 classes lanceuses SRD
+  // (Hardening C) puisque ce composant est rendu pour chaque entrée de
+  // `casterClasses` (cf. SpellsStep.casterClasses).
+  const bundleEmptyForThisClass = cantripList.length === 0 && level1List.length === 0;
+
   // Sélection persistante locale à la section (panneau desktop). Bascule
   // uniquement quand un AUTRE sort devient actif — pas de retour à null.
   const [previewSpellId, setPreviewSpellId] = useState<string | null>(null);
@@ -233,7 +241,16 @@ function CasterSection({
         </Button>
       </header>
 
-      {cantripsQuota > 0 ? (
+      {bundleEmptyForThisClass ? (
+        <div
+          role="alert"
+          className="rounded-md border border-crimson/40 bg-crimson/10 p-4 font-serif text-[14px] text-crimson"
+        >
+          ⚠ {t('wizard.spells.bundleEmpty')}
+        </div>
+      ) : null}
+
+      {!bundleEmptyForThisClass && cantripsQuota > 0 ? (
         <SpellPickGroup
           title={t('wizard.label.cantrips')}
           quota={cantripsQuota}
@@ -245,7 +262,7 @@ function CasterSection({
         />
       ) : null}
 
-      {level1Quota > 0 ? (
+      {!bundleEmptyForThisClass && level1Quota > 0 ? (
         <SpellPickGroup
           title={t('wizard.label.level1Spells')}
           quota={level1Quota}
@@ -255,11 +272,11 @@ function CasterSection({
           onPreviewChange={setPreviewSpellId}
           onRequestDetail={onRequestDetail}
         />
-      ) : (
+      ) : !bundleEmptyForThisClass ? (
         <p className="font-serif text-[13px] italic text-text-tertiary">
           {t('wizard.spells.preparedDaily')}
         </p>
-      )}
+      ) : null}
     </div>
   );
 

@@ -122,7 +122,7 @@ function mockFetchAligned(): void {
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const url = typeof input === 'string' ? input : (input as URL | Request).toString();
-      if (url.endsWith('/data/index.json')) {
+      if (url.includes('/data/index.json')) {
         return Promise.resolve(
           new Response(
             JSON.stringify({

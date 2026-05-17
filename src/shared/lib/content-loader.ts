@@ -30,26 +30,52 @@ const PUBLIC_CACHE_ID = '__public__';
  * Invalidation du cache public par hash de contenu.
  *
  * Pourquoi : le TTL 7 jours ne détecte pas les changements de bundle. Adrien
- * a vécu le bug une fois (plans/DEBT.md > D7 — "Page Sorts vide pour les
- * lanceurs") : le bundle disque avait été régénéré FR → EN, mais le cache
- * Dexie servait toujours l'ancien FR pendant 7j → SpellsStep filtrait sur
- * `'wizard'` contre des `classes: ['magicien']` → liste vide.
+ * a vécu le bug plusieurs fois (plans/DEBT.md > D7 — "Page Sorts vide pour
+ * les lanceurs") : le bundle disque avait changé mais le cache Dexie servait
+ * toujours l'ancienne version pendant 7j → SpellsStep filtrait dans le vide.
  *
  * Solution : `scripts/build-public-content.ts` écrit un sha-256 du bundle
  * dans `public/data/index.json` (clé `contentHash`). Au premier
  * `loadPublicContent` d'une session, on fetch `index.json`, on compare au
  * hash stocké dans Dexie. Différent → on vide les rows publiques.
  *
- * Mémoisé par module — un seul round-trip réseau par session, partagé entre
- * tous les appels concurrents. Le TTL 7j reste comme garde-fou secondaire.
+ * Mémoïsation — sémantique SUCCÈS UNIQUEMENT (cf. bug post-13.7 du
+ * 2026-05-17) : un échec (fetch throw, HTTP ≠ 2xx, JSON invalide, hash
+ * absent) NE doit PAS marquer le mécanisme comme "fait" — la promesse est
+ * remise à null pour que le prochain appel re-tente réellement. Sinon un
+ * hoquet réseau ponctuel fige le cache obsolète jusqu'au hard refresh.
  *
- * Offline-safe : si `fetch('/data/index.json')` échoue (réseau coupé), on
- * sert le cache existant sans crasher. C'est une PWA, le boot doit marcher
- * sur "phone in a cave" (CLAUDE.md > Project overview).
+ * Comportement dev vs prod sur fail de fraîcheur :
+ *   - PROD (PWA hors-ligne possible, "phone in a cave") : on `console.warn`
+ *     et on sert le cache existant. Le fallback est légitime offline.
+ *   - DEV : on `console.error` ET on jette une erreur visible. Un échec en
+ *     dev est presque toujours un vrai bug (bundle en cours d'écriture, SW
+ *     fantôme, mauvais chemin) qu'il faut voir tout de suite, pas un
+ *     warning noyé dans la console.
  */
 const PUBLIC_HASH_SETTINGS_KEY = 'public:contentHash';
 
 let publicCacheFreshnessPromise: Promise<void> | null = null;
+
+/**
+ * `true` en dev (Vite `import.meta.env.DEV`), `false` en build prod. Lu via
+ * un wrapper pour pouvoir le stubber dans les tests sans casser le bundle
+ * Vite. En contexte test (vitest), `import.meta.env.DEV` est `true` — on
+ * laisse les tests décider du mode via `__setFreshnessFailMode`.
+ */
+type FreshnessFailMode = 'dev' | 'prod';
+let freshnessFailMode: FreshnessFailMode =
+  import.meta.env.DEV && !import.meta.env.VITEST ? 'dev' : 'prod';
+
+/** Reset hook — utilisé par les tests pour rejouer la freshness check entre cas. */
+export function __resetPublicCacheFreshness(): void {
+  publicCacheFreshnessPromise = null;
+}
+
+/** Test-only — force le mode dev/prod pour exercer les deux branches. */
+export function __setFreshnessFailMode(mode: FreshnessFailMode): void {
+  freshnessFailMode = mode;
+}
 
 async function clearAllPublicContent(): Promise<void> {
   // On ne peut pas filtrer par `where('id').equals(PUBLIC_CACHE_ID)` parce que
@@ -66,49 +92,91 @@ async function clearAllPublicContent(): Promise<void> {
   }
 }
 
-async function ensurePublicCacheFreshness(): Promise<void> {
-  if (publicCacheFreshnessPromise) return publicCacheFreshnessPromise;
-  publicCacheFreshnessPromise = (async (): Promise<void> => {
-    let response: Response;
-    try {
-      response = await fetch('/data/index.json', { cache: 'no-cache' });
-    } catch {
-      // Réseau coupé — on garde le cache existant. C'est une PWA, le boot
-      // hors-ligne doit fonctionner.
-      console.warn('[content-loader] index.json indisponible (offline?) — cache public servi tel quel');
-      return;
-    }
-    if (!response.ok) {
-      console.warn(
-        `[content-loader] index.json HTTP ${response.status} — cache public servi tel quel`,
-      );
-      return;
-    }
-    let index: { contentHash?: unknown };
-    try {
-      index = (await response.json()) as { contentHash?: unknown };
-    } catch {
-      console.warn('[content-loader] index.json JSON invalide — cache public servi tel quel');
-      return;
-    }
-    const remoteHash = typeof index.contentHash === 'string' ? index.contentHash : null;
-    if (!remoteHash) {
-      // Index sans contentHash — fallback comportement legacy (TTL only).
-      // Garde-fou pour les déploiements pré-fix.
-      return;
-    }
-    const stored = await dexie.settings.get(PUBLIC_HASH_SETTINGS_KEY);
-    const localHash = typeof stored?.value === 'string' ? stored.value : null;
-    if (localHash === remoteHash) return;
-    await clearAllPublicContent();
-    await dexie.settings.put({ key: PUBLIC_HASH_SETTINGS_KEY, value: remoteHash });
-  })();
-  return publicCacheFreshnessPromise;
+/**
+ * Émet un signal d'échec de fraîcheur. En prod, un `console.warn` non
+ * bloquant (cache obsolète servi est légitime hors-ligne). En dev, on jette
+ * une erreur visible — un échec en dev est presque toujours un vrai bug.
+ *
+ * Throw est rattrapé par l'appelant : le cache obsolète est servi quand même
+ * (pas de régression de UX sur les composants), mais l'erreur remonte dans
+ * la promesse rejetée → visible dans la console DevTools, plus un warning
+ * noyé. Le `console.error` garantit un signal aussi en cas où l'appelant
+ * avale la promesse rejetée.
+ */
+function signalFreshnessFailure(message: string): never {
+  if (freshnessFailMode === 'dev') {
+    console.error(`[content-loader] ${message}`);
+    throw new Error(`[content-loader] ${message}`);
+  }
+  console.warn(`[content-loader] ${message} — cache public servi tel quel`);
+  throw new Error(`[content-loader] ${message}`);
 }
 
-/** Reset hook — utilisé par les tests pour rejouer la freshness check entre cas. */
-export function __resetPublicCacheFreshness(): void {
-  publicCacheFreshnessPromise = null;
+async function runFreshnessCheck(): Promise<void> {
+  let response: Response;
+  try {
+    // `?v=<timestamp>` : cache-busting URL-level pour court-circuiter un
+    // éventuel SW Workbox qui aurait `/data/index.json` en SWR (cf. Bug 1
+    // post-13.7). Le fix principal vit dans vite.config.ts (NetworkFirst
+    // pour index.json), ce cache-buster est une ceinture-bretelles côté
+    // client si jamais un SW ancien traîne dans un navigateur installé.
+    response = await fetch(`/data/index.json?v=${Date.now()}`, {
+      cache: 'no-cache',
+    });
+  } catch {
+    signalFreshnessFailure('index.json indisponible (offline ?)');
+  }
+  if (!response.ok) {
+    signalFreshnessFailure(`index.json HTTP ${response.status}`);
+  }
+  let index: { contentHash?: unknown };
+  try {
+    index = (await response.json()) as { contentHash?: unknown };
+  } catch {
+    signalFreshnessFailure('index.json JSON invalide (build en cours ?)');
+  }
+  const remoteHash = typeof index.contentHash === 'string' ? index.contentHash : null;
+  if (!remoteHash) {
+    // Index sans contentHash : peut être un build legacy pré-fix D7, ou un
+    // pipeline cassé. Ne pas rester silencieux — c'est un signal qu'il faut
+    // voir (ce qui aurait évité de chasser le bug en aveugle).
+    signalFreshnessFailure(
+      'index.json sans contentHash — build legacy ou pipeline cassé',
+    );
+  }
+  const stored = await dexie.settings.get(PUBLIC_HASH_SETTINGS_KEY);
+  const localHash = typeof stored?.value === 'string' ? stored.value : null;
+  if (localHash === remoteHash) return;
+  await clearAllPublicContent();
+  await dexie.settings.put({ key: PUBLIC_HASH_SETTINGS_KEY, value: remoteHash });
+}
+
+/**
+ * Vérifie la fraîcheur du cache public — mémoïsation succès uniquement.
+ *
+ * Si la promesse précédente a échoué, on la jette et on rejoue. Si elle a
+ * réussi (cache à jour ou purge effectuée), on la garde pour le reste de la
+ * session — pas de re-fetch gratuit de `index.json` à chaque appel.
+ *
+ * L'erreur jetée n'est PAS propagée à l'appelant : `loadPublicContent`
+ * l'avale et sert le cache existant (offline-safe en prod). Le log de la
+ * fonction signale la fraîcheur ratée — invisible en prod (warn), bruyant
+ * en dev (error).
+ */
+async function ensurePublicCacheFreshness(): Promise<void> {
+  if (publicCacheFreshnessPromise) return publicCacheFreshnessPromise;
+  const attempt = runFreshnessCheck();
+  publicCacheFreshnessPromise = attempt;
+  try {
+    await attempt;
+  } catch {
+    // Échec : on remet la mémoïsation à null pour que le prochain appel
+    // RÉ-essaie réellement (vs Bug 2 : la mémoïsation absorbait l'échec
+    // comme un succès et figeait le cache obsolète jusqu'au hard refresh).
+    if (publicCacheFreshnessPromise === attempt) {
+      publicCacheFreshnessPromise = null;
+    }
+  }
 }
 
 export type ContentScope = 'public' | 'user' | 'campaign';

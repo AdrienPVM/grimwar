@@ -46,6 +46,29 @@ export default defineConfig({
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
             },
           },
+          // index.json — NetworkFirst placé AVANT le pattern SWR générique.
+          // Workbox applique la première règle qui matche : ce handler doit
+          // précéder /data/.*\.json$ pour ne pas être shadowé par lui.
+          //
+          // Pourquoi : index.json PORTE le signal de fraîcheur (contentHash).
+          // S'il est servi périmé par le SW (SWR), le mécanisme
+          // d'invalidation Dexie compare deux hashes périmés cohérents entre
+          // eux et conclut « à jour » alors qu'un nouveau bundle est sur
+          // disque. C'est Bug 1 du post-13.7 — un piège latent garanti en
+          // prod PWA où le SW est enregistré (cf. plans/DEBT.md > D7).
+          //
+          // NetworkFirst : online → vrai disque (le bon hash) ; offline →
+          // fallback cache (PWA airplane-mode reste fonctionnelle). timeout
+          // 3s pour ne pas suspendre le boot si le réseau pédale.
+          {
+            urlPattern: /\/data\/index\.json(\?.*)?$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'grimwar-content-index',
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 4, maxAgeSeconds: 60 * 60 * 24 * 7 },
+            },
+          },
           {
             urlPattern: /\/data\/.*\.json$/,
             handler: 'StaleWhileRevalidate',
