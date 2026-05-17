@@ -1,0 +1,418 @@
+[
+  {
+    "id": "agonizing-blast",
+    "name": {
+      "fr": "Décharge déchirante",
+      "en": "Agonizing Blast"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": {
+      "fr": "Connaître un cantrip Occultiste à attaque",
+      "en": "Must know a Warlock attack cantrip"
+    },
+    "summary": {
+      "fr": "Ajoutez votre modificateur de Charisme aux dégâts du cantrip d'attaque choisi.",
+      "en": "Add your Charisma modifier to the damage of your chosen attack cantrip."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "armor-of-shadows",
+    "name": {
+      "fr": "Armure d'ombres",
+      "en": "Armor of Shadows"
+    },
+    "prerequisiteWarlockLevel": null,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous pouvez lancer Armure du mage sur vous-même à volonté, sans slot ni composants.",
+      "en": "You can cast Mage Armor on yourself at will, without expending a spell slot or material components."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ascendant-step",
+    "name": {
+      "fr": "Pas aérien",
+      "en": "Ascendant Step"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Lévitation sur vous-même à volonté, sans slot.",
+      "en": "You can cast Levitate on yourself at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "devils-sight",
+    "name": {
+      "fr": "Vision du diable",
+      "en": "Devil's Sight"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous voyez normalement dans le noir magique ou non, jusqu'à 36 m.",
+      "en": "You see normally in magical and nonmagical Darkness to a range of 120 ft."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "devouring-blade",
+    "name": {
+      "fr": "Lame dévorante",
+      "en": "Devouring Blade"
+    },
+    "prerequisiteWarlockLevel": 12,
+    "prerequisiteOther": {
+      "fr": "Thirsting Blade",
+      "en": "Thirsting Blade"
+    },
+    "summary": {
+      "fr": "Vous attaquez 3 fois avec votre arme de pacte dans l'action Attaque (au lieu de 2 via Thirsting Blade).",
+      "en": "You can attack three times with your Pact Weapon as part of the Attack action (instead of twice)."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "eldritch-mind",
+    "name": {
+      "fr": "Esprit occulte",
+      "en": "Eldritch Mind"
+    },
+    "prerequisiteWarlockLevel": null,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Avantage aux jets de sauvegarde de Constitution pour maintenir la Concentration sur un sort.",
+      "en": "Advantage on Constitution saving throws to maintain Concentration on a spell."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "eldritch-smite",
+    "name": {
+      "fr": "Frappe occulte",
+      "en": "Eldritch Smite"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": {
+      "fr": "Pact of the Blade",
+      "en": "Pact of the Blade"
+    },
+    "summary": {
+      "fr": "Quand vous touchez avec votre arme de pacte, vous pouvez dépenser un slot pour infliger +1d8 dégâts/niveau (max +5d8) et tenter Prone si Large ou moins.",
+      "en": "On a Pact Weapon hit, spend a spell slot to deal +1d8 damage per slot level (max +5d8) and attempt to knock the target Prone (Large or smaller)."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "eldritch-spear",
+    "name": {
+      "fr": "Lance occulte",
+      "en": "Eldritch Spear"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "La portée de vos cantrips Occultiste à attaque est doublée.",
+      "en": "The range of your Warlock attack cantrips doubles."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "fiendish-vigor",
+    "name": {
+      "fr": "Vigueur fiélonne",
+      "en": "Fiendish Vigor"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous pouvez lancer Armure de la nuit (Armor of Agathys) à volonté sur vous-même, sans slot.",
+      "en": "You can cast False Life on yourself at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "gaze-of-two-minds",
+    "name": {
+      "fr": "Perception transférée",
+      "en": "Gaze of Two Minds"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Par contact volontaire, vous percevez par les sens d'une créature consentante (Concentration).",
+      "en": "By touch, you can perceive through a willing creature's senses (Concentration)."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "gift-of-the-depths",
+    "name": {
+      "fr": "Présent des profondeurs",
+      "en": "Gift of the Depths"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vitesse de nage = vitesse de marche, respiration aquatique, et 1×/repos long : Respiration aquatique sans slot.",
+      "en": "Swim speed = walking speed, can breathe underwater, and once/long rest cast Water Breathing without a slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "gift-of-the-protectors",
+    "name": {
+      "fr": "Présent des sauveurs",
+      "en": "Gift of the Protectors"
+    },
+    "prerequisiteWarlockLevel": 9,
+    "prerequisiteOther": {
+      "fr": "Pact of the Tome",
+      "en": "Pact of the Tome"
+    },
+    "summary": {
+      "fr": "Notez jusqu'à PB noms dans votre Codex : ces créatures, quand elles tomberaient à 0 PV, tombent à 1 PV à la place (1×/repos long par nom).",
+      "en": "List up to PB names in your Book: those creatures drop to 1 HP instead of 0 (once/long rest per name)."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "investment-of-the-chain-master",
+    "name": {
+      "fr": "Engagement du maître des chaînes",
+      "en": "Investment of the Chain Master"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": {
+      "fr": "Pact of the Chain",
+      "en": "Pact of the Chain"
+    },
+    "summary": {
+      "fr": "Votre familier gagne des bénéfices supplémentaires (vol 9 m, dégâts magiques, résistance), et vous pouvez le commander en action bonus.",
+      "en": "Your familiar gains extra benefits (30 ft. fly, magical damage, resistance) and you can command it as a bonus action."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "lessons-of-the-first-ones",
+    "name": {
+      "fr": "Enseignement des Premiers-Nés",
+      "en": "Lessons of the First Ones"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous gagnez les bénéfices d'un Origin Feat de votre choix. Répétable.",
+      "en": "Gain the benefits of one Origin Feat of your choice. Repeatable."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "lifedrinker",
+    "name": {
+      "fr": "Buveuse de vie",
+      "en": "Lifedrinker"
+    },
+    "prerequisiteWarlockLevel": 9,
+    "prerequisiteOther": {
+      "fr": "Pact of the Blade",
+      "en": "Pact of the Blade"
+    },
+    "summary": {
+      "fr": "Votre arme de pacte inflige 1d6 dégâts nécrotiques supplémentaires sur chaque coup, et vous gagnez PB PV temporaires sur un coup.",
+      "en": "Your Pact Weapon deals an extra 1d6 necrotic damage on a hit, and you gain PB temporary HP on a hit."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "mask-of-many-faces",
+    "name": {
+      "fr": "Mille visages",
+      "en": "Mask of Many Faces"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Déguisement à volonté, sans slot.",
+      "en": "You can cast Disguise Self at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "master-of-myriad-forms",
+    "name": {
+      "fr": "Maître des formes",
+      "en": "Master of Myriad Forms"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Métamorphose à volonté, sans slot.",
+      "en": "You can cast Alter Self at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "misty-visions",
+    "name": {
+      "fr": "Visions embrumées",
+      "en": "Misty Visions"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Image silencieuse à volonté, sans slot.",
+      "en": "You can cast Silent Image at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "one-with-shadows",
+    "name": {
+      "fr": "Maître des ombres",
+      "en": "One with Shadows"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Dans une zone de luminosité faible ou inférieure, vous devenez Invisible jusqu'à votre prochain tour.",
+      "en": "In an area of dim light or darker, you become Invisible until the start of your next turn."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "otherworldly-leap",
+    "name": {
+      "fr": "Saut d'outre-monde",
+      "en": "Otherworldly Leap"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Saut sur vous-même à volonté, sans slot.",
+      "en": "You can cast Jump on yourself at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pact-of-the-blade",
+    "name": {
+      "fr": "Pacte de la lame",
+      "en": "Pact of the Blade"
+    },
+    "prerequisiteWarlockLevel": null,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "En action bonus, invoquez votre arme de pacte (Charisme pour attaque/dégâts, type de dégâts au choix entre nécrotiques, psychiques ou radiants).",
+      "en": "As a bonus action, summon your Pact Weapon (Charisma for attack/damage, choose damage type from necrotic, psychic, or radiant)."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pact-of-the-chain",
+    "name": {
+      "fr": "Pacte de la chaîne",
+      "en": "Pact of the Chain"
+    },
+    "prerequisiteWarlockLevel": null,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous apprenez Appel de familier (rituel) et pouvez invoquer des formes spéciales : Démon mineur, Pseudodragon, Quasit, Sprite.",
+      "en": "You learn Find Familiar (as a ritual) and can summon special forms: Imp, Pseudodragon, Quasit, or Sprite."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pact-of-the-tome",
+    "name": {
+      "fr": "Pacte du grimoire",
+      "en": "Pact of the Tome"
+    },
+    "prerequisiteWarlockLevel": null,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Codex des Ombres : 3 cantrips au choix de n'importe quelle classe + 2 sorts L1 rituels au choix de n'importe quelle classe.",
+      "en": "Book of Shadows: 3 cantrips of your choice from any class + 2 ritual level-1 spells of your choice from any class."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "repelling-blast",
+    "name": {
+      "fr": "Décharge répulsive",
+      "en": "Repelling Blast"
+    },
+    "prerequisiteWarlockLevel": 2,
+    "prerequisiteOther": {
+      "fr": "Connaître un cantrip Occultiste à attaque",
+      "en": "Must know a Warlock attack cantrip"
+    },
+    "summary": {
+      "fr": "Quand vous touchez avec votre cantrip d'attaque, vous repoussez la créature de 3 m.",
+      "en": "When you hit a creature with your attack cantrip, push it 10 ft. away."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "thirsting-blade",
+    "name": {
+      "fr": "Lame assoiffée",
+      "en": "Thirsting Blade"
+    },
+    "prerequisiteWarlockLevel": 5,
+    "prerequisiteOther": {
+      "fr": "Pact of the Blade",
+      "en": "Pact of the Blade"
+    },
+    "summary": {
+      "fr": "Vous pouvez attaquer 2 fois (au lieu d'une) avec votre arme de pacte dans l'action Attaque.",
+      "en": "You can attack twice (instead of once) with your Pact Weapon as part of the Attack action."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "visions-of-distant-realms",
+    "name": {
+      "fr": "Royaumes lointains",
+      "en": "Visions of Distant Realms"
+    },
+    "prerequisiteWarlockLevel": 9,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Œil de mage à volonté, sans slot.",
+      "en": "You can cast Arcane Eye at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "whispers-of-the-grave",
+    "name": {
+      "fr": "Murmures de la tombe",
+      "en": "Whispers of the Grave"
+    },
+    "prerequisiteWarlockLevel": 7,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous lancez Parler aux morts à volonté, sans slot.",
+      "en": "You can cast Speak with Dead at will, without expending a spell slot."
+    },
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "witch-sight",
+    "name": {
+      "fr": "Vision sorcière",
+      "en": "Witch Sight"
+    },
+    "prerequisiteWarlockLevel": 15,
+    "prerequisiteOther": null,
+    "summary": {
+      "fr": "Vous voyez la vraie forme de toute créature dans 9 m (formes mutées, illusions, métamorphoses, etc.).",
+      "en": "You see the true form of any creature within 30 ft. (shapechangers, illusions, polymorph, etc.)."
+    },
+    "source": "srd-5.2.1"
+  }
+]

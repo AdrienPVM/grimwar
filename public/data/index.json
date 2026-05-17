@@ -1,18 +1,19 @@
 {
-  "generatedAt": "2026-05-16T18:27:15.651Z",
+  "generatedAt": "2026-05-17T15:15:09.879Z",
   "counts": {
-    "spells": 330,
-    "monsters": 0,
+    "ancestries": 9,
+    "backgrounds": 4,
+    "classes": 12,
+    "conditions": 15,
+    "feats": 17,
+    "invocations": 28,
     "items": 190,
     "magic-items": 251,
-    "classes": 12,
-    "subclasses": 12,
-    "ancestries": 9,
+    "monsters": 0,
+    "rules": 0,
+    "spells": 330,
     "subancestries": 0,
-    "backgrounds": 4,
-    "feats": 1,
-    "conditions": 15,
-    "rules": 0
+    "subclasses": 12
   },
-  "contentHash": "a5cd583d6a253224ec92075372dde8e320f4b3cfab59f4d77cc6e305346023d8"
+  "contentHash": "7e314424697007844223e0086b8e9e39c35ec64ce62bf15111b06d5224ef0c4f"
 }

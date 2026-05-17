@@ -1,1402 +1,5 @@
 [
   {
-    "id": "quarterstaff",
-    "name": {
-      "fr": "Bâton de combat",
-      "en": "Quarterstaff"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 2,
-      "unit": "sp"
-    },
-    "weight": 4,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Versatile"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "dagger",
-    "name": {
-      "fr": "Dague",
-      "en": "Dagger"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Finesse",
-      "Light",
-      "Thrown"
-    ],
-    "range": {
-      "normal": 20,
-      "max": 60
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "club",
-    "name": {
-      "fr": "Gourdin",
-      "en": "Club"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 1,
-      "unit": "sp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Light"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "handaxe",
-    "name": {
-      "fr": "Hachette",
-      "en": "Handaxe"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Light",
-      "Thrown"
-    ],
-    "range": {
-      "normal": 20,
-      "max": 60
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "javelin",
-    "name": {
-      "fr": "Javeline",
-      "en": "Javelin"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "sp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Thrown"
-    ],
-    "range": {
-      "normal": 30,
-      "max": 120
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "spear",
-    "name": {
-      "fr": "Lance",
-      "en": "Spear"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Thrown",
-      "Versatile"
-    ],
-    "range": {
-      "normal": 20,
-      "max": 60
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "light-hammer",
-    "name": {
-      "fr": "Marteau léger",
-      "en": "Light Hammer"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Light",
-      "Thrown"
-    ],
-    "range": {
-      "normal": 20,
-      "max": 60
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "mace",
-    "name": {
-      "fr": "Masse d’armes",
-      "en": "Mace"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "simple-melee"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "greatclub",
-    "name": {
-      "fr": "Massue",
-      "en": "Greatclub"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 2,
-      "unit": "sp"
-    },
-    "weight": 10,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "sickle",
-    "name": {
-      "fr": "Serpe",
-      "en": "Sickle"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "simple-melee",
-      "Light"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "light-crossbow",
-    "name": {
-      "fr": "Arbalète légère",
-      "en": "Light Crossbow"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "simple-ranged",
-      "Ammunition",
-      "Loading",
-      "Two-Handed"
-    ],
-    "range": {
-      "normal": 80,
-      "max": 320
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "shortbow",
-    "name": {
-      "fr": "Arc court",
-      "en": "Shortbow"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "simple-ranged",
-      "Ammunition",
-      "Two-Handed"
-    ],
-    "range": {
-      "normal": 80,
-      "max": 320
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "dart",
-    "name": {
-      "fr": "Fléchette",
-      "en": "Dart"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "cp"
-    },
-    "weight": 4,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "simple-ranged",
-      "Finesse",
-      "Thrown"
-    ],
-    "range": {
-      "normal": 20,
-      "max": 60
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "sling",
-    "name": {
-      "fr": "Fronde",
-      "en": "Sling"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 1,
-      "unit": "sp"
-    },
-    "weight": 0,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "simple-ranged",
-      "Ammunition"
-    ],
-    "range": {
-      "normal": 30,
-      "max": 120
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "scimitar",
-    "name": {
-      "fr": "Cimeterre",
-      "en": "Scimitar"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Finesse",
-      "Light"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "glaive",
-    "name": {
-      "fr": "Coutille",
-      "en": "Glaive"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 20,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "damage": {
-      "dice": "1d10",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Reach",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "greatsword",
-    "name": {
-      "fr": "Épée à deux mains",
-      "en": "Greatsword"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "damage": {
-      "dice": "2d6",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "shortsword",
-    "name": {
-      "fr": "Épée courte",
-      "en": "Shortsword"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Finesse",
-      "Light"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "longsword",
-    "name": {
-      "fr": "Épée longue",
-      "en": "Longsword"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 15,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Versatile"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "flail",
-    "name": {
-      "fr": "Fléau d’armes",
-      "en": "Flail"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "martial-melee"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "whip",
-    "name": {
-      "fr": "Fouet",
-      "en": "Whip"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "damage": {
-      "dice": "1d4",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Finesse",
-      "Reach"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "greataxe",
-    "name": {
-      "fr": "Hache à deux mains",
-      "en": "Greataxe"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 30,
-      "unit": "gp"
-    },
-    "weight": 7,
-    "description": null,
-    "damage": {
-      "dice": "1d12",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "battleaxe",
-    "name": {
-      "fr": "Hache d’armes",
-      "en": "Battleaxe"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 4,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Versatile"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "halberd",
-    "name": {
-      "fr": "Hallebarde",
-      "en": "Halberd"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 20,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "damage": {
-      "dice": "1d10",
-      "type": "slashing",
-      "typeLabel": {
-        "fr": "tranchants",
-        "en": "Slashing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Reach",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "lance",
-    "name": {
-      "fr": "Lance d’arçon",
-      "en": "Lance"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "damage": {
-      "dice": "1d10",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Reach",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "maul",
-    "name": {
-      "fr": "Maillet d’armes",
-      "en": "Maul"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 10,
-    "description": null,
-    "damage": {
-      "dice": "2d6",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "warhammer",
-    "name": {
-      "fr": "Marteau de guerre",
-      "en": "Warhammer"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 15,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "bludgeoning",
-      "typeLabel": {
-        "fr": "contondants",
-        "en": "Bludgeoning"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Versatile"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "morningstar",
-    "name": {
-      "fr": "Morgenstern",
-      "en": "Morningstar"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 15,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "war-pick",
-    "name": {
-      "fr": "Pic de guerre",
-      "en": "War Pick"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Versatile"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "pike",
-    "name": {
-      "fr": "Pique",
-      "en": "Pike"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 18,
-    "description": null,
-    "damage": {
-      "dice": "1d10",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Heavy",
-      "Reach",
-      "Two-Handed"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "rapier",
-    "name": {
-      "fr": "Rapière",
-      "en": "Rapier"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Finesse"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "tr-ide-nt",
-    "name": {
-      "fr": "Trident",
-      "en": "Trident"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 4,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-melee",
-      "Thrown",
-      "Versatile"
-    ],
-    "range": {
-      "normal": 20,
-      "max": 60
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "hand-crossbow",
-    "name": {
-      "fr": "Arbalète de poing",
-      "en": "Hand Crossbow"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 75,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "damage": {
-      "dice": "1d6",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-ranged",
-      "Ammunition",
-      "Light",
-      "Loading"
-    ],
-    "range": {
-      "normal": 30,
-      "max": 120
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "heavy-crossbow",
-    "name": {
-      "fr": "Arbalète lourde",
-      "en": "Heavy Crossbow"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 18,
-    "description": null,
-    "damage": {
-      "dice": "1d10",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-ranged",
-      "Ammunition",
-      "Heavy",
-      "Loading",
-      "Two-Handed"
-    ],
-    "range": {
-      "normal": 100,
-      "max": 400
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "longbow",
-    "name": {
-      "fr": "Arc long",
-      "en": "Longbow"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "damage": {
-      "dice": "1d8",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-ranged",
-      "Ammunition",
-      "Heavy",
-      "Two-Handed"
-    ],
-    "range": {
-      "normal": 150,
-      "max": 600
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "musket",
-    "name": {
-      "fr": "Mousquet",
-      "en": "Musket"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 500,
-      "unit": "gp"
-    },
-    "weight": 10,
-    "description": null,
-    "damage": {
-      "dice": "1d12",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-ranged",
-      "Ammunition",
-      "Loading",
-      "Two-Handed"
-    ],
-    "range": {
-      "normal": 40,
-      "max": 120
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "pistol",
-    "name": {
-      "fr": "Pistolet",
-      "en": "Pistol"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 250,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "damage": {
-      "dice": "1d10",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-ranged",
-      "Ammunition",
-      "Loading"
-    ],
-    "range": {
-      "normal": 30,
-      "max": 90
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "blowgun",
-    "name": {
-      "fr": "Sarbacane",
-      "en": "Blowgun"
-    },
-    "category": "weapon",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "damage": {
-      "dice": "1",
-      "type": "piercing",
-      "typeLabel": {
-        "fr": "perforants",
-        "en": "Piercing"
-      }
-    },
-    "properties": [
-      "martial-ranged",
-      "Ammunition",
-      "Loading"
-    ],
-    "range": {
-      "normal": 25,
-      "max": 100
-    },
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "padded-armor",
-    "name": {
-      "fr": "Armure matelassée",
-      "en": "Padded Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "light-armor"
-    ],
-    "acBase": 11,
-    "acDexMax": null,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "leather-armor",
-    "name": {
-      "fr": "Armure de cuir",
-      "en": "Leather Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "light-armor"
-    ],
-    "acBase": 11,
-    "acDexMax": null,
-    "stealthDisadvantage": false,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "studded-leather-armor",
-    "name": {
-      "fr": "Armure de cuir clouté",
-      "en": "Studded Leather Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 45,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "light-armor"
-    ],
-    "acBase": 12,
-    "acDexMax": null,
-    "stealthDisadvantage": false,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "hide-armor",
-    "name": {
-      "fr": "Armure de peaux",
-      "en": "Hide Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "medium-armor"
-    ],
-    "acBase": 12,
-    "acDexMax": 2,
-    "stealthDisadvantage": false,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "chain-shirt",
-    "name": {
-      "fr": "Chemise de mailles",
-      "en": "Chain Shirt"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "medium-armor"
-    ],
-    "acBase": 13,
-    "acDexMax": 2,
-    "stealthDisadvantage": false,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "scale-mail",
-    "name": {
-      "fr": "Armure d’écailles",
-      "en": "Scale Mail"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "medium-armor"
-    ],
-    "acBase": 14,
-    "acDexMax": 2,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "breastplate",
-    "name": {
-      "fr": "Cuirasse",
-      "en": "Breastplate"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 400,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "medium-armor"
-    ],
-    "acBase": 14,
-    "acDexMax": 2,
-    "stealthDisadvantage": false,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "half-plate-armor",
-    "name": {
-      "fr": "Demi-plate",
-      "en": "Half Plate Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 750,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "medium-armor"
-    ],
-    "acBase": 15,
-    "acDexMax": 2,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "ring-mail",
-    "name": {
-      "fr": "Broigne",
-      "en": "Ring Mail"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 30,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "heavy-armor"
-    ],
-    "acBase": 14,
-    "acDexMax": 0,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "chain-mail",
-    "name": {
-      "fr": "Cotte de mailles",
-      "en": "Chain Mail"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 75,
-      "unit": "gp"
-    },
-    "weight": 55,
-    "description": null,
-    "properties": [
-      "heavy-armor"
-    ],
-    "acBase": 16,
-    "acDexMax": 0,
-    "strRequired": 13,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "splint-armor",
-    "name": {
-      "fr": "Clibanion",
-      "en": "Splint Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 200,
-      "unit": "gp"
-    },
-    "weight": 60,
-    "description": null,
-    "properties": [
-      "heavy-armor"
-    ],
-    "acBase": 17,
-    "acDexMax": 0,
-    "strRequired": 15,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "plate-armor",
-    "name": {
-      "fr": "Harnois",
-      "en": "Plate Armor"
-    },
-    "category": "armor",
-    "cost": {
-      "qty": 1500,
-      "unit": "gp"
-    },
-    "weight": 65,
-    "description": null,
-    "properties": [
-      "heavy-armor"
-    ],
-    "acBase": 18,
-    "acDexMax": 0,
-    "strRequired": 15,
-    "stealthDisadvantage": true,
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "shield",
-    "name": {
-      "fr": "Bouclier",
-      "en": "Shield"
-    },
-    "category": "shield",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "shield-armor"
-    ],
-    "acBase": 2,
-    "stealthDisadvantage": false,
-    "source": "srd-5.2.1"
-  },
-  {
     "id": "acid",
     "name": {
       "fr": "Acide",
@@ -1429,6 +32,22 @@
     "source": "srd-5.2.1"
   },
   {
+    "id": "alchemists-supplies",
+    "name": {
+      "fr": "Matériel d’alchimiste",
+      "en": "Alchemist’s Supplies"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 8,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
     "id": "ammunition",
     "name": {
       "fr": "Munitions",
@@ -1441,1267 +60,6 @@
     "properties": [
       "varies"
     ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "antitoxin",
-    "name": {
-      "fr": "Antidote",
-      "en": "Antitoxin"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "arcane-focus",
-    "name": {
-      "fr": "Focaliseur arcanique",
-      "en": "Arcane Focus"
-    },
-    "category": "gear",
-    "cost": null,
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "varies"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "backpack",
-    "name": {
-      "fr": "Sac à dos",
-      "en": "Backpack"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "ball-bearings",
-    "name": {
-      "fr": "Billes",
-      "en": "Ball Bearings"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "barrel",
-    "name": {
-      "fr": "Tonneau",
-      "en": "Barrel"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 70,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "basket",
-    "name": {
-      "fr": "Panier",
-      "en": "Basket"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 4,
-      "unit": "sp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "bedroll",
-    "name": {
-      "fr": "Sac de couchage",
-      "en": "Bedroll"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 7,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "bell",
-    "name": {
-      "fr": "Cloche",
-      "en": "Bell"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "blanket",
-    "name": {
-      "fr": "Couverture",
-      "en": "Blanket"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "sp"
-    },
-    "weight": 3,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "block-and-tackle",
-    "name": {
-      "fr": "Palan",
-      "en": "Block and Tackle"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "book",
-    "name": {
-      "fr": "Livre",
-      "en": "Book"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "bottle-glass",
-    "name": {
-      "fr": "Bouteille, verre",
-      "en": "Bottle, Glass"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "bucket",
-    "name": {
-      "fr": "Seau",
-      "en": "Bucket"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "cp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "burglars-pack",
-    "name": {
-      "fr": "Paquetage de cambrioleur",
-      "en": "Burglar’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 16,
-      "unit": "gp"
-    },
-    "weight": 42,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "caltrops",
-    "name": {
-      "fr": "Chausse-trappes",
-      "en": "Caltrops"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "candle",
-    "name": {
-      "fr": "Bougie",
-      "en": "Candle"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "cp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "case-crossbow-bolt",
-    "name": {
-      "fr": "Étui pour carreaux d’arbalète",
-      "en": "Case, Crossbow Bolt"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "case-map-or-scroll",
-    "name": {
-      "fr": "Étui à cartes ou à parchemins",
-      "en": "Case, Map or Scroll"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "chain",
-    "name": {
-      "fr": "Chaîne",
-      "en": "Chain"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 10,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "chest",
-    "name": {
-      "fr": "Coffre",
-      "en": "Chest"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 25,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "climbers-kit",
-    "name": {
-      "fr": "Matériel d’escalade",
-      "en": "Climber’s Kit"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 12,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "clothes-fine",
-    "name": {
-      "fr": "Beaux habits",
-      "en": "Clothes, Fine"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 15,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "clothes-travelers",
-    "name": {
-      "fr": "Tenue de voyage",
-      "en": "Clothes, Traveler’s"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 4,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "component-pouch",
-    "name": {
-      "fr": "Sacoche à composantes",
-      "en": "Component Pouch"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "costume",
-    "name": {
-      "fr": "Costume",
-      "en": "Costume"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 4,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "crowbar",
-    "name": {
-      "fr": "Pied-de-biche",
-      "en": "Crowbar"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "diplomats-pack",
-    "name": {
-      "fr": "Paquetage de diplomate",
-      "en": "Diplomat’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 39,
-      "unit": "gp"
-    },
-    "weight": 39,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "druidic-focus",
-    "name": {
-      "fr": "Focaliseur druidique",
-      "en": "Druidic Focus"
-    },
-    "category": "gear",
-    "cost": null,
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "varies"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "dungeoneers-pack",
-    "name": {
-      "fr": "Paquetage d’exploration souterraine",
-      "en": "Dungeoneer’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 12,
-      "unit": "gp"
-    },
-    "weight": 55,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "entertainers-pack",
-    "name": {
-      "fr": "Paquetage d’artiste",
-      "en": "Entertainer’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 40,
-      "unit": "gp"
-    },
-    "weight": 58.5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "explorers-pack",
-    "name": {
-      "fr": "Paquetage d’explorateur",
-      "en": "Explorer’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 55,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "flask",
-    "name": {
-      "fr": "Flasque",
-      "en": "Flask"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "cp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "grappling-hook",
-    "name": {
-      "fr": "Grappin",
-      "en": "Grappling Hook"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 4,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "healers-kit",
-    "name": {
-      "fr": "Trousse de soins",
-      "en": "Healer’s Kit"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "holy-symbol",
-    "name": {
-      "fr": "Symbole sacré",
-      "en": "Holy Symbol"
-    },
-    "category": "gear",
-    "cost": null,
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "varies"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "holy-water",
-    "name": {
-      "fr": "Eau bénite",
-      "en": "Holy Water"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "hunting-trap",
-    "name": {
-      "fr": "Piège à mâchoires",
-      "en": "Hunting Trap"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 25,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "ink",
-    "name": {
-      "fr": "Encre",
-      "en": "Ink"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "ink-pen",
-    "name": {
-      "fr": "Porte-plume",
-      "en": "Ink Pen"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "cp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "jug",
-    "name": {
-      "fr": "Cruche",
-      "en": "Jug"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "cp"
-    },
-    "weight": 4,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "ladder",
-    "name": {
-      "fr": "Échelle",
-      "en": "Ladder"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "sp"
-    },
-    "weight": 25,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "lamp",
-    "name": {
-      "fr": "Lampe",
-      "en": "Lamp"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "sp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "lantern-bullseye",
-    "name": {
-      "fr": "Lanterne sourde",
-      "en": "Lantern, Bullseye"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "lantern-hooded",
-    "name": {
-      "fr": "Lanterne à capote",
-      "en": "Lantern, Hooded"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "lock",
-    "name": {
-      "fr": "Cadenas",
-      "en": "Lock"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "magnifying-glass",
-    "name": {
-      "fr": "Loupe",
-      "en": "Magnifying Glass"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 100,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "manacles",
-    "name": {
-      "fr": "Menottes",
-      "en": "Manacles"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "map",
-    "name": {
-      "fr": "Carte",
-      "en": "Map"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "mirror",
-    "name": {
-      "fr": "Miroir",
-      "en": "Mirror"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "net",
-    "name": {
-      "fr": "Filet",
-      "en": "Net"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "oil",
-    "name": {
-      "fr": "Huile",
-      "en": "Oil"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "sp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "paper",
-    "name": {
-      "fr": "Papier",
-      "en": "Paper"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "sp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "parchment",
-    "name": {
-      "fr": "Parchemin",
-      "en": "Parchment"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "sp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "perfume",
-    "name": {
-      "fr": "Parfum",
-      "en": "Perfume"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "poison-basic",
-    "name": {
-      "fr": "Poison standard",
-      "en": "Poison, Basic"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 100,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "pole",
-    "name": {
-      "fr": "Perche",
-      "en": "Pole"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "cp"
-    },
-    "weight": 7,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "pot-iron",
-    "name": {
-      "fr": "Pot en fer",
-      "en": "Pot, Iron"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 10,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "potion-of-healing",
-    "name": {
-      "fr": "Potion de guérison",
-      "en": "Potion of Healing"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "pouch",
-    "name": {
-      "fr": "Sacoche",
-      "en": "Pouch"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "sp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "priests-pack",
-    "name": {
-      "fr": "Paquetage d’ecclésiastique",
-      "en": "Priest’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 33,
-      "unit": "gp"
-    },
-    "weight": 29,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "quiver",
-    "name": {
-      "fr": "Carquois",
-      "en": "Quiver"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "ram-portable",
-    "name": {
-      "fr": "Bélier portable",
-      "en": "Ram, Portable"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 4,
-      "unit": "gp"
-    },
-    "weight": 35,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "rations",
-    "name": {
-      "fr": "Rations",
-      "en": "Rations"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "sp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "robe",
-    "name": {
-      "fr": "Robe",
-      "en": "Robe"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 4,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "rope",
-    "name": {
-      "fr": "Corde",
-      "en": "Rope"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "sack",
-    "name": {
-      "fr": "Sac",
-      "en": "Sack"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "cp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "scholars-pack",
-    "name": {
-      "fr": "Paquetage d’érudit",
-      "en": "Scholar’s Pack"
-    },
-    "category": "pack",
-    "cost": {
-      "qty": 40,
-      "unit": "gp"
-    },
-    "weight": 22,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "shovel",
-    "name": {
-      "fr": "Pelle",
-      "en": "Shovel"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "signal-whistle",
-    "name": {
-      "fr": "Sifflet",
-      "en": "Signal Whistle"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "cp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "spell-scroll-cantrip",
-    "name": {
-      "fr": "Parchemin de sort (sort mineur)",
-      "en": "Spell Scroll (Cantrip)"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 30,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "spell-scroll-level-1",
-    "name": {
-      "fr": "Parchemin de sort (1er niveau)",
-      "en": "Spell Scroll (Level 1)"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "spikes-iron",
-    "name": {
-      "fr": "Pointes en fer",
-      "en": "Spikes, Iron"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "spyglass",
-    "name": {
-      "fr": "Longue-vue",
-      "en": "Spyglass"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1000,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "string",
-    "name": {
-      "fr": "Ficelle",
-      "en": "String"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "sp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "tent",
-    "name": {
-      "fr": "Tente",
-      "en": "Tent"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "gp"
-    },
-    "weight": 20,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "tinderbox",
-    "name": {
-      "fr": "Boîte à amadou",
-      "en": "Tinderbox"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 5,
-      "unit": "sp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "torch",
-    "name": {
-      "fr": "Torche",
-      "en": "Torch"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "cp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "vial",
-    "name": {
-      "fr": "Fiole",
-      "en": "Vial"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 0,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "waterskin",
-    "name": {
-      "fr": "Outre",
-      "en": "Waterskin"
-    },
-    "category": "gear",
-    "cost": {
-      "qty": 2,
-      "unit": "sp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
     "source": "srd-5.2.1"
   },
   {
@@ -2753,6 +111,22 @@
     "source": "srd-5.2.1"
   },
   {
+    "id": "ammunition-needles",
+    "name": {
+      "fr": "Dards",
+      "en": "Needles"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
     "id": "ammunition-sling-bullets",
     "name": {
       "fr": "Billes de fronde",
@@ -2769,19 +143,34 @@
     "source": "srd-5.2.1"
   },
   {
-    "id": "ammunition-needles",
+    "id": "antitoxin",
     "name": {
-      "fr": "Dards",
-      "en": "Needles"
+      "fr": "Antidote",
+      "en": "Antitoxin"
     },
     "category": "gear",
     "cost": {
-      "qty": 1,
+      "qty": 50,
       "unit": "gp"
     },
-    "weight": 1,
+    "weight": 0,
     "description": null,
     "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "arcane-focus",
+    "name": {
+      "fr": "Focaliseur arcanique",
+      "en": "Arcane Focus"
+    },
+    "category": "gear",
+    "cost": null,
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "varies"
+    ],
     "source": "srd-5.2.1"
   },
   {
@@ -2865,6 +254,772 @@
     "source": "srd-5.2.1"
   },
   {
+    "id": "artisans-tools",
+    "name": {
+      "fr": "Outils d’artisan (au choix)",
+      "en": "Artisan’s Tools (choice)"
+    },
+    "category": "tool",
+    "cost": null,
+    "weight": 0,
+    "description": {
+      "fr": "Placeholder pour « Outils d’artisan au choix » (Moine SRD). À remplacer par un outil spécifique à la création du personnage.",
+      "en": "Placeholder for 'any Artisan's Tools' (Monk SRD). Replace with a specific tool at character creation."
+    },
+    "properties": [
+      "placeholder",
+      "choice"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "backpack",
+    "name": {
+      "fr": "Sac à dos",
+      "en": "Backpack"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ball-bearings",
+    "name": {
+      "fr": "Billes",
+      "en": "Ball Bearings"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "barrel",
+    "name": {
+      "fr": "Tonneau",
+      "en": "Barrel"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 70,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "basket",
+    "name": {
+      "fr": "Panier",
+      "en": "Basket"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 4,
+      "unit": "sp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "battleaxe",
+    "name": {
+      "fr": "Hache d’armes",
+      "en": "Battleaxe"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 4,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Versatile"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "topple"
+  },
+  {
+    "id": "bedroll",
+    "name": {
+      "fr": "Sac de couchage",
+      "en": "Bedroll"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 7,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "bell",
+    "name": {
+      "fr": "Cloche",
+      "en": "Bell"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "blanket",
+    "name": {
+      "fr": "Couverture",
+      "en": "Blanket"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "sp"
+    },
+    "weight": 3,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "block-and-tackle",
+    "name": {
+      "fr": "Palan",
+      "en": "Block and Tackle"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "blowgun",
+    "name": {
+      "fr": "Sarbacane",
+      "en": "Blowgun"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "damage": {
+      "dice": "1",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-ranged",
+      "Ammunition",
+      "Loading"
+    ],
+    "range": {
+      "normal": 25,
+      "max": 100
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "book",
+    "name": {
+      "fr": "Livre",
+      "en": "Book"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "bottle-glass",
+    "name": {
+      "fr": "Bouteille, verre",
+      "en": "Bottle, Glass"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "breastplate",
+    "name": {
+      "fr": "Cuirasse",
+      "en": "Breastplate"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 400,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "medium-armor"
+    ],
+    "acBase": 14,
+    "acDexMax": 2,
+    "stealthDisadvantage": false,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "brewers-supplies",
+    "name": {
+      "fr": "Matériel de brasseur",
+      "en": "Brewer’s Supplies"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 20,
+      "unit": "gp"
+    },
+    "weight": 9,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "bucket",
+    "name": {
+      "fr": "Seau",
+      "en": "Bucket"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "cp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "burglars-pack",
+    "name": {
+      "fr": "Paquetage de cambrioleur",
+      "en": "Burglar’s Pack"
+    },
+    "category": "pack",
+    "cost": {
+      "qty": 16,
+      "unit": "gp"
+    },
+    "weight": 42,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "calligraphers-supplies",
+    "name": {
+      "fr": "Matériel de calligraphe",
+      "en": "Calligrapher’s Supplies"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "caltrops",
+    "name": {
+      "fr": "Chausse-trappes",
+      "en": "Caltrops"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "candle",
+    "name": {
+      "fr": "Bougie",
+      "en": "Candle"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "cp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "carpenters-tools",
+    "name": {
+      "fr": "Outils de charpentier",
+      "en": "Carpenter’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 8,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "cartographers-tools",
+    "name": {
+      "fr": "Outils de cartographe",
+      "en": "Cartographer’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 15,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "case-crossbow-bolt",
+    "name": {
+      "fr": "Étui pour carreaux d’arbalète",
+      "en": "Case, Crossbow Bolt"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "case-map-or-scroll",
+    "name": {
+      "fr": "Étui à cartes ou à parchemins",
+      "en": "Case, Map or Scroll"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "chain",
+    "name": {
+      "fr": "Chaîne",
+      "en": "Chain"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 10,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "chain-mail",
+    "name": {
+      "fr": "Cotte de mailles",
+      "en": "Chain Mail"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 75,
+      "unit": "gp"
+    },
+    "weight": 55,
+    "description": null,
+    "properties": [
+      "heavy-armor"
+    ],
+    "acBase": 16,
+    "acDexMax": 0,
+    "strRequired": 13,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "chain-shirt",
+    "name": {
+      "fr": "Chemise de mailles",
+      "en": "Chain Shirt"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "medium-armor"
+    ],
+    "acBase": 13,
+    "acDexMax": 2,
+    "stealthDisadvantage": false,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "chest",
+    "name": {
+      "fr": "Coffre",
+      "en": "Chest"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 25,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "climbers-kit",
+    "name": {
+      "fr": "Matériel d’escalade",
+      "en": "Climber’s Kit"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 12,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "clothes-fine",
+    "name": {
+      "fr": "Beaux habits",
+      "en": "Clothes, Fine"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 15,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "clothes-travelers",
+    "name": {
+      "fr": "Tenue de voyage",
+      "en": "Clothes, Traveler’s"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 4,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "club",
+    "name": {
+      "fr": "Gourdin",
+      "en": "Club"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 1,
+      "unit": "sp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Light"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "cobblers-tools",
+    "name": {
+      "fr": "Outils de cordonnier",
+      "en": "Cobbler’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "component-pouch",
+    "name": {
+      "fr": "Sacoche à composantes",
+      "en": "Component Pouch"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "cooks-utensils",
+    "name": {
+      "fr": "Ustensiles de cuisinier",
+      "en": "Cook’s Utensils"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 8,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "costume",
+    "name": {
+      "fr": "Costume",
+      "en": "Costume"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 4,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "crowbar",
+    "name": {
+      "fr": "Pied-de-biche",
+      "en": "Crowbar"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "dagger",
+    "name": {
+      "fr": "Dague",
+      "en": "Dagger"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Finesse",
+      "Light",
+      "Thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "max": 60
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "nick"
+  },
+  {
+    "id": "dart",
+    "name": {
+      "fr": "Fléchette",
+      "en": "Dart"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "cp"
+    },
+    "weight": 4,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "simple-ranged",
+      "Finesse",
+      "Thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "max": 60
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "diplomats-pack",
+    "name": {
+      "fr": "Paquetage de diplomate",
+      "en": "Diplomat’s Pack"
+    },
+    "category": "pack",
+    "cost": {
+      "qty": 39,
+      "unit": "gp"
+    },
+    "weight": 39,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "disguise-kit",
+    "name": {
+      "fr": "Accessoires de déguisement",
+      "en": "Disguise Kit"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "druidic-focus",
+    "name": {
+      "fr": "Focaliseur druidique",
+      "en": "Druidic Focus"
+    },
+    "category": "gear",
+    "cost": null,
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "varies"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
     "id": "druidic-focus-mistletoe",
     "name": {
       "fr": "Branche de houx",
@@ -2913,337 +1068,92 @@
     "source": "srd-5.2.1"
   },
   {
-    "id": "holy-symbol-amulet",
+    "id": "dungeoneers-pack",
     "name": {
-      "fr": "Amulette",
-      "en": "Amulet"
+      "fr": "Paquetage d’exploration souterraine",
+      "en": "Dungeoneer’s Pack"
     },
-    "category": "gear",
+    "category": "pack",
     "cost": {
-      "qty": 5,
+      "qty": 12,
       "unit": "gp"
     },
-    "weight": 1,
+    "weight": 55,
     "description": null,
     "properties": [],
     "source": "srd-5.2.1"
   },
   {
-    "id": "holy-symbol-emblem",
+    "id": "entertainers-pack",
     "name": {
-      "fr": "Emblème",
-      "en": "Emblem"
+      "fr": "Paquetage d’artiste",
+      "en": "Entertainer’s Pack"
     },
-    "category": "gear",
+    "category": "pack",
     "cost": {
-      "qty": 5,
+      "qty": 40,
+      "unit": "gp"
+    },
+    "weight": 58.5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "explorers-pack",
+    "name": {
+      "fr": "Paquetage d’explorateur",
+      "en": "Explorer’s Pack"
+    },
+    "category": "pack",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 55,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "flail",
+    "name": {
+      "fr": "Fléau d’armes",
+      "en": "Flail"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 10,
       "unit": "gp"
     },
     "weight": 0,
     "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "martial-melee"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "sap"
   },
   {
-    "id": "holy-symbol-reliquary",
+    "id": "flask",
     "name": {
-      "fr": "Reliquaire",
-      "en": "Reliquary"
+      "fr": "Flasque",
+      "en": "Flask"
     },
     "category": "gear",
     "cost": {
-      "qty": 5,
-      "unit": "gp"
+      "qty": 2,
+      "unit": "cp"
     },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "alchemists-supplies",
-    "name": {
-      "fr": "Matériel d’alchimiste",
-      "en": "Alchemist’s Supplies"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 8,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "brewers-supplies",
-    "name": {
-      "fr": "Matériel de brasseur",
-      "en": "Brewer’s Supplies"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 20,
-      "unit": "gp"
-    },
-    "weight": 9,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "calligraphers-supplies",
-    "name": {
-      "fr": "Matériel de calligraphe",
-      "en": "Calligrapher’s Supplies"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "carpenters-tools",
-    "name": {
-      "fr": "Outils de charpentier",
-      "en": "Carpenter’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 8,
-      "unit": "gp"
-    },
-    "weight": 6,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "cartographers-tools",
-    "name": {
-      "fr": "Outils de cartographe",
-      "en": "Cartographer’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 15,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "cobblers-tools",
-    "name": {
-      "fr": "Outils de cordonnier",
-      "en": "Cobbler’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "cooks-utensils",
-    "name": {
-      "fr": "Ustensiles de cuisinier",
-      "en": "Cook’s Utensils"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 8,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "glassblowers-tools",
-    "name": {
-      "fr": "Outils de souffleur de verre",
-      "en": "Glassblower’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 30,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "jewelers-tools",
-    "name": {
-      "fr": "Outils de joaillier",
-      "en": "Jeweler’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "leatherworkers-tools",
-    "name": {
-      "fr": "Outils de tanneur",
-      "en": "Leatherworker’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "masons-tools",
-    "name": {
-      "fr": "Outils de maçon",
-      "en": "Mason’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "painters-supplies",
-    "name": {
-      "fr": "Matériel de peintre",
-      "en": "Painter’s Supplies"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "potters-tools",
-    "name": {
-      "fr": "Outils de potier",
-      "en": "Potter’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 10,
-      "unit": "gp"
-    },
-    "weight": 3,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "smiths-tools",
-    "name": {
-      "fr": "Outils de forgeron",
-      "en": "Smith’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 20,
-      "unit": "gp"
-    },
-    "weight": 8,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "tinkers-tools",
-    "name": {
-      "fr": "Outils de bricoleur",
-      "en": "Tinker’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 10,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "weavers-tools",
-    "name": {
-      "fr": "Outils de tisserand",
-      "en": "Weaver’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "woodcarvers-tools",
-    "name": {
-      "fr": "Outils de menuisier",
-      "en": "Woodcarver’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 1,
-      "unit": "gp"
-    },
-    "weight": 5,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "disguise-kit",
-    "name": {
-      "fr": "Accessoires de déguisement",
-      "en": "Disguise Kit"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 5,
+    "weight": 1,
     "description": null,
     "properties": [],
     "source": "srd-5.2.1"
@@ -3277,85 +1187,6 @@
     "properties": [
       "varies"
     ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "herbalism-kit",
-    "name": {
-      "fr": "Matériel d’herboriste",
-      "en": "Herbalism Kit"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 5,
-      "unit": "gp"
-    },
-    "weight": 3.31,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "musical-instrument",
-    "name": {
-      "fr": "Instrument de musique",
-      "en": "Musical Instrument"
-    },
-    "category": "tool",
-    "cost": null,
-    "weight": 0,
-    "description": null,
-    "properties": [
-      "varies"
-    ],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "navigators-tools",
-    "name": {
-      "fr": "Instruments de navigateur",
-      "en": "Navigator’s Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 2,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "poisoners-kit",
-    "name": {
-      "fr": "Matériel d’empoisonneur",
-      "en": "Poisoner’s Kit"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 50,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
-    "source": "srd-5.2.1"
-  },
-  {
-    "id": "thieves-tools",
-    "name": {
-      "fr": "Outils de voleur",
-      "en": "Thieves’ Tools"
-    },
-    "category": "tool",
-    "cost": {
-      "qty": 25,
-      "unit": "gp"
-    },
-    "weight": 1,
-    "description": null,
-    "properties": [],
     "source": "srd-5.2.1"
   },
   {
@@ -3427,6 +1258,1005 @@
     "description": null,
     "properties": [
       "variant"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "glaive",
+    "name": {
+      "fr": "Coutille",
+      "en": "Glaive"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 20,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Reach",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "graze"
+  },
+  {
+    "id": "glassblowers-tools",
+    "name": {
+      "fr": "Outils de souffleur de verre",
+      "en": "Glassblower’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 30,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "grappling-hook",
+    "name": {
+      "fr": "Grappin",
+      "en": "Grappling Hook"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 4,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "greataxe",
+    "name": {
+      "fr": "Hache à deux mains",
+      "en": "Greataxe"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 30,
+      "unit": "gp"
+    },
+    "weight": 7,
+    "description": null,
+    "damage": {
+      "dice": "1d12",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "cleave"
+  },
+  {
+    "id": "greatclub",
+    "name": {
+      "fr": "Massue",
+      "en": "Greatclub"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 2,
+      "unit": "sp"
+    },
+    "weight": 10,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "push"
+  },
+  {
+    "id": "greatsword",
+    "name": {
+      "fr": "Épée à deux mains",
+      "en": "Greatsword"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "damage": {
+      "dice": "2d6",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "graze"
+  },
+  {
+    "id": "halberd",
+    "name": {
+      "fr": "Hallebarde",
+      "en": "Halberd"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 20,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "damage": {
+      "dice": "1d10",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Reach",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "cleave"
+  },
+  {
+    "id": "half-plate-armor",
+    "name": {
+      "fr": "Demi-plate",
+      "en": "Half Plate Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 750,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "medium-armor"
+    ],
+    "acBase": 15,
+    "acDexMax": 2,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "hand-crossbow",
+    "name": {
+      "fr": "Arbalète de poing",
+      "en": "Hand Crossbow"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 75,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-ranged",
+      "Ammunition",
+      "Light",
+      "Loading"
+    ],
+    "range": {
+      "normal": 30,
+      "max": 120
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "handaxe",
+    "name": {
+      "fr": "Hachette",
+      "en": "Handaxe"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Light",
+      "Thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "max": 60
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "healers-kit",
+    "name": {
+      "fr": "Trousse de soins",
+      "en": "Healer’s Kit"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "heavy-crossbow",
+    "name": {
+      "fr": "Arbalète lourde",
+      "en": "Heavy Crossbow"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 18,
+    "description": null,
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-ranged",
+      "Ammunition",
+      "Heavy",
+      "Loading",
+      "Two-Handed"
+    ],
+    "range": {
+      "normal": 100,
+      "max": 400
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "push"
+  },
+  {
+    "id": "herbalism-kit",
+    "name": {
+      "fr": "Matériel d’herboriste",
+      "en": "Herbalism Kit"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 3.31,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "hide-armor",
+    "name": {
+      "fr": "Armure de peaux",
+      "en": "Hide Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "medium-armor"
+    ],
+    "acBase": 12,
+    "acDexMax": 2,
+    "stealthDisadvantage": false,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "holy-symbol",
+    "name": {
+      "fr": "Symbole sacré",
+      "en": "Holy Symbol"
+    },
+    "category": "gear",
+    "cost": null,
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "varies"
+    ],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "holy-symbol-amulet",
+    "name": {
+      "fr": "Amulette",
+      "en": "Amulet"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "holy-symbol-emblem",
+    "name": {
+      "fr": "Emblème",
+      "en": "Emblem"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "holy-symbol-reliquary",
+    "name": {
+      "fr": "Reliquaire",
+      "en": "Reliquary"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "holy-water",
+    "name": {
+      "fr": "Eau bénite",
+      "en": "Holy Water"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "hunting-trap",
+    "name": {
+      "fr": "Piège à mâchoires",
+      "en": "Hunting Trap"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 25,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ink",
+    "name": {
+      "fr": "Encre",
+      "en": "Ink"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ink-pen",
+    "name": {
+      "fr": "Porte-plume",
+      "en": "Ink Pen"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "cp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "javelin",
+    "name": {
+      "fr": "Javeline",
+      "en": "Javelin"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "sp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Thrown"
+    ],
+    "range": {
+      "normal": 30,
+      "max": 120
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "jewelers-tools",
+    "name": {
+      "fr": "Outils de joaillier",
+      "en": "Jeweler’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "jug",
+    "name": {
+      "fr": "Cruche",
+      "en": "Jug"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "cp"
+    },
+    "weight": 4,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ladder",
+    "name": {
+      "fr": "Échelle",
+      "en": "Ladder"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "sp"
+    },
+    "weight": 25,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "lamp",
+    "name": {
+      "fr": "Lampe",
+      "en": "Lamp"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "sp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "lance",
+    "name": {
+      "fr": "Lance d’arçon",
+      "en": "Lance"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Reach",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "topple"
+  },
+  {
+    "id": "lantern-bullseye",
+    "name": {
+      "fr": "Lanterne sourde",
+      "en": "Lantern, Bullseye"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "lantern-hooded",
+    "name": {
+      "fr": "Lanterne à capote",
+      "en": "Lantern, Hooded"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "leather-armor",
+    "name": {
+      "fr": "Armure de cuir",
+      "en": "Leather Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "light-armor"
+    ],
+    "acBase": 11,
+    "acDexMax": null,
+    "stealthDisadvantage": false,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "leatherworkers-tools",
+    "name": {
+      "fr": "Outils de tanneur",
+      "en": "Leatherworker’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "light-crossbow",
+    "name": {
+      "fr": "Arbalète légère",
+      "en": "Light Crossbow"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "simple-ranged",
+      "Ammunition",
+      "Loading",
+      "Two-Handed"
+    ],
+    "range": {
+      "normal": 80,
+      "max": 320
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "light-hammer",
+    "name": {
+      "fr": "Marteau léger",
+      "en": "Light Hammer"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Light",
+      "Thrown"
+    ],
+    "range": {
+      "normal": 20,
+      "max": 60
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "nick"
+  },
+  {
+    "id": "lock",
+    "name": {
+      "fr": "Cadenas",
+      "en": "Lock"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "longbow",
+    "name": {
+      "fr": "Arc long",
+      "en": "Longbow"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-ranged",
+      "Ammunition",
+      "Heavy",
+      "Two-Handed"
+    ],
+    "range": {
+      "normal": 150,
+      "max": 600
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "longsword",
+    "name": {
+      "fr": "Épée longue",
+      "en": "Longsword"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 15,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Versatile"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "sap"
+  },
+  {
+    "id": "mace",
+    "name": {
+      "fr": "Masse d’armes",
+      "en": "Mace"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "simple-melee"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "sap"
+  },
+  {
+    "id": "magnifying-glass",
+    "name": {
+      "fr": "Loupe",
+      "en": "Magnifying Glass"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 100,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "manacles",
+    "name": {
+      "fr": "Menottes",
+      "en": "Manacles"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 6,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "map",
+    "name": {
+      "fr": "Carte",
+      "en": "Map"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "masons-tools",
+    "name": {
+      "fr": "Outils de maçon",
+      "en": "Mason’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "maul",
+    "name": {
+      "fr": "Maillet d’armes",
+      "en": "Maul"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 10,
+    "description": null,
+    "damage": {
+      "dice": "2d6",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "topple"
+  },
+  {
+    "id": "mirror",
+    "name": {
+      "fr": "Miroir",
+      "en": "Mirror"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "morningstar",
+    "name": {
+      "fr": "Morgenstern",
+      "en": "Morningstar"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 15,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-melee"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "sap"
+  },
+  {
+    "id": "musical-instrument",
+    "name": {
+      "fr": "Instrument de musique",
+      "en": "Musical Instrument"
+    },
+    "category": "tool",
+    "cost": null,
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "varies"
     ],
     "source": "srd-5.2.1"
   },
@@ -3611,6 +2441,880 @@
     "source": "srd-5.2.1"
   },
   {
+    "id": "musket",
+    "name": {
+      "fr": "Mousquet",
+      "en": "Musket"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 500,
+      "unit": "gp"
+    },
+    "weight": 10,
+    "description": null,
+    "damage": {
+      "dice": "1d12",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-ranged",
+      "Ammunition",
+      "Loading",
+      "Two-Handed"
+    ],
+    "range": {
+      "normal": 40,
+      "max": 120
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "navigators-tools",
+    "name": {
+      "fr": "Instruments de navigateur",
+      "en": "Navigator’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "net",
+    "name": {
+      "fr": "Filet",
+      "en": "Net"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "oil",
+    "name": {
+      "fr": "Huile",
+      "en": "Oil"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "sp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "padded-armor",
+    "name": {
+      "fr": "Armure matelassée",
+      "en": "Padded Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "light-armor"
+    ],
+    "acBase": 11,
+    "acDexMax": null,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "painters-supplies",
+    "name": {
+      "fr": "Matériel de peintre",
+      "en": "Painter’s Supplies"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "paper",
+    "name": {
+      "fr": "Papier",
+      "en": "Paper"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "sp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "parchment",
+    "name": {
+      "fr": "Parchemin",
+      "en": "Parchment"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "sp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "perfume",
+    "name": {
+      "fr": "Parfum",
+      "en": "Perfume"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pike",
+    "name": {
+      "fr": "Pique",
+      "en": "Pike"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 18,
+    "description": null,
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Heavy",
+      "Reach",
+      "Two-Handed"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "push"
+  },
+  {
+    "id": "pistol",
+    "name": {
+      "fr": "Pistolet",
+      "en": "Pistol"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 250,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "damage": {
+      "dice": "1d10",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-ranged",
+      "Ammunition",
+      "Loading"
+    ],
+    "range": {
+      "normal": 30,
+      "max": 90
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "plate-armor",
+    "name": {
+      "fr": "Harnois",
+      "en": "Plate Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 1500,
+      "unit": "gp"
+    },
+    "weight": 65,
+    "description": null,
+    "properties": [
+      "heavy-armor"
+    ],
+    "acBase": 18,
+    "acDexMax": 0,
+    "strRequired": 15,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "poison-basic",
+    "name": {
+      "fr": "Poison standard",
+      "en": "Poison, Basic"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 100,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "poisoners-kit",
+    "name": {
+      "fr": "Matériel d’empoisonneur",
+      "en": "Poisoner’s Kit"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pole",
+    "name": {
+      "fr": "Perche",
+      "en": "Pole"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "cp"
+    },
+    "weight": 7,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pot-iron",
+    "name": {
+      "fr": "Pot en fer",
+      "en": "Pot, Iron"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 10,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "potion-of-healing",
+    "name": {
+      "fr": "Potion de guérison",
+      "en": "Potion of Healing"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "potters-tools",
+    "name": {
+      "fr": "Outils de potier",
+      "en": "Potter’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pouch",
+    "name": {
+      "fr": "Sacoche",
+      "en": "Pouch"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "sp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "priests-pack",
+    "name": {
+      "fr": "Paquetage d’ecclésiastique",
+      "en": "Priest’s Pack"
+    },
+    "category": "pack",
+    "cost": {
+      "qty": 33,
+      "unit": "gp"
+    },
+    "weight": 29,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "quarterstaff",
+    "name": {
+      "fr": "Bâton de combat",
+      "en": "Quarterstaff"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 2,
+      "unit": "sp"
+    },
+    "weight": 4,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Versatile"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "topple"
+  },
+  {
+    "id": "quiver",
+    "name": {
+      "fr": "Carquois",
+      "en": "Quiver"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ram-portable",
+    "name": {
+      "fr": "Bélier portable",
+      "en": "Ram, Portable"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 4,
+      "unit": "gp"
+    },
+    "weight": 35,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "rapier",
+    "name": {
+      "fr": "Rapière",
+      "en": "Rapier"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Finesse"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "rations",
+    "name": {
+      "fr": "Rations",
+      "en": "Rations"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "sp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "ring-mail",
+    "name": {
+      "fr": "Broigne",
+      "en": "Ring Mail"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 30,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "heavy-armor"
+    ],
+    "acBase": 14,
+    "acDexMax": 0,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "robe",
+    "name": {
+      "fr": "Robe",
+      "en": "Robe"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 4,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "rope",
+    "name": {
+      "fr": "Corde",
+      "en": "Rope"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "sack",
+    "name": {
+      "fr": "Sac",
+      "en": "Sack"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "cp"
+    },
+    "weight": 2,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "scale-mail",
+    "name": {
+      "fr": "Armure d’écailles",
+      "en": "Scale Mail"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "medium-armor"
+    ],
+    "acBase": 14,
+    "acDexMax": 2,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "scholars-pack",
+    "name": {
+      "fr": "Paquetage d’érudit",
+      "en": "Scholar’s Pack"
+    },
+    "category": "pack",
+    "cost": {
+      "qty": 40,
+      "unit": "gp"
+    },
+    "weight": 22,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "scimitar",
+    "name": {
+      "fr": "Cimeterre",
+      "en": "Scimitar"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Finesse",
+      "Light"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "nick"
+  },
+  {
+    "id": "shield",
+    "name": {
+      "fr": "Bouclier",
+      "en": "Shield"
+    },
+    "category": "shield",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "shield-armor"
+    ],
+    "acBase": 2,
+    "stealthDisadvantage": false,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "shortbow",
+    "name": {
+      "fr": "Arc court",
+      "en": "Shortbow"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "simple-ranged",
+      "Ammunition",
+      "Two-Handed"
+    ],
+    "range": {
+      "normal": 80,
+      "max": 320
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "shortsword",
+    "name": {
+      "fr": "Épée courte",
+      "en": "Shortsword"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 10,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Finesse",
+      "Light"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "vex"
+  },
+  {
+    "id": "shovel",
+    "name": {
+      "fr": "Pelle",
+      "en": "Shovel"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "sickle",
+    "name": {
+      "fr": "Serpe",
+      "en": "Sickle"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Light"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "nick"
+  },
+  {
+    "id": "signal-whistle",
+    "name": {
+      "fr": "Sifflet",
+      "en": "Signal Whistle"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "cp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "sling",
+    "name": {
+      "fr": "Fronde",
+      "en": "Sling"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 1,
+      "unit": "sp"
+    },
+    "weight": 0,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "simple-ranged",
+      "Ammunition"
+    ],
+    "range": {
+      "normal": 30,
+      "max": 120
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "smiths-tools",
+    "name": {
+      "fr": "Outils de forgeron",
+      "en": "Smith’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 20,
+      "unit": "gp"
+    },
+    "weight": 8,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "spear",
+    "name": {
+      "fr": "Lance",
+      "en": "Spear"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "damage": {
+      "dice": "1d6",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "simple-melee",
+      "Thrown",
+      "Versatile"
+    ],
+    "range": {
+      "normal": 20,
+      "max": 60
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "sap"
+  },
+  {
+    "id": "spell-scroll-cantrip",
+    "name": {
+      "fr": "Parchemin de sort (sort mineur)",
+      "en": "Spell Scroll (Cantrip)"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 30,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "spell-scroll-level-1",
+    "name": {
+      "fr": "Parchemin de sort (1er niveau)",
+      "en": "Spell Scroll (Level 1)"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
     "id": "spellbook",
     "name": {
       "fr": "Livre de sorts",
@@ -3629,22 +3333,356 @@
     "source": "srd-5.2.1"
   },
   {
-    "id": "artisans-tools",
+    "id": "spikes-iron",
     "name": {
-      "fr": "Outils d’artisan (au choix)",
-      "en": "Artisan’s Tools (choice)"
+      "fr": "Pointes en fer",
+      "en": "Spikes, Iron"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "splint-armor",
+    "name": {
+      "fr": "Clibanion",
+      "en": "Splint Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 200,
+      "unit": "gp"
+    },
+    "weight": 60,
+    "description": null,
+    "properties": [
+      "heavy-armor"
+    ],
+    "acBase": 17,
+    "acDexMax": 0,
+    "strRequired": 15,
+    "stealthDisadvantage": true,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "spyglass",
+    "name": {
+      "fr": "Longue-vue",
+      "en": "Spyglass"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1000,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "string",
+    "name": {
+      "fr": "Ficelle",
+      "en": "String"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "sp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "studded-leather-armor",
+    "name": {
+      "fr": "Armure de cuir clouté",
+      "en": "Studded Leather Armor"
+    },
+    "category": "armor",
+    "cost": {
+      "qty": 45,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [
+      "light-armor"
+    ],
+    "acBase": 12,
+    "acDexMax": null,
+    "stealthDisadvantage": false,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "tent",
+    "name": {
+      "fr": "Tente",
+      "en": "Tent"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 20,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "thieves-tools",
+    "name": {
+      "fr": "Outils de voleur",
+      "en": "Thieves’ Tools"
     },
     "category": "tool",
-    "cost": null,
-    "weight": 0,
-    "description": {
-      "fr": "Placeholder pour « Outils d’artisan au choix » (Moine SRD). À remplacer par un outil spécifique à la création du personnage.",
-      "en": "Placeholder for 'any Artisan's Tools' (Monk SRD). Replace with a specific tool at character creation."
+    "cost": {
+      "qty": 25,
+      "unit": "gp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "tinderbox",
+    "name": {
+      "fr": "Boîte à amadou",
+      "en": "Tinderbox"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 5,
+      "unit": "sp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "tinkers-tools",
+    "name": {
+      "fr": "Outils de bricoleur",
+      "en": "Tinker’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 50,
+      "unit": "gp"
+    },
+    "weight": 10,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "torch",
+    "name": {
+      "fr": "Torche",
+      "en": "Torch"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "cp"
+    },
+    "weight": 1,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "tr-ide-nt",
+    "name": {
+      "fr": "Trident",
+      "en": "Trident"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 4,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
     },
     "properties": [
-      "placeholder",
-      "choice"
+      "martial-melee",
+      "Thrown",
+      "Versatile"
     ],
+    "range": {
+      "normal": 20,
+      "max": 60
+    },
+    "source": "srd-5.2.1",
+    "masteryProperty": "topple"
+  },
+  {
+    "id": "vial",
+    "name": {
+      "fr": "Fiole",
+      "en": "Vial"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 0,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "war-pick",
+    "name": {
+      "fr": "Pic de guerre",
+      "en": "War Pick"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 5,
+      "unit": "gp"
+    },
+    "weight": 2,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "piercing",
+      "typeLabel": {
+        "fr": "perforants",
+        "en": "Piercing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Versatile"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "sap"
+  },
+  {
+    "id": "warhammer",
+    "name": {
+      "fr": "Marteau de guerre",
+      "en": "Warhammer"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 15,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "damage": {
+      "dice": "1d8",
+      "type": "bludgeoning",
+      "typeLabel": {
+        "fr": "contondants",
+        "en": "Bludgeoning"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Versatile"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "push"
+  },
+  {
+    "id": "waterskin",
+    "name": {
+      "fr": "Outre",
+      "en": "Waterskin"
+    },
+    "category": "gear",
+    "cost": {
+      "qty": 2,
+      "unit": "sp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "weavers-tools",
+    "name": {
+      "fr": "Outils de tisserand",
+      "en": "Weaver’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "whip",
+    "name": {
+      "fr": "Fouet",
+      "en": "Whip"
+    },
+    "category": "weapon",
+    "cost": {
+      "qty": 2,
+      "unit": "gp"
+    },
+    "weight": 3,
+    "description": null,
+    "damage": {
+      "dice": "1d4",
+      "type": "slashing",
+      "typeLabel": {
+        "fr": "tranchants",
+        "en": "Slashing"
+      }
+    },
+    "properties": [
+      "martial-melee",
+      "Finesse",
+      "Reach"
+    ],
+    "source": "srd-5.2.1",
+    "masteryProperty": "slow"
+  },
+  {
+    "id": "woodcarvers-tools",
+    "name": {
+      "fr": "Outils de menuisier",
+      "en": "Woodcarver’s Tools"
+    },
+    "category": "tool",
+    "cost": {
+      "qty": 1,
+      "unit": "gp"
+    },
+    "weight": 5,
+    "description": null,
+    "properties": [],
     "source": "srd-5.2.1"
   }
 ]

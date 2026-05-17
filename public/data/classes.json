@@ -292,7 +292,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 2
   },
   {
     "id": "bard",
@@ -498,7 +499,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 0
   },
   {
     "id": "cleric",
@@ -703,7 +705,32 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "divineOrders": [
+      {
+        "id": "protector",
+        "name": {
+          "fr": "Protecteur",
+          "en": "Protector"
+        },
+        "summary": {
+          "fr": "Clerc de première ligne : maîtrise des armes de guerre + formation à l'armure lourde.",
+          "en": "Front-line cleric: martial weapon mastery + heavy armor training."
+        }
+      },
+      {
+        "id": "thaumaturge",
+        "name": {
+          "fr": "Thaumaturge",
+          "en": "Thaumaturge"
+        },
+        "summary": {
+          "fr": "Clerc érudit : 1 cantrip Clerc supplémentaire + bonus aux tests INT (Arcana ou Religion) égal au modificateur de Sagesse (min +1).",
+          "en": "Scholarly cleric: 1 extra Cleric cantrip + bonus to Int (Arcana or Religion) checks equal to Wis modifier (min +1)."
+        }
+      }
+    ],
+    "weaponMasteryCount": 0
   },
   {
     "id": "druid",
@@ -938,7 +965,32 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "primalOrders": [
+      {
+        "id": "magician",
+        "name": {
+          "fr": "Mage",
+          "en": "Magician"
+        },
+        "summary": {
+          "fr": "Druide-sorcier : 1 cantrip Druide supplémentaire + bonus aux tests INT (Arcana ou Nature) égal au modificateur de Sagesse (min +1).",
+          "en": "Druid-mage: 1 extra Druid cantrip + bonus to Int (Arcana or Nature) checks equal to Wis modifier (min +1)."
+        }
+      },
+      {
+        "id": "warden",
+        "name": {
+          "fr": "Gardien",
+          "en": "Warden"
+        },
+        "summary": {
+          "fr": "Druide-gardien : maîtrise des armes de guerre + formation à l'armure intermédiaire.",
+          "en": "Druid-warden: martial weapon mastery + medium armor training."
+        }
+      }
+    ],
+    "weaponMasteryCount": 0
   },
   {
     "id": "fighter",
@@ -1227,7 +1279,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 3
   },
   {
     "id": "monk",
@@ -1550,7 +1603,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 0
   },
   {
     "id": "paladin",
@@ -1829,7 +1883,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 2
   },
   {
     "id": "ranger",
@@ -2117,7 +2172,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 2
   },
   {
     "id": "rogue",
@@ -2415,7 +2471,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 2
   },
   {
     "id": "sorcerer",
@@ -2604,7 +2661,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 0
   },
   {
     "id": "warlock",
@@ -2791,7 +2849,8 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 0
   },
   {
     "id": "wizard",
@@ -2985,6 +3044,7 @@
         }
       }
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "weaponMasteryCount": 0
   }
 ]
