@@ -6,6 +6,9 @@ import { localize, t } from '@/shared/lib/i18n';
 import { getSkill } from '@/shared/lib/rules/skills';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { ANCESTRY_EXTRA_SKILL_HELP } from '../../help/ancestry-extra-skill-help';
+
+import { ChooserHelpPanel } from './chooser-help-panel';
 import { patchAncestrySubChoice } from './chooser-utils';
 import { ELF_KEEN_SENSES_SKILLS } from './use-ancestry-sub-choices';
 
@@ -57,21 +60,32 @@ export function AncestryExtraSkillChooser({ ancestryId }: Props): JSX.Element | 
 
   if (options.length === 0) return null;
 
+  // Le panneau d'aide décrit le TRAIT (Sens Aiguisés / Compétent) plutôt que
+  // chaque skill, parce que le sens de la mécanique est porté par le trait
+  // d'ascendance. Affiché en permanence quand le chooser est visible.
+  const helpTitle = t('wizard.subchoice.ancestryExtraSkill.legend');
+
   return (
-    <RadioCardGroup
-      legend={t('wizard.subchoice.ancestryExtraSkill.legend')}
-      helper={t(helperKey)}
-      name="ancestrySubChoice-extraSkill"
-      value={value}
-      onValueChange={(next) => {
-        if (!admissibleValues.includes(next)) return;
-        setField(
-          'ancestrySubChoices',
-          patchAncestrySubChoice(subChoices, 'ancestryExtraSkill', next),
-        );
-      }}
-      options={options}
-      columns={3}
-    />
+    <div className="flex flex-col gap-4">
+      <RadioCardGroup
+        legend={helpTitle}
+        helper={t(helperKey)}
+        name="ancestrySubChoice-extraSkill"
+        value={value}
+        onValueChange={(next) => {
+          if (!admissibleValues.includes(next)) return;
+          setField(
+            'ancestrySubChoices',
+            patchAncestrySubChoice(subChoices, 'ancestryExtraSkill', next),
+          );
+        }}
+        options={options}
+        columns={3}
+      />
+      <ChooserHelpPanel
+        title={helpTitle}
+        entry={ANCESTRY_EXTRA_SKILL_HELP[ancestryId]}
+      />
+    </div>
   );
 }

@@ -5,6 +5,9 @@ import { RadioCardGroup, type RadioCardOption } from '@/shared/components/form';
 import { t, type StringKey } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { ANCESTRY_CASTING_ABILITY_HELP } from '../../help/ancestry-casting-ability-help';
+
+import { ChooserHelpPanel } from './chooser-help-panel';
 import { patchAncestrySubChoice } from './chooser-utils';
 import { ANCESTRY_CASTING_ABILITY_VALUES } from './use-ancestry-sub-choices';
 
@@ -45,21 +48,27 @@ export function AncestryCastingAbilityChooser(): JSX.Element {
     }));
 
   return (
-    <RadioCardGroup
-      legend={t('wizard.subchoice.ancestryCastingAbility.legend')}
-      helper={t('wizard.subchoice.ancestryCastingAbility.helper')}
-      name="ancestrySubChoice-castingAbility"
-      value={value}
-      onValueChange={(next) => {
-        const parsed = castingAbilitySchema.safeParse(next);
-        if (!parsed.success) return;
-        setField(
-          'ancestrySubChoices',
-          patchAncestrySubChoice(subChoices, 'ancestryCastingAbility', parsed.data),
-        );
-      }}
-      options={options}
-      columns={3}
-    />
+    <div className="flex flex-col gap-4">
+      <RadioCardGroup
+        legend={t('wizard.subchoice.ancestryCastingAbility.legend')}
+        helper={t('wizard.subchoice.ancestryCastingAbility.helper')}
+        name="ancestrySubChoice-castingAbility"
+        value={value}
+        onValueChange={(next) => {
+          const parsed = castingAbilitySchema.safeParse(next);
+          if (!parsed.success) return;
+          setField(
+            'ancestrySubChoices',
+            patchAncestrySubChoice(subChoices, 'ancestryCastingAbility', parsed.data),
+          );
+        }}
+        options={options}
+        columns={3}
+      />
+      <ChooserHelpPanel
+        title={value ? t(ABILITY_LABEL_KEY[value]) : ''}
+        entry={value ? ANCESTRY_CASTING_ABILITY_HELP[value] : undefined}
+      />
+    </div>
   );
 }

@@ -5,6 +5,9 @@ import { t } from '@/shared/lib/i18n';
 import type { AncestrySize } from '@/shared/types/character';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { ANCESTRY_SIZE_HELP } from '../../help/ancestry-size-help';
+
+import { ChooserHelpPanel } from './chooser-help-panel';
 import { asAncestrySize, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -29,22 +32,35 @@ export function AncestrySizeChooser(): JSX.Element {
     },
   ];
 
+  const selectedTitleKey =
+    value === 'medium'
+      ? 'wizard.subchoice.ancestrySize.medium.title'
+      : value === 'small'
+        ? 'wizard.subchoice.ancestrySize.small.title'
+        : null;
+
   return (
-    <RadioCardGroup
-      legend={t('wizard.subchoice.ancestrySize.legend')}
-      helper={t('wizard.subchoice.ancestrySize.helper')}
-      name="ancestrySubChoice-size"
-      value={value}
-      onValueChange={(next) => {
-        const parsed = asAncestrySize(next);
-        if (!parsed) return;
-        setField(
-          'ancestrySubChoices',
-          patchAncestrySubChoice(subChoices, 'ancestrySize', parsed),
-        );
-      }}
-      options={options}
-      columns={2}
-    />
+    <div className="flex flex-col gap-4">
+      <RadioCardGroup
+        legend={t('wizard.subchoice.ancestrySize.legend')}
+        helper={t('wizard.subchoice.ancestrySize.helper')}
+        name="ancestrySubChoice-size"
+        value={value}
+        onValueChange={(next) => {
+          const parsed = asAncestrySize(next);
+          if (!parsed) return;
+          setField(
+            'ancestrySubChoices',
+            patchAncestrySubChoice(subChoices, 'ancestrySize', parsed),
+          );
+        }}
+        options={options}
+        columns={2}
+      />
+      <ChooserHelpPanel
+        title={selectedTitleKey ? t(selectedTitleKey) : ''}
+        entry={value ? ANCESTRY_SIZE_HELP[value] : undefined}
+      />
+    </div>
   );
 }

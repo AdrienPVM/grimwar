@@ -5,6 +5,9 @@ import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { DRAGON_ANCESTRY_HELP } from '../../help/dragon-ancestry-help';
+
+import { ChooserHelpPanel } from './chooser-help-panel';
 import { asDragonAncestry, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -33,21 +36,30 @@ export function DragonAncestryChooser(): JSX.Element | null {
 
   if (options.length === 0) return null;
 
+  const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
+  const selectedTitle = selectedOption ? String(selectedOption.title) : '';
+
   return (
-    <RadioCardGroup
-      legend={t('wizard.subchoice.dragonAncestry.legend')}
-      helper={t('wizard.subchoice.dragonAncestry.helper')}
-      name="ancestrySubChoice-dragon"
-      value={value}
-      onValueChange={(next) => {
-        const parsed = asDragonAncestry(next);
-        if (!parsed) return;
-        setField(
-          'ancestrySubChoices',
-          patchAncestrySubChoice(subChoices, 'dragonAncestry', parsed),
-        );
-      }}
-      options={options}
-    />
+    <div className="flex flex-col gap-4">
+      <RadioCardGroup
+        legend={t('wizard.subchoice.dragonAncestry.legend')}
+        helper={t('wizard.subchoice.dragonAncestry.helper')}
+        name="ancestrySubChoice-dragon"
+        value={value}
+        onValueChange={(next) => {
+          const parsed = asDragonAncestry(next);
+          if (!parsed) return;
+          setField(
+            'ancestrySubChoices',
+            patchAncestrySubChoice(subChoices, 'dragonAncestry', parsed),
+          );
+        }}
+        options={options}
+      />
+      <ChooserHelpPanel
+        title={selectedTitle}
+        entry={value ? DRAGON_ANCESTRY_HELP[value] : undefined}
+      />
+    </div>
   );
 }

@@ -5,6 +5,9 @@ import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { GOLIATH_ANCESTRY_HELP } from '../../help/goliath-ancestry-help';
+
+import { ChooserHelpPanel } from './chooser-help-panel';
 import { asGoliathAncestry, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -32,21 +35,30 @@ export function GoliathAncestryChooser(): JSX.Element | null {
 
   if (options.length === 0) return null;
 
+  const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
+  const selectedTitle = selectedOption ? String(selectedOption.title) : '';
+
   return (
-    <RadioCardGroup
-      legend={t('wizard.subchoice.goliathAncestry.legend')}
-      helper={t('wizard.subchoice.goliathAncestry.helper')}
-      name="ancestrySubChoice-goliath"
-      value={value}
-      onValueChange={(next) => {
-        const parsed = asGoliathAncestry(next);
-        if (!parsed) return;
-        setField(
-          'ancestrySubChoices',
-          patchAncestrySubChoice(subChoices, 'goliathAncestry', parsed),
-        );
-      }}
-      options={options}
-    />
+    <div className="flex flex-col gap-4">
+      <RadioCardGroup
+        legend={t('wizard.subchoice.goliathAncestry.legend')}
+        helper={t('wizard.subchoice.goliathAncestry.helper')}
+        name="ancestrySubChoice-goliath"
+        value={value}
+        onValueChange={(next) => {
+          const parsed = asGoliathAncestry(next);
+          if (!parsed) return;
+          setField(
+            'ancestrySubChoices',
+            patchAncestrySubChoice(subChoices, 'goliathAncestry', parsed),
+          );
+        }}
+        options={options}
+      />
+      <ChooserHelpPanel
+        title={selectedTitle}
+        entry={value ? GOLIATH_ANCESTRY_HELP[value] : undefined}
+      />
+    </div>
   );
 }
