@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { createSafeJSONStorage } from '@/shared/lib/zustand-storage';
+
 export const SHEET_MODES = ['combat', 'essence', 'magie', 'avoir', 'ame'] as const;
 export type SheetMode = (typeof SHEET_MODES)[number];
 
@@ -29,6 +31,8 @@ export const useSheetModeStore = create<SheetModeStore>()(
     {
       name: 'grimwar-sheet-mode',
       version: 1,
+      // Storage durci — cf. zustand-storage.ts.
+      storage: createSafeJSONStorage<SheetModeStore>(),
     },
   ),
 );

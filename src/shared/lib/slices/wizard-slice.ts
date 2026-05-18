@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { createSafeJSONStorage } from '@/shared/lib/zustand-storage';
 import {
   EMPTY_ANCESTRY_SUB_CHOICES,
   createEmptyClassSubChoices,
@@ -387,6 +388,10 @@ export const useWizardStore = create<WizardStore>()(
       // coût utilisateur, gros gain en robustesse).
       name: 'grimwar-wizard-draft-v4',
       version: 4,
+      // Storage explicite + no-op fallback si `window.localStorage` est absent
+      // (cf. zustand-storage.ts). Évite le crash dur observé sur Node 26 où
+      // le `localStorage` global expérimental shadow celui de jsdom.
+      storage: createSafeJSONStorage<WizardStore>(),
     },
   ),
 );
