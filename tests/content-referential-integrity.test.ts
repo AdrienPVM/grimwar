@@ -1,0 +1,180 @@
+import { readFile } from 'node:fs/promises';
+import { describe, expect, it } from 'vitest';
+
+/**
+ * Bug 1 (UAT 2026-05-18) — sorts d'ascendance absents sur la fiche.
+ *
+ * Cause-racine : `ancestries.json` référençait des slugs **EN**
+ * (`dancing-lights`, `fire-bolt`, …) alors que `spells.json` ne contient
+ * que des slugs **FR** (`lumieres-dansantes`, `trait-de-feu`, …). Le
+ * runtime `AncestrySpellsCard > resolveAncestrySpellEntries` skipait
+ * silencieusement chaque sort non résolu → carte d'ascendance vide.
+ *
+ * Le bug est resté caché parce que :
+ *   - le test d'intégrité disque ancien ne croisait pas les bundles ;
+ *   - les e2e ancestry étaient skip (Java absent jusqu'au plan 13.5) ;
+ *   - l'UAT pnpm dev a un cache Dexie tiède masquant la régression.
+ *
+ * Ce test est la GARDE PERMANENTE post-fix : toute référence de sort dans
+ * `ancestries.json` doit résoudre dans `spells.json` (ou figurer dans la
+ * sous-dette explicite D9 — 2 sorts SRD 5.2.1 manquant du bundle FR
+ * actuellement, à livrer par plan 13.10).
+ */
+
+async function loadJson<T>(path: string): Promise<T> {
+  const raw = await readFile(path, 'utf-8');
+  return JSON.parse(raw) as T;
+}
+
+interface SpellEntry {
+  id: string;
+}
+
+interface TieflingLegacy {
+  id: string;
+  cantripSpellId: string;
+  level3SpellId: string;
+  level5SpellId: string;
+}
+
+interface ElfLineage {
+  id: string;
+  cantripSpellId: string | null;
+  level3SpellId: string;
+  level5SpellId: string;
+}
+
+interface GnomeLineage {
+  id: string;
+  cantripSpellIds: string[];
+}
+
+interface AncestryEntry {
+  id: string;
+  options?: {
+    tieflingLegacies?: TieflingLegacy[];
+    elfLineages?: ElfLineage[];
+    gnomeLineages?: GnomeLineage[];
+  };
+}
+
+/**
+ * Sorts SRD 5.2.1 référencés par les sous-choix d'ascendance mais ABSENTS
+ * du bundle `public/data/spells.json` au moment du fix Bug 1 (2026-05-18).
+ *
+ * - `rayon-de-maladie` (Ray of Sickness, L1) — Tieffelin Abyssal L3.
+ * - `feinte-vie` (False Life, L1) — Tieffelin Chtonien L3.
+ *
+ * Tracé dans `plans/DEBT.md > D9` (les 21 sorts SRD à ajouter sont
+ * livrables par plan 13.10 Spells cleanup). Cette liste DOIT être prunée
+ * quand 13.10 ajoute ces sorts — le garde-fou en bas du fichier
+ * ("tripwire") échoue alors et force la mise à jour ici.
+ */
+const KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9: ReadonlySet<string> = new Set([
+  'rayon-de-maladie',
+  'feinte-vie',
+]);
+
+function collectAncestrySpellRefs(
+  ancestries: AncestryEntry[],
+): Array<{ ancestry: string; sub: string; slot: string; spellId: string }> {
+  const refs: Array<{ ancestry: string; sub: string; slot: string; spellId: string }> = [];
+  for (const a of ancestries) {
+    const opts = a.options;
+    if (!opts) continue;
+    for (const t of opts.tieflingLegacies ?? []) {
+      refs.push({ ancestry: a.id, sub: t.id, slot: 'cantrip', spellId: t.cantripSpellId });
+      refs.push({ ancestry: a.id, sub: t.id, slot: 'level3', spellId: t.level3SpellId });
+      refs.push({ ancestry: a.id, sub: t.id, slot: 'level5', spellId: t.level5SpellId });
+    }
+    for (const e of opts.elfLineages ?? []) {
+      if (e.cantripSpellId != null) {
+        refs.push({ ancestry: a.id, sub: e.id, slot: 'cantrip', spellId: e.cantripSpellId });
+      }
+      refs.push({ ancestry: a.id, sub: e.id, slot: 'level3', spellId: e.level3SpellId });
+      refs.push({ ancestry: a.id, sub: e.id, slot: 'level5', spellId: e.level5SpellId });
+    }
+    for (const g of opts.gnomeLineages ?? []) {
+      for (const sid of g.cantripSpellIds) {
+        refs.push({ ancestry: a.id, sub: g.id, slot: 'cantrip', spellId: sid });
+      }
+    }
+  }
+  return refs;
+}
+
+describe('Intégrité référentielle des bundles SRD (Bug 1 UAT 2026-05-18)', () => {
+  it('toute référence de sort dans ancestries.json résout dans spells.json (modulo sous-dette D9)', async () => {
+    const ancestries = await loadJson<AncestryEntry[]>('public/data/ancestries.json');
+    const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
+    const spellIds = new Set(spells.map((s) => s.id));
+
+    const refs = collectAncestrySpellRefs(ancestries);
+    expect(refs.length, 'refs trouvées dans ancestries.json').toBeGreaterThan(0);
+
+    const unresolved = refs.filter(
+      (r) => !spellIds.has(r.spellId) && !KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9.has(r.spellId),
+    );
+
+    expect(
+      unresolved,
+      `Références cassées (slug-language drift ou nouveau bug) :\n${unresolved
+        .map((r) => `  ${r.ancestry}/${r.sub}/${r.slot} → ${r.spellId}`)
+        .join('\n')}`,
+    ).toEqual([]);
+  });
+
+  // Tripwire — sous-dette D9. Quand le plan 13.10 ajoute ces sorts au bundle, ce test
+  // CASSE volontairement → force le prochain agent à pruner
+  // KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9 ci-dessus. C'est la garantie qu'on
+  // ne laisse pas la dérogation en place après que la dette est résolue.
+  it('DEBT D9 — 2 sorts SRD 5.2.1 toujours absents du bundle (à supprimer quand plan 13.10 livre)', async () => {
+    const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
+    const spellIds = new Set(spells.map((s) => s.id));
+    for (const knownMissing of KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9) {
+      expect(
+        spellIds.has(knownMissing),
+        `${knownMissing} est dans spells.json → la sous-dette D9 est résolue, supprime ce test et l'entrée correspondante dans KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9.`,
+      ).toBe(false);
+    }
+  });
+});
+
+/**
+ * Bug 2 (UAT 2026-05-18) — Barde non créable (0 compétence sélectionnable).
+ *
+ * Cause-racine : `classes.json > bard.skillChoices.from = []` (parser PDF a
+ * raté le motif SRD 2024 « Choose 3 : any »). Conséquence : pool de picks vide
+ * → toutes les checkboxes désactivées → bouton Suivant verrouillé pour
+ * l'éternité.
+ *
+ * Garde permanente : aucune classe ne peut avoir un pool de picks vide. Si le
+ * SRD veut « any X skills », il faut matérialiser les 18 IDs (cf. fix Bug 2
+ * via `SRD_CLASS_SKILL_CHOICES_OVERRIDE`).
+ */
+describe('Intégrité du pool de compétences par classe (Bug 2 UAT 2026-05-18)', () => {
+  interface ClassEntry {
+    id: string;
+    skillChoices: { count: number; from: string[] };
+  }
+
+  it('aucune classe SRD n\'a un pool de picks vide (Bug 2)', async () => {
+    const classes = await loadJson<ClassEntry[]>('public/data/classes.json');
+    const empty = classes.filter((c) => (c.skillChoices?.from?.length ?? 0) === 0);
+    expect(
+      empty.map((c) => c.id),
+      `Classes avec pool de picks vide (incréable) : ${empty.map((c) => c.id).join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('chaque classe a au moins `count` items dans le pool (sinon la sélection est impossible)', async () => {
+    const classes = await loadJson<ClassEntry[]>('public/data/classes.json');
+    const broken = classes.filter(
+      (c) => (c.skillChoices?.from?.length ?? 0) < (c.skillChoices?.count ?? 0),
+    );
+    expect(
+      broken.map((c) => `${c.id} (count=${c.skillChoices.count}, from.length=${c.skillChoices.from.length})`),
+      'Classes dont le pool est plus petit que le nombre de picks requis',
+    ).toEqual([]);
+  });
+});
