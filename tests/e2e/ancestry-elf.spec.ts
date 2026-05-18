@@ -4,7 +4,7 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import { elfL1Drow, seedCharacter } from './seed-character';
 
 /**
- * Plan 13.8 step 38 — Elfe Drow L1 → `Danses lumineuses` (Dancing Lights)
+ * Plan 13.8 step 38 — Elfe Drow L1 → `Lumières dansantes` (Dancing Lights)
  * visible en mode Magie.
  */
 test.describe('Ancestry — Elfe Drow (sorts de lignage)', () => {
@@ -16,20 +16,7 @@ test.describe('Ancestry — Elfe Drow (sorts de lignage)', () => {
     );
   });
 
-  test('seed Elfe Drow L1 → mode Magie → Danses lumineuses visible', async ({ page }) => {
-    // FIXME 2026-05-18 — Bloqué par dette de contenu sœur de D9 :
-    // `public/data/ancestries.json > elf.options.elfLineages.drow` référence
-    // les sortIds EN (`dancing-lights`, `faerie-fire`, `darkness`) mais
-    // `public/data/spells.json` ne contient que des slugs FR
-    // (`lumieres-dansantes`, `lueurs-feeriques`, `tenebres`). Le runtime
-    // `AncestrySpellsCard > resolveAncestrySpellEntries` ne trouve aucun
-    // sort → la carte n'est pas rendue. À résoudre par mise à jour de
-    // `scripts/data/srd-ancestries-l1.ts` + regen `ancestries.json`
-    // (script SRD safe, pas AideDD). Le nom FR « Danses lumineuses »
-    // attendu par le test diffère aussi de « Lumières dansantes » qu'a le
-    // bundle SRD — à harmoniser en même temps. Surfacé à Adrien plan 13.9
-    // UAT 2026-05-18, à traiter avec plan 13.10 ou par patch séparé.
-    test.fixme();
+  test('seed Elfe Drow L1 → mode Magie → Lumières dansantes visible', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
 
@@ -42,6 +29,6 @@ test.describe('Ancestry — Elfe Drow (sorts de lignage)', () => {
     await expect(page.locator('#sheet-mode-panel-magie')).toBeVisible();
 
     await expect(page.getByText(/Sorts de lignage elfique/)).toBeVisible();
-    await expect(page.getByText('Danses lumineuses')).toBeVisible();
+    await expect(page.getByText('Lumières dansantes')).toBeVisible();
   });
 });
