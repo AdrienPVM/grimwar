@@ -296,6 +296,28 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **Critère de complétion** : aucun — cette dette ne sera pas levée par migration. Bascule en `## Résolu` quand Adrien confirme la suppression des persos de test pré-fix.
 - **Leçon de process** : un test d'agrégation par source de maîtrise (background, ancestry, classe, expertise) doit être présent **dès la livraison initiale** de chaque step qui touche `character.skills`. C'est la garde qui aurait attrapé le bug background-latent dès plan 05. Le plan 13.9 hérite désormais explicitement de cette exigence (cf. plan 13.9 > « Exigences héritées de 13.8 »).
 
+## D11 — Bugs UAT 2026-05-18 : sorts d'ascendance EN→FR + Barde non créable
+
+- **Owner** : commit fix du jour (entrée mémorielle, pas de plan dédié).
+- **Statut** : **résolue 2026-05-18** par le même commit qui ajoute les tests d'intégrité référentielle et le fix Bug 1 + Bug 2. Les 2 sorts SRD 5.2.1 manquant encore du bundle (`rayon-de-maladie`, `feinte-vie`) restent **sous D9** (plan 13.10 = spells cleanup).
+- **Cause-racine commune** : aucune garde structurelle ne validait l'intégrité référentielle entre `public/data/*.json` ni que le pool de skill-picks d'une classe soit ≥ count. Deux régressions silencieuses sont passées à travers la triple gate :
+  1. **Bug 1 — slugs EN dans `ancestries.json` vs slugs FR dans `spells.json`.** `scripts/data/srd-ancestries-l1.ts` hardcodait `dancing-lights`, `fire-bolt`, `minor-illusion`, … alors que `spells.json` n'expose que `lumieres-dansantes`, `trait-de-feu`, `illusion-mineure`, … Le runtime `AncestrySpellsCard > resolveAncestrySpellEntries` skippait silencieusement → **la carte des sorts d'héritage/lignage NE S'AFFICHAIT PAS** sur la fiche pour Elfe + Gnome + Tieffelin.
+  2. **Bug 2 — `classes.json > bard.skillChoices.from = []`.** Le parser PDF SRD a raté le motif « Choose any 3 skills (see "Playing the Game") » du Barde 2024. Pool de picks vide → toutes les checkboxes désactivées → bouton Suivant verrouillé → **Barde impossible à créer**.
+- **Détection** : UAT manuel Adrien après que la suite e2e ait été débloquée (plan 13.5 Java/JDK 25 + plan 13.9 fix wrap `firebase emulators:exec`). Les 3 specs ancestry e2e ont commencé à passer en `test.fixme()` avec pointeur clair, ce qui a déclenché le diagnostic. Le Barde a été signalé par Adrien suite à un essai manuel.
+- **Conséquence** : 3 occurrences cumulées de bugs « contenu mécaniquement testable trouvé par UAT humain ». Trigger pour la **politique de couverture matricielle obligatoire** ajoutée à `CLAUDE.md` (cf. règle « UAT manuel = EXCEPTION »). Le plan matriciel dédié à la couverture par parcours intégré est en cours de spécification (post-bug-fix de ce commit).
+- **Surface impactée (livrée)** :
+  - `scripts/data/srd-ancestries-l1.ts` — 17 slugs EN → FR (Tieffelin × 3, Elfe × 3, Gnome × 2). 2 slugs (`rayon-de-maladie`, `feinte-vie`) commentés en `DEBT D9 — absent du bundle FR jusqu'à 13.10`.
+  - `scripts/data/srd-classes-l1.ts` — nouveau `SRD_CLASS_SKILL_CHOICES_OVERRIDE` matérialisant le « Choose any N » du Barde en 18 skills EN.
+  - `scripts/extract-srd-classes.ts` — applique l'override + log du nombre de skillChoices override(s) appliqués.
+  - `public/data/ancestries.json` + `public/data/classes.json` — régénérés par les 2 scripts SRD-only.
+  - `tests/content-referential-integrity.test.ts` — nouveau ; 4 tests vu rouge avant le fix, vu vert après. Tripwire D9 explicite (cassera quand 13.10 ajoute les 2 sorts).
+  - `CLAUDE.md > Required at every commit` — 2 nouvelles règles : « Couverture matricielle obligatoire par plan » + « Intégrité référentielle des bundles SRD ».
+- **Leçons de process** :
+  - **Un test d'intégrité référentielle cross-bundle est la garde minimale absolue.** Tout slug ID dans un bundle doit résoudre dans son bundle de destination. Sans ce garde, n'importe quel rebuild peut casser le runtime silencieusement.
+  - **Un pool de picks vide est un état inacceptable** — la garde « pool ≥ count » doit exister par construction. Cette classe de bug est triviale à détecter, sa détection par UAT humain est un signal d'absence de garde.
+  - **L'UAT humain est l'EXCEPTION.** Tout ce qui est mécaniquement vérifiable doit l'être par un test automatique. La politique acte 2026-05-18 dans `CLAUDE.md`.
+- **Critère de fermeture** : tous remplis ; entrée mémorielle prête à basculer en `## Résolu` au prochain housekeeping.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).

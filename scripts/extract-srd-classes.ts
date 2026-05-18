@@ -16,6 +16,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import {
   CLERIC_DIVINE_ORDERS,
   DRUID_PRIMAL_ORDERS,
+  SRD_CLASS_SKILL_CHOICES_OVERRIDE,
   SRD_CLASSES_COUNTS,
   SRD_WEAPON_MASTERY_COUNT_PER_CLASS,
 } from './data/srd-classes-l1';
@@ -28,6 +29,7 @@ interface ClassJsonEntry {
   divineOrders?: typeof CLERIC_DIVINE_ORDERS;
   primalOrders?: typeof DRUID_PRIMAL_ORDERS;
   weaponMasteryCount?: number;
+  skillChoices?: { count: number; from: string[] };
   [k: string]: unknown;
 }
 
@@ -46,6 +48,7 @@ async function main(): Promise<void> {
 
   let clericFound = false;
   let druidFound = false;
+  let skillOverridesApplied = 0;
   const enriched = classes.map((cls) => {
     const out: ClassJsonEntry = { ...cls };
     if (cls.id === 'cleric') {
@@ -55,6 +58,13 @@ async function main(): Promise<void> {
     if (cls.id === 'druid') {
       out.primalOrders = DRUID_PRIMAL_ORDERS;
       druidFound = true;
+    }
+    // Override SRD : matérialiser le pool de skill-picks pour les classes dont
+    // le PDF dit « Choose any N » (cf. Bug 2 UAT 2026-05-18).
+    const skillOverride = SRD_CLASS_SKILL_CHOICES_OVERRIDE[cls.id];
+    if (skillOverride) {
+      out.skillChoices = { count: skillOverride.count, from: [...skillOverride.from] };
+      skillOverridesApplied += 1;
     }
     const count = SRD_WEAPON_MASTERY_COUNT_PER_CLASS[cls.id];
     if (count === undefined) {
@@ -81,7 +91,7 @@ async function main(): Promise<void> {
 
   const totalMasteries = SRD_CLASSES_COUNTS.totalWeaponMasteries;
   console.log(
-    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1.`,
+    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s).`,
   );
 }
 

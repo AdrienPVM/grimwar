@@ -43,30 +43,38 @@ export interface TieflingLegacyOption {
   level5SpellId: string;
 }
 
+// Slugs FR pour aligner sur `public/data/spells.json` (qui n'expose que des
+// IDs FR). Fix Bug 1 UAT 2026-05-18 — cf. `tests/content-referential-integrity.test.ts`.
+//
+// `rayon-de-maladie` (Ray of Sickness) et `feinte-vie` (False Life) sont
+// référencés ici par fidélité SRD 5.2.1 MAIS encore absents du bundle FR
+// `spells.json` au moment du fix → dette D9 (à livrer par plan 13.10).
+// Le runtime `AncestrySpellsCard` skip silencieusement le sort manquant —
+// les autres slots (cantrip + L5) du même héritage s'affichent normalement.
 export const TIEFLING_LEGACIES: TieflingLegacyOption[] = [
   {
     id: 'abyssal',
     name: { fr: 'Abyssal', en: 'Abyssal' },
     resistance: { fr: 'Poison', en: 'Poison' },
-    cantripSpellId: 'poison-spray',
-    level3SpellId: 'ray-of-sickness',
-    level5SpellId: 'hold-person',
+    cantripSpellId: 'bouffee-de-poison',
+    level3SpellId: 'rayon-de-maladie', // DEBT D9 — absent du bundle FR jusqu'à 13.10.
+    level5SpellId: 'immobilisation-de-personne',
   },
   {
     id: 'chthonic',
     name: { fr: 'Chtonien', en: 'Chthonic' },
     resistance: { fr: 'Nécrotique', en: 'Necrotic' },
-    cantripSpellId: 'chill-touch',
-    level3SpellId: 'false-life',
-    level5SpellId: 'ray-of-enfeeblement',
+    cantripSpellId: 'contact-glacial',
+    level3SpellId: 'feinte-vie', // DEBT D9 — absent du bundle FR jusqu'à 13.10.
+    level5SpellId: 'rayon-affaiblissant',
   },
   {
     id: 'infernal',
     name: { fr: 'Infernal', en: 'Infernal' },
     resistance: { fr: 'Feu', en: 'Fire' },
-    cantripSpellId: 'fire-bolt',
-    level3SpellId: 'hellish-rebuke',
-    level5SpellId: 'darkness',
+    cantripSpellId: 'trait-de-feu',
+    level3SpellId: 'represailles-infernales',
+    level5SpellId: 'tenebres',
   },
 ];
 
@@ -79,6 +87,8 @@ export interface ElfLineageOption {
   level5SpellId: string;
 }
 
+// Slugs FR (cf. Bug 1 UAT 2026-05-18 ci-dessus). 100% des sorts elfes
+// existent dans le bundle FR — aucun blocage D10b sur cette ascendance.
 export const ELF_LINEAGES: ElfLineageOption[] = [
   {
     id: 'drow',
@@ -87,9 +97,9 @@ export const ELF_LINEAGES: ElfLineageOption[] = [
       fr: 'Vision dans le noir étendue à 36 m.',
       en: 'Darkvision extended to 120 ft.',
     },
-    cantripSpellId: 'dancing-lights',
-    level3SpellId: 'faerie-fire',
-    level5SpellId: 'darkness',
+    cantripSpellId: 'lumieres-dansantes',
+    level3SpellId: 'lueurs-feeriques',
+    level5SpellId: 'tenebres',
   },
   {
     id: 'high-elf',
@@ -99,8 +109,8 @@ export const ELF_LINEAGES: ElfLineageOption[] = [
       en: 'Swap your lineage cantrip on each long rest (from the Wizard list).',
     },
     cantripSpellId: 'prestidigitation',
-    level3SpellId: 'detect-magic',
-    level5SpellId: 'misty-step',
+    level3SpellId: 'detection-de-la-magie',
+    level5SpellId: 'foulee-brumeuse',
   },
   {
     id: 'wood-elf',
@@ -109,9 +119,9 @@ export const ELF_LINEAGES: ElfLineageOption[] = [
       fr: 'Vitesse de marche portée à 10,50 m.',
       en: 'Walking speed increases to 35 ft.',
     },
-    cantripSpellId: 'druidcraft',
-    level3SpellId: 'longstrider',
-    level5SpellId: 'pass-without-trace',
+    cantripSpellId: 'druidisme',
+    level3SpellId: 'grande-foulee',
+    level5SpellId: 'passage-sans-trace',
   },
 ];
 
@@ -122,6 +132,7 @@ export interface GnomeLineageOption {
   cantripSpellIds: string[];
 }
 
+// Slugs FR (cf. Bug 1 UAT 2026-05-18 ci-dessus).
 export const GNOME_LINEAGES: GnomeLineageOption[] = [
   {
     id: 'forest',
@@ -130,7 +141,7 @@ export const GNOME_LINEAGES: GnomeLineageOption[] = [
       fr: 'Vous lancez Communication avec les animaux (rituel) sans slot, jusqu\'à PB fois par repos long sans rituel.',
       en: 'Cast Speak with Animals as a ritual without a slot, up to PB times per long rest without the ritual tag.',
     },
-    cantripSpellIds: ['minor-illusion'],
+    cantripSpellIds: ['illusion-mineure'],
   },
   {
     id: 'rock',
@@ -139,7 +150,7 @@ export const GNOME_LINEAGES: GnomeLineageOption[] = [
       fr: "Vous fabriquez de petits appareils (Tiny) en 10 minutes. Tinker's Tools maîtrise requise.",
       en: 'Craft Tiny clockwork devices in 10 minutes. Requires Tinker\'s Tools proficiency.',
     },
-    cantripSpellIds: ['mending', 'prestidigitation'],
+    cantripSpellIds: ['reparation', 'prestidigitation'],
   },
 ];
 

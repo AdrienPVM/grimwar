@@ -61,6 +61,48 @@ export const DRUID_PRIMAL_ORDERS: PrimalOrderEntry[] = [
   },
 ];
 
+/**
+ * Override SRD 2024 — `skillChoices` quand le parser PDF rate le motif
+ * (« Choose any 3 skills » pour le Barde notamment, qui produit un `from: []`
+ * dans `classes.json` → pool vide → classe incréable).
+ *
+ * Bug 2 UAT 2026-05-18 — cf. `tests/content-referential-integrity.test.ts`.
+ *
+ * Les noms EN ici matchent ceux que produirait l'extraction PDF — le runtime
+ * `resolveSkillId` normalise vers kebab-case (`athletics`, `animal-handling`,
+ * …) via `SKILLS` (cf. `src/shared/lib/rules/skills.ts`).
+ *
+ * Quand le SRD dit « Choose any N » (Barde), on matérialise les 18 skills.
+ */
+const SRD_ALL_SKILLS_EN: readonly string[] = [
+  'Athletics',
+  'Acrobatics',
+  'Sleight of Hand',
+  'Stealth',
+  'Arcana',
+  'History',
+  'Investigation',
+  'Nature',
+  'Religion',
+  'Animal Handling',
+  'Insight',
+  'Medicine',
+  'Perception',
+  'Survival',
+  'Deception',
+  'Intimidation',
+  'Performance',
+  'Persuasion',
+];
+
+export const SRD_CLASS_SKILL_CHOICES_OVERRIDE: Record<
+  string,
+  { count: number; from: readonly string[] }
+> = {
+  // SRD 5.2.1 : « Choose any 3 skills (see "Playing the Game") ».
+  bard: { count: 3, from: SRD_ALL_SKILLS_EN },
+};
+
 /** Allocation de Weapon Masteries reçues à L1 par classe. */
 export const SRD_WEAPON_MASTERY_COUNT_PER_CLASS: Record<string, number> = {
   barbarian: 2,
