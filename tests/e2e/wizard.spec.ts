@@ -32,27 +32,37 @@ test.describe('Wizard — création rapide', () => {
     await page.getByRole('button', { name: /^Magicien( |$)/i }).first().click();
     await clickNext(page);
 
+    // Humain → 2 sous-choix obligatoires : `ancestrySize` + `ancestryExtraSkill`
+    // (plan 13.8). Sans les 2, `isAncestryValid` reste false → Suivant désactivé.
+    // Acrobaties = première carte du grid (visible sans scroll). `force: true`
+    // car l'`<input type=radio>` est `sr-only` (cf. smoke.spec.ts pour détail).
     await page.getByRole('button', { name: /^Humain( |$)/i }).first().click();
+    const sizeMoyenne = page.getByRole('radio', { name: /^Moyenne/i }).first();
+    await sizeMoyenne.scrollIntoViewIfNeeded();
+    await sizeMoyenne.check({ force: true });
+    const acrobaties = page.getByRole('radio', { name: /^Acrobaties$/i }).first();
+    await acrobaties.scrollIntoViewIfNeeded();
+    await acrobaties.check({ force: true });
     await clickNext(page);
 
     // Auto-fill abilities
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
     await page.getByRole('button', { name: /^Acolyte( |$)/i }).first().click();
     await clickNext(page);
 
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
     await page.getByRole('button', { name: /^Créer le personnage$/i }).click();
-    await expect(page).toHaveURL(/\/character\/[A-Za-z0-9]+$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/character\/[A-Za-z0-9-]+$/, { timeout: 15_000 });
 
     const durationMs = Date.now() - start;
     expect(

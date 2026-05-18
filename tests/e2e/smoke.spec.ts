@@ -62,12 +62,26 @@ test.describe('Smoke central — / → /create → /character/:id → /', () => 
     await page.getByRole('button', { name: /^Magicien( |$)/i }).first().click();
     await clickNext(page);
 
-    // 6. Ancestry : pick Humain.
+    // 6. Ancestry : pick Humain + sous-choix obligatoires (plan 13.8).
+    //    Humain a 2 sous-choix REQUIS : `ancestrySize` + `ancestryExtraSkill`
+    //    (cf. `use-ancestry-sub-choices.ts > REQUIREMENTS_BY_ANCESTRY.human`).
+    //    Sans les 2, `isAncestryValid` retourne false → Suivant désactivé.
+    //    Acrobaties = première carte du grid 18 (ordre EN-alphabétique du
+    //    bundle), donc visible sans scroll même sur mobile-chromium.
+    //    `force: true` : l'`<input type=radio>` est `sr-only` ; sans ce flag,
+    //    Playwright voit le label visible « intercepter » le clic et retry à
+    //    l'infini. Pattern canonique pour ce type d'input.
     await page.getByRole('button', { name: /^Humain( |$)/i }).first().click();
+    const sizeMoyenne = page.getByRole('radio', { name: /^Moyenne/i }).first();
+    await sizeMoyenne.scrollIntoViewIfNeeded();
+    await sizeMoyenne.check({ force: true });
+    const acrobaties = page.getByRole('radio', { name: /^Acrobaties$/i }).first();
+    await acrobaties.scrollIntoViewIfNeeded();
+    await acrobaties.check({ force: true });
     await clickNext(page);
 
     // 7. Abilities : auto-fill via le build de référence.
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
     // 8. Background : pick Acolyte (premier dans le bundle).
@@ -75,15 +89,15 @@ test.describe('Smoke central — / → /create → /character/:id → /', () => 
     await clickNext(page);
 
     // 9. Skills : auto-fill.
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
     // 10. Equipment : auto-fill.
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
     // 11. Spells : auto-fill (Magicien est lanceur — l'étape est visible).
-    await page.getByRole('button', { name: /Auto.*remplir|✨.*Auto/i }).first().click();
+    await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
     // 12. Recap : tap « Créer le personnage ». Soumet à Firestore (émulateur).
@@ -92,7 +106,7 @@ test.describe('Smoke central — / → /create → /character/:id → /', () => 
     await submitBtn.click();
 
     // 13. Atterrissage sur /character/:id — la fiche rend.
-    await expect(page).toHaveURL(/\/character\/[A-Za-z0-9]+$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/character\/[A-Za-z0-9-]+$/, { timeout: 15_000 });
     await expect(
       page.getByText('Test Hero Smoke').first(),
       'Le nom du perso doit apparaître sur la fiche (hero card).',
@@ -105,8 +119,10 @@ test.describe('Smoke central — / → /create → /character/:id → /', () => 
 
     // 5 onglets de mode sur la fiche (Combat / Essence / Magie / Avoir / Âme).
     // Le label exact dépend de l'i18n — on cherche au moins Combat + Magie.
-    await expect(page.getByRole('button', { name: /^Combat$/i }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: /^Magie$/i }).first()).toBeVisible();
+    // Les onglets sont `role="tab"` (cf. ModeTabs) — pas `button`. Spec mise
+    // à jour 2026-05-18 (auparavant skip masquait l'obsolescence).
+    await expect(page.getByRole('tab', { name: /^Combat$/i }).first()).toBeVisible();
+    await expect(page.getByRole('tab', { name: /^Magie$/i }).first()).toBeVisible();
 
     // 14. Retour à la library via le bouton du nav shell.
     await page.getByRole('link', { name: /Retour à la bibliothèque/i }).click();
