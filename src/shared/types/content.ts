@@ -365,36 +365,75 @@ export const AncestryGiantOptionSchema = z.object({
 });
 export type AncestryGiantOption = z.infer<typeof AncestryGiantOptionSchema>;
 
-export const AncestryOptionsSchema = z
-  .object({
-    dragonAncestries: z.array(AncestryDragonOptionSchema).optional(),
-    tieflingLegacies: z.array(AncestryTieflingLegacyOptionSchema).optional(),
-    elfLineages: z.array(AncestryElfLineageOptionSchema).optional(),
-    gnomeLineages: z.array(AncestryGnomeLineageOptionSchema).optional(),
-    giantAncestries: z.array(AncestryGiantOptionSchema).optional(),
-    versatileFeatIds: z.array(slug).optional(),
-    skillfulOptions: z.array(slug).optional(),
-  })
-  .default({});
+/**
+ * `options` doit être PRÉSENT (au minimum `{}`) — on retire le `.default({})`
+ * volontaire qui camouflait un cache pré-13.7 où la clé manquait totalement.
+ * Combiné au `superRefine` ci-dessous, une entrée d'ancestrie avec sous-choix
+ * mais options absentes ou vides est REJETÉE au lieu d'être tolérée. La
+ * conséquence pratique : le re-parse au cache read (cf. `content-loader.ts`)
+ * échoue, invalide la row Dexie, et déclenche un fetch frais qui re-peuple
+ * proprement depuis `public/data/ancestries.json`.
+ */
+export const AncestryOptionsSchema = z.object({
+  dragonAncestries: z.array(AncestryDragonOptionSchema).optional(),
+  tieflingLegacies: z.array(AncestryTieflingLegacyOptionSchema).optional(),
+  elfLineages: z.array(AncestryElfLineageOptionSchema).optional(),
+  gnomeLineages: z.array(AncestryGnomeLineageOptionSchema).optional(),
+  giantAncestries: z.array(AncestryGiantOptionSchema).optional(),
+  versatileFeatIds: z.array(slug).optional(),
+  skillfulOptions: z.array(slug).optional(),
+});
 export type AncestryOptions = z.infer<typeof AncestryOptionsSchema>;
 
-export const AncestrySchema = z.object({
-  id: slug,
-  name: I18nSchema,
-  size: sizeSchema,
-  speed: z.number().int(),
-  description: I18nSchema,
-  abilityScoreIncrease: z.array(
-    z.object({
-      ability: z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha']),
-      bonus: z.number().int(),
-    }),
-  ),
-  traits: z.array(namedDescription),
-  languages: z.array(z.string()),
-  source: sourceTag,
-  options: AncestryOptionsSchema,
-});
+/**
+ * Sous-clé d'options requise (non vide) par ancestryId. SRD 5.2.1.
+ * Dwarf / Halfling / Orc n'ont aucun sous-choix L1 → pas d'entrée ici (options
+ * peut rester `{}`). Pour human, on exige `skillfulOptions` non vide (sinon
+ * `AncestryExtraSkillChooser` tombe sur le fallback elfique faux pour humain).
+ */
+const REQUIRED_ANCESTRY_OPTION_KEY: Record<string, keyof AncestryOptions> = {
+  dragonborn: 'dragonAncestries',
+  tiefling: 'tieflingLegacies',
+  elf: 'elfLineages',
+  gnome: 'gnomeLineages',
+  goliath: 'giantAncestries',
+  human: 'skillfulOptions',
+};
+
+export const AncestrySchema = z
+  .object({
+    id: slug,
+    name: I18nSchema,
+    size: sizeSchema,
+    speed: z.number().int(),
+    description: I18nSchema,
+    abilityScoreIncrease: z.array(
+      z.object({
+        ability: z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha']),
+        bonus: z.number().int(),
+      }),
+    ),
+    traits: z.array(namedDescription),
+    languages: z.array(z.string()),
+    source: sourceTag,
+    options: AncestryOptionsSchema,
+  })
+  .superRefine((ancestry, ctx) => {
+    // Validation cross-field : si l'ascendance a un sous-choix L1 SRD, la
+    // liste correspondante doit exister et être non vide. Une entrée cache
+    // pré-13.7 sans `options` (ou avec `options: {}`) tombe ici → safeParse
+    // échoue → cache invalidé → fetch frais (cf. content-loader).
+    const requiredKey = REQUIRED_ANCESTRY_OPTION_KEY[ancestry.id];
+    if (!requiredKey) return;
+    const list = ancestry.options[requiredKey];
+    if (!Array.isArray(list) || list.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['options', requiredKey],
+        message: `Ancestry "${ancestry.id}" doit fournir options.${requiredKey} non vide (SRD 5.2.1 sub-choice L1).`,
+      });
+    }
+  });
 export type Ancestry = z.infer<typeof AncestrySchema>;
 
 export const SubancestrySchema = z.object({

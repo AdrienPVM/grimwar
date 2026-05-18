@@ -8,6 +8,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { DRAGON_ANCESTRY_HELP } from '../../help/dragon-ancestry-help';
 
 import { ChooserHelpPanel } from './chooser-help-panel';
+import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asDragonAncestry, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -17,7 +18,7 @@ import { asDragonAncestry, patchAncestrySubChoice } from './chooser-utils';
  * (extrait par `scripts/extract-srd-ancestries.ts`). Chaque carte affiche le
  * nom du dragon + son type de dégâts (= type de résistance accordée).
  */
-export function DragonAncestryChooser(): JSX.Element | null {
+export function DragonAncestryChooser(): JSX.Element {
   const value = useWizardStore((s) => s.draft.ancestrySubChoices.dragonAncestry);
   const subChoices = useWizardStore((s) => s.draft.ancestrySubChoices);
   const setField = useWizardStore((s) => s.setField);
@@ -34,7 +35,7 @@ export function DragonAncestryChooser(): JSX.Element | null {
     }));
   }, [ancestries.data]);
 
-  if (options.length === 0) return null;
+  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="dragon-ancestry" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';

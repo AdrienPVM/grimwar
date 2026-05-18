@@ -8,6 +8,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { TIEFLING_LEGACY_HELP } from '../../help/tiefling-legacy-help';
 
 import { ChooserHelpPanel } from './chooser-help-panel';
+import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asTieflingLegacy, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -17,7 +18,7 @@ import { asTieflingLegacy, patchAncestrySubChoice } from './chooser-utils';
  * cantrip de niveau 1 + le type de résistance. Les sorts L3/L5 sont
  * mentionnés en pédagogie mais débloqués par level-up (hors plan 13.8).
  */
-export function TieflingLegacyChooser(): JSX.Element | null {
+export function TieflingLegacyChooser(): JSX.Element {
   const value = useWizardStore((s) => s.draft.ancestrySubChoices.tieflingLegacy);
   const subChoices = useWizardStore((s) => s.draft.ancestrySubChoices);
   const setField = useWizardStore((s) => s.setField);
@@ -40,7 +41,7 @@ export function TieflingLegacyChooser(): JSX.Element | null {
     });
   }, [ancestries.data, spells.data]);
 
-  if (options.length === 0) return null;
+  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="tiefling-legacy" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';

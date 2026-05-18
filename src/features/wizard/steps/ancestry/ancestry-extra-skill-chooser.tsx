@@ -9,6 +9,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { ANCESTRY_EXTRA_SKILL_HELP } from '../../help/ancestry-extra-skill-help';
 
 import { ChooserHelpPanel } from './chooser-help-panel';
+import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { patchAncestrySubChoice } from './chooser-utils';
 import { ELF_KEEN_SENSES_SKILLS } from './use-ancestry-sub-choices';
 
@@ -27,7 +28,7 @@ interface Props {
  * depuis `ancestries.json > human.options.skillfulOptions` (= 18 skills par
  * défaut). Layout 3 colonnes pour ne pas déborder.
  */
-export function AncestryExtraSkillChooser({ ancestryId }: Props): JSX.Element | null {
+export function AncestryExtraSkillChooser({ ancestryId }: Props): JSX.Element {
   const value = useWizardStore((s) => s.draft.ancestrySubChoices.ancestryExtraSkill);
   const subChoices = useWizardStore((s) => s.draft.ancestrySubChoices);
   const setField = useWizardStore((s) => s.setField);
@@ -58,7 +59,9 @@ export function AncestryExtraSkillChooser({ ancestryId }: Props): JSX.Element | 
     });
   }, [admissibleValues]);
 
-  if (options.length === 0) return null;
+  if (options.length === 0) {
+    return <ChooserMissingDataBanner chooserKey={`ancestry-extra-skill-${ancestryId}`} />;
+  }
 
   // Le panneau d'aide décrit le TRAIT (Sens Aiguisés / Compétent) plutôt que
   // chaque skill, parce que le sens de la mécanique est porté par le trait

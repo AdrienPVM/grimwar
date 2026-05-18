@@ -8,6 +8,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { GOLIATH_ANCESTRY_HELP } from '../../help/goliath-ancestry-help';
 
 import { ChooserHelpPanel } from './chooser-help-panel';
+import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asGoliathAncestry, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -17,7 +18,7 @@ import { asGoliathAncestry, patchAncestrySubChoice } from './chooser-utils';
  * mécanique court — cadence d'utilisation = PB fois par repos long
  * (mentionné dans la pédagogie commit 3).
  */
-export function GoliathAncestryChooser(): JSX.Element | null {
+export function GoliathAncestryChooser(): JSX.Element {
   const value = useWizardStore((s) => s.draft.ancestrySubChoices.goliathAncestry);
   const subChoices = useWizardStore((s) => s.draft.ancestrySubChoices);
   const setField = useWizardStore((s) => s.setField);
@@ -33,7 +34,7 @@ export function GoliathAncestryChooser(): JSX.Element | null {
     }));
   }, [ancestries.data]);
 
-  if (options.length === 0) return null;
+  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="goliath-ancestry" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';

@@ -8,6 +8,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { GNOME_LINEAGE_HELP } from '../../help/gnome-lineage-help';
 
 import { ChooserHelpPanel } from './chooser-help-panel';
+import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asGnomeLineage, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -16,7 +17,7 @@ import { asGnomeLineage, patchAncestrySubChoice } from './chooser-utils';
  * Gnome des forêts / Gnome des roches. Cantrips fournis listés sur chaque
  * carte.
  */
-export function GnomeLineageChooser(): JSX.Element | null {
+export function GnomeLineageChooser(): JSX.Element {
   const value = useWizardStore((s) => s.draft.ancestrySubChoices.gnomeLineage);
   const subChoices = useWizardStore((s) => s.draft.ancestrySubChoices);
   const setField = useWizardStore((s) => s.setField);
@@ -42,7 +43,7 @@ export function GnomeLineageChooser(): JSX.Element | null {
     });
   }, [ancestries.data, spells.data]);
 
-  if (options.length === 0) return null;
+  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="gnome-lineage" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';

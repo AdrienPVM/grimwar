@@ -279,6 +279,23 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - plan 13.10 `## Notes for next plan` — cible explicite de la dette.
   - CLAUDE.md > « Required at every commit » — pointe ici via l'interdit temporaire.
 
+## D10 — `character.skills` incomplet sur les persos créés AVANT le fix UAT 13.8 du 2026-05-18
+
+- **Owner** : aucun plan dédié — pas de migration prévue. Cette entrée est purement mémorielle.
+- **Statut** : ouverte au sens « les persos existants sont touchés », mais **sans plan d'action** (décision Adrien 2026-05-18 : les fiches v1/v2 antérieures à ce fix seront supprimées et recréées à neuf plutôt que migrées).
+- **Cause-racine** : avant le fix, `submit-from-wizard.ts > buildCharacterFromWizard` n'écrivait dans `character.skills` que les `draft.pickedSkills`. Deux sources de maîtrise étaient silencieusement perdues :
+  1. **Background** (Acolyte → Insight + Religion, etc.) — bug latent, jamais remonté en UAT parce qu'aucune surface ne montrait la lacune (l'étape Compétences cochait visuellement les skills background mais ne les écrivait pas au submit).
+  2. **Ancestry** (Humain Compétent → 1 skill, Elfe Sens Aiguisés → 1 skill) — détecté en UAT plan 13.8 : la skill choisie au step ascendance n'apparaissait nulle part sur la fiche.
+- **Conséquence sur la base existante** : toute fiche créée avant le commit de fix porte un `character.skills` lacunaire. Concrètement, sur un Acolyte/Magicien créé avant 2026-05-18 : `character.skills` ne contient PAS `insight` ni `religion` ; sur un Humain Compétent : `character.skills` ne contient PAS la skill choisie en ancestry.
+- **Décision (Adrien 2026-05-18)** : pas de migration. Les rares persos de test pré-fix seront supprimés/recréés à neuf. Cette dette est **non-bloquante** parce qu'aucune fiche en prod ne dépend de l'exactitude de `character.skills` côté DM/joueur réel (premier jeu de table prévu post-S2).
+- **Surface impactée (résolue côté code)** :
+  - `src/features/wizard/submit-from-wizard.ts:174-185` — `buildSkillProficiencies({ backgroundSkills, ancestrySubChoices, pickedSkills, expertiseSkills })` remplace le `for (sid of pickedSkills) skills[sid] = 1` lacunaire.
+  - `src/features/wizard/steps/skills-step.tsx` — affiche les skills granted (background+ancestry) cochées+verrouillées avec tag de source ; le pool de picks de classe est réduit visuellement, le `count` reste inchangé.
+  - `src/shared/lib/rules/skill-proficiencies.ts` (nouveau) — agrégateur central pur. **Une seule source de vérité** consommée par wizard step + submit. Quand le plan 13.9 ajoutera Expertise du Roublard, un seul endroit à brancher.
+  - Tests anti-régression : `src/shared/lib/rules/__tests__/skill-proficiencies.test.ts` (23 tests table-driven), `src/features/wizard/steps/__tests__/skills-step.test.tsx` (4 tests rendu), `src/features/wizard/__tests__/submit-from-wizard-ancestry.test.ts` (4 tests submit étendus).
+- **Critère de complétion** : aucun — cette dette ne sera pas levée par migration. Bascule en `## Résolu` quand Adrien confirme la suppression des persos de test pré-fix.
+- **Leçon de process** : un test d'agrégation par source de maîtrise (background, ancestry, classe, expertise) doit être présent **dès la livraison initiale** de chaque step qui touche `character.skills`. C'est la garde qui aurait attrapé le bug background-latent dès plan 05. Le plan 13.9 hérite désormais explicitement de cette exigence (cf. plan 13.9 > « Exigences héritées de 13.8 »).
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).

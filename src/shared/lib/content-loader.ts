@@ -222,7 +222,24 @@ export async function loadPublicContent<K extends ContentTypeKey>(
 
   const cached = await readCache('public', type);
   if (cached && Date.now() - cached.fetchedAt < ttlFor('public')) {
-    return cached.data as ContentEntityByKey[K][];
+    // Re-parser le cache via Zod : un schéma STRICT (plan 13.8 UAT Drakéide)
+    // sur des données obsolètes échoue ici, déclenche l'invalidation et force
+    // un fetch frais — la voie de sortie quand un cache pré-évolution-schéma
+    // est piégé malgré la freshness check.
+    //
+    // Cas concret : `Ancestry` exige depuis le `superRefine` plan 13.8 que
+    // dragonborn/goliath/elf/gnome/tiefling/human aient leurs sub-options non
+    // vides. Un cache pré-13.7 (sans `options`) ou pré-extraction-complète
+    // (`options: {}`) tombe ici → row supprimée → fetch `/data/<type>.json`
+    // → bundle disque sain → cache reconstitué propre, transparent côté UI.
+    const arraySchema = z.array(ContentTypeSchemas[type]);
+    const reparsed = arraySchema.safeParse(cached.data);
+    if (reparsed.success) {
+      return reparsed.data as ContentEntityByKey[K][];
+    }
+    // Schéma cassé sur le cache : on vide la row pour qu'un retry ne reboucle
+    // pas indéfiniment, puis on tombe sur le fetch frais.
+    await invalidatePublicContent(type);
   }
 
   const response = await fetch(`/data/${type}.json`, { cache: 'no-cache' });

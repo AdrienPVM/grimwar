@@ -118,6 +118,8 @@ export type StringKey =
   | 'wizard.background.personality'
   | 'wizard.skills.toPick'
   | 'wizard.skills.fromBackground'
+  | 'wizard.skills.fromAncestry'
+  | 'wizard.skills.fromClassExpertise'
   | 'wizard.skills.notAllowed'
   | 'wizard.equipment.fromClass'
   | 'wizard.equipment.fromBackground'
@@ -156,6 +158,12 @@ export type StringKey =
   | 'wizard.subchoice.ancestrySize.medium.title'
   | 'wizard.subchoice.ancestrySize.medium.impact'
   | 'wizard.subchoice.unmet.aria'
+  // Bannière de garde "données manquantes" sur chooser de sous-choix (plan 13.8
+  // UAT 2026-05-17). Apparaît quand la liste d'options à afficher est vide alors
+  // que l'ascendance courante exige ce sous-choix par SRD — durcissement A
+  // équivalent à la bannière "wizard.spells.bundleEmpty".
+  | 'wizard.subchoice.missingData.title'
+  | 'wizard.subchoice.missingData.body'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -387,7 +395,9 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.background.list.aria': 'Liste des historiques',
     'wizard.background.personality': 'Personnalité',
     'wizard.skills.toPick': 'Compétences à choisir',
-    'wizard.skills.fromBackground': 'Historique',
+    'wizard.skills.fromBackground': 'Via historique',
+    'wizard.skills.fromAncestry': 'Via ascendance',
+    'wizard.skills.fromClassExpertise': 'Expertise',
     'wizard.skills.notAllowed': 'Hors classe',
     'wizard.equipment.fromClass': 'Au choix',
     'wizard.equipment.fromBackground': 'Accordé par ton historique',
@@ -444,6 +454,9 @@ const STRINGS: Record<Locale, Dict> = {
       "Aucune restriction sur les armes. Taille humaine standard.",
     'wizard.subchoice.unmet.aria':
       "Certains sous-choix d'ascendance restent à poser avant de continuer.",
+    'wizard.subchoice.missingData.title': 'Options indisponibles',
+    'wizard.subchoice.missingData.body':
+      "Les options de ce sous-choix n'ont pas été chargées correctement. Le cache local a été invalidé en arrière-plan — recharge la page (F5) pour les afficher. Si le problème persiste, signale-le.",
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -669,7 +682,9 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.background.list.aria': 'Background list',
     'wizard.background.personality': 'Personality',
     'wizard.skills.toPick': 'Skills to pick',
-    'wizard.skills.fromBackground': 'Background',
+    'wizard.skills.fromBackground': 'Via background',
+    'wizard.skills.fromAncestry': 'Via ancestry',
+    'wizard.skills.fromClassExpertise': 'Expertise',
     'wizard.skills.notAllowed': 'Off-class',
     'wizard.equipment.fromClass': 'Choose',
     'wizard.equipment.fromBackground': 'Granted by your background',
@@ -726,6 +741,9 @@ const STRINGS: Record<Locale, Dict> = {
       'No restriction on weapons. Standard human-size build.',
     'wizard.subchoice.unmet.aria':
       "Some ancestry sub-choices remain to be set before you can continue.",
+    'wizard.subchoice.missingData.title': 'Options unavailable',
+    'wizard.subchoice.missingData.body':
+      'Sub-choice options failed to load. The local cache was invalidated in the background — reload the page (F5) to display them. If the problem persists, report it.',
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel

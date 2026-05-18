@@ -3,6 +3,7 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { addItemToInventory } from '@/shared/lib/inventory';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { maxHp, totalLevel } from '@/shared/lib/rules/multiclass';
+import { buildSkillProficiencies } from '@/shared/lib/rules/skill-proficiencies';
 import { getDb } from '@/shared/lib/firebase';
 import {
   CharacterSchema,
@@ -19,6 +20,7 @@ import type {
 } from '@/shared/types/content';
 import type { WizardDraft } from '@/shared/lib/slices/wizard-slice';
 
+import { resolveSkillIds } from './steps/skill-resolver';
 import { getMissingAncestrySubChoiceKeys } from './steps/ancestry/use-ancestry-sub-choices';
 
 /**
@@ -171,10 +173,24 @@ export async function buildCharacterFromWizard(
     cha: primaryClass.saveProficiencies.includes('cha'),
   };
 
-  // Skills : maîtrise = 1 pour chaque skill picked. Le wizard a déjà résolu en
-  // IDs canoniques kebab-case.
-  const skills: Character['skills'] = {};
-  for (const sid of draft.pickedSkills) skills[sid] = 1;
+  // Skills : agrégateur central des sources (plan 13.8 UAT 2026-05-18).
+  // Avant le fix, ce bloc écrivait UNIQUEMENT `pickedSkills` — les grants
+  // background (ex. Acolyte → Insight/Religion) et ancestry (Humain
+  // Compétent / Elfe Sens Aiguisés) étaient perdus silencieusement. Le
+  // `buildSkillProficiencies` applique la règle max-par-skillId et écrit
+  // tout dans `character.skills`.
+  const resolvedBackgroundSkills = resolveSkillIds(background.skillProficiencies);
+  // Expertise (13.9 — Roublard) : agrégée depuis `characterClasses[].expertiseSkills`.
+  // Tant que le wizard 13.9 n'écrit pas ces champs, le tableau reste vide.
+  const expertiseSkills: string[] = characterClasses.flatMap(
+    (c) => c.expertiseSkills,
+  );
+  const skills: Character['skills'] = buildSkillProficiencies({
+    backgroundSkills: resolvedBackgroundSkills,
+    ancestrySubChoices: draft.ancestrySubChoices,
+    pickedSkills: draft.pickedSkills,
+    expertiseSkills,
+  });
 
   // Inventaire : pour chaque classe choisie, on prend l'option d'équipement
   // sélectionnée et on injecte chaque itemId via addItemToInventory (qui

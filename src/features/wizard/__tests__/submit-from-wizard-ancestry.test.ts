@@ -1,10 +1,35 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 import { EMPTY_DRAFT, type WizardDraft } from '@/shared/lib/slices/wizard-slice';
 import { EMPTY_ANCESTRY_SUB_CHOICES } from '@/shared/types/character';
-import type { Ancestry } from '@/shared/types/content';
+import type {
+  Ancestry,
+  Background,
+  ClassEntity,
+  Item,
+  Spell,
+} from '@/shared/types/content';
 
-import { buildAncestrySpellIds } from '../submit-from-wizard';
+import { buildAncestrySpellIds, buildCharacterFromWizard } from '../submit-from-wizard';
+
+// `buildCharacterFromWizard` finit par appeler `addItemToInventory` qui résout
+// les items via `loadPublicContent`. Pour des tests purs (zéro Dexie / Firestore)
+// on stub la résolution : tout itemId fourni en seed est considéré valide et
+// poussé à plat dans l'inventaire.
+vi.mock('@/shared/lib/inventory', () => ({
+  addItemToInventory: vi.fn(
+    async (shape: { inventory: { items: unknown[] } }, itemId: string) => {
+      shape.inventory.items.push({
+        contentId: itemId,
+        contentScope: 'public',
+        qty: 1,
+        equipped: false,
+        attuned: false,
+        notes: '',
+      });
+    },
+  ),
+}));
 
 /**
  * Tests purs sur buildAncestrySpellIds (plan 13.8 step 25).
@@ -177,5 +202,160 @@ describe('buildAncestrySpellIds — résolution sous-choix → liste de spellIds
       options: { tieflingLegacies: [TIEFLING.options.tieflingLegacies![1]!] }, // infernal only
     };
     expect(buildAncestrySpellIds(draft, bundleWithoutAbyssal)).toEqual([]);
+  });
+});
+
+/**
+ * Anti-régression UAT 13.8 (2026-05-18) — agrégation des sources de
+ * maîtrise au submit Firestore.
+ *
+ * Avant le fix, `submit-from-wizard.ts` écrivait dans `character.skills`
+ * uniquement les `draft.pickedSkills`. Les grants suivants étaient
+ * silencieusement perdus :
+ *   - Background (Acolyte → Insight + Religion) — bug latent, jamais
+ *     remonté en UAT parce qu'aucune fiche ne montrait la lacune.
+ *   - Ancestry (Humain Compétent → 1 skill, Elfe Sens Aiguisés → 1 skill) —
+ *     bug détecté en UAT visible : la skill choisie au step ascendance
+ *     n'apparaissait nulle part sur la fiche.
+ *
+ * Ces tests doivent être rouges sur le code pré-fix de `submit-from-wizard.ts`
+ * (qui n'agrège pas via `buildSkillProficiencies`).
+ */
+
+const ACOLYTE: Background = {
+  id: 'acolyte',
+  name: { fr: 'Acolyte', en: 'Acolyte' },
+  description: { fr: '.', en: '.' },
+  skillProficiencies: ['Insight', 'Religion'],
+  toolProficiencies: [],
+  languages: 0,
+  equipment: [],
+  startingCoins: null,
+  feature: { name: { fr: '.', en: '.' }, description: { fr: '.', en: '.' } },
+  source: 'srd-5.2.1',
+};
+
+const HUMAN: Ancestry = {
+  id: 'human',
+  name: { fr: 'Humain', en: 'Human' },
+  size: 'medium',
+  speed: 30,
+  description: { fr: '', en: '' },
+  abilityScoreIncrease: [],
+  traits: [],
+  languages: ['common'],
+  source: 'srd-5.2.1',
+  options: { skillfulOptions: ['arcana', 'history', 'investigation'] },
+};
+
+const WIZARD_CLASS: ClassEntity = {
+  id: 'wizard',
+  name: { fr: 'Magicien', en: 'Wizard' },
+  hitDie: 'd6',
+  primaryAbility: ['int'],
+  saveProficiencies: ['int', 'sag'],
+  armorProficiencies: [],
+  weaponProficiencies: [],
+  toolProficiencies: [],
+  skillChoices: {
+    count: 2,
+    from: ['Arcana', 'History', 'Insight', 'Investigation', 'Medicine', 'Nature', 'Religion'],
+  },
+  spellcasting: { ability: 'int', progression: 'full' },
+  startingEquipment: { options: [{ items: [], coins: null }] },
+  description: { fr: '.', en: '.' },
+  features: [],
+  source: 'srd-5.2.1',
+};
+
+const EMPTY_SPELLS_BUNDLE: Spell[] = [];
+const EMPTY_ITEMS_BUNDLE: Item[] = [];
+
+function draftReady(patch: Partial<WizardDraft> = {}): WizardDraft {
+  return {
+    ...EMPTY_DRAFT,
+    name: 'Test',
+    level: 1,
+    alignment: 'NB',
+    classes: [{ classId: 'wizard', level: 1 }],
+    primaryClassId: 'wizard',
+    ancestryId: 'human',
+    ancestrySubChoices: {
+      ...EMPTY_ANCESTRY_SUB_CHOICES,
+      ancestrySize: 'medium',
+      ancestryExtraSkill: 'arcana',
+    },
+    backgroundId: 'acolyte',
+    pickedSkills: ['history', 'investigation'],
+    equipmentChoices: [{ classId: 'wizard', optionIndex: 0 }],
+    ...patch,
+  };
+}
+
+describe('submit-from-wizard → character.skills agrège background + ancestry + picks', () => {
+  it('Acolyte → character.skills.insight === 1 && character.skills.religion === 1', async () => {
+    const character = await buildCharacterFromWizard({
+      uid: 'uid-test',
+      draft: draftReady(),
+      classes: [WIZARD_CLASS],
+      ancestry: HUMAN,
+      background: ACOLYTE,
+      items: EMPTY_ITEMS_BUNDLE,
+      spells: EMPTY_SPELLS_BUNDLE,
+    });
+    expect(character.skills.insight).toBe(1);
+    expect(character.skills.religion).toBe(1);
+  });
+
+  it('Humain Compétent (Arcanes) → character.skills.arcana === 1', async () => {
+    const character = await buildCharacterFromWizard({
+      uid: 'uid-test',
+      draft: draftReady(),
+      classes: [WIZARD_CLASS],
+      ancestry: HUMAN,
+      background: ACOLYTE,
+      items: EMPTY_ITEMS_BUNDLE,
+      spells: EMPTY_SPELLS_BUNDLE,
+    });
+    expect(character.skills.arcana).toBe(1);
+  });
+
+  it('picks de classe (History, Investigation) restent à 1 sur la fiche', async () => {
+    const character = await buildCharacterFromWizard({
+      uid: 'uid-test',
+      draft: draftReady(),
+      classes: [WIZARD_CLASS],
+      ancestry: HUMAN,
+      background: ACOLYTE,
+      items: EMPTY_ITEMS_BUNDLE,
+      spells: EMPTY_SPELLS_BUNDLE,
+    });
+    expect(character.skills.history).toBe(1);
+    expect(character.skills.investigation).toBe(1);
+  });
+
+  it('ancestry+class doublon : Humain Arcanes + classe pick Arcanes → 1 seule entrée à 1', async () => {
+    const character = await buildCharacterFromWizard({
+      uid: 'uid-test',
+      draft: draftReady({
+        pickedSkills: ['arcana', 'history'],
+        ancestrySubChoices: {
+          ...EMPTY_ANCESTRY_SUB_CHOICES,
+          ancestrySize: 'medium',
+          ancestryExtraSkill: 'arcana',
+        },
+      }),
+      classes: [WIZARD_CLASS],
+      ancestry: HUMAN,
+      background: ACOLYTE,
+      items: EMPTY_ITEMS_BUNDLE,
+      spells: EMPTY_SPELLS_BUNDLE,
+    });
+    expect(character.skills.arcana).toBe(1);
+    // Acolyte + ancestry Arcanes + picks {arcana, history} → 4 entrées
+    // distinctes (insight, religion, arcana, history) avec max=1 partout.
+    expect(Object.keys(character.skills).sort()).toEqual(
+      ['arcana', 'history', 'insight', 'religion'].sort(),
+    );
   });
 });

@@ -8,6 +8,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { ELF_LINEAGE_HELP } from '../../help/elf-lineage-help';
 
 import { ChooserHelpPanel } from './chooser-help-panel';
+import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asElfLineage, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -16,7 +17,7 @@ import { asElfLineage, patchAncestrySubChoice } from './chooser-utils';
  * Drow / Haut-elfe / Elfe sylvestre. Chaque carte montre le cantrip lié
  * + le bénéfice de niveau 1.
  */
-export function ElfLineageChooser(): JSX.Element | null {
+export function ElfLineageChooser(): JSX.Element {
   const value = useWizardStore((s) => s.draft.ancestrySubChoices.elfLineage);
   const subChoices = useWizardStore((s) => s.draft.ancestrySubChoices);
   const setField = useWizardStore((s) => s.setField);
@@ -38,7 +39,7 @@ export function ElfLineageChooser(): JSX.Element | null {
     });
   }, [ancestries.data, spells.data]);
 
-  if (options.length === 0) return null;
+  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="elf-lineage" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';
