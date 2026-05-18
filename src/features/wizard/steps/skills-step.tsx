@@ -15,6 +15,7 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { applyReferenceSkills } from '../reference-builds/builds';
 import { StepIntro } from '../help/help-panel';
 
+import { RogueExpertiseChooser } from './class/rogue-expertise-chooser';
 import { resolveSkillIds } from './skill-resolver';
 
 /**
@@ -174,6 +175,12 @@ export function SkillsStep(): JSX.Element {
           ✨ {t('wizard.action.autofill')}
         </Button>
       </div>
+
+      {/* Roublard : l'Expertise se choisit ici, pas à l'étape Classe (Option B
+          plan 13.9 UAT 2026-05-18). Le pool est calculé en live depuis
+          background + ancestry + pickedSkills — le chooser réagit à chaque
+          coche/décoche de la grille ci-dessus. */}
+      {draft.primaryClassId === 'rogue' ? <RogueExpertiseChooser /> : null}
     </section>
   );
 }

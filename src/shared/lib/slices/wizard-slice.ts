@@ -3,8 +3,12 @@ import { persist } from 'zustand/middleware';
 
 import {
   EMPTY_ANCESTRY_SUB_CHOICES,
+  createEmptyClassSubChoices,
   type AbilityCode,
   type AncestrySubChoices,
+  type DivineOrder,
+  type FightingStyle,
+  type PrimalOrder,
 } from '@/shared/types/character';
 
 /**
@@ -25,10 +29,43 @@ import {
 
 export type AbilityMethod = 'standard-array' | 'point-buy' | 'manual';
 
+/**
+ * Sous-choix de classe niveau 1 SRD 5.2.1 portés par chaque entrée du tableau
+ * `classes[]` (décision 13.7 §0.1). Mirror typé du `characterClassEntrySchema`
+ * côté `character.ts` — le wizard porte les mêmes sentinelles avant submit,
+ * `submit-from-wizard` les recopie dans `characterClasses[i]` 1:1.
+ */
 export interface WizardClassEntry {
   classId: string;
   level: number;
+  clericDivineOrder: DivineOrder | null;
+  druidPrimalOrder: PrimalOrder | null;
+  fighterFightingStyle: FightingStyle | null;
+  /** Ids d'armes (items.json) choisies pour Weapon Mastery. */
+  weaponMasteries: string[];
+  /** Ids de compétences (skill-resolver) choisies pour Expertise (Roublard). */
+  expertiseSkills: string[];
+  /** Ids d'invocations (invocations.json) choisies pour Warlock. */
+  eldritchInvocations: string[];
+  /** Ids de sorts (spells.json) inscrits dans le grimoire L1 (Magicien). */
+  wizardSpellbookL1: string[];
 }
+
+export type ClassSubChoiceKey =
+  | 'clericDivineOrder'
+  | 'druidPrimalOrder'
+  | 'fighterFightingStyle'
+  | 'weaponMasteries'
+  | 'expertiseSkills'
+  | 'eldritchInvocations'
+  | 'wizardSpellbookL1';
+
+export type ClassSubChoiceValue =
+  | DivineOrder
+  | PrimalOrder
+  | FightingStyle
+  | string[]
+  | null;
 
 export interface WizardEquipmentChoice {
   /** classId concerné — chaque classe choisie pose sa propre option. */
@@ -79,6 +116,14 @@ export interface WizardDraft {
   // Étape 6 — Compétences
   pickedSkills: string[];
 
+  /**
+   * Langues supplémentaires racine (Roublard +1, Background, Origin Feat...) —
+   * décision 13.7 §0.1 : `extraLanguages` reste à la racine du perso parce qu'il
+   * agrège plusieurs sources. Les sous-choix de classe (Fighting Style, etc.)
+   * vivent dans `classes[].*`, pas ici.
+   */
+  extraLanguages: string[];
+
   // Étape 7 — Équipement
   equipmentChoices: WizardEquipmentChoice[];
 
@@ -108,6 +153,7 @@ export const EMPTY_DRAFT: WizardDraft = {
   backgroundId: null,
   personality: { trait: '', ideal: '', bond: '', flaw: '', backstory: '' },
   pickedSkills: [],
+  extraLanguages: [],
   equipmentChoices: [],
   spellsByClass: [],
 };
@@ -144,6 +190,19 @@ interface WizardStore {
   removeClass: (classId: string) => void;
   setPrimaryClass: (classId: string) => void;
 
+  /**
+   * Setter unique pour les sous-choix de classe (plan 13.9). Cible une entrée
+   * de `classes[]` par `classId` + une clé typée (`fighterFightingStyle`,
+   * `weaponMasteries`, etc.). Refus silencieux si l'entrée n'existe pas — c'est
+   * acceptable parce que le wizard 13.9 ne rend les choosers que pour la classe
+   * primaire mono-class à L1.
+   */
+  setClassSubChoice: <K extends ClassSubChoiceKey>(
+    classId: string,
+    key: K,
+    value: WizardClassEntry[K],
+  ) => void;
+
   // Équipement multi-class
   setEquipmentChoice: (classId: string, optionIndex: number) => void;
 
@@ -165,6 +224,7 @@ function cloneDraft(): WizardDraft {
     equipmentChoices: [],
     spellsByClass: [],
     pickedSkills: [],
+    extraLanguages: [],
     personality: { ...EMPTY_DRAFT.personality },
     ancestrySubChoices: { ...EMPTY_ANCESTRY_SUB_CHOICES },
   };
@@ -202,7 +262,13 @@ export const useWizardStore = create<WizardStore>()(
       addClass: (classId, level): void => {
         set((state) => {
           if (state.draft.classes.some((c) => c.classId === classId)) return state;
-          const nextClasses = [...state.draft.classes, { classId, level }];
+          // Chaque nouvelle entrée porte ses propres sentinelles de sous-choix
+          // (factory `createEmptyClassSubChoices` — pas de partage d'arrays
+          // entre entrées, cf. character.ts).
+          const nextClasses: WizardClassEntry[] = [
+            ...state.draft.classes,
+            { classId, level, ...createEmptyClassSubChoices() },
+          ];
           // Le premier ajout devient la classe primaire par défaut.
           const primary = state.draft.primaryClassId ?? nextClasses[0]?.classId ?? null;
           return {
@@ -251,6 +317,17 @@ export const useWizardStore = create<WizardStore>()(
       setPrimaryClass: (classId): void => {
         set((state) => ({
           draft: { ...state.draft, primaryClassId: classId },
+        }));
+      },
+
+      setClassSubChoice: (classId, key, value): void => {
+        set((state) => ({
+          draft: {
+            ...state.draft,
+            classes: state.draft.classes.map((c) =>
+              c.classId === classId ? { ...c, [key]: value } : c,
+            ),
+          },
         }));
       },
 
@@ -303,11 +380,13 @@ export const useWizardStore = create<WizardStore>()(
       },
     }),
     {
-      // Clé bumpée vs v2 (`grimwar-wizard-draft-v2`) → invalide les drafts qui
-      // contenaient encore `subancestryId` (retiré au plan 13.7). Pas de
-      // migration locale nécessaire : un draft incomplet est jetable.
-      name: 'grimwar-wizard-draft-v3',
-      version: 3,
+      // Clé bumpée v3→v4 (plan 13.9) — les anciens drafts v3 n'avaient pas les
+      // sous-choix de classe sur `WizardClassEntry` ni `extraLanguages` racine.
+      // Un draft v3 incomplet pourrait crasher le wizard à l'hydratation ; on
+      // préfère jeter et repartir vide (workflow de création courte → faible
+      // coût utilisateur, gros gain en robustesse).
+      name: 'grimwar-wizard-draft-v4',
+      version: 4,
     },
   ),
 );

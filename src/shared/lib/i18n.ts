@@ -159,11 +159,45 @@ export type StringKey =
   | 'wizard.subchoice.ancestrySize.medium.impact'
   | 'wizard.subchoice.unmet.aria'
   // Bannière de garde "données manquantes" sur chooser de sous-choix (plan 13.8
-  // UAT 2026-05-17). Apparaît quand la liste d'options à afficher est vide alors
-  // que l'ascendance courante exige ce sous-choix par SRD — durcissement A
-  // équivalent à la bannière "wizard.spells.bundleEmpty".
+  // UAT 2026-05-17, périmètre restreint plan 13.9 UAT 2026-05-18). Apparaît
+  // UNIQUEMENT quand la donnée du bundle disque est absente (vrai bug cache/
+  // parse). Pour un pool **calculé** légitimement vide (dépendances pas encore
+  // résolues), utiliser le pattern `wizard.subchoice.pending.*` ci-dessous.
   | 'wizard.subchoice.missingData.title'
   | 'wizard.subchoice.missingData.body'
+  // Message d'attente neutre (NON alarmant) pour les choosers dont le pool est
+  // calculé à partir d'autres étapes — l'utilisateur doit d'abord remplir ces
+  // étapes. Distinct de `missingData` qui crierait "panne" à tort.
+  | 'wizard.subchoice.pending.expertiseAtClassStep'
+  | 'wizard.subchoice.pending.expertiseNoSkills'
+  // Sous-choix de classe (plan 13.9) — choosers + helpers + section ombrella
+  | 'wizard.subchoice.class.section.title'
+  | 'wizard.subchoice.class.section.helper'
+  | 'wizard.subchoice.divineOrder.legend'
+  | 'wizard.subchoice.divineOrder.helper'
+  | 'wizard.subchoice.primalOrder.legend'
+  | 'wizard.subchoice.primalOrder.helper'
+  | 'wizard.subchoice.fightingStyle.legend'
+  | 'wizard.subchoice.fightingStyle.helper'
+  | 'wizard.subchoice.weaponMastery.legend'
+  | 'wizard.subchoice.weaponMastery.helper'
+  | 'wizard.subchoice.weaponMastery.remaining'
+  | 'wizard.subchoice.weaponMastery.propertyPrefix'
+  | 'wizard.subchoice.expertise.legend'
+  | 'wizard.subchoice.expertise.helper'
+  | 'wizard.subchoice.expertise.remaining'
+  | 'wizard.subchoice.eldritchInvocation.legend'
+  | 'wizard.subchoice.eldritchInvocation.helper'
+  | 'wizard.subchoice.extraLanguages.legend'
+  | 'wizard.subchoice.extraLanguages.helper'
+  | 'wizard.subchoice.extraLanguages.remaining'
+  | 'wizard.subchoice.extraLanguages.tierStandard'
+  | 'wizard.subchoice.extraLanguages.tierRare'
+  | 'wizard.subchoice.wizardSpellbook.inscribedLegend'
+  | 'wizard.subchoice.wizardSpellbook.inscribedHelper'
+  | 'wizard.subchoice.wizardSpellbook.preparedLegend'
+  | 'wizard.subchoice.wizardSpellbook.preparedHelper'
+  | 'wizard.subchoice.wizardSpellbook.preparedEmpty'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -457,6 +491,53 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.subchoice.missingData.title': 'Options indisponibles',
     'wizard.subchoice.missingData.body':
       "Les options de ce sous-choix n'ont pas été chargées correctement. Le cache local a été invalidé en arrière-plan — recharge la page (F5) pour les afficher. Si le problème persiste, signale-le.",
+    // Messages d'attente neutres (PAS de "panne", PAS de "recharge la page") —
+    // affichés quand un chooser dépend d'étapes encore à remplir.
+    'wizard.subchoice.pending.expertiseAtClassStep':
+      "L'Expertise se choisira à l'étape Compétences — sa liste dépend des compétences que tu maîtriseras.",
+    'wizard.subchoice.pending.expertiseNoSkills':
+      "Choisis d'abord tes compétences de classe ci-dessus — ton Expertise s'y prendra parmi elles.",
+    // Sous-choix de classe (plan 13.9)
+    'wizard.subchoice.class.section.title': 'Précise ta classe',
+    'wizard.subchoice.class.section.helper':
+      'Encore quelques choix qui fixent ton style de jeu. Tu pourras tout consulter à la fiche plus tard.',
+    'wizard.subchoice.divineOrder.legend': 'Ordre divin',
+    'wizard.subchoice.divineOrder.helper':
+      'Deux écoles de clercs : Protecteur, en première ligne avec bouclier et armure lourde ; Thaumaturge, érudit des mystères divins avec un cantrip supplémentaire.',
+    'wizard.subchoice.primalOrder.legend': 'Ordre primordial',
+    'wizard.subchoice.primalOrder.helper':
+      'Deux voies de druides : Magicien (sortilèges + bonus aux tests Intelligence liés à la nature) ou Gardien (armes martiales + armure intermédiaire pour défendre physiquement la nature).',
+    'wizard.subchoice.fightingStyle.legend': 'Style de combat',
+    'wizard.subchoice.fightingStyle.helper':
+      'Ta signature au combat. Chaque style apporte un avantage mécanique distinct — choisis selon ce que tu veux voir à la table.',
+    'wizard.subchoice.weaponMastery.legend': "Bottes d'arme",
+    'wizard.subchoice.weaponMastery.helper':
+      'Choisis {count} arme(s) sur lesquelles tu maîtrises une botte spéciale (effet automatique chaque fois que tu touches). À combiner avec ton équipement de départ.',
+    'wizard.subchoice.weaponMastery.remaining': 'encore {n} à choisir',
+    'wizard.subchoice.weaponMastery.propertyPrefix': 'Botte',
+    'wizard.subchoice.expertise.legend': 'Expertise',
+    'wizard.subchoice.expertise.helper':
+      'Choisis 2 compétences déjà maîtrisées — tu y ajoutes ton bonus de maîtrise une seconde fois (×2). Choisis tes signatures.',
+    'wizard.subchoice.expertise.remaining': 'encore {n} à choisir',
+    'wizard.subchoice.eldritchInvocation.legend': 'Manifestation occulte',
+    'wizard.subchoice.eldritchInvocation.helper':
+      'Ta connexion au patron prend une forme concrète. Les trois Pactes (Lame, Chaîne, Grimoire) débloquent du contenu de classe spécifique.',
+    'wizard.subchoice.extraLanguages.legend': 'Langues supplémentaires',
+    'wizard.subchoice.extraLanguages.helper':
+      'Choisis {count} langue(s) supplémentaire(s) — utile pour les échanges diplomatiques, lire un parchemin antique ou comprendre un dragon.',
+    'wizard.subchoice.extraLanguages.remaining': 'encore {n} à choisir',
+    'wizard.subchoice.extraLanguages.tierStandard': 'Courante',
+    'wizard.subchoice.extraLanguages.tierRare': 'Rare',
+    'wizard.subchoice.wizardSpellbook.inscribedLegend':
+      'Grimoire — sorts inscrits',
+    'wizard.subchoice.wizardSpellbook.inscribedHelper':
+      "Ton grimoire de départ contient {count} sorts de niveau 1. Ce sont les sorts que tu connais — tu pourras en préparer un sous-ensemble chaque matin.",
+    'wizard.subchoice.wizardSpellbook.preparedLegend':
+      'Sorts préparés aujourd’hui',
+    'wizard.subchoice.wizardSpellbook.preparedHelper':
+      "Choisis {count} sorts parmi ton grimoire — seuls les sorts préparés sont lançables aujourd'hui. Les autres restent inscrits mais inutilisables tant que tu ne les prépares pas.",
+    'wizard.subchoice.wizardSpellbook.preparedEmpty':
+      "Inscris d'abord les sorts dans ton grimoire ci-dessus.",
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -744,6 +825,51 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.subchoice.missingData.title': 'Options unavailable',
     'wizard.subchoice.missingData.body':
       'Sub-choice options failed to load. The local cache was invalidated in the background — reload the page (F5) to display them. If the problem persists, report it.',
+    'wizard.subchoice.pending.expertiseAtClassStep':
+      'Expertise is picked at the Skills step — its list depends on which skills you end up with.',
+    'wizard.subchoice.pending.expertiseNoSkills':
+      'Pick your class skills above first — Expertise will then choose from them.',
+    // Class sub-choices (plan 13.9)
+    'wizard.subchoice.class.section.title': 'Refine your class',
+    'wizard.subchoice.class.section.helper':
+      'A few more picks that shape your play style. You can revisit them on the sheet later.',
+    'wizard.subchoice.divineOrder.legend': 'Divine Order',
+    'wizard.subchoice.divineOrder.helper':
+      'Two cleric paths: Protector (front-line with heavy armor and martial weapons) or Thaumaturge (scholar of the divine mysteries with an extra cantrip).',
+    'wizard.subchoice.primalOrder.legend': 'Primal Order',
+    'wizard.subchoice.primalOrder.helper':
+      'Two druid paths: Magician (spell-focused with nature-Int bonus) or Warden (martial weapons + medium armor to physically defend the wild).',
+    'wizard.subchoice.fightingStyle.legend': 'Fighting Style',
+    'wizard.subchoice.fightingStyle.helper':
+      'Your combat signature. Each style grants a distinct mechanical edge — pick what you want to see at the table.',
+    'wizard.subchoice.weaponMastery.legend': 'Weapon Mastery',
+    'wizard.subchoice.weaponMastery.helper':
+      'Pick {count} weapon(s) you master a special property on (automatic effect each time you hit). Pair with your starting gear.',
+    'wizard.subchoice.weaponMastery.remaining': '{n} left to choose',
+    'wizard.subchoice.weaponMastery.propertyPrefix': 'Mastery',
+    'wizard.subchoice.expertise.legend': 'Expertise',
+    'wizard.subchoice.expertise.helper':
+      'Pick 2 skills you are already proficient in — you add your proficiency bonus twice (×2). Pick your signatures.',
+    'wizard.subchoice.expertise.remaining': '{n} left to choose',
+    'wizard.subchoice.eldritchInvocation.legend': 'Eldritch Invocation',
+    'wizard.subchoice.eldritchInvocation.helper':
+      'Your bond with the patron takes shape. The three Pacts (Blade, Chain, Tome) unlock class-specific content.',
+    'wizard.subchoice.extraLanguages.legend': 'Extra languages',
+    'wizard.subchoice.extraLanguages.helper':
+      'Pick {count} extra language(s) — useful for diplomacy, reading old scrolls, or understanding a dragon.',
+    'wizard.subchoice.extraLanguages.remaining': '{n} left to choose',
+    'wizard.subchoice.extraLanguages.tierStandard': 'Standard',
+    'wizard.subchoice.extraLanguages.tierRare': 'Rare',
+    'wizard.subchoice.wizardSpellbook.inscribedLegend':
+      'Spellbook — inscribed spells',
+    'wizard.subchoice.wizardSpellbook.inscribedHelper':
+      'Your starting spellbook holds {count} level-1 spells. These are the spells you know — you will prepare a subset each morning.',
+    'wizard.subchoice.wizardSpellbook.preparedLegend':
+      'Spells prepared today',
+    'wizard.subchoice.wizardSpellbook.preparedHelper':
+      'Pick {count} spells from your spellbook — only prepared spells are castable today. The others stay inscribed but unusable until prepared.',
+    'wizard.subchoice.wizardSpellbook.preparedEmpty':
+      'Inscribe spells in your spellbook above first.',
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel

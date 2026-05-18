@@ -176,6 +176,24 @@ export type ItemCategory = z.infer<typeof itemCategorySchema>;
 const coinUnitSchema = z.enum(['cp', 'sp', 'ep', 'gp', 'pp']);
 export type CoinUnit = z.infer<typeof coinUnitSchema>;
 
+/**
+ * Propriétés Weapon Mastery SRD 5.2.1 (8 valeurs canoniques — cf.
+ * `docs/AUDIT-SRD-COMPLETUDE.md > C.1`). Énumération typée pour que tout
+ * lecteur (chooser de classe 13.9, render Combat, moteur de dés) reste
+ * cohérent et type-safe — pas de chaîne libre.
+ */
+export const weaponMasteryPropertySchema = z.enum([
+  'cleave',
+  'graze',
+  'nick',
+  'push',
+  'sap',
+  'slow',
+  'topple',
+  'vex',
+]);
+export type WeaponMasteryProperty = z.infer<typeof weaponMasteryPropertySchema>;
+
 export const ItemSchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -206,6 +224,13 @@ export const ItemSchema = z.object({
   acDexMax: z.number().int().nullable().optional(),
   strRequired: z.number().int().optional(),
   stealthDisadvantage: z.boolean().optional(),
+  /**
+   * Propriété Mastery de l'arme (SRD 5.2.1) — uniquement sur les armes
+   * éligibles (37 armes simples + martiales). Lu par le chooser
+   * `weapon-mastery-chooser` du wizard et par les badges Combat du sheet.
+   * `optional` parce que non-weapon items et armes hors-table SRD ne l'ont pas.
+   */
+  masteryProperty: weaponMasteryPropertySchema.optional(),
   source: sourceTag,
 });
 export type Item = z.infer<typeof ItemSchema>;
@@ -263,36 +288,86 @@ export const StartingEquipmentSchema = z.object({
 });
 export type StartingEquipment = z.infer<typeof StartingEquipmentSchema>;
 
-export const ClassSchema = z.object({
+/**
+ * Option Divine Order Clerc / Primal Order Druide (SRD 5.2.1) — même shape
+ * pour les deux, factorisé dans un schéma partagé pour stabilité.
+ */
+export const ClassOrderOptionSchema = z.object({
   id: slug,
   name: I18nSchema,
-  hitDie: z.enum(['d6', 'd8', 'd10', 'd12']),
-  primaryAbility: z.array(z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha'])),
-  saveProficiencies: z.array(z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha'])),
-  armorProficiencies: z.array(z.string()),
-  weaponProficiencies: z.array(z.string()),
-  toolProficiencies: z.array(z.string()),
-  skillChoices: z.object({
-    count: z.number().int().nonnegative(),
-    from: z.array(z.string()),
-  }),
-  spellcasting: z
-    .object({
-      ability: z.enum(['int', 'sag', 'cha']),
-      progression: z.enum(['full', 'half', 'third', 'pact']),
-    })
-    .nullable(),
-  startingEquipment: StartingEquipmentSchema,
-  description: I18nSchema,
-  features: z.array(
-    z.object({
-      level: z.number().int().min(1).max(20),
-      name: I18nSchema,
-      description: I18nSchema,
-    }),
-  ),
-  source: sourceTag,
+  summary: I18nSchema,
 });
+export type ClassOrderOption = z.infer<typeof ClassOrderOptionSchema>;
+
+export const ClassSchema = z
+  .object({
+    id: slug,
+    name: I18nSchema,
+    hitDie: z.enum(['d6', 'd8', 'd10', 'd12']),
+    primaryAbility: z.array(z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha'])),
+    saveProficiencies: z.array(z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha'])),
+    armorProficiencies: z.array(z.string()),
+    weaponProficiencies: z.array(z.string()),
+    toolProficiencies: z.array(z.string()),
+    skillChoices: z.object({
+      count: z.number().int().nonnegative(),
+      from: z.array(z.string()),
+    }),
+    spellcasting: z
+      .object({
+        ability: z.enum(['int', 'sag', 'cha']),
+        progression: z.enum(['full', 'half', 'third', 'pact']),
+      })
+      .nullable(),
+    startingEquipment: StartingEquipmentSchema,
+    description: I18nSchema,
+    features: z.array(
+      z.object({
+        level: z.number().int().min(1).max(20),
+        name: I18nSchema,
+        description: I18nSchema,
+      }),
+    ),
+    /**
+     * Sous-choix L1 portés par le bundle classe (plan 13.7 §0.3) — `optional`
+     * parce que la majorité des classes n'en n'expose qu'un seul. Le
+     * `superRefine` ci-dessous impose que cleric ait `divineOrders` non vide
+     * et druid ait `primalOrders` non vide (rejet d'un cache pré-13.7).
+     */
+    divineOrders: z.array(ClassOrderOptionSchema).optional(),
+    primalOrders: z.array(ClassOrderOptionSchema).optional(),
+    /**
+     * Nombre d'armes Weapon Mastery accessibles à L1 par cette classe (SRD
+     * 5.2.1 : 0 pour les non-martiales, 2 pour Barb/Pal/Rgr/Rog, 3 pour
+     * Fighter). Toujours présent dans le bundle — `int >= 0` borné côté
+     * superRefine. Le chooser 13.9 utilise cette valeur comme `count` exact.
+     */
+    weaponMasteryCount: z.number().int().min(0).max(6),
+    source: sourceTag,
+  })
+  .superRefine((cls, ctx) => {
+    // Validation cross-field SRD 5.2.1 : si cleric, divineOrders non vide ;
+    // si druid, primalOrders non vide. Une entrée bundle ou cache dégradée
+    // sans cette clé est REJETÉE (cf. plan 13.9 exigence héritée 13.8 #1).
+    if (cls.id === 'cleric') {
+      if (!Array.isArray(cls.divineOrders) || cls.divineOrders.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['divineOrders'],
+          message: 'Class "cleric" doit fournir divineOrders non vide (SRD 5.2.1 sub-choice L1).',
+        });
+      }
+    }
+    if (cls.id === 'druid') {
+      if (!Array.isArray(cls.primalOrders) || cls.primalOrders.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['primalOrders'],
+          message: 'Class "druid" doit fournir primalOrders non vide (SRD 5.2.1 sub-choice L1).',
+        });
+      }
+    }
+  });
 export type ClassEntity = z.infer<typeof ClassSchema>;
 
 export const SubclassSchema = z.object({
@@ -479,15 +554,44 @@ export type Background = z.infer<typeof BackgroundSchema>;
 // Feats / Conditions / Rules
 // ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Catégorie de feat SRD 5.2.1 — `fighting-style` est consommée par le chooser
+ * Fighter L1 du plan 13.9 (filtre les 4 styles SRD parmi les 17 feats).
+ * `optional` parce que les feats hors-catégorie pré-13.7 ne l'ont pas encore.
+ */
 export const FeatSchema = z.object({
   id: slug,
   name: I18nSchema,
   prerequisite: I18nSchema.nullable(),
   summary: I18nSchema.nullable(),
-  description: I18nSchema,
+  /**
+   * Texte long. Nullable/optional parce que `public/data/feats.json` (post-13.7)
+   * livre `description: null` pour la plupart des entrées — `description` viendra
+   * avec une passe d'extraction étendue. Le chooser 13.9 utilise `summary` qui
+   * est garanti.
+   */
+  description: I18nSchema.nullable().optional(),
+  category: z.string().optional(),
   source: sourceTag,
 });
 export type Feat = z.infer<typeof FeatSchema>;
+
+/**
+ * Eldritch Invocation SRD 5.2.1 (28 entrées — `prerequisiteWarlockLevel: null`
+ * pour les 5 éligibles L1 + Pact of the Blade/Chain/Tome). Consommé par
+ * `warlock-invocation-chooser` au plan 13.9.
+ */
+export const InvocationSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  summary: I18nSchema,
+  /** Niveau Warlock minimum requis — `null` = utilisable dès L1. */
+  prerequisiteWarlockLevel: z.number().int().min(1).max(20).nullable(),
+  /** Pré-requis non-niveau (ex. « Pact of the Blade »). `null` si aucun. */
+  prerequisiteOther: I18nSchema.nullable(),
+  source: sourceTag,
+});
+export type Invocation = z.infer<typeof InvocationSchema>;
 
 export const ConditionSchema = z.object({
   id: slug,
@@ -521,6 +625,7 @@ export const ContentTypeSchemas = {
   subancestries: SubancestrySchema,
   backgrounds: BackgroundSchema,
   feats: FeatSchema,
+  invocations: InvocationSchema,
   conditions: ConditionSchema,
   rules: RuleSchema,
 } as const;
@@ -538,6 +643,7 @@ export type ContentEntityByKey = {
   subancestries: Subancestry;
   backgrounds: Background;
   feats: Feat;
+  invocations: Invocation;
   conditions: Condition;
   rules: Rule;
 };

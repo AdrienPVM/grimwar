@@ -265,6 +265,7 @@ const WIZARD_CLASS: ClassEntity = {
   startingEquipment: { options: [{ items: [], coins: null }] },
   description: { fr: '.', en: '.' },
   features: [],
+  weaponMasteryCount: 0,
   source: 'srd-5.2.1',
 };
 
@@ -277,7 +278,19 @@ function draftReady(patch: Partial<WizardDraft> = {}): WizardDraft {
     name: 'Test',
     level: 1,
     alignment: 'NB',
-    classes: [{ classId: 'wizard', level: 1 }],
+    classes: [
+      {
+        classId: 'wizard',
+        level: 1,
+        clericDivineOrder: null,
+        druidPrimalOrder: null,
+        fighterFightingStyle: null,
+        weaponMasteries: [],
+        expertiseSkills: [],
+        eldritchInvocations: [],
+        wizardSpellbookL1: [],
+      },
+    ],
     primaryClassId: 'wizard',
     ancestryId: 'human',
     ancestrySubChoices: {

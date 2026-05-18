@@ -7,8 +7,9 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { DRAGON_ANCESTRY_HELP } from '../../help/dragon-ancestry-help';
 
+import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
+
 import { ChooserHelpPanel } from './chooser-help-panel';
-import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asDragonAncestry, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -35,7 +36,8 @@ export function DragonAncestryChooser(): JSX.Element {
     }));
   }, [ancestries.data]);
 
-  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="dragon-ancestry" />;
+  if (options.length === 0)
+    return <ChooserMissingDataBanner chooserKey="dragon-ancestry" contentType="ancestries" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';

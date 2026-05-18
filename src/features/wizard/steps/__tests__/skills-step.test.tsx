@@ -86,9 +86,19 @@ function seedDraft(setup: DraftSetup = {}): void {
     draft: {
       ...state.draft,
       primaryClassId: setup.primaryClassId ?? 'wizard',
-      classes: setup.primaryClassId
-        ? [{ classId: setup.primaryClassId, level: 1 }]
-        : [{ classId: 'wizard', level: 1 }],
+      classes: [
+        {
+          classId: setup.primaryClassId ?? 'wizard',
+          level: 1,
+          clericDivineOrder: null,
+          druidPrimalOrder: null,
+          fighterFightingStyle: null,
+          weaponMasteries: [],
+          expertiseSkills: [],
+          eldritchInvocations: [],
+          wizardSpellbookL1: [],
+        },
+      ],
       backgroundId: setup.backgroundId ?? null,
       ancestryId: 'human',
       ancestrySubChoices: {

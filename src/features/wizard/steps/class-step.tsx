@@ -14,6 +14,8 @@ import { CLASS_HELP } from '../help/class-help';
 import { HelpTriggerButton } from '../help/help-trigger-button';
 import { ListWithHelpPanel } from '../help/list-with-help-panel';
 
+import { ClassSubChoicesSection } from './class/class-sub-choices-section';
+
 /**
  * Étape 2 — Classe (+ multi-class conditionnel) (plan 05 §E.2).
  *
@@ -165,6 +167,8 @@ export function ClassStep(): JSX.Element {
           </div>
         ) : null}
       </DetailModal>
+
+      <ClassSubChoicesSection />
 
       {/* Multi-class — visible uniquement si level >= 2 et une classe choisie */}
       {draft.level >= 2 && draft.classes.length >= 1 ? (

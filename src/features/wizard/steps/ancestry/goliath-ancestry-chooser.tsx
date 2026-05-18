@@ -7,8 +7,9 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { GOLIATH_ANCESTRY_HELP } from '../../help/goliath-ancestry-help';
 
+import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
+
 import { ChooserHelpPanel } from './chooser-help-panel';
-import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asGoliathAncestry, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -34,7 +35,8 @@ export function GoliathAncestryChooser(): JSX.Element {
     }));
   }, [ancestries.data]);
 
-  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="goliath-ancestry" />;
+  if (options.length === 0)
+    return <ChooserMissingDataBanner chooserKey="goliath-ancestry" contentType="ancestries" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';

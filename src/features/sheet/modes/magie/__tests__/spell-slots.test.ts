@@ -37,6 +37,7 @@ const stubClass = (id: string, progression: 'full' | 'half' | 'third' | 'pact' |
   startingEquipment: { options: [{ items: [], coins: null }] },
   description: { fr: '', en: '' },
   features: [],
+  weaponMasteryCount: 0,
   source: 'srd-5.2.1',
 });
 

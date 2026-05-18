@@ -77,7 +77,15 @@ export function isSkillsValid({ draft, classes }: ValidationContext): boolean {
   if (!draft.primaryClassId) return false;
   const primary = classes.find((c) => c.id === draft.primaryClassId);
   if (!primary) return false;
-  return draft.pickedSkills.length === primary.skillChoices.count;
+  if (draft.pickedSkills.length !== primary.skillChoices.count) return false;
+  // Roublard : l'Expertise est rendue dans cette même étape (plan 13.9 UAT
+  // 2026-05-18, Option B). Pas valide tant que les 2 Expertise ne sont pas
+  // posées — sinon le bouton Suivant ne doit pas s'activer.
+  if (draft.primaryClassId === 'rogue') {
+    const rogueEntry = draft.classes.find((c) => c.classId === 'rogue');
+    if (!rogueEntry || rogueEntry.expertiseSkills.length !== 2) return false;
+  }
+  return true;
 }
 
 export function isEquipmentValid({ draft }: ValidationContext): boolean {

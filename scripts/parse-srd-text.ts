@@ -694,6 +694,11 @@ function buildClassEntity(section: ClassSection, en: Lines, fr: Lines, validItem
     startingEquipment,
     description: { fr: frDescription.slice(0, 4000), en: enDescription.slice(0, 4000) },
     features,
+    // weaponMasteryCount défaut 0 — les valeurs réelles (2 pour Barb/Pal/Rgr/Rog,
+    // 3 pour Fighter) sont injectées par `extract-srd-weapon-mastery.ts` qui
+    // enrichit le bundle à part. Le `superRefine` du schéma exige le champ
+    // mais accepte 0 comme valeur valide.
+    weaponMasteryCount: 0,
     source: SOURCE,
   };
 }

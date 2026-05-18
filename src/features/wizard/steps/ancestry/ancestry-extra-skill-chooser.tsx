@@ -8,8 +8,9 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { ANCESTRY_EXTRA_SKILL_HELP } from '../../help/ancestry-extra-skill-help';
 
+import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
+
 import { ChooserHelpPanel } from './chooser-help-panel';
-import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { patchAncestrySubChoice } from './chooser-utils';
 import { ELF_KEEN_SENSES_SKILLS } from './use-ancestry-sub-choices';
 
@@ -60,7 +61,12 @@ export function AncestryExtraSkillChooser({ ancestryId }: Props): JSX.Element {
   }, [admissibleValues]);
 
   if (options.length === 0) {
-    return <ChooserMissingDataBanner chooserKey={`ancestry-extra-skill-${ancestryId}`} />;
+    return (
+      <ChooserMissingDataBanner
+        chooserKey={`ancestry-extra-skill-${ancestryId}`}
+        contentType="ancestries"
+      />
+    );
   }
 
   // Le panneau d'aide décrit le TRAIT (Sens Aiguisés / Compétent) plutôt que

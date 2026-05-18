@@ -86,6 +86,7 @@ const EN_FRESH_CLASSES = [
     startingEquipment: { options: [{ items: [], coins: null }] },
     description: { fr: 'Magicien.', en: 'Wizard.' },
     features: [],
+    weaponMasteryCount: 0,
     source: 'srd-5.2.1',
   },
 ];
@@ -160,7 +161,19 @@ describe('SpellsStep — invalidation du cache public par contentHash', () => {
       ...state,
       draft: {
         ...state.draft,
-        classes: [{ classId: 'wizard', level: 1 }],
+        classes: [
+          {
+            classId: 'wizard',
+            level: 1,
+            clericDivineOrder: null,
+            druidPrimalOrder: null,
+            fighterFightingStyle: null,
+            weaponMasteries: [],
+            expertiseSkills: [],
+            eldritchInvocations: [],
+            wizardSpellbookL1: [],
+          },
+        ],
         primaryClassId: 'wizard',
       },
     }));

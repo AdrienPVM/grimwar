@@ -36,6 +36,17 @@ const SRD_CASTER_CLASSES = [
 ];
 
 function classFixture(id: string, name: { fr: string; en: string }): unknown {
+  // ClassSchema strict (plan 13.9) — cleric/druid exigent leur sous-choix
+  // SRD via `superRefine`. On injecte le minimum vivant pour passer la
+  // validation sans toucher au reste du test.
+  const divineOrders =
+    id === 'cleric'
+      ? [{ id: 'protector', name: { fr: 'Protecteur', en: 'Protector' }, summary: { fr: '.', en: '.' } }]
+      : undefined;
+  const primalOrders =
+    id === 'druid'
+      ? [{ id: 'magician', name: { fr: 'Magicien', en: 'Magician' }, summary: { fr: '.', en: '.' } }]
+      : undefined;
   return {
     id,
     name,
@@ -50,6 +61,9 @@ function classFixture(id: string, name: { fr: string; en: string }): unknown {
     startingEquipment: { options: [{ items: [], coins: null }] },
     description: { fr: '.', en: '.' },
     features: [],
+    weaponMasteryCount: 0,
+    ...(divineOrders ? { divineOrders } : {}),
+    ...(primalOrders ? { primalOrders } : {}),
     source: 'srd-5.2.1',
   };
 }
@@ -115,7 +129,19 @@ describe('SpellsStep — bannière vide visible pour les 8 classes lanceuses SRD
         ...state,
         draft: {
           ...state.draft,
-          classes: [{ classId: cls.id, level: 1 }],
+          classes: [
+            {
+              classId: cls.id,
+              level: 1,
+              clericDivineOrder: null,
+              druidPrimalOrder: null,
+              fighterFightingStyle: null,
+              weaponMasteries: [],
+              expertiseSkills: [],
+              eldritchInvocations: [],
+              wizardSpellbookL1: [],
+            },
+          ],
           primaryClassId: cls.id,
         },
       }));

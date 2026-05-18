@@ -7,8 +7,9 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { TIEFLING_LEGACY_HELP } from '../../help/tiefling-legacy-help';
 
+import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
+
 import { ChooserHelpPanel } from './chooser-help-panel';
-import { ChooserMissingDataBanner } from './chooser-missing-data-banner';
 import { asTieflingLegacy, patchAncestrySubChoice } from './chooser-utils';
 
 /**
@@ -41,7 +42,8 @@ export function TieflingLegacyChooser(): JSX.Element {
     });
   }, [ancestries.data, spells.data]);
 
-  if (options.length === 0) return <ChooserMissingDataBanner chooserKey="tiefling-legacy" />;
+  if (options.length === 0)
+    return <ChooserMissingDataBanner chooserKey="tiefling-legacy" contentType="ancestries" />;
 
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';
