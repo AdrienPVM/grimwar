@@ -25,6 +25,10 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: 'tests/e2e',
+  // Réchauffement Vite global (plan 13.9 fix point 2 UAT 2026-05-18) — évite
+  // le timeout `waitForAppReady` sur la 1ʳᵉ spec qui paie le cold-start Vite
+  // (compilation lazy chunks wizard sur Pixel 7 emu).
+  globalSetup: './tests/e2e/global-setup.ts',
   // Timeout global d'un test : 60s suffit largement pour les parcours wizard
   // (le plus long ~10s à la main) avec marge pour la boot Firestore.
   timeout: 60_000,
@@ -68,6 +72,16 @@ export default defineConfig({
     command: 'pnpm dev --port 5179 --strictPort',
     env: {
       VITE_USE_FIREBASE_EMULATOR: 'true',
+      // Override projectId pour l'e2e — l'émulateur tourne en
+      // `singleProjectMode: true` (cf. firebase.json) avec `--project
+      // demo-grimwar` (cf. package.json:test:e2e). Si le client utilise
+      // `dndjourney-2ee6f` (de .env.local) au lieu de demo-grimwar, les
+      // documents écrits par l'Admin SDK côté seed (project demo-grimwar)
+      // ne sont pas visibles depuis le client (project dndjourney-2ee6f).
+      // L'override aligne le client sur le project ID que l'Admin SDK et
+      // l'émulateur utilisent. Acté 2026-05-18 suite à UAT plan 13.9 — bug
+      // resté caché tant que les specs de seed étaient skippées sans Java.
+      VITE_FIREBASE_PROJECT_ID: 'demo-grimwar',
     },
     url: 'http://localhost:5179',
     reuseExistingServer: !process.env['CI'],

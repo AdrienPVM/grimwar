@@ -108,13 +108,19 @@ export async function expectBodyScrollRestored(page: Page): Promise<void> {
  * Si l'émulateur n'est pas joignable, l'auth anonyme échoue mais `setReady(true)`
  * est appelé immédiatement par `onAuthStateChanged(null)` → l'app boote en
  * empty state (user=null). Le splash disparaît dans les deux cas.
+ *
+ * Timeout 30s (plan 13.9 fix point 2 UAT 2026-05-18) : le cold-start Vite +
+ * compilation des lazy chunks wizard en émulation mobile Pixel 7 (CPU
+ * throttling) peut dépasser 10s à froid. La vraie correction est le warm-up
+ * `globalSetup` qui pré-compile les chunks ; ce timeout généreux n'est que le
+ * filet de sécurité — il ne masque PAS de lenteur métier (en cache chaud,
+ * <1s comme avant).
  */
 export async function waitForAppReady(page: Page): Promise<void> {
-  // Le splash disparaît dès que `auth.isReady === true`. En pratique <1s.
   await page.waitForFunction(
     () => !document.querySelector('[data-splash="true"]'),
     null,
-    { timeout: 10_000 },
+    { timeout: 30_000 },
   );
 }
 

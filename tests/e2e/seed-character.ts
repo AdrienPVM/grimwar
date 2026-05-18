@@ -28,7 +28,7 @@
  * faux-vert silencieux.
  */
 
-import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
+import { getApps, initializeApp, type App } from 'firebase-admin/app';
 import { getFirestore, FieldValue, type Firestore } from 'firebase-admin/firestore';
 import type { Page } from '@playwright/test';
 
@@ -52,9 +52,12 @@ const ADMIN_APP_NAME = 'e2e-seed-admin';
  * positionnés. On les force ici pour ne pas dépendre d'un setup d'env
  * Playwright (qui n'a pas accès à `.env.local`).
  *
- * Le `credential: cert({ projectId })` est requis par firebase-admin même
- * en mode émulateur (sinon il échoue à l'init faute de credentials). Le
- * `clientEmail` / `privateKey` sont dummy — jamais utilisés en émulateur.
+ * Pas de `credential` passé à `initializeApp` : avec
+ * `FIRESTORE_EMULATOR_HOST` posé, l'Admin SDK route en mode émulateur
+ * anonyme. Le SDK 12.7+ a durci la validation de `cert(…)` — passer une
+ * clé PEM dummy throw désormais (`Failed to parse private key: Too few
+ * bytes to read ASN.1 value`). Comme l'émulateur ignore la signature de
+ * toute façon, on retire le `cert(…)` au lieu d'inventer une clé valide.
  */
 function getAdmin(): { app: App; db: Firestore } {
   process.env.FIRESTORE_EMULATOR_HOST =
@@ -69,14 +72,6 @@ function getAdmin(): { app: App; db: Firestore } {
   const app = initializeApp(
     {
       projectId: PROJECT_ID,
-      credential: cert({
-        projectId: PROJECT_ID,
-        clientEmail: 'e2e@seed.local',
-        // Clé dummy PEM — jamais utilisée par l'émulateur, mais le format est
-        // validé par firebase-admin. Pas de risque, le projet est local.
-        privateKey:
-          '-----BEGIN PRIVATE KEY-----\nMIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEAv\n-----END PRIVATE KEY-----\n',
-      }),
     },
     ADMIN_APP_NAME,
   );
@@ -377,6 +372,10 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
     primaryClassId: preset.primaryClassId,
     ancestryId: preset.ancestryId,
     backgroundId: preset.backgroundId,
+    // `extraLanguages` ajouté en plan 13.9 (sous-choix Roublard 1 langue
+    // extra + dette de modèle). Tableau vide par défaut côté seed — les
+    // presets l1 actuels ne posent pas de langues supplémentaires.
+    extraLanguages: [],
     experience: 0,
     alignment: 'N',
     abilities: preset.abilities,
