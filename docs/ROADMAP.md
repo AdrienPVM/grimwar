@@ -19,7 +19,7 @@ Rythme **soirs/weekends (~10h/sem)** : doubler → ~10-12 mois. Rythme **full-ti
 
 Goal: Adrien charge l'app sur son téléphone à la prochaine session, ouvre la fiche d'un perso intégralement conforme au SRD 5.2.1 niveau 1, joue tap-to-roll (digital ou physique), fonctionne offline. **Politique de contenu lockée : bundle SRD-only** (voir `CLAUDE.md` decision log) ; le système d'import de contenu custom (plan 13.11) est livré comme mécanisme générique, vide de contenu.
 
-Ordre effectif S1 (swaps actés) : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → **12 (digital)** → **12.5 (physique)** → **13.6 (LibraryScreen + nav shell)** → **13.5 (Playwright smoke)** → **13.7 (SRD schema + scripts)** → **13.8 (sous-choix ascendance)** → **13.9 (sous-choix classe + Weapon Mastery)** → **13.10 (cleanup spells SRD)** → **13.11 (système d'import custom)** → **11 (radial FAB)** → 13.
+Ordre effectif S1 (swaps actés) : 01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → **12 (digital)** → **12.5 (physique)** → **13.6 (LibraryScreen + nav shell)** → **13.5 (Playwright smoke)** → **13.7 (SRD schema + scripts)** → **13.8 (sous-choix ascendance)** → **13.8b (sorts d'ascendance consultables)** → **13.9 (sous-choix classe + Weapon Mastery)** → **13.10 (cleanup spells SRD)** → **13.11 (système d'import custom)** → **11 (radial FAB)** → 13.
 
 End of S1: l'app est jouable solo à table, en digital ou en physique, avec un personnage **mécaniquement complet** selon le SRD 5.2.1 (souffle Drakéide jouable, Tieffelin avec ses sorts d'héritage, Clerc avec son Ordre divin, etc.). Adrien la déploie sur son téléphone. Le mode Âme manque encore (S2). Filet automatique e2e Playwright en place. Mécanisme d'import de contenu custom prêt, sans contenu bundlé au-delà du SRD.
 

@@ -318,6 +318,35 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - **L'UAT humain est l'EXCEPTION.** Tout ce qui est mécaniquement vérifiable doit l'être par un test automatique. La politique acte 2026-05-18 dans `CLAUDE.md`.
 - **Critère de fermeture** : tous remplis ; entrée mémorielle prête à basculer en `## Résolu` au prochain housekeeping.
 
+## D12 — Mécanique de lancement des sorts d'ascendance (slots / once-per-day / featureUsage L3+L5 Tieffelin)
+
+- **Owner** : plan dédié à créer post-13.11. Piste : `13.8c` (lot dédié court) ou intégration au plan futur « Long Rest + Daily Resources » qui matérialisera le compteur `featureUsage` (lecture/écriture par PJ + reset à la fin du long rest).
+- **Statut** : ouverte. Tracée 2026-05-19 à la livraison du plan 13.8b.
+- **Cause-racine** : le plan 13.8b a livré la **consultation** des sorts d'ascendance (cliquables, modale détail, présence dans la `SpellList` générale avec chip source distinct, sans classe lanceuse requise — cf. commits `d89086f` / `d4d0de8` / `38c5cae`). Il a explicitement laissé hors périmètre la **mécanique de cast** côté ascendance — d'où le bouton « Lancer » désactivé avec hint `t('sheet.magie.cantNotImplementedAncestry')` quand la classe-source résolue est `'ancestry'` (et seulement dans ce cas — un cantrip d'ascendance qui se trouve aussi côté classe lanceuse reste castable via la source classe, cf. cas collision couvert par `spell-list.test.tsx`).
+- **Conséquence** : l'utilisateur peut consulter ses sorts d'héritage / lignage sur la fiche, mais ne peut pas (encore) les lancer depuis l'app. Pour le moment l'utilisateur tire son dé et applique la résolution à la main — non-bloquant pour le jeu de table (la fiche documente le sort), mais incomplet vis-à-vis de la promesse « tap-to-roll ».
+- **Scope attendu de la résolution** :
+  1. **Consommation de slot pour les cantrips Tieffelin / Elfe / Gnome** : les cantrips d'ascendance ne consomment **pas** de slot (cantrip = at-will dans le SRD 5.2.1) — la mécanique ici est juste « lancer le dé d'attaque ou de save + appliquer dégâts/effet ». À câbler comme un cast normal mais sans déduction de slot.
+  2. **Compteur 1×/jour pour les sorts L3 + L5 Tieffelin** (`Fiendish Legacy` : `level3SpellId` + `level5SpellId`). Stockage : `character.featureUsage[<featureKey>]: { used: number, max: number, period: 'long-rest' }`. Reset à la fin du long rest. Surface UI : modale détail montre « 1/1 utilisation/jour », passe désactivé quand `used >= max`.
+  3. **Propagation des dégâts d'ascendance via le moteur de dés au MJ** pour application sur cible (chemin générique du dice mode — déjà en place côté classes lanceuses, à étendre à la source `'ancestry'`).
+  4. **Cas Elfe Haut-elfe « swap cantrip à chaque Long Rest »** : UI long rest qui propose de choisir un autre cantrip Wizard. À cadrer comme partie du même plan ou tenant séparé.
+- **Surface impactée (au moment du fix)** :
+  - `src/features/sheet/modes/magie/spell-detail-modal.tsx` — bouton « Lancer » réactivé pour `'ancestry'`, branchement sur le moteur de dés.
+  - `src/shared/lib/i18n.ts` — la clé `sheet.magie.cantNotImplementedAncestry` perd son utilité (tag pour suppression).
+  - `src/shared/types/character.ts` (ou équivalent) — extension `featureUsage` si pas encore canonique pour les sorts d'ascendance (déjà prévue pour `Goliath > Giant Ancestry`, cf. `docs/AUDIT-SRD-COMPLETUDE.md` ligne 56).
+  - `src/features/sheet/modes/magie/__tests__/spell-detail-modal-cast-ancestry.test.tsx` (nouveau) — cast cantrip d'ascendance + slot non consommé + roll publié.
+  - `src/features/sheet/modes/magie/__tests__/spell-detail-modal-cast-fiendish-l3.test.tsx` (nouveau) — cast L3 Tieffelin + featureUsage incrémenté + bouton désactivé après usage.
+- **Critère de complétion** :
+  1. Bouton « Lancer » actif sur les sorts d'ascendance (cantrips + L3/L5 Tieffelin).
+  2. Cantrips d'ascendance : cast publie un toast + entrée historique, n'écrit pas de slot.
+  3. L3/L5 Tieffelin : `featureUsage` incrémenté, désactivation après usage, reset au long rest.
+  4. Tests rouge-puis-vert pour chaque branche.
+  5. Long rest UI propose le swap cantrip Haut-elfe (ou plan séparé explicite).
+  6. Hint « Pas encore implémenté pour les sorts d'ascendance » retiré ; clé i18n associée supprimée.
+  7. Cette entrée bascule en `## Résolu` avec le hash du commit.
+- **Notes liées** :
+  - plan 13.8b > Goal — pointe ici.
+  - `docs/AUDIT-SRD-COMPLETUDE.md` — lignes Elf / Gnome / Tiefling annotées « rendu sheet OK (13.8b), cast → D12 ».
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
