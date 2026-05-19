@@ -168,12 +168,12 @@ describe('<AncestrySpellsCard>', () => {
   it("ne rend rien si knownSpells.ancestry est vide", () => {
     const character = tieflingChar();
     character.knownSpells = {};
-    const { container } = render(<AncestrySpellsCard character={character} />);
+    const { container } = render(<AncestrySpellsCard character={character} onSpellSelect={() => {}} />);
     expect(container.firstChild).toBeNull();
   });
 
   it('Tieffelin Infernal L1 → 3 sorts listés + 2 L3/L5 grisés', () => {
-    render(<AncestrySpellsCard character={tieflingChar(1)} />);
+    render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={() => {}} />);
     expect(screen.getByText('Trait de feu')).toBeInTheDocument();
     expect(screen.getByText('Châtiment infernal')).toBeInTheDocument();
     expect(screen.getByText('Ténèbres')).toBeInTheDocument();
@@ -182,29 +182,29 @@ describe('<AncestrySpellsCard>', () => {
   });
 
   it('Tieffelin Infernal L3 → seul Ténèbres (L5) reste grisé', () => {
-    render(<AncestrySpellsCard character={tieflingChar(3)} />);
+    render(<AncestrySpellsCard character={tieflingChar(3)} onSpellSelect={() => {}} />);
     expect(screen.getByText('Niv. 5')).toBeInTheDocument();
     expect(screen.queryByText('Niv. 3')).not.toBeInTheDocument();
   });
 
   it('Tieffelin Infernal L5 → aucun verrou', () => {
-    render(<AncestrySpellsCard character={tieflingChar(5)} />);
+    render(<AncestrySpellsCard character={tieflingChar(5)} onSpellSelect={() => {}} />);
     expect(screen.queryByText(/Niv\./)).not.toBeInTheDocument();
   });
 
   it("affiche la caractéristique d'incantation lue depuis spellcastingAbility.ancestry", () => {
-    render(<AncestrySpellsCard character={tieflingChar(1)} />);
+    render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={() => {}} />);
     expect(screen.getByText(/Caract\. d'incantation/)).toBeInTheDocument();
     expect(screen.getByText(/Charisme/)).toBeInTheDocument();
   });
 
   it('affiche le titre Tieffelin', () => {
-    render(<AncestrySpellsCard character={tieflingChar(1)} />);
+    render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={() => {}} />);
     expect(screen.getByText("Sorts d'héritage fiélon")).toBeInTheDocument();
   });
 
   it('affiche le label source par sort (« Héritage Infernal »)', () => {
-    render(<AncestrySpellsCard character={tieflingChar(3)} />);
+    render(<AncestrySpellsCard character={tieflingChar(3)} onSpellSelect={() => {}} />);
     // 3 entries → 3 occurrences du label source.
     expect(screen.getAllByText('Héritage Infernal').length).toBe(3);
   });

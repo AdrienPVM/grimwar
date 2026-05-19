@@ -18,6 +18,14 @@ interface SpellDetailModalProps {
   spell: Spell;
   /** Classe(s) lanceuse(s) du perso — utilisé pour déterminer l'ability du sort. */
   spellcastingClasses: readonly SpellcastingClassEntry[];
+  /**
+   * Source d'ascendance du sort (plan 13.8b). Si non-null, un chip distinct
+   * est affiché dans l'en-tête. Si `spellcastingClasses` est vide ET
+   * `ancestrySource` est posé, le bouton « Lancer » est désactivé avec un
+   * hint « pas encore implémenté » — la mécanique de slots / 1×/jour pour
+   * ces sorts viendra avec D12.
+   */
+  ancestrySource: { label: string } | null;
   readOnly: boolean;
   onClose: () => void;
 }
@@ -45,9 +53,16 @@ export function SpellDetailModal({
   character,
   spell,
   spellcastingClasses,
+  ancestrySource,
   readOnly,
   onClose,
 }: SpellDetailModalProps): JSX.Element {
+  // Sort d'ascendance pure (aucune classe lanceuse pour ce sort) → bouton
+  // « Lancer » désactivé avec hint, cf. plan 13.8b commit 1 + D12.
+  const ancestryOnly = spellcastingClasses.length === 0 && ancestrySource !== null;
+  const castDisabledHint = ancestryOnly
+    ? t('sheet.magie.cantNotImplementedAncestry')
+    : undefined;
   // Choix de la classe lanceuse (si multi-class) : on prend la première par
   // défaut, l'utilisateur peut basculer via un sélecteur si plusieurs.
   const [activeClassId, setActiveClassId] = useState<string>(
@@ -197,6 +212,23 @@ export function SpellDetailModal({
               {spell.concentration && ' · Concentration'}
               {spell.ritual && ' · Rituel'}
             </p>
+            {(spellcastingClasses.length > 0 || ancestrySource) && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {spellcastingClasses.map((c) => (
+                  <span
+                    key={`class-${c.classId}`}
+                    className="rounded-full border border-gold-dim/40 bg-gold/[0.08] px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-gold-bright"
+                  >
+                    {c.name}
+                  </span>
+                ))}
+                {ancestrySource ? (
+                  <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-amethyst">
+                    {ancestrySource.label}
+                  </span>
+                ) : null}
+              </div>
+            )}
           </div>
           <button
             type="button"
@@ -302,8 +334,14 @@ export function SpellDetailModal({
               variant="primary"
               size="sm"
               onClick={() => void handleCast()}
-              disabled={readOnly || busy || (!isCantrip && availableSlots.length === 0)}
+              disabled={
+                readOnly ||
+                busy ||
+                ancestryOnly ||
+                (!isCantrip && availableSlots.length === 0)
+              }
               className="flex-1"
+              title={castDisabledHint}
             >
               {busy ? '…' : 'Lancer'}
             </Button>

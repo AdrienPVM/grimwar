@@ -9,6 +9,8 @@ import type { Ancestry, Spell } from '@/shared/types/content';
 
 interface AncestrySpellsCardProps {
   character: Character;
+  /** Ouvre la modale détail (plan 13.8b — sort consultable d'un tap). */
+  onSpellSelect: (spell: Spell) => void;
 }
 
 interface AncestrySpellEntry {
@@ -24,15 +26,17 @@ interface AncestrySpellEntry {
  *
  * Affiche les sorts inscrits dans `knownSpells.ancestry` (cantrip L1 +
  * sorts L3/L5 pour Tieffelin/Elfe — uniquement cantrips pour Gnome). Les
- * sorts dont le niveau d'unlock dépasse le `totalLevel` du perso sont
- * grisés avec un badge « Débloqué à L3 » / « L5 », pas de cast — c'est
- * documentaire à L1.
+ * sorts dont le niveau d'unlock dépasse le `totalLevel` du perso restent
+ * cliquables (consultables) mais sont visuellement grisés avec un badge
+ * « Niv. N » — décision Adrien 13.8b : consultable même quand pas encore
+ * lançable.
  *
  * La caractéristique d'incantation utilisée est lue dans
  * `spellcastingAbility.ancestry` posée au submit (sous-choix wizard).
  */
 export function AncestrySpellsCard({
   character,
+  onSpellSelect,
 }: AncestrySpellsCardProps): JSX.Element | null {
   const { data: spells } = useContent('spells');
   const { data: ancestries } = useContent('ancestries');
@@ -64,39 +68,46 @@ export function AncestrySpellsCard({
       <ul className="flex flex-col gap-2">
         {entries.map((entry) => {
           const locked = character.totalLevel < entry.unlockedAt;
+          const spellName = localize(entry.spell.name);
           return (
-            <li
-              key={entry.spell.id}
-              className={cn(
-                'flex items-center gap-3 rounded-card-sm border px-3 py-2',
-                locked
-                  ? 'border-white-8 bg-white/[0.02] opacity-60'
-                  : 'border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.08] to-gold/[0.02]',
-              )}
-            >
-              <span
-                aria-hidden="true"
+            <li key={entry.spell.id}>
+              <button
+                type="button"
+                aria-label={spellName}
+                onClick={() => onSpellSelect(entry.spell)}
                 className={cn(
-                  'flex h-8 w-8 flex-shrink-0 items-center justify-center font-display text-[13px]',
-                  locked ? 'text-text-tertiary' : 'text-gold-bright',
+                  'flex w-full items-center gap-3 rounded-card-sm border px-3 py-2 text-left',
+                  'transition-all duration-150 ease-base',
+                  'hover:-translate-y-px hover:border-soft active:scale-[0.99]',
+                  locked
+                    ? 'border-white-8 bg-white/[0.02] opacity-60'
+                    : 'border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.08] to-gold/[0.02]',
                 )}
-                style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}
               >
-                {entry.spell.level === 0 ? '·' : entry.spell.level}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="truncate font-serif text-body text-text">
-                  {localize(entry.spell.name)}
-                </div>
-                <div className="font-ui text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                  {entry.sourceLabel}
-                </div>
-              </div>
-              {locked ? (
-                <span className="rounded-full border border-soft px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                  Niv. {entry.unlockedAt}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'flex h-8 w-8 flex-shrink-0 items-center justify-center font-display text-[13px]',
+                    locked ? 'text-text-tertiary' : 'text-gold-bright',
+                  )}
+                  style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}
+                >
+                  {entry.spell.level === 0 ? '·' : entry.spell.level}
                 </span>
-              ) : null}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-serif text-body text-text">
+                    {spellName}
+                  </div>
+                  <div className="font-ui text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+                    {entry.sourceLabel}
+                  </div>
+                </div>
+                {locked ? (
+                  <span className="rounded-full border border-soft px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+                    Niv. {entry.unlockedAt}
+                  </span>
+                ) : null}
+              </button>
             </li>
           );
         })}

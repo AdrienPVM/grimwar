@@ -269,11 +269,12 @@ export type StringKey =
   | 'sheet.mode.avoir'
   | 'sheet.mode.ame'
   | 'sheet.placeholder.todo'
-  // Sorts d'ascendance — plan 13.8
+  // Sorts d'ascendance — plan 13.8 / 13.8b
   | 'sheet.magie.ancestry.tieflingTitle'
   | 'sheet.magie.ancestry.elfTitle'
   | 'sheet.magie.ancestry.gnomeTitle'
   | 'sheet.magie.ancestry.genericTitle'
+  | 'sheet.magie.cantNotImplementedAncestry'
   // Nav shell (header sticky persistant — plan 13.6)
   | 'nav.aria'
   | 'nav.brand.aria'
@@ -621,6 +622,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.elfTitle': 'Sorts de lignage elfique',
     'sheet.magie.ancestry.gnomeTitle': 'Sorts de lignage gnome',
     'sheet.magie.ancestry.genericTitle': "Sorts d'ascendance",
+    'sheet.magie.cantNotImplementedAncestry':
+      "Lancement des sorts d'ascendance pas encore implémenté.",
     // Nav shell
     'nav.aria': 'Navigation principale',
     'nav.brand.aria': "Retour à l'accueil",
@@ -948,6 +951,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.elfTitle': 'Elven lineage spells',
     'sheet.magie.ancestry.gnomeTitle': 'Gnomish lineage spells',
     'sheet.magie.ancestry.genericTitle': 'Ancestry spells',
+    'sheet.magie.cantNotImplementedAncestry':
+      'Casting ancestry spells is not yet implemented.',
     'nav.aria': 'Main navigation',
     'nav.brand.aria': 'Back to home',
     'nav.back': 'Back',

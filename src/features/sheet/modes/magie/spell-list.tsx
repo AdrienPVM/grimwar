@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
 import { Icon } from '@/shared/components/icon';
+import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
@@ -13,10 +14,28 @@ interface SpellListProps {
   spells: readonly Spell[];
   /** IDs des classes lanceuses du perso, utilisé pour résoudre "préparé". */
   spellcasterClassIds: readonly string[];
+  /**
+   * Label de la source d'ascendance pré-calculé par le parent
+   * (`computeAncestrySourceLabel`). `null` si le perso n'a pas de sorts
+   * d'ascendance ou si l'ascendance n'a aucun chooser de sorts.
+   */
+  ancestrySourceLabel: string | null;
   onSpellSelect: (spell: Spell) => void;
 }
 
 type FilterKey = 'all' | 'prep' | 'cantrip' | 'ritual';
+
+/**
+ * Source du sort dans la liste générale. Un sort peut cumuler des classes
+ * lanceuses ET l'ascendance — la collision rend UNE seule entrée avec les
+ * deux sources (plan 13.8b commit 1).
+ */
+interface SpellSource {
+  /** Noms localisés des classes lanceuses qui connaissent le sort. */
+  classNames: string[];
+  /** `true` si le sort vient aussi de `knownSpells.ancestry`. */
+  fromAncestry: boolean;
+}
 
 /**
  * Liste des sorts connus du personnage groupée par niveau. Recherche, filtres,
@@ -27,33 +46,76 @@ type FilterKey = 'all' | 'prep' | 'cantrip' | 'ritual';
  * mais tout dans known ; les préparateurs ont l'inverse). Un sort est visuel-
  * lement "préparé" si présent dans `preparedSpells` OU si c'est un cantrip
  * (les cantrips sont toujours actifs une fois connus).
+ *
+ * Plan 13.8b — étendu à `knownSpells.ancestry`. Sources visibles via des
+ * chips distincts (ascendance améthyste vs classe doré). Collision : une
+ * entrée unique avec les deux chips.
  */
 export function SpellList({
   character,
   spells,
   spellcasterClassIds,
+  ancestrySourceLabel,
   onSpellSelect,
 }: SpellListProps): JSX.Element {
+  const { data: classCatalog } = useContent('classes');
   const [query, setQuery] = useState<string>('');
   const [filter, setFilter] = useState<FilterKey>('all');
 
-  const { knownSet, preparedSet } = useMemo(() => {
+  const classNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of classCatalog) map.set(c.id, localize(c.name));
+    return map;
+  }, [classCatalog]);
+
+  const { knownSet, preparedSet, sourceMap } = useMemo(() => {
     const known = new Set<string>();
     const prepared = new Set<string>();
+    const sources = new Map<string, SpellSource>();
+
+    function ensure(spellId: string): SpellSource {
+      let src = sources.get(spellId);
+      if (!src) {
+        src = { classNames: [], fromAncestry: false };
+        sources.set(spellId, src);
+      }
+      return src;
+    }
+
     for (const classId of spellcasterClassIds) {
-      for (const id of character.knownSpells[classId] ?? []) known.add(id);
+      const className = classNameById.get(classId) ?? classId;
+      for (const id of character.knownSpells[classId] ?? []) {
+        known.add(id);
+        const src = ensure(id);
+        if (!src.classNames.includes(className)) src.classNames.push(className);
+      }
       for (const id of character.preparedSpells[classId] ?? []) {
         known.add(id);
         prepared.add(id);
+        const src = ensure(id);
+        if (!src.classNames.includes(className)) src.classNames.push(className);
       }
     }
-    return { knownSet: known, preparedSet: prepared };
-  }, [character.knownSpells, character.preparedSpells, spellcasterClassIds]);
+
+    for (const id of character.knownSpells.ancestry ?? []) {
+      known.add(id);
+      ensure(id).fromAncestry = true;
+    }
+
+    return { knownSet: known, preparedSet: prepared, sourceMap: sources };
+  }, [
+    character.knownSpells,
+    character.preparedSpells,
+    spellcasterClassIds,
+    classNameById,
+  ]);
 
   const knownSpells = useMemo(
     () => spells.filter((s) => knownSet.has(s.id)),
     [spells, knownSet],
   );
+
+  const hasClassCaster = spellcasterClassIds.length > 0;
 
   const counts = useMemo(() => {
     let prepCount = 0;
@@ -102,9 +164,11 @@ export function SpellList({
         <Chip active={filter === 'all'} onToggle={() => setFilter('all')}>
           Tous · {counts.all}
         </Chip>
-        <Chip active={filter === 'prep'} onToggle={() => setFilter('prep')}>
-          Préparés · {counts.prep}
-        </Chip>
+        {hasClassCaster && (
+          <Chip active={filter === 'prep'} onToggle={() => setFilter('prep')}>
+            Préparés · {counts.prep}
+          </Chip>
+        )}
         <Chip active={filter === 'cantrip'} onToggle={() => setFilter('cantrip')}>
           Tours · {counts.cantrip}
         </Chip>
@@ -120,15 +184,26 @@ export function SpellList({
               {level === 0 ? 'Sorts mineurs' : `Niveau ${level}`}
             </h4>
             <ul className="flex flex-col gap-2">
-              {items.map((spell) => (
-                <li key={spell.id}>
-                  <SpellRow
-                    spell={spell}
-                    prepared={preparedSet.has(spell.id) || spell.level === 0}
-                    onClick={() => onSpellSelect(spell)}
-                  />
-                </li>
-              ))}
+              {items.map((spell) => {
+                const src = sourceMap.get(spell.id) ?? { classNames: [], fromAncestry: false };
+                // « Visuel préparé » réservé aux sources de classe (cantrip
+                // d'ascendance seul → variante améthyste plus sobre, pas le
+                // doré des sorts préparés).
+                const preparedVisual =
+                  preparedSet.has(spell.id) ||
+                  (spell.level === 0 && src.classNames.length > 0);
+                return (
+                  <li key={spell.id}>
+                    <SpellRow
+                      spell={spell}
+                      prepared={preparedVisual}
+                      sourceClassNames={src.classNames}
+                      ancestrySourceLabel={src.fromAncestry ? ancestrySourceLabel : null}
+                      onClick={() => onSpellSelect(spell)}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           </section>
         ))}
@@ -145,10 +220,20 @@ export function SpellList({
 interface SpellRowProps {
   spell: Spell;
   prepared: boolean;
+  /** Classes lanceuses qui connaissent ce sort (chip doré). */
+  sourceClassNames: readonly string[];
+  /** Label ascendance — `null` si le sort ne vient pas de `knownSpells.ancestry`. */
+  ancestrySourceLabel: string | null;
   onClick: () => void;
 }
 
-function SpellRow({ spell, prepared, onClick }: SpellRowProps): JSX.Element {
+function SpellRow({
+  spell,
+  prepared,
+  sourceClassNames,
+  ancestrySourceLabel,
+  onClick,
+}: SpellRowProps): JSX.Element {
   const schoolLabel = t(`school.${spell.school}`);
   return (
     <button
@@ -189,6 +274,19 @@ function SpellRow({ spell, prepared, onClick }: SpellRowProps): JSX.Element {
               Rituel
             </span>
           )}
+          {sourceClassNames.map((name) => (
+            <span
+              key={`class-${name}`}
+              className="rounded-full border border-gold-dim/40 bg-gold/[0.08] px-1.5 py-0.5 text-[8px] text-gold-bright"
+            >
+              {name}
+            </span>
+          ))}
+          {ancestrySourceLabel ? (
+            <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-1.5 py-0.5 text-[8px] text-amethyst">
+              {ancestrySourceLabel}
+            </span>
+          ) : null}
         </div>
       </div>
     </button>
@@ -219,3 +317,4 @@ function groupByLevel(spells: readonly Spell[]): Array<[number, Spell[]]> {
   }
   return Array.from(map.entries()).sort((a, b) => a[0] - b[0]);
 }
+
