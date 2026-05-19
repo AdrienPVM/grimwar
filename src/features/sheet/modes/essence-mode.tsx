@@ -1,8 +1,10 @@
 import type { Character } from '@/shared/types/character';
 
 import { isSheetReadOnly } from './combat/hp-combat';
+import { DivineOrderCard } from './essence/divine-order-card';
 import { EssenceHeader } from './essence/essence-header';
 import { Hexagram } from './essence/hexagram';
+import { PrimalOrderCard } from './essence/primal-order-card';
 import { SavesRow } from './essence/saves-row';
 import { SkillsList } from './essence/skills-list';
 
@@ -31,6 +33,8 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
       <EssenceHeader character={character} readOnly={readOnly} />
       <Hexagram character={character} readOnly={readOnly} />
       <SavesRow character={character} readOnly={readOnly} />
+      <DivineOrderCard character={character} />
+      <PrimalOrderCard character={character} />
       <SkillsList character={character} readOnly={readOnly} />
     </section>
   );

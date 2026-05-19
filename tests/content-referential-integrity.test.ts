@@ -178,3 +178,74 @@ describe('Intégrité du pool de compétences par classe (Bug 2 UAT 2026-05-18)'
     ).toEqual([]);
   });
 });
+
+/**
+ * Cat. 1 — Cohérence référentielle étendue (politique « Vérité du contenu »
+ * 2026-05-19, cf. CLAUDE.md > Required at every commit > Vérité du contenu).
+ *
+ * Les enums TypeScript des sous-choix de classe (`clericDivineOrder`,
+ * `druidPrimalOrder`) doivent EXACTEMENT correspondre aux `id` du bundle SRD
+ * `classes.json`. Si on rename un slug côté bundle sans rebrancher l'enum
+ * (ou vice-versa), le wizard pose un slug que la fiche ne saura pas résoudre.
+ *
+ * Liste figée : les 2 Cleric divine orders (`protector`, `thaumaturge`) + les
+ * 2 Druid primal orders (`magician`, `warden`). Plan 13.9 a livré ces choosers
+ * — le plan 13.9 commit 4b ajoute les cartes Sheet correspondantes.
+ */
+describe('Intégrité référentielle — sous-choix de classe enum ↔ bundle (plan 13.9 commit 4b)', () => {
+  interface Order {
+    id: string;
+    name: { fr: string; en?: string };
+    summary: { fr: string; en?: string };
+  }
+  interface ClassWithOrders {
+    id: string;
+    divineOrders?: Order[];
+    primalOrders?: Order[];
+  }
+
+  const CLERIC_DIVINE_ORDER_ENUM = ['protector', 'thaumaturge'] as const;
+  const DRUID_PRIMAL_ORDER_ENUM = ['magician', 'warden'] as const;
+
+  it('les 2 Cleric divine orders enum résolvent dans classes.json[cleric].divineOrders', async () => {
+    const classes = await loadJson<ClassWithOrders[]>('public/data/classes.json');
+    const cleric = classes.find((c) => c.id === 'cleric');
+    expect(cleric, 'classe cleric absente du bundle').toBeDefined();
+    const ids = new Set((cleric?.divineOrders ?? []).map((o) => o.id));
+    const unresolved = CLERIC_DIVINE_ORDER_ENUM.filter((slug) => !ids.has(slug));
+    expect(
+      unresolved,
+      `enum divineOrder slugs non résolus dans classes.json : ${unresolved.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('les 2 Druid primal orders enum résolvent dans classes.json[druid].primalOrders', async () => {
+    const classes = await loadJson<ClassWithOrders[]>('public/data/classes.json');
+    const druid = classes.find((c) => c.id === 'druid');
+    expect(druid, 'classe druid absente du bundle').toBeDefined();
+    const ids = new Set((druid?.primalOrders ?? []).map((o) => o.id));
+    const unresolved = DRUID_PRIMAL_ORDER_ENUM.filter((slug) => !ids.has(slug));
+    expect(
+      unresolved,
+      `enum primalOrder slugs non résolus dans classes.json : ${unresolved.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('aucun divine/primal order orphelin dans le bundle (entrée sans pendant enum)', async () => {
+    const classes = await loadJson<ClassWithOrders[]>('public/data/classes.json');
+    const cleric = classes.find((c) => c.id === 'cleric');
+    const druid = classes.find((c) => c.id === 'druid');
+    const divineEnumSet = new Set<string>(CLERIC_DIVINE_ORDER_ENUM);
+    const primalEnumSet = new Set<string>(DRUID_PRIMAL_ORDER_ENUM);
+
+    const divineOrphans = (cleric?.divineOrders ?? [])
+      .map((o) => o.id)
+      .filter((id) => !divineEnumSet.has(id));
+    const primalOrphans = (druid?.primalOrders ?? [])
+      .map((o) => o.id)
+      .filter((id) => !primalEnumSet.has(id));
+
+    expect(divineOrphans, `divine orders bundle sans pendant enum : ${divineOrphans.join(', ')}`).toEqual([]);
+    expect(primalOrphans, `primal orders bundle sans pendant enum : ${primalOrphans.join(', ')}`).toEqual([]);
+  });
+});
