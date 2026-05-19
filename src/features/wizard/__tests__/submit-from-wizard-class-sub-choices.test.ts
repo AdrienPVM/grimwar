@@ -332,3 +332,63 @@ describe('buildCharacterFromWizard — propagation draft → character.classes[i
     expect(character.classes[0]?.clericDivineOrder).toBe('protector');
   });
 });
+
+describe('buildCharacterFromWizard — knownSpells.wizard reflète le grimoire inscrit', () => {
+  /**
+   * Bug audité plan 13.9 commit 4 prep (2026-05-19) :
+   *   `submit-from-wizard.ts:274` mettait `knownSpells.wizard =
+   *   [...cantrips, ...picks.level1]` (= cantrips + 4 préparés). Les 2 sorts
+   *   inscrits-non-préparés du grimoire étaient absents de `knownSpells`
+   *   ET de `preparedSpells` → invisibles dans le SpellList côté Sheet, qui
+   *   filtre sur `knownSet = knownSpells[classId] ∪ preparedSpells[classId]`.
+   *
+   * Conséquence directe pour commit 4b : la section « Grimoire » prévue
+   * (sorts inscrits mais non préparés) n'avait rien à afficher car les 2
+   * sorts orphelins n'arrivaient pas en Firestore.
+   *
+   * Fix : pour le Magicien, unionner `knownSpells.wizard` avec
+   * `classes[i].wizardSpellbookL1` (les 6 inscrits). `preparedSpells.wizard`
+   * reste les 4 préparés.
+   */
+  it('Magicien L1 : knownSpells.wizard contient les 6 inscrits + les cantrips, preparedSpells les 4 préparés', async () => {
+    const cantrips = ['light', 'mage-hand'];
+    const inscribed = [
+      'burning-hands',
+      'mage-armor',
+      'magic-missile',
+      'shield',
+      'sleep',
+      'detect-magic',
+    ];
+    const prepared = ['shield', 'sleep', 'magic-missile', 'detect-magic'];
+
+    const character = await buildCharacterFromWizard(
+      buildArgs(
+        draftFor(
+          'wizard',
+          { wizardSpellbookL1: inscribed },
+          {
+            pickedSkills: ['arcana', 'history'],
+            spellsByClass: [{ classId: 'wizard', cantrips, level1: prepared }],
+          },
+        ),
+      ),
+    );
+
+    expect(character.knownSpells.wizard).toBeDefined();
+    expect(character.preparedSpells.wizard).toBeDefined();
+
+    // Les 4 préparés sont dans preparedSpells (jouables aujourd'hui).
+    expect(character.preparedSpells.wizard).toEqual(prepared);
+
+    // knownSpells.wizard doit contenir les cantrips + les 6 inscrits — pas
+    // seulement les 4 préparés. Les 2 sorts inscrits-non-préparés
+    // (`burning-hands`, `mage-armor`) DOIVENT être présents.
+    const known = new Set(character.knownSpells.wizard);
+    for (const c of cantrips) expect(known.has(c)).toBe(true);
+    for (const i of inscribed) expect(known.has(i)).toBe(true);
+    // Les 2 orphelins explicitement présents.
+    expect(known.has('burning-hands')).toBe(true);
+    expect(known.has('mage-armor')).toBe(true);
+  });
+});

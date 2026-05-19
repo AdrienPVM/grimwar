@@ -262,6 +262,14 @@ export async function buildCharacterFromWizard(
   }
 
   // Sorts par classe lanceuse (multi-class : on key par classId).
+  //
+  // Cas Magicien (SRD 2024) : `wizardSpellbookL1` est le grimoire inscrit
+  // (6 sorts à L1), `picks.level1` les 4 préparés (sous-ensemble du grimoire).
+  // `knownSpells.wizard` doit refléter le grimoire complet — sinon les sorts
+  // inscrits-non-préparés disparaissent du SpellList côté Sheet
+  // (filtré par `knownSet = knownSpells[classId] ∪ preparedSpells[classId]`).
+  // Pour les autres lanceurs (Clerc, Druide, Occultiste...), `knownSpells`
+  // reste l'union cantrips + niveau 1.
   const knownSpells: Character['knownSpells'] = {};
   const preparedSpells: Character['preparedSpells'] = {};
   const spellcastingAbility: Character['spellcastingAbility'] = {};
@@ -271,7 +279,12 @@ export async function buildCharacterFromWizard(
     spellcastingAbility[cls.id] = cls.spellcasting.ability;
     const picks = draft.spellsByClass.find((s) => s.classId === cls.id);
     if (picks) {
-      const allKnown = [...picks.cantrips, ...picks.level1];
+      const isWizard = cls.id === 'wizard';
+      const inscribed = isWizard ? c.wizardSpellbookL1 ?? [] : [];
+      // Union sans doublons : cantrips + (grimoire complet OU 4 préparés).
+      const allKnown = Array.from(
+        new Set([...picks.cantrips, ...(isWizard ? inscribed : picks.level1)]),
+      );
       if (allKnown.length > 0) knownSpells[cls.id] = allKnown;
       if (picks.level1.length > 0) preparedSpells[cls.id] = picks.level1;
     }
