@@ -275,6 +275,9 @@ export type StringKey =
   | 'sheet.magie.ancestry.gnomeTitle'
   | 'sheet.magie.ancestry.genericTitle'
   | 'sheet.magie.cantNotImplementedAncestry'
+  // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
+  | 'sheet.combat.attacks.masteryBadgePrefix'
+  | 'sheet.combat.attacks.masteryBadgeAria'
   // Nav shell (header sticky persistant — plan 13.6)
   | 'nav.aria'
   | 'nav.brand.aria'
@@ -624,6 +627,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.genericTitle': "Sorts d'ascendance",
     'sheet.magie.cantNotImplementedAncestry':
       "Lancement des sorts d'ascendance pas encore implémenté.",
+    // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
+    'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
+    'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
     // Nav shell
     'nav.aria': 'Navigation principale',
     'nav.brand.aria': "Retour à l'accueil",
@@ -953,6 +959,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.genericTitle': 'Ancestry spells',
     'sheet.magie.cantNotImplementedAncestry':
       'Casting ancestry spells is not yet implemented.',
+    'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
+    'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',
     'nav.brand.aria': 'Back to home',
     'nav.back': 'Back',

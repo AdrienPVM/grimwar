@@ -11,7 +11,7 @@ import { useContent } from '@/shared/hooks/use-content';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
 import type { Advantage } from '@/shared/lib/dice/types';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
 import { getKnownWeaponMasteries } from '@/shared/lib/rules/weapon-mastery';
@@ -260,7 +260,7 @@ function AttackRow({
         <button
           type="button"
           onClick={onOpenMastery}
-          aria-label={`Voir la mastery de ${name}`}
+          aria-label={t('sheet.combat.attacks.masteryBadgeAria').replace('{weapon}', name)}
           className={cn(
             // Sibling du bouton-attack : positionné en bas-gauche de la
             // carte, sur la ligne « Distance · Xd6 + … » via marge négative.
@@ -273,7 +273,7 @@ function AttackRow({
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40',
           )}
         >
-          <span aria-hidden="true">Mastery</span>
+          <span aria-hidden="true">{t('sheet.combat.attacks.masteryBadgePrefix')}</span>
           <span aria-hidden="true">·</span>
           <span>{masteryLabel}</span>
         </button>

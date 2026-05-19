@@ -12,7 +12,7 @@ import { fighterL1MasteryDefense, seedCharacter } from './seed-character';
  *    choix `fighterFightingStyle` est posé, avec le nom FR du feat
  *    correspondant (lecture `feats.json`).
  *  - Chaque arme équipée dont l'`itemId` est dans `classes[i].weaponMasteries`
- *    expose un badge `Mastery · <label FR>` cliquable qui ouvre une modale de
+ *    expose un badge `Maîtrise · <label FR>` cliquable qui ouvre une modale de
  *    détail avec le nom de l'arme substitué dans l'exemple pédagogique.
  *
  * Le test mobile est volontairement strict : si le badge n'est plus tappable
@@ -61,15 +61,17 @@ test.describe('Class Fighter — render Combat (style + mastery badges)', () => 
     ).toBeVisible();
 
     // ── Mastery badges sur les 3 armes équipées ────────────────────────
-    // Aria-label canonique = "Voir la mastery de <name>" (cf. attacks-list).
+    // Aria-label canonique FR = "Voir la maîtrise de <name>" (cf. attacks-list +
+    // clé i18n `sheet.combat.attacks.masteryBadgeAria`). Hotfix UAT 2026-05-19 :
+    // ne JAMAIS écrire "mastery" en EN dans une chaîne user-visible côté FR.
     const longswordBadge = panel.getByRole('button', {
-      name: "Voir la mastery de Épée longue",
+      name: 'Voir la maîtrise de Épée longue',
     });
     const greatswordBadge = panel.getByRole('button', {
-      name: 'Voir la mastery de Épée à deux mains',
+      name: 'Voir la maîtrise de Épée à deux mains',
     });
     const battleaxeBadge = panel.getByRole('button', {
-      name: 'Voir la mastery de Hache d’armes',
+      name: 'Voir la maîtrise de Hache d’armes',
     });
     await expect(longswordBadge).toBeVisible();
     await expect(greatswordBadge).toBeVisible();

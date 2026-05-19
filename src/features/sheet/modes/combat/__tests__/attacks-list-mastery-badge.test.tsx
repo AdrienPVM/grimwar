@@ -8,6 +8,7 @@ import { WEAPON_MASTERY_HELP, applyWeaponName } from '@/features/wizard/help/wea
 import { AttacksList } from '../attacks-list';
 
 import itemsBundle from '../../../../../../public/data/items.json';
+import { findForbiddenEnglish } from '../../../../../../tests/helpers/i18n-guard';
 
 /**
  * Plan 13.9 commit 4a — badge Weapon Mastery sur les armes équipées dont
@@ -162,16 +163,24 @@ describe('<AttacksList> — badge Weapon Mastery', () => {
     property: w.masteryProperty,
     label: WEAPON_MASTERY_HELP[w.masteryProperty].label,
   })))(
-    'arme=$name équipée + dans weaponMasteries → badge "Mastery · $label" visible',
+    'arme=$name équipée + dans weaponMasteries → badge "Maîtrise · $label" visible et entièrement en FR',
     ({ id, name, label }) => {
       const character = buildFighterWith([id], [id]);
       render(<AttacksList character={character} readOnly={false} />);
       const badge = screen.getByRole('button', {
-        name: `Voir la mastery de ${name}`,
+        name: `Voir la maîtrise de ${name}`,
       });
       expect(badge).toBeInTheDocument();
       // Le label FR visible dans le bouton — invariant chooser/help/sheet.
-      expect(badge.textContent ?? '').toContain(label);
+      const text = badge.textContent ?? '';
+      expect(text).toContain(label);
+      // Préfixe FR explicite — pas de chaîne EN résiduelle (bug UAT 2026-05-19).
+      expect(text).toContain('Maîtrise');
+      // Garde-fou réutilisable : aucun mot EN interdit dans le badge.
+      expect(
+        findForbiddenEnglish(text),
+        `Mots EN interdits dans le badge "${name}" : "${text}"`,
+      ).toEqual([]);
     },
   );
 
@@ -185,7 +194,7 @@ describe('<AttacksList> — badge Weapon Mastery', () => {
       const character = buildFighterWith([id], []);
       render(<AttacksList character={character} readOnly={false} />);
       expect(
-        screen.queryByRole('button', { name: `Voir la mastery de ${name}` }),
+        screen.queryByRole('button', { name: `Voir la maîtrise de ${name}` }),
       ).toBeNull();
     },
   );
@@ -203,7 +212,7 @@ describe('<AttacksList> — badge Weapon Mastery', () => {
       // La ligne d'attaque n'est pas rendue → ni le badge ni le row.
       expect(screen.queryByText(name)).toBeNull();
       expect(
-        screen.queryByRole('button', { name: `Voir la mastery de ${name}` }),
+        screen.queryByRole('button', { name: `Voir la maîtrise de ${name}` }),
       ).toBeNull();
     },
   );
@@ -222,7 +231,7 @@ describe('<AttacksList> — badge Weapon Mastery', () => {
       const character = buildFighterWith([id], [id]);
       render(<AttacksList character={character} readOnly={false} />);
       const badge = screen.getByRole('button', {
-        name: `Voir la mastery de ${name}`,
+        name: `Voir la maîtrise de ${name}`,
       });
       fireEvent.click(badge);
       const dialog = screen.getByRole('dialog');
