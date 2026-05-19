@@ -100,11 +100,43 @@ export interface SeedAncestrySubChoices {
   ancestrySize?: 'small' | 'medium';
 }
 
+/**
+ * Sous-choix de classe niveau 1 SRD 5.2.1 (plan 13.7 §0.1 + 13.9). Injecté
+ * **par entrée `classes[]`** — la racine du preset ne porte plus ces champs
+ * (le schéma v2 les attache à chaque `CharacterClassEntry`).
+ *
+ * Tous optionnels — si omis, le seed pose les sentinelles par défaut
+ * (`null` / `[]`). Le plan 13.9 commit 4a a besoin de pouvoir injecter
+ * `fighterFightingStyle` + `weaponMasteries` côté seed e2e pour que la spec
+ * Combat puisse asserter la présence du badge Mastery + de la carte Style.
+ */
+export interface SeedClassSubChoices {
+  clericDivineOrder?: 'protector' | 'thaumaturge';
+  druidPrimalOrder?: 'magician' | 'warden';
+  fighterFightingStyle?:
+    | 'archery'
+    | 'defense'
+    | 'great-weapon-fighting'
+    | 'two-weapon-fighting';
+  weaponMasteries?: string[];
+  expertiseSkills?: string[];
+  eldritchInvocations?: string[];
+  wizardSpellbookL1?: string[];
+}
+
+export interface SeedClassEntry {
+  classId: string;
+  subclassId: string | null;
+  level: number;
+  /** Sous-choix v2 — interprétés seulement si le preset a `ancestrySubChoices`. */
+  subChoices?: SeedClassSubChoices;
+}
+
 export interface SeedPreset {
   /** Nom affiché en hero card. */
   name: string;
   /** Multi-class supporté ; un seul élément en S1 standard. */
-  classes: { classId: string; subclassId: string | null; level: number }[];
+  classes: SeedClassEntry[];
   primaryClassId: string;
   ancestryId: string;
   /**
@@ -308,6 +340,45 @@ export const humanL1Skillful: SeedPreset = {
 };
 
 /**
+ * Guerrier niv. 1 avec Style « Défense » + 3 Weapon Masteries (Longsword
+ * Sap, Greatsword Graze, Battleaxe Topple) — cas de test plan 13.9 commit
+ * 4a : la fiche Combat doit rendre `<FightingStyleCard>` et les badges
+ * Mastery sur les armes équipées.
+ */
+export const fighterL1MasteryDefense: SeedPreset = {
+  name: 'Sigrid la Sape',
+  classes: [
+    {
+      classId: 'fighter',
+      subclassId: null,
+      level: 1,
+      subChoices: {
+        fighterFightingStyle: 'defense',
+        weaponMasteries: ['longsword', 'greatsword', 'battleaxe'],
+      },
+    },
+  ],
+  primaryClassId: 'fighter',
+  ancestryId: 'human',
+  // Présent → seedCharacter écrit en schemaVersion: 2, ce qui active le
+  // chemin avec sub-choices côté classes[].
+  ancestrySubChoices: {},
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 12, con: 14, int: 10, sag: 10, cha: 10 },
+  hp: { current: 12, max: 12 },
+  ac: 14,
+  hitDice: [{ classId: 'fighter', current: 1, max: 1, die: 'd10' }],
+  saves: { for: true, con: true },
+  inventory: {
+    items: [
+      { contentId: 'longsword', equipped: true, qty: 1 },
+      { contentId: 'greatsword', equipped: true, qty: 1 },
+      { contentId: 'battleaxe', equipped: true, qty: 1 },
+    ],
+  },
+};
+
+/**
  * Magicien niv. 3, 2 cantrips + 2 sorts niv 1 connus. Cas de test du Magie
  * mode : un caster avec slots débloqués (niv 1 + 2 via la table unifiée) et
  * des sorts effectivement visibles dans la liste.
@@ -349,19 +420,31 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
   const initial = preset.name.trim()[0] ?? '?';
   const writeV2 = preset.ancestrySubChoices !== undefined;
 
-  // Classes : v2 ajoute les 7 sentinelles de sous-choix par entrée.
+  // Classes : v2 ajoute les 7 sentinelles de sous-choix par entrée. Les
+  // valeurs explicites du preset (`subChoices.*`) gagnent — pattern utilisé
+  // par les specs Combat / Essence / Magie (plan 13.9) pour seed un perso
+  // déjà rempli sans rejouer le wizard.
   const classes = writeV2
-    ? preset.classes.map((c) => ({
-        ...c,
-        clericDivineOrder: null,
-        druidPrimalOrder: null,
-        fighterFightingStyle: null,
-        weaponMasteries: [],
-        expertiseSkills: [],
-        eldritchInvocations: [],
-        wizardSpellbookL1: [],
-      }))
-    : preset.classes;
+    ? preset.classes.map((c) => {
+        const sc = c.subChoices ?? {};
+        return {
+          classId: c.classId,
+          subclassId: c.subclassId,
+          level: c.level,
+          clericDivineOrder: sc.clericDivineOrder ?? null,
+          druidPrimalOrder: sc.druidPrimalOrder ?? null,
+          fighterFightingStyle: sc.fighterFightingStyle ?? null,
+          weaponMasteries: sc.weaponMasteries ?? [],
+          expertiseSkills: sc.expertiseSkills ?? [],
+          eldritchInvocations: sc.eldritchInvocations ?? [],
+          wizardSpellbookL1: sc.wizardSpellbookL1 ?? [],
+        };
+      })
+    : preset.classes.map((c) => ({
+        classId: c.classId,
+        subclassId: c.subclassId,
+        level: c.level,
+      }));
 
   const ancestrySubChoices = writeV2
     ? {

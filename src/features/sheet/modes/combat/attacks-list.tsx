@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react';
 
 import { useDice } from '@/features/dice/use-dice';
+import {
+  WEAPON_MASTERY_HELP,
+  applyWeaponName,
+} from '@/features/wizard/help/weapon-mastery-help';
 import { Card, CardHeader } from '@/shared/components/card';
+import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
@@ -9,8 +14,9 @@ import type { Advantage } from '@/shared/lib/dice/types';
 import { localize } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
+import { getKnownWeaponMasteries } from '@/shared/lib/rules/weapon-mastery';
 import type { Character } from '@/shared/types/character';
-import type { Item } from '@/shared/types/content';
+import type { Item, WeaponMasteryProperty } from '@/shared/types/content';
 
 import { useUpdateCharacter } from '../../use-update-character';
 
@@ -26,6 +32,12 @@ interface AttackEntry {
   damageFormula: string;
   damageTypeLabel: string;
   ranged: boolean;
+  /**
+   * Présent ssi le perso connaît la Weapon Mastery de cette arme (id ∈
+   * union `classes[i].weaponMasteries`) ET l'arme a une `masteryProperty`.
+   * Source unique des libellés FR : `WEAPON_MASTERY_HELP[prop].label`.
+   */
+  masteryProperty: WeaponMasteryProperty | null;
 }
 
 /**
@@ -44,6 +56,10 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
   const dexMod = abilityModifier(character.abilities.dex);
   const dice = useDice();
   const { updateCharacter } = useUpdateCharacter(character.id);
+  const knownMasteries = useMemo(
+    () => getKnownWeaponMasteries(character),
+    [character],
+  );
 
   const attacks = useMemo<AttackEntry[]>(() => {
     return character.inventory.items
@@ -56,6 +72,13 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
         );
         const finesse = (weapon.properties ?? []).some((p) => p.toLowerCase() === 'finesse');
         const baseMod = ranged ? dexMod : finesse ? Math.max(forMod, dexMod) : forMod;
+        // Mastery visible ssi le perso la connaît ET l'arme en a une (les
+        // 2 conditions sont symétriques : pas de mastery sur arme sans
+        // `masteryProperty`, pas de badge si l'id n'est pas dans l'union).
+        const masteryProperty =
+          weapon.masteryProperty && knownMasteries.has(weapon.id)
+            ? (weapon.masteryProperty as WeaponMasteryProperty)
+            : null;
         return {
           itemId: entry.contentId,
           weapon,
@@ -63,12 +86,24 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
           damageFormula: addModifier(weapon.damage.dice, baseMod),
           damageTypeLabel: localize(weapon.damage.typeLabel),
           ranged,
+          masteryProperty,
         };
       })
       .filter((a): a is AttackEntry => a !== null);
-  }, [character.inventory.items, itemsById, forMod, dexMod, pb]);
+  }, [character.inventory.items, itemsById, forMod, dexMod, pb, knownMasteries]);
 
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  // ID de l'arme dont la modale `Mastery` est ouverte. On garde l'id et pas la
+  // propriété : le contenu modal a besoin du nom localisé pour substituer
+  // `{weapon}` dans l'exemple (cohérence avec `WeaponMasteryChooser`).
+  const [masteryModalId, setMasteryModalId] = useState<string | null>(null);
+  const masteryModalAttack = masteryModalId
+    ? attacks.find((a) => a.itemId === masteryModalId) ?? null
+    : null;
+  const masteryModalEntry =
+    masteryModalAttack && masteryModalAttack.masteryProperty
+      ? WEAPON_MASTERY_HELP[masteryModalAttack.masteryProperty]
+      : null;
 
   async function performRoll(
     entry: AttackEntry,
@@ -127,9 +162,38 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
               setMenuFor(null);
               void performRoll(entry, advantage, crit);
             }}
+            onOpenMastery={() => setMasteryModalId(entry.itemId)}
           />
         ))}
       </div>
+      <DetailModal
+        open={masteryModalEntry !== null}
+        onClose={() => setMasteryModalId(null)}
+        titleId="attacks-list-mastery-modal-title"
+      >
+        {masteryModalEntry && masteryModalAttack && (
+          <div className="flex flex-col gap-3 p-1">
+            <h2
+              id="attacks-list-mastery-modal-title"
+              className="font-display text-[18px] text-gold-bright"
+            >
+              {masteryModalEntry.label}
+            </h2>
+            <p className="font-serif text-[13px] italic text-text-secondary">
+              {masteryModalEntry.tagline}
+            </p>
+            <p className="font-serif text-[13px] text-text">
+              {masteryModalEntry.effect}
+            </p>
+            <p className="font-serif text-[13px] text-text-secondary">
+              {applyWeaponName(
+                masteryModalEntry.example,
+                localize(masteryModalAttack.weapon.name),
+              )}
+            </p>
+          </div>
+        )}
+      </DetailModal>
     </Card>
   );
 }
@@ -141,6 +205,7 @@ interface AttackRowProps {
   onOpenMenu: () => void;
   onCloseMenu: () => void;
   onPerform: (advantage: Advantage, forceCrit: boolean) => void;
+  onOpenMastery: () => void;
 }
 
 function AttackRow({
@@ -150,12 +215,16 @@ function AttackRow({
   onOpenMenu,
   onCloseMenu,
   onPerform,
+  onOpenMastery,
 }: AttackRowProps): JSX.Element {
   const handlers = useLongPress(
     () => onPerform('normal', false),
     () => onOpenMenu(),
   );
   const name = localize(entry.weapon.name);
+  const masteryLabel = entry.masteryProperty
+    ? WEAPON_MASTERY_HELP[entry.masteryProperty].label
+    : null;
   return (
     <div className="relative">
       <button
@@ -173,11 +242,42 @@ function AttackRow({
           <div className="font-ui text-[11px] uppercase tracking-[0.12em] text-text-tertiary">
             {entry.ranged ? 'Distance' : 'Mêlée'} · {entry.damageFormula} {entry.damageTypeLabel}
           </div>
+          {/*
+            * Placeholder de hauteur réservé pour le badge Mastery — le badge
+            * lui-même est rendu en sibling absolute pour rester un VRAI
+            * `<button>` (HTML interdit nested-button). On garde 1 ligne de
+            * texte d'espace pour éviter qu'il chevauche le bonus à droite.
+            */}
+          {masteryLabel && (
+            <span aria-hidden="true" className="mt-1.5 block h-[18px] w-0" />
+          )}
         </div>
         <span className="font-display text-[18px] font-bold tracking-[-0.02em] text-gold-bright">
           {signed(entry.attackBonus)}
         </span>
       </button>
+      {masteryLabel && (
+        <button
+          type="button"
+          onClick={onOpenMastery}
+          aria-label={`Voir la mastery de ${name}`}
+          className={cn(
+            // Sibling du bouton-attack : positionné en bas-gauche de la
+            // carte, sur la ligne « Distance · Xd6 + … » via marge négative.
+            // C'est un VRAI bouton (pas nested) qui peut donc recevoir le focus,
+            // les events tap et l'aria-label sans conflit avec le parent.
+            'absolute bottom-2 left-4 inline-flex items-center gap-1.5 rounded-pill border border-gold-dim/40 bg-gold-bright/[0.06] px-2.5 py-0.5',
+            'font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright',
+            'transition-colors duration-200 ease-base',
+            'hover:border-glow hover:bg-gold-bright/[0.12]',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40',
+          )}
+        >
+          <span aria-hidden="true">Mastery</span>
+          <span aria-hidden="true">·</span>
+          <span>{masteryLabel}</span>
+        </button>
+      )}
       {menuOpen && (
         <div
           role="menu"

@@ -1,3 +1,4 @@
+import type { Character, FightingStyle } from '@/shared/types/character';
 import type { Item } from '@/shared/types/content';
 
 /**
@@ -59,4 +60,42 @@ export function getEligibleWeaponMasteryIds(
     const bn = b.name[locale] ?? b.name.fr;
     return an.localeCompare(bn, locale);
   });
+}
+
+/**
+ * Renvoie l'ensemble des `itemId` de Weapon Mastery connus du personnage —
+ * union sur toutes les entrées de `classes[]` (multi-class : un Roublard 2 /
+ * Guerrier 1 cumule les 2 masteries Roublard + les 3 Guerrier).
+ *
+ * Renvoie un `Set` pour permettre un test d'appartenance O(1) côté
+ * `attacks-list.tsx` (38 armes potentielles × 1 lookup par ligne d'attaque).
+ * La fonction est pure et stable : pas de side effect, idempotente sur le
+ * même perso.
+ */
+export function getKnownWeaponMasteries(character: Character): Set<string> {
+  const known = new Set<string>();
+  for (const entry of character.classes) {
+    for (const id of entry.weaponMasteries) {
+      known.add(id);
+    }
+  }
+  return known;
+}
+
+/**
+ * Renvoie le Fighting Style choisi pour la première classe de type Guerrier
+ * du personnage, ou `null` si aucun (perso non-Guerrier, ou Guerrier dont la
+ * sentinelle est restée vide — cas v1 migré).
+ *
+ * À L1, un perso a au plus une entrée Guerrier dans `classes[]` ; à plus haut
+ * niveau, un multi-Guerrier est non-canonique mais resté possible côté schéma
+ * — on prend le premier match pour garder un comportement déterministe.
+ */
+export function getFighterFightingStyle(
+  character: Character,
+): FightingStyle | null {
+  const fighterEntry = character.classes.find(
+    (c) => c.classId === 'fighter' && c.fighterFightingStyle !== null,
+  );
+  return fighterEntry?.fighterFightingStyle ?? null;
 }
