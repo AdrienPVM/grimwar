@@ -185,6 +185,13 @@ export const dragonbornL1Red: SeedPreset = {
 /**
  * Tieffelin Infernal niv. 1 (plan 13.8). Cas de test des Sorts d'héritage
  * en mode Magie : `Trait de feu` visible dans la liste ancestry-spells.
+ *
+ * **Slugs canoniques FR** (plan 13.8b commit 3) — alignés sur
+ * `public/data/spells.json`. `AncestrySpellsCard` les résout via
+ * `ancestries.json > tieflingLegacies > cantripSpellId` (qui est correct
+ * depuis le début) ; `SpellList` (plan 13.8b) les lit directement depuis
+ * `knownSpells.ancestry` — d'où la nécessité que ces slugs résolvent dans
+ * le bundle spells.json.
  */
 export const tieflingL1Infernal: SeedPreset = {
   name: 'Maelstrom Skye',
@@ -202,18 +209,23 @@ export const tieflingL1Infernal: SeedPreset = {
   ac: 13,
   hitDice: [{ classId: 'rogue', current: 1, max: 1, die: 'd8' }],
   saves: { dex: true, int: true },
-  knownSpells: { ancestry: ['fire-bolt', 'hellish-rebuke', 'darkness'] },
+  knownSpells: {
+    ancestry: ['trait-de-feu', 'represailles-infernales', 'tenebres'],
+  },
   spellcastingAbility: { ancestry: 'cha' },
 };
 
 /**
- * Elfe Drow niv. 1 (plan 13.8). Cas de test des Sorts de lignage en mode
- * Magie : `Danses lumineuses` visible.
+ * Elfe Drow niv. 1 Roublard (plan 13.8b commit 3). Non-caster pour assurer
+ * la cohérence matricielle avec les 2 autres ascendances (Gnome / Tieffelin
+ * sont Roublard) et permettre l'assertion « Lancer désactivé » côté modale.
+ *
+ * Slugs canoniques FR : `lumieres-dansantes`, `lueurs-feeriques`, `tenebres`.
  */
 export const elfL1Drow: SeedPreset = {
   name: 'Vaelarie Nightveil',
-  classes: [{ classId: 'ranger', subclassId: null, level: 1 }],
-  primaryClassId: 'ranger',
+  classes: [{ classId: 'rogue', subclassId: null, level: 1 }],
+  primaryClassId: 'rogue',
   ancestryId: 'elf',
   ancestrySubChoices: {
     elfLineage: 'drow',
@@ -222,17 +234,19 @@ export const elfL1Drow: SeedPreset = {
   },
   backgroundId: 'outlander',
   abilities: { for: 12, dex: 16, con: 13, int: 12, sag: 14, cha: 10 },
-  hp: { current: 11, max: 11 },
+  hp: { current: 9, max: 9 },
   ac: 13,
-  hitDice: [{ classId: 'ranger', current: 1, max: 1, die: 'd10' }],
-  saves: { for: true, dex: true },
-  knownSpells: { ancestry: ['dancing-lights', 'faerie-fire', 'darkness'] },
+  hitDice: [{ classId: 'rogue', current: 1, max: 1, die: 'd8' }],
+  saves: { dex: true, int: true },
+  knownSpells: {
+    ancestry: ['lumieres-dansantes', 'lueurs-feeriques', 'tenebres'],
+  },
   spellcastingAbility: { ancestry: 'int' },
 };
 
 /**
  * Gnome des forêts niv. 1 (plan 13.8). Cas de test : `Illusion mineure`
- * visible en mode Magie.
+ * visible en mode Magie. Slug canonique FR : `illusion-mineure`.
  */
 export const gnomeL1Forest: SeedPreset = {
   name: 'Pip Tweedleblossom',
@@ -249,7 +263,7 @@ export const gnomeL1Forest: SeedPreset = {
   ac: 13,
   hitDice: [{ classId: 'rogue', current: 1, max: 1, die: 'd8' }],
   saves: { dex: true, int: true },
-  knownSpells: { ancestry: ['minor-illusion'] },
+  knownSpells: { ancestry: ['illusion-mineure'] },
   spellcastingAbility: { ancestry: 'int' },
 };
 
