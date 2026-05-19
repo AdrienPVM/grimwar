@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
@@ -60,6 +60,38 @@ const SPELLS_FIXTURE: Spell[] = [
     classes: ['warlock', 'wizard'],
     source: 'srd-5.2.1',
   },
+  {
+    id: 'lumieres-dansantes',
+    name: { fr: 'Lumières dansantes', en: 'Dancing Lights' },
+    level: 0,
+    school: 'illusion',
+    castingTime: { fr: '1 action', en: '1 Action' },
+    range: { fr: '36 m', en: '120 ft' },
+    components: { v: true, s: true, m: true },
+    duration: { fr: '1 minute', en: '1 Minute' },
+    concentration: true,
+    ritual: false,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['wizard'],
+    source: 'srd-5.2.1',
+  },
+  {
+    id: 'illusion-mineure',
+    name: { fr: 'Illusion mineure', en: 'Minor Illusion' },
+    level: 0,
+    school: 'illusion',
+    castingTime: { fr: '1 action', en: '1 Action' },
+    range: { fr: '9 m', en: '30 ft' },
+    components: { v: false, s: true, m: false },
+    duration: { fr: '1 minute', en: '1 Minute' },
+    concentration: false,
+    ritual: false,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['bard', 'sorcerer', 'warlock', 'wizard'],
+    source: 'srd-5.2.1',
+  },
 ];
 
 const TIEFLING_ANCESTRY: Ancestry = {
@@ -86,14 +118,101 @@ const TIEFLING_ANCESTRY: Ancestry = {
   },
 };
 
+/**
+ * Stubs minimaux d'Elfe (Drow) et Gnome (Forêt) pour vérifier `onSpellSelect`
+ * sur les 3 ascendances à sorts. Volontairement co-localisés au test : on ne
+ * lit pas `public/data/ancestries.json` (cf. CLAUDE.md > Tester le runtime).
+ */
+const ELF_ANCESTRY: Ancestry = {
+  id: 'elf',
+  name: { fr: 'Elfe', en: 'Elf' },
+  size: 'medium',
+  speed: 30,
+  description: { fr: '', en: '' },
+  abilityScoreIncrease: [],
+  traits: [],
+  languages: ['common'],
+  source: 'srd-5.2.1',
+  options: {
+    elfLineages: [
+      {
+        id: 'drow',
+        name: { fr: 'Drow', en: 'Drow' },
+        benefit: { fr: 'Vision dans le noir étendue.', en: 'Extended darkvision.' },
+        cantripSpellId: 'lumieres-dansantes',
+        // Slugs stub distincts pour éviter React duplicate keys ; le test
+        // n'asserte que le cantrip — knownSpells.ancestry ne contient que lui.
+        level3SpellId: 'lueurs-stub',
+        level5SpellId: 'tenebres-stub',
+      },
+    ],
+  },
+};
+
+const GNOME_ANCESTRY: Ancestry = {
+  id: 'gnome',
+  name: { fr: 'Gnome', en: 'Gnome' },
+  size: 'small',
+  speed: 30,
+  description: { fr: '', en: '' },
+  abilityScoreIncrease: [],
+  traits: [],
+  languages: ['common'],
+  source: 'srd-5.2.1',
+  options: {
+    gnomeLineages: [
+      {
+        id: 'forest',
+        name: { fr: 'Forêts', en: 'Forest' },
+        benefit: { fr: 'Rituel sans slot.', en: 'Ritual without slot.' },
+        cantripSpellIds: ['illusion-mineure'],
+      },
+    ],
+  },
+};
+
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'spells') return { data: SPELLS_FIXTURE, isLoading: false, error: null };
     if (type === 'ancestries')
-      return { data: [TIEFLING_ANCESTRY], isLoading: false, error: null };
+      return {
+        data: [TIEFLING_ANCESTRY, ELF_ANCESTRY, GNOME_ANCESTRY],
+        isLoading: false,
+        error: null,
+      };
     return { data: [], isLoading: false, error: null };
   },
 }));
+
+function elfDrowChar(level = 1, ancestrySpellIds: string[] = ['lumieres-dansantes']): Character {
+  const base = tieflingChar(level);
+  return {
+    ...base,
+    ancestryId: 'elf',
+    ancestrySubChoices: {
+      ...base.ancestrySubChoices,
+      tieflingLegacy: null,
+      elfLineage: 'drow',
+    },
+    knownSpells: { ancestry: ancestrySpellIds },
+    spellcastingAbility: { ancestry: 'int' },
+  };
+}
+
+function gnomeForestChar(level = 1): Character {
+  const base = tieflingChar(level);
+  return {
+    ...base,
+    ancestryId: 'gnome',
+    ancestrySubChoices: {
+      ...base.ancestrySubChoices,
+      tieflingLegacy: null,
+      gnomeLineage: 'forest',
+    },
+    knownSpells: { ancestry: ['illusion-mineure'] },
+    spellcastingAbility: { ancestry: 'int' },
+  };
+}
 
 function tieflingChar(level = 1): Character {
   return {
@@ -207,5 +326,52 @@ describe('<AncestrySpellsCard>', () => {
     render(<AncestrySpellsCard character={tieflingChar(3)} onSpellSelect={() => {}} />);
     // 3 entries → 3 occurrences du label source.
     expect(screen.getAllByText('Héritage Infernal').length).toBe(3);
+  });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Plan 13.8b commit 1 — clic sur un sort d'ascendance ouvre la modale
+  // (callback `onSpellSelect` appelée avec le Spell exact).
+  // ─────────────────────────────────────────────────────────────────────
+
+  it("Tieffelin Infernal L1 → clic sur Trait de feu (cantrip) appelle onSpellSelect avec le sort", () => {
+    const onSpellSelect = vi.fn();
+    render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={onSpellSelect} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Trait de feu' }));
+    expect(onSpellSelect).toHaveBeenCalledTimes(1);
+    expect(onSpellSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'fire-bolt' }),
+    );
+  });
+
+  it("Tieffelin Infernal L1 → clic sur Châtiment infernal (L3 verrouillé) appelle quand même onSpellSelect", () => {
+    // Décision Adrien 13.8b : un sort verrouillé reste consultable (la modale
+    // documente le sort même si le perso ne peut pas encore le lancer).
+    const onSpellSelect = vi.fn();
+    render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={onSpellSelect} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Châtiment infernal' }));
+    expect(onSpellSelect).toHaveBeenCalledTimes(1);
+    expect(onSpellSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'hellish-rebuke' }),
+    );
+  });
+
+  it("Elfe Drow L1 → clic sur Lumières dansantes appelle onSpellSelect avec le sort", () => {
+    const onSpellSelect = vi.fn();
+    render(<AncestrySpellsCard character={elfDrowChar(1)} onSpellSelect={onSpellSelect} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Lumières dansantes' }));
+    expect(onSpellSelect).toHaveBeenCalledTimes(1);
+    expect(onSpellSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'lumieres-dansantes' }),
+    );
+  });
+
+  it("Gnome Forêt L1 → clic sur Illusion mineure appelle onSpellSelect avec le sort", () => {
+    const onSpellSelect = vi.fn();
+    render(<AncestrySpellsCard character={gnomeForestChar(1)} onSpellSelect={onSpellSelect} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Illusion mineure' }));
+    expect(onSpellSelect).toHaveBeenCalledTimes(1);
+    expect(onSpellSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'illusion-mineure' }),
+    );
   });
 });
