@@ -12,6 +12,16 @@ export interface RadioCardOption<T extends string> {
   mechanicalImpact?: ReactNode;
   /** Petit pictogramme optionnel (emoji ou SVG) — purement décoratif (aria-hidden). */
   icon?: ReactNode;
+  /**
+   * Bouton « ? » à rendre en sibling du `<label>`, positionné en absolute
+   * top-right de la carte (cf. plan 13.9 fix UAT 2026-05-19 Bug A). On le
+   * rend HORS du `<label>` pour que tapper le « ? » n'active pas la radio
+   * (label-for semantics). `helpButton` est typiquement un `<HelpTriggerButton>`.
+   *
+   * Quand présent, on ajoute `pr-12` au label pour que le titre ne déborde
+   * pas sous la pastille « ? ».
+   */
+  helpButton?: ReactNode;
   disabled?: boolean;
 }
 
@@ -46,6 +56,8 @@ interface RadioCardGroupProps<T extends string> {
  *   type="radio">` natif (navigation flèches gratuite via le `name` commun).
  * - Tap target ≥ 44px par carte.
  * - Focus visible via `focus-visible:ring`.
+ * - Slot `helpButton` (plan 13.9 Bug A fix) rendu HORS du `<label>` pour
+ *   que le tap sur « ? » ne coche pas la radio.
  */
 export function RadioCardGroup<T extends string>({
   legend,
@@ -109,7 +121,12 @@ function RadioCard<T extends string>({
   checked: boolean;
   onSelect: () => void;
 }): JSX.Element {
-  return (
+  const hasHelp = option.helpButton != null;
+  // Quand un slot help est présent, on isole le label dans un wrapper relatif
+  // et on pose le « ? » en absolute top-right (sibling, pas enfant — cf. doc
+  // du fichier). Sinon on retombe sur le `<label>` nu pour ne pas alourdir
+  // le DOM des callers historiques.
+  const card = (
     <label
       htmlFor={id}
       className={cn(
@@ -120,6 +137,7 @@ function RadioCard<T extends string>({
           ? 'border-gold-bright bg-gold-bright/10 shadow-gold-glow'
           : 'border-soft bg-bg-3/30 hover:border-glow hover:bg-bg-3/50',
         option.disabled && 'cursor-not-allowed opacity-50',
+        hasHelp && 'pr-12',
       )}
     >
       <input
@@ -156,5 +174,14 @@ function RadioCard<T extends string>({
         </span>
       ) : null}
     </label>
+  );
+
+  if (!hasHelp) return card;
+
+  return (
+    <div className="relative">
+      {card}
+      <span className="absolute top-1 right-1">{option.helpButton}</span>
+    </div>
   );
 }

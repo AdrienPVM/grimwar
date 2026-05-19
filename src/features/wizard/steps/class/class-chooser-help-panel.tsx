@@ -24,9 +24,19 @@ export interface ClassSubChoiceHelpEntry {
 interface Props {
   title: string;
   entry: ClassSubChoiceHelpEntry | undefined;
+  /**
+   * ID DOM optionnel posé sur le `<h3>` interne. Branché par `<DetailModal>`
+   * à `aria-labelledby` quand le panneau est rendu à l'intérieur d'une modale
+   * (correctif Bug A — pré-consult mobile via le « ? »).
+   */
+  headingId?: string;
 }
 
-export function ClassChooserHelpPanel({ title, entry }: Props): JSX.Element | null {
+export function ClassChooserHelpPanel({
+  title,
+  entry,
+  headingId,
+}: Props): JSX.Element | null {
   if (!entry) return null;
   return (
     <HelpPanel
@@ -35,6 +45,7 @@ export function ClassChooserHelpPanel({ title, entry }: Props): JSX.Element | nu
       whyChoose={entry.whyChoose}
       inGame={entry.inGame}
       difficulty={entry.difficulty}
+      headingId={headingId}
     />
   );
 }

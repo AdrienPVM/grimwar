@@ -1,12 +1,14 @@
-import { useMemo, type JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 
 import { RadioCardGroup, type RadioCardOption } from '@/shared/components/form';
+import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { fightingStyleSchema } from '@/shared/types/character';
 
 import { FIGHTING_STYLE_HELP } from '../../help/fighting-style-help';
+import { HelpTriggerButton } from '../../help/help-trigger-button';
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
 
 import { ClassChooserHelpPanel } from './class-chooser-help-panel';
@@ -21,6 +23,11 @@ import { asFightingStyle } from './chooser-utils';
  *
  * On filtre aussi sur les 4 ids du `fightingStyleSchema` côté character pour
  * garantir la cohérence (un feat hors-enum serait silencieusement ignoré).
+ *
+ * Bouton « ? » par option (correctif UAT 2026-05-19 Bug A) : sans le `?`,
+ * le panneau d'aide n'apparaît qu'APRÈS sélection — l'utilisateur ne peut
+ * pas comparer 4 options avant de cliquer. Le `?` ouvre une `<DetailModal>`
+ * de pré-consult (mobile-only par le composant — desktop a déjà l'inline).
  */
 const FIGHTING_STYLE_IDS = fightingStyleSchema.options;
 
@@ -31,19 +38,32 @@ export function FighterFightingStyleChooser(): JSX.Element {
     s.draft.classes.find((c) => c.classId === 'fighter') ?? null,
   );
 
-  const options = useMemo<ReadonlyArray<RadioCardOption<string>>>(() => {
-    return feats.data
-      .filter(
-        (f) =>
-          f.category === 'fighting-style' &&
-          FIGHTING_STYLE_IDS.includes(f.id as (typeof FIGHTING_STYLE_IDS)[number]),
-      )
-      .map((f) => ({
-        value: f.id,
-        title: localize(f.name),
-        description: f.summary ? localize(f.summary) : undefined,
-      }));
+  const [modalStyleId, setModalStyleId] = useState<string | null>(null);
+
+  const filteredFeats = useMemo(() => {
+    return feats.data.filter(
+      (f) =>
+        f.category === 'fighting-style' &&
+        FIGHTING_STYLE_IDS.includes(f.id as (typeof FIGHTING_STYLE_IDS)[number]),
+    );
   }, [feats.data]);
+
+  const options = useMemo<ReadonlyArray<RadioCardOption<string>>>(() => {
+    return filteredFeats.map((f) => {
+      const name = localize(f.name);
+      return {
+        value: f.id,
+        title: name,
+        description: f.summary ? localize(f.summary) : undefined,
+        helpButton: (
+          <HelpTriggerButton
+            ariaLabel={`${t('wizard.helpPanel.viewDetail')} · ${name}`}
+            onClick={() => setModalStyleId(f.id)}
+          />
+        ),
+      };
+    });
+  }, [filteredFeats]);
 
   if (options.length === 0)
     return <ChooserMissingDataBanner chooserKey="fighter-fighting-style" contentType="feats" />;
@@ -51,6 +71,14 @@ export function FighterFightingStyleChooser(): JSX.Element {
   const value = entry?.fighterFightingStyle ?? null;
   const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
   const selectedTitle = selectedOption ? String(selectedOption.title) : '';
+
+  const modalFeat = modalStyleId
+    ? filteredFeats.find((f) => f.id === modalStyleId) ?? null
+    : null;
+  const modalEntry =
+    modalStyleId && modalStyleId in FIGHTING_STYLE_HELP
+      ? FIGHTING_STYLE_HELP[modalStyleId as keyof typeof FIGHTING_STYLE_HELP]
+      : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -71,6 +99,22 @@ export function FighterFightingStyleChooser(): JSX.Element {
         title={selectedTitle}
         entry={value ? FIGHTING_STYLE_HELP[value] : undefined}
       />
+      <DetailModal
+        open={modalFeat !== null && modalEntry !== null}
+        onClose={() => setModalStyleId(null)}
+        titleId="fighter-fighting-style-detail-modal-title"
+        closeLabel={t('wizard.helpPanel.close')}
+      >
+        {modalFeat && modalEntry ? (
+          <div className="p-4 sm:p-5">
+            <ClassChooserHelpPanel
+              title={localize(modalFeat.name)}
+              entry={modalEntry}
+              headingId="fighter-fighting-style-detail-modal-title"
+            />
+          </div>
+        ) : null}
+      </DetailModal>
     </div>
   );
 }
