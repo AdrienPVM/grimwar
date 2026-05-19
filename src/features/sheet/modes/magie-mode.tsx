@@ -13,6 +13,7 @@ import { SpellDetailModal } from './magie/spell-detail-modal';
 import { SpellList } from './magie/spell-list';
 import { SpellStatsBar } from './magie/spell-stats-bar';
 import { spellcastingClasses } from './magie/spell-slots';
+import { WizardSpellbookSections } from './magie/wizard-spellbook-sections';
 
 interface MagieModeProps {
   character: Character;
@@ -101,14 +102,29 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
         character={character}
         onSpellSelect={(spell) => setActiveSpell(spell)}
       />
-      {(castingClasses.length > 0 || hasAncestrySpells) && (
-        <SpellList
+      {/*
+        Plan 13.9 commit 4c — décision Adrien (UAT 4b) : pour le Magicien
+        mono-class (cas usuel S1), on rend la séparation visuelle Grimoire /
+        Préparés. Pour tout autre caster (Sorcier, Barde, etc.) ou un
+        Magicien multi-class, on conserve la <SpellList> générique avec son
+        chip « Préparés » comme filtre.
+      */}
+      {isWizardMonoClass(castingClassIds) ? (
+        <WizardSpellbookSections
           character={character}
           spells={spells}
-          spellcasterClassIds={castingClassIds}
-          ancestrySourceLabel={ancestrySourceLabel}
           onSpellSelect={(spell) => setActiveSpell(spell)}
         />
+      ) : (
+        (castingClasses.length > 0 || hasAncestrySpells) && (
+          <SpellList
+            character={character}
+            spells={spells}
+            spellcasterClassIds={castingClassIds}
+            ancestrySourceLabel={ancestrySourceLabel}
+            onSpellSelect={(spell) => setActiveSpell(spell)}
+          />
+        )
       )}
       {activeSpell && (
         <SpellDetailModal
@@ -122,4 +138,15 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       )}
     </section>
   );
+}
+
+/**
+ * Mono-class Magicien : la seule classe lanceuse du perso est `wizard`. On
+ * exclut le multi-class `wizard + autre caster` pour rester sur la
+ * <SpellList> générique dans ce cas (le grimoire/préparés se mélange mal
+ * avec une autre liste à L1 ; on cadrera ça à un plan ultérieur si jamais
+ * un joueur multi-class).
+ */
+function isWizardMonoClass(castingClassIds: readonly string[]): boolean {
+  return castingClassIds.length === 1 && castingClassIds[0] === 'wizard';
 }

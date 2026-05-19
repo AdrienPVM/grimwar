@@ -379,6 +379,117 @@ export const fighterL1MasteryDefense: SeedPreset = {
 };
 
 /**
+ * Clerc niv. 1 Ordre Protecteur (plan 13.9 commit 4c). Cas de test du mode
+ * Essence : la carte « Ordre divin : Protecteur » est rendue (issue de
+ * `classes.json[cleric].divineOrders[protector]`) et tappable pour ouvrir
+ * la modale détail.
+ */
+export const clericL1Protector: SeedPreset = {
+  name: 'Astrid Lumière-Tenace',
+  classes: [
+    {
+      classId: 'cleric',
+      subclassId: null,
+      level: 1,
+      subChoices: { clericDivineOrder: 'protector' },
+    },
+  ],
+  primaryClassId: 'cleric',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'acolyte',
+  abilities: { for: 14, dex: 10, con: 14, int: 10, sag: 16, cha: 12 },
+  hp: { current: 10, max: 10 },
+  ac: 16,
+  hitDice: [{ classId: 'cleric', current: 1, max: 1, die: 'd8' }],
+  saves: { sag: true, cha: true },
+};
+
+/**
+ * Druide niv. 1 Ordre Mage (plan 13.9 commit 4c). Parité avec Cleric pour le
+ * mode Essence — la carte « Ordre primordial : Mage » est rendue et tappable.
+ */
+export const druidL1Magician: SeedPreset = {
+  name: 'Sylvène la Trame-Forêt',
+  classes: [
+    {
+      classId: 'druid',
+      subclassId: null,
+      level: 1,
+      subChoices: { druidPrimalOrder: 'magician' },
+    },
+  ],
+  primaryClassId: 'druid',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'hermit',
+  abilities: { for: 10, dex: 12, con: 14, int: 12, sag: 16, cha: 10 },
+  hp: { current: 10, max: 10 },
+  ac: 12,
+  hitDice: [{ classId: 'druid', current: 1, max: 1, die: 'd8' }],
+  saves: { int: true, sag: true },
+};
+
+/**
+ * Magicien niv. 1 avec grimoire complet (6 inscrits dont 4 préparés) — cas
+ * de test plan 13.9 commit 4c : la fiche Magie rend DEUX sections distinctes
+ * « Sorts préparés » (4) et « Grimoire » (2 inscrits non-préparés).
+ *
+ * Échantillon raisonné par couverture d'écoles (cohérent avec
+ * spell-list-wizard-grimoire.test.tsx) :
+ *
+ *   - **Inscrits (knownSpells.wizard, 6)** : bouclier (abj), projectile-
+ *     magique (evo), armure-de-mage (abj), graisse (conj), alarme (abj),
+ *     appel-de-familier (conj).
+ *   - **Préparés (4 ⊂ inscrits)** : bouclier, projectile-magique,
+ *     armure-de-mage, graisse.
+ *   - **Inscrits non-préparés (2)** : alarme, appel-de-familier.
+ */
+export const wizardL1Grimoire: SeedPreset = {
+  name: 'Lirael de la Plume-Ardente',
+  classes: [
+    {
+      classId: 'wizard',
+      subclassId: null,
+      level: 1,
+      subChoices: {
+        wizardSpellbookL1: [
+          'bouclier',
+          'projectile-magique',
+          'armure-de-mage',
+          'graisse',
+          'alarme',
+          'appel-de-familier',
+        ],
+      },
+    },
+  ],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'sage',
+  abilities: { for: 8, dex: 14, con: 12, int: 16, sag: 12, cha: 10 },
+  hp: { current: 7, max: 7 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 1, max: 1, die: 'd6' }],
+  saves: { int: true, sag: true },
+  knownSpells: {
+    wizard: [
+      'bouclier',
+      'projectile-magique',
+      'armure-de-mage',
+      'graisse',
+      'alarme',
+      'appel-de-familier',
+    ],
+  },
+  preparedSpells: {
+    wizard: ['bouclier', 'projectile-magique', 'armure-de-mage', 'graisse'],
+  },
+  spellcastingAbility: { wizard: 'int' },
+};
+
+/**
  * Magicien niv. 3, 2 cantrips + 2 sorts niv 1 connus. Cas de test du Magie
  * mode : un caster avec slots débloqués (niv 1 + 2 via la table unifiée) et
  * des sorts effectivement visibles dans la liste.

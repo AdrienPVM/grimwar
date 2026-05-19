@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
+import { takeStepScreenshot } from './helpers/screenshot';
 import { fighterL3, seedCharacter } from './seed-character';
 
 /**
@@ -31,7 +32,7 @@ test.describe('Combat — HP ± via tap (golden path)', () => {
     );
   });
 
-  test('seed Guerrier niv. 3 → tap −1 PV → tap +1 PV restaure', async ({ page }) => {
+  test('seed Guerrier niv. 3 → tap −1 PV → tap +1 PV restaure', async ({ page }, testInfo) => {
     // 1. Boot l'app pour que l'auth anon s'établisse → window.__e2eAuthUid.
     await page.goto('/');
     await waitForAppReady(page);
@@ -48,6 +49,7 @@ test.describe('Combat — HP ± via tap (golden path)', () => {
       page.getByText(fighterL3.name).first(),
       'La hero card doit afficher le nom du PJ seedé — si absent, le doc Firestore est invisible côté client (auth ou path mismatch).',
     ).toBeVisible({ timeout: 10_000 });
+    await takeStepScreenshot(page, testInfo, 'fighter-sheet-loaded');
 
     // 5. Switch sur le mode Combat (tab a un role="tab" avec label "Combat").
     //    L'onglet par défaut est probablement Combat, mais on force le tap
@@ -57,6 +59,7 @@ test.describe('Combat — HP ± via tap (golden path)', () => {
       page.locator('#sheet-mode-panel-combat'),
       'Le panel Combat doit être rendu après tap de l\'onglet.',
     ).toBeVisible();
+    await takeStepScreenshot(page, testInfo, 'combat-tab-initial');
 
     // 6. État initial : 28/28 PV (preset fighterL3.hp = { current: 28, max: 28 }).
     //    On cherche le texte "28" dans la mega-card en se basant sur le
@@ -92,5 +95,6 @@ test.describe('Combat — HP ± via tap (golden path)', () => {
       page.locator('[role="tabpanel"]#sheet-mode-panel-combat').getByText(/^28$/).first(),
       'Après tap +, PV courants doivent retourner à 28 (applyHeal vers max).',
     ).toBeVisible({ timeout: 5_000 });
+    await takeStepScreenshot(page, testInfo, 'combat-hp-restored');
   });
 });

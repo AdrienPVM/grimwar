@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type {
@@ -177,5 +177,60 @@ describe('<DivineOrderCard>', () => {
     ]);
     const { container } = render(<DivineOrderCard character={character} />);
     expectNoForbiddenEnglish(container.textContent ?? '', 'DivineOrderCard');
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Commit 4c — la carte devient cliquable et ouvre une modale détail
+  // (cohérence d'interaction avec sorts + maîtrises d'armes : un tap = un
+  // détail). Cat. 2 (identité) appliquée à la modale ouverte.
+  // ───────────────────────────────────────────────────────────────────────
+
+  it('cat. 4c — la carte est un bouton tappable (role=button + aria-label)', () => {
+    const character = buildCharacter([
+      classEntry({ classId: 'cleric', clericDivineOrder: 'protector' }),
+    ]);
+    render(<DivineOrderCard character={character} />);
+    const trigger = screen.getByRole('button', { name: /Ordre divin : Protecteur/ });
+    expect(trigger).toBeInTheDocument();
+  });
+
+  it.each(
+    CLERIC_DIVINE_ORDERS.map((o) => ({
+      order: o.id as DivineOrder,
+      name: o.name.fr,
+      summary: o.summary.fr,
+      otherName: CLERIC_DIVINE_ORDERS.find((x) => x.id !== o.id)?.name.fr ?? '',
+    })),
+  )(
+    'cat. 4c — tap sur Clerc/$name ouvre la modale qui affiche EXACTEMENT $name + son summary du bundle, JAMAIS $otherName',
+    ({ order, name, summary, otherName }) => {
+      const character = buildCharacter([
+        classEntry({ classId: 'cleric', clericDivineOrder: order }),
+      ]);
+      render(<DivineOrderCard character={character} />);
+      // État initial : pas de dialog.
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      // Tap → dialog.
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`Ordre divin : ${name}`) }));
+      const dialog = screen.getByRole('dialog');
+      // Le titre kindLabel « Ordre divin » est rendu.
+      expect(within(dialog).getByText('Ordre divin')).toBeInTheDocument();
+      // Le nom + summary EXACTS du bundle sont rendus.
+      expect(within(dialog).getByText(name)).toBeInTheDocument();
+      expect(within(dialog).getByText(summary)).toBeInTheDocument();
+      // Test négatif (cat. 5) : pas de fuite de l'autre ordre.
+      expect(within(dialog).queryByText(otherName)).not.toBeInTheDocument();
+    },
+  );
+
+  it('cat. 4c — Échap ferme la modale après tap', () => {
+    const character = buildCharacter([
+      classEntry({ classId: 'cleric', clericDivineOrder: 'protector' }),
+    ]);
+    render(<DivineOrderCard character={character} />);
+    fireEvent.click(screen.getByRole('button', { name: /Ordre divin : Protecteur/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

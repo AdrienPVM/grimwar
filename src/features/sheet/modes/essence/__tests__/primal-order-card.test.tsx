@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type {
@@ -170,5 +170,53 @@ describe('<PrimalOrderCard>', () => {
     ]);
     const { container } = render(<PrimalOrderCard character={character} />);
     expectNoForbiddenEnglish(container.textContent ?? '', 'PrimalOrderCard');
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Commit 4c — carte cliquable + modale détail (parité avec Divine Order).
+  // ───────────────────────────────────────────────────────────────────────
+
+  it('cat. 4c — la carte est un bouton tappable (role=button + aria-label)', () => {
+    const character = buildCharacter([
+      classEntry({ classId: 'druid', druidPrimalOrder: 'magician' }),
+    ]);
+    render(<PrimalOrderCard character={character} />);
+    const trigger = screen.getByRole('button', { name: /Ordre primordial : Mage/ });
+    expect(trigger).toBeInTheDocument();
+  });
+
+  it.each(
+    DRUID_PRIMAL_ORDERS.map((o) => ({
+      order: o.id as PrimalOrder,
+      name: o.name.fr,
+      summary: o.summary.fr,
+      otherName: DRUID_PRIMAL_ORDERS.find((x) => x.id !== o.id)?.name.fr ?? '',
+    })),
+  )(
+    'cat. 4c — tap sur Druide/$name ouvre la modale avec $name + son summary EXACT, jamais $otherName',
+    ({ order, name, summary, otherName }) => {
+      const character = buildCharacter([
+        classEntry({ classId: 'druid', druidPrimalOrder: order }),
+      ]);
+      render(<PrimalOrderCard character={character} />);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(`Ordre primordial : ${name}`) }));
+      const dialog = screen.getByRole('dialog');
+      expect(within(dialog).getByText('Ordre primordial')).toBeInTheDocument();
+      expect(within(dialog).getByText(name)).toBeInTheDocument();
+      expect(within(dialog).getByText(summary)).toBeInTheDocument();
+      expect(within(dialog).queryByText(otherName)).not.toBeInTheDocument();
+    },
+  );
+
+  it('cat. 4c — Échap ferme la modale', () => {
+    const character = buildCharacter([
+      classEntry({ classId: 'druid', druidPrimalOrder: 'magician' }),
+    ]);
+    render(<PrimalOrderCard character={character} />);
+    fireEvent.click(screen.getByRole('button', { name: /Ordre primordial : Mage/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

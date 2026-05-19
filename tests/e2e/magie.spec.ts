@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
+import { takeStepScreenshot } from './helpers/screenshot';
 import { seedCharacter, wizardL3 } from './seed-character';
 
 /**
@@ -38,7 +39,7 @@ test.describe('Magie — slots + spell list (golden path Magicien niv. 3)', () =
     );
   });
 
-  test('Magicien niv. 3 → onglet Magie → barre stats + sort connu visible', async ({ page }) => {
+  test('Magicien niv. 3 → onglet Magie → barre stats + sort connu visible', async ({ page }, testInfo) => {
     await page.goto('/');
     await waitForAppReady(page);
 
@@ -50,6 +51,7 @@ test.describe('Magie — slots + spell list (golden path Magicien niv. 3)', () =
       page.getByText(wizardL3.name).first(),
       'Le nom du PJ Magicien doit apparaître sur la fiche après seed + nav.',
     ).toBeVisible({ timeout: 10_000 });
+    await takeStepScreenshot(page, testInfo, 'wizard-l3-sheet-loaded');
 
     // 2. Tap onglet Magie.
     await page.getByRole('tab', { name: /^Magie$/i }).click();
@@ -58,6 +60,7 @@ test.describe('Magie — slots + spell list (golden path Magicien niv. 3)', () =
       panel,
       'Le panel Magie doit être rendu après tap de l\'onglet.',
     ).toBeVisible();
+    await takeStepScreenshot(page, testInfo, 'wizard-l3-magie-tab');
 
     // 3. Barre de stats classe : doit afficher au moins « DD » + « + attaque »
     //    pour la classe Wizard. Le composant SpellStatsBar rend ces labels
@@ -88,5 +91,6 @@ test.describe('Magie — slots + spell list (golden path Magicien niv. 3)', () =
       panel.getByText(/Alarme/i).first(),
       '« Alarme » (preset wizardL3) doit apparaître dans la liste.',
     ).toBeVisible();
+    await takeStepScreenshot(page, testInfo, 'wizard-l3-spells-visible');
   });
 });
