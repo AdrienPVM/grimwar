@@ -29,7 +29,15 @@ test.describe('Wizard — création rapide', () => {
     await page.getByPlaceholder(/Nom de l['']aventurier/i).fill('Wizard Speed');
     await clickNext(page);
 
+    // Magicien : sous-choix de classe niveau 1 SRD — 6 sorts inscrits au
+    // grimoire (plan 13.9). Sans ça, `isClassValid` reste false et Suivant
+    // ne s'active pas. Cf. smoke.spec.ts pour le détail du pattern.
     await page.getByRole('button', { name: /^Magicien( |$)/i }).first().click();
+    const inscribedCheckboxes = page.locator('input[id^="wizard-inscribed-"]');
+    await inscribedCheckboxes.first().waitFor({ state: 'attached', timeout: 5_000 });
+    for (let i = 0; i < 6; i++) {
+      await inscribedCheckboxes.nth(i).check({ force: true });
+    }
     await clickNext(page);
 
     // Humain → 2 sous-choix obligatoires : `ancestrySize` + `ancestryExtraSkill`

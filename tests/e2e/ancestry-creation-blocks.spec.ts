@@ -49,8 +49,12 @@ async function navigateToAncestryStep(page: Page, opts: { name: string }) {
   await page.getByLabel(/^Nom/i).fill(opts.name);
   await wizardNext(page);
 
-  // Étape 2 — Classe : choisir Guerrier (premier dispo, aucun sous-choix de classe).
-  await page.getByRole('button', { name: /Guerrier/i }).first().click();
+  // Étape 2 — Classe : choisir Barde (aucun sous-choix de classe L1 SRD —
+  // contrairement au Guerrier qui exige Fighting Style + 3 Weapon Masteries
+  // depuis le gating plan 13.9). Le Barde laisse `isClassValid` passer dès
+  // que la classe est posée → on peut filer direct à la step Ancestry pour
+  // tester le gating ascendance que cette spec couvre.
+  await page.getByRole('button', { name: /^Barde\b/i }).first().click();
   await wizardNext(page);
 }
 

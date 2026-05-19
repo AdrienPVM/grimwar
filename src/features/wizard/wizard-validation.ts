@@ -8,6 +8,7 @@ import {
 import type { WizardDraft, WizardStepId } from '@/shared/lib/slices/wizard-slice';
 
 import { isAncestrySubChoicesCompleted } from './steps/ancestry/use-ancestry-sub-choices';
+import { areAllClassStepSubChoicesCompleted } from './steps/class/use-class-sub-choices';
 
 /**
  * Validation per-step (plan 05 §C.3.c).
@@ -36,12 +37,17 @@ export function isIdentityValid({ draft }: ValidationContext): boolean {
   return true;
 }
 
-export function isClassValid({ draft }: ValidationContext): boolean {
+export function isClassValid({ draft, classes }: ValidationContext): boolean {
   if (draft.classes.length < 1) return false;
   const sum = draft.classes.reduce((acc, c) => acc + c.level, 0);
   if (sum !== draft.level) return false;
   if (!draft.primaryClassId) return false;
   if (!draft.classes.some((c) => c.classId === draft.primaryClassId)) return false;
+  // Sous-choix de classe niveau 1 SRD (plan 13.9) — exigés à la step Classe
+  // sauf Expertise du Roublard (rendue à la step Compétences). Sans cette
+  // garde, un Guerrier sans Fighting Style, un Clerc sans Ordre divin, un
+  // Magicien sans grimoire de 6 sorts passaient silencieusement la step.
+  if (!areAllClassStepSubChoicesCompleted(draft.classes, classes)) return false;
   return true;
 }
 

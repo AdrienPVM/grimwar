@@ -7,7 +7,6 @@ import { buildSkillProficiencies } from '@/shared/lib/rules/skill-proficiencies'
 import { getDb } from '@/shared/lib/firebase';
 import {
   CharacterSchema,
-  createEmptyClassSubChoices,
   type Character,
   type CharacterClassEntry,
 } from '@/shared/types/character';
@@ -22,6 +21,10 @@ import type { WizardDraft } from '@/shared/lib/slices/wizard-slice';
 
 import { resolveSkillIds } from './steps/skill-resolver';
 import { getMissingAncestrySubChoiceKeys } from './steps/ancestry/use-ancestry-sub-choices';
+import {
+  areAllClassSubChoicesCompleted,
+  getMissingClassSubChoiceKeys,
+} from './steps/class/use-class-sub-choices';
 
 /**
  * Submit wizard → Firestore (plan 05 §F).
@@ -126,6 +129,20 @@ export async function buildCharacterFromWizard(
     );
   }
 
+  // Sous-choix de classe niveau 1 SRD 5.2.1 (plan 13.9) — même contrat de
+  // double-check. Inclut Expertise du Roublard (qui passe par la step Skills
+  // côté UI mais reste un sous-choix de classe au sens schéma).
+  if (!areAllClassSubChoicesCompleted(draft.classes, classes)) {
+    const detail = draft.classes
+      .map((c) => {
+        const keys = getMissingClassSubChoiceKeys(c, classes);
+        return keys.length > 0 ? `${c.classId}: ${keys.join(', ')}` : '';
+      })
+      .filter((s) => s.length > 0)
+      .join(' | ');
+    throw new Error(`[wizard] sous-choix de classe manquant(s) — ${detail}`);
+  }
+
   const primaryClass = classes.find((c) => c.id === draft.primaryClassId);
   if (!primaryClass) {
     throw new Error(
@@ -141,10 +158,17 @@ export async function buildCharacterFromWizard(
     classId: c.classId,
     subclassId: null, // sous-classe choisie au level-up (plan 18)
     level: c.level,
-    // Sous-choix de classe niveau 1 SRD (plan 13.7 §0.1) — sentinelles ici.
-    // Le wizard 13.9 ajoutera des sous-étapes qui peupleront ces champs et
-    // refusera de submit si requis (Fighter Style, Rogue Expertise, etc.).
-    ...createEmptyClassSubChoices(),
+    // Sous-choix de classe niveau 1 SRD propagés du draft (plan 13.9). La
+    // garde `areAllClassSubChoicesCompleted` ci-dessus a déjà rejeté tout
+    // draft incomplet — ici on copie tel quel. Tableaux clonés pour couper
+    // toute référence partagée avec le state Zustand.
+    clericDivineOrder: c.clericDivineOrder,
+    druidPrimalOrder: c.druidPrimalOrder,
+    fighterFightingStyle: c.fighterFightingStyle,
+    weaponMasteries: [...c.weaponMasteries],
+    expertiseSkills: [...c.expertiseSkills],
+    eldritchInvocations: [...c.eldritchInvocations],
+    wizardSpellbookL1: [...c.wizardSpellbookL1],
   }));
   const computedTotalLevel = totalLevel(characterClasses);
 

@@ -160,3 +160,37 @@ export function areAllClassSubChoicesCompleted(
 ): boolean {
   return entries.every((e) => getMissingClassSubChoiceKeys(e, classes).length === 0);
 }
+
+/**
+ * Clés portées par la **step Classe** du wizard. `expertiseSkills` (Roublard)
+ * est rendue à la **step Compétences** (Option B, UAT 2026-05-18) — son pool
+ * dépend des picks de classe choisis là-bas, donc le chooser ne peut pas vivre
+ * à la step Classe. Conséquence pour la garde « Suivant » de la step Classe :
+ * on n'exige pas Expertise ici (sinon le Roublard serait bloqué sur Classe
+ * alors que l'UI ne lui propose pas encore le chooser).
+ */
+export const CLASS_STEP_SUB_CHOICE_KEYS: ReadonlySet<ClassSubChoiceKey> = new Set<ClassSubChoiceKey>([
+  'clericDivineOrder',
+  'druidPrimalOrder',
+  'fighterFightingStyle',
+  'weaponMasteries',
+  'eldritchInvocations',
+  'wizardSpellbookL1',
+]);
+
+/**
+ * Variante de `areAllClassSubChoicesCompleted` qui filtre les sous-choix
+ * rendus en dehors de la step Classe (cf. `CLASS_STEP_SUB_CHOICE_KEYS`).
+ * Consommée par `isClassValid` pour décider si « Suivant » s'active à la
+ * step Classe — sans bloquer le Roublard sur Expertise (qui sera validée
+ * par `isSkillsValid` à la step suivante).
+ */
+export function areAllClassStepSubChoicesCompleted(
+  entries: readonly WizardClassEntry[],
+  classes: readonly ClassEntity[],
+): boolean {
+  return entries.every((entry) => {
+    const missing = getMissingClassSubChoiceKeys(entry, classes);
+    return missing.every((key) => !CLASS_STEP_SUB_CHOICE_KEYS.has(key));
+  });
+}

@@ -288,7 +288,17 @@ function draftReady(patch: Partial<WizardDraft> = {}): WizardDraft {
         weaponMasteries: [],
         expertiseSkills: [],
         eldritchInvocations: [],
-        wizardSpellbookL1: [],
+        // Grimoire L1 complet (6 sorts) — requis par la garde sous-choix
+        // de classe (plan 13.9). Sans ces 6 sorts, `buildCharacterFromWizard`
+        // throw « sous-choix de classe manquant — wizard: wizardSpellbookL1 ».
+        wizardSpellbookL1: [
+          'burning-hands',
+          'mage-armor',
+          'magic-missile',
+          'shield',
+          'sleep',
+          'detect-magic',
+        ],
       },
     ],
     primaryClassId: 'wizard',

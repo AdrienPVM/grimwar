@@ -58,8 +58,18 @@ test.describe('Smoke central — / → /create → /character/:id → /', () => 
     await page.getByPlaceholder(/Nom de l['']aventurier/i).fill('Test Hero Smoke');
     await clickNext(page);
 
-    // 5. Class : pick Magicien (id=wizard, name FR=Magicien).
+    // 5. Class : pick Magicien (id=wizard, name FR=Magicien) + grimoire L1.
+    //    Le Magicien exige 6 sorts inscrits dans son grimoire au niveau 1
+    //    (sous-choix de classe SRD 5.2.1 — plan 13.9). Sans ces 6 sorts cochés,
+    //    `isClassValid` retourne false et le bouton Suivant reste désactivé.
+    //    On coche les 6 premiers checkboxes du chooser (peu importe lesquels) :
+    //    indépendant des noms FR exacts, robuste si l'ordre change.
     await page.getByRole('button', { name: /^Magicien( |$)/i }).first().click();
+    const inscribedCheckboxes = page.locator('input[id^="wizard-inscribed-"]');
+    await inscribedCheckboxes.first().waitFor({ state: 'attached', timeout: 5_000 });
+    for (let i = 0; i < 6; i++) {
+      await inscribedCheckboxes.nth(i).check({ force: true });
+    }
     await clickNext(page);
 
     // 6. Ancestry : pick Humain + sous-choix obligatoires (plan 13.8).
