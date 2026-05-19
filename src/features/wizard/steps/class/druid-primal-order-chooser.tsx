@@ -5,8 +5,10 @@ import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { PRIMAL_ORDER_HELP } from '../../help/primal-order-help';
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
 
+import { ClassChooserHelpPanel } from './class-chooser-help-panel';
 import { asPrimalOrder } from './chooser-utils';
 
 /**
@@ -36,13 +38,17 @@ export function DruidPrimalOrderChooser(): JSX.Element {
   if (options.length === 0)
     return <ChooserMissingDataBanner chooserKey="druid-primal-order" contentType="classes" />;
 
+  const value = entry?.druidPrimalOrder ?? null;
+  const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
+  const selectedTitle = selectedOption ? String(selectedOption.title) : '';
+
   return (
     <div className="flex flex-col gap-4">
       <RadioCardGroup
         legend={t('wizard.subchoice.primalOrder.legend')}
         helper={t('wizard.subchoice.primalOrder.helper')}
         name="classSubChoice-druid-primal-order"
-        value={entry?.druidPrimalOrder ?? null}
+        value={value}
         onValueChange={(next) => {
           const parsed = asPrimalOrder(next);
           if (!parsed) return;
@@ -50,6 +56,10 @@ export function DruidPrimalOrderChooser(): JSX.Element {
         }}
         options={options}
         columns={2}
+      />
+      <ClassChooserHelpPanel
+        title={selectedTitle}
+        entry={value ? PRIMAL_ORDER_HELP[value] : undefined}
       />
     </div>
   );

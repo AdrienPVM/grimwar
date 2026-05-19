@@ -8,6 +8,8 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import type { Invocation } from '@/shared/types/content';
 
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
+import { ELDRITCH_INVOCATION_HELP } from '../../help/eldritch-invocation-help';
+import { HelpPanel } from '../../help/help-panel';
 import { HelpTriggerButton } from '../../help/help-trigger-button';
 import { ListWithHelpPanel } from '../../help/list-with-help-panel';
 
@@ -171,8 +173,12 @@ export function WarlockInvocationChooser(): JSX.Element {
 }
 
 /**
- * Fiche de détail d'une invocation occulte — réutilisée par la modale mobile
- * et le panneau persistant desktop (pattern `SpellHelpPanel`).
+ * Fiche d'une invocation occulte — combine summary du bundle (donnée
+ * mécanique autoritaire) et contenu pédagogique (`ELDRITCH_INVOCATION_HELP`).
+ *
+ * Si le help record n'a pas d'entrée pour cette invocation (cas futur d'une
+ * invocation L2+ ouverte par un sort), on retombe sur le summary du bundle
+ * seul — pas de placeholder vide.
  */
 function InvocationHelpPanel({
   invocation,
@@ -181,22 +187,47 @@ function InvocationHelpPanel({
   invocation: Invocation;
   headingId?: string;
 }): JSX.Element {
+  const help = ELDRITCH_INVOCATION_HELP[invocation.id];
+  const name = localize(invocation.name);
+  const summary = localize(invocation.summary);
+  const prerequisite = invocation.prerequisiteOther
+    ? localize(invocation.prerequisiteOther)
+    : null;
+
+  if (!help) {
+    return (
+      <div className="flex flex-col gap-3 rounded-card border border-soft bg-bg-3/30 p-5">
+        <h3 id={headingId} className="font-display text-display text-gold-bright">
+          {name}
+        </h3>
+        {prerequisite ? (
+          <p className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            {prerequisite}
+          </p>
+        ) : null}
+        <p className="font-serif text-body text-text">{summary}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-soft bg-bg-3/30 p-5">
-      <h3
-        id={headingId}
-        className="font-display text-display text-gold-bright"
-      >
-        {localize(invocation.name)}
-      </h3>
-      {invocation.prerequisiteOther ? (
-        <p className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          {localize(invocation.prerequisiteOther)}
-        </p>
-      ) : null}
-      <p className="font-serif text-body text-text">
-        {localize(invocation.summary)}
-      </p>
-    </div>
+    <HelpPanel
+      title={name}
+      tagline={help.tagline}
+      whyChoose={help.whyChoose}
+      inGame={help.inGame}
+      difficulty={help.difficulty}
+      headingId={headingId}
+      extra={
+        <div className="flex flex-col gap-2 border-t border-soft pt-3">
+          {prerequisite ? (
+            <p className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+              {prerequisite}
+            </p>
+          ) : null}
+          <p className="font-serif text-body text-text-secondary">{summary}</p>
+        </div>
+      }
+    />
   );
 }

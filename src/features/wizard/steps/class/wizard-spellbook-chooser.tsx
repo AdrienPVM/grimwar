@@ -8,9 +8,11 @@ import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import type { Spell } from '@/shared/types/content';
 
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
+import { HelpPanel } from '../../help/help-panel';
 import { HelpTriggerButton } from '../../help/help-trigger-button';
 import { ListWithHelpPanel } from '../../help/list-with-help-panel';
 import { SpellHelpPanel } from '../../help/spell-help-panel';
+import { WIZARD_SPELLBOOK_HELP } from '../../help/wizard-spellbook-help';
 
 import { toggleBoundedSelection } from './chooser-utils';
 import {
@@ -115,6 +117,13 @@ export function WizardSpellbookChooser(): JSX.Element {
 
   const list = (
     <fieldset className="flex flex-col gap-5 border-0 p-0 m-0">
+      <HelpPanel
+        title={WIZARD_SPELLBOOK_HELP.title}
+        tagline={WIZARD_SPELLBOOK_HELP.tagline}
+        whyChoose={WIZARD_SPELLBOOK_HELP.whyChoose}
+        inGame={WIZARD_SPELLBOOK_HELP.inGame}
+        difficulty={WIZARD_SPELLBOOK_HELP.difficulty}
+      />
       <div className="flex flex-col gap-2">
         <legend className="font-title text-meta text-text-secondary uppercase tracking-[0.16em]">
           {t('wizard.subchoice.wizardSpellbook.inscribedLegend')}

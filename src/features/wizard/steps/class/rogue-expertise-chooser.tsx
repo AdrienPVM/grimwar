@@ -6,6 +6,8 @@ import { localize, t } from '@/shared/lib/i18n';
 import { getSkill } from '@/shared/lib/rules/skills';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { EXPERTISE_HELP } from '../../help/expertise-help';
+import { HelpPanel } from '../../help/help-panel';
 import { resolveSkillIds } from '../skill-resolver';
 import { ChooserDependencyHint } from '../chooser-dependency-hint';
 
@@ -94,7 +96,14 @@ export function RogueExpertiseChooser(): JSX.Element | null {
   const reachedCap = selected.length >= count;
 
   return (
-    <fieldset className="flex flex-col gap-3 border-0 p-0 m-0">
+    <fieldset className="flex flex-col gap-4 border-0 p-0 m-0">
+      <HelpPanel
+        title={EXPERTISE_HELP.title}
+        tagline={EXPERTISE_HELP.tagline}
+        whyChoose={EXPERTISE_HELP.whyChoose}
+        inGame={EXPERTISE_HELP.inGame}
+        difficulty={EXPERTISE_HELP.difficulty}
+      />
       <legend className="font-title text-meta text-text-secondary uppercase tracking-[0.16em]">
         {t('wizard.subchoice.expertise.legend')}
       </legend>

@@ -1,4 +1,4 @@
-import { useMemo, type JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 
 import { cn } from '@/shared/lib/cn';
 import { useContent } from '@/shared/hooks/use-content';
@@ -7,6 +7,9 @@ import { getEligibleWeaponMasteryIds } from '@/shared/lib/rules/weapon-mastery';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import type { WeaponMasteryProperty } from '@/shared/types/content';
 
+import { WEAPON_MASTERY_HELP } from '../../help/weapon-mastery-help';
+import { HelpPanel } from '../../help/help-panel';
+import { ListWithHelpPanel } from '../../help/list-with-help-panel';
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
 
 import { toggleBoundedSelection } from './chooser-utils';
@@ -23,23 +26,15 @@ import { getRequiredCount } from './use-class-sub-choices';
  * Multi-sélection bornée : tap sur une carte cochée → décoche ; tap sur une
  * carte non cochée → coche si on a encore de la place, sinon refuse (UX :
  * grise visuellement les cartes restantes quand on a atteint la borne).
+ *
+ * Panneau d'aide (plan 13.9 commit 2) : preview latérale (hover/focus) qui
+ * décrit la propriété Mastery de l'arme survolée. Source unique des libellés
+ * FR = `WEAPON_MASTERY_HELP[prop].label`.
  */
 interface Props {
   /** classId concerné (présent dans `draft.classes[]`). */
   classId: string;
 }
-
-/** Petits labels FR pour les 8 propriétés Mastery. Source : SRD 5.2.1 §C.1. */
-const MASTERY_LABELS_FR: Record<WeaponMasteryProperty, string> = {
-  cleave: 'Cisaille',
-  graze: 'Égratignure',
-  nick: 'Encoche',
-  push: 'Repoussée',
-  sap: 'Sape',
-  slow: 'Ralentie',
-  topple: 'Renverse',
-  vex: 'Tourment',
-};
 
 export function WeaponMasteryChooser({ classId }: Props): JSX.Element {
   const items = useContent('items');
@@ -61,6 +56,9 @@ export function WeaponMasteryChooser({ classId }: Props): JSX.Element {
 
   const selected = entry?.weaponMasteries ?? [];
 
+  const [previewProperty, setPreviewProperty] =
+    useState<WeaponMasteryProperty | null>(null);
+
   if (eligible.length === 0 || count === 0)
     return (
       <ChooserMissingDataBanner
@@ -72,7 +70,7 @@ export function WeaponMasteryChooser({ classId }: Props): JSX.Element {
   const remaining = count - selected.length;
   const reachedCap = selected.length >= count;
 
-  return (
+  const list = (
     <fieldset className="flex flex-col gap-3 border-0 p-0 m-0">
       <legend className="font-title text-meta text-text-secondary uppercase tracking-[0.16em]">
         {t('wizard.subchoice.weaponMastery.legend')}
@@ -103,11 +101,13 @@ export function WeaponMasteryChooser({ classId }: Props): JSX.Element {
           const checked = selected.includes(it.id);
           const disabled = !checked && reachedCap;
           const property = it.masteryProperty as WeaponMasteryProperty;
-          const label = MASTERY_LABELS_FR[property];
+          const label = WEAPON_MASTERY_HELP[property].label;
           return (
             <label
               key={it.id}
               htmlFor={`weapon-mastery-${classId}-${it.id}`}
+              onMouseEnter={() => setPreviewProperty(property)}
+              onFocus={() => setPreviewProperty(property)}
               className={cn(
                 'group relative flex min-h-[68px] cursor-pointer flex-col gap-1 rounded-card border p-3',
                 'transition-all duration-150 ease-base',
@@ -145,5 +145,24 @@ export function WeaponMasteryChooser({ classId }: Props): JSX.Element {
         })}
       </div>
     </fieldset>
+  );
+
+  const previewEntry = previewProperty ? WEAPON_MASTERY_HELP[previewProperty] : null;
+
+  return (
+    <ListWithHelpPanel
+      list={list}
+      panel={
+        previewEntry ? (
+          <HelpPanel
+            title={previewEntry.label}
+            tagline={previewEntry.tagline}
+            whyChoose={previewEntry.effect}
+            inGame={[previewEntry.example]}
+          />
+        ) : null
+      }
+      panelKey={previewProperty ? `mastery:${previewProperty}` : undefined}
+    />
   );
 }

@@ -5,8 +5,10 @@ import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { DIVINE_ORDER_HELP } from '../../help/divine-order-help';
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
 
+import { ClassChooserHelpPanel } from './class-chooser-help-panel';
 import { asDivineOrder } from './chooser-utils';
 
 /**
@@ -36,13 +38,17 @@ export function ClericDivineOrderChooser(): JSX.Element {
   if (options.length === 0)
     return <ChooserMissingDataBanner chooserKey="cleric-divine-order" contentType="classes" />;
 
+  const value = entry?.clericDivineOrder ?? null;
+  const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
+  const selectedTitle = selectedOption ? String(selectedOption.title) : '';
+
   return (
     <div className="flex flex-col gap-4">
       <RadioCardGroup
         legend={t('wizard.subchoice.divineOrder.legend')}
         helper={t('wizard.subchoice.divineOrder.helper')}
         name="classSubChoice-cleric-divine-order"
-        value={entry?.clericDivineOrder ?? null}
+        value={value}
         onValueChange={(next) => {
           const parsed = asDivineOrder(next);
           if (!parsed) return;
@@ -50,6 +56,10 @@ export function ClericDivineOrderChooser(): JSX.Element {
         }}
         options={options}
         columns={2}
+      />
+      <ClassChooserHelpPanel
+        title={selectedTitle}
+        entry={value ? DIVINE_ORDER_HELP[value] : undefined}
       />
     </div>
   );

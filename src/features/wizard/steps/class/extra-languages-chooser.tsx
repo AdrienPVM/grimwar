@@ -5,6 +5,8 @@ import { localize, t } from '@/shared/lib/i18n';
 import { LANGUAGES, type LanguageEntry } from '@/shared/lib/rules/languages';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
+import { LANGUAGE_HELP } from '../../help/extra-languages-help';
+
 import { toggleBoundedSelection } from './chooser-utils';
 
 /**
@@ -71,6 +73,7 @@ export function ExtraLanguagesChooser({ count, alreadyKnown = [] }: Props): JSX.
         {pool.map((lang) => {
           const checked = selected.includes(lang.id);
           const disabled = !checked && reachedCap;
+          const help = LANGUAGE_HELP[lang.id];
           return (
             <label
               key={lang.id}
@@ -109,6 +112,11 @@ export function ExtraLanguagesChooser({ count, alreadyKnown = [] }: Props): JSX.
                   ? t('wizard.subchoice.extraLanguages.tierRare')
                   : t('wizard.subchoice.extraLanguages.tierStandard')}
               </span>
+              {help ? (
+                <span className="mt-1 font-serif text-[12px] text-text-secondary leading-snug">
+                  {help.shortDescription}
+                </span>
+              ) : null}
             </label>
           );
         })}

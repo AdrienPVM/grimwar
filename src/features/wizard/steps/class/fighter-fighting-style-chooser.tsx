@@ -6,8 +6,10 @@ import { localize, t } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { fightingStyleSchema } from '@/shared/types/character';
 
+import { FIGHTING_STYLE_HELP } from '../../help/fighting-style-help';
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
 
+import { ClassChooserHelpPanel } from './class-chooser-help-panel';
 import { asFightingStyle } from './chooser-utils';
 
 /**
@@ -46,13 +48,17 @@ export function FighterFightingStyleChooser(): JSX.Element {
   if (options.length === 0)
     return <ChooserMissingDataBanner chooserKey="fighter-fighting-style" contentType="feats" />;
 
+  const value = entry?.fighterFightingStyle ?? null;
+  const selectedOption = value ? options.find((o) => o.value === value) ?? null : null;
+  const selectedTitle = selectedOption ? String(selectedOption.title) : '';
+
   return (
     <div className="flex flex-col gap-4">
       <RadioCardGroup
         legend={t('wizard.subchoice.fightingStyle.legend')}
         helper={t('wizard.subchoice.fightingStyle.helper')}
         name="classSubChoice-fighter-fighting-style"
-        value={entry?.fighterFightingStyle ?? null}
+        value={value}
         onValueChange={(next) => {
           const parsed = asFightingStyle(next);
           if (!parsed) return;
@@ -60,6 +66,10 @@ export function FighterFightingStyleChooser(): JSX.Element {
         }}
         options={options}
         columns={2}
+      />
+      <ClassChooserHelpPanel
+        title={selectedTitle}
+        entry={value ? FIGHTING_STYLE_HELP[value] : undefined}
       />
     </div>
   );
