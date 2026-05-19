@@ -147,8 +147,8 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 
 ## D6 — Fiche de personnage non responsive desktop
 
-- **Owner** : nouveau plan à créer, probablement en fin de S1 ou début S2. Adrien fera l'audit détaillé mode par mode avant cadrage.
-- **Statut** : ouverte. Détectée lors de l'UAT plan 05 du 16 mai 2026, à l'atterrissage sur la fiche après création de personnage.
+- **Owner** : **plan 13.14** (`plans/13.14-sheet-responsive-desktop.md`, cadrage acté 2026-05-19 — position roadmap indicative, peut être remontée par Adrien).
+- **Statut** : ouverte. Détectée lors de l'UAT plan 05 du 16 mai 2026, à l'atterrissage sur la fiche après création de personnage. Owner précis posé 2026-05-19.
 - **Cause-racine** : les 5 modes de la fiche (`combat` / `essence` / `magie` / `avoir` / `ame`, plans 06-12) ont été construits **mobile-first** sans pass desktop. À large viewport, le layout mobile s'étire (cards pleine largeur, padding sous-utilisé) au lieu d'exploiter l'espace disponible (2 cols, sticky sidebar, dense par endroit).
 - **Conséquence** : la fiche est utilisable mais ergonomiquement sous-optimale sur écran large. Pas bloquant pour le MJ qui joue sur téléphone (cas nominal), gênant pour les usages annexes (préparation de session sur PC).
 - **Surface impactée (à confirmer après audit)** :
@@ -158,7 +158,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **Hors scope du wizard (plan 05)** : aucune correction de la fiche dans le lot wizard. La dette est seulement **tracée** ici pour que la mémoire de projet la garde.
 - **Critère de complétion** :
   1. Audit mode-par-mode par Adrien (PC + grand écran).
-  2. Plan dédié créé et numéroté.
+  2. Plan dédié créé et numéroté. ✅ — plan 13.14 livré 2026-05-19 (cadrage).
   3. Chaque mode revu avec breakpoints `md:` + `lg:` (et `xl:` quand pertinent).
   4. UAT navigateur 1024 + 1440 + 1920 px validée par Adrien.
   5. Cette entrée bascule en `## Résolu` avec le hash du commit final.

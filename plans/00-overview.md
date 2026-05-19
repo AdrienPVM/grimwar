@@ -2,7 +2,7 @@
 
 47 plans across 5 sprints. Numbered, sequential. Pick lowest unfinished. Each has explicit DoD.
 
-## Sprint 1 — Table-ready MVP (21 plans)
+## Sprint 1 — Table-ready MVP (22 plans)
 
 Adrien joue Lyralei sur son téléphone à la prochaine session.
 
@@ -29,6 +29,7 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 13.10 | [Cleanup spells.json SRD strict](./13.10-srd-spells-cleanup.md) — 44 renames PHB 2014→SRD 5.2.1 + 21 ajouts + 18 retraits hors-SRD via script déterministe | **NEW (comblage SRD jalon 1)** |
 | 13.11 | [Système d'import de contenu custom](./13.11-custom-content-import.md) — format `grimwar-content-pack.json` + validateur + UI campagne (mécanisme générique vide de contenu) | **NEW (jalon 1 — mécanisme, pas de contenu)** |
 | 13.12 | [Matrice de tests de parcours + Vérité du contenu](./13.12-test-matrix-and-content-truth.md) — helpers `content-truth/*`, 20 entrées SRD reference figées, combinatoire L1 (classe × ascendance × background × variant) | **STUB (politique active, mécanique à livrer)** |
+| 13.14 | [Fiche + wizard pleinement responsive (mobile / tablet / desktop)](./13.14-sheet-responsive-desktop.md) — coquille 2 cols `lg:`, modes adaptés, audit wizard, tests layout DOM (pas pixel-diff), owner D6 | **NEW (position indicative — peut être remontée, pas verrou dur)** |
 | 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12/12.5) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
