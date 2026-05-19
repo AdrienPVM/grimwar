@@ -28,6 +28,7 @@ Adrien joue Lyralei sur son téléphone à la prochaine session.
 | 13.9 | [Sous-choix de classe L1 + Weapon Mastery](./13.9-srd-class-sub-choices.md) — Divine Order / Primal Order / Fighting Style / Weapon Mastery (5 classes) / Expertise / Eldritch Invocations / langues | **NEW (comblage SRD jalon 1)** |
 | 13.10 | [Cleanup spells.json SRD strict](./13.10-srd-spells-cleanup.md) — 44 renames PHB 2014→SRD 5.2.1 + 21 ajouts + 18 retraits hors-SRD via script déterministe | **NEW (comblage SRD jalon 1)** |
 | 13.11 | [Système d'import de contenu custom](./13.11-custom-content-import.md) — format `grimwar-content-pack.json` + validateur + UI campagne (mécanisme générique vide de contenu) | **NEW (jalon 1 — mécanisme, pas de contenu)** |
+| 13.12 | [Matrice de tests de parcours + Vérité du contenu](./13.12-test-matrix-and-content-truth.md) — helpers `content-truth/*`, 20 entrées SRD reference figées, combinatoire L1 (classe × ascendance × background × variant) | **STUB (politique active, mécanique à livrer)** |
 | 11 | [Radial FAB menu](./11-radial-fab.md) — gesture, wedges, sub-menus (consomme le moteur 12/12.5) | TODO |
 | 13 | [PWA + deploy v0.0.1](./13-pwa-deploy.md) — manifest, SW, install, Firebase Hosting | TODO |
 
