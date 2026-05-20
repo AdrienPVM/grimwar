@@ -105,7 +105,7 @@ export const ELF_LINEAGES: ElfLineageOption[] = [
     id: 'high-elf',
     name: { fr: 'Haut-elfe', en: 'High Elf' },
     benefit: {
-      fr: "Swap du cantrip de lignage à chaque repos long (parmi la liste Magicien).",
+      fr: "Swap du sort mineur de lignage à chaque repos long (parmi la liste Magicien).",
       en: 'Swap your lineage cantrip on each long rest (from the Wizard list).',
     },
     cantripSpellId: 'prestidigitation',

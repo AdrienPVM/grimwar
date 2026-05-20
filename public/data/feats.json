@@ -241,7 +241,7 @@
     "category": "origin",
     "prerequisite": null,
     "summary": {
-      "fr": "Choisissez une liste (Clerc, Druide ou Magicien) : vous apprenez 2 cantrips + 1 sort de niveau 1 (lancé une fois par repos long sans slot). Choisissez Int, Sag ou Cha comme caractéristique d'incantation.",
+      "fr": "Choisissez une liste (Clerc, Druide ou Magicien) : vous apprenez 2 sorts mineurs + 1 sort de niveau 1 (lancé une fois par repos long sans slot). Choisissez Int, Sag ou Cha comme caractéristique d'incantation.",
       "en": "Pick a class spell list (Cleric, Druid, or Wizard): learn 2 cantrips + 1 level-1 spell (castable once per long rest without a slot). Choose Int, Wis, or Cha as casting ability."
     },
     "description": null,

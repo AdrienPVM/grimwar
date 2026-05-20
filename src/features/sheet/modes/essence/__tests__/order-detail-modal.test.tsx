@@ -74,8 +74,8 @@ describe('<OrderDetailModal>', () => {
   it('cat. 2 — identité : le name fourni est rendu EXACTEMENT, summary aussi', () => {
     const cases = [
       { name: 'Protecteur', summary: "Clerc de première ligne : maîtrise des armes de guerre + formation à l'armure lourde." },
-      { name: 'Thaumaturge', summary: 'Clerc érudit : 1 cantrip Clerc supplémentaire + bonus aux tests INT (Arcana ou Religion) égal au modificateur de Sagesse (min +1).' },
-      { name: 'Mage', summary: 'Druide-sorcier : 1 cantrip Druide supplémentaire + bonus aux tests INT (Arcana ou Nature) égal au modificateur de Sagesse (min +1).' },
+      { name: 'Thaumaturge', summary: 'Clerc érudit : 1 sort mineur Clerc supplémentaire + bonus aux tests INT (Arcana ou Religion) égal au modificateur de Sagesse (min +1).' },
+      { name: 'Mage', summary: 'Druide-sorcier : 1 sort mineur Druide supplémentaire + bonus aux tests INT (Arcana ou Nature) égal au modificateur de Sagesse (min +1).' },
       { name: 'Gardien', summary: "Druide-gardien : maîtrise des armes de guerre + formation à l'armure intermédiaire." },
     ];
     for (const { name, summary } of cases) {

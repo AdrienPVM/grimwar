@@ -62,11 +62,11 @@ export const ELDRITCH_INVOCATION_HELP: Record<string, EldritchInvocationHelpEntr
     difficulty: 'medium',
   },
   'pact-of-the-tome': {
-    tagline: 'Un Codex des Ombres : 3 cantrips et 2 sorts rituels en plus',
+    tagline: 'Un Codex des Ombres : 3 sorts mineurs et 2 sorts rituels en plus',
     whyChoose:
       'Tu veux étoffer ton arsenal magique avec des sorts piochés dans n’importe quelle liste de classe. Le pacte le plus polyvalent.',
     inGame: [
-      '3 tours de magie au choix dans n’importe quelle classe',
+      '3 sorts mineurs au choix dans n’importe quelle classe',
       '2 sorts de niveau 1 (rituels uniquement) au choix dans n’importe quelle classe',
       'Tous sont écrits dans ton Codex des Ombres',
     ],

@@ -15,7 +15,7 @@ export const TIEFLING_LEGACY_HELP: Record<TieflingLegacy, AncestryHelpEntry> = {
     whyChoose:
       'Tu veux un Tieffelin né d’une descendance démoniaque. Poison, déchaînement, frénésie sauvage.',
     inGame: [
-      'Lancer Bouffée empoisonnée (cantrip — nuage toxique)',
+      'Lancer Bouffée empoisonnée (sort mineur — nuage toxique)',
       'Résister naturellement au poison',
       'Apprendre Rayon de maladie au niveau 3, Immobilisation de personne au niveau 5',
     ],
@@ -26,7 +26,7 @@ export const TIEFLING_LEGACY_HELP: Record<TieflingLegacy, AncestryHelpEntry> = {
     whyChoose:
       'Tu veux un personnage marqué par la mort. Énergie nécrotique, drain vital, lien avec les outre-mondes glacés.',
     inGame: [
-      'Lancer Contact glacial (cantrip — sape les morts-vivants)',
+      'Lancer Contact glacial (sort mineur — sape les morts-vivants)',
       'Résister aux dégâts nécrotiques',
       'Apprendre Fausse vie au niveau 3, Rayon d’affaiblissement au niveau 5',
     ],
@@ -37,7 +37,7 @@ export const TIEFLING_LEGACY_HELP: Record<TieflingLegacy, AncestryHelpEntry> = {
     whyChoose:
       'Le Tieffelin canonique. Feu, malice diabolique, sorts qui brûlent et qui dominent.',
     inGame: [
-      'Lancer Trait de feu (cantrip — projectile incandescent)',
+      'Lancer Trait de feu (sort mineur — projectile incandescent)',
       'Résister aux flammes',
       'Apprendre Châtiment infernal au niveau 3, Ténèbres au niveau 5',
     ],

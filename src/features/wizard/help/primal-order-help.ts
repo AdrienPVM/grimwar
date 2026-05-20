@@ -24,7 +24,7 @@ export const PRIMAL_ORDER_HELP: Record<string, PrimalOrderHelpEntry> = {
     whyChoose:
       'Tu veux faire pleuvoir des éclairs, faire pousser des ronces, transformer un caillou en serpent. La magie d’abord.',
     inGame: [
-      'Un tour de magie Druide supplémentaire',
+      'Un sort mineur Druide supplémentaire',
       'Quand tu fais un test d’Intelligence (Arcanes) ou (Nature), tu ajoutes ton modificateur de Sagesse (minimum +1) au résultat',
       'Le combat se gagne par les sorts',
     ],

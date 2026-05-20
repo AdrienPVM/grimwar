@@ -76,7 +76,7 @@ export const SRD_INVOCATIONS: SrdInvocationEntry[] = [
     prerequisiteWarlockLevel: null,
     prerequisiteOther: null,
     summary: {
-      fr: 'Codex des Ombres : 3 cantrips au choix de n\'importe quelle classe + 2 sorts L1 rituels au choix de n\'importe quelle classe.',
+      fr: 'Codex des Ombres : 3 sorts mineurs au choix de n\'importe quelle classe + 2 sorts L1 rituels au choix de n\'importe quelle classe.',
       en: 'Book of Shadows: 3 cantrips of your choice from any class + 2 ritual level-1 spells of your choice from any class.',
     },
     source: 'srd-5.2.1',
@@ -88,11 +88,11 @@ export const SRD_INVOCATIONS: SrdInvocationEntry[] = [
     name: { fr: 'Décharge déchirante', en: 'Agonizing Blast' },
     prerequisiteWarlockLevel: 2,
     prerequisiteOther: {
-      fr: 'Connaître un cantrip Occultiste à attaque',
+      fr: 'Connaître un sort mineur Occultiste à attaque',
       en: 'Must know a Warlock attack cantrip',
     },
     summary: {
-      fr: "Ajoutez votre modificateur de Charisme aux dégâts du cantrip d'attaque choisi.",
+      fr: "Ajoutez votre modificateur de Charisme aux dégâts du sort mineur d'attaque choisi.",
       en: 'Add your Charisma modifier to the damage of your chosen attack cantrip.',
     },
     source: 'srd-5.2.1',
@@ -114,7 +114,7 @@ export const SRD_INVOCATIONS: SrdInvocationEntry[] = [
     prerequisiteWarlockLevel: 2,
     prerequisiteOther: null,
     summary: {
-      fr: 'La portée de vos cantrips Occultiste à attaque est doublée.',
+      fr: 'La portée de vos sorts mineurs Occultiste à attaque est doublée.',
       en: 'The range of your Warlock attack cantrips doubles.',
     },
     source: 'srd-5.2.1',
@@ -179,11 +179,11 @@ export const SRD_INVOCATIONS: SrdInvocationEntry[] = [
     name: { fr: 'Décharge répulsive', en: 'Repelling Blast' },
     prerequisiteWarlockLevel: 2,
     prerequisiteOther: {
-      fr: 'Connaître un cantrip Occultiste à attaque',
+      fr: 'Connaître un sort mineur Occultiste à attaque',
       en: 'Must know a Warlock attack cantrip',
     },
     summary: {
-      fr: 'Quand vous touchez avec votre cantrip d\'attaque, vous repoussez la créature de 3 m.',
+      fr: 'Quand vous touchez avec votre sort mineur d\'attaque, vous repoussez la créature de 3 m.',
       en: 'When you hit a creature with your attack cantrip, push it 10 ft. away.',
     },
     source: 'srd-5.2.1',

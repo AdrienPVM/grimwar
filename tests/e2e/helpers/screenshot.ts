@@ -36,24 +36,42 @@ import { type Page, type TestInfo } from '@playwright/test';
  * capture qui échoue (browser fermé, viewport invalide) est traitée en
  * `console.warn`, pas en `throw` — la galerie est un complément, pas une
  * gate.
+ *
+ * **Pleine page obligatoire** (`fullPage: true`) — acté 2026-05-19 suite à
+ * l'UAT 4c où les captures viewport-only ne montraient qu'un fragment de
+ * la fiche scrollable, rendant la validation impossible. Une capture
+ * tronquée n'est pas une validation. Si un panneau interne a son propre
+ * overflow (scroll indépendant du document), `fullPage` ne le capturera
+ * pas — à traiter au cas par cas via un screenshot ciblé sur l'élément.
+ *
+ * **Exception modales — double-capture (`viewport: true`)** acté 2026-05-20
+ * suite à l'UAT 4c : une modale ouverte par-dessus la fiche reste dans le
+ * flux du document quand `fullPage` reprojette toute la hauteur, donc le
+ * ressenti d'overlay (backdrop, ancrage `items-end` mobile, position
+ * stacking) est illisible. Pour ces cas, ajouter une seconde capture
+ * `viewport: true` en plus de la pleine page. Le ressenti visuel se lit sur
+ * la capture viewport ; le contenu textuel exhaustif sur la pleine page.
  */
 export async function takeStepScreenshot(
   page: Page,
   testInfo: TestInfo,
   step: string,
+  options: { viewport?: boolean } = {},
 ): Promise<void> {
   const specSlug = slugify(testInfo.titlePath.slice(-1)[0] ?? 'unknown');
   const dir = path.join('test-results', 'screenshots', specSlug);
-  const filename = `${zeroPadStep(testInfo)}-${slugify(step)}.png`;
+  const fullPage = options.viewport !== true;
+  const suffix = fullPage ? '' : '-viewport';
+  const filename = `${zeroPadStep(testInfo)}-${slugify(step)}${suffix}.png`;
   const target = path.join(dir, filename);
   try {
     mkdirSync(dir, { recursive: true });
     const buffer = await page.screenshot({
       path: target,
-      fullPage: false,
+      fullPage,
       animations: 'disabled',
     });
-    await testInfo.attach(`${step}.png`, {
+    await testInfo.attach(`${step}${suffix}.png`, {
       body: buffer,
       contentType: 'image/png',
     });

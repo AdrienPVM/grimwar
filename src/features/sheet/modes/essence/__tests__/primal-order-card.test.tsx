@@ -8,7 +8,10 @@ import type {
 } from '@/shared/types/character';
 
 import { PrimalOrderCard } from '../primal-order-card';
-import { expectNoForbiddenEnglish } from '../../../../../../tests/helpers/i18n-guard';
+import {
+  expectNoForbiddenEnglish,
+  expectNoForbiddenNonOfficialFr,
+} from '../../../../../../tests/helpers/i18n-guard';
 
 import classesBundle from '../../../../../../public/data/classes.json';
 
@@ -164,13 +167,25 @@ describe('<PrimalOrderCard>', () => {
     }
   });
 
-  it('aucune fuite EN dans la carte (i18n-guard, plan 13.9 commit hotfix 4a)', () => {
-    const character = buildCharacter([
-      classEntry({ classId: 'druid', druidPrimalOrder: 'magician' }),
-    ]);
-    const { container } = render(<PrimalOrderCard character={character} />);
-    expectNoForbiddenEnglish(container.textContent ?? '', 'PrimalOrderCard');
-  });
+  /**
+   * Itération exhaustive sur les 2 ordres primordiaux : Mage porte
+   * « cantrip » dans son `summary.fr` du bundle SRD (4a + 4b), puis sa
+   * 1ère correction a introduit « tour de magie » (terme non-officiel
+   * Baldur's Gate 3) là où le PHB FR officiel utilise « sort mineur ».
+   * Le test couvre les deux pièges via le i18n-guard étendu.
+   */
+  it.each<PrimalOrder>(['magician', 'warden'])(
+    'aucune fuite EN ni terme FR non-officiel dans la carte pour l\'ordre %s (i18n-guard)',
+    (slug) => {
+      const character = buildCharacter([
+        classEntry({ classId: 'druid', druidPrimalOrder: slug }),
+      ]);
+      const { container } = render(<PrimalOrderCard character={character} />);
+      const text = container.textContent ?? '';
+      expectNoForbiddenEnglish(text, `PrimalOrderCard:${slug}`);
+      expectNoForbiddenNonOfficialFr(text, `PrimalOrderCard:${slug}`);
+    },
+  );
 
   // ───────────────────────────────────────────────────────────────────────
   // Commit 4c — carte cliquable + modale détail (parité avec Divine Order).

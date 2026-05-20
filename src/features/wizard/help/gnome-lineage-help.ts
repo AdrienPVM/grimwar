@@ -14,7 +14,7 @@ export const GNOME_LINEAGE_HELP: Record<GnomeLineage, AncestryHelpEntry> = {
     whyChoose:
       'Tu veux un personnage discret qui communique avec les bêtes et improvise des illusions pour tromper.',
     inGame: [
-      'Lancer Illusion mineure (cantrip — son ou image trompeuse)',
+      'Lancer Illusion mineure (sort mineur — son ou image trompeuse)',
       'Parler aux animaux comme un rituel sans dépenser de sort (PB fois par repos long)',
       'Idéal pour un Roublard ou un Magicien malicieux',
     ],
@@ -25,8 +25,8 @@ export const GNOME_LINEAGE_HELP: Record<GnomeLineage, AncestryHelpEntry> = {
     whyChoose:
       'Tu veux du concret. Mending pour réparer, Prestidigitation pour le quotidien, et la fabrication de petits jouets mécaniques.',
     inGame: [
-      'Lancer Réparation (cantrip — restaure un objet brisé)',
-      'Lancer Prestidigitation (cantrip — petits effets utiles)',
+      'Lancer Réparation (sort mineur — restaure un objet brisé)',
+      'Lancer Prestidigitation (sort mineur — petits effets utiles)',
       'Fabriquer un appareil mécanique de taille TP en 10 minutes (jouet, boîte à musique, allume-feu)',
     ],
     difficulty: 'medium',

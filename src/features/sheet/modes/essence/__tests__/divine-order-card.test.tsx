@@ -8,7 +8,10 @@ import type {
 } from '@/shared/types/character';
 
 import { DivineOrderCard } from '../divine-order-card';
-import { expectNoForbiddenEnglish } from '../../../../../../tests/helpers/i18n-guard';
+import {
+  expectNoForbiddenEnglish,
+  expectNoForbiddenNonOfficialFr,
+} from '../../../../../../tests/helpers/i18n-guard';
 
 import classesBundle from '../../../../../../public/data/classes.json';
 
@@ -171,13 +174,26 @@ describe('<DivineOrderCard>', () => {
     }
   });
 
-  it('aucune fuite EN dans la carte (i18n-guard, plan 13.9 commit hotfix 4a)', () => {
-    const character = buildCharacter([
-      classEntry({ classId: 'cleric', clericDivineOrder: 'protector' }),
-    ]);
-    const { container } = render(<DivineOrderCard character={character} />);
-    expectNoForbiddenEnglish(container.textContent ?? '', 'DivineOrderCard');
-  });
+  /**
+   * Iteration exhaustive sur les 2 ordres : Thaumaturge porte un anglicisme
+   * connu (« cantrip ») dans son `summary.fr` du bundle SRD — capture ratée
+   * en commit 4b parce que seul Protecteur était sous garde-fou (Cat. 6
+   * « cas-limites » : tester l'autre branche obligatoire). Étendu 2026-05-20
+   * (UAT 4c bis) aux termes FR non-officiels (« tour de magie » → la
+   * traduction officielle PHB FR est « sort mineur »).
+   */
+  it.each<DivineOrder>(['protector', 'thaumaturge'])(
+    'aucune fuite EN ni terme FR non-officiel dans la carte pour l\'ordre %s (i18n-guard)',
+    (slug) => {
+      const character = buildCharacter([
+        classEntry({ classId: 'cleric', clericDivineOrder: slug }),
+      ]);
+      const { container } = render(<DivineOrderCard character={character} />);
+      const text = container.textContent ?? '';
+      expectNoForbiddenEnglish(text, `DivineOrderCard:${slug}`);
+      expectNoForbiddenNonOfficialFr(text, `DivineOrderCard:${slug}`);
+    },
+  );
 
   // ───────────────────────────────────────────────────────────────────────
   // Commit 4c — la carte devient cliquable et ouvre une modale détail

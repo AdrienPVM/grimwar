@@ -13,6 +13,10 @@ coverage/
 playwright-report/
 test-results/
 
+# UAT review folder — visual captures gathered per UI commit for Adrien to review.
+# Vidé et reconstitué à chaque commit UI ; jamais versionné.
+uat-review/
+
 # Logs
 *.log
 npm-debug.log*

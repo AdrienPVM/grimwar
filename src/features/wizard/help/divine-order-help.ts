@@ -35,7 +35,7 @@ export const DIVINE_ORDER_HELP: Record<string, DivineOrderHelpEntry> = {
     whyChoose:
       'Tu veux un prêtre savant — tu lances un sort de plus, tes tests de connaissance arcaniques et religieux deviennent excellents.',
     inGame: [
-      'Un tour de magie Clerc supplémentaire',
+      'Un sort mineur Clerc supplémentaire',
       'Quand tu fais un test d’Intelligence (Arcanes) ou (Religion), tu ajoutes ton modificateur de Sagesse (minimum +1) au résultat',
       'Tu te bats par les sorts plus que par l’épée',
     ],

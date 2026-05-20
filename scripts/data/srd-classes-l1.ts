@@ -36,7 +36,7 @@ export const CLERIC_DIVINE_ORDERS: DivineOrderEntry[] = [
     id: 'thaumaturge',
     name: { fr: 'Thaumaturge', en: 'Thaumaturge' },
     summary: {
-      fr: "Clerc érudit : 1 cantrip Clerc supplémentaire + bonus aux tests INT (Arcana ou Religion) égal au modificateur de Sagesse (min +1).",
+      fr: "Clerc érudit : 1 sort mineur Clerc supplémentaire + bonus aux tests INT (Arcana ou Religion) égal au modificateur de Sagesse (min +1).",
       en: 'Scholarly cleric: 1 extra Cleric cantrip + bonus to Int (Arcana or Religion) checks equal to Wis modifier (min +1).',
     },
   },
@@ -47,7 +47,7 @@ export const DRUID_PRIMAL_ORDERS: PrimalOrderEntry[] = [
     id: 'magician',
     name: { fr: 'Mage', en: 'Magician' },
     summary: {
-      fr: "Druide-sorcier : 1 cantrip Druide supplémentaire + bonus aux tests INT (Arcana ou Nature) égal au modificateur de Sagesse (min +1).",
+      fr: "Druide-sorcier : 1 sort mineur Druide supplémentaire + bonus aux tests INT (Arcana ou Nature) égal au modificateur de Sagesse (min +1).",
       en: 'Druid-mage: 1 extra Druid cantrip + bonus to Int (Arcana or Nature) checks equal to Wis modifier (min +1).',
     },
   },

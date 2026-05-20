@@ -367,7 +367,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.method.point-buy': 'Achat de points',
     'wizard.method.manual': 'Manuel',
     'wizard.label.pointsRemaining': 'Points restants',
-    'wizard.label.cantrips': 'Sorts mineurs (cantrips)',
+    'wizard.label.cantrips': 'Sorts mineurs',
     'wizard.label.level1Spells': 'Sorts de niveau 1',
     'wizard.label.option': 'Option',
     'wizard.label.cost': 'Coût',
@@ -412,7 +412,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.help.equipment.intro':
       "Ton paquetage de départ. Chaque classe propose une ou deux options — choisis celle qui te ressemble. L'historique ajoute quelques objets en plus.",
     'wizard.help.spells.intro':
-      "Tu peux lancer des sorts ! Les sorts mineurs (cantrips) sont gratuits et illimités. Les sorts de niveau 1 consomment un emplacement à chaque lancement — tu en récupères tous au repos long. Survole un sort pour lire ses effets avant de choisir.",
+      "Tu peux lancer des sorts ! Les sorts mineurs sont gratuits et illimités. Les sorts de niveau 1 consomment un emplacement à chaque lancement — tu en récupères tous au repos long. Survole un sort pour lire ses effets avant de choisir.",
     'wizard.help.recap.intro':
       "Voici ton personnage en clair. Tu peux modifier une section en cliquant sur ✎, ou créer la fiche directement.",
     'wizard.helpPanel.hint':
@@ -456,11 +456,11 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.subchoice.dragonAncestry.impactPrefix': 'Dégâts et résistance',
     'wizard.subchoice.tieflingLegacy.legend': 'Héritage fiélon',
     'wizard.subchoice.tieflingLegacy.helper':
-      'Trois lignées infernales possibles. Chacune débloque un sort mineur (cantrip) au niveau 1 et des sorts plus puissants aux niveaux 3 et 5, avec une résistance correspondante.',
+      'Trois lignées infernales possibles. Chacune débloque un sort mineur au niveau 1 et des sorts plus puissants aux niveaux 3 et 5, avec une résistance correspondante.',
     'wizard.subchoice.tieflingLegacy.resistancePrefix': 'Résistance',
     'wizard.subchoice.elfLineage.legend': 'Lignage elfique',
     'wizard.subchoice.elfLineage.helper':
-      'Trois lignages possibles : Drow (vision dans le noir étendue), Haut-elfe (sortilèges arcaniques) ou Elfe sylvestre (mobilité accrue). Chacun apporte son propre cantrip.',
+      'Trois lignages possibles : Drow (vision dans le noir étendue), Haut-elfe (sortilèges arcaniques) ou Elfe sylvestre (mobilité accrue). Chacun apporte son propre sort mineur.',
     'wizard.subchoice.gnomeLineage.legend': 'Lignage gnome',
     'wizard.subchoice.gnomeLineage.helper':
       "Forêts (illusion + parler aux animaux) ou Roches (réparation + petits appareils mécaniques).",
@@ -507,7 +507,7 @@ const STRINGS: Record<Locale, Dict> = {
       'Encore quelques choix qui fixent ton style de jeu. Tu pourras tout consulter à la fiche plus tard.',
     'wizard.subchoice.divineOrder.legend': 'Ordre divin',
     'wizard.subchoice.divineOrder.helper':
-      'Deux écoles de clercs : Protecteur, en première ligne avec bouclier et armure lourde ; Thaumaturge, érudit des mystères divins avec un cantrip supplémentaire.',
+      'Deux écoles de clercs : Protecteur, en première ligne avec bouclier et armure lourde ; Thaumaturge, érudit des mystères divins avec un sort mineur supplémentaire.',
     'wizard.subchoice.primalOrder.legend': 'Ordre primordial',
     'wizard.subchoice.primalOrder.helper':
       'Deux voies de druides : Magicien (sortilèges + bonus aux tests Intelligence liés à la nature) ou Gardien (armes martiales + armure intermédiaire pour défendre physiquement la nature).',
@@ -545,7 +545,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
-    'spell.level.cantrip': 'Sort mineur (cantrip)',
+    'spell.level.cantrip': 'Sort mineur',
     'spell.level.prefix': 'Niveau',
     'spell.meta.castingTime': 'Temps d’incantation',
     'spell.meta.range': 'Portée',
