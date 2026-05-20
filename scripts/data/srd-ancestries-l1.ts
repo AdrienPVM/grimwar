@@ -46,18 +46,20 @@ export interface TieflingLegacyOption {
 // Slugs FR pour aligner sur `public/data/spells.json` (qui n'expose que des
 // IDs FR). Fix Bug 1 UAT 2026-05-18 — cf. `tests/content-referential-integrity.test.ts`.
 //
-// `rayon-de-maladie` (Ray of Sickness) et `feinte-vie` (False Life) sont
-// référencés ici par fidélité SRD 5.2.1 MAIS encore absents du bundle FR
-// `spells.json` au moment du fix → dette D9 (à livrer par plan 13.10).
-// Le runtime `AncestrySpellsCard` skip silencieusement le sort manquant —
-// les autres slots (cantrip + L5) du même héritage s'affichent normalement.
+// DEBT D9 résolue (plan 13.10) : les slugs L3 Tieffelin pointent désormais vers
+// des sorts présents dans le bundle FR. `rayon-empoisonne` (Ray of Sickness,
+// abyssal) et `simulacre-de-vie` (False Life, chthonic) ont été corrigés sur le
+// JSON live en 13.10/4 et remontés ici (source de vérité de l'extracteur) en
+// 13.10b/2 — vérifiés contre `FR_SRD_CC_v5.2.1.txt`. Sans ce remontée,
+// `extract-srd-ancestries.ts` réécrirait `options` depuis ce module et
+// reverterait le fix au prochain `content:build`.
 export const TIEFLING_LEGACIES: TieflingLegacyOption[] = [
   {
     id: 'abyssal',
     name: { fr: 'Abyssal', en: 'Abyssal' },
     resistance: { fr: 'Poison', en: 'Poison' },
     cantripSpellId: 'bouffee-de-poison',
-    level3SpellId: 'rayon-de-maladie', // DEBT D9 — absent du bundle FR jusqu'à 13.10.
+    level3SpellId: 'rayon-empoisonne', // DEBT D9 résolue (Ray of Sickness, slug FR bundle).
     level5SpellId: 'immobilisation-de-personne',
   },
   {
@@ -65,7 +67,7 @@ export const TIEFLING_LEGACIES: TieflingLegacyOption[] = [
     name: { fr: 'Chtonien', en: 'Chthonic' },
     resistance: { fr: 'Nécrotique', en: 'Necrotic' },
     cantripSpellId: 'contact-glacial',
-    level3SpellId: 'feinte-vie', // DEBT D9 — absent du bundle FR jusqu'à 13.10.
+    level3SpellId: 'simulacre-de-vie', // DEBT D9 résolue (False Life, slug FR bundle).
     level5SpellId: 'rayon-affaiblissant',
   },
   {

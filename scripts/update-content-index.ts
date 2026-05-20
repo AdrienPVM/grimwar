@@ -77,13 +77,30 @@ async function main(): Promise<void> {
   }
   const contentHash = hash.digest('hex');
 
+  const indexPath = join(OUT_DIR, 'index.json');
+
+  // `generatedAt` STABLE (finding D, plan 13.10b) : on ne bumpe l'horodatage
+  // QUE si le `contentHash` a changé. Sinon `git diff --quiet public/data` ne
+  // serait jamais quiet (le timestamp bougerait à chaque run) et le critère
+  // d'idempotence dur de D17 serait inatteignable. Cohérent avec le rôle
+  // d'utilitaire ré-appelable manuellement : un re-run sans changement de
+  // contenu ne touche pas le fichier.
+  let generatedAt = new Date().toISOString();
+  try {
+    const prev = JSON.parse(await readFile(indexPath, 'utf-8')) as Partial<IndexFile>;
+    if (prev.contentHash === contentHash && typeof prev.generatedAt === 'string') {
+      generatedAt = prev.generatedAt;
+    }
+  } catch {
+    // Pas d'index existant (ou illisible) → on horodate maintenant.
+  }
+
   const index: IndexFile = {
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     counts,
     contentHash,
   };
 
-  const indexPath = join(OUT_DIR, 'index.json');
   await writeFile(indexPath, JSON.stringify(index, null, 2) + '\n', 'utf-8');
 
   console.log(
