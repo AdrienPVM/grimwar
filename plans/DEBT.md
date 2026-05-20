@@ -395,6 +395,34 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   4. Tests d'identité du contenu (les 6 catégories) sur les 4 statblocks.
   5. Cette entrée bascule en `## Résolu` avec le hash du commit.
 
+## D15 — Artefacts de letter-spacing résiduels en corps de texte du bundle `spells`
+
+- **Owner** : mini-plan dédié post-13.10 (ou queue de fin de 13.10 selon planning). À ownerer avant le plan 19 (Bibliothèque) qui rend les descriptions de sorts en pleine page.
+- **Statut** : ouverte. Tracée 2026-05-20 à la livraison du plan 13.10 commit 1, scope confirmé par Adrien (pas de mini-commit immédiat — passe systématique dédiée).
+- **Cause-racine** : l'extraction texte du PDF SRD a inséré des espaces parasites en plein milieu de mots du **corps de texte** des descriptions (pas seulement les titres). Exemples relevés : `« no a ns wer »` (≈ « no answer ») dans 3 sorts EN (`augure` / `communion` / `divination`), `« Vot re »` ×5, etc. Distinct de `normalizeSpacedTitle` (`scripts/bootstrap-srd-spells.ts`) qui ne corrige QUE les titres letter-spacés — le corps de texte n'a pas de passe équivalente.
+- **Conséquence** : cosmétique, pas un bug fonctionnel (le sort reste lisible et mécaniquement correct). Mais visible en lecture pleine page → à nettoyer avant la Bibliothèque (plan 19).
+- **Pourquoi pas corrigé au commit 1/2 du plan 13.10** : (1) le commit 1 a déjà un périmètre dense (pairing, gate, 20 fix structurels, D14, extracteur, tests) — greffer une passe transversale = commit fourre-tout ; (2) cosmétique, non bloquant ; (3) mérite sa propre passe avec audit complet du nombre d'occurrences + regex auditable + allowlist (pour les cas légitimes type abréviations « p. ex. »).
+- **Critère de complétion** :
+  1. Audit du nombre exact d'occurrences (combien de sorts, combien de fragments) sur le bundle régénéré.
+  2. Regex auditable de dé-letter-spacing du corps de texte + allowlist explicite des faux positifs (abréviations, sigles légitimes).
+  3. Test versionné garde-fou (échoue sur réintroduction d'un fragment letter-spacé connu).
+  4. Bascule en `## Résolu` avec le hash du commit.
+
+## D16 — Écart audit D.3 ↔ réconciliation réelle des renames/ajouts/retraits de sorts
+
+- **Owner** : plan 13.10 commit 5 (annotation de `docs/AUDIT-SRD-COMPLETUDE.md > D.3`). Cette dette est un **flag de divergence à acter**, pas un bug à corriger dans le bundle.
+- **Statut** : ouverte. Tracée 2026-05-20 au commit 2 du plan 13.10 (réconciliation). Aucune auto-extension de l'audit — flag à Adrien comme l'exige la procédure du plan (step 8).
+- **Cause-racine** : l'audit D.3 ESTIMAIT la transition 2014→SRD à **~44 renames / ~21 ajouts / ~18 retraits** (heuristique, non vérifiée entrée par entrée). La réconciliation réelle (`scripts/__tests__/spell-audit-reconciliation.test.ts`, intrant = `scripts/maps/spell-renames-2014-to-2024.ts` + snapshot gelé `scripts/data/legacy-spell-ids-2014.ts`) donne **50 renames / 16 ajouts / 7 retraits** (273 inchangés ; partition exhaustive, 0 ID orphelin). La source de vérité est le module SRD (`scripts/data/srd-spells.ts`, dérivé du SRD CC) — l'audit était une estimation.
+- **Détail des divergences** (toutes bénignes — aucune ne révèle un bug de parse ; vérifié contre `SRD_CC_v5.2.1.txt`) :
+  1. **6 « ajouts » de l'audit sont en réalité des renames** (le sort existait sous l'ancien nom) : `esprit-faible`→`alienation` (Befuddlement), `animation-d-objets`→`animation-des-objets` (Animate Objects), `contrat`→`entrave-planaire` (Planar Binding), `terraformage`→`glissement-de-terrain` (Move Earth), `urne-magique`→`possession` (Magic Jar), `marche-sur-le-vent`→`vent-divin` (Wind Walk).
+  2. **L'entrée audit « imprécation | Hex » est erronée deux fois** : `imprecation` (« Imprécation ») = **Bane** (rename de `fleau`), et **Hex** = « Maléfice » était DÉJÀ présent (ID inchangé). Aucun des deux n'était manquant.
+  3. **L'entrée audit « vent divin | Divine Word » est erronée** : « Vent divin » = **Wind Walk** (rename de `marche-sur-le-vent`) ; **Divine Word** = « Parole divine » était DÉJÀ présent. Confirmé via `FR_SRD_CC_v5.2.1.txt` (lignes 18205 / 20583).
+  4. **2 ajouts que l'audit n'a pas listés** : `elementalisme` (Elementalism) et `eruption-ensorcelee` (Sorcerous Burst) — cantrips nouveaux 2024.
+  5. **7 retraits réels** (et non ~18 estimés ; chaque EN vérifié absent du SRD CC) : `amis` (Friends), `armure-d-agathys` (Armor of Agathys), `fouet-epineux` (Thorn Whip), `nuee-de-dagues` (Cloud of Daggers), `protection-contre-les-armes` (Blade Ward), `sens-animal` (Beast Sense), `trait-ensorcele` (Witch Bolt).
+- **Critère de complétion** :
+  1. `docs/AUDIT-SRD-COMPLETUDE.md > D.3` annoté avec les nombres réconciliés (50/16/7) et le détail ci-dessus, référence au commit (plan 13.10 commit 5, step 23).
+  2. Bascule en `## Résolu` avec le hash du commit.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
