@@ -174,6 +174,8 @@ Le cantrip Thaumaturgy (Otherworldly Presence) est automatique, mais utilise la 
 
 ⚠️ **Changement majeur 2024** : les anciens Pact Boons L3 (Blade/Chain/Tome) sont devenus des invocations accessibles dès L1.
 
+> **État implémentation (2026-05-20, plan 13.9 commit 4e)** : sous-choix posé au wizard (`warlock-invocation-chooser`, gate Suivant) ET **rendu sur la fiche** en mode Essence (`InvocationsCard` « Manifestations occultes », chaque invocation cliquable → modale identité). **Moteur mécanique des 3 Pacts (Tome → sorts accordés / Chain → familier / Blade → arme de pacte) + passifs (Armure d'ombres CA / Esprit occulte concentration) → différés en `plans/DEBT.md > D13`.** Terminologie FR officielle : « Manifestation occulte » (Black Book Editions PHB FR).
+
 **Wizard — Spellbook** : 6 sorts L1 dans le grimoire + 4 préparés au démarrage parmi ces 6. Cantrips : 3.
 
 ### B.3 — Compétences à choisir L1 par classe (nombre + parmi quoi)

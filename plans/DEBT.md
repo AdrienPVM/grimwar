@@ -347,6 +347,36 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - plan 13.8b > Goal — pointe ici.
   - `docs/AUDIT-SRD-COMPLETUDE.md` — lignes Elf / Gnome / Tiefling annotées « rendu sheet OK (13.8b), cast → D12 ».
 
+## D13 — Manifestations occultes (Warlock) : carte rendue affichage-seul, moteur pact-of-the-tome / pact-of-the-chain différé
+
+- **Owner** : plan dédié à créer post-13.11. Piste : intégration au plan futur « Long Rest + Daily Resources » + au plan « Pact Magic » (slots Warlock courts à recharge short-rest). À ownerer explicitement avant la livraison du premier plan S3 qui touche au moteur de sorts.
+- **Statut** : ouverte. Tracée 2026-05-20 à la livraison du plan 13.9 commit 4e.
+- **Cause-racine** : le plan 13.9 commit 4e a livré la **consultation** des Manifestations occultes (Eldritch Invocations) — `InvocationsCard` en mode Essence, chaque invocation cliquable ouvrant `OrderDetailModal` (nom + summary du bundle). Il a explicitement laissé hors périmètre toute **mécanique active** côté invocation, car l'app L1 ne câble encore aucun moteur d'action/rituel sur ces capacités. Les 3 Pacts (Blade / Chain / Tome) sont ceux qui débloqueront du contenu mécanique — afficher un bouton « Lancer » / « Invoquer » dessus aujourd'hui ferait un faux signal d'interaction.
+- **Conséquence** : l'utilisateur consulte ses invocations sur la fiche (mode Essence) mais ne peut pas (encore) en déclencher les effets mécaniques depuis l'app. Non-bloquant pour le jeu de table à L1 (les 5 invocations L1 sont majoritairement passives/permanentes) ; incomplet vis-à-vis de la promesse « tap-to-roll » dès que les pacts ouvrent du contenu actif.
+- **Détail par invocation L1** (les 5 sans prérequis de niveau, cf. `docs/AUDIT-SRD-COMPLETUDE.md > C.3`) :
+  1. **Armure d'ombres** (`armor-of-shadows`) — *Mage Armor* à volonté sur soi. Passif (CA dérivée) → à câbler côté calcul de CA quand le moteur le portera, pas un cast ponctuel.
+  2. **Esprit occulte** (`eldritch-mind`) — avantage aux jets de Constitution pour maintenir la concentration. Passif → modificateur de règle, pas d'action.
+  3. **Pacte de la lame** (`pact-of-the-blade`) — invoque une arme de pacte (Cha à l'attaque/dégâts, type de dégâts au choix). **Moteur d'arme à câbler** : créer une entrée d'attaque virtuelle en mode Combat, stat d'incantation = Cha. Différé.
+  4. **Pacte de la chaîne** (`pact-of-the-chain`) — familier amélioré (4 formes spéciales). **Carte « Familier » + compteur à câbler.** Différé. (cf. plan 13.9 step 30.)
+  5. **Pacte du grimoire** (`pact-of-the-tome`) — ajoute 3 cantrips + 2 sorts L1 rituels au répertoire. **Granting de sorts à câbler** : peupler `knownSpells['warlock-tome']` au moment du choix (wizard ou level-up), rendus en mode Magie avec source distincte. Différé. (cf. plan 13.9 step 30.)
+- **Surface impactée (au moment du fix)** :
+  - `src/features/sheet/modes/essence/invocations-card.tsx` — bornage actuel (consultation seule), pointe ici.
+  - `src/features/wizard/submit-from-wizard.ts` (ou level-up) — granting `pact-of-the-tome` → `knownSpells`.
+  - `src/features/sheet/modes/combat/` — entrée d'attaque virtuelle « arme de pacte » pour `pact-of-the-blade`.
+  - `src/features/sheet/modes/combat/` — carte « Familier » + compteur pour `pact-of-the-chain`.
+  - `src/shared/lib/rules/` — CA dérivée *Mage Armor* (`armor-of-shadows`), avantage concentration (`eldritch-mind`).
+- **Critère de complétion** :
+  1. `pact-of-the-tome` peuple `knownSpells` (3 cantrips + 2 rituels L1), rendus en mode Magie avec source distincte.
+  2. `pact-of-the-blade` rend une entrée d'attaque en mode Combat (stat = Cha, type de dégâts au choix).
+  3. `pact-of-the-chain` rend une carte « Familier » avec compteur d'usage le cas échéant.
+  4. `armor-of-shadows` impacte la CA dérivée ; `eldritch-mind` impacte l'avantage concentration.
+  5. Tests rouge-puis-vert pour chaque branche câblée.
+  6. Cette entrée bascule en `## Résolu` avec le hash du commit.
+- **Notes liées** :
+  - `src/features/sheet/modes/essence/invocations-card.tsx` — commentaire de bornage pointe ici (corrigé 2026-05-20 : pointait par erreur sur D12, qui est la dette cast d'ascendance — sans rapport).
+  - `docs/AUDIT-SRD-COMPLETUDE.md > C.3` — annotée « rendu sheet OK (13.9 commit 4e, Essence), moteur → D13 ».
+  - Distincte de **D12** (mécanique cast des sorts **d'ascendance**) : structure parallèle (consultation livrée / moteur différé), périmètres disjoints (ascendance vs classe Warlock).
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).

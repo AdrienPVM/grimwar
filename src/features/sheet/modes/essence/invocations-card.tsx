@@ -27,7 +27,7 @@ interface InvocationsCardProps {
  * `pact-of-the-chain` ajoute un familier rituel. Mais l'app L1 ne câble
  * ENCORE aucun moteur d'action/rituel sur ces capacités. Les afficher en
  * Combat / Magie ferait un faux signal d'interaction. L'Essence est le siège
- * canonique tant que l'intégration profonde n'existe pas (cf. DEBT D12 pour
+ * canonique tant que l'intégration profonde n'existe pas (cf. DEBT D13 pour
  * `pact-of-the-tome` / `pact-of-the-chain` côté moteur de sorts).
  *
  * Chaque invocation est cliquable → ouvre `<OrderDetailModal>` réutilisée
