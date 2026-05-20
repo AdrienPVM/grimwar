@@ -448,6 +448,45 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - CLAUDE.md > Decision log > « Interdit `pnpm content:build` (REQUALIFIÉ) » — pointe ici.
   - `plans/DEBT.md > D9` — la cause sorts est résolue ; D17 est la nouvelle (et vraie) raison de l'interdit.
 
+## D18 — Tieffelin « Présence d'outre-monde » : sort de thaumaturgie non injecté dans `knownSpells.ancestry`
+
+- **Owner** : mini-plan content fix dédié à créer (piste : lot court « sorts de traits d'ascendance non injectés », à ownerer avant le plan 19 Bibliothèque qui rend les sorts connus). Lié à D12 (mécanique de cast des sorts d'ascendance) — D18 est un trou de **contenu** (le sort manque), D12 un trou de **moteur** (le sort présent n'est pas castable).
+- **Statut** : ouverte. Découverte 2026-05-20 via le runner combinatoire (plan 13.12 commit 3), pendant le calibrage des pins de comptes de sorts d'ascendance.
+- **Cause-racine** : le trait SRD officiel **Présence d'outre-monde** (*Fiendish Legacy*) accorde au Tieffelin le sort mineur **Thaumaturgie** (*Thaumaturgy*) connu dès le niveau 1. Dans le bundle, ce sort vit uniquement comme **texte descriptif** dans `tiefling.traits[]` — `buildAncestrySpellIds()` (`submit-from-wizard.ts`) ne pousse dans `knownSpells.ancestry` que le **triplet d'héritage** de la legacy choisie (`cantripSpellId` + `level3SpellId` + `level5SpellId`), jamais la thaumaturgie de base commune à toutes les legacies. Conséquence mesurée par le runner : un Tieffelin a `knownSpells.ancestry.length === 3` (triplet), pas 4 (triplet + thaumaturgie).
+- **Conséquence** : la thaumaturgie n'apparaît pas dans la liste des sorts connus de la fiche (mode Magie) et n'est donc pas castable depuis l'app pour un Tieffelin. Non-bloquant à L1 (cantrip utilitaire mineur), mais c'est une **lacune de contenu**, pas un choix éditorial — option (a) actée par Adrien 2026-05-20 (vs option (b) fix immédiat = scope creep dans le plan matrice ; option (c) « choix assumé » = dette refoulée sous un faux nom).
+- **À investiguer dans le mini-plan** : d'autres ascendances ont-elles des sorts de traits non injectés de la même manière ? Pistes citées : **Drakéide** (souffle / sort de lignage draconique), **Gnome** (« Présence inattendue » / autres traits raciaux à sort). Audit transversal de tous les `*.traits[]` mentionnant un sort vs ce que `buildAncestrySpellIds()` injecte réellement.
+- **Surface impactée (au moment du fix)** :
+  - `src/features/wizard/submit-from-wizard.ts > buildAncestrySpellIds()` — injecter la thaumaturgie commune Tieffelin (et tout autre sort de trait identifié) dans `knownSpells.ancestry`.
+  - `public/data/ancestries.json` — possiblement un champ structuré `commonSpellIds[]` au niveau de l'ancestry (pas de la legacy) pour porter la thaumaturgie sans la coder en dur dans le builder.
+  - `tests/wizard-matrix/matrix.test.ts` + pins — le compte ancestry Tieffelin passe de **3 → 4** (et total **9 → 10**) quand D18 est résolue ; le pin documente déjà ce basculement attendu.
+- **Critère de complétion** :
+  1. La thaumaturgie est injectée dans `knownSpells.ancestry` pour tout Tieffelin à la création.
+  2. Audit transversal des autres ascendances à sort de trait non injecté : chaque cas trouvé est soit corrigé, soit tracé.
+  3. Pin matrice Tieffelin ré-aligné à `ancestry: 4` / `total: 10`, rouge-avant-vert prouvé.
+  4. Cette entrée bascule en `## Résolu` avec le hash du commit.
+- **Notes liées** :
+  - `tests/wizard-matrix/matrix.test.ts` — le pin Tieffelin porte le commentaire « si D18 résolue → 4 ».
+  - `plans/DEBT.md > D12` — mécanique de cast des sorts d'ascendance (trou de moteur, distinct).
+
+## D19 — Style de combat `defense` n'applique aucun bonus de CA au build (sous-choix snapshot-invariant)
+
+- **Owner** : plan dédié au calcul de CA dérivée par style de combat (piste : plan « Combat avancé » ou le plan qui câblera la CA d'armure réelle sur la fiche, S2/S3). À ownerer avant tout plan qui prétend rendre la CA correcte pour un Guerrier en armure.
+- **Statut** : ouverte. Découverte 2026-05-20 via le runner combinatoire (plan 13.12 commit 3), en actant la position v1 de la matrice sur les sous-choix L1 (« un sous-choix canonique par classe, variations hors v1 tant que snapshot-invariantes »).
+- **Cause-racine** : le style de combat **Défense** (*Defense*) du SRD accorde **+1 CA tant que le personnage porte une armure**. Dans le build courant, `buildClassEntry` pose `fighterFightingStyle: 'defense'` sur le draft, mais `buildCharacterFromWizard` **n'applique pas** ce +1 à la CA dérivée : `character.ac === 10 + modDEX` pour le Guerrier (prouvé par l'invariant `baseAc` de la matrice, vert). La **valeur** du sous-choix (`defense` vs `dueling` vs `archery`…) ne modifie **aucun champ** capturé par le snapshot — `defense` est donc aujourd'hui indistinguable de `dueling` du point de vue `Character`.
+- **Conséquence** : la CA d'un Guerrier « Défense » en armure est sous-évaluée de 1 sur la fiche. Non-bloquant tant que la CA d'armure réelle n'est pas câblée (le build pose une CA de base `10 + DEX`, l'armure équipée dérive ailleurs — cf. `baseAc` vs CA effective). Mais c'est un écart **non SRD-conforme** à terme.
+- **Lien avec la position matrice v1** : cette dette est la **raison documentée** pour laquelle la matrice ne teste pas les variations de style de combat. Tant que `defense` est snapshot-invariant, une persona « guerrier·dueling » produirait un snapshot identique à « guerrier·defense » → la tester serait un test cargo-cult. **Trigger de revisite** : le jour où D19 est résolue (defense → +1 CA), le sous-choix devient snapshot-discriminant → on ajoute une persona de variation à la matrice pour figer le delta de CA.
+- **Surface impactée (au moment du fix)** :
+  - `src/features/wizard/submit-from-wizard.ts` (ou le calcul de CA dérivée) — appliquer +1 CA quand `fighterFightingStyle === 'defense'` ET armure équipée.
+  - `src/features/sheet/modes/combat/` — affichage CA respectant le style.
+  - `tests/wizard-matrix/` — persona « guerrier·dueling » ajoutée pour figer que `defense` (+1 CA armure) ≠ `dueling` (0 CA, bonus dégâts).
+- **Critère de complétion** :
+  1. `defense` applique +1 CA en armure ; les autres styles appliquent leur effet propre.
+  2. Persona de variation de style ajoutée à la matrice (snapshot désormais discriminant).
+  3. Test rouge-avant-vert sur le delta de CA.
+  4. Cette entrée bascule en `## Résolu` avec le hash du commit.
+- **Notes liées** :
+  - `tests/wizard-matrix/matrix.test.ts` — en-tête « Position matrice v1 sur les sous-choix L1 » cite D19 comme exemple canonique du critère snapshot-invariant.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
