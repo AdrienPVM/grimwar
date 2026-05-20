@@ -102,6 +102,65 @@ test.describe('Wizard — gating Class step', () => {
     await divineOrderRadios.first().check({ force: true });
     await expectNextEnabled(page);
   });
+
+  /**
+   * Roublard — subtilité « Option B » de 13.9 (plan + UAT 2026-05-18).
+   *
+   * Le chooser Expertise du Roublard est rendu à l'étape **Compétences**,
+   * PAS à l'étape Classe. Raison : le pool des compétences éligibles dépend
+   * du background + ancestry-extra-skill + picks-de-classe, dont aucun
+   * n'est encore arrêté à l'étape Classe. Mettre le chooser à Classe ferait
+   * une bannière « panne » trompeuse (pool vide structurel).
+   *
+   * NB pour le gating Class step : le Roublard a quand même un sous-choix
+   * de classe à L1 — Weapon Mastery (2 armes, parité Guerrier). C'est ce
+   * sous-choix qui gate Suivant ici, PAS l'Expertise. La subtilité Option
+   * B porte uniquement sur l'Expertise, qui doit être absente du Class
+   * step et ne bloque rien tant qu'on n'a pas avancé à Compétences.
+   *
+   * Le gating réel de l'Expertise (Skills step) est couvert par les
+   * tests jsdom de `rogue-expertise-flow.test.tsx` (notamment `isSkillsValid :
+   * Roublard est INVALIDE tant que expertiseSkills.length < 2`) — ce qui
+   * évite un e2e long traversant 6 étapes du wizard juste pour atterrir
+   * à Compétences. La couverture matricielle est complète : e2e ici pour
+   * la subtilité Class-step (présence Weapon Mastery + absence Expertise),
+   * jsdom là-bas pour le gating Skills-step.
+   */
+  test('Roublard : gate sur Weapon Mastery (2 armes) à Classe, AUCUN chooser Expertise à Classe (subtilité Option B)', async ({
+    page,
+  }) => {
+    await goToClassStep(page, 'Roublard Gating');
+
+    await page.getByRole('button', { name: /^Roublard( |$)/i }).first().click();
+    await expectNextDisabled(page);
+
+    // Test négatif (subtilité Option B) : AUCUN input rogue-expertise-*
+    // n'est rendu à l'étape Classe — c'est précisément ce qui distingue ce
+    // chooser des autres et constitue la subtilité. Si une régression
+    // réintroduisait le chooser Expertise ici, les locators matcheraient
+    // et la spec rougit.
+    await expect(
+      page.locator('input[id^="rogue-expertise-"]'),
+      'Aucun input rogue-expertise-* ne doit exister à l\'étape Classe (Option B — chooser vit à Compétences, là où le pool est calculable).',
+    ).toHaveCount(0);
+    // L'étape Classe affiche au plus un `ChooserDependencyHint` (texte
+    // explicatif), pas le vrai `<RogueExpertiseChooser>` (qui rendrait un
+    // `<input>`). Locator générique sur le mot « Expertise » NON suffisant
+    // (les autres choosers peuvent le mentionner via help/labels) — c'est
+    // la présence des inputs qui prouve le rendu actif du chooser.
+
+    // Pose les 2 Weapon Masteries du Roublard → Suivant doit s'activer
+    // (parité Guerrier : Weapon Mastery est un sous-choix de Classe step,
+    // 2 armes pour le Roublard vs 3 pour le Guerrier).
+    const weaponMasteries = page.locator('input[id^="weapon-mastery-rogue-"]');
+    await weaponMasteries
+      .first()
+      .waitFor({ state: 'attached', timeout: 5_000 });
+    await weaponMasteries.nth(0).check({ force: true });
+    await expectNextDisabled(page);
+    await weaponMasteries.nth(1).check({ force: true });
+    await expectNextEnabled(page);
+  });
 });
 
 /**

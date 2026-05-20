@@ -517,6 +517,67 @@ export const wizardL1Grimoire: SeedPreset = {
 };
 
 /**
+ * Roublard niv. 1 avec Expertise sur Discrétion + Escamotage (plan 13.9
+ * commit 5 — render Essence des compétences avec Expertise).
+ *
+ * Background `criminal` donne Discrétion + Escamotage en maîtrise simple.
+ * Roublard L1 ajoute Expertise sur 2 compétences MAÎTRISÉES — choix typique :
+ * doubler la maîtrise de Discrétion + Escamotage (cf. classes.json[rogue]
+ * features L1 : « Escamotage et Discrétion sont recommandés si vous en avez
+ * la maîtrise »). Cat. 6 « cas-limites » de la testing policy 2026-05-19 :
+ * Expertise sur compétence DÉJÀ maîtrisée → valeur finale = 2 (Expertise),
+ * pas 3 — la double mention background + classe ne stacke pas.
+ *
+ * Rogue picks 4 skills (`classSkillCount = 4`) : on prend acrobatics +
+ * perception en + des 2 du background pour avoir 4 maîtrises distinctes,
+ * dont 2 portent l'Expertise. État final attendu :
+ *   - stealth = 2 (Expertise)
+ *   - sleight-of-hand = 2 (Expertise)
+ *   - acrobatics = 1 (maîtrise)
+ *   - perception = 1 (maîtrise)
+ *
+ * Cat. 4 (calculs de règles) côté spec : avec Dex 14 (+2) et Sag 10 (0)
+ * et bonus de maîtrise L1 = +2, on attend :
+ *   - Discrétion / Escamotage = +2 (Dex) + 2 × 2 (Expertise) = +6
+ *   - Acrobaties = +2 (Dex) + 2 (maîtrise) = +4
+ *   - Perception = 0 (Sag) + 2 (maîtrise) = +2
+ *
+ * Ces chiffres sont assertés EXACTEMENT par la spec e2e Rogue Expertise.
+ */
+export const rogueL1Expertise: SeedPreset = {
+  name: 'Sif des Toits-Brisés',
+  classes: [
+    {
+      classId: 'rogue',
+      subclassId: null,
+      level: 1,
+      subChoices: {
+        expertiseSkills: ['stealth', 'sleight-of-hand'],
+      },
+    },
+  ],
+  primaryClassId: 'rogue',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'criminal',
+  abilities: { for: 10, dex: 14, con: 12, int: 12, sag: 10, cha: 14 },
+  hp: { current: 9, max: 9 },
+  ac: 13,
+  hitDice: [{ classId: 'rogue', current: 1, max: 1, die: 'd8' }],
+  saves: { dex: true, int: true },
+  // Maîtrise simple (1) pour acrobaties + perception (picks classe), Expertise
+  // (2) pour stealth + sleight-of-hand (overlap classe expertise + background).
+  // Le sheet runtime `SkillsList` lit directement `character.skills[skillId]`
+  // pour décider du losange (Expertise) vs cercle (maîtrise).
+  skills: {
+    stealth: 2,
+    'sleight-of-hand': 2,
+    acrobatics: 1,
+    perception: 1,
+  },
+};
+
+/**
  * Occultiste niv. 1 avec 1 manifestation L1 « Armure d'ombres » (plan 13.9
  * commit 4e). Cas de test du mode Essence — la carte « Manifestations
  * occultes » est rendue et tappable ; la modale détail réutilise la primitive
