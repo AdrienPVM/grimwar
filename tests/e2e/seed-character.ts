@@ -517,6 +517,69 @@ export const wizardL1Grimoire: SeedPreset = {
 };
 
 /**
+ * Occultiste niv. 1 avec 1 manifestation L1 « Armure d'ombres » (plan 13.9
+ * commit 4e). Cas de test du mode Essence — la carte « Manifestations
+ * occultes » est rendue et tappable ; la modale détail réutilise la primitive
+ * `<OrderDetailModal>` partagée (kindLabel = `Manifestation occulte`).
+ *
+ * Choix d'invocation : Armure d'ombres. Capacité « lance Armure du mage à
+ * volonté » — démontre une mécanique pure (pas de wiring Magie L1 encore
+ * câblé, cf. DEBT D12 pour pact-of-the-tome / pact-of-the-chain).
+ */
+export const warlockL1ArmorOfShadows: SeedPreset = {
+  name: 'Velinor du Voile-Mince',
+  classes: [
+    {
+      classId: 'warlock',
+      subclassId: null,
+      level: 1,
+      subChoices: { eldritchInvocations: ['armor-of-shadows'] },
+    },
+  ],
+  primaryClassId: 'warlock',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'charlatan',
+  abilities: { for: 8, dex: 14, con: 13, int: 12, sag: 10, cha: 16 },
+  hp: { current: 9, max: 9 },
+  ac: 12,
+  hitDice: [{ classId: 'warlock', current: 1, max: 1, die: 'd8' }],
+  saves: { sag: true, cha: true },
+};
+
+/**
+ * Occultiste niv. 1 avec 2 manifestations (anticipation level-up, plan 13.9
+ * commit 4e). Cat. 6 (cas-limite) de la testing policy : la carte doit gérer
+ * N invocations dès maintenant — un Warlock L2 réel posera la 2e, et l'ordre
+ * d'affichage doit rester stable (alphabétique FR : Armure < Esprit) sans
+ * duplication. Pas dans le périmètre de la sélection wizard L1 (qui force
+ * count=1), mais le composant fiche doit le rendre proprement quand la
+ * donnée arrive ainsi.
+ */
+export const warlockL1MultiInvocations: SeedPreset = {
+  name: 'Velinor du Voile-Mince',
+  classes: [
+    {
+      classId: 'warlock',
+      subclassId: null,
+      level: 1,
+      subChoices: {
+        eldritchInvocations: ['eldritch-mind', 'armor-of-shadows'],
+      },
+    },
+  ],
+  primaryClassId: 'warlock',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'charlatan',
+  abilities: { for: 8, dex: 14, con: 13, int: 12, sag: 10, cha: 16 },
+  hp: { current: 9, max: 9 },
+  ac: 12,
+  hitDice: [{ classId: 'warlock', current: 1, max: 1, die: 'd8' }],
+  saves: { sag: true, cha: true },
+};
+
+/**
  * Magicien niv. 3, 2 cantrips + 2 sorts niv 1 connus. Cas de test du Magie
  * mode : un caster avec slots débloqués (niv 1 + 2 via la table unifiée) et
  * des sorts effectivement visibles dans la liste.
