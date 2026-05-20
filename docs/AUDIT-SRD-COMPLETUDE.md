@@ -25,7 +25,7 @@
 | `public/data/feats.json` | **1/17 (16 feats manquants)** | CRITIQUE |
 | `public/data/monsters.json` | **0/332** | CRITIQUE (bloquant S3) |
 | `public/data/rules.json` | **0/~200** | CRITIQUE |
-| `public/data/spells.json` | 330/333 — **21 vrais manquants + 44 sorts renommés (naming PHB 2014) + 18 sorts hors-SRD** | MOYEN |
+| `public/data/spells.json` | ✅ **RÉSOLU (plan 13.10)** — régénéré strict SRD 5.2.1 bilingue, **339 sorts** ; réconcilié 50 renames / 16 ajouts / 7 retraits (cf. D.3) | — |
 | `public/data/magic-items.json` | 251/~258 | FAIBLE |
 | `public/data/classes.json` | 12/12, mais **aucun `options[]` machine-readable sur les features L1 à sous-choix** | À enrichir |
 | `public/data/ancestries.json` | 9/9, mais **traits L1 sans `options[]`** | À enrichir |
@@ -364,7 +364,7 @@ Total : **28 invocations SRD**. L'Occultiste en reçoit 1 à L1, puis 3 à L2, e
 | backgrounds | 4 | 4 | 0 | OK |
 | **feats** | **1** | **17** | **16** | CRITIQUE |
 | conditions | 15 | 15 | 0 | OK |
-| **spells** | **330** | **~333** | **21 manquants + 44 renames + 18 hors-SRD** | MOYEN |
+| **spells** | ✅ **339 (RÉSOLU plan 13.10)** | **~333** | régénéré SRD 5.2.1 bilingue ; 50 renames / 16 ajouts / 7 retraits réconciliés (cf. D.3) | — |
 | items — weapons | 38 | 38 | 0 | OK |
 | items — armor + shield | 13 | 13 | 0 | OK |
 | items — tools | 40 | ~39 | 0 (1 surnuméraire neutre) | OK |
@@ -396,6 +396,40 @@ Total : **28 invocations SRD**. L'Occultiste en reçoit 1 à L1, puis 3 à L2, e
 | Epic Boon | Boon of Truesight | — | ❌ |
 
 ### D.3 — Détail : spells
+
+> **✅ RÉSOLU — plan 13.10 (Spells cleanup SRD 5.2.1), 2026-05-20.** `public/data/spells.json`
+> a été **régénéré strict SRD 5.2.1, bilingue (`fr`+`en`)**, par bootstrap des
+> extractions texte SRD (`content-sources/extracted/raw/{SRD,FR_SRD}_CC_v5.2.1.txt`)
+> vers un module TS canonique (`scripts/data/srd-spells.ts`), consommé par
+> `scripts/extract-srd-spells.ts` (TS→JSON, ne lit jamais AideDD ni PDF). Bundle
+> final : **339 sorts, 0 `name.en === null`, 100 % `source: srd-5.2.1`**.
+>
+> **Réconciliation du diff `ancien bundle AideDD (330) ↔ nouveau bundle SRD (339)`**
+> (cf. `plans/DEBT.md > D16`, partition déterministe via la table d'alias) :
+> les estimations de cet audit (**44 renames / 21 ajouts / 18 retraits**) sont
+> remplacées par les **chiffres réconciliés et vérifiés un à un** :
+> **50 renames · 16 ajouts · 7 retraits** (330 − 7 + 16 = 339). Chaque retrait
+> a été vérifié absent de `SRD_CC_v5.2.1.txt` ; chaque rename apparié par
+> dé-éponymisation + niveau + école (+ description pour les cas ambigus).
+>
+> - **Renames** (ex. `armure-de-mage`→`armure-du-mage`, `peur`→`terreur`,
+>   `gourdin-magique`→`crosse-des-druides`) : table canonique dans
+>   `src/shared/lib/rules/spell-aliases.ts` ; migration runtime des persos par
+>   `migrateSpellIds()` (commit 4).
+> - **Retraits hors-SRD** (7) : `amis`, `armure-d-agathys`, `fouet-epineux`,
+>   `nuee-de-dagues`, `protection-contre-les-armes`, `sens-animal`,
+>   `trait-ensorcele` — signalés au MJ à la migration, jamais remappés.
+> - **Slugs fantômes d'ascendance** (sous-dette D9) : `rayon-de-maladie`→`rayon-empoisonne`
+>   (Ray of Sickness), `feinte-vie`→`simulacre-de-vie` (False Life), corrigés
+>   dans `ancestries.json` (commit 4, sources `FR_SRD_CC_v5.2.1.txt` l.9459/9463).
+>
+> Commits : `ebcb27d` (commit 3 — régénération bundle + requalif `content:build`
+> + D17), `5fafbc9` (commit 4 — D9 + Ray of Sickness + migration), docs (commit 5).
+> ⚠️ L'interdit `pnpm content:build` **n'est PAS levé** (nouvelle cause D17 :
+> `build-public-content.ts` obsolète/destructif — cf. `plans/DEBT.md > D17`).
+>
+> Les listes ci-dessous sont conservées **pour archive** (l'estimation d'audit
+> d'origine) — elles ne reflètent plus le bundle livré.
 
 **21 sorts SRD 5.2.1 réellement absents** :
 

@@ -129,6 +129,51 @@ Tout le reste (`Player´s Handbook` sans suffixe, `Monster Manual` sans suffixe,
 - `rules` (glossaire complet) : ~200 entrées (actions, attitudes, hazards, etc.). Corpus large, plan dédié.
 - `monsters` : parser AideDD partiel (id/name/source seulement). Stat blocks demandent travail dédié — bloqueur S3 plan 24, pas plan 05.
 
+## Sorts — pipeline SRD 5.2.1 bilingue (plan 13.10, remplace AideDD)
+
+> Ce pipeline **remplace** la source AideDD des sorts (cf. l'entrée « Spells
+> source-inconsistency » plus bas, désormais superseded). Les sorts sont
+> produits **strictement** depuis les extractions texte SRD 5.2.1, jamais
+> depuis AideDD ni les PDF binaires.
+
+Deux scripts, deux rôles distincts :
+
+| Script | Rôle | Fréquence | Lit | Écrit |
+|---|---|---|---|---|
+| `scripts/bootstrap-srd-spells.ts` | **One-shot** — parse les 2 extractions texte SRD et émet un module TS révisable. | Manuel, rejoué seulement si le `.txt` source change. | `content-sources/extracted/raw/{SRD,FR_SRD}_CC_v5.2.1.txt` | `scripts/data/srd-spells.ts` (module TS canonique, **révisable à la main**) |
+| `scripts/extract-srd-spells.ts` | **Récurrent** — transforme le module TS en JSON bundlé. | À chaque besoin de régénérer le bundle. **Idempotent** (deux runs byte-identiques). | `scripts/data/srd-spells.ts` (TS, **pas** le `.txt`) | `public/data/spells.json` (339 sorts, bilingue, `source: srd-5.2.1`) |
+
+**Pourquoi ce découpage** : le `.txt` SRD comporte des corruptions ponctuelles
+(interleaving EN/FR, statblocks aplatis, titres lettre-espacée). Le bootstrap
+applique 4 heuristiques de détection + des réparations ciblées, puis fige le
+résultat dans un module TS **révisable** — toute correction manuelle (cf.
+fallbacks ci-dessous) vit là, sous revue de code, et `extract-srd-spells.ts`
+la reproduit déterministiquement. On ne re-parse jamais le `.txt` au runtime du
+build.
+
+**Fallbacks ciblés (corrections manuelles dans `scripts/data/srd-spells.ts`)** :
+- **Reconstruction de scramble** (commit 2) : `Animate Objects` / `Antilife
+  Shell` / `Antipathy/Sympathy` étaient interleavés dans le `.txt` — desentre­lacés
+  à la main, mécanique tranchée par l'EN, formulation par le FR (règle d'arbitrage
+  EN↔FR, cf. CLAUDE.md).
+- **Conflit d'upcast** `Domination de personne` (commit 2) : progression 6e/7e/8e+
+  reconstruite, vérifiée page 138 du PDF FR via les sorts voisins intacts
+  (`Domination de bête` / `Domination de monstre`).
+- **Marqueur D14** : trims de statblocks parasites signalés inline (cf. `plans/DEBT.md > D14`).
+- **Letter-spacing résiduel** : `normalizeSpacedTitle` (cf. `plans/DEBT.md > D15`).
+
+**Migration des persos** : les IDs 2014 (AideDD) → SRD 2024 sont remappés au
+load par `src/shared/lib/rules/spell-aliases.ts` (table canonique + `migrateSpellIds`).
+`scripts/maps/spell-renames-2014-to-2024.ts` n'est qu'un ré-export pour l'audit.
+
+**Re-run** :
+```bash
+pnpm tsx scripts/bootstrap-srd-spells.ts   # .txt SRD → scripts/data/srd-spells.ts (one-shot)
+pnpm tsx scripts/extract-srd-spells.ts     # scripts/data/srd-spells.ts → public/data/spells.json
+pnpm tsx scripts/update-content-index.ts   # recalcule index.json (contentHash)
+```
+⚠️ **NE PAS** utiliser `pnpm content:build` (interdit, cf. CLAUDE.md + `plans/DEBT.md > D17`).
+
 ## Items DB strict (réouverture plan 04 post-MVP-classes)
 
 Le bundle initial de plan 04 a livré classes/subclasses/ancestries/backgrounds/conditions mais **pas items.json**, ce qui bloquait plan 05 (équipement de départ). Réouverture propre + parser dédié `parse-srd-equipment.ts` ajouté.
@@ -173,7 +218,7 @@ L'invariant **items DB strict** de CLAUDE.md est maintenant respecté de bout en
 - **Monsters parser partiel** : id/name/source seulement. Pas bloquant pour plan 05. Session dédiée requise avant S3 plan 24 (combat tracker / DM dashboard) — extension de `parseMonster()` dans `parse-aidedd.ts` pour `.red`/`.carac`/`.rub` divs.
 - **DMG inextractible** : 642 chars sur 321 pages (fonts custom/scan via pdf-parse). Privé + optionnel — on l'oublie. Si Adrien veut du contenu DMG plus tard, il fournira un PDF texte ou OCR ciblé.
 - **Couche EN sur ancestries traits** : différée à plan 34 (i18n-EN), avec maps FR↔EN explicites par ancestry. Plan 34 inscrit cette tâche.
-- **Spells source-inconsistency** : 330 sorts viennent d'AideDD HTML (parsing structuré, plus fiable que SRD text), pas du SRD FR PDF. Mécaniques identiques (AideDD reflète SRD), mais source field reste `aidedd-homebrew` ou `srd-5.2.1` selon `<div class="source">`. Décision actée : "if it works, don't touch it" — pas de re-parse depuis SRD FR PDF.
+- ~~**Spells source-inconsistency** : 330 sorts viennent d'AideDD HTML…~~ **SUPERSEDED — plan 13.10** : les sorts ne viennent plus d'AideDD. `public/data/spells.json` est régénéré strict SRD 5.2.1 bilingue (339, 100 % `source: srd-5.2.1`) via le pipeline `bootstrap-srd-spells.ts` → `extract-srd-spells.ts` (cf. section « Sorts — pipeline SRD 5.2.1 bilingue » ci-dessus). La source AideDD est retirée du chemin sorts de `build-public-content.ts`.
 
 ## Erreurs PDF rencontrées
 
