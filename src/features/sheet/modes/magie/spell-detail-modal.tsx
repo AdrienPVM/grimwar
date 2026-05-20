@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
 import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
+import { DetailModal } from '@/shared/components/detail-modal';
 import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
@@ -191,56 +192,50 @@ export function SpellDetailModal({
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="spell-detail-title"
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-ink/85 px-4 py-6 backdrop-blur-xl sm:items-center"
+    <DetailModal
+      open
+      onClose={onClose}
+      titleId="spell-detail-title"
+      // Override `overflow-y-auto` du panneau partagé : la modale sort garde le
+      // pattern header sticky / body scrollable / footer sticky historique
+      // (header + footer fixes, body défile), au lieu d'un scroll global.
+      className="overflow-hidden"
     >
-      <div className="flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg">
-        <header className="flex items-start justify-between gap-3 border-b border-white-8 px-6 py-4">
-          <div className="min-w-0">
-            <h2
-              id="spell-detail-title"
-              className="font-display text-[20px] font-black tracking-[-0.02em] text-gold-bright"
-            >
-              {localize(spell.name)}
-            </h2>
-            <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-              {isCantrip ? 'Sort mineur' : `Niveau ${spell.level}`} ·{' '}
-              {t(`school.${spell.school}`)}
-              {spell.concentration && ' · Concentration'}
-              {spell.ritual && ' · Rituel'}
-            </p>
-            {(spellcastingClasses.length > 0 || ancestrySource) && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {spellcastingClasses.map((c) => (
-                  <span
-                    key={`class-${c.classId}`}
-                    className="rounded-full border border-gold-dim/40 bg-gold/[0.08] px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-gold-bright"
-                  >
-                    {c.name}
-                  </span>
-                ))}
-                {ancestrySource ? (
-                  <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-amethyst">
-                    {ancestrySource.label}
-                  </span>
-                ) : null}
-              </div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fermer"
-            className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
+      <header className="border-b border-white-8 px-6 py-4 pr-14">
+        <div className="min-w-0">
+          <h2
+            id="spell-detail-title"
+            className="font-display text-[20px] font-black tracking-[-0.02em] text-gold-bright"
           >
-            ✕
-          </button>
-        </header>
+            {localize(spell.name)}
+          </h2>
+          <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
+            {isCantrip ? 'Sort mineur' : `Niveau ${spell.level}`} ·{' '}
+            {t(`school.${spell.school}`)}
+            {spell.concentration && ' · Concentration'}
+            {spell.ritual && ' · Rituel'}
+          </p>
+          {(spellcastingClasses.length > 0 || ancestrySource) && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {spellcastingClasses.map((c) => (
+                <span
+                  key={`class-${c.classId}`}
+                  className="rounded-full border border-gold-dim/40 bg-gold/[0.08] px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-gold-bright"
+                >
+                  {c.name}
+                </span>
+              ))}
+              {ancestrySource ? (
+                <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-amethyst">
+                  {ancestrySource.label}
+                </span>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </header>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4">
           <dl className="mb-4 grid grid-cols-2 gap-3 font-serif text-body-sm">
             <Meta label="Temps">{localize(spell.castingTime)}</Meta>
             <Meta label="Portée">{localize(spell.range)}</Meta>
@@ -347,8 +342,7 @@ export function SpellDetailModal({
             </Button>
           </div>
         </footer>
-      </div>
-    </div>
+    </DetailModal>
   );
 }
 

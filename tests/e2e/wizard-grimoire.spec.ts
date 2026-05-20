@@ -66,17 +66,36 @@ test.describe('Magie — Magicien L1 grimoire (2 sections + tap sort)', () => {
       'Titre modale = name.fr du sort EXACT (cat. 2 identité).',
     ).toBeVisible();
     await takeStepScreenshot(page, testInfo, 'spell-modal-prepared');
+    await takeStepScreenshot(page, testInfo, 'spell-modal-prepared', {
+      viewport: true,
+    });
 
-    // Ferme via le bouton « Fermer » (SpellDetailModal n'écoute pas Échap —
-    // c'est une modale custom héritée du plan 09 ; à migrer sur <DetailModal>
-    // partagée dans un plan ultérieur si besoin).
-    await dialog.getByRole('button', { name: /Fermer/i }).first().click();
-    await expect(dialog, 'La modale doit se fermer au clic sur Fermer.').toBeHidden();
+    // Plan 13.9 commit 4d — la SpellDetailModal a été migrée sur
+    // <DetailModal> partagée : Échap ferme la modale (assertion explicite).
+    await page.keyboard.press('Escape');
+    await expect(
+      dialog,
+      'Échap doit fermer la modale détail sort (post-migration DetailModal).',
+    ).toBeHidden();
+    await takeStepScreenshot(page, testInfo, 'spell-modal-closed-by-escape');
 
     // Tap sur un sort de la section Grimoire (inscrit non-préparé) → modale.
     await grimoireSection.getByText('Alarme').click();
     await expect(dialog, 'Modale doit ré-ouvrir pour le sort inscrit non-préparé.').toBeVisible();
     await expect(dialog.getByText('Alarme').first()).toBeVisible();
     await takeStepScreenshot(page, testInfo, 'spell-modal-grimoire-only');
+    await takeStepScreenshot(page, testInfo, 'spell-modal-grimoire-only', {
+      viewport: true,
+    });
+
+    // Plan 13.9 commit 4d — vérifie aussi que le clic backdrop (zone hors
+    // panneau) ferme. La modale en portal est ancrée à `document.body` ; le
+    // backdrop est l'élément `[role="dialog"]` lui-même. Cliquer en coin
+    // viewport (5, 5) hors panneau déclenche `onClose`.
+    await page.mouse.click(5, 5);
+    await expect(
+      dialog,
+      'Clic backdrop (hors panneau) doit fermer la modale.',
+    ).toBeHidden();
   });
 });

@@ -406,6 +406,33 @@ export const clericL1Protector: SeedPreset = {
 };
 
 /**
+ * Clerc niv. 1 Thaumaturge (plan 13.9 hotfix 4c+1 cantrip → sort mineur).
+ * Existe pour capturer la modale d'Ordre divin du Thaumaturge POST-fix bundle,
+ * et pour garantir que l'i18n-guard de `DivineOrderCard` reste vert sur
+ * l'autre branche que Protecteur.
+ */
+export const clericL1Thaumaturge: SeedPreset = {
+  name: 'Thalrik le Scrute-Astres',
+  classes: [
+    {
+      classId: 'cleric',
+      subclassId: null,
+      level: 1,
+      subChoices: { clericDivineOrder: 'thaumaturge' },
+    },
+  ],
+  primaryClassId: 'cleric',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'acolyte',
+  abilities: { for: 10, dex: 12, con: 14, int: 14, sag: 16, cha: 10 },
+  hp: { current: 9, max: 9 },
+  ac: 12,
+  hitDice: [{ classId: 'cleric', current: 1, max: 1, die: 'd8' }],
+  saves: { sag: true, cha: true },
+};
+
+/**
  * Druide niv. 1 Ordre Mage (plan 13.9 commit 4c). Parité avec Cleric pour le
  * mode Essence — la carte « Ordre primordial : Mage » est rendue et tappable.
  */
