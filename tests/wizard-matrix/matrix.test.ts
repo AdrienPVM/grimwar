@@ -4,9 +4,14 @@ import { abilityModifier } from '@/shared/lib/rules/abilities';
 
 import { submitWizardAndDeriveSheet, type SheetSnapshot } from '../helpers/content-truth';
 import {
+  axisDrift,
   buildInvalidPersonaInput,
   buildPersonaInput,
   loadBundles,
+  MATRIX_ANCESTRY_AXIS,
+  MATRIX_BACKGROUND_AXIS,
+  MATRIX_BASE_PERSONA_CLASS_AXIS,
+  MATRIX_CLASS_AXIS,
   PERSONAS,
   type MatrixBundles,
   type PersonaSpec,
@@ -229,6 +234,80 @@ describe('matrice L1 — cas-limites cat. 6 portés en unitaire', () => {
     if (!spec) return;
     const s = snap(spec);
     expect((s.character.knownSpells.ancestry ?? []).length).toBe(3);
+  });
+});
+
+describe('matrice L1 — garde-fou d’axe « matrice ≡ bundle » (C3)', () => {
+  // Régime BIDIRECTIONNEL : classes + backgrounds. La matrice prétend couvrir
+  // chaque entrée du bundle ; toute divergence (manquant OU fantôme) = échec dur.
+  it('classes : clés REFERENCE_BUILDS ≡ ids classes.json (bidirectionnel)', () => {
+    const drift = axisDrift(
+      MATRIX_CLASS_AXIS,
+      bundles.classes.map((c) => c.id),
+    );
+    expect(
+      drift.missingFromMatrix,
+      'classe(s) du bundle sans build de référence — ajoute un REFERENCE_BUILD',
+    ).toEqual([]);
+    expect(
+      drift.phantomInMatrix,
+      'build(s) de référence fantôme(s) — classe retirée/renommée du bundle',
+    ).toEqual([]);
+  });
+
+  it('classes : chaque classe du bundle a une persona base (couverture matrice)', () => {
+    const drift = axisDrift(
+      MATRIX_BASE_PERSONA_CLASS_AXIS,
+      bundles.classes.map((c) => c.id),
+    );
+    expect(
+      drift.missingFromMatrix,
+      'classe(s) du bundle sans persona base — ajoute une entrée à PERSONAS',
+    ).toEqual([]);
+    expect(drift.phantomInMatrix, 'persona base pour une classe absente du bundle').toEqual([]);
+  });
+
+  it('backgrounds : ids couverts ≡ ids backgrounds.json (set S1 verrouillé)', () => {
+    const drift = axisDrift(
+      MATRIX_BACKGROUND_AXIS,
+      bundles.backgrounds.map((b) => b.id),
+    );
+    expect(
+      drift.missingFromMatrix,
+      'background(s) du bundle sans persona — ajoute une entrée à PERSONAS',
+    ).toEqual([]);
+    expect(drift.phantomInMatrix, 'background référencé absent du bundle').toEqual([]);
+  });
+
+  // Régime SUBSET : ancestries. Couverture ciblée (5/9) par construction — on
+  // garde-fou contre les FANTÔMES uniquement, pas contre la non-exhaustivité.
+  it('ancestries : tout id référencé résout dans le bundle (subset — couverture, pas exhaustivité)', () => {
+    const drift = axisDrift(
+      MATRIX_ANCESTRY_AXIS,
+      bundles.ancestries.map((a) => a.id),
+    );
+    expect(
+      drift.phantomInMatrix,
+      'ancestrie(s) référencée(s) par la matrice absente(s) du bundle (slug renommé/retiré ?)',
+    ).toEqual([]);
+    // PAS d'assertion sur missingFromMatrix : la matrice couvre 5/9 ancestries
+    // par décision de cadrage (voir en-tête runner.ts). Exhaustivité = hors v1.
+  });
+
+  // ── Rouge-avant-vert PERMANENT du mécanisme anti-dérive ──
+  // Prouve que le garde-fou RÉAGIT à une 13ᵉ classe : on injecte un id fictif
+  // dans une copie du bundle → le drift le signale. Puis on revérifie que le
+  // bundle RÉEL ne dérive pas. Ce test fige le mécanisme : si `axisDrift`
+  // cessait de détecter un id manquant, CE test virerait au rouge.
+  it('rouge-avant-vert : une 13ᵉ classe fictive au bundle → drift détecté', () => {
+    const bundleClassIds = bundles.classes.map((c) => c.id);
+    const withPhantomClass = [...bundleClassIds, 'necromancer'];
+    const drift = axisDrift(MATRIX_CLASS_AXIS, withPhantomClass);
+    expect(drift.missingFromMatrix, 'le garde-fou doit voir la 13ᵉ classe non couverte').toContain(
+      'necromancer',
+    );
+    // Vert au retrait : le bundle réel reste parfaitement couvert.
+    expect(axisDrift(MATRIX_CLASS_AXIS, bundleClassIds).missingFromMatrix).toEqual([]);
   });
 });
 

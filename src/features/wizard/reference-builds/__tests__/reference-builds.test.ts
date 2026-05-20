@@ -15,24 +15,15 @@ import {
  * Une régression sur l'un des 12 builds = la triple gate échoue.
  */
 describe('reference builds', () => {
-  it('couvre les 12 classes SRD', () => {
-    const classes = [
-      'barbarian',
-      'bard',
-      'cleric',
-      'druid',
-      'fighter',
-      'monk',
-      'paladin',
-      'ranger',
-      'rogue',
-      'sorcerer',
-      'warlock',
-      'wizard',
-    ];
-    for (const id of classes) {
-      expect(REFERENCE_BUILDS[id]).toBeDefined();
-      expect(REFERENCE_BUILDS[id]?.classId).toBe(id);
+  // Cohérence interne du registre : chaque clé == son `classId`. La COUVERTURE
+  // « registre ≡ bundle » (une 13ᵉ classe du bundle doit avoir un build) n'est
+  // PLUS testée ici : l'ancienne liste de 12 ids codée en dur n'échouait pas sur
+  // dérive (elle vérifiait la présence, jamais l'égalité). Elle est remplacée par
+  // le garde-fou d'axe bundle-derivé de `tests/wizard-matrix/matrix.test.ts`
+  // (« classes : clés REFERENCE_BUILDS ≡ ids classes.json »), qui échoue dur.
+  it('clé ≡ classId pour chaque build (cohérence du registre)', () => {
+    for (const [id, build] of Object.entries(REFERENCE_BUILDS)) {
+      expect(build.classId).toBe(id);
     }
   });
 

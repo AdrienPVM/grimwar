@@ -5,6 +5,7 @@ import {
   applyReferenceEquipment,
   applyReferenceSkills,
   applyReferenceSpells,
+  REFERENCE_BUILDS,
 } from '@/features/wizard/reference-builds/builds';
 import { resolveSkillIds } from '@/features/wizard/steps/skill-resolver';
 import { getAncestrySubChoiceRequirements } from '@/features/wizard/steps/ancestry/use-ancestry-sub-choices';
@@ -380,4 +381,63 @@ export const PERSONAS: readonly PersonaSpec[] = [
   { id: 'bg-rogue-criminal', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'criminal', method: 'standard-array', axis: 'background' },
   { id: 'bg-rogue-sage', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'sage', method: 'standard-array', axis: 'background' },
   { id: 'bg-rogue-soldier', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'standard-array', axis: 'background' },
+];
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * GARDE-FOU D'AXE « matrice ≡ bundle » (plan 13.12 commit 4, catégorie C3)
+ * ──────────────────────────────────────────────────────────────────────────
+ * Remplace l'ancien « 12 classes codées en dur » (`reference-builds.test.ts`)
+ * qui N'ÉCHOUAIT PAS sur dérive : il vérifiait que les 12 ids attendus étaient
+ * présents, jamais que le registre ÉGALE le bundle. Une 13ᵉ classe ajoutée à
+ * `classes.json` sans build de référence ni persona passait inaperçue.
+ *
+ * Le garde-fou compare l'AXE COUVERT PAR LA MATRICE à l'AXE DU BUNDLE et
+ * échoue dur sur toute divergence pertinente. Trois axes, deux régimes :
+ *
+ *  - classes / backgrounds → ÉGALITÉ BIDIRECTIONNELLE. La matrice prétend
+ *    couvrir CHAQUE classe (1 persona base par classe + 1 build de référence)
+ *    et CHAQUE background (set S1 verrouillé à 4, tous exercés). Donc bundle ⊆
+ *    matrice ET matrice ⊆ bundle. Une entrée ajoutée d'un côté sans l'autre =
+ *    échec.
+ *  - ancestries → SUBSET (résolution seule). La matrice couvre 5 ancestries
+ *    CIBLÉES sur 9 par CONSTRUCTION (couverture, pas exhaustivité — décision de
+ *    cadrage 13.12 : on n'exerce que les ancestries qui changent un calcul/une
+ *    source). Exiger l'égalité forcerait une persona par ancestrie = exhaustivité
+ *    déguisée, contraire au principe. On garde-fou donc contre les FANTÔMES (un
+ *    id référencé par la matrice mais renommé/retiré du bundle), pas contre la
+ *    non-exhaustivité. ⚠️ Écart documenté vs lettre du plan (« idem ») — voir
+ *    rapport STOP commit 4.
+ */
+
+/** Différence symétrique entre l'axe couvert par la matrice et l'axe du bundle. */
+export function axisDrift(
+  matrixIds: readonly string[],
+  bundleIds: readonly string[],
+): { missingFromMatrix: string[]; phantomInMatrix: string[] } {
+  const matrixSet = new Set(matrixIds);
+  const bundleSet = new Set(bundleIds);
+  return {
+    // Présent dans le bundle, absent de la matrice (ex. 13ᵉ classe non couverte).
+    missingFromMatrix: [...bundleSet].filter((id) => !matrixSet.has(id)).sort(),
+    // Présent dans la matrice, absent du bundle (ex. slug renommé/retiré).
+    phantomInMatrix: [...matrixSet].filter((id) => !bundleSet.has(id)).sort(),
+  };
+}
+
+/** Axe classes couvert : clés du registre `REFERENCE_BUILDS` (source prod). */
+export const MATRIX_CLASS_AXIS: readonly string[] = Object.keys(REFERENCE_BUILDS);
+
+/** Axe classes des personas base (doit rester en lockstep avec le registre). */
+export const MATRIX_BASE_PERSONA_CLASS_AXIS: readonly string[] = PERSONAS.filter(
+  (p) => p.axis === 'class',
+).map((p) => p.classId);
+
+/** Axe backgrounds couvert : ids distincts référencés par les personas. */
+export const MATRIX_BACKGROUND_AXIS: readonly string[] = [
+  ...new Set(PERSONAS.map((p) => p.backgroundId)),
+];
+
+/** Axe ancestries couvert : ids distincts référencés par les personas (subset). */
+export const MATRIX_ANCESTRY_AXIS: readonly string[] = [
+  ...new Set(PERSONAS.map((p) => p.ancestryId)),
 ];
