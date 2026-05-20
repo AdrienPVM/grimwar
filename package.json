@@ -23,6 +23,7 @@
     "content:parse-srd": "tsx scripts/parse-srd-text.ts",
     "content:parse-equipment": "tsx scripts/parse-srd-equipment.ts",
     "content:build": "tsx scripts/build-public-content.ts",
+    "content:check": "tsx scripts/check-content-build-idempotence.ts",
     "content:upload-private": "tsx scripts/upload-dmg-to-firestore.ts",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules",
     "firebase:deploy:indexes": "firebase deploy --only firestore:indexes",
