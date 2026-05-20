@@ -1,9 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 
+import { expectIdentityRender } from './helpers/content-truth';
 import {
   SRD_CLASS_ORDER_REFERENCES,
   SRD_SPELL_REFERENCES,
+  SRD_WEAPON_REFERENCES,
 } from './fixtures/srd-reference-entries';
 
 /**
@@ -13,7 +15,14 @@ import {
  * Le test itère sur `tests/fixtures/srd-reference-entries.ts` et vérifie que
  * chaque entrée pinned correspond EXACTEMENT à la donnée dans
  * `public/data/*.json`. Détecte toute dérive (rename de slug, perte d'accent
- * FR, normalisation accidentelle d'école, prose summary modifiée).
+ * FR, dérive EN, normalisation accidentelle d'école, prose summary modifiée).
+ *
+ * Fédération 13.12 commit 2 : l'identité de NOM (FR + EN) passe par
+ * `expectIdentityRender` (helper cat. 2 du commit 1) — comparaison après
+ * normalisation des espaces, source unique de vérité d'identité textuelle. Les
+ * champs MÉCANIQUES (niveau, école, classes, dés, type, maîtrise) restent en
+ * asserts numériques/ensemblistes : ce sont des valeurs discrètes, pas du texte
+ * rendu.
  *
  * La vérification humaine contre le SRD officiel se fait UNE FOIS à l'ajout
  * d'une entrée (cf. commentaire dans la fixture). Le test garde la vérité
@@ -26,6 +35,13 @@ interface SpellEntry {
   level: number;
   school: string;
   classes?: string[];
+}
+
+interface WeaponEntry {
+  id: string;
+  name: { fr: string; en?: string };
+  damage?: { dice: string; type: string };
+  masteryProperty?: string;
 }
 
 interface ClassOrder {
@@ -54,7 +70,17 @@ describe('cat. 3 — Fidélité bundle SRD vs fixtures pinned', () => {
       expect(found, `sort ${ref.id} absent de spells.json`).toBeDefined();
       if (!found) return;
 
-      expect(found.name.fr, `${ref.id} : name.fr a dérivé`).toBe(ref.nameFr);
+      // Identité de nom (FR + EN) via le helper cat. 2 — détecte une dérive
+      // de nom ou une modale qui afficherait le mauvais sort.
+      expectIdentityRender({
+        slug: ref.id,
+        fields: [
+          { label: 'name.fr', expected: ref.nameFr, rendered: found.name.fr },
+          { label: 'name.en', expected: ref.nameEn, rendered: found.name.en ?? '' },
+        ],
+      });
+
+      // Champs mécaniques : asserts discrets.
       expect(found.level, `${ref.id} : level a dérivé`).toBe(ref.level);
       expect(found.school, `${ref.id} : school a dérivé`).toBe(ref.school);
       // Comparaison ordre-indépendante pour les classes (le bundle peut
@@ -69,6 +95,33 @@ describe('cat. 3 — Fidélité bundle SRD vs fixtures pinned', () => {
       for (const c of got) {
         expect(refSet.has(c), `${ref.id} : classe ${c} présente côté bundle mais absente de la fixture`).toBe(true);
       }
+    },
+  );
+
+  it.each(SRD_WEAPON_REFERENCES.map((w) => ({ ref: w, label: w.id })))(
+    'items.json contient EXACTEMENT l\'arme pinnée : $label',
+    async ({ ref }) => {
+      const items = await loadJson<WeaponEntry[]>('public/data/items.json');
+      const found = items.find((w) => w.id === ref.id);
+      expect(found, `arme ${ref.id} absente de items.json`).toBeDefined();
+      if (!found) return;
+
+      // Identité de nom (FR + EN) via le helper cat. 2.
+      expectIdentityRender({
+        slug: ref.id,
+        fields: [
+          { label: 'name.fr', expected: ref.nameFr, rendered: found.name.fr },
+          { label: 'name.en', expected: ref.nameEn, rendered: found.name.en ?? '' },
+        ],
+      });
+
+      // Champs mécaniques : asserts discrets.
+      expect(found.damage?.dice, `${ref.id} : dé de dégâts a dérivé`).toBe(ref.dice);
+      expect(found.damage?.type, `${ref.id} : type de dégâts a dérivé`).toBe(ref.damageType);
+      expect(
+        found.masteryProperty,
+        `${ref.id} : propriété de maîtrise a dérivé`,
+      ).toBe(ref.masteryProperty);
     },
   );
 
@@ -89,7 +142,14 @@ describe('cat. 3 — Fidélité bundle SRD vs fixtures pinned', () => {
       ).toBeDefined();
       if (!order) return;
 
-      expect(order.name.fr).toBe(ref.nameFr);
+      // Identité de nom via le helper cat. 2.
+      expectIdentityRender({
+        slug: `${ref.classId}/${ref.id}`,
+        fields: [{ label: 'name.fr', expected: ref.nameFr, rendered: order.name.fr }],
+      });
+
+      // summary : substring sémantique délibéré (pas une identité de prose
+      // complète, qui peut être éditée par typo-fix).
       expect(
         order.summary.fr,
         `summary.fr de ${ref.id} a dérivé du SRD (n'inclut plus « ${ref.summaryFrContains} »)`,
