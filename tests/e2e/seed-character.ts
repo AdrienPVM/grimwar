@@ -670,6 +670,35 @@ export const wizardL3: SeedPreset = {
   spellcastingAbility: { wizard: 'int' },
 };
 
+/**
+ * Magicien L1 seedé AVEC des IDs de sort « PHB 2014 (AideDD) » — cas de la
+ * migration au load (plan 13.10 commit 4). Le doc Firestore part avec :
+ *   - `main-de-mage` (2014) → migré en `main-du-mage` (Mage Hand)
+ *   - `armure-de-mage` (2014) → migré en `armure-du-mage` (Mage Armor)
+ *   - `amis` (Friends) → retiré (hors SRD 5.2.1), signalé au MJ
+ * La spec `spell-migration.spec.ts` vérifie que la fiche affiche les noms
+ * 2024 ET que le doc Firestore est ré-écrit migré (one-shot upgrade).
+ */
+export const wizardL1Migration: SeedPreset = {
+  name: 'Alde la Migrante',
+  classes: [{ classId: 'wizard', subclassId: null, level: 1 }],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  backgroundId: 'acolyte',
+  abilities: { for: 8, dex: 14, con: 13, int: 16, sag: 12, cha: 10 },
+  hp: { current: 8, max: 8 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 1, max: 1, die: 'd6' }],
+  saves: { int: true, sag: true },
+  knownSpells: {
+    wizard: ['main-de-mage', 'armure-de-mage', 'amis'],
+  },
+  preparedSpells: {
+    wizard: ['armure-de-mage'],
+  },
+  spellcastingAbility: { wizard: 'int' },
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // Build & seed
 // ─────────────────────────────────────────────────────────────────────────
@@ -881,4 +910,23 @@ export async function seedCharacter(
   await db.collection('users').doc(uid).collection('characters').doc(charId).set(doc);
 
   return { uid, charId };
+}
+
+/**
+ * Relit le doc character via l'Admin SDK (bypass des rules) — utilisé par les
+ * specs qui doivent vérifier une ré-écriture serveur (ex : migration des IDs
+ * de sort one-shot, plan 13.10). Lit `users/{uid}/characters/{charId}`.
+ */
+export async function readBackCharacter(
+  uid: string,
+  charId: string,
+): Promise<Record<string, unknown> | undefined> {
+  const { db } = getAdmin();
+  const snap = await db
+    .collection('users')
+    .doc(uid)
+    .collection('characters')
+    .doc(charId)
+    .get();
+  return snap.exists ? (snap.data() as Record<string, unknown>) : undefined;
 }

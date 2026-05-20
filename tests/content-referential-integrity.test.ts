@@ -16,9 +16,12 @@ import { describe, expect, it } from 'vitest';
  *   - l'UAT pnpm dev a un cache Dexie tiède masquant la régression.
  *
  * Ce test est la GARDE PERMANENTE post-fix : toute référence de sort dans
- * `ancestries.json` doit résoudre dans `spells.json` (ou figurer dans la
- * sous-dette explicite D9 — 2 sorts SRD 5.2.1 manquant du bundle FR
- * actuellement, à livrer par plan 13.10).
+ * `ancestries.json` doit résoudre dans `spells.json`. La sous-dette D9 (2
+ * sorts d'ascendance pointant des slugs fantômes) est RÉSOLUE au plan 13.10
+ * commit 4 — `abyssal.level3SpellId` → `rayon-empoisonne` (Ray of Sickness),
+ * `chthonic.level3SpellId` → `simulacre-de-vie` (False Life), tous deux
+ * présents dans le bundle SRD 5.2.1. La dérogation et son tripwire sont donc
+ * retirés : plus aucune référence n'est excusée.
  */
 
 async function loadJson<T>(path: string): Promise<T> {
@@ -58,23 +61,6 @@ interface AncestryEntry {
   };
 }
 
-/**
- * Sorts SRD 5.2.1 référencés par les sous-choix d'ascendance mais ABSENTS
- * du bundle `public/data/spells.json` au moment du fix Bug 1 (2026-05-18).
- *
- * - `rayon-de-maladie` (Ray of Sickness, L1) — Tieffelin Abyssal L3.
- * - `feinte-vie` (False Life, L1) — Tieffelin Chtonien L3.
- *
- * Tracé dans `plans/DEBT.md > D9` (les 21 sorts SRD à ajouter sont
- * livrables par plan 13.10 Spells cleanup). Cette liste DOIT être prunée
- * quand 13.10 ajoute ces sorts — le garde-fou en bas du fichier
- * ("tripwire") échoue alors et force la mise à jour ici.
- */
-const KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9: ReadonlySet<string> = new Set([
-  'rayon-de-maladie',
-  'feinte-vie',
-]);
-
 function collectAncestrySpellRefs(
   ancestries: AncestryEntry[],
 ): Array<{ ancestry: string; sub: string; slot: string; spellId: string }> {
@@ -104,7 +90,7 @@ function collectAncestrySpellRefs(
 }
 
 describe('Intégrité référentielle des bundles SRD (Bug 1 UAT 2026-05-18)', () => {
-  it('toute référence de sort dans ancestries.json résout dans spells.json (modulo sous-dette D9)', async () => {
+  it('toute référence de sort dans ancestries.json résout dans spells.json (D9 résolu, plan 13.10)', async () => {
     const ancestries = await loadJson<AncestryEntry[]>('public/data/ancestries.json');
     const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
     const spellIds = new Set(spells.map((s) => s.id));
@@ -112,9 +98,7 @@ describe('Intégrité référentielle des bundles SRD (Bug 1 UAT 2026-05-18)', (
     const refs = collectAncestrySpellRefs(ancestries);
     expect(refs.length, 'refs trouvées dans ancestries.json').toBeGreaterThan(0);
 
-    const unresolved = refs.filter(
-      (r) => !spellIds.has(r.spellId) && !KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9.has(r.spellId),
-    );
+    const unresolved = refs.filter((r) => !spellIds.has(r.spellId));
 
     expect(
       unresolved,
@@ -124,19 +108,20 @@ describe('Intégrité référentielle des bundles SRD (Bug 1 UAT 2026-05-18)', (
     ).toEqual([]);
   });
 
-  // Tripwire — sous-dette D9. Quand le plan 13.10 ajoute ces sorts au bundle, ce test
-  // CASSE volontairement → force le prochain agent à pruner
-  // KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9 ci-dessus. C'est la garantie qu'on
-  // ne laisse pas la dérogation en place après que la dette est résolue.
-  it('DEBT D9 — 2 sorts SRD 5.2.1 toujours absents du bundle (à supprimer quand plan 13.10 livre)', async () => {
-    const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
-    const spellIds = new Set(spells.map((s) => s.id));
-    for (const knownMissing of KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9) {
-      expect(
-        spellIds.has(knownMissing),
-        `${knownMissing} est dans spells.json → la sous-dette D9 est résolue, supprime ce test et l'entrée correspondante dans KNOWN_MISSING_FROM_SPELLS_BUNDLE_D9.`,
-      ).toBe(false);
-    }
+  // Garde explicite D9 — les 2 slugs fantômes historiques (`rayon-de-maladie`,
+  // `feinte-vie`) ne doivent JAMAIS réapparaître dans ancestries.json : le SRD
+  // 5.2.1 nomme ces sorts `rayon-empoisonne` (Ray of Sickness) et
+  // `simulacre-de-vie` (False Life). Cf. FR_SRD_CC_v5.2.1.txt l.9459/9463.
+  it('D9 — aucun slug fantôme (rayon-de-maladie / feinte-vie) ne subsiste dans ancestries.json', async () => {
+    const ancestries = await loadJson<AncestryEntry[]>('public/data/ancestries.json');
+    const refs = collectAncestrySpellRefs(ancestries);
+    const phantoms = refs.filter((r) =>
+      r.spellId === 'rayon-de-maladie' || r.spellId === 'feinte-vie',
+    );
+    expect(
+      phantoms.map((r) => `${r.ancestry}/${r.sub}/${r.slot} → ${r.spellId}`),
+      'slugs fantômes D9 résiduels (doivent être rayon-empoisonne / simulacre-de-vie)',
+    ).toEqual([]);
   });
 });
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/features/auth/use-auth';
 import { getDb } from '@/shared/lib/firebase';
 import { CharacterSchema, type Character } from '@/shared/types/character';
+import { migrateSpellRecord } from '@/shared/lib/rules/spell-aliases';
 import {
   needsV1ToV2Upgrade,
   upgradeCharacterV1ToV2,
@@ -70,18 +71,51 @@ export function useCharacter(characterId: string | undefined): UseCharacterResul
           );
           setCharacter(null);
         } else {
-          setCharacter(parsed.data);
+          // Migration des IDs de sort « PHB 2014 (AideDD) » → « SRD 5.2.1 »
+          // (plan 13.10 commit 4). Le bundle `spells.json` est régénéré
+          // strict SRD : un perso seedé avant 13.10 peut porter des IDs 2014
+          // (renommés) ou des sorts retirés du SRD. On remappe à la lecture
+          // pour que la fiche les résolve, et on signale les retraits au MJ.
+          const knownMig = migrateSpellRecord(parsed.data.knownSpells);
+          const preparedMig = migrateSpellRecord(parsed.data.preparedSpells);
+          const spellsChanged = knownMig.changed || preparedMig.changed;
+          const finalCharacter = spellsChanged
+            ? {
+                ...parsed.data,
+                knownSpells: knownMig.record,
+                preparedSpells: preparedMig.record,
+              }
+            : parsed.data;
+
+          setCharacter(finalCharacter);
           setError(null);
-          if (needsUpgrade) {
-            // Persiste la v2 en Firestore — fire-and-forget, on log l'échec
-            // sans bloquer l'affichage de la fiche (utilisateur a déjà la v2
-            // en mémoire).
-            console.info(
-              `[sheet] schema.upgraded character=${snap.id} v1 → v2 (plan 13.7)`,
+
+          // Visibilité MJ : un sort retiré du SRD 5.2.1 disparaît de la fiche.
+          // En S1 l'event-logger n'existe pas encore (cf. docs/EVENT-LOG.md, S3) ;
+          // on émet un log structuré greppable, repris par le logger plus tard.
+          for (const r of [...knownMig.removed, ...preparedMig.removed]) {
+            console.warn(
+              `[sheet] spell.removed-not-in-srd character=${snap.id} class=${r.classId} spell=${r.spellId}`,
             );
-            void setDoc(ref, parsed.data).catch((err) => {
+          }
+
+          if (needsUpgrade || spellsChanged) {
+            // Persiste l'upgrade (v2 + migration sorts) en Firestore —
+            // fire-and-forget, on log l'échec sans bloquer l'affichage (la
+            // version migrée est déjà en mémoire). One-shot idempotent.
+            if (needsUpgrade) {
+              console.info(
+                `[sheet] schema.upgraded character=${snap.id} v1 → v2 (plan 13.7)`,
+              );
+            }
+            if (spellsChanged) {
+              console.info(
+                `[sheet] spell.ids-migrated character=${snap.id} (2014 → SRD 5.2.1, plan 13.10)`,
+              );
+            }
+            void setDoc(ref, finalCharacter).catch((err) => {
               console.warn(
-                `[sheet] schema upgrade write failed for ${snap.id}:`,
+                `[sheet] character upgrade write failed for ${snap.id}:`,
                 err,
               );
             });

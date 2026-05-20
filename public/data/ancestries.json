@@ -767,7 +767,7 @@
             "en": "Poison"
           },
           "cantripSpellId": "bouffee-de-poison",
-          "level3SpellId": "rayon-de-maladie",
+          "level3SpellId": "rayon-empoisonne",
           "level5SpellId": "immobilisation-de-personne"
         },
         {
@@ -781,7 +781,7 @@
             "en": "Necrotic"
           },
           "cantripSpellId": "contact-glacial",
-          "level3SpellId": "feinte-vie",
+          "level3SpellId": "simulacre-de-vie",
           "level5SpellId": "rayon-affaiblissant"
         },
         {
