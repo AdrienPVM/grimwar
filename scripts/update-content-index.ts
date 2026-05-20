@@ -2,17 +2,19 @@
  * scripts/update-content-index.ts (plan 13.7 §0.4 — annexe)
  *
  * Régénère `public/data/index.json` (counts + contentHash) à partir de l'état
- * actuel de `public/data/*.json`. Complémentaire des 5 scripts d'extraction —
- * à lancer après eux pour invalider correctement le cache Dexie (cf. D7).
+ * actuel de `public/data/*.json`. Logique 100% locale sur le bundle déjà produit
+ * — ne touche AUCUN autre fichier, ne lit AUCUN PDF/AideDD.
  *
- * Ne touche AUCUN autre fichier, ne lit AUCUN PDF/AideDD. Logique 100% locale
- * sur le bundle déjà produit.
+ * RÔLE (plan 13.10b, D17) : utilitaire autonome ré-appelable manuellement,
+ * DISTINCT de l'orchestrateur `build-public-content.ts`. L'orchestrateur l'invoque
+ * en DERNIÈRE étape (après les producteurs SRD), mais ce script reste utile seul :
+ * après un `extract-srd-*.ts` lancé isolément, ou pour rafraîchir counts/hash sans
+ * rejouer tout le pipeline. C'est la séparation décidée en Q2 (13.10b) — l'index
+ * est un concern de cache (cf. D7), pas de production de contenu.
  *
- * Note vis-à-vis de `pnpm content:build` : ce script-là régénère le bundle à
- * partir de `content-sources/extracted/srd/*.json` (stage upstream) et écraserait
- * les enrichissements de 13.7. L'intégration propre des extracts SRD dans la
- * pipeline `content:build` est l'objet du plan 13.10 / 13.11. En attendant, le
- * workflow est : (1) lancer les 5 `extract-srd-*.ts` ; (2) lancer ce script.
+ * `generatedAt` STABLE (finding D, voir plus bas) : préservé tant que le
+ * `contentHash` ne change pas — sinon `git diff --quiet public/data` ne pourrait
+ * jamais être quiet et le critère d'idempotence dur de D17 serait inatteignable.
  *
  * Run : `pnpm tsx scripts/update-content-index.ts`
  */
