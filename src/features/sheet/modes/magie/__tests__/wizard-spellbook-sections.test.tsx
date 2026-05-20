@@ -28,12 +28,12 @@ import spellsBundle from '../../../../../../public/data/spells.json';
  * - **Inscrits (knownSpells.wizard, 6 sorts L1)** :
  *   1. bouclier (abj)         ← préparé
  *   2. projectile-magique (evo) ← préparé
- *   3. armure-de-mage (abj)   ← préparé
+ *   3. armure-du-mage (abj)   ← préparé (renommé SRD 5.2.1)
  *   4. graisse (conj)         ← préparé
  *   5. alarme (abj)           ← inscrit non-préparé
  *   6. appel-de-familier (conj) ← inscrit non-préparé
  *
- * - **Préparés** : bouclier, projectile-magique, armure-de-mage, graisse (4)
+ * - **Préparés** : bouclier, projectile-magique, armure-du-mage, graisse (4)
  * - **Inscrits non-préparés** : alarme, appel-de-familier (2)
  */
 
@@ -49,12 +49,12 @@ interface SpellBundleEntry {
 const INSCRIBED_IDS = [
   'bouclier',
   'projectile-magique',
-  'armure-de-mage',
+  'armure-du-mage',
   'graisse',
   'alarme',
   'appel-de-familier',
 ] as const;
-const PREPARED_IDS = ['bouclier', 'projectile-magique', 'armure-de-mage', 'graisse'] as const;
+const PREPARED_IDS = ['bouclier', 'projectile-magique', 'armure-du-mage', 'graisse'] as const;
 const INSCRIBED_NOT_PREPARED_IDS = ['alarme', 'appel-de-familier'] as const;
 
 function spellFromBundle(id: string): Spell {

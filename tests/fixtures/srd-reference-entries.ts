@@ -68,9 +68,13 @@ export const SRD_SPELL_REFERENCES: readonly SrdSpellReference[] = [
     classes: ['sorcerer', 'wizard'],
   },
   {
+    // Renommé SRD 5.2.1 : `armure-de-mage` → `armure-du-mage`
+    // (« Armure de mage » → « Armure du mage »), cf.
+    // scripts/maps/spell-renames-2014-to-2024.ts. Mis à jour au plan 13.10
+    // commit 3 lors de la régénération du bundle SRD-only bilingue.
     bundle: 'spells',
-    id: 'armure-de-mage',
-    nameFr: 'Armure de mage',
+    id: 'armure-du-mage',
+    nameFr: 'Armure du mage',
     level: 1,
     school: 'abjuration',
     classes: ['sorcerer', 'wizard'],

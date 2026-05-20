@@ -9,11 +9,11 @@ export const WIZARD_BUILD: ReferenceBuild = {
   pointBuy: [8, 14, 14, 15, 10, 10],
   preferredSkills: ['arcana', 'investigation', 'history', 'insight'],
   equipmentOption: 0,
-  preferredCantrips: ['main-de-mage', 'prestidigitation', 'rayon-de-givre'],
+  preferredCantrips: ['main-du-mage', 'prestidigitation', 'rayon-de-givre'],
   preferredLevel1Spells: [
     'bouclier',
     'projectile-magique',
-    'armure-de-mage',
+    'armure-du-mage',
     'detection-de-la-magie',
     'identification',
     'graisse',

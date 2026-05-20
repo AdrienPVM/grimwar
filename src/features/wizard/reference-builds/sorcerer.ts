@@ -9,6 +9,6 @@ export const SORCERER_BUILD: ReferenceBuild = {
   pointBuy: [8, 14, 13, 10, 12, 15],
   preferredSkills: ['arcana', 'persuasion', 'deception', 'insight'],
   equipmentOption: 0,
-  preferredCantrips: ['poigne-electrique', 'rayon-de-givre', 'main-de-mage', 'prestidigitation'],
-  preferredLevel1Spells: ['bouclier', 'projectile-magique', 'armure-de-mage', 'mains-brulantes'],
+  preferredCantrips: ['poigne-electrique', 'rayon-de-givre', 'main-du-mage', 'prestidigitation'],
+  preferredLevel1Spells: ['bouclier', 'projectile-magique', 'armure-du-mage', 'mains-brulantes'],
 };

@@ -191,22 +191,31 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
      * été ajouté et bumper le seuil. Vu rouge à coup sûr quand on supprime
      * intentionnellement une entrée wizard de spells.json.
      */
-    // Plage indicative (post-13.7, source AideDD + SRD mappings) — à
-    // ré-aligner quand le plan 13.10 ré-extrait spells.json depuis le SRD
-    // PDF (cf. plans/DEBT.md > D9). Note : ces compteurs vivent ICI parce
-    // que c'est la seule garde anti-régression structurelle entre les
-    // bundles et l'UI. Tant que 13.10 n'a pas livré, on conserve les
-    // valeurs observées dans le bundle AideDD courant.
+    // Seuils ré-dérivés du bundle SRD 5.2.1 bilingue régénéré au plan 13.10
+    // commit 3 (`scripts/extract-srd-spells.ts`, 339 sorts). Remplacent les
+    // anciennes valeurs AideDD (117/105/107/31/38/126/70/210), toutes
+    // inférieures — la régénération SRD enrichit chaque classe lanceuse.
+    // Rouge-avant-vert prouvé : ces planchers exécutés contre l'ancien
+    // bundle AideDD échouent sur les 8 classes (cf. plan 13.10 commit 3).
+    // Note : ces compteurs vivent ICI parce que c'est la seule garde
+    // anti-régression structurelle entre les bundles et l'UI. Si une
+    // valeur diverge à la baisse : enquêter le pipeline. À la hausse :
+    // confirmer l'ajout SRD et bumper le plancher.
     const EXPECTED_PER_CLASS: Record<string, number> = {
-      bard: 117,
-      cleric: 105,
-      druid: 107,
-      paladin: 31,
-      ranger: 38,
-      sorcerer: 126,
-      warlock: 70,
-      wizard: 210,
+      bard: 130,
+      cleric: 109,
+      druid: 124,
+      paladin: 38,
+      ranger: 48,
+      sorcerer: 140,
+      warlock: 72,
+      wizard: 218,
     };
+
+    it('a 339 sorts SRD 5.2.1 (compteur ré-dérivé du bundle régénéré, plan 13.10)', async () => {
+      const spells = await loadJson<SpellEntry[]>('public/data/spells.json');
+      expect(spells).toHaveLength(339);
+    });
 
     it('chaque classe lanceuse SRD a au moins le volume attendu de sorts (anti-régression silencieuse)', async () => {
       const spells = await loadJson<SpellEntry[]>('public/data/spells.json');

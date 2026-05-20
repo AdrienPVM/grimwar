@@ -76,16 +76,16 @@ test.describe('Magie — slots + spell list (golden path Magicien niv. 3)', () =
     ).toBeVisible();
 
     // 4. Au moins UN sort connu rendu dans la liste. Les sorts seedés sont
-    //    « Amis » (cantrip) + « Aspersion d'acide » (cantrip) + « Alarme »
-    //    (niv 1) + « Armure de mage » (niv 1). On valide la présence d'au
+    //    « Main du mage » (cantrip) + « Aspersion acide » (cantrip) + « Alarme »
+    //    (niv 1) + « Armure du mage » (niv 1). On valide la présence d'au
     //    moins 2 d'entre eux pour ne pas être faux-positif sur un crash
     //    silencieux qui laisserait un seul sort de fallback.
     //
     //    Note : si le texte est dans une carte Card cliquable, le sort est
     //    cherché en se contentant de localiser le label visible.
     await expect(
-      panel.getByText(/Armure de mage/i).first(),
-      '« Armure de mage » (preset wizardL3) doit apparaître dans la liste — si absent, knownSpells.wizard n\'est pas résolu correctement.',
+      panel.getByText(/Armure du mage/i).first(),
+      '« Armure du mage » (preset wizardL3) doit apparaître dans la liste — si absent, knownSpells.wizard n\'est pas résolu correctement.',
     ).toBeVisible({ timeout: 5_000 });
     await expect(
       panel.getByText(/Alarme/i).first(),

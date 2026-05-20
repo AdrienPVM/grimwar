@@ -22,13 +22,13 @@ import spellsBundle from '../../../../../../public/data/spells.json';
  * - **Grimoire inscrit (knownSpells.wizard, 6 sorts)** :
  *   1. `bouclier` — Bouclier (abjuration L1)
  *   2. `projectile-magique` — Projectile magique (evocation L1)
- *   3. `armure-de-mage` — Armure de mage (abjuration L1)
+ *   3. `armure-du-mage` — Armure du mage (abjuration L1, renommé SRD 5.2.1)
  *   4. `graisse` — Graisse (conjuration L1)
  *   5. `alarme` — Alarme (abjuration L1)  ← inscrit non-préparé
  *   6. `appel-de-familier` — Appel de familier (conjuration L1)  ← inscrit non-préparé
  *
  * - **Préparés aujourd'hui (preparedSpells.wizard, 4 sorts ⊂ grimoire)** :
- *   `bouclier`, `projectile-magique`, `armure-de-mage`, `graisse`.
+ *   `bouclier`, `projectile-magique`, `armure-du-mage`, `graisse`.
  *
  * Tests :
  * 1. Tous les 6 noms FR du bundle apparaissent dans la liste rendue
@@ -55,7 +55,7 @@ interface SpellBundleEntry {
 const WIZARD_INSCRIBED_IDS = [
   'bouclier',
   'projectile-magique',
-  'armure-de-mage',
+  'armure-du-mage',
   'graisse',
   'alarme',
   'appel-de-familier',
@@ -63,7 +63,7 @@ const WIZARD_INSCRIBED_IDS = [
 const WIZARD_PREPARED_IDS = [
   'bouclier',
   'projectile-magique',
-  'armure-de-mage',
+  'armure-du-mage',
   'graisse',
 ] as const;
 const WIZARD_INSCRIBED_NOT_PREPARED_IDS = ['alarme', 'appel-de-familier'] as const;

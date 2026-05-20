@@ -23,7 +23,8 @@ import spellsBundle from '../../../../../../public/data/spells.json';
  * 1 hors-grimoire) :
  *
  * - **In-grimoire** : `bouclier` (abj L1), `projectile-magique` (evo L1),
- *   `armure-de-mage` (abj L1), `graisse` (conj L1), `alarme` (abj L1),
+ *   `armure-du-mage` (abj L1, renommé SRD 5.2.1 de `armure-de-mage`),
+ *   `graisse` (conj L1), `alarme` (abj L1),
  *   `appel-de-familier` (conj L1) — couvre 3 écoles ; détecte une
  *   désynchro school FR (Abjuration / Évocation / Invocation).
  * - **Hors-grimoire** : `boule-de-feu` (evo L3) — pour vérifier le niveau >1
@@ -46,7 +47,7 @@ interface SpellBundleEntry {
 const SAMPLE_SPELL_IDS = [
   'bouclier',
   'projectile-magique',
-  'armure-de-mage',
+  'armure-du-mage',
   'graisse',
   'alarme',
   'appel-de-familier',

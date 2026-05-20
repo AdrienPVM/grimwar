@@ -258,7 +258,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D9 — `pnpm content:build` réhydrate `spells.json` depuis AideDD (violation politique de contenu)
 
 - **Owner** : **plan 13.10** (Spells cleanup SRD 5.2.1).
-- **Statut** : ouverte. Tracée 2026-05-17 lors du diagnostic du bug "sorts vides UAT plan 13.7" (3e occurrence).
+- **Statut** : **RÉSOLUE (cause sorts) 2026-05-20** au commit 3 du plan 13.10 — voir `## Résolu`. La cause-racine (sorts `public/data/spells.json` d'origine AideDD) est éliminée : le bundle est régénéré strict SRD 5.2.1 bilingue (339, 0 `en=null`) par `extract-srd-spells.ts`, et la source AideDD est retirée du chemin sorts de `build-public-content.ts`. ⚠️ **L'interdit `pnpm content:build` reste néanmoins en force** — non plus à cause des sorts, mais parce que `build-public-content.ts` est globalement obsolète (vide classes/ancestries/feats/invocations s'il est lancé). Cette nouvelle cause est tracée séparément en **D17** (le critère #5 ci-dessous est donc *superseded by D17*, pas honoré). Tracée 2026-05-17 lors du diagnostic du bug "sorts vides UAT plan 13.7" (3e occurrence).
 - **Cause-racine** : `scripts/build-public-content.ts` lit `content-sources/extracted/aidedd/spells.json` (et magic-items, items partiels…) en plus du SRD pour fabriquer `public/data/spells.json`. La politique de contenu **lockée 2026-05-17** (cf. CLAUDE.md > Decision log > Politique de contenu) interdit toute source au-delà de **SRD 5.2.1 EN + FR**. Le pipeline actuel viole cette règle de fait sur les sorts — c'est un héritage du jalon S1 où AideDD couvrait des trous SRD non encore extraits.
 - **Conséquence** : tant que la dette est ouverte, **toute exécution de `pnpm content:build` régénère `spells.json` à partir d'une source interdite**. Le fichier sur disque peut donc bouger silencieusement (FR-pollué, sorts hors-SRD, schemas non canoniques) et déclencher des bugs UI à chaque rebuild. Le bug "sorts vides UAT plan 13.7" en est une instance latente : le contenu peut être correct sur disque à un instant T mais le mécanisme amont est fragile.
 - **Interdit temporaire (jusqu'à 13.10 livré)** : **NE PAS exécuter `pnpm content:build`** tant que la dette est ouverte. Le bundle actuel sur disque est sain (confirmé par les compteurs `tests/srd-counters.test.ts > Hardening D` et l'intégration runtime `src/shared/lib/__tests__/content-runtime-spells.test.ts`) — le rejouer ne ferait que ré-introduire la source AideDD. Cet interdit est aussi notifié dans `CLAUDE.md` pour qu'aucun plan ne le franchisse par inadvertance.
@@ -273,7 +273,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   2. `scripts/build-public-content.ts` ne lit PLUS `content-sources/extracted/aidedd/spells.json`. La source AideDD pour sorts est physiquement retirée du pipeline (la fonction `normalizeSpellEntity` peut être supprimée — son existence trahit la dette).
   3. `public/data/spells.json` ré-extrait : 18 non-SRD purgés, 21 SRD manquants ajoutés, 44 renames SRD 5.2.1 appliqués.
   4. Compteurs `Hardening D` (`tests/srd-counters.test.ts`) ré-alignés sur les volumes SRD canoniques (vraisemblablement différents de la table 117/105/107/31/38/126/70/210 héritée d'AideDD).
-  5. Interdit `pnpm content:build` levé dans CLAUDE.md.
+  5. ~~Interdit `pnpm content:build` levé dans CLAUDE.md.~~ **SUPERSEDED BY D17** (2026-05-20) : l'interdit ne pouvait PAS être levé honnêtement par un fix sorts-only — `build-public-content.ts` est destructif sur 5 types de contenu (dry-run vérifié au commit 3). L'interdit reste, requalifié dans CLAUDE.md avec la vraie cause.
   6. Cette entrée bascule en `## Résolu` avec le hash du commit.
 - **Notes liées** :
   - plan 13.10 `## Notes for next plan` — cible explicite de la dette.
@@ -423,6 +423,31 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   1. `docs/AUDIT-SRD-COMPLETUDE.md > D.3` annoté avec les nombres réconciliés (50/16/7) et le détail ci-dessus, référence au commit (plan 13.10 commit 5, step 23).
   2. Bascule en `## Résolu` avec le hash du commit.
 
+## D17 — `build-public-content.ts` obsolète : à refondre en orchestrateur des extracteurs SRD dédiés
+
+- **Owner** : **mini-plan dédié post-13.10** (la refonte de pipeline est hors périmètre de 13.10 « spells cleanup » — Adrien 2026-05-20, rejet de l'option A pour éviter le scope creep + garder la bisectabilité).
+- **Statut** : ouverte. Tracée 2026-05-20 au commit 3 du plan 13.10, après dry-run de `pnpm content:build` sur une copie de `public/data` (puis restaurée).
+- **Cause-racine** : `scripts/build-public-content.ts` source chaque type depuis `content-sources/extracted/{srd,aidedd}/*.json` via un `SRD_DIR` **figé daté du 2026-05-16**. Mais les bundles live de `classes/ancestries/feats/invocations/spells/items` sont désormais produits par les extracteurs dédiés `extract-srd-*.ts` (plans 13.7/13.8/13.9/13.10) qui écrivent **directement** dans `public/data` — `build-public-content.ts` ne les connaît pas et ne les orchestre pas. Son `SRD_DIR` est donc stale/superseded pour ~5 types.
+- **Conséquence — blast radius mesuré (dry-run 2026-05-20, restauré)** : exécuter `pnpm content:build` dans son état actuel régresse le bundle live :
+  | Bundle | Après `content:build` | Live (correct) | Cause |
+  |---|---|---|---|
+  | `classes.json` | **0** (12 perdus, Zod fail) | 12 | `SRD_DIR` stale, schéma courant non satisfait |
+  | `ancestries.json` | **0** (9 perdus, `options` Required) | 9 | `SRD_DIR` stale, enrichissement `options` manquant |
+  | `feats.json` | **1** (`lutteur`, AideDD) | 17 | pas de `SRD_DIR/feats.json` ; AideDD seule source |
+  | `items.json` | 190 mais contenu changé | 190 | perte probable de l'enrichissement `masteryProperty` |
+  | `index.json` | 12 types, sans `invocations` | 13 types | `TYPES` de `build-public-content` omet `invocations` |
+- **Interdit en force** : **NE PAS exécuter `pnpm content:build`** tant que D17 n'est pas livré (interdit requalifié dans CLAUDE.md — il survit à la résolution de D9). Le bundle live sur disque est sain ; le mécanisme amont est destructif.
+- **Surface impactée** : 5 types de contenu live (`classes`, `ancestries`, `feats`, `invocations`, `items`) + `index.json` + `magic-items`/`monsters` (encore AideDD-sourced, en attente de SRD-sourcing — `magic-items` plan ultérieur, `monsters` plan 13.11+).
+- **Critère de complétion (mini-plan dédié)** :
+  1. `build-public-content.ts` devient un **orchestrateur** : il appelle (ou délègue à) les `extract-srd-*.ts` pour chaque type SRD-sourced au lieu de relire un `SRD_DIR` figé.
+  2. Le merge AideDD est retiré pour tous les types SRD-sourced ; conservé seulement pour `magic-items`/`monsters` tant que ces types ne sont pas SRD-sourced (idéalement jusqu'au plan 13.11).
+  3. `index.json` inclut les 13 types (dont `invocations`).
+  4. Dry-run prouve idempotence : `pnpm content:build && git diff --quiet public/data` → exit 0.
+  5. Interdit `pnpm content:build` levé dans CLAUDE.md ; cette entrée bascule en `## Résolu` avec le hash du commit.
+- **Notes liées** :
+  - CLAUDE.md > Decision log > « Interdit `pnpm content:build` (REQUALIFIÉ) » — pointe ici.
+  - `plans/DEBT.md > D9` — la cause sorts est résolue ; D17 est la nouvelle (et vraie) raison de l'interdit.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
@@ -434,6 +459,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 
 - **D2 — Point d'entrée S1 manquant** — résolu par commit `b522775` (`feat(library): library screen + nav shell (plan 13.6)`, 2026-05-16). Route `/` monte désormais une `<LibraryScreen />` réelle (query Firestore + grille de cards + empty state + CTA Créer), `<NavShell />` sticky persistant sur `/`, `/create`, `/character/:id`. Grep `Lyralei` / `letter="L"` / `hp={28}` / `hpMax={32}` à zéro dans le code de prod. Verrou de process « UAT navigateur obligatoire » ajouté à `CLAUDE.md`. Playwright (plan 13.5) à exécuter ensuite pour automatiser ce filet. Détails dans la section D2 ci-dessus.
 - **D3 — Wizard de création abandonné + 3 bugs structurels exposés** — résolu par commit `023c451` (`feat(wizard): unified pedagogical character creation (plan 05)`, 2026-05-17). Wizard guidé multi-step pédagogique livré, plan 17 absorbé. Les 3 bugs structurels (`setDoc(undefined)`, mismatch FR/EN spell.classes, classes Tailwind inexistantes) sont structurellement absents par construction (form-kit canonique, IDs EN, ignoreUndefinedProperties). Détails dans la section D3 ci-dessus.
+- **D9 — `pnpm content:build` réhydrate `spells.json` depuis AideDD** — **cause sorts résolue** au commit 3 du plan 13.10 (`fix(content): spells.json strict SRD 5.2.1 bilingue + requalif content:build ban + D17`, hash backfillé au commit 5 docs). `public/data/spells.json` régénéré strict SRD 5.2.1 bilingue (339 entrées, 0 `name.en === null`, 100 % `source: srd-5.2.1`) par `scripts/extract-srd-spells.ts` (TS→JSON, ne lit jamais AideDD ni PDF). `normalizeSpellEntity` + le merge AideDD pour `spells` supprimés de `build-public-content.ts` ; `spells` retiré de son `TYPES` (même statut que `invocations`). Compteurs `tests/srd-counters.test.ts > Hardening D` ré-dérivés du nouveau bundle (130/109/124/38/48/72/218 + total 339), rouge-avant-vert prouvé contre l'ancien bundle AideDD. ⚠️ **L'interdit `pnpm content:build` n'est PAS levé** : le critère #5 de D9 est *superseded by D17* — `build-public-content.ts` est globalement obsolète (destructif sur 5 types, dry-run vérifié), interdit requalifié dans CLAUDE.md. Détails section D9 ci-dessus.
 - **D7 — Cache Dexie du contenu public sans invalidation cross-build** — initialement résolue par `9559b9b` (mécanisme `contentHash`), **réouverte** 2026-05-17 (post-13.7, 3e occurrence du bug "sorts vides" en UAT) car 2 bugs structurels distincts (SW Workbox SWR sur `index.json` + mémoïsation absorbant les échecs comme succès) faisaient encore manquer le filet. **Re-résolue 2026-05-17** par le commit fix anti-cache-figé (Bug 1 NetworkFirst `index.json` + Bug 2 mémoïsation succès-uniquement + signalFreshnessFailure dev/prod + Hardening A-F). UAT Adrien validée sans wipe IndexedDB ni hard refresh — l'invalidation s'effectue d'elle-même au reload simple. Détails dans la section D7 ci-dessus.
 
 > Note : D8 a été basculé en « ## Résolu » en commit `5df68b4` lors de la livraison initiale du plan 13.5, puis **ré-ouvert** au complément 2026-05-17 quand Adrien a refusé le report intégral en `test.fixme()`. La purge est désormais partielle (3/7), avec owner précis = plan 20.5. Cf. section D8 ci-dessus.

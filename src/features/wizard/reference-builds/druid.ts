@@ -9,6 +9,6 @@ export const DRUID_BUILD: ReferenceBuild = {
   pointBuy: [8, 14, 14, 10, 15, 10],
   preferredSkills: ['perception', 'nature', 'survival', 'animal-handling'],
   equipmentOption: 0,
-  preferredCantrips: ['druidisme', 'flammes', 'gourdin-magique'],
+  preferredCantrips: ['druidisme', 'flammes', 'crosse-des-druides'],
   preferredLevel1Spells: ['soins', 'enchevetrement', 'nappe-de-brouillard', 'mot-de-guerison'],
 };

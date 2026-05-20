@@ -466,10 +466,10 @@ export const druidL1Magician: SeedPreset = {
  * spell-list-wizard-grimoire.test.tsx) :
  *
  *   - **Inscrits (knownSpells.wizard, 6)** : bouclier (abj), projectile-
- *     magique (evo), armure-de-mage (abj), graisse (conj), alarme (abj),
+ *     magique (evo), armure-du-mage (abj), graisse (conj), alarme (abj),
  *     appel-de-familier (conj).
  *   - **Préparés (4 ⊂ inscrits)** : bouclier, projectile-magique,
- *     armure-de-mage, graisse.
+ *     armure-du-mage, graisse.
  *   - **Inscrits non-préparés (2)** : alarme, appel-de-familier.
  */
 export const wizardL1Grimoire: SeedPreset = {
@@ -483,7 +483,7 @@ export const wizardL1Grimoire: SeedPreset = {
         wizardSpellbookL1: [
           'bouclier',
           'projectile-magique',
-          'armure-de-mage',
+          'armure-du-mage',
           'graisse',
           'alarme',
           'appel-de-familier',
@@ -504,14 +504,14 @@ export const wizardL1Grimoire: SeedPreset = {
     wizard: [
       'bouclier',
       'projectile-magique',
-      'armure-de-mage',
+      'armure-du-mage',
       'graisse',
       'alarme',
       'appel-de-familier',
     ],
   },
   preparedSpells: {
-    wizard: ['bouclier', 'projectile-magique', 'armure-de-mage', 'graisse'],
+    wizard: ['bouclier', 'projectile-magique', 'armure-du-mage', 'graisse'],
   },
   spellcastingAbility: { wizard: 'int' },
 };
@@ -656,13 +656,16 @@ export const wizardL3: SeedPreset = {
   ac: 12,
   hitDice: [{ classId: 'wizard', current: 3, max: 3, die: 'd6' }],
   saves: { int: true, sag: true },
-  // IDs vérifiés contre `public/data/spells.json` (les noms FR sont
-  // « Amis » / « Aspersion d'acide » / « Alarme » / « Armure de mage »).
+  // IDs vérifiés contre `public/data/spells.json` SRD 5.2.1 (noms FR
+  // « Main du mage » / « Aspersion acide » / « Alarme » / « Armure du mage »).
+  // `amis` (Friends) retiré du SRD 5.2.1 → remplacé par `main-du-mage`
+  // (Mage Hand) ; `aspersion-d-acide`→`aspersion-acide` et
+  // `armure-de-mage`→`armure-du-mage` renommés. MàJ plan 13.10 commit 3.
   knownSpells: {
-    wizard: ['amis', 'aspersion-d-acide', 'alarme', 'armure-de-mage'],
+    wizard: ['main-du-mage', 'aspersion-acide', 'alarme', 'armure-du-mage'],
   },
   preparedSpells: {
-    wizard: ['alarme', 'armure-de-mage'],
+    wizard: ['alarme', 'armure-du-mage'],
   },
   spellcastingAbility: { wizard: 'int' },
 };

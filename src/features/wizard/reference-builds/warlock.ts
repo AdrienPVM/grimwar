@@ -9,6 +9,13 @@ export const WARLOCK_BUILD: ReferenceBuild = {
   pointBuy: [8, 14, 14, 8, 12, 15],
   preferredSkills: ['arcana', 'deception', 'persuasion', 'investigation'],
   equipmentOption: 0,
-  preferredCantrips: ['decharge-occulte', 'main-de-mage', 'prestidigitation'],
-  preferredLevel1Spells: ['malefice', 'armure-d-agathys', 'represailles-infernales'],
+  preferredCantrips: ['decharge-occulte', 'main-du-mage', 'prestidigitation'],
+  // `armure-d-agathys` (Armor of Agathys) retiré du SRD 5.2.1 → remplacé par
+  // `protection-contre-le-mal-et-le-bien` (Protection from Evil and Good) : la
+  // seule ward défensive personnelle dispo en SRD L1 occultiste, qui préserve
+  // l'identité défensive/survivability du preset (CHA primary + CON « fragile à
+  // protéger »). Conflit de concentration avec `malefice` (Hex) acté comme
+  // choix de jeu réaliste, pas comme défaut de build. Substitution plan 13.10
+  // commit 3 (régénération bundle SRD).
+  preferredLevel1Spells: ['malefice', 'protection-contre-le-mal-et-le-bien', 'represailles-infernales'],
 };
