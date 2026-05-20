@@ -377,6 +377,24 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - `docs/AUDIT-SRD-COMPLETUDE.md > C.3` — annotée « rendu sheet OK (13.9 commit 4e, Essence), moteur → D13 ».
   - Distincte de **D12** (mécanique cast des sorts **d'ascendance**) : structure parallèle (consultation livrée / moteur différé), périmètres disjoints (ascendance vs classe Warlock).
 
+## D14 — Profils de créatures invoquées (statblocks) à intégrer comme type de contenu distinct
+
+- **Owner** : plan dédié à créer (piste : plan « Invocations / créatures convoquées » en S3+, à ownerer avant le premier plan qui câble le combat des créatures invoquées). Lié à D13 (Pacte de la chaîne = familier) et D1 (`spell.damage[]`).
+- **Statut** : ouverte. Tracée 2026-05-20 à la livraison du plan 13.10 commit 1.
+- **Cause-racine** : 4 sorts SRD 5.2.1 embarquent dans leur description/montée en niveau un **profil de créature complet** (statblock : CA, PV, vitesse, caractéristiques, actions) destiné à être joué par le MJ : `appel-de-destrier` (Find Steed → Monture d'outre-monde), `animation-des-objets` (Animate Objects → Objet animé), `insecte-geant` (Giant Insect → Insecte géant), `convocation-de-dragon` (Summon Dragon → Esprit draconique). L'extraction texte SRD aplatit ces statblocks en prose illisible (colonnes `MODSAVEMODSAVEMODSAVE`, `For 18+4 +4Dex…`) et, pour 2 d'entre eux, les a fait fuir vers des sorts voisins (cf. commit 1 : scramble Animate Objects / Antilife Shell / Antipathy ; contamination Fireball par la Monture d'outre-monde). Le schéma `Spell` n'a aucun champ structuré pour un statblock embarqué.
+- **Décision commit 1 (plan 13.10)** : **trim + marqueur visible**. Le statblock aplati est retiré de `description`/`atHigherLevels` et remplacé par un marqueur user-visible (`[Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]` côté FR, équivalent EN). Le bundle ne porte donc PAS le profil de la créature — l'utilisateur lit le sort proprement mais doit se référer au SRD pour le statblock de la créature convoquée. Choix assumé : mieux vaut un marqueur honnête qu'un statblock illisible inline.
+- **Conséquence** : à L1 non-bloquant (aucune de ces invocations n'est lançable par un PJ niveau 1 du premier jalon ; ce sont des sorts de niveau 2 à 5). Incomplet vis-à-vis du jeu de table dès qu'un PJ atteint le niveau de ces sorts et veut jouer la créature convoquée depuis l'app.
+- **Surface impactée** :
+  - `scripts/data/srd-spells.ts` — les 4 entrées portent le marqueur (rechercher `dette D14`).
+  - `src/shared/types/content.ts` — `SpellSchema` à étendre (champ optionnel `summonedStatBlock` ou type de contenu `creature`/`statblock` séparé, référencé par slug).
+  - Pipeline de bootstrap (`scripts/bootstrap-srd-spells.ts`) — réextraire les statblocks proprement (probablement saisie manuelle vérifiée contre le SRD, vu l'aplatissement).
+- **Critère de complétion** :
+  1. Un type de contenu « profil de créature invoquée » existe (schéma + bundle ou champ structuré), peuplé pour les 4 sorts.
+  2. Les marqueurs `dette D14` sont retirés des 4 entrées `srd-spells.ts` au profit de la donnée structurée.
+  3. Le mode Combat (ou un écran dédié) rend le statblock de la créature convoquée.
+  4. Tests d'identité du contenu (les 6 catégories) sur les 4 statblocks.
+  5. Cette entrée bascule en `## Résolu` avec le hash du commit.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
