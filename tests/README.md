@@ -63,6 +63,7 @@ le run en cours). Node 22 (`engines.node = ">=22 <26"`), pnpm via corepack
 | `unit` | `test:fast` | non | Bug **unitaire algorithmique** (règle, composant, hook, extracteur, helper). |
 | `matrix` | `test:matrix` | non | **Dérive de couverture/contenu** : classe ou persona ajoutée au bundle sans couverture, référence cross-bundle cassée, anglicisme/terme non-officiel FR, compteur SRD modifié. C'est le garde-fou de 13.12. |
 | `emulator` | `test:rules` puis `test:e2e` | oui | Régression de **sécurité Firestore** (rules) ou de **parcours utilisateur** (e2e). Statut par-step : GitHub distingue « rules a pété » de « e2e a pété ». |
+| `protected-paths-guard` | `push: main` only | non | Un commit **direct non-merge** a touché un path protégé (`public/data/**`, `scripts/data/srd-*.ts`, `.github/workflows/**`). Filet de la couche (b) du flow mixte. |
 
 `rules` + `e2e` sont groupés dans un seul job `emulator` pour payer le setup lourd
 (Java + firebase-tools + chromium + jars) **une fois** ; la granularité Q1 est
@@ -79,3 +80,24 @@ issue GitHub ouverte traçant le flake) — **jamais** en montant les retries po
 masquer le symptôme. Un test flaky non diagnostiqué est une dette, pas un détail
 de réglage. Playwright n'a aucune mémoire cross-run : la quarantaine est une
 décision **manuelle**, prise sur l'historique des runs, pas un outillage.
+
+## Flow mixte — protection des paths critiques (Voie A, plan 13.13)
+
+Direct-push sur `main` autorisé par défaut. Trois groupes de paths sont
+**durcis** (`public/data/**`, `scripts/data/srd-*.ts`, `.github/workflows/**` —
+bundles SRD + pipeline CI). GitHub ne sait pas conditionner une branch protection
+à un path ; le mécanisme est donc du **code à 2 couches**, pattern partagé via
+`scripts/ci/protected-paths.sh` (source unique) :
+
+- **(a) Prévention locale** — `.githooks/pre-push` refuse un push direct sur
+  `main` touchant ces paths. Auto-installé sans husky (`core.hooksPath .githooks`
+  posé par le script `prepare`, lancé à chaque `pnpm install`). Pousser une
+  **branche de feature** passe librement (la PR est la voie légitime).
+- **(b) Détection CI** — job `protected-paths-guard` (`push: main` only) échoue
+  si un commit **direct non-merge** (`git rev-list --first-parent --no-merges`)
+  touche ces paths. Filet pour les `--no-verify` et les pushes hors-machine.
+
+**Un merge de PR n'est jamais bloqué** (le merge commit est exclu par
+`--first-parent --no-merges`). Pour modifier légitimement un path protégé :
+ouvrir une PR (mergée avec un merge commit). Contournement direct conscient :
+`git push --no-verify` — assumé, le job (b) le signale alors a posteriori.

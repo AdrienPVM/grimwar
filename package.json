@@ -5,6 +5,7 @@
   "description": "D&D 5e campaign management PWA — mobile-first, cinematic, illuminated manuscript aesthetic.",
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks || true",
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && vite build",
     "preview": "vite preview",
