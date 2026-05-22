@@ -428,6 +428,13 @@ export const AncestryGnomeLineageOptionSchema = z.object({
   name: I18nSchema,
   benefit: I18nSchema,
   cantripSpellIds: z.array(slug),
+  /**
+   * Sorts de trait SPÉCIFIQUES au lignage (pas communs à toute l'ascendance).
+   * Forest Gnome « Gnome des forêts » → `communication-avec-les-animaux`
+   * (rituel, usage limité PB×/repos). Rock Gnome ne l'a PAS → champ absent.
+   * Plan 13.14b (D18) : présence injectée ; cast à usage limité = D12.
+   */
+  spellIds: z.array(slug).optional(),
 });
 export type AncestryGnomeLineageOption = z.infer<
   typeof AncestryGnomeLineageOptionSchema
@@ -492,6 +499,13 @@ export const AncestrySchema = z
     languages: z.array(z.string()),
     source: sourceTag,
     options: AncestryOptionsSchema,
+    /**
+     * Sorts de trait COMMUNS à toute l'ascendance (tous sous-choix confondus).
+     * SRD 5.2.1 : Tieffelin « Présence d'outre-monde » → `thaumaturgie`, commun
+     * aux 3 héritages. Les sorts propres à UN sous-choix (lignage/héritage)
+     * vivent sur l'option correspondante, pas ici. Plan 13.14b (D18).
+     */
+    commonSpellIds: z.array(slug).optional(),
   })
   .superRefine((ancestry, ctx) => {
     // Validation cross-field : si l'ascendance a un sous-choix L1 SRD, la

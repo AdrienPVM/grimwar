@@ -80,6 +80,22 @@ export const TIEFLING_LEGACIES: TieflingLegacyOption[] = [
   },
 ];
 
+/**
+ * Sorts de trait COMMUNS à toute l'ascendance (tous sous-choix confondus) —
+ * SRD 5.2.1, plan 13.14b (D18).
+ *
+ * - Tieffelin « Présence d'outre-monde » → Thaumaturgie (commun aux 3 héritages,
+ *   `FR_SRD_CC_v5.2.1.txt` l.9448 ; `thaumaturgie` présent niv. 0 dans spells.json).
+ *
+ * Les sorts propres à UN sous-choix (lignage / héritage) NE vont PAS ici — ils
+ * vivent sur l'option du sous-choix (cf. `GNOME_LINEAGES.forest.spellIds` pour
+ * Communication avec les animaux, forest-only). Distinction taxonomique SRD :
+ * ancestry-common vs lineage-specific.
+ */
+export const ANCESTRY_COMMON_SPELL_IDS: Record<string, string[]> = {
+  tiefling: ['thaumaturgie'],
+};
+
 export interface ElfLineageOption {
   id: 'drow' | 'high-elf' | 'wood-elf';
   name: { fr: string; en: string };
@@ -132,6 +148,14 @@ export interface GnomeLineageOption {
   name: { fr: string; en: string };
   benefit: { fr: string; en: string };
   cantripSpellIds: string[];
+  /**
+   * Sorts de trait spécifiques au lignage (pas communs à tous les gnomes).
+   * Forest Gnome « Gnome des forêts » → Communication avec les animaux (rituel,
+   * usage limité PB×/repos). Source `FR_SRD_CC_v5.2.1.txt` l.9236 ; slug présent
+   * dans `spells.json` (niv. 1). Rock Gnome ne l'a PAS → pas de `spellIds`.
+   * Présence = D18 (plan 13.14b) ; cast à usage limité = D12 (différé).
+   */
+  spellIds?: string[];
 }
 
 // Slugs FR (cf. Bug 1 UAT 2026-05-18 ci-dessus).
@@ -144,6 +168,7 @@ export const GNOME_LINEAGES: GnomeLineageOption[] = [
       en: 'Cast Speak with Animals as a ritual without a slot, up to PB times per long rest without the ritual tag.',
     },
     cantripSpellIds: ['illusion-mineure'],
+    spellIds: ['communication-avec-les-animaux'], // D18 — forest only (pas rock).
   },
   {
     id: 'rock',
