@@ -1,0 +1,53 @@
+# CI GrimWar — câble les cadences de test livrées par le plan 13.12.
+# Plan 13.13. Flow mixte (CLAUDE.md) : direct-push autorisé par défaut, branch
+# protection bloquante sur public/data/**, scripts/data/srd-*.ts, .github/workflows/**.
+#
+# 4 jobs parallèles, tous bloquants :
+#   static   — typecheck + lint                       (léger, pas d'émulateur)
+#   unit     — test:fast                              (commit 2)
+#   matrix   — test:matrix (garde-fou 13.12)          (commit 2)
+#   emulator — test:rules puis test:e2e               (commit 3, Java + chromium)
+#
+# Node 22 : engines.node = ">=22 <26". La machine par défaut d'Adrien (v26) est
+# hors range — setup-node@22 est le seul Node conforme, pas un confort.
+# pnpm via corepack, version pinnée par packageManager (pnpm@9.12.3).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Annule les runs obsolètes sur la même réf (un nouveau push remplace l'ancien
+# run en cours plutôt que de les empiler).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static (typecheck + lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # corepack AVANT setup-node : active le shim pnpm pour le node système,
+      # puis setup-node (cache: pnpm) localise le store via ce shim.
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
