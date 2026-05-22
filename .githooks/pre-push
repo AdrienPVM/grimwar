@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Hook pre-push — COUCHE (a) PRÉVENTION LOCALE du flow mixte (CLAUDE.md, plan 13.13).
+#
+# Refuse un push direct sur `main` qui touche un path protégé. Ne bloque que
+# `main` : pousser une branche de feature (vers une PR) passe librement, même
+# si elle touche des paths protégés — la PR est la voie légitime.
+#
+# Sémantique alignée sur le job CI guard : on n'inspecte que les commits ajoutés
+# DIRECTEMENT à la mainline (`--first-parent`) et NON-MERGE (`--no-merges`). Un
+# merge de PR n'est donc jamais bloqué. Seul un commit direct (le cas d'un fix
+# poussé à la va-vite sur main) déclenche le refus.
+#
+# Contournement conscient : `git push --no-verify`. Assumé : le job CI
+# protected-paths-guard sert alors de filet a posteriori (couche b).
+#
+# Installé sans husky : `git config core.hooksPath .githooks`, posé par le
+# script `prepare` de package.json (lancé à chaque `pnpm install`).
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+HELPER="$REPO_ROOT/scripts/ci/protected-paths.sh"
+# Si le matcher manque, on échoue LOUD plutôt que de laisser passer en silence.
+[ -x "$HELPER" ] || { echo "❌ matcher introuvable : $HELPER" >&2; exit 2; }
+ZERO="0000000000000000000000000000000000000000"
+
+blocked=0
+
+# stdin : "<local_ref> <local_sha> <remote_ref> <remote_sha>" par réf poussée.
+while read -r local_ref local_sha remote_ref remote_sha; do
+  # On ne protège que main.
+  [ "$remote_ref" = "refs/heads/main" ] || continue
+  # Suppression de la branche distante : rien à inspecter.
+  [ "$local_sha" = "$ZERO" ] && continue
+
+  if [ "$remote_sha" = "$ZERO" ]; then
+    # main n'existe pas encore côté remote : inspecte le commit de tête.
+    commits="$local_sha"
+  else
+    # Commits directs (first-parent) et non-merge ajoutés à main.
+    commits="$(git rev-list --first-parent --no-merges "$remote_sha..$local_sha")"
+  fi
+
+  [ -n "${commits// /}" ] || continue
+
+  files=""
+  for c in $commits; do
+    files+="$(git diff-tree --no-commit-id --name-only -r "$c")"$'\n'
+  done
+
+  protected="$(printf '%s' "$files" | grep -v '^$' | sort -u | "$HELPER" || true)"
+  if [ -n "$protected" ]; then
+    blocked=1
+    echo "" >&2
+    echo "⛔ Push direct sur main refusé — paths protégés modifiés :" >&2
+    printf '%s\n' "$protected" | sed 's/^/   • /' >&2
+  fi
+done
+
+if [ "$blocked" = "1" ]; then
+  cat >&2 <<'EOF'
+
+Ces paths sont durcis (bundles SRD + pipeline CI). Voie recommandée : une PR
+(mergée avec un merge commit, exclue du garde-fou).
+Contournement conscient : git push --no-verify
+(le job CI protected-paths-guard le détectera a posteriori — couche b).
+EOF
+  exit 1
+fi
+
+exit 0

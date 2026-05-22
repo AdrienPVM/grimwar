@@ -184,3 +184,23 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  # Couche (b) du flow mixte (CLAUDE.md) : filet pour les push direct --no-verify
+  # et les pushes depuis une machine sans le hook .githooks/pre-push (couche a).
+  # Échoue si un commit direct non-merge sur main touche un path protégé. Ne
+  # tourne que sur push:main — sur une PR, toucher un path protégé est légitime.
+  # Léger : git seul, ni Node ni émulateur. fetch-depth:0 pour résoudre BEFORE..AFTER.
+  guard:
+    name: protected-paths-guard
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard protected paths
+        env:
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: bash scripts/ci/guard-protected-paths.sh
