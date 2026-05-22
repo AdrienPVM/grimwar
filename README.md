@@ -1,5 +1,7 @@
 # GrimWar
 
+[![CI](https://github.com/AdrienPVM/grimwar/actions/workflows/ci.yml/badge.svg)](https://github.com/AdrienPVM/grimwar/actions/workflows/ci.yml)
+
 A D&D 5e **campaign management PWA** — mobile-first, cinematic, illuminated-manuscript aesthetic.
 
 Built for the DM and their party. Real-time multi-user. Every gameplay action auto-logged to compile a living session journal. Cinematic radial menu instead of buttons. Works offline.

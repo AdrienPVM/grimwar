@@ -35,14 +35,47 @@ Périmètre (liste explicite) :
 - `tests/srd-counters.test.ts` — compteurs SRD figés (hardening bundle).
 - `tests/srd-reference-entries.test.ts` — 20 entrées SRD de référence pinnées (cat. 3).
 
-## `pnpm test:nightly` — câblage CI à venir (plan 13.13)
+## `pnpm test:nightly`
 
-Entry point **déclaré mais non câblé en CI** aujourd'hui. Alias de `test:matrix`
-pour l'instant. Le plan 13.13 le branchera dans GitHub Actions (run nocturne) et
-pourra y ajouter des invariants plus coûteux (multi-niveaux, fuzz, etc.).
+Alias de `test:matrix` aujourd'hui. Entry point réservé pour des invariants plus
+coûteux (multi-niveaux, fuzz, etc.) qu'on pourra y rattacher sans toucher au
+câblage CI. Pas encore branché sur un run nocturne — la matrice tourne déjà sur
+chaque déclencheur via le job `matrix` (cf. ci-dessous), ce qui couvre le besoin
+de protection ; le run nocturne ne s'ajoutera que si `test:matrix` devient trop
+lourd pour chaque PR.
 
 ## Hors de ces cadences
 
 - `tests/firestore-rules.test.ts` → `pnpm test:rules` (requiert l'émulateur Firebase / Java).
 - `tests/e2e/**` → `pnpm test:e2e` (Playwright + émulateur).
-- `pnpm test` reste le **run complet** (tout le périmètre Vitest, hors e2e), utilisé par la quadruple gate de livraison.
+- `pnpm test` reste le **run complet** (tout le périmètre Vitest, hors e2e), utilisé par la quadruple gate de livraison locale. **Non exécutable tel quel en CI** : il embarque `firestore-rules.test.ts`, qui se skippe silencieusement sans `FIRESTORE_EMULATOR_HOST` → couverture rules perdue sans bruit. La CI passe donc par le split `fast` + `matrix` + `rules` (cf. ci-dessous), qui couvre exactement tout le périmètre Vitest, chaque test une seule fois.
+
+## Câblage CI (GitHub Actions — plan 13.13)
+
+`.github/workflows/ci.yml` : **4 jobs parallèles, tous bloquants**, sur `push: main`
++ `pull_request`. `concurrency` + `cancel-in-progress` (un nouveau push remplace
+le run en cours). Node 22 (`engines.node = ">=22 <26"`), pnpm via corepack
+(`pnpm@9.12.3`).
+
+| Job | Cadence | Émulateur / Java | Ce qu'un rouge signifie |
+|---|---|---|---|
+| `static` | `typecheck` + `lint` | non | Erreur de type ou de lint. |
+| `unit` | `test:fast` | non | Bug **unitaire algorithmique** (règle, composant, hook, extracteur, helper). |
+| `matrix` | `test:matrix` | non | **Dérive de couverture/contenu** : classe ou persona ajoutée au bundle sans couverture, référence cross-bundle cassée, anglicisme/terme non-officiel FR, compteur SRD modifié. C'est le garde-fou de 13.12. |
+| `emulator` | `test:rules` puis `test:e2e` | oui | Régression de **sécurité Firestore** (rules) ou de **parcours utilisateur** (e2e). Statut par-step : GitHub distingue « rules a pété » de « e2e a pété ». |
+
+`rules` + `e2e` sont groupés dans un seul job `emulator` pour payer le setup lourd
+(Java + firebase-tools + chromium + jars) **une fois** ; la granularité Q1 est
+préservée par les statuts par-step.
+
+**Lire un échec :** ouvrir le run dans l'onglet Actions, repérer le job rouge.
+Pour `emulator`, le report Playwright (traces + screenshots) est attaché en
+artefact `playwright-report` (uniquement `if: failure()`, rétention 7 j).
+
+**Politique de quarantaine (anti-flake — volet P4) :** `workers:1` + `retries:1`
+en CI (`CI=true`) sont déjà actifs (cf. `playwright.config.ts`). Si un test e2e
+pète **≥ 3 fois sur 10 runs CI**, on le met en **quarantaine** (`test.fixme` +
+issue GitHub ouverte traçant le flake) — **jamais** en montant les retries pour
+masquer le symptôme. Un test flaky non diagnostiqué est une dette, pas un détail
+de réglage. Playwright n'a aucune mémoire cross-run : la quarantaine est une
+décision **manuelle**, prise sur l'historique des runs, pas un outillage.
