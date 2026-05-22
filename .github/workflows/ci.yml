@@ -51,3 +51,51 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+  unit:
+    name: unit (test:fast)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Invariants algorithmiques : src + scripts + tests/helpers (content-truth).
+      # Rouge ici = bug unitaire, pas une dérive de couverture combinatoire.
+      - name: Unit tests
+        run: pnpm test:fast
+
+  matrix:
+    name: matrix (test:matrix)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Le garde-fou anti-dérive de 13.12 : matrice combinatoire L1 + axe
+      # « matrice ≡ bundle » + invariants content-truth lourds. Rouge ici =
+      # une classe/persona ajoutée au bundle sans couverture, ou une dérive
+      # du contenu SRD. C'est ce job qui rend la valeur de 13.12 permanente.
+      - name: Matrix + content-truth
+        run: pnpm test:matrix
