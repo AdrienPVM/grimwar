@@ -67,6 +67,10 @@ export function buildAncestrySpellIds(
 ): string[] {
   const sc = draft.ancestrySubChoices;
   const out: string[] = [];
+  // Sorts de trait COMMUNS à toute l'ascendance, indépendants du sous-choix
+  // (plan 13.14b D18). Tieffelin « Présence d'outre-monde » → thaumaturgie,
+  // commun aux 3 héritages. Poussés en premier, avant le triplet de sous-choix.
+  out.push(...(ancestry.commonSpellIds ?? []));
   if (ancestry.id === 'tiefling' && sc.tieflingLegacy) {
     const legacy = ancestry.options.tieflingLegacies?.find(
       (o) => o.id === sc.tieflingLegacy,
@@ -87,6 +91,9 @@ export function buildAncestrySpellIds(
     );
     if (lineage) {
       out.push(...lineage.cantripSpellIds);
+      // Sorts de trait spécifiques au lignage (Gnome des forêts →
+      // communication-avec-les-animaux). Rock Gnome n'en a pas → no-op.
+      out.push(...(lineage.spellIds ?? []));
     }
   }
   return out;

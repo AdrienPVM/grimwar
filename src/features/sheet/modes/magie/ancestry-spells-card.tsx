@@ -5,20 +5,14 @@ import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
-import type { Ancestry, Spell } from '@/shared/types/content';
+import type { Spell } from '@/shared/types/content';
+
+import { resolveAncestrySpellEntries } from './ancestry-source-label';
 
 interface AncestrySpellsCardProps {
   character: Character;
   /** Ouvre la modale détail (plan 13.8b — sort consultable d'un tap). */
   onSpellSelect: (spell: Spell) => void;
-}
-
-interface AncestrySpellEntry {
-  spell: Spell;
-  /** Niveau de personnage à partir duquel ce sort est déblocable. */
-  unlockedAt: number;
-  /** Label de la source dans la fiche. */
-  sourceLabel: string;
 }
 
 /**
@@ -43,7 +37,7 @@ export function AncestrySpellsCard({
 
   const ability = character.spellcastingAbility.ancestry ?? null;
 
-  const entries = useMemo<AncestrySpellEntry[]>(() => {
+  const entries = useMemo(() => {
     const ids = character.knownSpells.ancestry ?? [];
     if (ids.length === 0) return [];
     const ancestry = ancestries.find((a) => a.id === character.ancestryId);
@@ -129,57 +123,3 @@ function sourceTitleKeyFor(ancestryId: Character['ancestryId']): StringKey {
   }
 }
 
-/**
- * Résout chaque sortId d'ascendance en `{ spell, unlockedAt, sourceLabel }`.
- *
- * Pour Tieffelin et Elfe : ordre canonique (cantrip = L1, level3 = L3,
- * level5 = L5). Pour Gnome : tous les cantrips sont L1.
- */
-function resolveAncestrySpellEntries(
-  character: Character,
-  ancestry: Ancestry,
-  allSpells: readonly Spell[],
-): AncestrySpellEntry[] {
-  const sc = character.ancestrySubChoices;
-  const spellById = new Map(allSpells.map((s) => [s.id, s]));
-  const out: AncestrySpellEntry[] = [];
-
-  if (ancestry.id === 'tiefling' && sc.tieflingLegacy) {
-    const legacy = ancestry.options.tieflingLegacies?.find(
-      (o) => o.id === sc.tieflingLegacy,
-    );
-    if (!legacy) return [];
-    const label = `Héritage ${localize(legacy.name)}`;
-    pushIfSpell(out, spellById.get(legacy.cantripSpellId), 1, label);
-    pushIfSpell(out, spellById.get(legacy.level3SpellId), 3, label);
-    pushIfSpell(out, spellById.get(legacy.level5SpellId), 5, label);
-  } else if (ancestry.id === 'elf' && sc.elfLineage) {
-    const lineage = ancestry.options.elfLineages?.find((o) => o.id === sc.elfLineage);
-    if (!lineage) return [];
-    const label = `Lignage ${localize(lineage.name)}`;
-    pushIfSpell(out, spellById.get(lineage.cantripSpellId), 1, label);
-    pushIfSpell(out, spellById.get(lineage.level3SpellId), 3, label);
-    pushIfSpell(out, spellById.get(lineage.level5SpellId), 5, label);
-  } else if (ancestry.id === 'gnome' && sc.gnomeLineage) {
-    const lineage = ancestry.options.gnomeLineages?.find(
-      (o) => o.id === sc.gnomeLineage,
-    );
-    if (!lineage) return [];
-    const label = `Lignage ${localize(lineage.name)}`;
-    for (const id of lineage.cantripSpellIds) {
-      pushIfSpell(out, spellById.get(id), 1, label);
-    }
-  }
-
-  return out;
-}
-
-function pushIfSpell(
-  out: AncestrySpellEntry[],
-  spell: Spell | undefined,
-  unlockedAt: number,
-  sourceLabel: string,
-): void {
-  if (!spell) return;
-  out.push({ spell, unlockedAt, sourceLabel });
-}

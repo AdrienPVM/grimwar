@@ -195,7 +195,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         character={character}
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel={null}
+        ancestrySourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -214,7 +214,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         character={character}
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel={null}
+        ancestrySourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -236,7 +236,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         character={character}
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel={null}
+        ancestrySourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -262,7 +262,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         character={character}
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel={null}
+        ancestrySourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -283,7 +283,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         character={character}
         spells={[...INSCRIBED_SPELLS, fireBall]}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel={null}
+        ancestrySourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );

@@ -15,11 +15,12 @@ interface SpellListProps {
   /** IDs des classes lanceuses du perso, utilisé pour résoudre "préparé". */
   spellcasterClassIds: readonly string[];
   /**
-   * Label de la source d'ascendance pré-calculé par le parent
-   * (`computeAncestrySourceLabel`). `null` si le perso n'a pas de sorts
-   * d'ascendance ou si l'ascendance n'a aucun chooser de sorts.
+   * Label de source PAR sortId, pré-calculé par le parent
+   * (`buildAncestrySourceLabelMap`). Un sort absent de la map ne vient pas de
+   * l'ascendance. Map par-sort (et non label global) pour que thaumaturgie
+   * (trait commun) ne porte plus le label « Héritage X » du sous-choix.
    */
-  ancestrySourceLabel: string | null;
+  ancestrySourceLabels: ReadonlyMap<string, string>;
   onSpellSelect: (spell: Spell) => void;
 }
 
@@ -55,7 +56,7 @@ export function SpellList({
   character,
   spells,
   spellcasterClassIds,
-  ancestrySourceLabel,
+  ancestrySourceLabels,
   onSpellSelect,
 }: SpellListProps): JSX.Element {
   const { data: classCatalog } = useContent('classes');
@@ -198,7 +199,9 @@ export function SpellList({
                       spell={spell}
                       prepared={preparedVisual}
                       sourceClassNames={src.classNames}
-                      ancestrySourceLabel={src.fromAncestry ? ancestrySourceLabel : null}
+                      ancestrySourceLabel={
+                        src.fromAncestry ? ancestrySourceLabels.get(spell.id) ?? null : null
+                      }
                       onClick={() => onSpellSelect(spell)}
                     />
                   </li>

@@ -274,6 +274,10 @@ export type StringKey =
   | 'sheet.magie.ancestry.elfTitle'
   | 'sheet.magie.ancestry.gnomeTitle'
   | 'sheet.magie.ancestry.genericTitle'
+  // Label de source pour les sorts de trait COMMUN à l'ascendance (plan 13.14b
+  // D18) — distinct du label « Héritage X » des sous-choix. Tieffelin : trait
+  // « Présence d'outre-monde » → thaumaturgie, commun aux 3 héritages.
+  | 'sheet.magie.ancestry.tieflingCommonSource'
   | 'sheet.magie.cantNotImplementedAncestry'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
@@ -625,6 +629,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.elfTitle': 'Sorts de lignage elfique',
     'sheet.magie.ancestry.gnomeTitle': 'Sorts de lignage gnome',
     'sheet.magie.ancestry.genericTitle': "Sorts d'ascendance",
+    'sheet.magie.ancestry.tieflingCommonSource': "Présence d’outre-monde",
     'sheet.magie.cantNotImplementedAncestry':
       "Lancement des sorts d'ascendance pas encore implémenté.",
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
@@ -957,6 +962,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.elfTitle': 'Elven lineage spells',
     'sheet.magie.ancestry.gnomeTitle': 'Gnomish lineage spells',
     'sheet.magie.ancestry.genericTitle': 'Ancestry spells',
+    'sheet.magie.ancestry.tieflingCommonSource': 'Otherworldly Presence',
     'sheet.magie.cantNotImplementedAncestry':
       'Casting ancestry spells is not yet implemented.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',

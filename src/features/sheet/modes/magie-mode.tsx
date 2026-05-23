@@ -7,7 +7,10 @@ import type { Spell } from '@/shared/types/content';
 
 import { isSheetReadOnly } from './combat/hp-combat';
 import { AncestrySpellsCard } from './magie/ancestry-spells-card';
-import { computeAncestrySourceLabel } from './magie/ancestry-source-label';
+import {
+  buildAncestrySourceLabelMap,
+  resolveAncestrySpellEntries,
+} from './magie/ancestry-source-label';
 import { MagicCircle } from './magie/magic-circle';
 import { SpellDetailModal } from './magie/spell-detail-modal';
 import { SpellList } from './magie/spell-list';
@@ -49,10 +52,16 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
     [castingClasses],
   );
 
-  const ancestrySourceLabel = useMemo(
-    () => computeAncestrySourceLabel(character, ancestries),
-    [character, ancestries],
-  );
+  // Label de source PAR SORT (plan 13.14b) — remplace l'ancien label global
+  // par-ascendance qui mislabelait thaumaturgie en « Héritage X ». Source de
+  // vérité = le résolveur canonique partagé avec la carte.
+  const ancestrySourceLabels = useMemo(() => {
+    const ancestry = ancestries.find((a) => a.id === character.ancestryId);
+    if (!ancestry) return new Map<string, string>();
+    return buildAncestrySourceLabelMap(
+      resolveAncestrySpellEntries(character, ancestry, spells),
+    );
+  }, [character, ancestries, spells]);
 
   const [activeSpell, setActiveSpell] = useState<Spell | null>(null);
 
@@ -62,13 +71,12 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
   // NI sorts d'ascendance ne sont présents.
   const hasAncestrySpells = (character.knownSpells.ancestry ?? []).length > 0;
 
-  // Source d'ascendance pour la modale détail. On marque le sort actif comme
-  // venant de l'ascendance si son id est dans `knownSpells.ancestry`.
+  // Source d'ascendance pour la modale détail — label propre au sort actif.
   const activeSpellAncestrySource = useMemo(() => {
-    if (!activeSpell || !ancestrySourceLabel) return null;
-    const ids = character.knownSpells.ancestry ?? [];
-    return ids.includes(activeSpell.id) ? { label: ancestrySourceLabel } : null;
-  }, [activeSpell, ancestrySourceLabel, character.knownSpells.ancestry]);
+    if (!activeSpell) return null;
+    const label = ancestrySourceLabels.get(activeSpell.id);
+    return label ? { label } : null;
+  }, [activeSpell, ancestrySourceLabels]);
 
   if (castingClasses.length === 0 && !hasAncestrySpells) {
     return (
@@ -121,7 +129,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
             character={character}
             spells={spells}
             spellcasterClassIds={castingClassIds}
-            ancestrySourceLabel={ancestrySourceLabel}
+            ancestrySourceLabels={ancestrySourceLabels}
             onSpellSelect={(spell) => setActiveSpell(spell)}
           />
         )

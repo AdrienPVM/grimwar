@@ -98,15 +98,16 @@ const KNOWN_SPELLS_PINS: Record<string, { total: number; ancestry: number }> = {
   // ── Axe ascendance ──
   // Humain = 0 sort d'ascendance ; le compte Magicien (9) est inchangé.
   'anc-wizard-human': { total: 9, ancestry: 0 },
-  // Tieffelin = 3 → triplet d'héritage de la legacy ABYSSAL (1ʳᵉ admissible) :
-  //   3 = [ Bouffée de poison (cantrip, accessible L1)
-  //       + Rayon empoisonné (sort L1, appris perso-niv.3, stocké/lock dès création — D12)
-  //       + Immobilisation de personne (sort L2, appris perso-niv.5, stocké/lock dès création — D12) ]
-  // NB : Thaumaturgie (trait commun « Présence d'outre-monde ») ABSENTE de
-  //      knownSpells.ancestry — dette D18 ouverte (sort de trait non injecté).
-  //      Le pin documente l'état ACTUEL ; si D18 est résolue → ancestry 4 / total 10.
-  // Total 9 = Ensorceleur 6 (4 cantrips + 2 sorts L1) + 3 ascendance.
-  'anc-sorcerer-tiefling': { total: 9, ancestry: 3 },
+  // Tieffelin = 4 (plan 13.14b D18 RÉSOLUE) :
+  //   - thaumaturgie via `ancestry.commonSpellIds` (trait « Présence d'outre-monde »,
+  //     COMMUN aux 3 héritages — pas un sous-choix). cantrip, accessible L1.
+  //   - triplet d'héritage de la legacy ABYSSAL (1ʳᵉ admissible) :
+  //       Bouffée de poison (cantrip, L1)
+  //     + Rayon empoisonné (sort L1, appris perso-niv.3, stocké/lock dès création — D12)
+  //     + Immobilisation de personne (sort L2, appris perso-niv.5, stocké/lock — D12)
+  //   → 1 commun + 3 triplet = 4. (Avant 13.14b : 3, thaumaturgie manquante = D18.)
+  // Total 10 = Ensorceleur 6 (4 cantrips + 2 sorts L1) + 4 ascendance.
+  'anc-sorcerer-tiefling': { total: 10, ancestry: 4 },
   // Elfe = 3 sur un NON-lanceur (interaction figée : sorts d'ascendance sans
   // classe lanceuse). Lignage DROW (1ʳᵉ admissible, PAS Haut-elfe) :
   //   3 = [ Lumières dansantes (cantrip)
@@ -114,11 +115,14 @@ const KNOWN_SPELLS_PINS: Record<string, { total: number; ancestry: number }> = {
   //       + Ténèbres (sort L2, appris perso-niv.5 — D12) ]
   // Total 3 = Guerrier 0 + 3 ascendance.
   'anc-fighter-elf': { total: 3, ancestry: 3 },
-  // Gnome = 1 → lignage des FORÊTS (1ʳᵉ admissible) : cantrips de lignage seuls,
-  // PAS de triplet L3/L5 (structure `cantripSpellIds[]`, 1 entrée) :
-  //   1 = [ Illusion mineure (cantrip) ]
-  // Total 4 = Clerc 3 (3 cantrips) + 1 ascendance.
-  'anc-cleric-gnome': { total: 4, ancestry: 1 },
+  // Gnome = 2 (plan 13.14b D18 RÉSOLUE) → lignage des FORÊTS (1ʳᵉ admissible) :
+  //   - Illusion mineure (cantrip de lignage, `cantripSpellIds[]`)
+  //   - communication-avec-les-animaux via `gnomeLineages.forest.spellIds`
+  //     (speak-with-animals, FOREST ONLY — Gnome des roches ne l'a PAS ; rituel,
+  //     usage limité PB×/repos = cast D12). cat. 6 cas-limite cross-source.
+  //   → 1 cantrip + 1 sort de lignage = 2. (Avant 13.14b : 1 = D18.)
+  // Total 5 = Clerc 3 (3 cantrips) + 2 ascendance.
+  'anc-cleric-gnome': { total: 5, ancestry: 2 },
   // ── Axe background : un background n'accorde AUCUN sort ──
   'bg-rogue-criminal': { total: 0, ancestry: 0 },
   'bg-rogue-sage': { total: 0, ancestry: 0 },
@@ -228,12 +232,34 @@ describe('matrice L1 — cas-limites cat. 6 portés en unitaire', () => {
     expect((s.character.preparedSpells.wizard ?? []).length).toBe(4);
   });
 
-  it('Tieffelin : 3 sorts d’ascendance (cantrip + L3 + L5) injectés dans knownSpells.ancestry', () => {
+  it('Tieffelin : 4 sorts d’ascendance (thaumaturgie commune + triplet d’héritage) injectés dans knownSpells.ancestry', () => {
     const spec = PERSONAS.find((p) => p.id === 'anc-sorcerer-tiefling');
     expect(spec, 'persona anc-sorcerer-tiefling absent').toBeDefined();
     if (!spec) return;
     const s = snap(spec);
-    expect((s.character.knownSpells.ancestry ?? []).length).toBe(3);
+    const ancestry = s.character.knownSpells.ancestry ?? [];
+    expect(ancestry.length).toBe(4);
+    // D18 : thaumaturgie (trait commun « Présence d'outre-monde ») présente,
+    // pas seulement le triplet d'héritage.
+    expect(ancestry, 'thaumaturgie (trait commun) absente de knownSpells.ancestry').toContain(
+      'thaumaturgie',
+    );
+  });
+
+  it('Gnome des forêts : 2 sorts d’ascendance (cantrip + speak-with-animals du lignage), pas castés à un Gnome des roches', () => {
+    const spec = PERSONAS.find((p) => p.id === 'anc-cleric-gnome');
+    expect(spec, 'persona anc-cleric-gnome absent').toBeDefined();
+    if (!spec) return;
+    const s = snap(spec);
+    const ancestry = s.character.knownSpells.ancestry ?? [];
+    expect(ancestry.length).toBe(2);
+    // cat. 6 cross-source : communication-avec-les-animaux vient du lignage
+    // FORÊTS uniquement (`spellIds`), pas d'un `commonSpellIds` au niveau
+    // ascendance qui le leakerait à tous les gnomes.
+    expect(
+      ancestry,
+      'communication-avec-les-animaux (lignage forêts) absente de knownSpells.ancestry',
+    ).toContain('communication-avec-les-animaux');
   });
 });
 
