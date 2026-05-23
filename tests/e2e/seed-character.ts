@@ -641,6 +641,106 @@ export const warlockL1MultiInvocations: SeedPreset = {
 };
 
 /**
+ * Plan 13.14b commit 3 — UAT visuel D19/D20 :
+ * Guerrier·Defense niv. 1 portant une cotte de mailles équipée. Le StatusStrip
+ * doit afficher **CA 17** (cotte 16 + DEX 0 capé + Defense +1). Comparable au
+ * jumeau « bare » ci-dessous pour mesurer le delta visuel armure / désarmé.
+ */
+export const fighterL1DefenseChainmail: SeedPreset = {
+  name: 'Sigrid Bouclier-de-Mailles',
+  classes: [
+    {
+      classId: 'fighter',
+      subclassId: null,
+      level: 1,
+      subChoices: {
+        fighterFightingStyle: 'defense',
+        weaponMasteries: ['longsword'],
+      },
+    },
+  ],
+  primaryClassId: 'fighter',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 10, con: 14, int: 10, sag: 10, cha: 10 },
+  hp: { current: 12, max: 12 },
+  // Valeur désarmée wizard (10 + DEX 0) — ignorée par computeDisplayedAc dès
+  // que l'inventaire fournit acFromArmor.
+  ac: 10,
+  hitDice: [{ classId: 'fighter', current: 1, max: 1, die: 'd10' }],
+  saves: { for: true, con: true },
+  inventory: {
+    items: [
+      { contentId: 'chain-mail', equipped: true, qty: 1 },
+      { contentId: 'longsword', equipped: true, qty: 1 },
+    ],
+  },
+};
+
+/**
+ * Plan 13.14b commit 3 — UAT visuel D19 « gate body-armor ». Même Guerrier·
+ * Defense que ci-dessus mais SANS armure équipée. Le StatusStrip doit afficher
+ * **CA 12** (10 + DEX +2, zéro bonus Defense). Sert à prouver visuellement que
+ * le +1 ne se déclenche pas hors-armure.
+ */
+export const fighterL1DefenseBare: SeedPreset = {
+  name: 'Sigrid Bras-Nu',
+  classes: [
+    {
+      classId: 'fighter',
+      subclassId: null,
+      level: 1,
+      subChoices: {
+        fighterFightingStyle: 'defense',
+        weaponMasteries: ['longsword'],
+      },
+    },
+  ],
+  primaryClassId: 'fighter',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 14, con: 14, int: 10, sag: 10, cha: 10 },
+  hp: { current: 12, max: 12 },
+  // Désarmé = 10 + DEX +2 = 12, conservé en fallback faute de acFromArmor.
+  ac: 12,
+  hitDice: [{ classId: 'fighter', current: 1, max: 1, die: 'd10' }],
+  saves: { for: true, con: true },
+  inventory: {
+    // Longsword seule, pas d'armure. Sert aussi à montrer une attaque équipée
+    // dans le mode Combat — pas le périmètre du screenshot StatusStrip mais
+    // utile à l'ergonomie de capture.
+    items: [{ contentId: 'longsword', equipped: true, qty: 1 }],
+  },
+};
+
+/**
+ * Plan 13.14b commit 3 — UAT visuel D19 « non-Defense class ». Magicien niv. 1
+ * portant une armure de cuir équipée (acBase 11, acDexMax null). Le StatusStrip
+ * doit afficher **CA 13** (11 + DEX +2, zéro Defense — aucune entrée `classes[]`
+ * n'a `fighterFightingStyle === 'defense'`). Légèrement « hors-règle » côté
+ * proficiency (les Magiciens ne sont pas formés au cuir), mais le calcul de CA
+ * reste pur — il n'arbitre pas la maîtrise d'armure.
+ */
+export const wizardL1LeatherArmor: SeedPreset = {
+  name: 'Maelo Sage-en-Cuir',
+  classes: [{ classId: 'wizard', subclassId: null, level: 1 }],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'sage',
+  abilities: { for: 8, dex: 14, con: 12, int: 16, sag: 12, cha: 10 },
+  hp: { current: 7, max: 7 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 1, max: 1, die: 'd6' }],
+  saves: { int: true, sag: true },
+  inventory: {
+    items: [{ contentId: 'leather-armor', equipped: true, qty: 1 }],
+  },
+};
+
+/**
  * Magicien niv. 3, 2 cantrips + 2 sorts niv 1 connus. Cas de test du Magie
  * mode : un caster avec slots débloqués (niv 1 + 2 via la table unifiée) et
  * des sorts effectivement visibles dans la liste.

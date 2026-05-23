@@ -11,6 +11,7 @@ import {
   carryingCapacity,
   computeAcFromArmor,
   computeEncumbrance,
+  hasEquippedBodyArmor,
   type EncumbranceLevel,
   type EquippedRow,
 } from './inventory-rules';
@@ -46,6 +47,11 @@ export interface InventoryDerived {
   encumbranceLevel: EncumbranceLevel;
   /** AC issue de l'armure équipée (ou null si aucune armure équipée). */
   acFromArmor: number | null;
+  /**
+   * Vrai si au moins une armure (light/medium/heavy) est portée. Gate du
+   * Fighting Style Defense — un bouclier seul ne déclenche pas le +1 CA.
+   */
+  hasEquippedBodyArmor: boolean;
   /** Items équipés en attunement (cap 5e = 3). */
   attunedCount: number;
   loading: boolean;
@@ -132,7 +138,7 @@ export function useInventoryDerived(character: Character): InventoryDerived {
     [weightTotal, character.abilities.for],
   );
 
-  const acFromArmor = useMemo(() => {
+  const equippedRows = useMemo<EquippedRow[]>(() => {
     const equipped: EquippedRow[] = [];
     for (const row of resolvedItems) {
       if (!row.content) continue;
@@ -142,8 +148,18 @@ export function useInventoryDerived(character: Character): InventoryDerived {
         isMagic: row.isMagic,
       });
     }
-    return computeAcFromArmor(equipped, character.abilities.dex);
-  }, [resolvedItems, character.abilities.dex]);
+    return equipped;
+  }, [resolvedItems]);
+
+  const acFromArmor = useMemo(
+    () => computeAcFromArmor(equippedRows, character.abilities.dex),
+    [equippedRows, character.abilities.dex],
+  );
+
+  const hasBodyArmor = useMemo(
+    () => hasEquippedBodyArmor(equippedRows),
+    [equippedRows],
+  );
 
   const attunedCount = useMemo(
     () => character.inventory.items.filter((i) => i.attuned).length,
@@ -156,6 +172,7 @@ export function useInventoryDerived(character: Character): InventoryDerived {
     carryingCapacity: capacity,
     encumbranceLevel,
     acFromArmor,
+    hasEquippedBodyArmor: hasBodyArmor,
     attunedCount,
     loading: itemsLoading || magicLoading || userLoading,
     refreshUserItems: loadCustom,

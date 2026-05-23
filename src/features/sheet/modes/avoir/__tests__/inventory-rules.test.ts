@@ -7,6 +7,7 @@ import {
   carryingCapacity,
   computeAcFromArmor,
   computeEncumbrance,
+  hasEquippedBodyArmor,
   type EquippedRow,
 } from '../inventory-rules';
 
@@ -204,5 +205,69 @@ describe('computeAcFromArmor', () => {
       },
     ];
     expect(computeAcFromArmor(rows, 14)).toBe(18);
+  });
+});
+
+describe('hasEquippedBodyArmor', () => {
+  // Gate Defense (+1 CA) du Fighting Style : la règle SRD exige une armure
+  // PORTÉE — un bouclier seul ne déclenche pas le bonus. Ce helper isole
+  // exactement cette discrimination, séparée du calcul d'AC.
+  it('inventaire vide → false', () => {
+    expect(hasEquippedBodyArmor([])).toBe(false);
+  });
+
+  it('armure équipée → true', () => {
+    const rows: EquippedRow[] = [
+      {
+        item: makeArmor('leather', 11),
+        inventory: makeInventoryItem('leather', { equipped: true }),
+        isMagic: false,
+      },
+    ];
+    expect(hasEquippedBodyArmor(rows)).toBe(true);
+  });
+
+  it('cotte de mailles équipée → true', () => {
+    const rows: EquippedRow[] = [
+      {
+        item: makeArmor('chain-mail', 16, 0),
+        inventory: makeInventoryItem('chain-mail', { equipped: true }),
+        isMagic: false,
+      },
+    ];
+    expect(hasEquippedBodyArmor(rows)).toBe(true);
+  });
+
+  it('armure non équipée → false', () => {
+    const rows: EquippedRow[] = [
+      {
+        item: makeArmor('plate', 18, 0),
+        inventory: makeInventoryItem('plate', { equipped: false }),
+        isMagic: false,
+      },
+    ];
+    expect(hasEquippedBodyArmor(rows)).toBe(false);
+  });
+
+  it('bouclier seul équipé → false (ne compte pas comme armure portée)', () => {
+    const rows: EquippedRow[] = [
+      {
+        item: makeShield(),
+        inventory: makeInventoryItem('shield', { equipped: true }),
+        isMagic: false,
+      },
+    ];
+    expect(hasEquippedBodyArmor(rows)).toBe(false);
+  });
+
+  it('magic item armor équipé → false (plan 19 décidera; ignoré ici)', () => {
+    const rows: EquippedRow[] = [
+      {
+        item: makeMagic('cloak-of-protection'),
+        inventory: makeInventoryItem('cloak-of-protection', { equipped: true }),
+        isMagic: true,
+      },
+    ];
+    expect(hasEquippedBodyArmor(rows)).toBe(false);
   });
 });

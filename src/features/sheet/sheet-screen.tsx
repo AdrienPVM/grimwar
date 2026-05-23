@@ -9,11 +9,14 @@ import { Splash } from '@/shared/components/splash';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
+import { computeDisplayedAc } from '@/shared/lib/rules/ac';
+
 import { HeroCard } from './hero/hero-card';
 import { hpStateFor } from './hp-state';
 import { ModeTabs } from './mode-tabs/mode-tabs';
 import { AmeMode } from './modes/ame-mode';
 import { AvoirMode } from './modes/avoir-mode';
+import { useInventoryDerived } from './modes/avoir/use-inventory-derived';
 import { CombatMode } from './modes/combat-mode';
 import { isSheetReadOnly } from './modes/combat/hp-combat';
 import { EssenceMode } from './modes/essence-mode';
@@ -106,13 +109,23 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
   // dès maintenant pour héberger le toggle Digital/Physique (plan 12.5).
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
 
+  // CA affichée : dérivée d'inventaire + Defense +1 conditionnel (D19/D20).
+  // L'appel est dupliqué dans AvoirMode (qui en a besoin pour weight/derived) —
+  // les useMemo internes au hook rendent ce doublon stable côté charge.
+  const derived = useInventoryDerived(character);
+  const displayedAc = computeDisplayedAc({
+    character,
+    acFromArmor: derived.acFromArmor,
+    hasEquippedBodyArmor: derived.hasEquippedBodyArmor,
+  });
+
   return (
     <main
       className={cn('sheet-state relative min-h-screen pb-32', hpClass)}
       data-readonly={readOnly ? 'true' : 'false'}
     >
       <HeroCard character={character} />
-      <StatusStrip character={character} />
+      <StatusStrip character={character} displayedAc={displayedAc} />
       <ModeTabs active={mode} onChange={setMode} />
       <ActiveMode character={character} />
       <button
