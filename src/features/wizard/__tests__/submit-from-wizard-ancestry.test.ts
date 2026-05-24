@@ -145,6 +145,24 @@ function draftWith(patch: Partial<WizardDraft['ancestrySubChoices']>): WizardDra
   };
 }
 
+/**
+ * Variante du bundle Gnome où le lignage forêts porte un `spellIds` (plan
+ * 13.14b D18). Le lignage roches reste sans `spellIds` — sert à prouver le
+ * non-leak cross-source.
+ */
+function gnomeWithForestSpell(): Ancestry {
+  const lineages = GNOME.options.gnomeLineages!;
+  return {
+    ...GNOME,
+    options: {
+      gnomeLineages: [
+        { ...lineages[0]!, spellIds: ['speak-with-animals'] },
+        lineages[1]!,
+      ],
+    },
+  };
+}
+
 describe('buildAncestrySpellIds — résolution sous-choix → liste de spellIds', () => {
   it('Tieffelin Infernal → fire-bolt + hellish-rebuke + darkness (cantrip + L3 + L5)', () => {
     const draft = draftWith({ tieflingLegacy: 'infernal' });
@@ -186,6 +204,37 @@ describe('buildAncestrySpellIds — résolution sous-choix → liste de spellIds
   it('Gnome des forêts → minor-illusion (1 cantrip)', () => {
     const draft = draftWith({ gnomeLineage: 'forest' });
     expect(buildAncestrySpellIds(draft, GNOME)).toEqual(['minor-illusion']);
+  });
+
+  // ── Plan 13.14b (D18) — sorts de trait data-driven ──
+
+  it('Tieffelin avec commonSpellIds → thaumaturgie EN PLUS du triplet d’héritage (trait commun)', () => {
+    const draft = draftWith({ tieflingLegacy: 'infernal' });
+    const withCommon: Ancestry = { ...TIEFLING, commonSpellIds: ['thaumaturgy'] };
+    expect(buildAncestrySpellIds(draft, withCommon)).toEqual([
+      'thaumaturgy',
+      'fire-bolt',
+      'hellish-rebuke',
+      'darkness',
+    ]);
+  });
+
+  it('Gnome des forêts avec spellIds de lignage → minor-illusion + speak-with-animals', () => {
+    const draft = draftWith({ gnomeLineage: 'forest' });
+    expect(buildAncestrySpellIds(draft, gnomeWithForestSpell())).toEqual([
+      'minor-illusion',
+      'speak-with-animals',
+    ]);
+  });
+
+  it('Gnome des roches → AUCUN leak du sort de lignage forêts (cat. 6 cross-source)', () => {
+    // Le sort vit sur le lignage forêts uniquement (`spellIds`), pas sur un
+    // `commonSpellIds` au niveau ascendance → Gnome des roches ne le reçoit pas.
+    const draft = draftWith({ gnomeLineage: 'rock' });
+    expect(buildAncestrySpellIds(draft, gnomeWithForestSpell())).toEqual([
+      'mending',
+      'prestidigitation',
+    ]);
   });
 
   it('Nain → [] (aucune ascendance avec sort)', () => {

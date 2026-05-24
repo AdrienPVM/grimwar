@@ -68,6 +68,22 @@ const SPELLS_FIXTURE: Spell[] = [
     classes: ['bard', 'sorcerer', 'warlock', 'wizard'],
     source: 'srd-5.2.1',
   },
+  {
+    id: 'thaumaturgie',
+    name: { fr: 'Thaumaturgie', en: 'Thaumaturgy' },
+    level: 0,
+    school: 'transmutation',
+    castingTime: { fr: '1 action', en: '1 Action' },
+    range: { fr: '9 m', en: '30 ft' },
+    components: { v: true, s: false, m: false },
+    duration: { fr: '1 minute', en: '1 Minute' },
+    concentration: false,
+    ritual: false,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['cleric'],
+    source: 'srd-5.2.1',
+  },
 ];
 
 const WIZARD_CLASS: ClassEntity = {
@@ -170,6 +186,18 @@ function tieflingNonCaster(): Character {
   return c;
 }
 
+/**
+ * Tieffelin avec DEUX sources d'ascendance distinctes dans la même liste :
+ * thaumaturgie (trait commun « Présence d'outre-monde ») + fire-bolt (héritage
+ * Infernal). Sert à prouver que le label est PAR SORT — thaumaturgie ne doit
+ * jamais hériter du label « Héritage Infernal » (le mislabel d'avant 13.14b).
+ */
+function tieflingCommonAndHeritage(): Character {
+  const c = baseCharacter();
+  c.knownSpells = { ancestry: ['thaumaturgie', 'fire-bolt'] };
+  return c;
+}
+
 function gnomeForestNonCaster(): Character {
   const c = baseCharacter();
   c.ancestryId = 'gnome';
@@ -236,14 +264,14 @@ function spellRowByName(name: string): HTMLElement {
 }
 
 describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
-  it('Gnome Forêt non-caster (Roublard L1) → la liste est rendue avec Illusion mineure + chip « Lignage Forêts »', () => {
+  it('Gnome Forêt non-caster (Roublard L1) → la liste est rendue avec Illusion mineure + chip « Lignage Gnome des forêts »', () => {
     const onSpellSelect = vi.fn();
     render(
       <SpellList
         character={gnomeForestNonCaster()}
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={[]}
-        ancestrySourceLabel="Lignage Forêts"
+        ancestrySourceLabels={new Map([['illusion-mineure', 'Lignage Gnome des forêts']])}
         onSpellSelect={onSpellSelect}
       />,
     );
@@ -251,7 +279,7 @@ describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
     expect(screen.getByText('Illusion mineure')).toBeInTheDocument();
     // Chip source visible dans la ligne.
     const row = spellRowByName('Illusion mineure');
-    expect(within(row).getByText('Lignage Forêts')).toBeInTheDocument();
+    expect(within(row).getByText('Lignage Gnome des forêts')).toBeInTheDocument();
     // Le filtre "Préparés" n'est PAS rendu (non-pertinent pour un non-caster).
     expect(screen.queryByText(/Préparés/)).not.toBeInTheDocument();
   });
@@ -263,7 +291,7 @@ describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
         character={tieflingNonCaster()}
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={[]}
-        ancestrySourceLabel="Héritage Infernal"
+        ancestrySourceLabels={new Map([['fire-bolt', 'Héritage Infernal']])}
         onSpellSelect={onSpellSelect}
       />,
     );
@@ -275,6 +303,32 @@ describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
       expect.objectContaining({ id: 'fire-bolt' }),
     );
   });
+
+  it("Plan 13.14b — label PAR SORT : thaumaturgie porte « Présence d’outre-monde », fire-bolt « Héritage Infernal » (pas de mislabel global)", () => {
+    render(
+      <SpellList
+        character={tieflingCommonAndHeritage()}
+        spells={SPELLS_FIXTURE}
+        spellcasterClassIds={[]}
+        ancestrySourceLabels={
+          new Map([
+            ['thaumaturgie', 'Présence d’outre-monde'],
+            ['fire-bolt', 'Héritage Infernal'],
+          ])
+        }
+        onSpellSelect={vi.fn()}
+      />,
+    );
+
+    const thaumaRow = spellRowByName('Thaumaturgie');
+    expect(within(thaumaRow).getByText('Présence d’outre-monde')).toBeInTheDocument();
+    // Garde anti-mislabel : thaumaturgie ne porte PAS le label d'héritage.
+    expect(within(thaumaRow).queryByText('Héritage Infernal')).not.toBeInTheDocument();
+
+    const fireBoltRow = spellRowByName('Trait de feu');
+    expect(within(fireBoltRow).getByText('Héritage Infernal')).toBeInTheDocument();
+    expect(within(fireBoltRow).queryByText('Présence d’outre-monde')).not.toBeInTheDocument();
+  });
 });
 
 describe('<SpellList> — caster × ascendance (cohabitation lisible)', () => {
@@ -284,7 +338,7 @@ describe('<SpellList> — caster × ascendance (cohabitation lisible)', () => {
         character={wizardL1ElfDrow()}
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel="Lignage Drow"
+        ancestrySourceLabels={new Map([['lumieres-dansantes', 'Lignage Drow']])}
         onSpellSelect={vi.fn()}
       />,
     );
@@ -313,7 +367,7 @@ describe('<SpellList> — caster × ascendance (cohabitation lisible)', () => {
         character={wizardL1ElfDrowCollision()}
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={['wizard']}
-        ancestrySourceLabel="Lignage Drow"
+        ancestrySourceLabels={new Map([['lumieres-dansantes', 'Lignage Drow']])}
         onSpellSelect={onSpellSelect}
       />,
     );

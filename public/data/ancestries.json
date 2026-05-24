@@ -423,6 +423,9 @@
           },
           "cantripSpellIds": [
             "illusion-mineure"
+          ],
+          "spellIds": [
+            "communication-avec-les-animaux"
           ]
         },
         {
@@ -799,6 +802,9 @@
           "level5SpellId": "tenebres"
         }
       ]
-    }
+    },
+    "commonSpellIds": [
+      "thaumaturgie"
+    ]
   }
 ]

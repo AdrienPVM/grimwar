@@ -1,9 +1,10 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 import type { Ancestry, Spell } from '@/shared/types/content';
 
+import { expectIdentityRender } from '../../../../../../tests/helpers/content-truth';
 import { AncestrySpellsCard } from '../ancestry-spells-card';
 
 /**
@@ -92,6 +93,40 @@ const SPELLS_FIXTURE: Spell[] = [
     classes: ['bard', 'sorcerer', 'warlock', 'wizard'],
     source: 'srd-5.2.1',
   },
+  // Plan 13.14b (D18) — trait commun Tieffelin « Présence d'outre-monde ».
+  {
+    id: 'thaumaturgie',
+    name: { fr: 'Thaumaturgie', en: 'Thaumaturgy' },
+    level: 0,
+    school: 'transmutation',
+    castingTime: { fr: '1 action', en: '1 Action' },
+    range: { fr: '9 m', en: '30 ft' },
+    components: { v: true, s: false, m: false },
+    duration: { fr: '1 minute', en: '1 Minute' },
+    concentration: false,
+    ritual: false,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['cleric'],
+    source: 'srd-5.2.1',
+  },
+  // Plan 13.14b (D18) — sort de lignage Gnome des forêts (forest only).
+  {
+    id: 'communication-avec-les-animaux',
+    name: { fr: 'Communication avec les animaux', en: 'Speak with Animals' },
+    level: 1,
+    school: 'divination',
+    castingTime: { fr: '1 action', en: '1 Action' },
+    range: { fr: 'Personnelle', en: 'Self' },
+    components: { v: true, s: true, m: false },
+    duration: { fr: '10 minutes', en: '10 Minutes' },
+    concentration: false,
+    ritual: true,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['bard', 'druid', 'ranger', 'warlock'],
+    source: 'srd-5.2.1',
+  },
 ];
 
 const TIEFLING_ANCESTRY: Ancestry = {
@@ -116,6 +151,8 @@ const TIEFLING_ANCESTRY: Ancestry = {
       },
     ],
   },
+  // Trait commun aux 3 héritages (« Présence d'outre-monde ») — pas un sous-choix.
+  commonSpellIds: ['thaumaturgie'],
 };
 
 /**
@@ -163,9 +200,13 @@ const GNOME_ANCESTRY: Ancestry = {
     gnomeLineages: [
       {
         id: 'forest',
-        name: { fr: 'Forêts', en: 'Forest' },
+        // Nom officiel du bundle (« Gnome des forêts ») — le label de source
+        // de la carte en dérive (« Lignage Gnome des forêts »).
+        name: { fr: 'Gnome des forêts', en: 'Forest Gnome' },
         benefit: { fr: 'Rituel sans slot.', en: 'Ritual without slot.' },
         cantripSpellIds: ['illusion-mineure'],
+        // Sort de trait spécifique au lignage forêts (forest only).
+        spellIds: ['communication-avec-les-animaux'],
       },
     ],
   },
@@ -209,7 +250,7 @@ function gnomeForestChar(level = 1): Character {
       tieflingLegacy: null,
       gnomeLineage: 'forest',
     },
-    knownSpells: { ancestry: ['illusion-mineure'] },
+    knownSpells: { ancestry: ['illusion-mineure', 'communication-avec-les-animaux'] },
     spellcastingAbility: { ancestry: 'int' },
   };
 }
@@ -266,7 +307,7 @@ function tieflingChar(level = 1): Character {
     classResources: {},
     spellSlots: {},
     preparedSpells: {},
-    knownSpells: { ancestry: ['fire-bolt', 'hellish-rebuke', 'darkness'] },
+    knownSpells: { ancestry: ['thaumaturgie', 'fire-bolt', 'hellish-rebuke', 'darkness'] },
     spellcastingAbility: { ancestry: 'cha' },
     inventory: { items: [], coins: { cu: 0, ar: 0, el: 0, or: 0, pl: 0 }, weightCache: 0 },
     personality: { trait: '', ideal: '', bond: '', flaw: '', backstory: '' },
@@ -291,8 +332,10 @@ describe('<AncestrySpellsCard>', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('Tieffelin Infernal L1 → 3 sorts listés + 2 L3/L5 grisés', () => {
+  it('Tieffelin Infernal L1 → 4 sorts listés (thaumaturgie commune + triplet) + 2 L3/L5 grisés', () => {
     render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={() => {}} />);
+    // Trait commun « Présence d'outre-monde » (D18, plan 13.14b) en plus du triplet.
+    expect(screen.getByText('Thaumaturgie')).toBeInTheDocument();
     expect(screen.getByText('Trait de feu')).toBeInTheDocument();
     expect(screen.getByText('Châtiment infernal')).toBeInTheDocument();
     expect(screen.getByText('Ténèbres')).toBeInTheDocument();
@@ -322,10 +365,59 @@ describe('<AncestrySpellsCard>', () => {
     expect(screen.getByText("Sorts d'héritage fiélon")).toBeInTheDocument();
   });
 
-  it('affiche le label source par sort (« Héritage Infernal »)', () => {
+  it('affiche le label source par sort (« Héritage Infernal ») pour le triplet d’héritage', () => {
     render(<AncestrySpellsCard character={tieflingChar(3)} onSpellSelect={() => {}} />);
-    // 3 entries → 3 occurrences du label source.
+    // 3 entries du triplet → 3 occurrences du label d'héritage. Thaumaturgie
+    // (trait commun) porte un AUTRE label → toujours exactement 3 ici.
     expect(screen.getAllByText('Héritage Infernal').length).toBe(3);
+  });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Plan 13.14b (D18) — cat. 2 « contenu affiché = contenu attendu » :
+  // les 2 sorts de trait injectés rendent avec leur NOM exact ET leur label
+  // de source CORRECT (pas le mislabel « Héritage X »).
+  // ─────────────────────────────────────────────────────────────────────
+
+  it("Tieffelin : thaumaturgie rend avec le nom exact + source « Présence d’outre-monde » (pas « Héritage Infernal »)", () => {
+    render(<AncestrySpellsCard character={tieflingChar(1)} onSpellSelect={() => {}} />);
+    const row = screen.getByRole('button', { name: 'Thaumaturgie' });
+    expectIdentityRender({
+      slug: 'thaumaturgie',
+      fields: [
+        {
+          label: 'name',
+          expected: 'Thaumaturgie',
+          rendered: within(row).getByText('Thaumaturgie').textContent ?? '',
+        },
+        {
+          label: 'source',
+          expected: 'Présence d’outre-monde',
+          rendered: within(row).getByText('Présence d’outre-monde').textContent ?? '',
+        },
+      ],
+    });
+    // Garde anti-mislabel : thaumaturgie ne porte JAMAIS le label d'héritage.
+    expect(within(row).queryByText('Héritage Infernal')).not.toBeInTheDocument();
+  });
+
+  it("Gnome des forêts : communication-avec-les-animaux rend avec le nom exact + source « Lignage Gnome des forêts »", () => {
+    render(<AncestrySpellsCard character={gnomeForestChar(1)} onSpellSelect={() => {}} />);
+    const row = screen.getByRole('button', { name: 'Communication avec les animaux' });
+    expectIdentityRender({
+      slug: 'communication-avec-les-animaux',
+      fields: [
+        {
+          label: 'name',
+          expected: 'Communication avec les animaux',
+          rendered: within(row).getByText('Communication avec les animaux').textContent ?? '',
+        },
+        {
+          label: 'source',
+          expected: 'Lignage Gnome des forêts',
+          rendered: within(row).getByText('Lignage Gnome des forêts').textContent ?? '',
+        },
+      ],
+    });
   });
 
   // ─────────────────────────────────────────────────────────────────────

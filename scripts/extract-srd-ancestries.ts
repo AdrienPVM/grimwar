@@ -18,6 +18,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 import {
+  ANCESTRY_COMMON_SPELL_IDS,
   DRAGON_ANCESTRIES,
   ELF_LINEAGES,
   GIANT_ANCESTRIES,
@@ -84,10 +85,17 @@ async function main(): Promise<void> {
     }
   }
 
-  const enriched = ancestries.map((a) => ({
-    ...a,
-    options: optionsForAncestry(a.id),
-  }));
+  const enriched = ancestries.map((a) => {
+    const next: AncestryJsonEntry = { ...a, options: optionsForAncestry(a.id) };
+    // Idempotence : on repart sans un éventuel `commonSpellIds` antérieur (un id
+    // retiré de la map doit disparaître du JSON, pas persister via le spread).
+    delete next.commonSpellIds;
+    const common = ANCESTRY_COMMON_SPELL_IDS[a.id];
+    if (common && common.length > 0) {
+      next.commonSpellIds = common;
+    }
+    return next;
+  });
 
   // Vérification compteurs SRD attendus pour chaque ascendance à sous-choix.
   const dragon = enriched.find((a) => a.id === 'dragonborn');

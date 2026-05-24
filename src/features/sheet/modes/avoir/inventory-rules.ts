@@ -76,3 +76,21 @@ export function computeAcFromArmor(
   if (bestArmor === null && shieldBonus === 0) return null;
   return (bestArmor ?? 10 + dexMod) + shieldBonus;
 }
+
+/**
+ * Détecte si une armure légère/intermédiaire/lourde est PORTÉE — gate du
+ * Fighting Style Defense (+1 CA, SRD 2024). Un bouclier seul ne déclenche pas
+ * le bonus : la règle exige « while wearing armor », ce qui exclut le shield-only.
+ * Séparé de `computeAcFromArmor` pour que le caller exprime explicitement la
+ * discrimination armure-portée vs valeur d'AC effective.
+ */
+export function hasEquippedBodyArmor(rows: readonly EquippedRow[]): boolean {
+  for (const row of rows) {
+    if (!row.inventory.equipped || row.isMagic) continue;
+    const item = row.item as Item;
+    if (item.category === 'armor' && typeof item.acBase === 'number') {
+      return true;
+    }
+  }
+  return false;
+}

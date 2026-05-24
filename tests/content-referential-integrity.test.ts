@@ -50,10 +50,13 @@ interface ElfLineage {
 interface GnomeLineage {
   id: string;
   cantripSpellIds: string[];
+  spellIds?: string[];
 }
 
 interface AncestryEntry {
   id: string;
+  /** Sorts de trait communs à toute l'ascendance (D18, plan 13.14b). */
+  commonSpellIds?: string[];
   options?: {
     tieflingLegacies?: TieflingLegacy[];
     elfLineages?: ElfLineage[];
@@ -66,6 +69,10 @@ function collectAncestrySpellRefs(
 ): Array<{ ancestry: string; sub: string; slot: string; spellId: string }> {
   const refs: Array<{ ancestry: string; sub: string; slot: string; spellId: string }> = [];
   for (const a of ancestries) {
+    // Sorts de trait communs à l'ascendance (D18 — ex. Tieffelin thaumaturgie).
+    for (const sid of a.commonSpellIds ?? []) {
+      refs.push({ ancestry: a.id, sub: '(common)', slot: 'common', spellId: sid });
+    }
     const opts = a.options;
     if (!opts) continue;
     for (const t of opts.tieflingLegacies ?? []) {
@@ -83,6 +90,10 @@ function collectAncestrySpellRefs(
     for (const g of opts.gnomeLineages ?? []) {
       for (const sid of g.cantripSpellIds) {
         refs.push({ ancestry: a.id, sub: g.id, slot: 'cantrip', spellId: sid });
+      }
+      // Sorts de trait spécifiques au lignage (D18 — ex. Gnome forêts speak-with-animals).
+      for (const sid of g.spellIds ?? []) {
+        refs.push({ ancestry: a.id, sub: g.id, slot: 'lineage-spell', spellId: sid });
       }
     }
   }

@@ -6,6 +6,13 @@ import type { IconName } from '@/shared/design/icons';
 
 interface StatusStripProps {
   character: Character;
+  /**
+   * CA effectivement affichée — déjà combinée par `computeDisplayedAc` au
+   * niveau de `CharacterSheet` (armure équipée + Fighting Style Defense +1).
+   * Distincte de `character.ac` qui ne porte que la valeur désarmée posée au
+   * wizard ; passée en prop pour découpler le strip de l'inventaire dérivé.
+   */
+  displayedAc: number;
 }
 
 /**
@@ -13,7 +20,7 @@ interface StatusStripProps {
  * tap-friendly (44px min cible). Aucune action en S1 — purement informatif.
  * Les + / – HP arrivent dans le mode Combat (plan 07).
  */
-export function StatusStrip({ character }: StatusStripProps): JSX.Element {
+export function StatusStrip({ character, displayedAc }: StatusStripProps): JSX.Element {
   const initSign = character.initiative >= 0 ? '+' : '';
   return (
     <section
@@ -30,7 +37,7 @@ export function StatusStrip({ character }: StatusStripProps): JSX.Element {
       <StatusCell
         icon="i-shield"
         label={t('sheet.stat.ac')}
-        value={`${character.ac}`}
+        value={`${displayedAc}`}
       />
       <StatusCell
         icon="i-init"
