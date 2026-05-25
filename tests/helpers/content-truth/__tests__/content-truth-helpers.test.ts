@@ -77,20 +77,25 @@ describe('expectIdentityRender', () => {
     ).toThrow();
   });
 
-  it('tolere le marqueur [dette D14] pour les 4 sorts grandfathered', () => {
-    expectIdentityRender({
-      slug: 'animation-des-objets',
-      fields: [
-        {
-          label: 'atHigherLevels',
-          expected: '[Profil de la créature invoquée non inclus ici ; suivi en dette D14.]',
-          rendered: '[Profil de la créature invoquée non inclus ici ; suivi en dette D14.]',
-        },
-      ],
-    });
+  it('ECHOUE si un marqueur de dette D14 fuit sur les 4 sorts ex-grandfathered (post-D14)', () => {
+    // Apres D14 : statblocks injectes, marqueurs retires de srd-spells.ts.
+    // La classe entiere « un marqueur de dette traine en prod » devient
+    // structurellement impossible — l'allowlist est sans objet.
+    expect(() =>
+      expectIdentityRender({
+        slug: 'animation-des-objets',
+        fields: [
+          {
+            label: 'atHigherLevels',
+            expected: '[Profil de la créature invoquée non inclus ici ; suivi en dette D14.]',
+            rendered: '[Profil de la créature invoquée non inclus ici ; suivi en dette D14.]',
+          },
+        ],
+      }),
+    ).toThrow();
   });
 
-  it('ECHOUE si un marqueur de dette fuit sur un slug HORS allowlist D14', () => {
+  it('ECHOUE si un marqueur de dette fuit sur n\'importe quel slug (post-D14, sans exception)', () => {
     expect(() =>
       expectIdentityRender({
         slug: 'projectile-magique',

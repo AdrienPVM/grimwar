@@ -80,6 +80,14 @@ export const SpellSchema = z.object({
   /** Dégâts canoniques structurés. Optionnel — fallback regex tant que le
    * pipeline d'extraction SRD n'est pas câblé (suivi plan 12+). */
   damage: z.array(SpellDamageSchema).optional(),
+  /**
+   * Profils de créatures invoquées par le sort (plan D14). Résolus contre
+   * `public/data/summoned-creatures.json`. Tableau (un sort peut référencer
+   * plusieurs créatures dans le futur ; aujourd'hui les 4 sorts SRD n'en
+   * référencent qu'une chacun). Optionnel — la quasi-totalité des sorts n'en
+   * portent pas (335/339). Les consommateurs traitent l'absence comme `[]`.
+   */
+  summonedCreatureIds: z.array(slug).optional(),
   source: sourceTag,
 });
 export type Spell = z.infer<typeof SpellSchema>;

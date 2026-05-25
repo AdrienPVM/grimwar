@@ -386,13 +386,16 @@
       "en": "Objects animate at your command. Choose a number of nonmagical objects within range that aren’t being worn or carried, aren’t fixed to a surface, and aren’t Gargantuan. The maximum number of objects is equal to your spellcasting ability modifier; for this number, a Medium or smaller target counts as\none object, a Large target counts as two, and a Huge target counts as three.\nEach target animates, sprouts legs, and becomes a Construct that uses the Animated Object stat block; this creature is under your control until the spell ends or until it is reduced to 0 Hit Points. Each creature you make with this spell is an ally to you and your allies. In combat, it shares your Initiative count and takes its turn immediately after yours.\nUntil the spell ends, you can take a Bonus Action to mentally command any creature you made with this spell if the creature is within 500 feet of you (if you control multiple creatures, you can command any of them at the same time, issuing the same command to each one). If you issue no commands, the creature takes the Dodge action and moves only to avoid harm. When the creature drops to 0 Hit Points, it reverts to its object form, and any remaining damage carries over to that form."
     },
     "atHigherLevels": {
-      "fr": "Emplacement de niveau supérieur. Les dégâts de Coup de la créature augmentent de 1d4 (taille M ou inférieure), 1d6 (taille G) ou 1d12 (taille TG) par niveau d’emplacement au-delà du 5e . [Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]",
-      "en": "Using a Higher-Level Spell Slot. The creature’s Slam damage increases by 1d4 (Medium or smaller), 1d6 (Large), or 1d12 (Huge) for each spell slot level above 5. [Summoned-creature stat block omitted here — see the SRD 5.2.1 stat block; tracked as debt D14.]"
+      "fr": "Emplacement de niveau supérieur. Les dégâts de Coup de la créature augmentent de 1d4 (taille M ou inférieure), 1d6 (taille G) ou 1d12 (taille TG) par niveau d’emplacement au-delà du 5e .",
+      "en": "Using a Higher-Level Spell Slot. The creature’s Slam damage increases by 1d4 (Medium or smaller), 1d6 (Large), or 1d12 (Huge) for each spell slot level above 5."
     },
     "classes": [
       "bard",
       "sorcerer",
       "wizard"
+    ],
+    "summonedCreatureIds": [
+      "objet-anime"
     ],
     "source": "srd-5.2.1"
   },
@@ -548,11 +551,14 @@
       "en": "You summon an otherworldly being that appears as a loyal steed in an unoccupied space of your choice within range. This creature uses the Otherworldly Steed stat block. If you already have a steed from this spell, the steed is replaced by the new one.\nThe steed resembles a Large, rideable animal of your choice, such as a horse, a camel, a dire wolf, or an elk. Whenever you cast the spell, choose the steed’s creature type—Celestial, Fey, or Fiend— which determines certain traits in the stat block. Combat. The steed is an ally to you and your allies. In combat, it shares your Initiative count, and it functions as a controlled mount while you ride it (as defined in the rules on mounted combat). If you have the Incapacitated condition, the steed takes its turn immediately after yours and acts independently, focusing on protecting you. Disappearance of the Steed. The steed disappears if it drops to 0 Hit Points or if you die. When it disappears, it leaves behind anything it was wearing or carrying. If you cast this spell again, you decide whether you summon the steed that disappeared or a different one."
     },
     "atHigherLevels": {
-      "fr": "Emplacement de niveau supérieur. Le niveau de l’emplacement de sort s’applique chaque fois que le profil de jeu y fait référence. [Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]",
-      "en": "Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block. [Summoned-creature stat block omitted here — see the SRD 5.2.1 stat block; tracked as debt D14.]"
+      "fr": "Emplacement de niveau supérieur. Le niveau de l’emplacement de sort s’applique chaque fois que le profil de jeu y fait référence.",
+      "en": "Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block."
     },
     "classes": [
       "paladin"
+    ],
+    "summonedCreatureIds": [
+      "monture-d-outre-monde"
     ],
     "source": "srd-5.2.1"
   },
@@ -3389,11 +3395,14 @@
       "en": "You call forth a Dragon spirit. It manifests in an unoccupied space that you can see within range and uses the Draconic Spirit stat block. The creature disappears when it drops to 0 Hit Points or when the spell ends.\nThe creature is an ally to you and your allies. In combat, the creature shares your Initiative count, but it takes its turn immediately after yours. It obeys your verbal commands (no action required by you). If you don’t issue any, it takes the Dodge action and uses its movement to avoid danger."
     },
     "atHigherLevels": {
-      "fr": "Emplacement de niveau supérieur. Le niveau de l’emplacement s’applique chaque fois que le profil de jeu y fait référence. [Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]",
-      "en": "Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block. [Summoned-creature stat block omitted here — see the SRD 5.2.1 stat block; tracked as debt D14.]"
+      "fr": "Emplacement de niveau supérieur. Le niveau de l’emplacement s’applique chaque fois que le profil de jeu y fait référence.",
+      "en": "Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block."
     },
     "classes": [
       "wizard"
+    ],
+    "summonedCreatureIds": [
+      "esprit-draconique"
     ],
     "source": "srd-5.2.1"
   },
@@ -7500,11 +7509,14 @@
       "en": "You summon a giant centipede, spider, or wasp (chosen when you cast the spell). It manifests in an unoccupied space you can see within range and uses the Giant Insect stat block. The form you choose determines certain details in its stat block. The creature disappears when it drops to 0 Hit Points or when the spell ends.\nThe creature is an ally to you and your allies. In combat, the creature shares your Initiative count, but it takes its turn immediately after yours. It obeys your verbal commands (no action required by you). If you don’t issue any, it takes the Dodge action and uses its movement to avoid danger."
     },
     "atHigherLevels": {
-      "fr": "Emplacement de niveau supérieur. Le niveau de l’emplacement de sort s’applique chaque fois que le profil de jeu y fait référence. [Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]",
-      "en": "Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block. [Summoned-creature stat block omitted here — see the SRD 5.2.1 stat block; tracked as debt D14.]"
+      "fr": "Emplacement de niveau supérieur. Le niveau de l’emplacement de sort s’applique chaque fois que le profil de jeu y fait référence.",
+      "en": "Using a Higher-Level Spell Slot. Use the spell slot’s level for the spell’s level in the stat block."
     },
     "classes": [
       "druid"
+    ],
+    "summonedCreatureIds": [
+      "insecte-geant-invoque"
     ],
     "source": "srd-5.2.1"
   },

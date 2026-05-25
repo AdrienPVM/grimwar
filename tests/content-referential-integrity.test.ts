@@ -245,3 +245,75 @@ describe('Intégrité référentielle — sous-choix de classe enum ↔ bundle (
     expect(primalOrphans, `primal orders bundle sans pendant enum : ${primalOrphans.join(', ')}`).toEqual([]);
   });
 });
+
+/**
+ * Plan D14 — toute référence `spell.summonedCreatureIds[]` doit résoudre dans
+ * `summoned-creatures.json`. Garde permanente : ajouter un nouveau sort qui
+ * référence un statblock fantôme casse ce test, pas le runtime utilisateur.
+ *
+ * Symétrique : pas de statblock orphelin (référencé par aucun sort) — détecte
+ * un nettoyage incomplet ou une donnée morte qui traîne dans le bundle.
+ */
+describe('Intégrité référentielle — sort ↔ statblock invoqué (plan D14)', () => {
+  interface SpellWithSummons {
+    id: string;
+    summonedCreatureIds?: string[];
+  }
+  interface SummonedCreatureEntry {
+    id: string;
+  }
+
+  it('toute référence spell.summonedCreatureIds[] résout dans summoned-creatures.json', async () => {
+    const spells = await loadJson<SpellWithSummons[]>('public/data/spells.json');
+    const creatures = await loadJson<SummonedCreatureEntry[]>(
+      'public/data/summoned-creatures.json',
+    );
+    const creatureIds = new Set(creatures.map((c) => c.id));
+
+    const unresolved: string[] = [];
+    for (const s of spells) {
+      for (const cid of s.summonedCreatureIds ?? []) {
+        if (!creatureIds.has(cid)) {
+          unresolved.push(`${s.id} → ${cid}`);
+        }
+      }
+    }
+    expect(
+      unresolved,
+      `Références spell→summoned-creature cassées :\n  ${unresolved.join('\n  ')}`,
+    ).toEqual([]);
+  });
+
+  it('aucun statblock orphelin (référencé par 0 sort)', async () => {
+    const spells = await loadJson<SpellWithSummons[]>('public/data/spells.json');
+    const creatures = await loadJson<SummonedCreatureEntry[]>(
+      'public/data/summoned-creatures.json',
+    );
+    const referenced = new Set<string>();
+    for (const s of spells) {
+      for (const cid of s.summonedCreatureIds ?? []) referenced.add(cid);
+    }
+    const orphans = creatures.filter((c) => !referenced.has(c.id)).map((c) => c.id);
+    expect(orphans, `statblocks orphelins (référencés par 0 sort) : ${orphans.join(', ')}`).toEqual(
+      [],
+    );
+  });
+
+  it('les 4 sorts D14 portent exactement 1 summonedCreatureId chacun', async () => {
+    const spells = await loadJson<SpellWithSummons[]>('public/data/spells.json');
+    const D14_SPELLS = [
+      'appel-de-destrier',
+      'animation-des-objets',
+      'insecte-geant',
+      'convocation-de-dragon',
+    ];
+    for (const sid of D14_SPELLS) {
+      const spell = spells.find((s) => s.id === sid);
+      expect(spell, `sort ${sid} absent du bundle`).toBeDefined();
+      expect(
+        spell?.summonedCreatureIds ?? [],
+        `sort ${sid} doit porter exactement 1 summonedCreatureId`,
+      ).toHaveLength(1);
+    }
+  });
+});

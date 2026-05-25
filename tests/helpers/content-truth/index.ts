@@ -8,7 +8,8 @@
  * i18n-guard) ; on les extrait sans casser l'existant.
  *
  * Couverture posee au commit 1 :
- *   - cat. 2 (identite) : expectIdentityRender + allowlist D14.
+ *   - cat. 2 (identite) : expectIdentityRender (post-D14 : plus d'allowlist —
+ *     la classe « marqueur de dette qui fuit » est structurellement impossible).
  *   - cat. 4 (calculs, bornee Q1) : expectAC / expectSaveDC / expectAttackMod /
  *     expectProfBonus / expectExpertise.
  *   - cat. 5 (wizard → fiche) : submitWizardAndDeriveSheet.
@@ -18,7 +19,6 @@
 export { normalizeText } from './normalize';
 export {
   expectIdentityRender,
-  DEBT_D14_SPELL_SLUGS,
   type IdentityField,
 } from './identity';
 export {
