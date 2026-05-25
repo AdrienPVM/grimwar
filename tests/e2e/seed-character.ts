@@ -799,6 +799,66 @@ export const wizardL1Migration: SeedPreset = {
   spellcastingAbility: { wizard: 'int' },
 };
 
+/**
+ * Plan D14 — UAT visuel des statblocks de créatures invoquées.
+ *
+ * 3 presets, un par classe lanceuse des 4 sorts D14 :
+ *   - Paladin L9 → Appel de destrier (L2)        → Monture d'outre-monde
+ *   - Magicien L9 → Animation des objets (L5)    → Objet animé
+ *                + Convocation de dragon (L5)    → Esprit draconique
+ *   - Druide L9   → Insecte géant (L4)           → Insecte géant invoqué
+ *
+ * Niveau 9 = slots 1-5 pleins (assez pour upcaster les sorts L5). HP / hitDice
+ * minimaux — l'UAT vise uniquement le rendu de la modale Magie, pas le combat.
+ */
+export const paladinL9D14: SeedPreset = {
+  name: 'Sire Aélan',
+  classes: [{ classId: 'paladin', subclassId: null, level: 9 }],
+  primaryClassId: 'paladin',
+  ancestryId: 'human',
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 10, con: 14, int: 10, sag: 12, cha: 14 },
+  hp: { current: 72, max: 72 },
+  ac: 16,
+  hitDice: [{ classId: 'paladin', current: 9, max: 9, die: 'd10' }],
+  saves: { sag: true, cha: true },
+  knownSpells: { paladin: ['appel-de-destrier'] },
+  preparedSpells: { paladin: ['appel-de-destrier'] },
+  spellcastingAbility: { paladin: 'cha' },
+};
+
+export const wizardL9D14: SeedPreset = {
+  name: 'Vex la Convocatrice',
+  classes: [{ classId: 'wizard', subclassId: null, level: 9 }],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  backgroundId: 'sage',
+  abilities: { for: 8, dex: 14, con: 12, int: 18, sag: 13, cha: 10 },
+  hp: { current: 45, max: 45 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 9, max: 9, die: 'd6' }],
+  saves: { int: true, sag: true },
+  knownSpells: { wizard: ['animation-des-objets', 'convocation-de-dragon'] },
+  preparedSpells: { wizard: ['animation-des-objets', 'convocation-de-dragon'] },
+  spellcastingAbility: { wizard: 'int' },
+};
+
+export const druidL9D14: SeedPreset = {
+  name: 'Brann le Pivert',
+  classes: [{ classId: 'druid', subclassId: null, level: 9 }],
+  primaryClassId: 'druid',
+  ancestryId: 'human',
+  backgroundId: 'hermit',
+  abilities: { for: 10, dex: 12, con: 14, int: 12, sag: 18, cha: 10 },
+  hp: { current: 54, max: 54 },
+  ac: 13,
+  hitDice: [{ classId: 'druid', current: 9, max: 9, die: 'd8' }],
+  saves: { int: true, sag: true },
+  knownSpells: { druid: ['insecte-geant'] },
+  preparedSpells: { druid: ['insecte-geant'] },
+  spellcastingAbility: { druid: 'sag' },
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // Build & seed
 // ─────────────────────────────────────────────────────────────────────────
