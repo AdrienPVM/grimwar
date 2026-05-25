@@ -284,9 +284,10 @@ describe('<InvocationsCard>', () => {
   );
 
   // ──────────────────────────────────────────────────────────────────────
-  // D13a — la modale rend la section « Mécanique » UNIQUEMENT pour les
-  // invocations dont l'effet runtime est câblé. Aujourd'hui : armor-of-shadows
-  // uniquement. Le test sera étendu naturellement quand D13b-e atterrissent.
+  // D13a + D13b — la modale rend la section « Mécanique » UNIQUEMENT pour
+  // les invocations dont l'effet runtime est câblé. Aujourd'hui :
+  // armor-of-shadows (D13a) + eldritch-mind (D13b). Le test sera étendu
+  // naturellement quand D13c-e atterrissent.
   // ──────────────────────────────────────────────────────────────────────
   it('D13a — tap sur Armure d\'ombres → modale rend la section « Mécanique » + le label CA', () => {
     const character = buildCharacter([
@@ -308,8 +309,30 @@ describe('<InvocationsCard>', () => {
     ).toHaveTextContent(/CA = 13 \+ modificateur de Dextérité/);
   });
 
-  it.each(['eldritch-mind', 'pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
-    'D13a — tap sur %s (D13b-e attendus) → modale NE rend PAS « Mécanique » (pas de faux signal)',
+  it('D13b — tap sur Esprit occulte (eldritch-mind) → modale rend « Mécanique » + label Concentration', () => {
+    const character = buildCharacter([
+      classEntry({
+        classId: 'warlock',
+        eldritchInvocations: ['eldritch-mind'],
+      }),
+    ]);
+    render(<InvocationsCard character={character} />);
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Manifestation occulte : Esprit occulte/,
+      }),
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Mécanique')).toBeInTheDocument();
+    expect(
+      within(dialog).getByTestId('invocation-effect-label'),
+    ).toHaveTextContent(
+      /Avantage aux jets de Constitution pour la Concentration/,
+    );
+  });
+
+  it.each(['pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
+    'D13a/b — tap sur %s (D13c-e attendus) → modale NE rend PAS « Mécanique » (pas de faux signal)',
     (slug) => {
       const character = buildCharacter([
         classEntry({ classId: 'warlock', eldritchInvocations: [slug] }),

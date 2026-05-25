@@ -52,6 +52,28 @@ export function InvocationEffectCard({
     );
   }
 
+  if (effect.kind === 'passive-concentration-advantage') {
+    return (
+      <div
+        className="mt-4 rounded-card-sm border border-gold-dim/40 bg-gradient-to-b from-gold-bright/[0.08] to-gold/[0.02] px-4 py-3"
+        data-testid="invocation-effect-card"
+      >
+        <p className="mb-2 font-title text-[10px] font-bold uppercase tracking-[0.2em] text-gold-bright">
+          {t('sheet.essence.invocation.mechanicsTitle')}
+        </p>
+        <p
+          className="font-display text-[15px] font-bold text-gold-bright"
+          data-testid="invocation-effect-label"
+        >
+          {t('sheet.essence.invocation.eldritchMind.label')}
+        </p>
+        <p className="mt-1 font-serif text-[12px] text-text-tertiary">
+          {t('sheet.essence.invocation.eldritchMind.condition')}
+        </p>
+      </div>
+    );
+  }
+
   // Pas de `default` — l'exhaustivité TS strict garantit qu'on traite chaque
   // `kind` du discriminated union au moment de l'ajout.
   return null;
