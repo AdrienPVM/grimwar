@@ -8425,7 +8425,22 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d10",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "Dégâts automatiques (pas de jet) : applicables UNIQUEMENT aux créatures des types choisis à l’incantation parmi Aberration, Céleste, Élémentaire, Fée, Fiélon, Mort-vivant. Type au choix à l’incantation : radiants (défaut) ou nécrotiques. Une cible de mot de passe (défini à l’incantation) peut traverser sans subir de dégâts. Zone : jusqu’à 3 700 m² × 9 m de haut, 1 jour de durée.",
+          "en": "Automatic damage (no save): applies ONLY to creatures of the types chosen at casting from Aberration, Celestial, Elemental, Fey, Fiend, Undead. Damage type chosen at casting: Radiant (default) or Necrotic. A target speaking a password (set at casting) passes without damage. Area: up to 40,000 sq ft × 30 ft tall, 1 day duration."
+        }
+      }
+    ]
   },
   {
     "id": "inversion-de-la-gravite",
@@ -11185,7 +11200,74 @@
       "bard",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "12d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 1 Rouge (feu). Jet de sauvegarde de Dextérité par couche traversée ; réussite = demi-dégâts. Le mur a 5 couches infligeant des dégâts (Rouge, Orange, Jaune, Vert, Bleu — chacune 12d6 d’un type différent) + 2 couches de conditions (Indigo → Entravé/Pétrifié, Violet → Aveuglé/téléporté autre plan). Une cible qui traverse le mur subit les jets de chaque couche dans l’ordre. La couche Rouge est détruite par ≥ 25 dégâts de froid.",
+          "en": "Layer 1 Red (Fire). Dexterity saving throw per layer traversed; success = half damage. Wall has 5 damage layers (Red, Orange, Yellow, Green, Blue — each 12d6 of a different type) + 2 condition layers (Indigo → Restrained/Petrified, Violet → Blinded/teleported other plane). A target crossing the wall saves against each layer in order. Red layer destroyed by ≥ 25 Cold damage."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 2 Orange (acide). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par un vent fort (ex. Souffle du vent).",
+          "en": "Layer 2 Orange (Acid). Dexterity saving throw; success = half damage. Destroyed by strong wind (e.g. Gust of Wind)."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 3 Jaune (foudre). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par ≥ 60 dégâts de force.",
+          "en": "Layer 3 Yellow (Lightning). Dexterity saving throw; success = half damage. Destroyed by ≥ 60 Force damage."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 4 Vert (poison). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par Passage sans trace (ou sort équivalent qui ouvre un passage sur surface solide).",
+          "en": "Layer 4 Green (Poison). Dexterity saving throw; success = half damage. Destroyed by Passwall (or equivalent spell that opens a passage on a solid surface)."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 5 Bleu (froid). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par ≥ 25 dégâts de feu.",
+          "en": "Layer 5 Blue (Cold). Dexterity saving throw; success = half damage. Destroyed by ≥ 25 Fire damage."
+        }
+      }
+    ]
   },
   {
     "id": "murmures-dissonants",
@@ -14749,7 +14831,22 @@
       "druid",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d10",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Variante « Mort » uniquement : jet de sauvegarde de Constitution ; réussite = demi-dégâts. Les 5 autres variantes choisies à l’incantation n’infligent PAS de dégâts (et n’apparaissent donc pas en damage[]) : Discorde (querelles 1 min, Désavantage attaques/jets), Peur (Effrayé 1 min, fuite forcée), Douleur (Incapable 1 min), Sommeil (Inconscient 10 min, réveillable), Étourdissement (Étourdi 1 min). Sphère de 18 m de rayon déclenchée par un trigger choisi (toucher, distance, ouverture…).",
+          "en": "« Death » variant only: Constitution saving throw; success = half damage. The 5 other variants chosen at casting deal NO damage (and therefore don’t appear in damage[]): Discord (arguing 1 min, Disadvantage on attacks/checks), Fear (Frightened 1 min, forced flight), Pain (Incapacitated 1 min), Sleep (Unconscious 10 min, wakeable), Stunning (Stunned 1 min). 60-ft-radius Sphere triggered by a chosen condition (touch, distance, opening…)."
+        }
+      }
+    ]
   },
   {
     "id": "telekinesie",

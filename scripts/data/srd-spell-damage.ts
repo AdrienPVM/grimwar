@@ -1499,7 +1499,153 @@ export const SRD_SPELL_DAMAGE: Readonly<Record<string, readonly SpellDamage[]>> 
       },
     }),
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // D1a — long-tail batch 6 (clôture) : 3 derniers sorts SRD à dégâts
+  // primaires + documentation des exclusions explicites (cas pour lesquels
+  // damage[] N'EST PAS le bon encodage). Hand-curés contre SRD CC EN.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // Forbiddance — SRD CC L12994-13027 : « In addition, the spell damages
+  // types of creatures that you choose when you cast it. Choose one or
+  // more of the following: Aberrations, Celestials, Elementals, Fey,
+  // Fiends, and Undead. When a creature of a chosen type enters the
+  // spell’s area for the first time on a turn or ends its turn there,
+  // the creature takes 5d10 Radiant or Necrotic damage (your choice
+  // when you cast this spell). » Pas d'upcast, pas de jet de
+  // sauvegarde (dégâts auto sur entrée pour les types ciblés).
+  //
+  // Type par défaut : `radiant` (le plus emblématique du sort, traduit
+  // aussi par le nom « Interdiction » côté FR — protection sacrée).
+  // Condition documente la variante nécrotique et la conditionnalité
+  // sur le type de créature.
+  'interdiction': [
+    dmg('5d10', 'radiant', {
+      resolution: 'auto',
+      condition: {
+        fr: 'Dégâts automatiques (pas de jet) : applicables UNIQUEMENT aux créatures des types choisis à l’incantation parmi Aberration, Céleste, Élémentaire, Fée, Fiélon, Mort-vivant. Type au choix à l’incantation : radiants (défaut) ou nécrotiques. Une cible de mot de passe (défini à l’incantation) peut traverser sans subir de dégâts. Zone : jusqu’à 3 700 m² × 9 m de haut, 1 jour de durée.',
+        en: 'Automatic damage (no save): applies ONLY to creatures of the types chosen at casting from Aberration, Celestial, Elemental, Fey, Fiend, Undead. Damage type chosen at casting: Radiant (default) or Necrotic. A target speaking a password (set at casting) passes without damage. Area: up to 40,000 sq ft × 30 ft tall, 1 day duration.',
+      },
+    }),
+  ],
+
+  // Symbol — SRD CC L16614-16683 : 6 variantes (Death, Discord, Fear,
+  // Pain, Sleep, Stunning). Seule la variante Death inflige des dégâts :
+  // « Death. Each target makes a Constitution saving throw, taking 10d10
+  // Necrotic damage on a failed save or half as much damage on a
+  // successful save. » Les 5 autres variantes sont des conditions
+  // (Discord, Fear, Pain → Incapacitated, Sleep → Unconscious, Stunning
+  // → Stunned). Pas d'upcast.
+  //
+  // Encodage : 1 entrée damage[] pour la variante Death. Condition liste
+  // les 5 autres variantes pour informer le lecteur (mais elles ne
+  // produiront pas de damage[] — c'est l'effet stocké qui s'applique).
+  'symbole': [
+    dmg('10d10', 'necrotic', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Variante « Mort » uniquement : jet de sauvegarde de Constitution ; réussite = demi-dégâts. Les 5 autres variantes choisies à l’incantation n’infligent PAS de dégâts (et n’apparaissent donc pas en damage[]) : Discorde (querelles 1 min, Désavantage attaques/jets), Peur (Effrayé 1 min, fuite forcée), Douleur (Incapable 1 min), Sommeil (Inconscient 10 min, réveillable), Étourdissement (Étourdi 1 min). Sphère de 18 m de rayon déclenchée par un trigger choisi (toucher, distance, ouverture…).',
+        en: '« Death » variant only: Constitution saving throw; success = half damage. The 5 other variants chosen at casting deal NO damage (and therefore don’t appear in damage[]): Discord (arguing 1 min, Disadvantage on attacks/checks), Fear (Frightened 1 min, forced flight), Pain (Incapacitated 1 min), Sleep (Unconscious 10 min, wakeable), Stunning (Stunned 1 min). 60-ft-radius Sphere triggered by a chosen condition (touch, distance, opening…).',
+      },
+    }),
+  ],
+
+  // Prismatic Wall — SRD CC L15328-15400 : mur multicolore à 7 couches.
+  // Les 5 premières (Rouge, Orange, Jaune, Vert, Bleu) infligent chacune
+  // 12d6 d'un type différent (feu, acide, foudre, poison, froid). Les
+  // couches 6 (Indigo : Restrained → Petrified) et 7 (Violet : Blinded
+  // → téléporté autre plan) sont des conditions, pas des dégâts. Save
+  // de Dextérité par couche, demi-dégâts à la réussite. Pas d'upcast.
+  //
+  // Calque structurel de `embruns-prismatiques` (batch 5) : 5 entrées
+  // damage[] parallèles. Chaque entrée porte sa couleur + son type ; la
+  // condition explique le mur à 7 couches et les destructions
+  // spécifiques (Cold détruit Rouge, Force détruit Jaune, etc.).
+  'mur-prismatique': [
+    dmg('12d6', 'fire', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Couche 1 Rouge (feu). Jet de sauvegarde de Dextérité par couche traversée ; réussite = demi-dégâts. Le mur a 5 couches infligeant des dégâts (Rouge, Orange, Jaune, Vert, Bleu — chacune 12d6 d’un type différent) + 2 couches de conditions (Indigo → Entravé/Pétrifié, Violet → Aveuglé/téléporté autre plan). Une cible qui traverse le mur subit les jets de chaque couche dans l’ordre. La couche Rouge est détruite par ≥ 25 dégâts de froid.',
+        en: 'Layer 1 Red (Fire). Dexterity saving throw per layer traversed; success = half damage. Wall has 5 damage layers (Red, Orange, Yellow, Green, Blue — each 12d6 of a different type) + 2 condition layers (Indigo → Restrained/Petrified, Violet → Blinded/teleported other plane). A target crossing the wall saves against each layer in order. Red layer destroyed by ≥ 25 Cold damage.',
+      },
+    }),
+    dmg('12d6', 'acid', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Couche 2 Orange (acide). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par un vent fort (ex. Souffle du vent).',
+        en: 'Layer 2 Orange (Acid). Dexterity saving throw; success = half damage. Destroyed by strong wind (e.g. Gust of Wind).',
+      },
+    }),
+    dmg('12d6', 'lightning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Couche 3 Jaune (foudre). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par ≥ 60 dégâts de force.',
+        en: 'Layer 3 Yellow (Lightning). Dexterity saving throw; success = half damage. Destroyed by ≥ 60 Force damage.',
+      },
+    }),
+    dmg('12d6', 'poison', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Couche 4 Vert (poison). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par Passage sans trace (ou sort équivalent qui ouvre un passage sur surface solide).',
+        en: 'Layer 4 Green (Poison). Dexterity saving throw; success = half damage. Destroyed by Passwall (or equivalent spell that opens a passage on a solid surface).',
+      },
+    }),
+    dmg('12d6', 'cold', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Couche 5 Bleu (froid). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par ≥ 25 dégâts de feu.',
+        en: 'Layer 5 Blue (Cold). Dexterity saving throw; success = half damage. Destroyed by ≥ 25 Fire damage.',
+      },
+    }),
+  ],
 };
+
+/**
+ * D1a — liste explicite des sorts SRD dont la description contient un
+ * pattern « NdM dégâts » mais qui NE SONT PAS modélisables en `damage[]`
+ * (ni primaires, ni secondaires). Sert au test bidirectionnel
+ * `tests/srd-spell-damage.test.ts > intégrité bidirectionnelle` : tout
+ * sort à dés détectable côté bundle DOIT être soit dans SRD_SPELL_DAMAGE,
+ * soit dans cette liste — pas dans une zone grise non documentée.
+ *
+ * Catégories d'exclusion :
+ *  - Pénalité conditionnelle rare (Téléportation mishap, Souhait stress,
+ *    Porte dimensionnelle overcapacity, Fusion dans la pierre détruite,
+ *    Songe psychic, Contact avec les plans, Quête violation).
+ *  - Effet meta (Tremblement de terre : 50 PV structurels + 12d6 sur
+ *    effondrement — la mécanique principale est Prone + fissures, le
+ *    dégât est conditionnel à un effondrement de structure).
+ *  - Threshold/seuil (Mot de pouvoir mortel : 12d12 est le SEUIL de PV
+ *    en dessous duquel la cible meurt, pas des dégâts roulés).
+ *  - Debuff (Rayon affaiblissant : -1d8 sur les jets de dégâts ennemis,
+ *    pas un dégât infligé par le sort).
+ *  - Heal (Festin des héros : 2d10 PV temporaires bonus).
+ *  - Bonus à un jet (Résistance : 1d4 ajouté à un jet de sauvegarde).
+ *  - Tic réactif éphémère sur une mécanique non-combat (Toile d’araignée :
+ *    2d4 quand on brûle une toile — détail de destruction, pas du sort).
+ */
+export const SRD_SPELL_DAMAGE_EXCLUSIONS: ReadonlyArray<{
+  slug: string;
+  reason: string;
+}> = [
+  // Pénalités conditionnelles rares
+  { slug: 'teleportation', reason: 'Table de mishap 1d100 — résultat aléatoire, pas un dégât roulé.' },
+  { slug: 'souhait', reason: 'Stress post-Wish : 1d10 nécrotique par niveau de sort effacé pour les effets hors-liste — pénalité conditionnelle rare.' },
+  { slug: 'porte-dimensionnelle', reason: 'Pénalité overcapacity : 4d6 force seulement si la téléportation rate (passager surnuméraire ou destination occupée).' },
+  { slug: 'fusion-dans-la-pierre', reason: 'Pénalité : 6d6 force seulement si la pierre est détruite pendant la durée — pas le mode normal du sort.' },
+  { slug: 'songe', reason: 'Pénalité post-rêve : 3d6 psychique seulement si le rêveur est Hostile et après le sort se termine.' },
+  { slug: 'contact-avec-les-plans', reason: 'Pénalité d’échec : 6d6 psychique + Étourdi sur échec du jet de sauvegarde d’Int — coût d’incantation, pas un sort offensif.' },
+  { slug: 'quete', reason: 'Pénalité de violation : 5d10 psychique par jour de violation — déclencheur narratif, pas un sort de dégâts.' },
+  // Meta / threshold / debuff
+  { slug: 'tremblement-de-terre', reason: 'Méta : 50 PV structurels + 12d6 bludgeoning seulement si effondrement de structure sur créature — mécanique principale = Prone + fissures.' },
+  { slug: 'mot-de-pouvoir-mortel', reason: 'Threshold : 12d12 = SEUIL de PV (≤ 100) sous lequel la cible meurt instantanément, pas des dégâts roulés.' },
+  { slug: 'rayon-affaiblissant', reason: 'Debuff : -1d8 sur les jets de dégâts de la cible (pénalité aux dégâts ENNEMIS), pas un dégât infligé par le sort.' },
+  // Heals / bonus aux jets
+  { slug: 'festin-des-heros', reason: 'Heal : 2d10 PV temporaires bonus, pas un dégât.' },
+  { slug: 'resistance', reason: 'Bonus à un jet : 1d4 ajouté à un jet de sauvegarde, pas un dégât.' },
+  // Tic réactif éphémère
+  { slug: 'toile-d-araignee', reason: 'Détail de destruction : 2d4 feu quand on brûle une section de toile — pas une attaque du sort lui-même.' },
+];
 
 /**
  * Liste des slugs présents — utile pour les tests de couverture qui veulent

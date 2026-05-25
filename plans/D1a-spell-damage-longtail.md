@@ -1,14 +1,11 @@
 # D1a — `spell.damage[]` long-tail : 55 sorts SRD restants
 
-> **⏳ EN COURS** — démarré 2026-05-25, branche `fix/D1a-spell-damage-longtail`.
-> Mini-plan dédié à la sous-dette **D1a** ouverte à la clôture du plan D1
-> (cf. `plans/DEBT.md > D1`).
->
-> **Périmètre** : compléter la couverture `spell.damage[]` du bundle SRD avec
-> les ~55 sorts à dégâts non capturés par les 43 sorts pilotes/larges de D1.
-> Les heals, bonus aux jets, et formules de durée (1d4 tours, 1d100 % de
-> téléportation) restent hors scope — `damage[]` est strictement réservé aux
-> dégâts.
+> **✅ LIVRÉ 2026-05-25** sur la branche `fix/D1a-spell-damage-longtail`,
+> 6 commits bisectables + DEBT D1a → Résolu. **Couverture finale** : 96/339
+> sorts SRD avec `damage[]` canonique (50 nouvelles entrées en D1a + 35
+> baseline pré-D1 + ~11 baseline déjà présents et non-redéfinis) + 13 sorts
+> explicitement exclus avec raison documentée. Test bidirectionnel enforced.
+> PR + merge à la suite de ce commit.
 
 ## Goal
 
@@ -218,13 +215,22 @@ déjà figés par D1 commit 1-2 (`typeLabel.fr`).
 - [x] 1. Inventaire honnête contre `spells.json` (75 candidates → 55 DMG +
   20 exclusions).
 - [x] 2. Plan rédigé.
-- [ ] 3. Commit 1 — Batch 1 (6 sorts) + plan + DEBT.
-- [ ] 4. Commit 2 — Batch 2 (8 sorts riders complémentaires).
-- [ ] 5. Commit 3 — Batch 3 (20 saving-throw classiques).
-- [ ] 6. Commit 4 — Batch 4 (6 attack-roll + modifier).
-- [ ] 7. Commit 5 — Batch 5 (7 type-au-choix).
-- [ ] 8. Commit 6 — Batch 6 (~10 atypiques + exclusions).
-- [ ] 9. Commit 7 — clôture, arbitrage D1b, mise à jour DEBT.
+- [x] 3. Commit 1 — Batch 1 (6 sorts) + plan + DEBT. (SHA `2df8f62`)
+- [x] 4. Commit 2 — Batch 2 (8 sorts riders complémentaires). (SHA `d652ba1`)
+- [x] 5. Commit 3 — Batch 3 (20 saving-throw classiques). (SHA `56c8371`)
+- [x] 6. Commit 4 — Batch 4 (9 attack-roll + cas spéciaux ; absorbe en
+  partie le batch 6 du plan initial — Disintegrate, Finger of Death,
+  Spirit Guardians, Delayed Blast Fireball, Flame Strike, Arcane Sword,
+  Arcane Hand, Flame Blade, Fire Shield). (SHA `95e78ad`)
+- [x] 7. Commit 5 — Batch 5 (7 type-au-choix : Sorcerous Burst, Phantasmal
+  Force, Glyph of Warding, Conjure Elemental, Conjure Fey, Conjure Celestial,
+  Prismatic Spray). (SHA `6eabb91`)
+- [x] 8. Commit 6 — Batch 6 (clôture : 3 derniers sorts primaires
+  Forbiddance/Symbol/Prismatic Wall + liste d'exclusion + test bidirectionnel
+  + DEBT + plan). (SHA à insérer post-commit)
+- [x] 9. Pas de commit 7 séparé — la clôture est intégrée au commit 6. D1b
+  arbitré : **maintenu ouvert** (la regex stopgap est encore utile pour les
+  243 sorts non-damage du bundle dont `damage[]` n'est pas peuplé).
 
 ## Definition of Done
 
@@ -239,4 +245,86 @@ déjà figés par D1 commit 1-2 (`typeLabel.fr`).
 
 ## Notes for next plan
 
-À renseigner à la clôture.
+### Couverture finale (2026-05-25)
+
+- **96/339 sorts SRD** avec `damage[]` canonique (vs 35 baseline pré-D1).
+  - 35 baseline pré-D1 (préservés)
+  - 11 baseline déjà couverts par `SRD_SPELL_DAMAGE` pré-D1a (Call Lightning,
+    Chain Lightning, Vampiric Touch, Ice Storm, Witch Bolt, Wall of Fire,
+    Vitriolic Sphere, Cone of Cold, Blight, Sunbeam, Fire Storm — laissés
+    tels quels, à enrichir éventuellement plus tard pour aligner leur
+    `condition.fr` sur la convention `rayon-de-lune`)
+  - 50 nouvelles entrées D1a sur 6 commits bisectables (batch 1: 6, batch 2:
+    8, batch 3: 20, batch 4: 9, batch 5: 7, batch 6: 3 ; net +50 — l'écart
+    avec la liste plan initiale vient de 3 spells qui étaient déjà baseline
+    et n'ont pas été redéfinis : `chaine-d-eclairs`, `appel-de-la-foudre`,
+    `caresse-du-vampire`)
+- **13 sorts exclus explicitement** via `SRD_SPELL_DAMAGE_EXCLUSIONS` (cf.
+  `scripts/data/srd-spell-damage.ts` — pénalités conditionnelles, méta,
+  threshold, debuff, heals, bonus, tic réactif éphémère).
+
+### Test bidirectionnel (livré)
+
+`tests/srd-spell-damage.test.ts > D1a — (a)/(b)/(b')` :
+
+- (a) Tout slug `SRD_SPELL_DAMAGE` résout dans le bundle.
+- (b) Tout sort à motif « NdM dégâts » détectable est SOIT couvert SOIT
+  exclus explicitement (zéro zone grise).
+- (b') Aucun slug n'est à la fois couvert ET exclus (cohérence).
+
+Cette gate ferme structurellement la classe « sort à dégâts qui passe
+entre les mailles ». Tout nouveau sort SRD à dégâts ajouté au bundle
+DOIT être soit couvert dans `SRD_SPELL_DAMAGE` soit ajouté à
+`SRD_SPELL_DAMAGE_EXCLUSIONS` avec raison — sinon le test échoue dur.
+
+### Patterns livrés (synthèse pour D1c éventuel)
+
+Au-delà des 6 patterns D1, D1a maîtrise désormais 5 patterns supplémentaires :
+
+1. **Rider sur attaque d'arme** (formule sans `resolution`, condition cite
+   le trigger : faveur divine, châtiment divin, malédiction…) — `PINNED_RIDERS`.
+2. **Formule mixte « XdY + N »** (Disintegrate 10d6+40, Finger of Death 7d8+30)
+   — le schéma `formula: z.string()` accepte la concaténation.
+3. **Dégâts cumulatifs concentration** (Delayed Blast Fireball : base + tic
+   par tour de concentration) — `formula` = base, condition documente
+   l'accumulation + la règle d'upcast spécifique.
+4. **Sort à 2 effets distincts** (Arcane Hand : attack-roll Clenched Fist +
+   auto Grasping Hand après grapple) — 2 entrées `damage[]` avec
+   `resolution` différents.
+5. **Dégâts réactifs auto sans save** (Fire Shield, Heat Metal, Forbiddance,
+   Phantasmal Force récurrent subjectif) — `resolution: 'auto'`,
+   condition explicite « pas de jet réduit les dégâts ».
+
+### Convention `rayon-de-lune` systématisée
+
+Le schéma `SpellDamage` n'expose pas de champ structuré pour la
+caractéristique de sauvegarde ni le résultat de la réussite (demi-dégâts
+ou aucun dégât). Cette info est portée par le texte `condition.fr` /
+`condition.en` et **testée par `BATCH3_SAVE_ABILITIES`** : chaque entrée
+à `resolution: 'saving-throw'` ajoutée en D1a porte la caractéristique de
+sauvegarde textuellement dans `condition.fr` (« Jet de sauvegarde de
+Dextérité ; réussite = demi-dégâts. »). Si un futur D1c enrichit le
+schéma avec un champ structuré (`saveAbility`/`saveOutcome`), le texte
+restera correct — la garde-fou aussi.
+
+### D1b — statut
+
+**Maintenu ouvert**. La regex stopgap `extractDamageFormula` dans
+`src/features/sheet/modes/magie/spell-detail-modal.tsx:412` reste utile :
+
+- 243 sorts du bundle n'ont pas `damage[]` (intentionnel — ils n'infligent
+  pas de dégâts, ou sont marqués dans `SRD_SPELL_DAMAGE_EXCLUSIONS`).
+- Pour les 243 non-damage, la regex retourne `null` → comportement neutre
+  (la modale passe à la branche attack-roll d20). Retirer la regex ne
+  changerait RIEN pour ces 243 sorts.
+- Pour les 13 exclusions, la regex peut accidentellement matcher un motif
+  de dés dans la description (ex. Wish « 1d10 par niveau »). Retirer la
+  regex SUPPRIMERAIT ce risque de roll erroné — mais c'est un gain marginal
+  pour un sort sur lequel le joueur ne va jamais cliquer « rouler les
+  dégâts » (Wish n'a pas de bouton dégâts dans le flow normal).
+
+**Décision** : la regex reste pour défense en profondeur. La résoudre
+demanderait soit (a) un audit fin du chemin UI pour s'assurer qu'aucune
+modale n'appelle `extractDamageFormula` sur un sort qui ne devrait pas
+roller, soit (b) un guard structurel basé sur `SRD_SPELL_DAMAGE_SLUGS ∪
+SRD_SPELL_DAMAGE_EXCLUSIONS`. Petit chantier hygiène, pas un blocker.

@@ -1092,4 +1092,138 @@ describe('cat. 4 — Dégâts canoniques de sort (D1)', () => {
       expect((spell?.damage ?? []).length).toBeGreaterThanOrEqual(1);
     }
   });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // D1a batch 6 (clôture) — 3 derniers sorts SRD primaires :
+  // interdiction (5d10 radiant/necrotic auto), symbole (variante Death
+  // 10d10 nécrotique), mur-prismatique (5 couleurs × 12d6).
+  // ──────────────────────────────────────────────────────────────────────
+  it('D1a batch 6 — interdiction porte resolution: auto avec choix radiant/nécrotique', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'interdiction');
+    expect(spell?.damage?.[0]?.formula).toBe('5d10');
+    expect(spell?.damage?.[0]?.type).toBe('radiant');
+    expect(spell?.damage?.[0]?.resolution).toBe('auto');
+    const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+    expect(cond).toContain('Aberration');
+    expect(cond).toContain('Céleste');
+    expect(cond).toContain('Élémentaire');
+    expect(cond).toContain('Fée');
+    expect(cond).toContain('Fiélon');
+    expect(cond).toContain('Mort-vivant');
+    expect(cond).toContain('nécrotiques');
+    expect(cond).toContain('mot de passe');
+  });
+
+  it('D1a batch 6 — symbole encode variante Death seule, condition liste les 5 autres', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'symbole');
+    expect(spell?.damage).toHaveLength(1);
+    expect(spell?.damage?.[0]?.formula).toBe('10d10');
+    expect(spell?.damage?.[0]?.type).toBe('necrotic');
+    const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+    expect(cond).toContain('Mort');
+    expect(cond).toContain('Constitution');
+    expect(cond).toContain('Discorde');
+    expect(cond).toContain('Peur');
+    expect(cond).toContain('Douleur');
+    expect(cond).toContain('Sommeil');
+    expect(cond).toContain('Étourdissement');
+  });
+
+  it('D1a batch 6 — mur-prismatique porte 5 entrées (5 couleurs × 12d6)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'mur-prismatique');
+    expect(spell?.damage).toHaveLength(5);
+    const types = (spell?.damage ?? []).map((d) => d.type);
+    expect(types).toEqual(['fire', 'acid', 'lightning', 'poison', 'cold']);
+    for (const entry of spell?.damage ?? []) {
+      expect(entry.formula).toBe('12d6');
+      expect(entry.resolution).toBe('saving-throw');
+    }
+  });
+
+  it('D1a batch 6 — 3 nouveaux sorts portent damage[] (sanity count)', async () => {
+    const spells = await loadSpells();
+    const batch6Slugs = ['interdiction', 'symbole', 'mur-prismatique'];
+    expect(batch6Slugs).toHaveLength(3);
+    for (const slug of batch6Slugs) {
+      const spell = spells.find((s) => s.id === slug);
+      expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
+      expect(
+        spell?.damage,
+        `${slug} doit porter au moins une entrée damage[]`,
+      ).toBeDefined();
+      expect((spell?.damage ?? []).length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // D1a — INTÉGRITÉ BIDIRECTIONNELLE (closing gate, plan D1a step 9).
+  // Garantit qu'aucun sort SRD à dégâts ne tombe dans une zone grise non
+  // documentée :
+  //  (a) Tout slug dans `SRD_SPELL_DAMAGE` doit exister dans le bundle.
+  //      (Déjà enforcé par `extract-srd-spells.ts > DAMAGE ORPHELIN` au
+  //      build — répété ici pour défense en profondeur côté test).
+  //  (b) Tout sort dont la description contient un motif « NdM dégâts »
+  //      doit être SOIT couvert par `SRD_SPELL_DAMAGE`, SOIT explicitement
+  //      listé dans `SRD_SPELL_DAMAGE_EXCLUSIONS` avec une raison.
+  // ──────────────────────────────────────────────────────────────────────
+  it('D1a — (a) tout slug `SRD_SPELL_DAMAGE` résout dans le bundle', async () => {
+    const { SRD_SPELL_DAMAGE_SLUGS } = await import(
+      '../scripts/data/srd-spell-damage'
+    );
+    const spells = await loadSpells();
+    const bundleSlugs = new Set(spells.map((s) => s.id));
+    const orphans = SRD_SPELL_DAMAGE_SLUGS.filter(
+      (slug) => !bundleSlugs.has(slug),
+    );
+    expect(
+      orphans,
+      `slug(s) damage sans entrée bundle : ${orphans.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('D1a — (b) tout sort à motif « NdM dégâts » est couvert OU exclus explicitement', async () => {
+    const { SRD_SPELL_DAMAGE_SLUGS, SRD_SPELL_DAMAGE_EXCLUSIONS } = await import(
+      '../scripts/data/srd-spell-damage'
+    );
+    const spells = await loadSpells();
+    const covered = new Set(SRD_SPELL_DAMAGE_SLUGS);
+    const excluded = new Set(SRD_SPELL_DAMAGE_EXCLUSIONS.map((e) => e.slug));
+
+    // Sort à motif de dégâts détectable = (description FR contient
+    // « dégâts » + un motif « \d+d\d+ »).
+    const candidates = spells.filter((sp) => {
+      const fr = sp.description?.fr ?? '';
+      const en = sp.description?.en ?? '';
+      const text = `${fr} ${en}`;
+      return /(\bdégâts\b|\bdamage\b)/i.test(text) && /\d+d\d+/.test(text);
+    });
+
+    // Tout candidat doit être soit couvert soit exclus.
+    const ungoverned = candidates.filter(
+      (sp) => !covered.has(sp.id) && !excluded.has(sp.id),
+    );
+    expect(
+      ungoverned.map((sp) => sp.id),
+      `sort(s) à dégâts en zone grise (ni couvert ni exclus) : ` +
+        ungoverned.map((sp) => sp.id).join(', '),
+    ).toEqual([]);
+  });
+
+  it('D1a — (b\') aucun slug d\'exclusion ne doit aussi être dans SRD_SPELL_DAMAGE (cohérence)', async () => {
+    const { SRD_SPELL_DAMAGE_SLUGS, SRD_SPELL_DAMAGE_EXCLUSIONS } = await import(
+      '../scripts/data/srd-spell-damage'
+    );
+    const covered = new Set(SRD_SPELL_DAMAGE_SLUGS);
+    const conflicts = SRD_SPELL_DAMAGE_EXCLUSIONS.filter((e) =>
+      covered.has(e.slug),
+    );
+    expect(
+      conflicts.map((e) => e.slug),
+      `slug(s) à la fois couvert ET exclus (incohérent) : ` +
+        conflicts.map((e) => e.slug).join(', '),
+    ).toEqual([]);
+  });
 });
