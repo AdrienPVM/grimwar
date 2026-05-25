@@ -585,6 +585,128 @@ export const SRD_SPELL_DAMAGE: Readonly<Record<string, readonly SpellDamage[]>> 
       },
     }),
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // D1a — long-tail batch 2 : 8 sorts riders complémentaires + cas simples
+  // hand-curés contre SRD CC EN (`SRD_CC_v5.2.1.txt`).
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // Hunter's Mark — SRD CC L13827-13844 : « Until the spell ends, you deal
+  // an extra 1d6 Force damage to the target whenever you hit it with an
+  // attack roll. […] Using a Higher-Level Spell Slot. Your Concentration
+  // can last longer with a spell slot of level 3–4 (up to 8 hours) or 5+
+  // (up to 24 hours). » → slot affecte UNIQUEMENT la durée, pas la formule.
+  'marque-du-chasseur': [
+    dmg('1d6', 'force', {
+      condition: {
+        fr: 'S’ajoute aux dégâts à chaque coup d’une attaque qui touche la cible marquée, tant que la concentration est maintenue. Le niveau d’emplacement n’affecte que la durée de concentration (pas la formule).',
+        en: 'Added on each successful attack roll against the marked target while you maintain Concentration. Higher slot levels affect only the Concentration duration (not the formula).',
+      },
+    }),
+  ],
+
+  // Bestow Curse — SRD CC L10735-10765 : « If you deal damage to the target
+  // with an attack roll or a spell, the target takes an extra 1d8 Necrotic
+  // damage. […] Using a Higher-Level Spell Slot. […] » Le slot upcast ne
+  // modifie QUE la durée/concentration (pas la formule).
+  // Le 1d8 est l'une des 4 maledictions au choix — encodée comme rider
+  // conditionnel via condition.fr.
+  'malediction': [
+    dmg('1d8', 'necrotic', {
+      condition: {
+        fr: 'Effet « malédiction des dégâts » uniquement (une des 4 malédictions au choix). +1d8 nécrotique chaque fois que vous infligez des dégâts à la cible avec un jet d’attaque ou un sort. Le niveau d’emplacement n’affecte que la durée (pas la formule).',
+        en: '"Damage curse" effect only (one of 4 curse options). +1d8 Necrotic whenever you deal damage to the target with an attack roll or a spell. Higher slot levels affect only the duration (not the formula).',
+      },
+    }),
+  ],
+
+  // Enlarge/Reduce — SRD CC L12376-12408 : « Enlarge. […] The target's
+  // attacks with its enlarged weapons or Unarmed Strikes deal an extra
+  // 1d4 damage on a hit. » Variant Enlarge uniquement (Reduce *retire*
+  // 1d4 — pas un dégât positif). Pas de scaling.
+  // Note : type omis car l'arme conserve son type natif (slashing/piercing/
+  // bludgeoning) — on fige `bludgeoning` éditorial pour les unarmed et on
+  // documente dans condition.
+  'agrandissement-rapetissement': [
+    dmg('1d4', 'bludgeoning', {
+      condition: {
+        fr: 'Effet « Agrandissement » uniquement. +1d4 dégâts à chaque coup d’arme ou de coup non armé. Le type final est celui de l’arme déclencheuse (pas nécessairement contondant — défaut éditorial UI). L’effet « Rapetissement » retire 1d4 (debuff, non modélisé ici).',
+        en: 'Enlarge variant only. +1d4 damage on each weapon or Unarmed Strike hit. Final damage type matches the triggering weapon (editorial default in UI). Reduce variant subtracts 1d4 (debuff, not modeled here).',
+      },
+    }),
+  ],
+
+  // Shining Smite — SRD CC L16087-16101 : « The target hit by the strike
+  // takes an extra 2d6 Radiant damage from the attack. […] Using a Higher-
+  // Level Spell Slot. The damage increases by 1d6 for each spell slot
+  // level above 2. »
+  // FR : `chatiment-de-revelation` (« Châtiment de révélation »).
+  'chatiment-de-revelation': [
+    dmg('2d6', 'radiant', {
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'S’ajoute aux dégâts de l’attaque (arme de mêlée ou coup non armé) qui vient de toucher. Tant que la concentration est maintenue, la cible émet une lumière vive et les jets d’attaque contre elle ont l’avantage. +1d6 par niveau d’emplacement au-dessus du 2.',
+        en: 'Added to the melee weapon or Unarmed Strike that just hit. While Concentration holds, the target sheds Bright Light and attack rolls against it have Advantage. +1d6 per spell slot level above 2.',
+      },
+    }),
+  ],
+
+  // Alter Self — SRD CC L10169-10202 : variant Natural Weapons : « When
+  // you use your Unarmed Strike to deal damage with that new growth, it
+  // deals 1d6 damage of the type in parentheses [Slashing/Piercing/
+  // Bludgeoning] instead of dealing the normal damage […]. » Pas de scaling.
+  // Type figé `slashing` (claws par défaut éditorial), 4 options documentées.
+  'modification-d-apparence': [
+    dmg('1d6', 'slashing', {
+      condition: {
+        fr: 'Effet « Armes naturelles » uniquement. Coup non armé inflige 1d6 du type choisi (griffes : tranchant ; crocs/cornes : perforant ; sabots : contondant) au lieu des dégâts normaux. Utilise le modificateur d’incantation pour attaque ET dégâts.',
+        en: '"Natural Weapons" variant only. Unarmed Strike deals 1d6 of the chosen type (claws: slashing; fangs/horns: piercing; hooves: bludgeoning) instead of normal damage. Uses spellcasting modifier for attack AND damage rolls.',
+      },
+    }),
+  ],
+
+  // Conjure Minor Elementals — SRD CC L11376-11391 : « Until the spell
+  // ends, any attack you make deals an extra 2d8 damage when you hit a
+  // creature in the Emanation. This damage is Acid, Cold, Fire, or Light-
+  // ning (your choice when you make the attack). […] Using a Higher-Level
+  // Spell Slot. The damage increases by 1d8 for each spell slot level
+  // above 4. »
+  // Type-au-choix éditorial : `fire` figé, 4 options documentées.
+  'invocation-d-elementaires-mineurs': [
+    dmg('2d8', 'fire', {
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'S’ajoute aux dégâts de toute attaque qui touche une créature dans l’émanation de 4,5 m, tant que la concentration est maintenue. Type au choix à chaque attaque : acide, froid, feu ou foudre. +1d8 par niveau d’emplacement au-dessus du 4.',
+        en: 'Added to each attack hit against a creature in the 15-foot Emanation while you maintain Concentration. Damage type chosen per attack: Acid, Cold, Fire, or Lightning. +1d8 per spell slot level above 4.',
+      },
+    }),
+  ],
+
+  // Spike Growth — SRD CC L16350-16367 : « When a creature moves into or
+  // within the area, it takes 2d4 Piercing damage for every 5 feet it
+  // travels. » Pas de scaling.
+  'croissance-d-epines': [
+    dmg('2d4', 'piercing', {
+      condition: {
+        fr: 'Terrain de 6 m de rayon. Toute créature qui entre dans la zone ou s’y déplace subit 2d4 perforants par tranche de 1,50 m parcourus.',
+        en: '20-foot-radius terrain. Any creature entering or moving within the area takes 2d4 Piercing damage for every 5 feet it travels.',
+      },
+    }),
+  ],
+
+  // Ensnaring Strike — SRD CC L12409-12428 : « While Restrained, the
+  // target takes 1d6 Piercing damage at the start of each of its turns.
+  // […] Using a Higher-Level Spell Slot. The damage increases by 1d6 for
+  // each spell slot level above 1. »
+  'frappe-piegeuse': [
+    dmg('1d6', 'piercing', {
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'La cible doit échouer un jet de Force lors du coup d’arme qui déclenche le sort pour subir l’état Entravé. Tant qu’elle est entravée, elle subit 1d6 perforants au début de chacun de ses tours. +1d6 par niveau d’emplacement au-dessus du 1er.',
+        en: 'Target must fail a Strength save on the triggering weapon hit to gain the Restrained condition. While Restrained, it takes 1d6 Piercing damage at the start of each of its turns. +1d6 per spell slot level above 1.',
+      },
+    }),
+  ],
 };
 
 /**
