@@ -8,6 +8,7 @@ import {
   type EquippedRow,
 } from '@/features/sheet/modes/avoir/inventory-rules';
 import type { SkillProf } from '@/shared/types/character';
+import type { DamageType, Spell, SpellDamage } from '@/shared/types/content';
 
 /**
  * Cat. 4 — Calculs de regles, resultat chiffre contre la regle SRD.
@@ -77,6 +78,89 @@ export function expectAttackMod(
     mod,
     `[content-truth] bonus d'attaque (carac ${args.abilityScore}, niveau ${args.totalLevel}, maitrise=${args.proficient})`,
   ).toBe(expected);
+}
+
+/**
+ * Plan D1 — dégâts de sort canoniques (cat. 4 étendue post-13.12).
+ *
+ * Asserte qu'un sort du bundle porte la formule + type + résolution attendus
+ * dans son premier `damage[]` (la plupart des sorts SRD n'ont qu'une entrée).
+ * Si on doit vérifier plusieurs entrées (Flame Strike = feu + radiant), passer
+ * `damageIndex` pour cibler l'autre entrée.
+ *
+ * Cible la valeur EXACTE des champs canoniques :
+ *   - `formula` (« 8d6 »)
+ *   - `type` (« fire »)
+ *   - `typeLabel.fr` / `typeLabel.en`
+ *   - `atHigherLevels?.perLevel` quand fourni en expectation
+ *   - `cantripScaling` quand fourni en expectation
+ *   - `resolution` quand fourni en expectation
+ *
+ * Rouge-avant-vert : si un sort perd son `damage[]` à un rebuild, ou si la
+ * formule/type bouge silencieusement, ce helper attrape la régression
+ * avec un message « [content-truth] dégâts de sort … attendu X reçu Y ».
+ */
+export function expectSpellDamage(
+  spell: Spell,
+  expected: {
+    formula: string;
+    type: DamageType;
+    typeLabelFr?: string;
+    typeLabelEn?: string;
+    atHigherLevelsPerLevel?: string;
+    cantripScaling?: { tier5: string; tier11: string; tier17: string };
+    resolution?: SpellDamage['resolution'];
+  },
+  damageIndex = 0,
+): void {
+  expect(
+    spell.damage,
+    `[content-truth] dégâts de sort "${spell.id}" — damage[] absent ou vide`,
+  ).toBeDefined();
+  const entry = spell.damage?.[damageIndex];
+  expect(
+    entry,
+    `[content-truth] dégâts de sort "${spell.id}" — damage[${damageIndex}] absent`,
+  ).toBeDefined();
+  if (!entry) return;
+  expect(
+    entry.formula,
+    `[content-truth] dégâts de sort "${spell.id}" — formula`,
+  ).toBe(expected.formula);
+  expect(
+    entry.type,
+    `[content-truth] dégâts de sort "${spell.id}" — type`,
+  ).toBe(expected.type);
+  if (expected.typeLabelFr !== undefined) {
+    expect(
+      entry.typeLabel.fr,
+      `[content-truth] dégâts de sort "${spell.id}" — typeLabel.fr`,
+    ).toBe(expected.typeLabelFr);
+  }
+  if (expected.typeLabelEn !== undefined) {
+    expect(
+      entry.typeLabel.en,
+      `[content-truth] dégâts de sort "${spell.id}" — typeLabel.en`,
+    ).toBe(expected.typeLabelEn);
+  }
+  if (expected.atHigherLevelsPerLevel !== undefined) {
+    expect(
+      entry.atHigherLevels?.perLevel,
+      `[content-truth] dégâts de sort "${spell.id}" — atHigherLevels.perLevel`,
+    ).toBe(expected.atHigherLevelsPerLevel);
+  }
+  if (expected.cantripScaling !== undefined) {
+    expect(
+      entry.cantripScaling,
+      `[content-truth] dégâts de sort "${spell.id}" — cantripScaling`,
+    ).toEqual(expected.cantripScaling);
+  }
+  if (expected.resolution !== undefined) {
+    expect(
+      entry.resolution,
+      `[content-truth] dégâts de sort "${spell.id}" — resolution`,
+    ).toBe(expected.resolution);
+  }
 }
 
 /**

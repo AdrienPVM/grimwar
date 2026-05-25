@@ -1588,7 +1588,23 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d12",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "saving-throw",
+        "cantripScaling": {
+          "tier5": "2d12",
+          "tier11": "3d12",
+          "tier17": "4d12"
+        }
+      }
+    ]
   },
   {
     "id": "boule-de-feu",
@@ -1633,7 +1649,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "boule-de-feu-a-retardement",
@@ -4075,7 +4105,27 @@
     "classes": [
       "warlock"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d10",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d10",
+          "tier11": "3d10",
+          "tier17": "4d10"
+        },
+        "condition": {
+          "fr": "Un rayon par tier (1 à L1-4, 2 à L5-10, 3 à L11-16, 4 à L17+) ; chaque rayon inflige 1d10 dégâts de force et nécessite son propre jet d’attaque de sort.",
+          "en": "One beam per tier (1 at L1-4, 2 at L5-10, 3 at L11-16, 4 at L17+); each beam deals 1d10 Force damage and requires its own ranged spell attack roll."
+        }
+      }
+    ]
   },
   {
     "id": "dedale",
@@ -5153,7 +5203,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d6",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "eclat-du-soleil",
@@ -5975,7 +6039,23 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "flammes",
@@ -8657,7 +8737,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "malediction",
@@ -11066,7 +11160,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d4+1",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "3 projectiles à l’incantation au niveau 1 ; +1 projectile par niveau d’emplacement au-dessus du 1er. Chaque projectile inflige 1d4+1 dégâts de force, sans jet d’attaque ni de sauvegarde.",
+          "en": "3 darts at base; +1 dart per spell slot level above 1. Each dart deals 1d4+1 Force damage, no attack roll, no saving throw."
+        }
+      }
+    ]
   },
   {
     "id": "projection-astrale",
@@ -11561,7 +11670,23 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "rayon-de-lune",
@@ -13804,7 +13929,23 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d10",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d10",
+          "tier11": "3d10",
+          "tier17": "4d10"
+        }
+      }
+    ]
   },
   {
     "id": "tremblement-de-terre",
@@ -13927,7 +14068,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "thunder",
+        "typeLabel": {
+          "fr": "tonnerre",
+          "en": "Thunder"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "vent-divin",

@@ -13,6 +13,9 @@
  */
 import { writeFile } from 'node:fs/promises';
 
+import type { Spell } from '../src/shared/types/content';
+
+import { SRD_SPELL_DAMAGE } from './data/srd-spell-damage';
 import { SRD_SPELLS, SRD_SPELLS_COUNTS } from './data/srd-spells';
 import { checkSpellQuality } from './srd-spell-quality-gate';
 
@@ -50,14 +53,35 @@ async function main(): Promise<void> {
     );
   }
 
+  // Plan D1 — merge des entrées `damage[]` canoniques par slug. La table
+  // `SRD_SPELL_DAMAGE` (scripts/data/srd-spell-damage.ts) est hand-curée
+  // depuis le SRD CC EN ; les slugs absents restent sans `damage[]` (le
+  // consommateur traite l'absence comme « sort non encore couvert »).
+  // Garde anti-typo : tout slug du mapping damage doit exister dans SRD_SPELLS.
+  const knownSlugs = new Set(SRD_SPELLS.map((s) => s.id));
+  const orphanDamageSlugs = Object.keys(SRD_SPELL_DAMAGE).filter(
+    (slug) => !knownSlugs.has(slug),
+  );
+  if (orphanDamageSlugs.length) {
+    throw new Error(
+      `[extract-srd-spells] DAMAGE ORPHELIN — ${orphanDamageSlugs.length} slug(s) damage sans sort correspondant : ${orphanDamageSlugs.join(', ')}.`,
+    );
+  }
+
+  const enriched: Spell[] = SRD_SPELLS.map((spell) => {
+    const damage = SRD_SPELL_DAMAGE[spell.id];
+    if (!damage || damage.length === 0) return spell;
+    return { ...spell, damage: [...damage] };
+  });
+
   // Tri déterministe par id.
-  const sorted = [...SRD_SPELLS].sort((a, b) => a.id.localeCompare(b.id));
+  const sorted = [...enriched].sort((a, b) => a.id.localeCompare(b.id));
 
   const next = JSON.stringify(sorted, null, 2) + '\n';
   await writeFile(SPELLS_PATH, next, 'utf-8');
 
   console.log(
-    `[extract-srd-spells] OK — ${SRD_SPELLS.length} sorts bilingues écrits dans ${SPELLS_PATH}.`,
+    `[extract-srd-spells] OK — ${SRD_SPELLS.length} sorts bilingues écrits dans ${SPELLS_PATH} (dont ${Object.keys(SRD_SPELL_DAMAGE).length} avec damage[] canonique).`,
   );
 }
 
