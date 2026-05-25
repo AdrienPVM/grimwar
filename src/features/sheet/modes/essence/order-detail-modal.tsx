@@ -1,4 +1,4 @@
-import type { JSX } from 'react';
+import type { JSX, ReactNode } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
 
@@ -15,6 +15,13 @@ interface OrderDetailModalProps {
   name: string;
   /** Summary FR localisé déjà résolu depuis le bundle classes.json. */
   summary: string;
+  /**
+   * Slot optionnel rendu sous la prose `summary`, pour les modales qui
+   * souhaitent surfacer un bloc structuré supplémentaire (D13a — section
+   * « Mécanique » d'une Manifestation occulte). Aucun caller existant
+   * (DivineOrderCard / PrimalOrderCard) ne le passe → no-op rétrocompatible.
+   */
+  extra?: ReactNode;
 }
 
 /**
@@ -36,6 +43,7 @@ export function OrderDetailModal({
   kindLabel,
   name,
   summary,
+  extra,
 }: OrderDetailModalProps): JSX.Element | null {
   const titleId = 'order-detail-title';
   return (
@@ -53,6 +61,7 @@ export function OrderDetailModal({
       </header>
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <p className="font-serif text-body text-text-secondary">{summary}</p>
+        {extra}
       </div>
     </DetailModal>
   );

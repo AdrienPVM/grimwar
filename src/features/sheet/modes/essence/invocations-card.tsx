@@ -6,6 +6,7 @@ import { localize } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 import type { Invocation } from '@/shared/types/content';
 
+import { InvocationEffectCard } from './invocation-effect-card';
 import { OrderDetailModal } from './order-detail-modal';
 
 interface InvocationsCardProps {
@@ -111,6 +112,7 @@ export function InvocationsCard({ character }: InvocationsCardProps): JSX.Elemen
         kindLabel="Manifestation occulte"
         name={opened ? localize(opened.name) : ''}
         summary={opened ? localize(opened.summary) : ''}
+        extra={opened ? <InvocationEffectCard slug={opened.id} /> : null}
       />
     </Card>
   );

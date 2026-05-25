@@ -358,8 +358,14 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 
 ## D13 — Manifestations occultes (Warlock) : carte rendue affichage-seul, moteur pact-of-the-tome / pact-of-the-chain différé
 
-- **Owner** : plan dédié à créer post-13.11. Piste : intégration au plan futur « Long Rest + Daily Resources » + au plan « Pact Magic » (slots Warlock courts à recharge short-rest). À ownerer explicitement avant la livraison du premier plan S3 qui touche au moteur de sorts.
-- **Statut** : ouverte. Tracée 2026-05-20 à la livraison du plan 13.9 commit 4e.
+- **Owner** : éclaté en sous-dettes après D13a. D13a (Armor of Shadows) → `plans/D13a-armor-of-shadows.md` (livré 2026-05-25). D13b-e (Eldritch Mind, Pact of Blade/Chain/Tome) : 4 plans dédiés à ouvrir post-D13a — voir « Sous-dettes ouvertes après D13a » ci-dessous.
+- **Statut** : **partiellement avancée 2026-05-25** — D13a livré sur la branche `fix/D13a-armor-of-shadows`. Armor of Shadows est passif et câblé côté moteur AC (`computeInvocationAcBonus` dans `src/shared/lib/rules/eldritch-invocations.ts`) avec rendu structuré « Mécanique » dans la modale d'invocation. Pattern data-driven (registre `slug → effect`) posé pour D13b-e. Les 4 autres invocations L1 restent affichage-seul (placeholder sans effet runtime).
+- **Sous-dettes ouvertes après D13a** :
+  - **D13b** — `eldritch-mind` (avantage Concentration). Pattern : ajouter `kind: 'passive-save-advantage'` au discriminated union, peupler le registre, poser `computeInvocationSaveAdvantage` (parallèle à `computeInvocationAcBonus`). Consommer côté moteur Concentration save quand il existera.
+  - **D13c** — `pact-of-the-blade` (arme virtuelle, Cha atk/dmg + type au choix). Décision schéma à prendre : entrée virtuelle dans `inventory.items[]` ou computed `attacksList` côté Combat mode.
+  - **D13d** — `pact-of-the-chain` (familier amélioré 4 formes). Carte « Familier » + compteur d'usage.
+  - **D13e** — `pact-of-the-tome` (3 cantrips + 2 rituels L1 grant). Granting dans `knownSpells['warlock-tome']` au choix wizard ou level-up.
+- **Tracée 2026-05-20** à la livraison du plan 13.9 commit 4e.
 - **Cause-racine** : le plan 13.9 commit 4e a livré la **consultation** des Manifestations occultes (Eldritch Invocations) — `InvocationsCard` en mode Essence, chaque invocation cliquable ouvrant `OrderDetailModal` (nom + summary du bundle). Il a explicitement laissé hors périmètre toute **mécanique active** côté invocation, car l'app L1 ne câble encore aucun moteur d'action/rituel sur ces capacités. Les 3 Pacts (Blade / Chain / Tome) sont ceux qui débloqueront du contenu mécanique — afficher un bouton « Lancer » / « Invoquer » dessus aujourd'hui ferait un faux signal d'interaction.
 - **Conséquence** : l'utilisateur consulte ses invocations sur la fiche (mode Essence) mais ne peut pas (encore) en déclencher les effets mécaniques depuis l'app. Non-bloquant pour le jeu de table à L1 (les 5 invocations L1 sont majoritairement passives/permanentes) ; incomplet vis-à-vis de la promesse « tap-to-roll » dès que les pacts ouvrent du contenu actif.
 - **Détail par invocation L1** (les 5 sans prérequis de niveau, cf. `docs/AUDIT-SRD-COMPLETUDE.md > C.3`) :

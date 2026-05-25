@@ -283,6 +283,50 @@ describe('<InvocationsCard>', () => {
     },
   );
 
+  // ──────────────────────────────────────────────────────────────────────
+  // D13a — la modale rend la section « Mécanique » UNIQUEMENT pour les
+  // invocations dont l'effet runtime est câblé. Aujourd'hui : armor-of-shadows
+  // uniquement. Le test sera étendu naturellement quand D13b-e atterrissent.
+  // ──────────────────────────────────────────────────────────────────────
+  it('D13a — tap sur Armure d\'ombres → modale rend la section « Mécanique » + le label CA', () => {
+    const character = buildCharacter([
+      classEntry({
+        classId: 'warlock',
+        eldritchInvocations: ['armor-of-shadows'],
+      }),
+    ]);
+    render(<InvocationsCard character={character} />);
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Manifestation occulte : Armure d'ombres/,
+      }),
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Mécanique')).toBeInTheDocument();
+    expect(
+      within(dialog).getByTestId('invocation-effect-label'),
+    ).toHaveTextContent(/CA = 13 \+ modificateur de Dextérité/);
+  });
+
+  it.each(['eldritch-mind', 'pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
+    'D13a — tap sur %s (D13b-e attendus) → modale NE rend PAS « Mécanique » (pas de faux signal)',
+    (slug) => {
+      const character = buildCharacter([
+        classEntry({ classId: 'warlock', eldritchInvocations: [slug] }),
+      ]);
+      render(<InvocationsCard character={character} />);
+      const button = screen.getByRole('button', {
+        name: /Manifestation occulte :/,
+      });
+      fireEvent.click(button);
+      const dialog = screen.getByRole('dialog');
+      expect(within(dialog).queryByText('Mécanique')).not.toBeInTheDocument();
+      expect(
+        within(dialog).queryByTestId('invocation-effect-card'),
+      ).not.toBeInTheDocument();
+    },
+  );
+
   it('cat. 2 modale — Échap ferme la modale après tap', () => {
     const character = buildCharacter([
       classEntry({
