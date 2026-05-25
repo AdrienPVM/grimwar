@@ -178,6 +178,262 @@ const PINNED_DAMAGES: readonly PinnedDamage[] = [
     resolution: 'saving-throw',
     atHigherLevelsPerLevel: '+1d10',
   },
+  // ─── D1a batch 3 (2026-05-25) ──────────────────────────────────────────
+  // 20 sorts à jet de sauvegarde de zone, dégâts pleins/moitié ou
+  // pleins/aucun selon le sort. Le test des conditions (save ability
+  // citée dans condition.fr) est consolidé dans
+  // `it('D1a batch 3 — condition mentionne la sauvegarde')` plus bas.
+  {
+    slug: 'assassin-imaginaire',
+    formula: '4d10',
+    type: 'psychic',
+    typeLabelFr: 'psychiques',
+    typeLabelEn: 'Psychic',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d10',
+  },
+  {
+    slug: 'barriere-de-lames',
+    formula: '6d10',
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'brume-mortelle',
+    formula: '5d8',
+    type: 'poison',
+    typeLabelFr: 'poison',
+    typeLabelEn: 'Poison',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'cercle-de-mort',
+    formula: '8d6',
+    type: 'necrotic',
+    typeLabelFr: 'nécrotiques',
+    typeLabelEn: 'Necrotic',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+2d6',
+  },
+  {
+    slug: 'contagion',
+    formula: '11d8',
+    type: 'necrotic',
+    typeLabelFr: 'nécrotiques',
+    typeLabelEn: 'Necrotic',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'contamination',
+    formula: '14d6',
+    type: 'necrotic',
+    typeLabelFr: 'nécrotiques',
+    typeLabelEn: 'Necrotic',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'controle-de-l-eau',
+    formula: '2d8',
+    type: 'bludgeoning',
+    typeLabelFr: 'contondants',
+    typeLabelEn: 'Bludgeoning',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'eclat-du-soleil',
+    formula: '12d6',
+    type: 'radiant',
+    typeLabelFr: 'radiants',
+    typeLabelEn: 'Radiant',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'ennemi-subconscient',
+    formula: '10d10',
+    type: 'psychic',
+    typeLabelFr: 'psychiques',
+    typeLabelEn: 'Psychic',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'epine-mentale',
+    formula: '3d8',
+    type: 'psychic',
+    typeLabelFr: 'psychiques',
+    typeLabelEn: 'Psychic',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'invocation-d-animaux',
+    formula: '3d10',
+    type: 'slashing',
+    typeLabelFr: 'tranchants',
+    typeLabelEn: 'Slashing',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d10',
+  },
+  {
+    slug: 'invocation-d-etres-sylvestres',
+    formula: '5d8',
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'metal-brulant',
+    formula: '2d8',
+    type: 'fire',
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'auto', // Cas particulier : dégâts auto, save uniquement pour le lâcher d'objet.
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'mur-de-vent',
+    formula: '4d8',
+    type: 'bludgeoning',
+    typeLabelFr: 'contondants',
+    typeLabelEn: 'Bludgeoning',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'sphere-glacee',
+    formula: '10d6',
+    type: 'cold',
+    typeLabelFr: 'froid',
+    typeLabelEn: 'Cold',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d6',
+  },
+  {
+    slug: 'tentacules-noirs',
+    formula: '3d6',
+    type: 'bludgeoning',
+    typeLabelFr: 'contondants',
+    typeLabelEn: 'Bludgeoning',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'chien-de-garde',
+    formula: '4d8',
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'saving-throw',
+  },
+  // 2-formula spells : pinned ici sur damage[0] (initial / apparition).
+  // damage[1] (traversée) est validé dans le test dédié plus bas.
+  {
+    slug: 'mur-d-epines',
+    formula: '7d8',
+    type: 'piercing',
+    typeLabelFr: 'perforants',
+    typeLabelEn: 'Piercing',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'mur-de-glace',
+    formula: '10d6',
+    type: 'cold',
+    typeLabelFr: 'froid',
+    typeLabelEn: 'Cold',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+2d6',
+  },
+  {
+    slug: 'tsunami',
+    formula: '6d10',
+    type: 'bludgeoning',
+    typeLabelFr: 'contondants',
+    typeLabelEn: 'Bludgeoning',
+    resolution: 'saving-throw',
+  },
+];
+
+/**
+ * D1a batch 3 — mapping slug → ability de sauvegarde citée dans
+ * `damage[*].condition.fr`. Le schéma SpellDamage n'expose pas de champ
+ * structuré pour le save ; le texte `condition` porte la vérité (convention
+ * `rayon-de-lune`). Test vérifie que chaque entrée mentionne explicitement
+ * la bonne caractéristique en FR.
+ */
+const BATCH3_SAVE_ABILITIES: ReadonlyArray<{ slug: string; ability: string }> =
+  [
+    { slug: 'assassin-imaginaire', ability: 'Sagesse' },
+    { slug: 'barriere-de-lames', ability: 'Dextérité' },
+    { slug: 'brume-mortelle', ability: 'Constitution' },
+    { slug: 'cercle-de-mort', ability: 'Constitution' },
+    { slug: 'contagion', ability: 'Constitution' },
+    { slug: 'contamination', ability: 'Constitution' },
+    { slug: 'controle-de-l-eau', ability: 'Force' },
+    { slug: 'eclat-du-soleil', ability: 'Constitution' },
+    { slug: 'ennemi-subconscient', ability: 'Sagesse' },
+    { slug: 'epine-mentale', ability: 'Sagesse' },
+    { slug: 'invocation-d-animaux', ability: 'Dextérité' },
+    { slug: 'invocation-d-etres-sylvestres', ability: 'Sagesse' },
+    { slug: 'metal-brulant', ability: 'Constitution' }, // pour lâcher l'objet
+    { slug: 'mur-d-epines', ability: 'Dextérité' },
+    { slug: 'mur-de-vent', ability: 'Force' },
+    { slug: 'sphere-glacee', ability: 'Constitution' },
+    { slug: 'tentacules-noirs', ability: 'Force' },
+    { slug: 'tsunami', ability: 'Force' },
+    { slug: 'chien-de-garde', ability: 'Dextérité' },
+    // mur-de-glace porte 2 abilities différentes (Dex initial, Con traversée)
+    // — validé dans le test dédié plus bas.
+  ];
+
+/**
+ * D1a batch 3 — sorts à 2 formules de dégâts (initial + traversée).
+ * Validation explicite de damage[1] qui n'est pas couvert par PINNED_DAMAGES.
+ */
+interface PinnedSecondFormula {
+  slug: string;
+  formula: string;
+  type: PinnedDamage['type'];
+  typeLabelFr: string;
+  typeLabelEn: string;
+  resolution: 'attack-roll' | 'saving-throw' | 'auto';
+  atHigherLevelsPerLevel?: string;
+  saveAbilityFr: string;
+}
+
+const BATCH3_SECOND_FORMULAS: readonly PinnedSecondFormula[] = [
+  {
+    slug: 'mur-d-epines',
+    formula: '7d8',
+    type: 'slashing',
+    typeLabelFr: 'tranchants',
+    typeLabelEn: 'Slashing',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+    saveAbilityFr: 'Dextérité',
+  },
+  {
+    slug: 'mur-de-glace',
+    formula: '5d6',
+    type: 'cold',
+    typeLabelFr: 'froid',
+    typeLabelEn: 'Cold',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d6',
+    saveAbilityFr: 'Constitution',
+  },
+  {
+    slug: 'tsunami',
+    formula: '5d10',
+    type: 'bludgeoning',
+    typeLabelFr: 'contondants',
+    typeLabelEn: 'Bludgeoning',
+    resolution: 'saving-throw',
+    saveAbilityFr: 'Force',
+  },
 ];
 
 /**
@@ -376,5 +632,106 @@ describe('cat. 4 — Dégâts canoniques de sort (D1)', () => {
     const spell = spells.find((s) => s.id === 'arme-spirituelle');
     const cond = spell?.damage?.[0]?.condition?.fr ?? '';
     expect(cond).toContain("modificateur de caractéristique d’incantation");
+  });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // D1a batch 3 — Save-throw AoE : la caractéristique de sauvegarde doit
+  // figurer textuellement dans `condition.fr` (convention `rayon-de-lune`).
+  // Le schéma n'expose pas de champ structuré — le texte EST la vérité.
+  // ──────────────────────────────────────────────────────────────────────
+  it.each(BATCH3_SAVE_ABILITIES)(
+    'D1a batch 3 — $slug mentionne « $ability » dans condition.fr',
+    async ({ slug, ability }) => {
+      const spells = await loadSpells();
+      const spell = spells.find((s) => s.id === slug);
+      expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
+      const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+      expect(
+        cond,
+        `${slug} — condition.fr doit citer la sauvegarde « ${ability} »`,
+      ).toContain(ability);
+    },
+  );
+
+  it('D1a batch 3 — mur-de-glace porte 2 ability saves distincts (Dex initial, Con traversée)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'mur-de-glace');
+    expect(spell?.damage).toHaveLength(2);
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Dextérité');
+    expect(spell?.damage?.[1]?.condition?.fr).toContain('Constitution');
+  });
+
+  it.each(BATCH3_SECOND_FORMULAS)(
+    'D1a batch 3 — $slug porte damage[1] (formule de traversée)',
+    async ({
+      slug,
+      formula,
+      type,
+      typeLabelFr,
+      typeLabelEn,
+      resolution,
+      atHigherLevelsPerLevel,
+      saveAbilityFr,
+    }) => {
+      const spells = await loadSpells();
+      const spell = spells.find((s) => s.id === slug);
+      expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
+      expect(spell?.damage, `${slug} doit avoir 2 formules`).toHaveLength(2);
+      const entry = spell?.damage?.[1];
+      expect(entry?.formula).toBe(formula);
+      expect(entry?.type).toBe(type);
+      expect(entry?.typeLabel.fr).toBe(typeLabelFr);
+      expect(entry?.typeLabel.en).toBe(typeLabelEn);
+      expect(entry?.resolution).toBe(resolution);
+      if (atHigherLevelsPerLevel !== undefined) {
+        expect(entry?.atHigherLevels?.perLevel).toBe(atHigherLevelsPerLevel);
+      } else {
+        expect(entry?.atHigherLevels).toBeUndefined();
+      }
+      expect(entry?.condition?.fr ?? '').toContain(saveAbilityFr);
+    },
+  );
+
+  it('D1a batch 3 — metal-brulant utilise resolution: auto (dégâts auto, save ne réduit PAS)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'metal-brulant');
+    expect(spell?.damage?.[0]?.resolution).toBe('auto');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('ne réduit PAS');
+  });
+
+  it('D1a batch 3 — 20 nouveaux sorts portent damage[] (sanity count)', async () => {
+    const spells = await loadSpells();
+    const batch3Slugs = [
+      'assassin-imaginaire',
+      'barriere-de-lames',
+      'brume-mortelle',
+      'cercle-de-mort',
+      'contagion',
+      'contamination',
+      'controle-de-l-eau',
+      'eclat-du-soleil',
+      'ennemi-subconscient',
+      'epine-mentale',
+      'invocation-d-animaux',
+      'invocation-d-etres-sylvestres',
+      'metal-brulant',
+      'mur-d-epines',
+      'mur-de-glace',
+      'mur-de-vent',
+      'sphere-glacee',
+      'tentacules-noirs',
+      'tsunami',
+      'chien-de-garde',
+    ];
+    expect(batch3Slugs).toHaveLength(20);
+    for (const slug of batch3Slugs) {
+      const spell = spells.find((s) => s.id === slug);
+      expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
+      expect(
+        spell?.damage,
+        `${slug} doit porter au moins une entrée damage[]`,
+      ).toBeDefined();
+      expect((spell?.damage ?? []).length).toBeGreaterThanOrEqual(1);
+    }
   });
 });

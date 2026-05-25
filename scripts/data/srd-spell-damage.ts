@@ -707,6 +707,391 @@ export const SRD_SPELL_DAMAGE: Readonly<Record<string, readonly SpellDamage[]>> 
       },
     }),
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // D1a — long-tail batch 3 : 20 sorts à jet de sauvegarde de zone.
+  // Hand-curés contre SRD CC EN (`SRD_CC_v5.2.1.txt`).
+  // ═══════════════════════════════════════════════════════════════════════
+  //
+  // Pattern dominant : dégâts pleins à l'échec / moitié à la réussite,
+  // `resolution: 'saving-throw'`. Schéma SpellDamage n'expose PAS de champ
+  // structuré pour l'ability de sauvegarde ni l'outcome — info portée par
+  // le texte `condition` (convention `rayon-de-lune`).
+  //
+  // Cas particuliers traités à part :
+  //  - `metal-brulant` : touche auto, save = lâche l'objet (pas réduction).
+  //  - `mur-d-epines` / `mur-de-glace` / `tsunami` : 2 formules (initial
+  //    + traversée).
+
+  // Phantasmal Killer — SRD CC L14997-15016 : « The target makes a Wisdom
+  // saving throw. On a failed save, the target takes 4d10 Psychic damage
+  // […]. On a successful save, the target takes half as much damage […].
+  // For the duration, the target makes a Wisdom saving throw at the end of
+  // each of its turns. On a failed save, it takes the Psychic damage again.
+  // […] Using a Higher-Level Spell Slot. The damage increases by 1d10 for
+  // each spell slot level above 4. »
+  'assassin-imaginaire': [
+    dmg('4d10', 'psychic', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d10' },
+      condition: {
+        fr: 'Jet de sauvegarde de Sagesse de la cible. Réussite = demi-dégâts ; échec = dégâts pleins + Désavantage aux jets de caractéristique et d’attaque pendant la durée. La cible refait le jet à la fin de chacun de ses tours ; nouvel échec = nouveaux dégâts.',
+        en: 'Wisdom saving throw. Success = half damage; failure = full damage + Disadvantage on ability checks and attack rolls for the duration. The target repeats the save at the end of each of its turns; another failed save deals the damage again.',
+      },
+    }),
+  ],
+
+  // Blade Barrier — SRD CC L10785-10803 : « Any creature in the wall's
+  // space makes a Dexterity saving throw, taking 6d10 Force damage on a
+  // failed save or half as much damage on a successful one. A creature
+  // also makes that save if it enters the wall's space or ends it turn
+  // there. A creature makes that save only once per turn. » Pas d'upcast.
+  'barriere-de-lames': [
+    dmg('6d10', 'force', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Mur tournoyant (jusqu’à 30 m × 6 m × 1,50 m d’épaisseur, ou anneau de 18 m de diamètre). Toute créature dans l’espace du mur fait le jet, et le refait si elle entre dans le mur ou y termine son tour (une fois par tour maximum).',
+        en: 'Dexterity saving throw; success = half damage. Whirling wall (up to 100 ft × 20 ft × 5 ft thick, or 60-ft-diameter ring). Save when in the wall’s space, when entering it, or when ending a turn there (once per turn).',
+      },
+    }),
+  ],
+
+  // Cloudkill — SRD CC L11095-11116 : « Each creature in the Sphere makes
+  // a Constitution saving throw, taking 5d8 Poison damage on a failed save
+  // or half as much damage on a successful one. A creature must also make
+  // this save when the Sphere moves into its space and when it enters the
+  // Sphere or ends its turn there. A creature makes this save only once
+  // per turn. […] +1d8 per spell slot level above 5. »
+  'brume-mortelle': [
+    dmg('5d8', 'poison', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Sphère de brouillard de 6 m de rayon, fortement obscurcie. La sphère se déplace de 3 m loin du lanceur au début de chacun de ses tours. Jet refait si la sphère entre dans l’espace, ou si la créature y entre ou y termine son tour (une fois par tour maximum).',
+        en: 'Constitution saving throw; success = half damage. 20-ft-radius Sphere of fog, Heavily Obscured. The Sphere moves 10 ft away from you at the start of each of your turns. Save repeated when the Sphere enters a creature’s space, or when the creature enters/ends its turn there (once per turn).',
+      },
+    }),
+  ],
+
+  // Circle of Death — SRD CC L11034-11047 : « Each creature in that area
+  // makes a Constitution saving throw, taking 8d6 Necrotic damage on a
+  // failed save or half as much damage on a successful one. […] +2d6 per
+  // spell slot level above 6. » (NB : 8d6, pas 8d8 — corrige l'inventaire
+  // initial du plan D1a.)
+  'cercle-de-mort': [
+    dmg('8d6', 'necrotic', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+2d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Sphère d’énergie négative de 18 m de rayon centrée sur un point au sein de la portée.',
+        en: 'Constitution saving throw; success = half damage. 60-ft-radius Sphere of negative energy centered on a point within range.',
+      },
+    }),
+  ],
+
+  // Contagion — SRD CC L11437-11457 : « The target must succeed on a
+  // Constitution saving throw or take 11d8 Necrotic damage and have the
+  // Poisoned condition. […] The target must repeat the saving throw at the
+  // end of each of its turns until it gets three successes or failures. »
+  // Pas d'upcast.
+  'contagion': [
+    dmg('11d8', 'necrotic', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution à la touche ; réussite = aucun effet, échec = dégâts pleins ET état Empoisonné avec Désavantage aux jets utilisant une caractéristique choisie. La cible refait le jet à la fin de chacun de ses tours jusqu’à 3 réussites (sort terminé) ou 3 échecs (effet persistant 7 jours).',
+        en: 'Constitution saving throw on touch; success = no effect; failure = full damage AND the Poisoned condition with Disadvantage on saves with a chosen ability. Repeats save end of each turn until three successes (spell ends) or three failures (effect lasts 7 days).',
+      },
+    }),
+  ],
+
+  // Harm — SRD CC L13616-13629 : « On a failed save, it takes 14d6
+  // Necrotic damage, and its Hit Point maximum is reduced by an amount
+  // equal to the Necrotic damage it took. On a successful save, it takes
+  // half as much damage only. This spell can't reduce a target's Hit Point
+  // maximum below 1. » Pas d'upcast.
+  'contamination': [
+    dmg('14d6', 'necrotic', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts seulement, échec = dégâts pleins ET maximum de PV réduit du même montant (sans pouvoir tomber sous 1 PV). Pas de réduction de PV max à la réussite.',
+        en: 'Constitution saving throw; success = half damage only, failure = full damage AND Hit Point maximum reduced by the damage taken (cannot drop below 1). No HP max reduction on a successful save.',
+      },
+    }),
+  ],
+
+  // Control Water — SRD CC L11498-11556 : 4 sous-effets (Flood, Part Water,
+  // Redirect Flow, Whirlpool). Seul le Whirlpool inflige des dégâts :
+  // « When a creature enters the whirlpool for the first time on a turn or
+  // ends its turn there, it makes a Strength saving throw. On a failed
+  // save, the creature takes 2d8 Bludgeoning damage. On a successful save,
+  // the creature takes half as much damage. »
+  'controle-de-l-eau': [
+    dmg('2d8', 'bludgeoning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Force ; réussite = demi-dégâts. Sous-effet Tourbillon uniquement (les 3 autres sous-effets — Inondation, Séparation, Redirection — n’infligent pas de dégâts). Jet refait quand une créature entre dans le tourbillon pour la première fois d’un tour, ou y termine son tour.',
+        en: 'Strength saving throw; success = half damage. Whirlpool sub-effect only (the other three — Flood, Part Water, Redirect Flow — deal no damage). Save when entering the whirlpool for the first time on a turn or ending a turn there.',
+      },
+    }),
+  ],
+
+  // Sunburst — SRD CC L16596-16611 : « Each creature in the Sphere makes a
+  // Constitution saving throw. On a failed save, a creature takes 12d6
+  // Radiant damage and has the Blinded condition for 1 minute. On a
+  // successful save, it takes half as much damage only. » Pas d'upcast.
+  'eclat-du-soleil': [
+    dmg('12d6', 'radiant', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Sphère de 18 m de rayon. Sur un échec, la cible subit aussi l’état Aveuglé pendant 1 minute (refait le jet à la fin de chacun de ses tours, met fin à l’effet sur une réussite).',
+        en: 'Constitution saving throw; success = half damage. 60-ft-radius Sphere. On a failed save, target also has the Blinded condition for 1 minute (repeats save end of each turn, ending the effect on a success).',
+      },
+    }),
+  ],
+
+  // Weird — SRD CC L17414-17430 : « Each creature of your choice in a
+  // 30-foot-radius Sphere […] makes a Wisdom saving throw. On a failed
+  // save, a target takes 10d10 Psychic damage and has the Frightened
+  // condition for the duration. On a successful save, a target takes half
+  // as much damage only. A Frightened target makes a Wisdom saving throw
+  // at the end of each of its turns. On a failed save, it takes 5d10
+  // Psychic damage. » Pas d'upcast.
+  'ennemi-subconscient': [
+    dmg('10d10', 'psychic', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Sphère de 9 m de rayon. Sur un échec, la cible subit aussi l’état Effrayé pendant la durée. Une cible Effrayée refait le jet à la fin de chacun de ses tours ; nouvel échec = 5d10 psychiques supplémentaires.',
+        en: 'Wisdom saving throw; success = half damage. 30-ft-radius Sphere. On a failed save, target also has the Frightened condition for the duration. A Frightened target repeats the save end of each turn; another failed save deals an additional 5d10 Psychic damage.',
+      },
+    }),
+  ],
+
+  // Mind Spike — SRD CC L14694-14712 : « The target makes a Wisdom saving
+  // throw, taking 3d8 Psychic damage on a failed save or half as much
+  // damage on a successful one. On a failed save, you also always know the
+  // target's location until the spell ends […]. +1d8 per spell slot level
+  // above 2. »
+  'epine-mentale': [
+    dmg('3d8', 'psychic', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Sur un échec, le lanceur connaît toujours la position de la cible sur le même plan d’existence pour la durée (1 h max), et la cible ne peut pas se cacher de lui.',
+        en: 'Wisdom saving throw; success = half damage. On a failed save, you always know the target’s location on the same plane for the duration (up to 1 hour), and it can’t hide from you.',
+      },
+    }),
+  ],
+
+  // Conjure Animals — SRD CC L11274-11300 : « Whenever the pack moves
+  // within 10 feet of a creature you can see and whenever a creature […]
+  // enters a space within 10 feet of the pack or ends its turn there, you
+  // can force that creature to make a Dexterity saving throw. On a failed
+  // save, the creature takes 3d10 Slashing damage. A creature makes this
+  // save only once per turn. […] +1d10 per spell slot level above 3. »
+  // Pas de demi-dégâts à la réussite.
+  'invocation-d-animaux': [
+    dmg('3d10', 'slashing', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d10' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Meute spectrale Grande. Jet déclenché quand la meute se déplace à moins de 3 m d’une cible, ou quand une cible entre dans cette zone / y termine son tour (une fois par tour maximum).',
+        en: 'Dexterity saving throw; success = no damage, failure = full damage. Large spectral pack. Save triggered when the pack moves within 10 ft of a target, or when a target enters that zone / ends its turn there (once per turn).',
+      },
+    }),
+  ],
+
+  // Conjure Woodland Beings — SRD CC L11392-11413 : « Whenever the
+  // Emanation enters the space of a creature you can see and whenever a
+  // creature […] enters the Emanation or ends its turn there, you can
+  // force that creature to make a Wisdom saving throw. The creature takes
+  // 5d8 Force damage on a failed save or half as much damage on a
+  // successful one. A creature makes this save only once per turn. […]
+  // +1d8 per spell slot level above 4. »
+  'invocation-d-etres-sylvestres': [
+    dmg('5d8', 'force', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Émanation de 3 m autour du lanceur. Jet déclenché quand l’émanation entre dans l’espace d’une cible, ou quand une cible entre dans l’émanation / y termine son tour (une fois par tour maximum).',
+        en: 'Wisdom saving throw; success = half damage. 10-ft Emanation around you. Save triggered when the Emanation enters a target’s space, or when a target enters the Emanation / ends its turn there (once per turn).',
+      },
+    }),
+  ],
+
+  // Heat Metal — SRD CC L13669-13693 : « Any creature in physical contact
+  // with the object takes 2d8 Fire damage when you cast the spell. Until
+  // the spell ends, you can take a Bonus Action on each of your later
+  // turns to deal this damage again […]. If a creature is holding or
+  // wearing the object and takes the damage from it, the creature must
+  // succeed on a Constitution saving throw or drop the object […]. +1d8
+  // per spell slot level above 2. »
+  //
+  // Cas particulier : les dégâts touchent automatiquement (pas de jet de
+  // réduction). Le jet de Con n'affecte QUE le fait de lâcher / garder
+  // l'objet, pas le montant de dégâts. Encodage : `resolution: 'auto'`,
+  // condition explicite côté texte.
+  'metal-brulant': [
+    dmg('2d8', 'fire', {
+      resolution: 'auto',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Dégâts automatiques (pas de jet) sur toute créature en contact physique avec l’objet métallique ciblé. Le lanceur peut répéter les dégâts en Action Bonus à chaque tour suivant. Une créature qui porte ou tient l’objet doit réussir un jet de sauvegarde de Constitution ou lâcher l’objet ; ce jet ne réduit PAS les dégâts.',
+        en: 'Automatic damage (no save) to any creature in physical contact with the targeted metal object. You may repeat the damage as a Bonus Action on later turns. A creature holding or wearing the object must succeed on a Constitution saving throw or drop it; this save does NOT reduce the damage.',
+      },
+    }),
+  ],
+
+  // Wall of Thorns — SRD CC L17307-17335 : « When the wall appears, each
+  // creature in its area makes a Dexterity saving throw, taking 7d8
+  // Piercing damage on a failed save or half as much damage on a
+  // successful one. […] The first time a creature enters a space in the
+  // wall on a turn or ends its turn there, the creature makes a Dexterity
+  // saving throw, taking 7d8 Slashing damage on a failed save or half as
+  // much damage on a successful one. […] Both types of damage increase by
+  // 1d8 for each spell slot level above 6. »
+  //
+  // 2 formules distinctes : initial (perforants, à l'apparition) + traversée
+  // (tranchants, par passage / fin de tour). Les deux scalent à +1d8/L.
+  'mur-d-epines': [
+    dmg('7d8', 'piercing', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Apparition du mur (jusqu’à 18 m × 3 m × 1,50 m, ou cercle de 6 m de diamètre × 6 m de hauteur × 1,50 m d’épaisseur). Chaque créature dans l’aire fait le jet.',
+        en: 'Dexterity saving throw; success = half damage. Wall appears (up to 60 ft × 10 ft × 5 ft, or 20-ft-diameter circle × 20 ft high × 5 ft thick). Each creature in the area saves.',
+      },
+    }),
+    dmg('7d8', 'slashing', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Traversée : 4 m de mouvement par 30 cm parcouru à travers le mur. La première fois qu’une créature entre dans le mur sur un tour ou y termine son tour, jet de Dex (une fois par tour maximum).',
+        en: 'Dexterity saving throw; success = half damage. Traversal: 4 ft of movement per 1 ft moved through the wall. First time a creature enters the wall on a turn or ends its turn there, Dex save (once per turn).',
+      },
+    }),
+  ],
+
+  // Wall of Ice — SRD CC L17231-17266 : « If the wall cuts through a
+  // creature's space when it appears, the creature is pushed to one side
+  // of the wall […] and makes a Dexterity saving throw, taking 10d6 Cold
+  // damage on a failed save or half as much damage on a successful one.
+  // […] A creature moving through the sheet of frigid air for the first
+  // time on a turn makes a Constitution saving throw, taking 5d6 Cold
+  // damage on a failed save or half as much damage on a successful one.
+  // […] The damage the wall deals when it appears increases by 2d6 and
+  // the damage from passing through the sheet of frigid air increases by
+  // 1d6 for each spell slot level above 6. »
+  //
+  // 2 formules : initial (apparition, Dex, +2d6/L) + traversée (air glacé
+  // après destruction d'une section, Con, +1d6/L).
+  'mur-de-glace': [
+    dmg('10d6', 'cold', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+2d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Apparition du mur. Si le mur traverse l’espace d’une créature, elle est poussée d’un côté et fait le jet.',
+        en: 'Dexterity saving throw; success = half damage. Wall appearance. If the wall cuts through a creature’s space, it is pushed to one side and makes the save.',
+      },
+    }),
+    dmg('5d6', 'cold', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Traversée de l’air glacé : une section de 3 m du mur réduite à 0 PV laisse un drap d’air glacé. Toute créature qui le traverse pour la première fois d’un tour fait le jet.',
+        en: 'Constitution saving throw; success = half damage. Frigid air traversal: a 10-ft section of wall reduced to 0 HP leaves a sheet of frigid air. Any creature moving through it for the first time on a turn makes the save.',
+      },
+    }),
+  ],
+
+  // Wind Wall — SRD CC L17454-17479 : « When the wall appears, each
+  // creature in its area makes a Strength saving throw, taking 4d8
+  // Bludgeoning damage on a failed save or half as much damage on a
+  // successful one. » Pas d'upcast.
+  'mur-de-vent': [
+    dmg('4d8', 'bludgeoning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Force ; réussite = demi-dégâts. Apparition du mur (jusqu’à 15 m × 4,50 m × 30 cm d’épaisseur, en chemin continu sur le sol). Chaque créature dans l’aire fait le jet une fois à l’apparition.',
+        en: 'Strength saving throw; success = half damage. Wall appears (up to 50 ft × 15 ft × 1 ft thick, in a continuous path on the ground). Each creature in the area saves once on appearance.',
+      },
+    }),
+  ],
+
+  // Freezing Sphere — SRD CC L13092-13123 : « A frigid globe streaks from
+  // you to a point of your choice within range, where it explodes in a
+  // 60-foot-radius Sphere. Each creature in that area makes a Constitution
+  // saving throw, taking 10d6 Cold damage on failed save or half as much
+  // damage on a successful one. […] Using a Higher-Level Spell Slot. The
+  // damage increases by 1d6 for each spell slot level above 6. »
+  'sphere-glacee': [
+    dmg('10d6', 'cold', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Globe glacial qui explose en une sphère de 18 m de rayon au point ciblé (portée 90 m). Variante : le lanceur peut garder le globe en main pour le lancer plus tard ; l’explosion à l’impact suit les mêmes règles.',
+        en: 'Constitution saving throw; success = half damage. Frigid globe explodes in a 60-ft-radius Sphere at the chosen point (300-ft range). Variant: the caster may keep the globe in hand to throw later; impact explosion follows the same rules.',
+      },
+    }),
+  ],
+
+  // Black Tentacles (Evard's) — SRD CC L10766-10784 : « Each creature in
+  // that area makes a Strength saving throw. On a failed save, it takes
+  // 3d6 Bludgeoning damage, and it has the Restrained condition until the
+  // spell ends. A creature also makes that save if it enters the area or
+  // ends it turn there. A creature makes that save only once per turn. »
+  // Pas de demi-dégâts à la réussite, pas d'upcast.
+  'tentacules-noirs': [
+    dmg('3d6', 'bludgeoning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Force ; réussite = aucun dégât, échec = dégâts pleins ET état Entravé jusqu’à la fin du sort. Carré de 6 m de côté sur le sol, Terrain difficile pour la durée. Jet refait à l’entrée dans l’aire ou en fin de tour (une fois par tour maximum). Une créature Entravée peut, par une action, tenter un Force (Athlétisme) contre le DD de sauvegarde pour mettre fin à l’état.',
+        en: 'Strength saving throw; success = no damage, failure = full damage AND the Restrained condition until the spell ends. 20-ft square on the ground, Difficult Terrain for the duration. Save repeats on entering the area or ending a turn there (once per turn). A Restrained creature may take an action to attempt a Strength (Athletics) check vs the save DC to end the condition.',
+      },
+    }),
+  ],
+
+  // Tsunami — SRD CC L17074-17098 : « When the wall appears, each creature
+  // in its area makes a Strength saving throw, taking 6d10 Bludgeoning
+  // damage on a failed save or half as much damage on a successful one.
+  // […] Any Huge or smaller creature inside the wall or whose space the
+  // wall enters when it moves must succeed on a Strength saving throw or
+  // take 5d10 Bludgeoning damage. A creature can take this damage only
+  // once per round. At the end of the turn, the wall’s height is reduced
+  // by 50 feet, and the damage the wall deals on later rounds is reduced
+  // by 1d10. »
+  //
+  // 2 formules : initial (apparition, 6d10, save-half) + traversée (5d10,
+  // décroissant -1d10/round). Pas d'upcast.
+  'tsunami': [
+    dmg('6d10', 'bludgeoning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Force ; réussite = demi-dégâts. Apparition du mur d’eau (jusqu’à 90 m × 90 m × 15 m d’épaisseur, à 1,5 km). Chaque créature dans l’aire fait le jet à l’apparition.',
+        en: 'Strength saving throw; success = half damage. Wall of water appears (up to 300 ft × 300 ft × 50 ft thick, at 1 mile range). Each creature in the area saves on appearance.',
+      },
+    }),
+    dmg('5d10', 'bludgeoning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Force ; réussite = aucun dégât, échec = dégâts pleins. Traversée : à chaque tour du lanceur, le mur (et les créatures à l’intérieur) avance de 15 m. Toute créature de taille TG ou inférieure dans le mur, ou dont l’espace est traversé, fait le jet (une fois par round maximum). La hauteur du mur diminue de 15 m et les dégâts baissent de 1d10 à la fin de chaque tour.',
+        en: 'Strength saving throw; success = no damage, failure = full damage. Traversal: each of caster’s turns, the wall (and creatures inside) moves 50 ft. Any Huge or smaller creature inside the wall, or whose space the wall enters, makes the save (once per round). Wall height drops 50 ft and damage drops 1d10 at end of each turn.',
+      },
+    }),
+  ],
+
+  // Faithful Hound — SRD CC L12567-12588 : « At the start of each of your
+  // turns, the hound attempts to bite one enemy within 5 feet of it. That
+  // enemy must succeed on a Dexterity saving throw or take 4d8 Force
+  // damage. » Pas d'upcast. Pas de demi-dégâts (réussite = aucun dégât).
+  'chien-de-garde': [
+    dmg('4d8', 'force', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Chien de garde fantomatique invoqué pour 8 h. Au début de chacun des tours du lanceur, le chien tente de mordre un ennemi à 1,50 m ou moins.',
+        en: 'Dexterity saving throw; success = no damage, failure = full damage. Phantom watchdog summoned for 8 h. At the start of each of the caster’s turns, the hound attempts to bite one enemy within 5 ft.',
+      },
+    }),
+  ],
 };
 
 /**
