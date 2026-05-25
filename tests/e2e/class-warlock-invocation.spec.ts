@@ -152,7 +152,22 @@ test.describe('Class Warlock — render Essence (manifestation occulte + modale)
       dialogText,
       "Aucune fuite du summary d'armor-of-shadows dans la modale d'eldritch-mind.",
     ).not.toMatch(/Vous pouvez lancer Armure du mage/);
+
+    // D13b — section structurée « Mécanique » présente avec le label canonique.
+    await expect(
+      dialog.getByText('Mécanique', { exact: true }),
+      "Section « Mécanique » doit être présente pour eldritch-mind (D13b câblé).",
+    ).toBeVisible();
+    await expect(
+      dialog.getByTestId('invocation-effect-label'),
+      "Le label canonique du moteur D13b doit être présent.",
+    ).toHaveText(
+      /Avantage aux jets de Constitution pour la Concentration/,
+    );
     await takeStepScreenshot(page, testInfo, 'mind-modal-open');
+    await takeStepScreenshot(page, testInfo, 'mind-modal-open', {
+      viewport: true,
+    });
 
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();

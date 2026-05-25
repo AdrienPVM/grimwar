@@ -4,14 +4,18 @@ import { describe, expect, it } from 'vitest';
 import { InvocationEffectCard } from '../invocation-effect-card';
 
 /**
- * D13a — InvocationEffectCard. Tests d'identité (cat. 2) + cas-limites (cat. 6).
+ * D13a + D13b — InvocationEffectCard. Tests d'identité (cat. 2) + cas-limites
+ * (cat. 6).
  *
  *  - Pour `armor-of-shadows`, la carte rend EXACTEMENT le label canonique
  *    « CA = 13 + modificateur de Dextérité » + la condition d'application
  *    « sans armure équipée, bouclier cumulable » (vocabulaire WotC FR officiel).
- *  - Pour les 4 autres invocations L1 (`eldritch-mind`, `pact-of-the-blade`,
+ *  - Pour `eldritch-mind` (D13b), la carte rend EXACTEMENT le label
+ *    « Avantage aux jets de Constitution pour la Concentration » + la
+ *    condition d'application.
+ *  - Pour les 3 autres invocations L1 (`pact-of-the-blade`,
  *    `pact-of-the-chain`, `pact-of-the-tome`) la carte ne rend rien (effet
- *    runtime pas câblé — D13b-e). Pas de placeholder trompeur.
+ *    runtime pas câblé — D13c-e). Pas de placeholder trompeur.
  *  - Pour un slug inconnu (seed corrompu) la carte ne rend rien sans crash.
  */
 describe('<InvocationEffectCard>', () => {
@@ -35,8 +39,28 @@ describe('<InvocationEffectCard>', () => {
     expect(screen.getByText('Mécanique')).toBeInTheDocument();
   });
 
-  it.each(['eldritch-mind', 'pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
-    'cat. 6 — %s (D13b-e attendus) ne rend rien (pas de placeholder trompeur)',
+  it('cat. 2 — eldritch-mind rend le label « Avantage aux jets de Constitution pour la Concentration »', () => {
+    const { container } = render(
+      <InvocationEffectCard slug="eldritch-mind" />,
+    );
+    expect(container.firstChild).not.toBeNull();
+    expect(screen.getByTestId('invocation-effect-label')).toHaveTextContent(
+      /Avantage aux jets de Constitution pour la Concentration/,
+    );
+    expect(
+      screen.getByText(
+        /S'applique à chaque jet de sauvegarde de Constitution effectué pour maintenir la Concentration sur un sort\./,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('cat. 2 — eldritch-mind rend le titre « Mécanique »', () => {
+    render(<InvocationEffectCard slug="eldritch-mind" />);
+    expect(screen.getByText('Mécanique')).toBeInTheDocument();
+  });
+
+  it.each(['pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
+    'cat. 6 — %s (D13c-e attendus) ne rend rien (pas de placeholder trompeur)',
     (slug) => {
       const { container } = render(<InvocationEffectCard slug={slug} />);
       expect(container.firstChild).toBeNull();

@@ -1,13 +1,14 @@
 /**
  * Registry des effets mécaniques des Manifestations occultes (Eldritch
- * Invocations) — premier pas de la séquence D13a-e. Pose le pattern de
- * data-driven runtime à étendre pour les 4 autres invocations L1 :
+ * Invocations) — séquence D13a-e. Pose le pattern de data-driven runtime
+ * étendu pour chaque invocation L1 :
  *
- *  - D13a (ce module) : `armor-of-shadows` — Armure du mage à volonté, passif AC.
- *  - D13b à venir     : `eldritch-mind` — avantage Concentration (passif save).
- *  - D13c à venir     : `pact-of-the-blade` — arme virtuelle (active combat).
- *  - D13d à venir     : `pact-of-the-chain` — familier amélioré (active utility).
- *  - D13e à venir     : `pact-of-the-tome` — grant de cantrips + rituels.
+ *  - D13a : `armor-of-shadows` — Armure du mage à volonté, passif AC.
+ *  - D13b : `eldritch-mind` — avantage aux jets de Constitution pour
+ *           maintenir la Concentration (passif save). LIVRÉ.
+ *  - D13c à venir : `pact-of-the-blade` — arme virtuelle (active combat).
+ *  - D13d à venir : `pact-of-the-chain` — familier amélioré (active utility).
+ *  - D13e à venir : `pact-of-the-tome` — grant de cantrips + rituels.
  *
  * Source SRD 5.2.1 (CC) — texte EN cité au plus court pour audit, voir
  * `content-sources/extracted/raw/SRD_CC_v5.2.1.txt` pour la prose intégrale.
@@ -36,6 +37,21 @@ export type PassiveInvocationEffect =
        */
       readonly bonus: 3;
       readonly requiresUnarmored: true;
+    }
+  | {
+      readonly kind: 'passive-concentration-advantage';
+      /**
+       * Eldritch Mind SRD 5.2.1 : "You have Advantage on Constitution
+       * saving throws that you make to maintain Concentration."
+       *
+       * Indicateur booléen ; l'application du désavantage/avantage côté
+       * dés est consommée par la fiche / le dice modal le jour où les
+       * jets de Concentration auront une UI dédiée (D24 encounters).
+       * Aujourd'hui, l'info est exposée au mode Combat pour signaler le
+       * bonus permanent au joueur (puis appliqué manuellement en mode
+       * physique ou par la couche dés digitale future).
+       */
+      readonly target: 'concentration-save';
     };
 
 export interface EldritchInvocationEntry {
@@ -63,8 +79,17 @@ const INVOCATION_REGISTRY: ReadonlyMap<string, EldritchInvocationEntry> =
         },
       },
     ],
-    // D13b-e — slugs L1 connus, effet câblé plus tard.
-    ['eldritch-mind', { slug: 'eldritch-mind', effect: null }],
+    [
+      'eldritch-mind',
+      {
+        slug: 'eldritch-mind',
+        effect: {
+          kind: 'passive-concentration-advantage',
+          target: 'concentration-save',
+        },
+      },
+    ],
+    // D13c-e — slugs L1 connus, effet câblé plus tard.
     ['pact-of-the-blade', { slug: 'pact-of-the-blade', effect: null }],
     ['pact-of-the-chain', { slug: 'pact-of-the-chain', effect: null }],
     ['pact-of-the-tome', { slug: 'pact-of-the-tome', effect: null }],
@@ -124,8 +149,34 @@ export function computeInvocationAcBonus(input: {
           bonus += effect.bonus;
         }
         break;
-      // D13b-e — futurs cas. Pas de `default` (exhaustivité TS strict).
+      case 'passive-concentration-advantage':
+        // Concentration advantage ne touche pas la CA — pas de contribution
+        // ici. Géré séparément par `hasConcentrationAdvantage`.
+        break;
+      // D13c-e — futurs cas. Pas de `default` (exhaustivité TS strict).
     }
   }
   return bonus;
+}
+
+/**
+ * D13b — Eldritch Mind. Le personnage a-t-il l'avantage aux jets de
+ * sauvegarde de Constitution pour maintenir la Concentration ?
+ *
+ * Pattern miroir de `computeInvocationAcBonus` mais pour un drapeau binaire
+ * plutôt qu'un cumul numérique : la 5e SRD ne définit pas « double
+ * avantage » — un personnage a, ou n'a pas, l'avantage. Pas de cumul. Les
+ * sources d'avantage Concentration multiples (rares au L1, mais
+ * possibles en multi-classe via War Caster feat ou items magiques au L5+)
+ * convergent toutes vers la même valeur booléenne.
+ */
+export function hasConcentrationAdvantage(
+  classes: readonly CharacterClassEntry[],
+): boolean {
+  const slugs = getKnownInvocationSlugs(classes);
+  for (const slug of slugs) {
+    const effect = getInvocationEntry(slug)?.effect;
+    if (effect?.kind === 'passive-concentration-advantage') return true;
+  }
+  return false;
 }

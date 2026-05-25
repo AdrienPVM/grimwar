@@ -288,6 +288,8 @@ export type StringKey =
   | 'sheet.essence.invocation.mechanicsTitle'
   | 'sheet.essence.invocation.armorOfShadows.label'
   | 'sheet.essence.invocation.armorOfShadows.condition'
+  | 'sheet.essence.invocation.eldritchMind.label'
+  | 'sheet.essence.invocation.eldritchMind.condition'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -653,6 +655,13 @@ const STRINGS: Record<Locale, Dict> = {
       'CA = 13 + modificateur de Dextérité',
     'sheet.essence.invocation.armorOfShadows.condition':
       "S'applique uniquement sans armure équipée. Le bouclier reste cumulable.",
+    // D13b Éveil occulte (Eldritch Mind) — terminologie WotC FR : « Avantage »
+    // + « Constitution » + « Concentration » figurent intacts dans le bundle
+    // SRD FR (cf. `public/data/conditions.json` état Concentration).
+    'sheet.essence.invocation.eldritchMind.label':
+      'Avantage aux jets de Constitution pour la Concentration',
+    'sheet.essence.invocation.eldritchMind.condition':
+      "S'applique à chaque jet de sauvegarde de Constitution effectué pour maintenir la Concentration sur un sort.",
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -994,6 +1003,10 @@ const STRINGS: Record<Locale, Dict> = {
       'AC = 13 + Dexterity modifier',
     'sheet.essence.invocation.armorOfShadows.condition':
       'Applies only while not wearing armor. Shields still stack.',
+    'sheet.essence.invocation.eldritchMind.label':
+      'Advantage on Constitution saves to maintain Concentration',
+    'sheet.essence.invocation.eldritchMind.condition':
+      'Applies to every Constitution saving throw rolled to maintain Concentration on a spell.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',
