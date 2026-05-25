@@ -428,6 +428,43 @@ Total : **28 invocations SRD**. L'Occultiste en reçoit 1 à L1, puis 3 à L2, e
 > ⚠️ L'interdit `pnpm content:build` **n'est PAS levé** (nouvelle cause D17 :
 > `build-public-content.ts` obsolète/destructif — cf. `plans/DEBT.md > D17`).
 >
+> **Détail per-item des divergences (D16, 2026-05-25)** — pour chaque écart
+> entre l'estimation initiale et la réconciliation finale :
+>
+> 1. **6 « ajouts » de l'audit étaient en réalité des renames** (le sort existait
+>    sous l'ancien nom mais a été renommé par WotC dans SRD 5.2.1) :
+>    - `esprit-faible`→`alienation` (Befuddlement)
+>    - `animation-d-objets`→`animation-des-objets` (Animate Objects)
+>    - `contrat`→`entrave-planaire` (Planar Binding)
+>    - `terraformage`→`glissement-de-terrain` (Move Earth)
+>    - `urne-magique`→`possession` (Magic Jar)
+>    - `marche-sur-le-vent`→`vent-divin` (Wind Walk)
+>
+> 2. **L'entrée audit « imprécation | Hex » est erronée deux fois** :
+>    `imprecation` (« Imprécation ») = **Bane** (rename de `fleau`), et
+>    **Hex** = « Maléfice » était DÉJÀ présent (ID inchangé). Aucun des deux
+>    n'était manquant.
+>
+> 3. **L'entrée audit « vent divin | Divine Word » est erronée** :
+>    « Vent divin » = **Wind Walk** (rename de `marche-sur-le-vent`) ;
+>    **Divine Word** = « Parole divine » était DÉJÀ présent. Confirmé via
+>    `FR_SRD_CC_v5.2.1.txt` (lignes 18205 / 20583).
+>
+> 4. **2 ajouts que l'audit n'a pas listés** : `elementalisme` (Elementalism)
+>    et `eruption-ensorcelee` (Sorcerous Burst) — cantrips nouveaux SRD 2024.
+>
+> 5. **7 retraits réels** (et non ~18 estimés ; chaque EN vérifié absent du
+>    SRD CC) : `amis` (Friends), `armure-d-agathys` (Armor of Agathys),
+>    `fouet-epineux` (Thorn Whip), `nuee-de-dagues` (Cloud of Daggers),
+>    `protection-contre-les-armes` (Blade Ward), `sens-animal` (Beast Sense),
+>    `trait-ensorcele` (Witch Bolt).
+>
+> Source de vérité = module SRD curé (`scripts/data/srd-spells.ts`, dérivé du
+> SRD CC) + table d'alias (`src/shared/lib/rules/spell-aliases.ts`) + test
+> `scripts/__tests__/spell-audit-reconciliation.test.ts` (partition
+> déterministe : 273 inchangés + 50 renames + 16 ajouts + 7 retraits = 346
+> entrées, dont 16 nouvelles et 7 disparues donnent 330 → 339).
+>
 > Les listes ci-dessous sont conservées **pour archive** (l'estimation d'audit
 > d'origine) — elles ne reflètent plus le bundle livré.
 
