@@ -55,9 +55,81 @@ export const FORBIDDEN_NON_OFFICIAL_FR_TERMS = [
   'tours de magie',
 ] as const;
 
+/**
+ * Fragments de mots cassés par insertions d'espaces parasites — typiquement
+ * issus d'extractions PDF où le letter-spacing (tracking CSS-like) ou un
+ * saut de colonne a injecté des espaces à l'intérieur d'un mot.
+ *
+ * Ajouté 2026-05-25 plan D15 — l'audit du bundle a confirmé des occurrences
+ * réelles sur 4 fichiers (`spells.json`, `classes.json`, `subclasses.json`).
+ * Liste : « Vot re » au lieu de « Votre », « heu r es » au lieu de
+ * « heures », « no a ns wer » au lieu de « no answer », etc.
+ *
+ * Chaque entrée doit représenter une cassure SPÉCIFIQUE (pas un détecteur
+ * générique — les heuristiques par token court produisent ~5000 faux-positifs
+ * sur les bundles SRD à cause des articles, prépositions et noms courts FR
+ * légitimes). On grave ici les cassures CONNUES pour bloquer leur
+ * réintroduction. Toute nouvelle cassure découverte s'ajoute à la liste.
+ *
+ * Le regex `\b…\b` n'est PAS utilisé : on matche la sous-chaîne brute pour
+ * que « Vot re » dans « Vot reChose » se déclenche aussi (au cas où une
+ * concaténation pathologique survive un fix incomplet). Le test scanne
+ * tous les bundles `public/data/*.json` indistinctement.
+ */
+export const FORBIDDEN_LETTER_SPACING_BREAKS = [
+  // spells.json — atHigherLevels Bénédiction / Communication avec les morts
+  // / variantes Drape de l'oubli / Domination de monstre. Cassure de « Votre ».
+  'Vot re',
+  // spells.json — atHigherLevels Bénédiction. Cassure de « heures ».
+  'heu r es',
+  // spells.json — description Augure (EN). Cassure de « no answer ».
+  'no a ns wer',
+  // spells.json — description Pétrification + Communication suprême (FR).
+  // Cassure de « l'autre ». Apostrophe FR U+2019 (’), pas ASCII (').
+  'l’aut re',
+  // spells.json — Pétrification (FR) variante avec préfixe « dans ».
+  // Capturé séparément car la cassure inclut « da n s ».
+  'da n s l’aut re',
+  // spells.json — description Création/Destruction d'eau (EN). Cassure
+  // de « Destroy ».
+  'Des t roy',
+  // spells.json — description Lever malédiction (FR). Cassure de
+  // « débarrasser ».
+  'déba r ra sser',
+  // spells.json — description Esprit du fé (EN). Cassure de « the fear ».
+  't he fea r',
+  // spells.json + classes.json — cassure de « saving throw » (EN).
+  // Variantes : « saving t hrow » (spells.json) et « sav ing t hrow »
+  // (classes.json). Listées séparément car le préfixe diffère.
+  'saving t hrow',
+  'sav ing t hrow',
+  // classes.json — description Moine frappe étourdissante (FR). Cassure
+  // de « l'Avantage ». Apostrophe FR U+2019 (’).
+  '’Av a nt a g e',
+  // classes.json — description Eldritch Smite (EN). Cassure de « smaller ».
+  'sma l ler',
+  // classes.json — table Monk Features (EN). Cassure de « 10 ft. » répétée
+  // (« 1d62+10 f t . 3+2... »). Le bundle ne contient pas « +15 f t . »
+  // (la même table a « +15 ft. » non-cassé) — on ne fige que le pattern réel.
+  '+10 f t .',
+  // subclasses.json — table Nature's Ward (FR). Cassure de « Tempéré » et
+  // « Tropical ». Note : « Tempéré » contient un accent ; on matche la
+  // cassure exacte sans `\b…\b`.
+  'Te m pé ré',
+  'Tropic al',
+  // subclasses.json — table Nature's Ward (EN). Cassure de « Land Type »
+  // et « Temperate ».
+  'L a n d Ty p e',
+  'Te m pe r at e',
+  // subclasses.json — description Champion (EN). Cassure de « victor ».
+  'v ic tor',
+] as const;
+
 export type ForbiddenWord = (typeof FORBIDDEN_ENGLISH_IN_FR_UI)[number];
 export type ForbiddenNonOfficialFr =
   (typeof FORBIDDEN_NON_OFFICIAL_FR_TERMS)[number];
+export type ForbiddenLetterSpacingBreak =
+  (typeof FORBIDDEN_LETTER_SPACING_BREAKS)[number];
 
 /**
  * Renvoie la liste des termes interdits qui apparaissent dans `text`. Le
@@ -83,6 +155,22 @@ export function findForbiddenNonOfficialFr(
   text: string,
 ): ForbiddenNonOfficialFr[] {
   return findIn(text, FORBIDDEN_NON_OFFICIAL_FR_TERMS);
+}
+
+/**
+ * Cherche les cassures de letter-spacing. Contrairement aux mots interdits
+ * EN ou FR non-officiels (match `\b…\b`), ici on cherche la SOUS-CHAÎNE
+ * brute — une cassure pathologique reste pathologique même si elle s'imbrique
+ * dans un mot composé (matche aussi « Vot reChose »).
+ */
+export function findForbiddenLetterSpacingBreaks(
+  text: string,
+): ForbiddenLetterSpacingBreak[] {
+  const found: ForbiddenLetterSpacingBreak[] = [];
+  for (const fragment of FORBIDDEN_LETTER_SPACING_BREAKS) {
+    if (text.includes(fragment)) found.push(fragment);
+  }
+  return found;
 }
 
 /**
