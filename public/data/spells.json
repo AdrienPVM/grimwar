@@ -41,7 +41,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d4",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "condition": {
+          "fr": "Effet « Agrandissement » uniquement. +1d4 dégâts à chaque coup d’arme ou de coup non armé. Le type final est celui de l’arme déclencheuse (pas nécessairement contondant — défaut éditorial UI). L’effet « Rapetissement » retire 1d4 (debuff, non modélisé ici).",
+          "en": "Enlarge variant only. +1d4 damage on each weapon or Unarmed Strike hit. Final damage type matches the triggering weapon (editorial default in UI). Reduce variant subtracts 1d4 (debuff, not modeled here)."
+        }
+      }
+    ]
   },
   {
     "id": "aide",
@@ -749,7 +763,25 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Sur un coup, la cible subit 1d8 + modificateur de caractéristique d’incantation dégâts de force. +1d8 par niveau d’emplacement au-dessus du 2 (mod d’incantation NON re-scalé).",
+          "en": "On a hit, the target takes 1d8 + spellcasting ability modifier Force damage. +1d8 per spell slot level above 2 (modifier NOT re-scaled)."
+        }
+      }
+    ]
   },
   {
     "id": "armure-du-mage",
@@ -927,7 +959,25 @@
       "bard",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d10",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Sagesse de la cible. Réussite = demi-dégâts ; échec = dégâts pleins + Désavantage aux jets de caractéristique et d’attaque pendant la durée. La cible refait le jet à la fin de chacun de ses tours ; nouvel échec = nouveaux dégâts.",
+          "en": "Wisdom saving throw. Success = half damage; failure = full damage + Disadvantage on ability checks and attack rolls for the duration. The target repeats the save at the end of each of its turns; another failed save deals the damage again."
+        }
+      }
+    ]
   },
   {
     "id": "assistance",
@@ -1336,7 +1386,22 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "6d10",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Mur tournoyant (jusqu’à 30 m × 6 m × 1,50 m d’épaisseur, ou anneau de 18 m de diamètre). Toute créature dans l’espace du mur fait le jet, et le refait si elle entre dans le mur ou y termine son tour (une fois par tour maximum).",
+          "en": "Dexterity saving throw; success = half damage. Whirling wall (up to 100 ft × 20 ft × 5 ft thick, or 60-ft-diameter ring). Save when in the wall’s space, when entering it, or when ending a turn there (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "benediction",
@@ -1558,7 +1623,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "Dégâts réactifs automatiques (pas de jet) : quand un attaquant à 1,50 m ou moins touche le lanceur en mêlée, il subit 2d8 dégâts. Variante « bouclier chaud » (feu, défaut) ou « bouclier froid » (froid 2d8) au choix à l’incantation. Le bouclier accorde aussi Résistance au type opposé (Froid pour warm, Feu pour chill).",
+          "en": "Automatic reactive damage (no save): when an attacker within 5 ft hits the caster with a melee attack, they take 2d8 damage. Variant « warm shield » (Fire, default) or « chill shield » (Cold 2d8) chosen at casting. Shield also grants Resistance to the opposite type (Cold for warm, Fire for chill)."
+        }
+      }
+    ]
   },
   {
     "id": "bouclier-de-la-foi",
@@ -1763,7 +1843,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "12d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Sphère de 6 m de rayon à l’explosion. La cible subit les dégâts ACCUMULÉS jusqu’à l’explosion : la base est 12d6 (à l’incantation) + 1d6 supplémentaires à la fin de chaque tour du lanceur tant que le sort dure (jusqu’à 1 minute de concentration). L’upcast augmente UNIQUEMENT la base (+1d6/L), pas le tic par tour.",
+          "en": "Dexterity saving throw; success = half damage. 20-ft-radius Sphere on explosion. Target takes ACCUMULATED damage: base 12d6 (on cast) + 1d6 at the end of each of caster’s turns while concentrating (up to 1 minute). Upcast only increases the base (+1d6/L), not the per-turn tic."
+        }
+      }
+    ]
   },
   {
     "id": "bourrasque",
@@ -1848,7 +1946,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d8",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Sphère de brouillard de 6 m de rayon, fortement obscurcie. La sphère se déplace de 3 m loin du lanceur au début de chacun de ses tours. Jet refait si la sphère entre dans l’espace, ou si la créature y entre ou y termine son tour (une fois par tour maximum).",
+          "en": "Constitution saving throw; success = half damage. 20-ft-radius Sphere of fog, Heavily Obscured. The Sphere moves 10 ft away from you at the start of each of your turns. Save repeated when the Sphere enters a creature’s space, or when the creature enters/ends its turn there (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "cage-de-force",
@@ -2036,7 +2152,25 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d6",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+2d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Sphère d’énergie négative de 18 m de rayon centrée sur un point au sein de la portée.",
+          "en": "Constitution saving throw; success = half damage. 60-ft-radius Sphere of negative energy centered on a point within range."
+        }
+      }
+    ]
   },
   {
     "id": "cercle-de-teleportation",
@@ -2501,7 +2635,24 @@
     "classes": [
       "paladin"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d6",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts de l’attaque (arme de mêlée ou coup non armé) qui vient de toucher. Tant que la concentration est maintenue, la cible émet une lumière vive et les jets d’attaque contre elle ont l’avantage. +1d6 par niveau d’emplacement au-dessus du 2.",
+          "en": "Added to the melee weapon or Unarmed Strike that just hit. While Concentration holds, the target sheds Bright Light and attack rolls against it have Advantage. +1d6 per spell slot level above 2."
+        }
+      }
+    ]
   },
   {
     "id": "chatiment-divin",
@@ -2541,7 +2692,24 @@
     "classes": [
       "paladin"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts d’une attaque d’arme de mêlée qui vient de toucher. +1d8 supplémentaire si la cible est un Fiélon ou un Mort-vivant. +1d8 par niveau d’emplacement au-dessus du 1er.",
+          "en": "Added to a melee weapon attack that just hit. +1d8 more if the target is a Fiend or an Undead. +1d8 per spell slot level above 1."
+        }
+      }
+    ]
   },
   {
     "id": "chien-de-garde",
@@ -2582,7 +2750,22 @@
     "classes": [
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d8",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Chien de garde fantomatique invoqué pour 8 h. Au début de chacun des tours du lanceur, le chien tente de mordre un ennemi à 1,50 m ou moins.",
+          "en": "Dexterity saving throw; success = no damage, failure = full damage. Phantom watchdog summoned for 8 h. At the start of each of the caster’s turns, the hound attempts to bite one enemy within 5 ft."
+        }
+      }
+    ]
   },
   {
     "id": "clairvoyance",
@@ -2790,7 +2973,41 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Cylindre de 3 m de rayon × 12 m de haut centré dans la portée. Cumule avec la composante radiante (5d6 supplémentaires, même jet, même upcast +1d6/L).",
+          "en": "Dexterity saving throw; success = half damage. 10-ft-radius × 40-ft-high Cylinder within range. Stacks with the Radiant component (additional 5d6, same save, same +1d6/L upcast)."
+        }
+      },
+      {
+        "formula": "5d6",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Composante radiante simultanée à la composante feu (même jet, même cylindre, même upcast +1d6/L). Total combiné : 10d6 dégâts mixtes au niveau de base.",
+          "en": "Dexterity saving throw; success = half damage. Radiant component simultaneous with Fire (same save, same cylinder, same +1d6/L upcast). Combined total: 10d6 mixed damage at base level."
+        }
+      }
+    ]
   },
   {
     "id": "communication-a-distance",
@@ -3356,7 +3573,22 @@
       "cleric",
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "11d8",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution à la touche ; réussite = aucun effet, échec = dégâts pleins ET état Empoisonné avec Désavantage aux jets utilisant une caractéristique choisie. La cible refait le jet à la fin de chacun de ses tours jusqu’à 3 réussites (sort terminé) ou 3 échecs (effet persistant 7 jours).",
+          "en": "Constitution saving throw on touch; success = no effect; failure = full damage AND the Poisoned condition with Disadvantage on saves with a chosen ability. Repeats save end of each turn until three successes (spell ends) or three failures (effect lasts 7 days)."
+        }
+      }
+    ]
   },
   {
     "id": "contamination",
@@ -3393,7 +3625,22 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "14d6",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts seulement, échec = dégâts pleins ET maximum de PV réduit du même montant (sans pouvoir tomber sous 1 PV). Pas de réduction de PV max à la réussite.",
+          "en": "Constitution saving throw; success = half damage only, failure = full damage AND Hit Point maximum reduced by the damage taken (cannot drop below 1). No HP max reduction on a successful save."
+        }
+      }
+    ]
   },
   {
     "id": "contresort",
@@ -3475,7 +3722,22 @@
       "druid",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Force ; réussite = demi-dégâts. Sous-effet Tourbillon uniquement (les 3 autres sous-effets — Inondation, Séparation, Redirection — n’infligent pas de dégâts). Jet refait quand une créature entre dans le tourbillon pour la première fois d’un tour, ou y termine son tour.",
+          "en": "Strength saving throw; success = half damage. Whirlpool sub-effect only (the other three — Flood, Part Water, Redirect Flow — deal no damage). Save when entering the whirlpool for the first time on a turn or ending a turn there."
+        }
+      }
+    ]
   },
   {
     "id": "controle-du-climat",
@@ -4063,7 +4325,21 @@
       "druid",
       "ranger"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d4",
+        "type": "piercing",
+        "typeLabel": {
+          "fr": "perforants",
+          "en": "Piercing"
+        },
+        "condition": {
+          "fr": "Terrain de 6 m de rayon. Toute créature qui entre dans la zone ou s’y déplace subit 2d4 perforants par tranche de 1,50 m parcourus.",
+          "en": "20-foot-radius terrain. Any creature entering or moving within the area takes 2d4 Piercing damage for every 5 feet it travels."
+        }
+      }
+    ]
   },
   {
     "id": "croissance-vegetale",
@@ -4483,7 +4759,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d6+40",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+3d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Si les dégâts réduisent la cible à 0 PV, elle (et tout son équipement non magique) est désintégrée en poussière grise — seules True Resurrection ou Wish peuvent la ramener.",
+          "en": "Dexterity saving throw; success = no damage, failure = full damage. If damage reduces the target to 0 HP, it (and all nonmagical equipment) is disintegrated into gray dust — only True Resurrection or Wish can revive it."
+        }
+      }
+    ]
   },
   {
     "id": "detection-de-l-invisibilite",
@@ -5025,7 +5319,22 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "7d8+30",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Un Humanoïde tué par ce sort se relève au début du prochain tour du lanceur comme un Zombie qui obéit à ses ordres verbaux.",
+          "en": "Constitution saving throw; success = half damage. A Humanoid killed by this spell rises at the start of the caster’s next turn as a Zombie that follows verbal orders."
+        }
+      }
+    ]
   },
   {
     "id": "domination-de-bete",
@@ -5419,7 +5728,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "12d6",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Sphère de 18 m de rayon. Sur un échec, la cible subit aussi l’état Aveuglé pendant 1 minute (refait le jet à la fin de chacun de ses tours, met fin à l’effet sur une réussite).",
+          "en": "Constitution saving throw; success = half damage. 60-ft-radius Sphere. On a failed save, target also has the Blinded condition for 1 minute (repeats save end of each turn, ending the effect on a success)."
+        }
+      }
+    ]
   },
   {
     "id": "elementalisme",
@@ -5497,7 +5821,74 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "12d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Cône de 18 m. Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Pour chaque cible, jet d8 sur la table : 1 = Rouge → 12d6 feu (cette entrée). Autres résultats : 2-Orange acide, 3-Jaune foudre, 4-Vert poison, 5-Bleu froid (entrées séparées) ; 6-Indigo Entravé→Pétrifié, 7-Violet Aveuglé→téléporté (effets non-dégâts), 8-Spécial = 2 jets.",
+          "en": "60-ft Cone. Dexterity saving throw; success = half damage. For each target, roll a d8: 1 = Red → 12d6 Fire (this entry). Other results: 2-Orange acid, 3-Yellow lightning, 4-Green poison, 5-Blue cold (separate entries); 6-Indigo Restrained→Petrified, 7-Violet Blinded→teleported (non-damage effects), 8-Special = 2 rolls."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Rayon Orange (jet d8 = 2). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Cf. entrée Rouge pour la mécanique de tirage des rayons.",
+          "en": "Orange ray (d8 = 2). Dexterity saving throw; success = half damage. See Red entry for ray-rolling mechanic."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Rayon Jaune (jet d8 = 3). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts.",
+          "en": "Yellow ray (d8 = 3). Dexterity saving throw; success = half damage."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Rayon Vert (jet d8 = 4). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts.",
+          "en": "Green ray (d8 = 4). Dexterity saving throw; success = half damage."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Rayon Bleu (jet d8 = 5). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts.",
+          "en": "Blue ray (d8 = 5). Dexterity saving throw; success = half damage."
+        }
+      }
+    ]
   },
   {
     "id": "emprisonnement",
@@ -5615,7 +6006,22 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d10",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Sphère de 9 m de rayon. Sur un échec, la cible subit aussi l’état Effrayé pendant la durée. Une cible Effrayée refait le jet à la fin de chacun de ses tours ; nouvel échec = 5d10 psychiques supplémentaires.",
+          "en": "Wisdom saving throw; success = half damage. 30-ft-radius Sphere. On a failed save, target also has the Frightened condition for the duration. A Frightened target repeats the save end of each turn; another failed save deals an additional 5d10 Psychic damage."
+        }
+      }
+    ]
   },
   {
     "id": "entrave-planaire",
@@ -5705,7 +6111,22 @@
       "bard",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d12",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "condition": {
+          "fr": "Sur un coup d’attaque magique au corps à corps, la cible subit 4d12 + modificateur de caractéristique d’incantation dégâts de force. Épée spectrale invoquée à portée (jusqu’à 27 m). Action bonus aux tours suivants : déplacer l’épée jusqu’à 9 m et répéter l’attaque (même cible ou autre).",
+          "en": "On a melee spell attack hit, target takes 4d12 + spellcasting ability modifier Force damage. Spectral sword summoned within range (90 ft). Bonus Action on later turns: move sword up to 30 ft and repeat the attack (same or different target)."
+        }
+      }
+    ]
   },
   {
     "id": "epine-mentale",
@@ -5747,7 +6168,25 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d8",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Sur un échec, le lanceur connaît toujours la position de la cible sur le même plan d’existence pour la durée (1 h max), et la cible ne peut pas se cacher de lui.",
+          "en": "Wisdom saving throw; success = half damage. On a failed save, you always know the target’s location on the same plane for the duration (up to 1 hour), and it can’t hide from you."
+        }
+      }
+    ]
   },
   {
     "id": "eruption-ensorcelee",
@@ -5787,7 +6226,27 @@
     "classes": [
       "sorcerer"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        },
+        "condition": {
+          "fr": "Sur un coup d’attaque magique à distance, la cible subit 1d8 dégâts du type choisi à l’incantation : acide, froid, feu, foudre, poison, psychiques ou tonnerre. « Dés explosifs » : sur un 8 obtenu, relance et ajoute (max = modificateur de caractéristique d’incantation supplémentaires).",
+          "en": "On a ranged spell attack hit, target takes 1d8 damage of the chosen type: Acid, Cold, Fire, Lightning, Poison, Psychic, or Thunder. « Exploding 8s »: on an 8 rolled, reroll and add (max = spellcasting ability modifier additional dice)."
+        }
+      }
+    ]
   },
   {
     "id": "esprit-impenetrable",
@@ -5869,7 +6328,25 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Émanation de 4,50 m autour du lanceur, vitesse divisée par 2. Type de dégâts : radiants si alignement Bon ou Neutre ; nécrotiques si alignement Mauvais. Une créature fait le jet la première fois qu’elle entre dans l’émanation ou y termine son tour (une fois par tour maximum).",
+          "en": "Wisdom saving throw; success = half damage. 15-ft Emanation around caster; Speed halved within. Damage type: Radiant if Good or Neutral alignment, Necrotic if Evil. Save when first entering the Emanation or ending a turn there (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "eveil",
@@ -6028,7 +6505,21 @@
     "classes": [
       "paladin"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d4",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts de chaque attaque d’arme qui touche, tant que la concentration est maintenue.",
+          "en": "Added to the damage of each weapon attack that hits while you maintain Concentration."
+        }
+      }
+    ]
   },
   {
     "id": "festin-des-heros",
@@ -6540,7 +7031,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "Jet de sauvegarde d’Intelligence à l’incantation : réussite = pas d’illusion. Sur un échec, le sort prend. UNE FOIS pris, les dégâts (2d8 psychiques) ne sont PAS mitigés par un nouveau jet — ils s’infligent à chaque tour du lanceur tant que la cible est dans l’aire de l’illusion ou à 1,50 m. La cible perçoit le type comme cohérent avec l’illusion. Action Étude (Int/Investigation contre DD de sort) pour briser l’illusion et mettre fin au sort.",
+          "en": "Initial Intelligence saving throw on cast: success = no illusion. On failure, spell takes hold. ONCE taken, damage (2d8 Psychic) is NOT mitigated by further saves — applied each of caster’s turns while target is in the illusion’s area or within 5 ft. Target perceives the damage type as fitting the illusion. Study action (Int/Investigation vs spell DC) to break the illusion and end the spell."
+        }
+      }
+    ]
   },
   {
     "id": "forme-etheree",
@@ -6815,7 +7321,24 @@
     "classes": [
       "ranger"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "piercing",
+        "typeLabel": {
+          "fr": "perforants",
+          "en": "Piercing"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "La cible doit échouer un jet de Force lors du coup d’arme qui déclenche le sort pour subir l’état Entravé. Tant qu’elle est entravée, elle subit 1d6 perforants au début de chacun de ses tours. +1d6 par niveau d’emplacement au-dessus du 1er.",
+          "en": "Target must fail a Strength save on the triggering weapon hit to gain the Restrained condition. While Restrained, it takes 1d6 Piercing damage at the start of each of its turns. +1d6 per spell slot level above 1."
+        }
+      }
+    ]
   },
   {
     "id": "fusion-dans-la-pierre",
@@ -7025,7 +7548,25 @@
       "cleric",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Variante « Rune explosive » : jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Sphère de 6 m de rayon centrée sur le glyphe. Type choisi à l’incantation parmi : acide, froid, feu, foudre, tonnerre. La variante « Glyphe de sort » stocke un sort de niveau ≤ celui de Glyphe de garde et n’inflige pas de dégâts directs (les effets dépendent du sort stocké).",
+          "en": "« Explosive Rune » variant: Dexterity saving throw; success = half damage. 20-ft-radius Sphere centered on the glyph. Type chosen at casting from: Acid, Cold, Fire, Lightning, Thunder. The « Spell Glyph » variant stores a spell of level ≤ Glyph of Warding and deals no direct damage (effects depend on the stored spell)."
+        }
+      }
+    ]
   },
   {
     "id": "graisse",
@@ -7884,7 +8425,22 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d10",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "Dégâts automatiques (pas de jet) : applicables UNIQUEMENT aux créatures des types choisis à l’incantation parmi Aberration, Céleste, Élémentaire, Fée, Fiélon, Mort-vivant. Type au choix à l’incantation : radiants (défaut) ou nécrotiques. Une cible de mot de passe (défini à l’incantation) peut traverser sans subir de dégâts. Zone : jusqu’à 3 700 m² × 9 m de haut, 1 jour de durée.",
+          "en": "Automatic damage (no save): applies ONLY to creatures of the types chosen at casting from Aberration, Celestial, Elemental, Fey, Fiend, Undead. Damage type chosen at casting: Radiant (default) or Necrotic. A target speaking a password (set at casting) passes without damage. Area: up to 40,000 sq ft × 30 ft tall, 1 day duration."
+        }
+      }
+    ]
   },
   {
     "id": "inversion-de-la-gravite",
@@ -8054,7 +8610,25 @@
       "druid",
       "ranger"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d10",
+        "type": "slashing",
+        "typeLabel": {
+          "fr": "tranchants",
+          "en": "Slashing"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Meute spectrale Grande. Jet déclenché quand la meute se déplace à moins de 3 m d’une cible, ou quand une cible entre dans cette zone / y termine son tour (une fois par tour maximum).",
+          "en": "Dexterity saving throw; success = no damage, failure = full damage. Large spectral pack. Save triggered when the pack moves within 10 ft of a target, or when a target enters that zone / ends its turn there (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "invocation-d-elementaire",
@@ -8095,7 +8669,41 @@
       "druid",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = aucun dégât ni Entravé, échec = dégâts pleins + état Entravé jusqu’à la fin du sort. Type choisi à l’incantation selon l’élément : air → foudre, terre → tonnerre, feu → feu (défaut), eau → froid. Le jet se déclenche quand une créature entre dans l’espace de l’esprit ou commence son tour à 1,50 m, et seulement si l’esprit n’a personne d’Entravé.",
+          "en": "Dexterity saving throw; success = no damage or Restrained, failure = full damage + Restrained until spell ends. Type chosen at casting per element: air → Lightning, earth → Thunder, fire → Fire (default), water → Cold. Save triggered when a creature enters the spirit’s space or starts its turn within 5 ft, only if the spirit has no one Restrained."
+        }
+      },
+      {
+        "formula": "4d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité au début de chaque tour de la créature Entravée ; réussite = elle se libère (plus Entravé, aucun dégât), échec = 4d8 supplémentaires du type de l’esprit. Même type que l’entrée initiale (selon élément). Upcast identique (+1d8/L).",
+          "en": "Dexterity saving throw at the start of each Restrained creature’s turn; success = freed (no longer Restrained, no damage), failure = additional 4d8 of the spirit’s type. Same type as the initial entry (per element). Same upcast (+1d8/L)."
+        }
+      }
+    ]
   },
   {
     "id": "invocation-d-elementaires-mineurs",
@@ -8136,7 +8744,24 @@
       "druid",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts de toute attaque qui touche une créature dans l’émanation de 4,5 m, tant que la concentration est maintenue. Type au choix à chaque attaque : acide, froid, feu ou foudre. +1d8 par niveau d’emplacement au-dessus du 4.",
+          "en": "Added to each attack hit against a creature in the 15-foot Emanation while you maintain Concentration. Damage type chosen per attack: Acid, Cold, Fire, or Lightning. +1d8 per spell slot level above 4."
+        }
+      }
+    ]
   },
   {
     "id": "invocation-d-etres-sylvestres",
@@ -8177,7 +8802,25 @@
       "druid",
       "ranger"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d8",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Émanation de 3 m autour du lanceur. Jet déclenché quand l’émanation entre dans l’espace d’une cible, ou quand une cible entre dans l’émanation / y termine son tour (une fois par tour maximum).",
+          "en": "Wisdom saving throw; success = half damage. 10-ft Emanation around you. Save triggered when the Emanation enters a target’s space, or when a target enters the Emanation / ends its turn there (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "invocation-de-celeste",
@@ -8217,7 +8860,25 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "6d12",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d12"
+        },
+        "condition": {
+          "fr": "Branche « Lumière brûlante » : jet de sauvegarde de Dextérité ; réussite = demi-dégâts. L’autre branche « Lumière guérisseuse » (4d12 + modificateur de caractéristique d’incantation PV récupérés) est un soin et n’apparaît pas en damage[]. Cylindre de 3 m de rayon × 12 m de haut. Le lanceur choisit par cible quelle lumière l’atteint (une fois par tour par créature).",
+          "en": "« Searing Light » branch: Dexterity saving throw; success = half damage. The other branch « Healing Light » (4d12 + spellcasting ability modifier HP regained) is healing and not represented in damage[]. 10-ft-radius × 40-ft-high Cylinder. Caster chooses per target which light strikes (once per turn per creature)."
+        }
+      }
+    ]
   },
   {
     "id": "invocation-de-fee",
@@ -8257,7 +8918,25 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d12",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d12"
+        },
+        "condition": {
+          "fr": "Sur un coup d’attaque magique au corps à corps (par l’esprit invoqué), la cible subit 3d12 + modificateur de caractéristique d’incantation dégâts psychiques + état Effrayé jusqu’au début du prochain tour du lanceur. Action bonus aux tours suivants : téléporter l’esprit jusqu’à 9 m et répéter l’attaque.",
+          "en": "On a melee spell attack hit (by the conjured spirit), target takes 3d12 + spellcasting ability modifier Psychic damage + Frightened condition until the start of caster’s next turn. Bonus Action on later turns: teleport spirit up to 30 ft and repeat the attack."
+        }
+      }
+    ]
   },
   {
     "id": "lame-de-feu",
@@ -8302,7 +8981,25 @@
       "druid",
       "sorcerer"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Lame de feu évoquée dans la main libre (Action bonus). Sur un coup d’attaque magique au corps à corps (action Magique), la cible subit 3d6 + modificateur de caractéristique d’incantation dégâts de feu. +1d6 par niveau d’emplacement au-dessus du 2.",
+          "en": "Flame blade evoked in the free hand (Bonus Action). On a melee spell attack hit (Magic action), target takes 3d6 + spellcasting ability modifier Fire damage. +1d6 per spell slot level above 2."
+        }
+      }
+    ]
   },
   {
     "id": "lenteur",
@@ -8901,7 +9598,41 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d8",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+2d8"
+        },
+        "condition": {
+          "fr": "Effet « Poing fermé » : sur un coup d’attaque magique au corps à corps, la cible subit 5d8 dégâts de force. +2d8 par niveau d’emplacement au-dessus du 5.",
+          "en": "« Clenched Fist » effect: on a melee spell attack hit, target takes 5d8 Force damage. +2d8 per spell slot level above 5."
+        }
+      },
+      {
+        "formula": "4d6",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "auto",
+        "atHigherLevels": {
+          "perLevel": "+2d6"
+        },
+        "condition": {
+          "fr": "Effet « Main agrippante » : après réussite du grapple (jet de Dextérité raté de la cible), action bonus pour écraser → 4d6 + modificateur de caractéristique d’incantation dégâts contondants automatiques (pas de jet supplémentaire). +2d6 par niveau d’emplacement au-dessus du 5.",
+          "en": "« Grasping Hand » effect: after grapple succeeds (target failed Dex save), Bonus Action to crush → 4d6 + spellcasting ability modifier Bludgeoning damage automatic (no further save). +2d6 per spell slot level above 5."
+        }
+      }
+    ]
   },
   {
     "id": "main-du-mage",
@@ -9038,7 +9769,21 @@
       "cleric",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "condition": {
+          "fr": "Effet « malédiction des dégâts » uniquement (une des 4 malédictions au choix). +1d8 nécrotique chaque fois que vous infligez des dégâts à la cible avec un jet d’attaque ou un sort. Le niveau d’emplacement n’affecte que la durée (pas la formule).",
+          "en": "\"Damage curse\" effect only (one of 4 curse options). +1d8 Necrotic whenever you deal damage to the target with an attack roll or a spell. Higher slot levels affect only the duration (not the formula)."
+        }
+      }
+    ]
   },
   {
     "id": "malefice",
@@ -9082,7 +9827,21 @@
     "classes": [
       "warlock"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts à chaque coup d’une attaque (arme ou sort) qui touche la cible maudite, tant que la concentration est maintenue.",
+          "en": "Added on each successful attack roll (weapon or spell) against the cursed target while you maintain Concentration."
+        }
+      }
+    ]
   },
   {
     "id": "manoir-somptueux",
@@ -9208,7 +9967,21 @@
     "classes": [
       "ranger"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts à chaque coup d’une attaque qui touche la cible marquée, tant que la concentration est maintenue. Le niveau d’emplacement n’affecte que la durée de concentration (pas la formule).",
+          "en": "Added on each successful attack roll against the marked target while you maintain Concentration. Higher slot levels affect only the Concentration duration (not the formula)."
+        }
+      }
+    ]
   },
   {
     "id": "mauvais-il",
@@ -9383,7 +10156,25 @@
       "bard",
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "auto",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Dégâts automatiques (pas de jet) sur toute créature en contact physique avec l’objet métallique ciblé. Le lanceur peut répéter les dégâts en Action Bonus à chaque tour suivant. Une créature qui porte ou tient l’objet doit réussir un jet de sauvegarde de Constitution ou lâcher l’objet ; ce jet ne réduit PAS les dégâts.",
+          "en": "Automatic damage (no save) to any creature in physical contact with the targeted metal object. You may repeat the damage as a Bonus Action on later turns. A creature holding or wearing the object must succeed on a Constitution saving throw or drop it; this save does NOT reduce the damage."
+        }
+      }
+    ]
   },
   {
     "id": "metamorphose",
@@ -9584,7 +10375,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "slashing",
+        "typeLabel": {
+          "fr": "tranchants",
+          "en": "Slashing"
+        },
+        "condition": {
+          "fr": "Effet « Armes naturelles » uniquement. Coup non armé inflige 1d6 du type choisi (griffes : tranchant ; crocs/cornes : perforant ; sabots : contondant) au lieu des dégâts normaux. Utilise le modificateur d’incantation pour attaque ET dégâts.",
+          "en": "\"Natural Weapons\" variant only. Unarmed Strike deals 1d6 of the chosen type (claws: slashing; fangs/horns: piercing; hooves: bludgeoning) instead of normal damage. Uses spellcasting modifier for attack AND damage rolls."
+        }
+      }
+    ]
   },
   {
     "id": "modification-de-memoire",
@@ -10044,7 +10849,41 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "7d8",
+        "type": "piercing",
+        "typeLabel": {
+          "fr": "perforants",
+          "en": "Piercing"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Apparition du mur (jusqu’à 18 m × 3 m × 1,50 m, ou cercle de 6 m de diamètre × 6 m de hauteur × 1,50 m d’épaisseur). Chaque créature dans l’aire fait le jet.",
+          "en": "Dexterity saving throw; success = half damage. Wall appears (up to 60 ft × 10 ft × 5 ft, or 20-ft-diameter circle × 20 ft high × 5 ft thick). Each creature in the area saves."
+        }
+      },
+      {
+        "formula": "7d8",
+        "type": "slashing",
+        "typeLabel": {
+          "fr": "tranchants",
+          "en": "Slashing"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Traversée : 4 m de mouvement par 30 cm parcouru à travers le mur. La première fois qu’une créature entre dans le mur sur un tour ou y termine son tour, jet de Dex (une fois par tour maximum).",
+          "en": "Dexterity saving throw; success = half damage. Traversal: 4 ft of movement per 1 ft moved through the wall. First time a creature enters the wall on a turn or ends its turn there, Dex save (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "mur-de-feu",
@@ -10189,7 +11028,41 @@
     "classes": [
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+2d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Apparition du mur. Si le mur traverse l’espace d’une créature, elle est poussée d’un côté et fait le jet.",
+          "en": "Dexterity saving throw; success = half damage. Wall appearance. If the wall cuts through a creature’s space, it is pushed to one side and makes the save."
+        }
+      },
+      {
+        "formula": "5d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Traversée de l’air glacé : une section de 3 m du mur réduite à 0 PV laisse un drap d’air glacé. Toute créature qui le traverse pour la première fois d’un tour fait le jet.",
+          "en": "Constitution saving throw; success = half damage. Frigid air traversal: a 10-ft section of wall reduced to 0 HP leaves a sheet of frigid air. Any creature moving through it for the first time on a turn makes the save."
+        }
+      }
+    ]
   },
   {
     "id": "mur-de-pierre",
@@ -10274,7 +11147,22 @@
       "druid",
       "ranger"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d8",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Force ; réussite = demi-dégâts. Apparition du mur (jusqu’à 15 m × 4,50 m × 30 cm d’épaisseur, en chemin continu sur le sol). Chaque créature dans l’aire fait le jet une fois à l’apparition.",
+          "en": "Strength saving throw; success = half damage. Wall appears (up to 50 ft × 15 ft × 1 ft thick, in a continuous path on the ground). Each creature in the area saves once on appearance."
+        }
+      }
+    ]
   },
   {
     "id": "mur-prismatique",
@@ -10312,7 +11200,74 @@
       "bard",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "12d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 1 Rouge (feu). Jet de sauvegarde de Dextérité par couche traversée ; réussite = demi-dégâts. Le mur a 5 couches infligeant des dégâts (Rouge, Orange, Jaune, Vert, Bleu — chacune 12d6 d’un type différent) + 2 couches de conditions (Indigo → Entravé/Pétrifié, Violet → Aveuglé/téléporté autre plan). Une cible qui traverse le mur subit les jets de chaque couche dans l’ordre. La couche Rouge est détruite par ≥ 25 dégâts de froid.",
+          "en": "Layer 1 Red (Fire). Dexterity saving throw per layer traversed; success = half damage. Wall has 5 damage layers (Red, Orange, Yellow, Green, Blue — each 12d6 of a different type) + 2 condition layers (Indigo → Restrained/Petrified, Violet → Blinded/teleported other plane). A target crossing the wall saves against each layer in order. Red layer destroyed by ≥ 25 Cold damage."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 2 Orange (acide). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par un vent fort (ex. Souffle du vent).",
+          "en": "Layer 2 Orange (Acid). Dexterity saving throw; success = half damage. Destroyed by strong wind (e.g. Gust of Wind)."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 3 Jaune (foudre). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par ≥ 60 dégâts de force.",
+          "en": "Layer 3 Yellow (Lightning). Dexterity saving throw; success = half damage. Destroyed by ≥ 60 Force damage."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 4 Vert (poison). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par Passage sans trace (ou sort équivalent qui ouvre un passage sur surface solide).",
+          "en": "Layer 4 Green (Poison). Dexterity saving throw; success = half damage. Destroyed by Passwall (or equivalent spell that opens a passage on a solid surface)."
+        }
+      },
+      {
+        "formula": "12d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Couche 5 Bleu (froid). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Détruite par ≥ 25 dégâts de feu.",
+          "en": "Layer 5 Blue (Cold). Dexterity saving throw; success = half damage. Destroyed by ≥ 25 Fire damage."
+        }
+      }
+    ]
   },
   {
     "id": "murmures-dissonants",
@@ -10652,7 +11607,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Type au choix à l’incantation : acide, froid, feu, foudre, poison ou tonnerre. L’UI affiche le type sélectionné par le joueur ; le type figé ici (feu) est un défaut éditorial. Si deux dés ou plus affichent le même résultat, l’orbe rebondit sur une autre cible dans un rayon de 9 m (nouveau jet d’attaque + nouveau jet de dégâts).",
+          "en": "Damage type chosen at casting from: acid, cold, fire, lightning, poison, or thunder. UI shows the selected type; “fire” here is an editorial default. If two or more dice show the same number, the orb leaps to a different target within 30 ft (new attack roll + new damage roll)."
+        }
+      }
+    ]
   },
   {
     "id": "orientation",
@@ -12101,7 +13074,25 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d10",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        },
+        "condition": {
+          "fr": "Save de Constitution chaque fois qu’une créature commence son tour dans le cylindre, y entre, ou que le cylindre se déplace sur elle (un save par tour maximum). Save réussi = demi-dégâts.",
+          "en": "Constitution save each time a creature starts its turn in the Cylinder, enters it, or the Cylinder moves into its space (max one save per turn). Successful save = half damage."
+        }
+      }
+    ]
   },
   {
     "id": "rayon-de-soleil",
@@ -13606,7 +14597,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Globe glacial qui explose en une sphère de 18 m de rayon au point ciblé (portée 90 m). Variante : le lanceur peut garder le globe en main pour le lancer plus tard ; l’explosion à l’impact suit les mêmes règles.",
+          "en": "Constitution saving throw; success = half damage. Frigid globe explodes in a 60-ft-radius Sphere at the chosen point (300-ft range). Variant: the caster may keep the globe in hand to throw later; impact explosion follows the same rules."
+        }
+      }
+    ]
   },
   {
     "id": "sphere-resiliente",
@@ -13822,7 +14831,22 @@
       "druid",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d10",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Variante « Mort » uniquement : jet de sauvegarde de Constitution ; réussite = demi-dégâts. Les 5 autres variantes choisies à l’incantation n’infligent PAS de dégâts (et n’apparaissent donc pas en damage[]) : Discorde (querelles 1 min, Désavantage attaques/jets), Peur (Effrayé 1 min, fuite forcée), Douleur (Incapable 1 min), Sommeil (Inconscient 10 min, réveillable), Étourdissement (Étourdi 1 min). Sphère de 18 m de rayon déclenchée par un trigger choisi (toucher, distance, ouverture…).",
+          "en": "« Death » variant only: Constitution saving throw; success = half damage. The 5 other variants chosen at casting deal NO damage (and therefore don’t appear in damage[]): Discord (arguing 1 min, Disadvantage on attacks/checks), Fear (Frightened 1 min, forced flight), Pain (Incapacitated 1 min), Sleep (Unconscious 10 min, wakeable), Stunning (Stunned 1 min). 60-ft-radius Sphere triggered by a chosen condition (touch, distance, opening…)."
+        }
+      }
+    ]
   },
   {
     "id": "telekinesie",
@@ -14197,7 +15221,22 @@
     "classes": [
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Force ; réussite = aucun dégât, échec = dégâts pleins ET état Entravé jusqu’à la fin du sort. Carré de 6 m de côté sur le sol, Terrain difficile pour la durée. Jet refait à l’entrée dans l’aire ou en fin de tour (une fois par tour maximum). Une créature Entravée peut, par une action, tenter un Force (Athlétisme) contre le DD de sauvegarde pour mettre fin à l’état.",
+          "en": "Strength saving throw; success = no damage, failure = full damage AND the Restrained condition until the spell ends. 20-ft square on the ground, Difficult Terrain for the duration. Save repeats on entering the area or ending a turn there (once per turn). A Restrained creature may take an action to attempt a Strength (Athletics) check vs the save DC to end the condition."
+        }
+      }
+    ]
   },
   {
     "id": "terrain-hallucinatoire",
@@ -14544,7 +15583,35 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "6d10",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Force ; réussite = demi-dégâts. Apparition du mur d’eau (jusqu’à 90 m × 90 m × 15 m d’épaisseur, à 1,5 km). Chaque créature dans l’aire fait le jet à l’apparition.",
+          "en": "Strength saving throw; success = half damage. Wall of water appears (up to 300 ft × 300 ft × 50 ft thick, at 1 mile range). Each creature in the area saves on appearance."
+        }
+      },
+      {
+        "formula": "5d10",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Force ; réussite = aucun dégât, échec = dégâts pleins. Traversée : à chaque tour du lanceur, le mur (et les créatures à l’intérieur) avance de 15 m. Toute créature de taille TG ou inférieure dans le mur, ou dont l’espace est traversé, fait le jet (une fois par round maximum). La hauteur du mur diminue de 15 m et les dégâts baissent de 1d10 à la fin de chaque tour.",
+          "en": "Strength saving throw; success = no damage, failure = full damage. Traversal: each of caster’s turns, the wall (and creatures inside) moves 50 ft. Any Huge or smaller creature inside the wall, or whose space the wall enters, makes the save (once per round). Wall height drops 50 ft and damage drops 1d10 at end of each turn."
+        }
+      }
+    ]
   },
   {
     "id": "vague-tonnante",
