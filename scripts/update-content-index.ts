@@ -40,6 +40,7 @@ const TYPES = [
   'spells',
   'subancestries',
   'subclasses',
+  'summoned-creatures',
 ];
 
 interface IndexFile {

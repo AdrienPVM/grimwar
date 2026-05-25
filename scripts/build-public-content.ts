@@ -67,6 +67,7 @@ const SRD_EXTRACTORS: readonly string[] = [
   'scripts/extract-srd-classes.ts',
   'scripts/extract-srd-ancestries.ts',
   'scripts/extract-srd-weapon-mastery.ts',
+  'scripts/extract-srd-summoned-creatures.ts',
 ];
 
 // 2. Types re-validés depuis la base SRD curée. AideDD jamais lu (LOCKED).

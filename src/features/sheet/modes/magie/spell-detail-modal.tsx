@@ -4,6 +4,7 @@ import { rollWithFlags } from '@/features/dice/roll-with-flags';
 import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
@@ -13,6 +14,7 @@ import type { Spell } from '@/shared/types/content';
 
 import { useUpdateCharacter } from '../../use-update-character';
 import { consumeSlot, type SpellcastingClassEntry } from './spell-slots';
+import { SummonedCreatureStatBlockCard } from './summoned-creature-stat-block-card';
 
 interface SpellDetailModalProps {
   character: Character;
@@ -84,6 +86,19 @@ export function SpellDetailModal({
   const { updateCharacter } = useUpdateCharacter(character.id);
   const dice = useDice();
   const [busy, setBusy] = useState<boolean>(false);
+
+  // Plan D14 — chargement des statblocks d'invocations référencés par le sort
+  // (Find Steed / Animate Objects / Giant Insect / Summon Dragon). Le hook ne
+  // tape le réseau qu'une fois par session (cache Dexie 7j) ; sur un sort qui
+  // n'invoque rien, on n'utilise simplement pas le résultat.
+  const { data: allSummoned } = useContent('summoned-creatures');
+  const summonedStatBlocks = useMemo(
+    () =>
+      (spell.summonedCreatureIds ?? [])
+        .map((id) => allSummoned.find((c) => c.id === id))
+        .filter((c) => c != null),
+    [spell.summonedCreatureIds, allSummoned],
+  );
 
   async function handleCast(): Promise<void> {
     if (readOnly || busy) return;
@@ -246,6 +261,10 @@ export function SpellDetailModal({
           <p className="whitespace-pre-line font-serif text-body text-text-secondary">
             {localize(spell.description)}
           </p>
+
+          {summonedStatBlocks.map((statBlock) => (
+            <SummonedCreatureStatBlockCard key={statBlock.id} statBlock={statBlock} />
+          ))}
 
           {spell.atHigherLevels && (
             <div className="mt-4 rounded-card-sm border border-amethyst/25 bg-amethyst/[0.06] px-4 py-3">

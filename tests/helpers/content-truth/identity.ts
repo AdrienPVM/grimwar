@@ -18,22 +18,17 @@ import { normalizeText } from './normalize';
  */
 
 /**
- * Sorts grandfathered D14 (DEBT.md > D14). Ces 4 sorts SRD embarquent un profil
- * de creature invoquee que l'extraction texte a aplati ; le bundle porte un
- * marqueur visible `[Profil de la creature invoquee non inclus ici ...]` a la
- * place. C'est une dette ASSUMEE — le helper tolere le marqueur pour ces slugs
- * uniquement, et echoue si un marqueur de dette apparait sur N'IMPORTE QUEL
- * autre contenu (= une nouvelle dette qui fuit silencieusement en prod).
+ * Marqueurs editoriaux de dette qui ne doivent JAMAIS fuir dans le contenu.
+ *
+ * Historique : jusqu'au plan D14, une allowlist `DEBT_D14_SPELL_SLUGS` tolerait
+ * le marqueur `[Profil de la creature invoquee ...]` sur 4 sorts (Find Steed,
+ * Animate Objects, Giant Insect, Summon Dragon). D14 a injecte le bundle
+ * `summoned-creatures` et retire les marqueurs des 4 sorts → l'allowlist est
+ * desormais SANS OBJET. La classe entiere du bug « un marqueur de dette
+ * apparait en prod sur n'importe quel slug » devient structurellement
+ * impossible : le helper echoue HARD pour TOUT slug, sans exception.
  */
-export const DEBT_D14_SPELL_SLUGS = [
-  'appel-de-destrier',
-  'animation-des-objets',
-  'insecte-geant',
-  'convocation-de-dragon',
-] as const;
-
-/** Marqueurs editoriaux de dette qui ne doivent jamais fuir dans le contenu. */
-const DEBT_MARKER_RE = /\[(?:dette\b|Profil de la cr[eé]ature invoqu[eé]e|TODO\b|FIXME\b)/i;
+const DEBT_MARKER_RE = /\[(?:dette\b|Profil de la cr[eé]ature invoqu[eé]e|Summoned[- ]creature stat block omitted|TODO\b|FIXME\b)/i;
 
 export interface IdentityField {
   /** Nom du champ pour les messages d'erreur (ex. 'title', 'description'). */
@@ -45,12 +40,10 @@ export interface IdentityField {
 }
 
 export function expectIdentityRender(args: {
-  /** Slug de l'entree, pour les messages + l'allowlist D14. */
+  /** Slug de l'entree, pour les messages. */
   readonly slug: string;
   readonly fields: readonly IdentityField[];
 }): void {
-  const isD14 = (DEBT_D14_SPELL_SLUGS as readonly string[]).includes(args.slug);
-
   for (const field of args.fields) {
     expect(
       normalizeText(field.rendered),
@@ -58,12 +51,10 @@ export function expectIdentityRender(args: {
     ).toBe(normalizeText(field.expected));
 
     // Garde anti-dette : un marqueur editorial qui fuit en prod est un bug,
-    // sauf pour les 4 sorts D14 grandfathered.
-    if (!isD14) {
-      expect(
-        DEBT_MARKER_RE.test(field.rendered),
-        `[content-truth] identite "${args.slug}" · ${field.label} : marqueur de dette inattendu dans le contenu rendu (slug hors allowlist D14)`,
-      ).toBe(false);
-    }
+    // sans exception (post-D14).
+    expect(
+      DEBT_MARKER_RE.test(field.rendered),
+      `[content-truth] identite "${args.slug}" · ${field.label} : marqueur de dette inattendu dans le contenu rendu`,
+    ).toBe(false);
   }
 }
