@@ -437,6 +437,73 @@ const PINNED_DAMAGES: readonly PinnedDamage[] = [
     typeLabelEn: 'Fire',
     resolution: 'auto', // dégâts réactifs auto sur attaque mêlée touchée
   },
+  // ─── D1a batch 5 (2026-05-25) — 7 sorts complémentaires ───────────────
+  // 1 cantrip (Sorcerous Burst) + 6 leveled (Phantasmal Force, Glyph of
+  // Warding, Conjure Elemental, Conjure Fey, Conjure Celestial, Prismatic
+  // Spray). Sorts à multi-entrées validés en dehors de PINNED_DAMAGES.
+  {
+    slug: 'eruption-ensorcelee',
+    formula: '1d8',
+    type: 'fire', // défaut éditorial — 7 types disponibles (cf. condition)
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'attack-roll',
+    cantripScaling: { tier5: '2d8', tier11: '3d8', tier17: '4d8' },
+  },
+  {
+    slug: 'force-fantasmagorique',
+    formula: '2d8',
+    type: 'psychic',
+    typeLabelFr: 'psychiques',
+    typeLabelEn: 'Psychic',
+    resolution: 'auto', // pas de save mitige (Int save initial bloque l'illusion entière)
+  },
+  {
+    slug: 'glyphe-de-garde',
+    formula: '5d8',
+    type: 'fire', // défaut éditorial — 5 types disponibles (cf. condition)
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'invocation-d-elementaire',
+    formula: '8d8', // damage[0] initial ; damage[1] cascade Restrained (4d8) testé séparément
+    type: 'fire', // défaut éditorial — 4 types selon élément (cf. condition)
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'invocation-de-fee',
+    formula: '3d12',
+    type: 'psychic',
+    typeLabelFr: 'psychiques',
+    typeLabelEn: 'Psychic',
+    resolution: 'attack-roll',
+    atHigherLevelsPerLevel: '+1d12',
+  },
+  {
+    slug: 'invocation-de-celeste',
+    formula: '6d12',
+    type: 'radiant',
+    typeLabelFr: 'radiants',
+    typeLabelEn: 'Radiant',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d12',
+  },
+  // embruns-prismatiques : 5 entrées (5 couleurs de dégâts) — pinned sur
+  // damage[0] = Rouge feu ; les 4 autres entrées sont testées séparément.
+  {
+    slug: 'embruns-prismatiques',
+    formula: '12d6',
+    type: 'fire',
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'saving-throw',
+  },
 ];
 
 /**
@@ -903,6 +970,119 @@ describe('cat. 4 — Dégâts canoniques de sort (D1)', () => {
     ];
     expect(batch4Slugs).toHaveLength(9);
     for (const slug of batch4Slugs) {
+      const spell = spells.find((s) => s.id === slug);
+      expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
+      expect(
+        spell?.damage,
+        `${slug} doit porter au moins une entrée damage[]`,
+      ).toBeDefined();
+      expect((spell?.damage ?? []).length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // D1a batch 5 — Cantrip Sorcerous Burst + 6 sorts leveled. 2 sorts
+  // multi-entrées : Conjure Elemental (initial + cascade) et Prismatic
+  // Spray (5 couleurs de dégâts).
+  // ──────────────────────────────────────────────────────────────────────
+  it('D1a batch 5 — eruption-ensorcelee (Sorcerous Burst) cantrip : 7 types + exploding 8s', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'eruption-ensorcelee');
+    expect(spell?.damage?.[0]?.cantripScaling).toEqual({
+      tier5: '2d8',
+      tier11: '3d8',
+      tier17: '4d8',
+    });
+    const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+    // 7 types disponibles
+    expect(cond).toContain('acide');
+    expect(cond).toContain('feu');
+    expect(cond).toContain('foudre');
+    expect(cond).toContain('froid');
+    expect(cond).toContain('poison');
+    expect(cond).toContain('psychiques');
+    expect(cond).toContain('tonnerre');
+    // Mécanique des dés explosifs
+    expect(cond).toContain('Dés explosifs');
+  });
+
+  it('D1a batch 5 — force-fantasmagorique : pas de save mitige les dégâts subjectifs', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'force-fantasmagorique');
+    expect(spell?.damage?.[0]?.resolution).toBe('auto');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Intelligence');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('PAS mitigés');
+  });
+
+  it('D1a batch 5 — glyphe-de-garde : 5 types d\'élément + variante Spell Glyph documentée', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'glyphe-de-garde');
+    const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+    expect(cond).toContain('Dextérité');
+    expect(cond).toContain('acide');
+    expect(cond).toContain('froid');
+    expect(cond).toContain('feu');
+    expect(cond).toContain('foudre');
+    expect(cond).toContain('tonnerre');
+    expect(cond).toContain('Glyphe de sort');
+  });
+
+  it('D1a batch 5 — invocation-d-elementaire : 2 entrées (8d8 initial + 4d8 cascade Restrained)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'invocation-d-elementaire');
+    expect(spell?.damage).toHaveLength(2);
+    const cascade = spell?.damage?.[1];
+    expect(cascade?.formula).toBe('4d8');
+    expect(cascade?.type).toBe('fire');
+    expect(cascade?.resolution).toBe('saving-throw');
+    expect(cascade?.atHigherLevels?.perLevel).toBe('+1d8');
+    expect(cascade?.condition?.fr).toContain('Entravée');
+  });
+
+  it('D1a batch 5 — invocation-de-fee : attack-roll + mention Effrayé', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'invocation-de-fee');
+    expect(spell?.damage?.[0]?.resolution).toBe('attack-roll');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Effrayé');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain(
+      "modificateur de caractéristique d’incantation",
+    );
+  });
+
+  it('D1a batch 5 — invocation-de-celeste : documente la branche Lumière guérisseuse séparée', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'invocation-de-celeste');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Lumière brûlante');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Lumière guérisseuse');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Dextérité');
+  });
+
+  it('D1a batch 5 — embruns-prismatiques porte 5 entrées (5 couleurs de dégâts)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'embruns-prismatiques');
+    expect(spell?.damage, 'embruns-prismatiques doit avoir 5 formules').toHaveLength(5);
+    const types = (spell?.damage ?? []).map((d) => d.type);
+    expect(types).toEqual(['fire', 'acid', 'lightning', 'poison', 'cold']);
+    // Toutes les entrées partagent la même formule et résolution
+    for (const entry of spell?.damage ?? []) {
+      expect(entry.formula).toBe('12d6');
+      expect(entry.resolution).toBe('saving-throw');
+    }
+  });
+
+  it('D1a batch 5 — 7 nouveaux sorts portent damage[] (sanity count)', async () => {
+    const spells = await loadSpells();
+    const batch5Slugs = [
+      'eruption-ensorcelee',
+      'force-fantasmagorique',
+      'glyphe-de-garde',
+      'invocation-d-elementaire',
+      'invocation-de-fee',
+      'invocation-de-celeste',
+      'embruns-prismatiques',
+    ];
+    expect(batch5Slugs).toHaveLength(7);
+    for (const slug of batch5Slugs) {
       const spell = spells.find((s) => s.id === slug);
       expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
       expect(

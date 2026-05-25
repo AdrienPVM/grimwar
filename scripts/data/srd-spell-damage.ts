@@ -1299,6 +1299,206 @@ export const SRD_SPELL_DAMAGE: Readonly<Record<string, readonly SpellDamage[]>> 
       },
     }),
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // D1a — long-tail batch 5 : 7 sorts complémentaires (1 cantrip + 6
+  // leveled). Hand-curés contre SRD CC EN.
+  // ═══════════════════════════════════════════════════════════════════════
+  //
+  // Patterns nouveaux maîtrisés ici :
+  //  - Cantrip avec type de dégâts au choix (Sorcerous Burst : 7 types).
+  //  - Dégâts récurrents subjectifs sans save (Phantasmal Force).
+  //  - Conjure Elemental : initial à la première rencontre + cascade
+  //    récurrente sur cible Restrained (2 entrées damage[]).
+  //  - Conjure Celestial : Searing Light branche dégâts seule (Healing
+  //    Light est un soin, non modélisé en damage[]).
+
+  // Sorcerous Burst — SRD CC L16243-16261 (Cantrip Evocation, Sorcerer) :
+  // « Make a ranged spell attack against the target. On a hit, the target
+  // takes 1d8 damage of a type you choose: Acid, Cold, Fire, Lightning,
+  // Poison, Psychic, or Thunder. If you roll an 8 on a d8 for this spell,
+  // you can roll another d8, and add it to the damage. […] Cantrip
+  // Upgrade. The damage increases by 1d8 when you reach levels 5 (2d8),
+  // 11 (3d8), and 17 (4d8). »
+  //
+  // Type par défaut : `fire` (le plus courant à la table) ; condition
+  // documente les 7 types disponibles et l'« exploding 8s ».
+  'eruption-ensorcelee': [
+    dmg('1d8', 'fire', {
+      resolution: 'attack-roll',
+      cantripScaling: cantripScaling('2d8', '3d8', '4d8'),
+      condition: {
+        fr: 'Sur un coup d’attaque magique à distance, la cible subit 1d8 dégâts du type choisi à l’incantation : acide, froid, feu, foudre, poison, psychiques ou tonnerre. « Dés explosifs » : sur un 8 obtenu, relance et ajoute (max = modificateur de caractéristique d’incantation supplémentaires).',
+        en: 'On a ranged spell attack hit, target takes 1d8 damage of the chosen type: Acid, Cold, Fire, Lightning, Poison, Psychic, or Thunder. « Exploding 8s »: on an 8 rolled, reroll and add (max = spellcasting ability modifier additional dice).',
+      },
+    }),
+  ],
+
+  // Phantasmal Force — SRD CC L14962-14990 : « An affected target can
+  // even take damage from the illusion if the phantasm represents a
+  // dangerous creature or hazard. On each of your turns, such a phantasm
+  // can deal 2d8 Psychic damage to the target if it is in the phantasm’s
+  // area or within 5 feet of the phantasm. The target perceives the
+  // damage as a type appropriate to the illusion. »
+  //
+  // Le jet de sauvegarde initial (Intelligence) détermine si le sort
+  // PREND (échec) ou non (réussite). UNE FOIS pris, les dégâts subjectifs
+  // (2d8 psychiques) ne sont PAS réduits par un save — la cible peut
+  // tenter une action Étude (Int/Investigation) pour briser l'illusion.
+  // Encodage : `resolution: 'auto'` (les dégâts ne sont pas mitigés par
+  // un jet), condition documente le mécanisme illusoire.
+  'force-fantasmagorique': [
+    dmg('2d8', 'psychic', {
+      resolution: 'auto',
+      condition: {
+        fr: 'Jet de sauvegarde d’Intelligence à l’incantation : réussite = pas d’illusion. Sur un échec, le sort prend. UNE FOIS pris, les dégâts (2d8 psychiques) ne sont PAS mitigés par un nouveau jet — ils s’infligent à chaque tour du lanceur tant que la cible est dans l’aire de l’illusion ou à 1,50 m. La cible perçoit le type comme cohérent avec l’illusion. Action Étude (Int/Investigation contre DD de sort) pour briser l’illusion et mettre fin au sort.',
+        en: 'Initial Intelligence saving throw on cast: success = no illusion. On failure, spell takes hold. ONCE taken, damage (2d8 Psychic) is NOT mitigated by further saves — applied each of caster’s turns while target is in the illusion’s area or within 5 ft. Target perceives the damage type as fitting the illusion. Study action (Int/Investigation vs spell DC) to break the illusion and end the spell.',
+      },
+    }),
+  ],
+
+  // Glyph of Warding (Explosive Rune) — SRD CC L13312-13374 : « When
+  // triggered, the glyph erupts with magical energy in a 20-foot-radius
+  // Sphere centered on the glyph. Each creature in the area makes a
+  // Dexterity saving throw. A creature takes 5d8 Acid, Cold, Fire,
+  // Lightning, or Thunder damage (your choice when you create the glyph)
+  // on a failed save or half as much damage on a successful one. […]
+  // The damage of an explosive rune increases by 1d8 for each spell slot
+  // level above 3. »
+  //
+  // Type par défaut : `fire` (le plus courant) ; condition documente les
+  // 5 types disponibles. Variante « Spell Glyph » n'est pas modélisée en
+  // damage[] (elle stocke un sort tiers — son rendu relève du sort
+  // stocké, pas de Glyph of Warding lui-même).
+  'glyphe-de-garde': [
+    dmg('5d8', 'fire', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Variante « Rune explosive » : jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Sphère de 6 m de rayon centrée sur le glyphe. Type choisi à l’incantation parmi : acide, froid, feu, foudre, tonnerre. La variante « Glyphe de sort » stocke un sort de niveau ≤ celui de Glyphe de garde et n’inflige pas de dégâts directs (les effets dépendent du sort stocké).',
+        en: '« Explosive Rune » variant: Dexterity saving throw; success = half damage. 20-ft-radius Sphere centered on the glyph. Type chosen at casting from: Acid, Cold, Fire, Lightning, Thunder. The « Spell Glyph » variant stores a spell of level ≤ Glyph of Warding and deals no direct damage (effects depend on the stored spell).',
+      },
+    }),
+  ],
+
+  // Conjure Elemental — SRD CC L11328-11360 : « Choose the spirit’s
+  // element, which determines its damage type: air (Lightning), earth
+  // (Thunder), fire (Fire), or water (Cold). […] On failed save, the
+  // target takes 8d8 damage of the spirit’s type, and the target has the
+  // Restrained condition until the spell ends. At the start of each of
+  // its turns, the Restrained target repeats the save. On a failed save,
+  // the target takes 4d8 damage of the spirit’s type. On a successful
+  // save, the target isn’t Restrained by the spirit. […] The damage
+  // increases by 1d8 for each spell slot level above 5. »
+  //
+  // 2 entrées damage[] : initial (8d8) + cascade Restrained (4d8). Type
+  // par défaut : `fire` (le plus courant à la table) ; condition
+  // documente les 4 types selon l'élément choisi.
+  'invocation-d-elementaire': [
+    dmg('8d8', 'fire', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = aucun dégât ni Entravé, échec = dégâts pleins + état Entravé jusqu’à la fin du sort. Type choisi à l’incantation selon l’élément : air → foudre, terre → tonnerre, feu → feu (défaut), eau → froid. Le jet se déclenche quand une créature entre dans l’espace de l’esprit ou commence son tour à 1,50 m, et seulement si l’esprit n’a personne d’Entravé.',
+        en: 'Dexterity saving throw; success = no damage or Restrained, failure = full damage + Restrained until spell ends. Type chosen at casting per element: air → Lightning, earth → Thunder, fire → Fire (default), water → Cold. Save triggered when a creature enters the spirit’s space or starts its turn within 5 ft, only if the spirit has no one Restrained.',
+      },
+    }),
+    dmg('4d8', 'fire', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité au début de chaque tour de la créature Entravée ; réussite = elle se libère (plus Entravé, aucun dégât), échec = 4d8 supplémentaires du type de l’esprit. Même type que l’entrée initiale (selon élément). Upcast identique (+1d8/L).',
+        en: 'Dexterity saving throw at the start of each Restrained creature’s turn; success = freed (no longer Restrained, no damage), failure = additional 4d8 of the spirit’s type. Same type as the initial entry (per element). Same upcast (+1d8/L).',
+      },
+    }),
+  ],
+
+  // Conjure Fey — SRD CC L11380-11413 : « When the spirit appears, you
+  // can make one melee spell attack against a creature within 5 feet of
+  // it. On a hit, the target takes Psychic damage equal to 3d12 plus
+  // your spellcasting ability modifier, and the target has the Frightened
+  // condition until the start of your next turn […]. As a Bonus Action
+  // on your later turns, you can teleport the spirit […] and make the
+  // attack against a creature within 5 feet of it. […] +1d12 per spell
+  // slot level above 6. »
+  'invocation-de-fee': [
+    dmg('3d12', 'psychic', {
+      resolution: 'attack-roll',
+      atHigherLevels: { perLevel: '+1d12' },
+      condition: {
+        fr: 'Sur un coup d’attaque magique au corps à corps (par l’esprit invoqué), la cible subit 3d12 + modificateur de caractéristique d’incantation dégâts psychiques + état Effrayé jusqu’au début du prochain tour du lanceur. Action bonus aux tours suivants : téléporter l’esprit jusqu’à 9 m et répéter l’attaque.',
+        en: 'On a melee spell attack hit (by the conjured spirit), target takes 3d12 + spellcasting ability modifier Psychic damage + Frightened condition until the start of caster’s next turn. Bonus Action on later turns: teleport spirit up to 30 ft and repeat the attack.',
+      },
+    }),
+  ],
+
+  // Conjure Celestial — SRD CC L11301-11328 (Searing Light branch
+  // only) : « Searing Light. The target makes a Dexterity saving throw,
+  // taking 6d12 Radiant damage on a failed save or half as much damage
+  // on a successful one. […] The healing and damage increase by 1d12
+  // for each spell slot level above 7. »
+  //
+  // L'autre branche (Healing Light : 4d12 + mod PV récupérés) est un
+  // soin et n'est pas modélisée en damage[]. Le sort permet de choisir
+  // par cible — un même cast peut soigner certains et brûler d'autres.
+  'invocation-de-celeste': [
+    dmg('6d12', 'radiant', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d12' },
+      condition: {
+        fr: 'Branche « Lumière brûlante » : jet de sauvegarde de Dextérité ; réussite = demi-dégâts. L’autre branche « Lumière guérisseuse » (4d12 + modificateur de caractéristique d’incantation PV récupérés) est un soin et n’apparaît pas en damage[]. Cylindre de 3 m de rayon × 12 m de haut. Le lanceur choisit par cible quelle lumière l’atteint (une fois par tour par créature).',
+        en: '« Searing Light » branch: Dexterity saving throw; success = half damage. The other branch « Healing Light » (4d12 + spellcasting ability modifier HP regained) is healing and not represented in damage[]. 10-ft-radius × 40-ft-high Cylinder. Caster chooses per target which light strikes (once per turn per creature).',
+      },
+    }),
+  ],
+
+  // Prismatic Spray — SRD CC L15284-15327 : 8 rayons aléatoires (d8) ;
+  // 5 d'entre eux infligent 12d6 de différents types (Rouge=feu,
+  // Orange=acide, Jaune=foudre, Vert=poison, Bleu=froid). Indigo (6) =
+  // Restrained → Petrified ; Violet (7) = Aveuglé → téléporté ;
+  // Special (8) = 2 jets. Pas d'upcast.
+  //
+  // Encodage : 1 entrée damage[] par couleur infligeant des dégâts.
+  // Chaque entrée porte la même formule (12d6) et le même résolution
+  // (saving-throw Dex half), avec son type propre et une `condition`
+  // qui explique le tirage d8.
+  'embruns-prismatiques': [
+    dmg('12d6', 'fire', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Cône de 18 m. Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Pour chaque cible, jet d8 sur la table : 1 = Rouge → 12d6 feu (cette entrée). Autres résultats : 2-Orange acide, 3-Jaune foudre, 4-Vert poison, 5-Bleu froid (entrées séparées) ; 6-Indigo Entravé→Pétrifié, 7-Violet Aveuglé→téléporté (effets non-dégâts), 8-Spécial = 2 jets.',
+        en: '60-ft Cone. Dexterity saving throw; success = half damage. For each target, roll a d8: 1 = Red → 12d6 Fire (this entry). Other results: 2-Orange acid, 3-Yellow lightning, 4-Green poison, 5-Blue cold (separate entries); 6-Indigo Restrained→Petrified, 7-Violet Blinded→teleported (non-damage effects), 8-Special = 2 rolls.',
+      },
+    }),
+    dmg('12d6', 'acid', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Rayon Orange (jet d8 = 2). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Cf. entrée Rouge pour la mécanique de tirage des rayons.',
+        en: 'Orange ray (d8 = 2). Dexterity saving throw; success = half damage. See Red entry for ray-rolling mechanic.',
+      },
+    }),
+    dmg('12d6', 'lightning', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Rayon Jaune (jet d8 = 3). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts.',
+        en: 'Yellow ray (d8 = 3). Dexterity saving throw; success = half damage.',
+      },
+    }),
+    dmg('12d6', 'poison', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Rayon Vert (jet d8 = 4). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts.',
+        en: 'Green ray (d8 = 4). Dexterity saving throw; success = half damage.',
+      },
+    }),
+    dmg('12d6', 'cold', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Rayon Bleu (jet d8 = 5). Jet de sauvegarde de Dextérité ; réussite = demi-dégâts.',
+        en: 'Blue ray (d8 = 5). Dexterity saving throw; success = half damage.',
+      },
+    }),
+  ],
 };
 
 /**
