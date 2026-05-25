@@ -487,6 +487,104 @@ export const SRD_SPELL_DAMAGE: Readonly<Record<string, readonly SpellDamage[]>> 
       },
     }),
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // D1a — long-tail batch 1 : 6 sorts hand-curés contre SRD CC EN
+  // (`SRD_CC_v5.2.1.txt`). Sélection « pattern existant + formule sans
+  // ambiguïté ». Le reliquat (~75 sorts) reste sous-dette D1a en attendant
+  // des batches dédiés (PDF SRD à re-vérifier sort par sort).
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // Divine Favor — SRD CC L12080-12087 : « Until the spell ends, your attacks
+  // with weapons deal an extra 1d4 Radiant damage on a hit. » Pas de scaling.
+  // Rider sur attaque d'arme : pas de `resolution` (pas de jet propre — le
+  // jet est celui de l'arme), `condition` explique le trigger.
+  'faveur-divine': [
+    dmg('1d4', 'radiant', {
+      condition: {
+        fr: 'S’ajoute aux dégâts de chaque attaque d’arme qui touche, tant que la concentration est maintenue.',
+        en: 'Added to the damage of each weapon attack that hits while you maintain Concentration.',
+      },
+    }),
+  ],
+  // Divine Smite — SRD CC L12088-12100 : « The target takes an extra 2d8
+  // Radiant damage from the attack. The damage increases by 1d8 if the target
+  // is a Fiend or an Undead. Using a Higher-Level Spell Slot. The damage
+  // increases by 1d8 for each spell slot level above 1. »
+  // Rider sur coup d'arme : pas de `resolution` (le jet d'attaque est celui
+  // de l'arme — le sort se cast en bonus action AVOIR touché). +1d8 vs
+  // fiend/undead encodé dans `condition`, +1d8 par slot via `atHigherLevels`.
+  'chatiment-divin': [
+    dmg('2d8', 'radiant', {
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'S’ajoute aux dégâts d’une attaque d’arme de mêlée qui vient de toucher. +1d8 supplémentaire si la cible est un Fiélon ou un Mort-vivant. +1d8 par niveau d’emplacement au-dessus du 1er.',
+        en: 'Added to a melee weapon attack that just hit. +1d8 more if the target is a Fiend or an Undead. +1d8 per spell slot level above 1.',
+      },
+    }),
+  ],
+  // Hex — SRD CC L13741-13758 : « Until the spell ends, you deal an extra
+  // 1d6 Necrotic damage to the target whenever you hit it with an attack
+  // roll. » Pas de scaling. Le « Using a Higher-Level Spell Slot » ne touche
+  // QUE la durée de concentration (pas la formule).
+  'malefice': [
+    dmg('1d6', 'necrotic', {
+      condition: {
+        fr: 'S’ajoute aux dégâts à chaque coup d’une attaque (arme ou sort) qui touche la cible maudite, tant que la concentration est maintenue.',
+        en: 'Added on each successful attack roll (weapon or spell) against the cursed target while you maintain Concentration.',
+      },
+    }),
+  ],
+  // Chromatic Orb — SRD CC L11012-11034 : « Choose Acid, Cold, Fire, Lightning,
+  // Poison, or Thunder for the type of orb you create, and then make a ranged
+  // spell attack against the target. On a hit, the target takes 3d8 damage of
+  // the chosen type. […] Using a Higher-Level Spell Slot. The damage increases
+  // by 1d8 for each spell slot level above 1. »
+  // Pattern type-au-choix : on fige le type par défaut éditorial = `fire` et
+  // on documente la liste dans `condition` (parité avec souffle-du-dragon).
+  'orbe-chromatique': [
+    dmg('3d8', 'fire', {
+      resolution: 'attack-roll',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Type au choix à l’incantation : acide, froid, feu, foudre, poison ou tonnerre. L’UI affiche le type sélectionné par le joueur ; le type figé ici (feu) est un défaut éditorial. Si deux dés ou plus affichent le même résultat, l’orbe rebondit sur une autre cible dans un rayon de 9 m (nouveau jet d’attaque + nouveau jet de dégâts).',
+        en: 'Damage type chosen at casting from: acid, cold, fire, lightning, poison, or thunder. UI shows the selected type; “fire” here is an editorial default. If two or more dice show the same number, the orb leaps to a different target within 30 ft (new attack roll + new damage roll).',
+      },
+    }),
+  ],
+  // Spiritual Weapon — SRD CC L16394-16412 : « On a hit, the target takes
+  // Force damage equal to 1d8 plus your spellcasting ability modifier. […]
+  // Using a Higher-Level Spell Slot. The damage increases by 1d8 for every
+  // slot level above 2. »
+  // Note d'arbitrage : le « + spellcasting ability modifier » dépend du PJ
+  // — non encodable en formule statique. On fige `1d8` et on documente le
+  // modifier dans `condition` (à brancher dans une future passe « damage
+  // formula avec modifier dérivé » si on étend `resolveSpellDamage`).
+  'arme-spirituelle': [
+    dmg('1d8', 'force', {
+      resolution: 'attack-roll',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Sur un coup, la cible subit 1d8 + modificateur de caractéristique d’incantation dégâts de force. +1d8 par niveau d’emplacement au-dessus du 2 (mod d’incantation NON re-scalé).',
+        en: 'On a hit, the target takes 1d8 + spellcasting ability modifier Force damage. +1d8 per spell slot level above 2 (modifier NOT re-scaled).',
+      },
+    }),
+  ],
+  // Moonbeam — SRD CC L14864-14887 : « When the Cylinder appears, each
+  // creature in it makes a Constitution saving throw. On a failed save, a
+  // creature takes 2d10 Radiant damage […] On a successful save, a creature
+  // takes half as much damage only. […] Using a Higher-Level Spell Slot. The
+  // damage increases by 1d10 for each spell slot level above 2. »
+  'rayon-de-lune': [
+    dmg('2d10', 'radiant', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d10' },
+      condition: {
+        fr: 'Save de Constitution chaque fois qu’une créature commence son tour dans le cylindre, y entre, ou que le cylindre se déplace sur elle (un save par tour maximum). Save réussi = demi-dégâts.',
+        en: 'Constitution save each time a creature starts its turn in the Cylinder, enters it, or the Cylinder moves into its space (max one save per turn). Successful save = half damage.',
+      },
+    }),
+  ],
 };
 
 /**

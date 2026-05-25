@@ -148,6 +148,83 @@ const PINNED_DAMAGES: readonly PinnedDamage[] = [
     resolution: 'saving-throw',
     atHigherLevelsPerLevel: '+1d6',
   },
+  // ─── D1a batch 1 (2026-05-25) ──────────────────────────────────────────
+  // Sorts à formule canonique + résolution propre. Riders (sans résolution)
+  // sont pinned dans `PINNED_RIDERS` ci-dessous.
+  {
+    slug: 'orbe-chromatique',
+    formula: '3d8',
+    type: 'fire', // défaut éditorial — cf. condition pour les 6 types
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'attack-roll',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'arme-spirituelle',
+    formula: '1d8', // + mod d'incantation (cf. condition)
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'attack-roll',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'rayon-de-lune',
+    formula: '2d10',
+    type: 'radiant',
+    typeLabelFr: 'radiants',
+    typeLabelEn: 'Radiant',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d10',
+  },
+];
+
+/**
+ * D1a batch 1 — Riders : sorts qui ne portent PAS de résolution propre
+ * (formule statique ajoutée aux dégâts d'une attaque d'arme qui touche). Le
+ * jet d'attaque est celui de l'arme ; la formule rider s'auto-applique.
+ *
+ * Test schema distinct de `PinnedDamage` : pas de `resolution`, présence
+ * d'une `condition` qui explique le trigger.
+ */
+interface PinnedRider {
+  slug: string;
+  formula: string;
+  type: PinnedDamage['type'];
+  typeLabelFr: string;
+  typeLabelEn: string;
+  atHigherLevelsPerLevel?: string;
+  /** Sous-chaîne FR attendue dans `damage[0].condition.fr`. */
+  conditionMustContainFr: string;
+}
+
+const PINNED_RIDERS: readonly PinnedRider[] = [
+  {
+    slug: 'faveur-divine',
+    formula: '1d4',
+    type: 'radiant',
+    typeLabelFr: 'radiants',
+    typeLabelEn: 'Radiant',
+    conditionMustContainFr: 'attaque d’arme qui touche',
+  },
+  {
+    slug: 'chatiment-divin',
+    formula: '2d8',
+    type: 'radiant',
+    typeLabelFr: 'radiants',
+    typeLabelEn: 'Radiant',
+    atHigherLevelsPerLevel: '+1d8',
+    conditionMustContainFr: 'Fiélon ou un Mort-vivant',
+  },
+  {
+    slug: 'malefice',
+    formula: '1d6',
+    type: 'necrotic',
+    typeLabelFr: 'nécrotiques',
+    typeLabelEn: 'Necrotic',
+    conditionMustContainFr: 'cible maudite',
+  },
 ];
 
 describe('cat. 4 — Dégâts canoniques de sort (D1)', () => {
@@ -182,5 +259,54 @@ describe('cat. 4 — Dégâts canoniques de sort (D1)', () => {
     const spells = await loadSpells();
     const spell = spells.find((s) => s.id === 'decharge-occulte');
     expect(spell?.damage?.[0]?.condition?.fr).toContain('rayon par tier');
+  });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // D1a batch 1 — Riders (formule auto sur attaque d'arme qui touche).
+  // Pas de `resolution` propre (le jet est celui de l'arme), donc test
+  // dédié qui vérifie formule + type + absence de `resolution` + condition.
+  // ──────────────────────────────────────────────────────────────────────
+  it.each(PINNED_RIDERS.map((d) => ({ pin: d, label: d.slug })))(
+    'D1a rider — $label porte la formule canonique + condition trigger',
+    async ({ pin }) => {
+      const spells = await loadSpells();
+      const spell = spells.find((s) => s.id === pin.slug);
+      expect(spell, `sort ${pin.slug} absent du bundle`).toBeDefined();
+      if (!spell) return;
+      const entry = spell.damage?.[0];
+      expect(entry, `${pin.slug} — damage[0] absent`).toBeDefined();
+      expect(entry?.formula).toBe(pin.formula);
+      expect(entry?.type).toBe(pin.type);
+      expect(entry?.typeLabel.fr).toBe(pin.typeLabelFr);
+      expect(entry?.typeLabel.en).toBe(pin.typeLabelEn);
+      // Rider = pas de jet de résolution propre.
+      expect(entry?.resolution).toBeUndefined();
+      // Condition trigger doit citer la mécanique exacte.
+      expect(entry?.condition?.fr).toContain(pin.conditionMustContainFr);
+      if (pin.atHigherLevelsPerLevel !== undefined) {
+        expect(entry?.atHigherLevels?.perLevel).toBe(pin.atHigherLevelsPerLevel);
+      } else {
+        expect(entry?.atHigherLevels).toBeUndefined();
+      }
+    },
+  );
+
+  it('Orbe chromatique — condition liste les 6 types disponibles', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'orbe-chromatique');
+    const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+    expect(cond).toContain('acide');
+    expect(cond).toContain('froid');
+    expect(cond).toContain('feu');
+    expect(cond).toContain('foudre');
+    expect(cond).toContain('poison');
+    expect(cond).toContain('tonnerre');
+  });
+
+  it('Arme spirituelle — condition documente le modificateur d\'incantation ajouté', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'arme-spirituelle');
+    const cond = spell?.damage?.[0]?.condition?.fr ?? '';
+    expect(cond).toContain("modificateur de caractéristique d’incantation");
   });
 });

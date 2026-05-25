@@ -749,7 +749,25 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Sur un coup, la cible subit 1d8 + modificateur de caractéristique d’incantation dégâts de force. +1d8 par niveau d’emplacement au-dessus du 2 (mod d’incantation NON re-scalé).",
+          "en": "On a hit, the target takes 1d8 + spellcasting ability modifier Force damage. +1d8 per spell slot level above 2 (modifier NOT re-scaled)."
+        }
+      }
+    ]
   },
   {
     "id": "armure-du-mage",
@@ -2541,7 +2559,24 @@
     "classes": [
       "paladin"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts d’une attaque d’arme de mêlée qui vient de toucher. +1d8 supplémentaire si la cible est un Fiélon ou un Mort-vivant. +1d8 par niveau d’emplacement au-dessus du 1er.",
+          "en": "Added to a melee weapon attack that just hit. +1d8 more if the target is a Fiend or an Undead. +1d8 per spell slot level above 1."
+        }
+      }
+    ]
   },
   {
     "id": "chien-de-garde",
@@ -6028,7 +6063,21 @@
     "classes": [
       "paladin"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d4",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts de chaque attaque d’arme qui touche, tant que la concentration est maintenue.",
+          "en": "Added to the damage of each weapon attack that hits while you maintain Concentration."
+        }
+      }
+    ]
   },
   {
     "id": "festin-des-heros",
@@ -9082,7 +9131,21 @@
     "classes": [
       "warlock"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "condition": {
+          "fr": "S’ajoute aux dégâts à chaque coup d’une attaque (arme ou sort) qui touche la cible maudite, tant que la concentration est maintenue.",
+          "en": "Added on each successful attack roll (weapon or spell) against the cursed target while you maintain Concentration."
+        }
+      }
+    ]
   },
   {
     "id": "manoir-somptueux",
@@ -10652,7 +10715,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Type au choix à l’incantation : acide, froid, feu, foudre, poison ou tonnerre. L’UI affiche le type sélectionné par le joueur ; le type figé ici (feu) est un défaut éditorial. Si deux dés ou plus affichent le même résultat, l’orbe rebondit sur une autre cible dans un rayon de 9 m (nouveau jet d’attaque + nouveau jet de dégâts).",
+          "en": "Damage type chosen at casting from: acid, cold, fire, lightning, poison, or thunder. UI shows the selected type; “fire” here is an editorial default. If two or more dice show the same number, the orb leaps to a different target within 30 ft (new attack roll + new damage roll)."
+        }
+      }
+    ]
   },
   {
     "id": "orientation",
@@ -12101,7 +12182,25 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d10",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        },
+        "condition": {
+          "fr": "Save de Constitution chaque fois qu’une créature commence son tour dans le cylindre, y entre, ou que le cylindre se déplace sur elle (un save par tour maximum). Save réussi = demi-dégâts.",
+          "en": "Constitution save each time a creature starts its turn in the Cylinder, enters it, or the Cylinder moves into its space (max one save per turn). Successful save = half damage."
+        }
+      }
+    ]
   },
   {
     "id": "rayon-de-soleil",
