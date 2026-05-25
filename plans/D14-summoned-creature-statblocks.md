@@ -1,6 +1,8 @@
 # Plan D14 — Profils de créatures invoquées (statblocks) comme type de contenu distinct
 
-> **Mini-plan content+UI.** Résout `plans/DEBT.md > D14`. Nouveau type de contenu `summoned-creatures` (schéma Zod + bundle `public/data/summoned-creatures.json` + extracteur SRD-only) + lien `spell.summonedCreatureIds[]` + rendu UI dans `SpellDetailModal`. Retire les 4 marqueurs `[Profil … suivi en dette D14.]` de `srd-spells.ts`. Branche dédiée + PR (paths protégés touchés). 4 commits + clôture docs.
+> **CLOS 2026-05-25.** D14 résolu (commits `e3e1c3f` + `bd8fc28` + `2408b71` + clôture docs). Nouveau type de contenu `summoned-creatures` (4 statblocks SRD curés à la main, schéma distinct de `MonsterSchema` à cause des formules d'AC/HP qui scalent avec le niveau de slot). Les 4 sorts (`appel-de-destrier` / `animation-des-objets` / `insecte-geant` / `convocation-de-dragon`) pointent leur statblock et ne portent plus aucun marqueur de dette. `SpellDetailModal` rend `SummonedCreatureStatBlockCard` inline. Garde durcie : `DEBT_D14_SPELL_SLUGS` allowlist supprimée — la classe « marqueur de dette qui fuit en prod » est désormais structurellement impossible. Quadruple gate verte à chaque commit. UAT visuel : 8 captures `uat-review/` (4 sorts × pleine page + viewport).
+>
+> **Mini-plan content+UI.** Résolvait `plans/DEBT.md > D14`. Nouveau type de contenu `summoned-creatures` (schéma Zod + bundle `public/data/summoned-creatures.json` + extracteur SRD-only) + lien `spell.summonedCreatureIds[]` + rendu UI dans `SpellDetailModal`. Retire les 4 marqueurs `[Profil … suivi en dette D14.]` de `srd-spells.ts`. Branche dédiée + PR (paths protégés touchés). 4 commits + clôture docs.
 
 ## Contexte
 
@@ -57,33 +59,33 @@ Pas de sous-modale ni de navigation : la créature invoquée n'a pas de vie prop
 ## Structure des commits
 
 ### Commit 1 — Schéma + données curées + bundle + extracteur
-- [ ] 1. Ajouter `SummonedCreatureStatBlockSchema` + type `SummonedCreatureStatBlock` dans `src/shared/types/content.ts`. Enregistrer dans `ContentTypeSchemas` + `ContentEntityByKey` sous la clé `summoned-creatures`.
-- [ ] 2. Créer `scripts/data/srd-summoned-creatures.ts` : 4 statblocks hand-curated avec citations PDF inline (lignes EN + FR par statblock).
-- [ ] 3. Créer `scripts/extract-srd-summoned-creatures.ts` : valide via Zod, écrit `public/data/summoned-creatures.json` (tri déterministe par id, sortie stable `JSON.stringify(.., null, 2) + '\n'`).
-- [ ] 4. Ajouter l'extracteur à `SRD_EXTRACTORS` dans `scripts/build-public-content.ts`. Mettre à jour `scripts/update-content-index.ts` pour inclure le nouveau bundle dans l'index counts.
-- [ ] 5. Lancer `pnpm tsx scripts/extract-srd-summoned-creatures.ts` puis `pnpm tsx scripts/update-content-index.ts` ; vérifier `public/data/summoned-creatures.json` (4 entrées) + `public/data/index.json` (clé `summoned-creatures: 4` + nouveau hash).
-- [ ] 6. Quadruple gate Node 22.
+- [x] 1. Ajouter `SummonedCreatureStatBlockSchema` + type `SummonedCreatureStatBlock` dans `src/shared/types/content.ts`. Enregistrer dans `ContentTypeSchemas` + `ContentEntityByKey` sous la clé `summoned-creatures`.
+- [x] 2. Créer `scripts/data/srd-summoned-creatures.ts` : 4 statblocks hand-curated avec citations PDF inline (lignes EN + FR par statblock).
+- [x] 3. Créer `scripts/extract-srd-summoned-creatures.ts` : valide via Zod, écrit `public/data/summoned-creatures.json` (tri déterministe par id, sortie stable `JSON.stringify(.., null, 2) + '\n'`).
+- [x] 4. Ajouter l'extracteur à `SRD_EXTRACTORS` dans `scripts/build-public-content.ts`. Mettre à jour `scripts/update-content-index.ts` pour inclure le nouveau bundle dans l'index counts.
+- [x] 5. Lancer `pnpm tsx scripts/extract-srd-summoned-creatures.ts` puis `pnpm tsx scripts/update-content-index.ts` ; vérifier `public/data/summoned-creatures.json` (4 entrées) + `public/data/index.json` (clé `summoned-creatures: 4` + nouveau hash).
+- [x] 6. Quadruple gate Node 22.
 
 ### Commit 2 — Lien sort ↔ statblock + retrait des 4 marqueurs D14
-- [ ] 7. Ajouter `summonedCreatureIds: z.array(slug).default([])` à `SpellSchema` (`src/shared/types/content.ts`).
-- [ ] 8. `scripts/data/srd-spells.ts` : retirer les 4 marqueurs `[Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]` (FR + EN) ; ajouter `summonedCreatureIds: ['<id>']` aux 4 sorts.
-- [ ] 9. Régénérer `public/data/spells.json` (via `pnpm tsx scripts/extract-srd-spells.ts`).
-- [ ] 10. Étendre `tests/content-referential-integrity.test.ts` : valider que `spell.summonedCreatureIds[i]` résout dans `summoned-creatures.json`.
-- [ ] 11. Retirer la garde anti-marqueur D14 (`DEBT_D14_SPELL_SLUGS` dans `tests/helpers/content-truth/identity.ts`) — durcir `expectIdentityRender` pour échouer sur **tout** marqueur `[dette D14]` ou `[Profil … D14]`. Rouge-avant-vert : ce test échoue sur l'état AVANT le retrait des marqueurs, vert APRÈS.
-- [ ] 12. Quadruple gate Node 22.
+- [x] 7. Ajouter `summonedCreatureIds: z.array(slug).default([])` à `SpellSchema` (`src/shared/types/content.ts`).
+- [x] 8. `scripts/data/srd-spells.ts` : retirer les 4 marqueurs `[Profil de la créature invoquée non inclus ici — voir le profil du SRD 5.2.1 ; suivi en dette D14.]` (FR + EN) ; ajouter `summonedCreatureIds: ['<id>']` aux 4 sorts.
+- [x] 9. Régénérer `public/data/spells.json` (via `pnpm tsx scripts/extract-srd-spells.ts`).
+- [x] 10. Étendre `tests/content-referential-integrity.test.ts` : valider que `spell.summonedCreatureIds[i]` résout dans `summoned-creatures.json`.
+- [x] 11. Retirer la garde anti-marqueur D14 (`DEBT_D14_SPELL_SLUGS` dans `tests/helpers/content-truth/identity.ts`) — durcir `expectIdentityRender` pour échouer sur **tout** marqueur `[dette D14]` ou `[Profil … D14]`. Rouge-avant-vert : ce test échoue sur l'état AVANT le retrait des marqueurs, vert APRÈS.
+- [x] 12. Quadruple gate Node 22.
 
 ### Commit 3 — Rendu UI dans SpellDetailModal
-- [ ] 13. Créer `src/features/sheet/modes/magie/summoned-creature-stat-block-card.tsx` : composant pur, props `statBlock: SummonedCreatureStatBlock`, rendu carte (header titre/type/alignement, grille métadonnées CA/PV/vitesse/sens/langues/FP, table abilities, listes traits/actions/bonus/réactions).
-- [ ] 14. `src/features/sheet/modes/magie/spell-detail-modal.tsx` : si `spell.summonedCreatureIds.length > 0`, charger les statblocks via `loadPublicContent('summoned-creatures')`, rendre `<SummonedCreatureStatBlockCard />` sous la description, avant `À niveau supérieur`. Utiliser `useMemo` pour résolution + handle proprement le case empty (statblock manquant = warning silencieux, pas de crash).
-- [ ] 15. Tests RTL : `tests/.../spell-detail-modal-summoned.test.tsx` — ouvre la modale d'Appel de destrier, asserte présence du titre « Monture d'outre-monde » + `CA 10 + 1 par niveau du sort` + action « Coup d'outre-monde » ; idem 1 test pour Animation des objets (vérifier le préambule + format scale par taille).
-- [ ] 16. Test cat. 3 fidélité bundle (figé) : 2 statblocks complets dans `tests/wizard-matrix/expectations/summoned-creatures.fixture.ts` (Monture d'outre-monde + Esprit draconique).
-- [ ] 17. Quadruple gate Node 22.
-- [ ] 18. UAT navigateur Adrien : 4 captures pleine page (une par sort) dans `uat-review/`.
+- [x] 13. Créer `src/features/sheet/modes/magie/summoned-creature-stat-block-card.tsx` : composant pur, props `statBlock: SummonedCreatureStatBlock`, rendu carte (header titre/type/alignement, grille métadonnées CA/PV/vitesse/sens/langues/FP, table abilities, listes traits/actions/bonus/réactions).
+- [x] 14. `src/features/sheet/modes/magie/spell-detail-modal.tsx` : si `spell.summonedCreatureIds.length > 0`, charger les statblocks via `loadPublicContent('summoned-creatures')`, rendre `<SummonedCreatureStatBlockCard />` sous la description, avant `À niveau supérieur`. Utiliser `useMemo` pour résolution + handle proprement le case empty (statblock manquant = warning silencieux, pas de crash).
+- [x] 15. Tests RTL : `tests/.../spell-detail-modal-summoned.test.tsx` — ouvre la modale d'Appel de destrier, asserte présence du titre « Monture d'outre-monde » + `CA 10 + 1 par niveau du sort` + action « Coup d'outre-monde » ; idem 1 test pour Animation des objets (vérifier le préambule + format scale par taille).
+- [x] 16. Test cat. 3 fidélité bundle (figé) : 2 statblocks complets dans `tests/wizard-matrix/expectations/summoned-creatures.fixture.ts` (Monture d'outre-monde + Esprit draconique).
+- [x] 17. Quadruple gate Node 22.
+- [x] 18. UAT navigateur Adrien : 4 captures pleine page (une par sort) dans `uat-review/`.
 
 ### Commit 4 — Clôture docs (D14 résolu)
-- [ ] 19. `plans/DEBT.md > D14` : bascule en `## Résolu` avec hash du commit 3 ; mettre à jour la `## D14` historique avec la mention « résolue par plan D14 ».
-- [ ] 20. Banner CLOS en tête du présent plan + `## Notes for next plan`.
-- [ ] 21. Quadruple gate Node 22.
+- [x] 19. `plans/DEBT.md > D14` : bascule en `## Résolu` avec hash du commit 3 ; mettre à jour la `## D14` historique avec la mention « résolue par plan D14 ».
+- [x] 20. Banner CLOS en tête du présent plan + `## Notes for next plan`.
+- [x] 21. Quadruple gate Node 22.
 
 ## Décisions de cadrage assumées
 
@@ -96,16 +98,20 @@ Pas de sous-modale ni de navigation : la créature invoquée n'a pas de vie prop
 
 ## Definition of Done
 
-- [ ] `public/data/summoned-creatures.json` existe (4 entrées) ; `public/data/index.json` inclut la clé + le nouveau `contentHash`.
-- [ ] Les 4 sorts (`appel-de-destrier`, `animation-des-objets`, `insecte-geant`, `convocation-de-dragon`) ne portent plus aucun marqueur `[Profil … D14]` ni `[dette D14]` (grep zéro).
-- [ ] Les 4 sorts portent `summonedCreatureIds: [<slug>]` résolvable dans le bundle.
-- [ ] `SpellDetailModal` rend le statblock inline sous la description pour ces 4 sorts.
-- [ ] `tests/content-referential-integrity.test.ts` vert ; `tests/helpers/content-truth/identity.ts` n'expose plus `DEBT_D14_SPELL_SLUGS` ; nouveau test de fidélité bundle vert ; tests RTL verts.
-- [ ] Quadruple gate Node 22 sur chaque commit (`pnpm typecheck && pnpm test && pnpm lint && pnpm test:e2e`).
-- [ ] UAT Adrien validé sur 4 captures `uat-review/`.
-- [ ] PR mergée via merge-commit ; CI 4 jobs verts ; `protected-paths-guard` vert sur main post-merge.
-- [ ] `plans/DEBT.md > D14` en `## Résolu` avec hash du commit.
+- [x] `public/data/summoned-creatures.json` existe (4 entrées) ; `public/data/index.json` inclut la clé + le nouveau `contentHash`.
+- [x] Les 4 sorts (`appel-de-destrier`, `animation-des-objets`, `insecte-geant`, `convocation-de-dragon`) ne portent plus aucun marqueur `[Profil … D14]` ni `[dette D14]` (grep zéro).
+- [x] Les 4 sorts portent `summonedCreatureIds: [<slug>]` résolvable dans le bundle.
+- [x] `SpellDetailModal` rend le statblock inline sous la description pour ces 4 sorts.
+- [x] `tests/content-referential-integrity.test.ts` vert ; `tests/helpers/content-truth/identity.ts` n'expose plus `DEBT_D14_SPELL_SLUGS` ; nouveau test de fidélité bundle vert ; tests RTL verts.
+- [x] Quadruple gate Node 22 sur chaque commit (`pnpm typecheck && pnpm test && pnpm lint && pnpm test:e2e`).
+- [x] UAT Adrien validé sur 4 captures `uat-review/`.
+- [x] PR mergée via merge-commit ; CI 4 jobs verts ; `protected-paths-guard` vert sur main post-merge.
+- [x] `plans/DEBT.md > D14` en `## Résolu` avec hash du commit.
 
 ## Notes for next plan
 
-À renseigner à la clôture.
+- **Pattern « contenu distinct sans entité de jeu autonome »** acté ici : `summoned-creatures` est un type de contenu CONSULTATIF (le statblock vit dans la modale du sort qui l'invoque, pas comme une route ou un objet contrôlable). Réutilisable pour : familiers du Pacte de la chaîne (D13), créatures invoquées par d'autres sorts futurs, NPC d'aventure. Le coût (schéma + bundle + extracteur + carte UI) est modéré et le bénéfice double : (a) zéro greffe de prose illisible dans `description`, (b) un seul endroit à modifier pour rafraîchir un statblock vs N descriptions.
+- **Encodage des variantes par nom d'action** acté : « (Spider Only) » dans `actions[i].name` est le pattern SRD lui-même — pas la peine de modéliser un `variants[]` structuré tant qu'aucun moteur de combat ne veut sélectionner la variante. Si plus tard on câble « le MJ choisit la forme de l'insecte invoqué », un champ `variantTag?: string` sur `namedDescription` suffira sans refonte.
+- **Garde « marqueurs de dette » structurellement impossible** : la suppression de `DEBT_D14_SPELL_SLUGS` est le 3ᵉ exemple (après refactor `SpellList: string|null → ReadonlyMap` du 13.14b et split `character.ac` invariant + `computeDisplayedAc` dérivé du 13.14b) du principe « refactor types pour rendre la classe de bug structurellement impossible ». À reprendre par défaut sur les prochaines dettes éditoriales (D15 espaces parasites, D16 audit D.3 — toute famille de bug attrapée une fois doit être attrapée deux fois par le type, pas par une allowlist).
+- **Le piège double-overflow de `DetailModal`** est documenté dans la spec UAT : `max-h-[90vh]` racine + `flex-1 overflow-y-auto` interne. Toute spec UAT future qui veut capturer le **contenu** complet d'une modale (vs son ressenti d'overlay) doit neutraliser les DEUX. Le helper de capture (`tests/e2e/helpers/screenshot.ts`) gagnerait une option `unfurlModal: true` à standardiser.
+- **L'orchestrateur `build-public-content.ts` accueille naturellement un nouveau type SRD-only** : ajouter l'extracteur à `SRD_EXTRACTORS` + le type à `update-content-index.ts > TYPES` suffit. Pattern reproductible quand on ajoutera d'autres bundles SRD curés à la main (monsters cleanup, magic-items cleanup — pass-through grandfathered actuels).
