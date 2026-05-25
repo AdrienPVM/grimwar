@@ -340,6 +340,14 @@
           "level5SpellId": "passage-sans-trace"
         }
       ]
+    },
+    "spellUsages": {
+      "lueurs-feeriques": "long-rest",
+      "tenebres": "long-rest",
+      "detection-de-la-magie": "long-rest",
+      "foulee-brumeuse": "long-rest",
+      "grande-foulee": "long-rest",
+      "passage-sans-trace": "long-rest"
     }
   },
   {
@@ -444,6 +452,9 @@
           ]
         }
       ]
+    },
+    "spellUsages": {
+      "communication-avec-les-animaux": "pb-per-rest"
     }
   },
   {
@@ -805,6 +816,14 @@
     },
     "commonSpellIds": [
       "thaumaturgie"
-    ]
+    ],
+    "spellUsages": {
+      "rayon-empoisonne": "long-rest",
+      "immobilisation-de-personne": "long-rest",
+      "simulacre-de-vie": "long-rest",
+      "rayon-affaiblissant": "long-rest",
+      "represailles-infernales": "long-rest",
+      "tenebres": "long-rest"
+    }
   }
 ]

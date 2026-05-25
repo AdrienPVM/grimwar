@@ -96,6 +96,61 @@ export const ANCESTRY_COMMON_SPELL_IDS: Record<string, string[]> = {
   tiefling: ['thaumaturgie'],
 };
 
+/**
+ * Plan D12a — usage des sorts d'ascendance (recharge / fréquence). Mappage
+ * par ancestryId → (slug → usage). N'inclut QUE les sorts à recharge limitée
+ * (`long-rest` ou `pb-per-rest`) ; les cantrips at-will sont implicites.
+ *
+ * Sources SRD 5.2.1 :
+ *   - Tieffelin « Héritage » : L3 + L5 → 1×/jour, recharge long rest
+ *     (`FR_SRD_CC_v5.2.1.txt`).
+ *   - Elfe lignage (Drow/Haut-Elfe/Sylvestre) : L3 + L5 → 1×/jour.
+ *   - Gnome forêts « communication-avec-les-animaux » → rituel, PB×/repos long.
+ *
+ * Aucune collision de slug intra-ascendance (vérifié manuellement) : un slug
+ * apparaît au plus une fois par ancestryId, donc le map slug→usage est
+ * non-ambigu.
+ *
+ * Notes sur les choix mécaniques :
+ *   - Tiefling cantrip d'héritage (bouffee-de-poison / contact-glacial /
+ *     trait-de-feu) : at-will (cantrip), pas dans la map.
+ *   - Elf cantrip (lumieres-dansantes / prestidigitation / druidisme) : at-will.
+ *   - Gnome cantrips (illusion-mineure / reparation / prestidigitation) : at-will.
+ *   - Haut-Elfe « swap du cantrip à chaque long rest » : at-will ↔ recharge non
+ *     applicable (le cantrip est tjs castable, c'est le SWAP qui se recharge —
+ *     géré côté UI long rest, pas ici).
+ */
+import type { SpellUsage } from '../../src/shared/types/content';
+
+export const ANCESTRY_SPELL_USAGES: Record<string, Record<string, SpellUsage>> = {
+  tiefling: {
+    // Abyssal (Infernal Legacy variant 1) — L3 + L5
+    'rayon-empoisonne': 'long-rest',
+    'immobilisation-de-personne': 'long-rest',
+    // Chthonic
+    'simulacre-de-vie': 'long-rest',
+    'rayon-affaiblissant': 'long-rest',
+    // Infernal
+    'represailles-infernales': 'long-rest',
+    tenebres: 'long-rest',
+  },
+  elf: {
+    // Drow
+    'lueurs-feeriques': 'long-rest',
+    tenebres: 'long-rest', // overrides Tiefling tenebres dans cet ancestry-record (séparé)
+    // High-Elf
+    'detection-de-la-magie': 'long-rest',
+    'foulee-brumeuse': 'long-rest',
+    // Wood Elf
+    'grande-foulee': 'long-rest',
+    'passage-sans-trace': 'long-rest',
+  },
+  gnome: {
+    // Forest Gnome — rituel, PB×/repos long
+    'communication-avec-les-animaux': 'pb-per-rest',
+  },
+};
+
 export interface ElfLineageOption {
   id: 'drow' | 'high-elf' | 'wood-elf';
   name: { fr: string; en: string };
