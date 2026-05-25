@@ -279,6 +279,10 @@ export type StringKey =
   // « Présence d'outre-monde » → thaumaturgie, commun aux 3 héritages.
   | 'sheet.magie.ancestry.tieflingCommonSource'
   | 'sheet.magie.cantNotImplementedAncestry'
+  // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
+  | 'spell.damage.resolution.attack-roll'
+  | 'spell.damage.resolution.saving-throw'
+  | 'spell.damage.resolution.auto'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -632,6 +636,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.tieflingCommonSource': "Présence d’outre-monde",
     'sheet.magie.cantNotImplementedAncestry':
       "Lancement des sorts d'ascendance pas encore implémenté.",
+    // Plan D1 — modes de résolution des dégâts de sort (modale détail)
+    'spell.damage.resolution.attack-roll': "Jet d'attaque",
+    'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
+    'spell.damage.resolution.auto': 'Touche automatique',
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -965,6 +973,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.tieflingCommonSource': 'Otherworldly Presence',
     'sheet.magie.cantNotImplementedAncestry':
       'Casting ancestry spells is not yet implemented.',
+    'spell.damage.resolution.attack-roll': 'Attack roll',
+    'spell.damage.resolution.saving-throw': 'Saving throw',
+    'spell.damage.resolution.auto': 'Automatic hit',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',

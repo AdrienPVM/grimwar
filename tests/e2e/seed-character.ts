@@ -843,6 +843,42 @@ export const wizardL9D14: SeedPreset = {
   spellcastingAbility: { wizard: 'int' },
 };
 
+/**
+ * Plan D1 — Magicien L5 avec un catalogue de sorts de dégâts canoniques
+ * pour la spec UAT visuelle de la section « Dégâts » de SpellDetailModal.
+ * 5 sorts couvrant les 3 patterns SRD :
+ *   - trait-de-feu (cantrip attack-roll + scaling tier 2 à L5 = 2d10)
+ *   - bouffee-de-poison (cantrip save + scaling à L5 = 2d12)
+ *   - projectile-magique (L1 auto-hit + condition « 3 projectiles »)
+ *   - mains-brulantes (L1 AoE save half + upcast +1d6)
+ *   - boule-de-feu (L3 AoE save half + upcast +1d6, démontre upcast L5)
+ */
+export const wizardL5DamageD1: SeedPreset = {
+  name: 'Vex la Calciante',
+  classes: [{ classId: 'wizard', subclassId: null, level: 5 }],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  backgroundId: 'sage',
+  abilities: { for: 8, dex: 14, con: 12, int: 18, sag: 13, cha: 10 },
+  hp: { current: 32, max: 32 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 5, max: 5, die: 'd6' }],
+  saves: { int: true, sag: true },
+  knownSpells: {
+    wizard: [
+      'trait-de-feu',
+      'bouffee-de-poison',
+      'projectile-magique',
+      'mains-brulantes',
+      'boule-de-feu',
+    ],
+  },
+  preparedSpells: {
+    wizard: ['projectile-magique', 'mains-brulantes', 'boule-de-feu'],
+  },
+  spellcastingAbility: { wizard: 'int' },
+};
+
 export const druidL9D14: SeedPreset = {
   name: 'Brann le Pivert',
   classes: [{ classId: 'druid', subclassId: null, level: 9 }],

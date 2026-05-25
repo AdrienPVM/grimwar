@@ -40,21 +40,71 @@ export const spellSchoolSchema = z.enum([
 export type SpellSchool = z.infer<typeof spellSchoolSchema>;
 
 /**
- * Mapping canonical des dégâts de sort. Introduit en plan 12 comme champ
- * **optionnel** pour ne pas casser `spells.json` existant. Le pipeline
- * d'extraction (`scripts/build-public-content`) populera ces structures dans
- * un suivi dédié — la regex fallback `extractDamageFormula` dans
- * `spell-detail-modal.tsx` continue de tourner pour les sorts sans `damage[]`
- * (étape 9 de plan 12 explicitement deferred au pipeline, voir Notes).
+ * Types de dégâts canoniques SRD 5.2.1 (clé EN minuscule). Servent d'enum
+ * strict côté `SpellDamageSchema` et de pivot i18n côté UI. Aligné sur la
+ * liste officielle SRD CC (« Damage Types » section), ordre alphabétique.
+ */
+export const damageTypeSchema = z.enum([
+  'acid',
+  'bludgeoning',
+  'cold',
+  'fire',
+  'force',
+  'lightning',
+  'necrotic',
+  'piercing',
+  'poison',
+  'psychic',
+  'radiant',
+  'slashing',
+  'thunder',
+]);
+export type DamageType = z.infer<typeof damageTypeSchema>;
+
+/**
+ * Plan D1 — Mapping canonique des dégâts de sort.
+ *
+ * Champ `optional` au niveau `Spell` pour ne pas casser les sorts sans
+ * dégâts (sorts utilitaires/buff/contrôle). Quand présent : tableau ordonné
+ * (un sort peut infliger plusieurs types, ex. Flame Strike = feu + radiant).
+ *
+ * - `formula` : dés de base au niveau d'emplacement minimum (« 8d6 » pour
+ *   Fireball L3) ou au tier 1 pour un cantrip (« 1d10 » pour Fire Bolt L1-4).
+ * - `type` + `typeLabel` : clé canonique EN + label i18n FR/EN. Même pattern
+ *   que `Item.damage.{type, typeLabel}` et `AncestryDragonOption.damageType
+ *   {Label}` pour cohérence cross-bundle.
+ * - `atHigherLevels?.perLevel` : scaling slot upcast (« +1d6 » par niveau au-
+ *   dessus du niveau de base). Pour Magic Missile, voir `condition`.
+ * - `cantripScaling?` : scaling cantrip par niveau de personnage. Les seuils
+ *   `tier5` / `tier11` / `tier17` correspondent au niveau du caster (sa table
+ *   de progression Cantrip Damage du SRD 5.2.1 PHB p.10).
+ * - `resolution?` : pivot de résolution. `attack-roll` = jet d'attaque de
+ *   sort ; `saving-throw` = jet de sauvegarde de la cible (le DD de sort
+ *   vient des stats du caster, voir `spell-detail-modal`) ; `auto` = dégâts
+ *   automatiques sans jet (Magic Missile). Absent = pattern non encodé,
+ *   l'UI tombe sur la prose.
+ * - `condition?` : texte libre i18n pour qualifier un pattern non
+ *   encodable en formule simple (« 3 projectiles × 1d4+1 force » pour
+ *   Magic Missile, ou « 1 dé supplémentaire par projectile au-dessus de L1 »).
  */
 export const SpellDamageSchema = z.object({
   formula: z.string(),
-  type: z.string(),
+  type: damageTypeSchema,
+  typeLabel: I18nSchema,
   atHigherLevels: z
     .object({
       perLevel: z.string(),
     })
     .optional(),
+  cantripScaling: z
+    .object({
+      tier5: z.string(),
+      tier11: z.string(),
+      tier17: z.string(),
+    })
+    .optional(),
+  resolution: z.enum(['attack-roll', 'saving-throw', 'auto']).optional(),
+  condition: I18nSchema.optional(),
 });
 export type SpellDamage = z.infer<typeof SpellDamageSchema>;
 

@@ -175,7 +175,18 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d12",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "saving-throw"
+      }
+    ]
   },
   {
     "id": "allie-planaire",
@@ -641,7 +652,21 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d10",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        }
+      }
+    ]
   },
   {
     "id": "arme-magique",
@@ -845,7 +870,23 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "resolution": "saving-throw",
+        "cantripScaling": {
+          "tier5": "2d6",
+          "tier11": "3d6",
+          "tier17": "4d6"
+        }
+      }
+    ]
   },
   {
     "id": "assassin-imaginaire",
@@ -1380,7 +1421,21 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d10",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        }
+      }
+    ]
   },
   {
     "id": "bouche-magique",
@@ -1588,7 +1643,23 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d12",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "saving-throw",
+        "cantripScaling": {
+          "tier5": "2d12",
+          "tier11": "3d12",
+          "tier17": "4d12"
+        }
+      }
+    ]
   },
   {
     "id": "boule-de-feu",
@@ -1633,7 +1704,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "boule-de-feu-a-retardement",
@@ -1848,7 +1933,21 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "cecite-surdite",
@@ -2073,7 +2172,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d8",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "La cible principale subit les dégâts ; 3 éclairs supplémentaires bondissent vers d’autres cibles à 9 m, chacune subissant les mêmes dégâts (sauvegarde de Dextérité pour moitié).",
+          "en": "Primary target takes the damage; 3 additional bolts leap to other targets within 30 ft, each taking the same damage (Dex save for half)."
+        }
+      }
+    ]
   },
   {
     "id": "champ-antimagie",
@@ -2330,7 +2444,24 @@
     "classes": [
       "paladin"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Ajout aux dégâts d’une attaque qui touche, puis 1d6 supplémentaires à chaque tour de la cible jusqu’à ce qu’elle réussisse un jet de sauvegarde de Constitution.",
+          "en": "Added to a hit, then 1d6 again each of the target’s turns until it succeeds on a Constitution save."
+        }
+      }
+    ]
   },
   {
     "id": "chatiment-de-revelation",
@@ -3030,7 +3161,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d8",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "confusion",
@@ -3157,7 +3302,23 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d10",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d10",
+          "tier11": "3d10",
+          "tier17": "4d10"
+        }
+      }
+    ]
   },
   {
     "id": "contagion",
@@ -3659,7 +3820,34 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d10",
+        "type": "piercing",
+        "typeLabel": {
+          "fr": "perforants",
+          "en": "Piercing"
+        },
+        "resolution": "attack-roll"
+      },
+      {
+        "formula": "2d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "L’éclat explose après l’attaque (touchée ou ratée) ; la cible et chaque créature à 1,50 m d’elle tente un jet de sauvegarde de Dextérité.",
+          "en": "The shard explodes after the attack (hit or miss); the target and each creature within 5 ft makes a Dexterity save."
+        }
+      }
+    ]
   },
   {
     "id": "creation",
@@ -4075,7 +4263,27 @@
     "classes": [
       "warlock"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d10",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d10",
+          "tier11": "3d10",
+          "tier17": "4d10"
+        },
+        "condition": {
+          "fr": "Un rayon par tier (1 à L1-4, 2 à L5-10, 3 à L11-16, 4 à L17+) ; chaque rayon inflige 1d10 dégâts de force et nécessite son propre jet d’attaque de sort.",
+          "en": "One beam per tier (1 at L1-4, 2 at L5-10, 3 at L11-16, 4 at L17+); each beam deals 1d10 Force damage and requires its own ranged spell attack roll."
+        }
+      }
+    ]
   },
   {
     "id": "dedale",
@@ -5153,7 +5361,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d6",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "eclat-du-soleil",
@@ -5975,7 +6197,23 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "flammes",
@@ -6015,7 +6253,23 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "fleau-d-insectes",
@@ -6061,7 +6315,21 @@
       "druid",
       "sorcerer"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d10",
+        "type": "piercing",
+        "typeLabel": {
+          "fr": "perforants",
+          "en": "Piercing"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        }
+      }
+    ]
   },
   {
     "id": "fleche-acide",
@@ -6105,7 +6373,36 @@
     "classes": [
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d4",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d4"
+        }
+      },
+      {
+        "formula": "2d4",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "atHigherLevels": {
+          "perLevel": "+1d4"
+        },
+        "condition": {
+          "fr": "Dégâts retardés appliqués automatiquement à la fin du prochain tour de la cible.",
+          "en": "Delayed damage applied automatically at the end of the target’s next turn."
+        }
+      }
+    ]
   },
   {
     "id": "fletrissement",
@@ -6148,7 +6445,21 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "8d8",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "flou",
@@ -6450,7 +6761,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d8",
+        "type": "thunder",
+        "typeLabel": {
+          "fr": "tonnerre",
+          "en": "Thunder"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "frappe-piegeuse",
@@ -8657,7 +8982,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "malediction",
@@ -9363,7 +9702,23 @@
     "classes": [
       "bard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d6",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "saving-throw",
+        "cantripScaling": {
+          "tier5": "2d6",
+          "tier11": "3d6",
+          "tier17": "4d6"
+        }
+      }
+    ]
   },
   {
     "id": "mot-de-guerison",
@@ -9735,7 +10090,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "mur-de-force",
@@ -9983,7 +10352,21 @@
     "classes": [
       "bard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "psychic",
+        "typeLabel": {
+          "fr": "psychiques",
+          "en": "Psychic"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "mythes-et-legendes",
@@ -10108,7 +10491,18 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw"
+      }
+    ]
   },
   {
     "id": "nuage-nauseabond",
@@ -10189,7 +10583,31 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "20d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Quatre météores impactent ; chaque créature dans une zone de 12 m subit les dégâts indiqués (les zones se chevauchent : on roule une seule fois par créature, pas une fois par météore).",
+          "en": "Four meteors strike; each creature in a 40-ft Sphere takes the listed damage (areas overlapping deal damage once)."
+        }
+      },
+      {
+        "formula": "20d6",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw"
+      }
+    ]
   },
   {
     "id": "orbe-chromatique",
@@ -10693,7 +11111,23 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "lightning",
+        "typeLabel": {
+          "fr": "foudre",
+          "en": "Lightning"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "portail",
@@ -10859,7 +11293,23 @@
       "bard",
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "premeditation",
@@ -11066,7 +11516,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d4+1",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "3 projectiles à l’incantation au niveau 1 ; +1 projectile par niveau d’emplacement au-dessus du 1er. Chaque projectile inflige 1d4+1 dégâts de force, sans jet d’attaque ni de sauvegarde.",
+          "en": "3 darts at base; +1 dart per spell slot level above 1. Each dart deals 1d4+1 Force damage, no attack roll, no saving throw."
+        }
+      }
+    ]
   },
   {
     "id": "projection-astrale",
@@ -11520,7 +11985,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "condition": {
+          "fr": "3 rayons au niveau 2 ; +1 rayon par niveau d’emplacement au-dessus du 2e. Chaque rayon nécessite son propre jet d’attaque de sort.",
+          "en": "3 rays at level 2; +1 ray per spell slot level above 2. Each ray requires its own spell attack roll."
+        }
+      }
+    ]
   },
   {
     "id": "rayon-de-givre",
@@ -11561,7 +12041,23 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d8",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d8",
+          "tier11": "3d8",
+          "tier17": "4d8"
+        }
+      }
+    ]
   },
   {
     "id": "rayon-de-lune",
@@ -11649,7 +12145,18 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "6d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw"
+      }
+    ]
   },
   {
     "id": "rayon-empoisonne",
@@ -11690,7 +12197,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "poison",
+        "typeLabel": {
+          "fr": "poison",
+          "en": "Poison"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "rayon-tracant",
@@ -11730,7 +12251,21 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d6",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "regeneration",
@@ -11938,7 +12473,21 @@
     "classes": [
       "warlock"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d10",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        }
+      }
+    ]
   },
   {
     "id": "resistance",
@@ -12837,7 +13386,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Type au choix à l’incantation : acide, froid, feu, foudre ou poison. L’UI affichera le type sélectionné par le joueur ; le type figé ici (feu) est un défaut éditorial.",
+          "en": "Damage type chosen at casting from: acid, cold, fire, lightning, or poison. UI shows the selected type; “fire” here is an editorial default."
+        }
+      }
+    ]
   },
   {
     "id": "souhait",
@@ -12921,7 +13488,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        }
+      }
+    ]
   },
   {
     "id": "sphere-de-vitriol",
@@ -12966,7 +13547,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d4",
+        "type": "acid",
+        "typeLabel": {
+          "fr": "acide",
+          "en": "Acid"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+2d4"
+        }
+      }
+    ]
   },
   {
     "id": "sphere-glacee",
@@ -13343,7 +13938,18 @@
       "druid",
       "sorcerer"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "7d10",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw"
+      }
+    ]
   },
   {
     "id": "tempete-de-grele",
@@ -13389,7 +13995,30 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d10",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d10"
+        }
+      },
+      {
+        "formula": "4d6",
+        "type": "cold",
+        "typeLabel": {
+          "fr": "froid",
+          "en": "Cold"
+        },
+        "resolution": "saving-throw"
+      }
+    ]
   },
   {
     "id": "tempete-de-neige",
@@ -13469,7 +14098,22 @@
     "classes": [
       "druid"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d6",
+        "type": "thunder",
+        "typeLabel": {
+          "fr": "tonnerre",
+          "en": "Thunder"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Effet d’apparition uniquement. Aux tours suivants, le sort produit grêle, foudres, acide et vents puissants — voir la description complète du sort.",
+          "en": "Onset effect only. On subsequent rounds, the spell produces hail, lightning, acid, and powerful winds — see full spell description."
+        }
+      }
+    ]
   },
   {
     "id": "tenebres",
@@ -13804,7 +14448,23 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "1d10",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "cantripScaling": {
+          "tier5": "2d10",
+          "tier11": "3d10",
+          "tier17": "4d10"
+        }
+      }
+    ]
   },
   {
     "id": "tremblement-de-terre",
@@ -13927,7 +14587,21 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "thunder",
+        "typeLabel": {
+          "fr": "tonnerre",
+          "en": "Thunder"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        }
+      }
+    ]
   },
   {
     "id": "vent-divin",

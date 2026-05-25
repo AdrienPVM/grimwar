@@ -6,6 +6,8 @@ import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
+import { SpellDamageChip } from './spell-damage-chip';
+
 interface WizardSpellbookSectionsProps {
   character: Character;
   /** Catalogue de sorts (typiquement `useContent('spells').data`). */
@@ -154,6 +156,7 @@ function SpellRows({ spells, prepared, onSpellSelect }: SpellRowsProps): JSX.Ele
                     Rituel
                   </span>
                 )}
+                <SpellDamageChip spell={spell} />
               </div>
             </div>
           </button>

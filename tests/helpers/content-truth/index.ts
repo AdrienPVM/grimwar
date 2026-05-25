@@ -27,6 +27,7 @@ export {
   expectAttackMod,
   expectProfBonus,
   expectExpertise,
+  expectSpellDamage,
 } from './rules';
 export {
   submitWizardAndDeriveSheet,

@@ -13,6 +13,7 @@ import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
 import { useUpdateCharacter } from '../../use-update-character';
+import { SpellDamageCard } from './spell-damage-card';
 import { consumeSlot, type SpellcastingClassEntry } from './spell-slots';
 import { SummonedCreatureStatBlockCard } from './summoned-creature-stat-block-card';
 
@@ -261,6 +262,12 @@ export function SpellDetailModal({
           <p className="whitespace-pre-line font-serif text-body text-text-secondary">
             {localize(spell.description)}
           </p>
+
+          <SpellDamageCard
+            spell={spell}
+            chosenSlotLevel={isCantrip ? 0 : chosenLevel}
+            casterLevel={character.totalLevel}
+          />
 
           {summonedStatBlocks.map((statBlock) => (
             <SummonedCreatureStatBlockCard key={statBlock.id} statBlock={statBlock} />

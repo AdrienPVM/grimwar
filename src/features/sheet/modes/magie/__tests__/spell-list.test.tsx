@@ -388,3 +388,101 @@ describe('<SpellList> — caster × ascendance (cohabitation lisible)', () => {
     );
   });
 });
+
+describe('Plan D1 — chip Dégâts sur les sorts du bundle', () => {
+  // Sort enrichi avec damage[] (pattern bundle SRD réel).
+  const fireballSpell: Spell = {
+    id: 'boule-de-feu',
+    name: { fr: 'Boule de feu', en: 'Fireball' },
+    level: 3,
+    school: 'evocation',
+    castingTime: { fr: '1 action', en: '1 Action' },
+    range: { fr: '45 m', en: '150 ft' },
+    components: { v: true, s: true, m: true },
+    duration: { fr: 'Instantanée', en: 'Instantaneous' },
+    concentration: false,
+    ritual: false,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['sorcerer', 'wizard'],
+    source: 'srd-5.2.1',
+    damage: [
+      {
+        formula: '8d6',
+        type: 'fire',
+        typeLabel: { fr: 'feu', en: 'Fire' },
+        resolution: 'saving-throw',
+        atHigherLevels: { perLevel: '+1d6' },
+      },
+    ],
+  };
+
+  const undamagedSpell: Spell = {
+    id: 'alarme',
+    name: { fr: 'Alarme', en: 'Alarm' },
+    level: 1,
+    school: 'abjuration',
+    castingTime: { fr: '1 minute', en: '1 Minute' },
+    range: { fr: '9 m', en: '30 ft' },
+    components: { v: true, s: true, m: true },
+    duration: { fr: '8 heures', en: '8 Hours' },
+    concentration: false,
+    ritual: true,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['wizard'],
+    source: 'srd-5.2.1',
+  };
+
+  function makeWizardCharacter(): Character {
+    return {
+      ...baseCharacter(),
+      classes: [
+        {
+          classId: 'wizard',
+          subclassId: null,
+          level: 5,
+          clericDivineOrder: null,
+          druidPrimalOrder: null,
+          fighterFightingStyle: null,
+          weaponMasteries: [],
+          expertiseSkills: [],
+          eldritchInvocations: [],
+          wizardSpellbookL1: [],
+        },
+      ],
+      totalLevel: 5,
+      knownSpells: { wizard: ['boule-de-feu', 'alarme'] },
+    };
+  }
+
+  it('rend un chip « 8d6 feu » sur le sort avec damage[] canonique', () => {
+    render(
+      <SpellList
+        character={makeWizardCharacter()}
+        spells={[fireballSpell, undamagedSpell]}
+        spellcasterClassIds={['wizard']}
+        ancestrySourceLabels={new Map()}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    const fireballRow = spellRowByName('Boule de feu');
+    // Le chip combine formule + label de type (« 8d6 feu »).
+    expect(within(fireballRow).getByText(/8d6\s*feu/)).toBeInTheDocument();
+  });
+
+  it('ne rend AUCUN chip Dégâts sur un sort utilitaire (sans damage[])', () => {
+    render(
+      <SpellList
+        character={makeWizardCharacter()}
+        spells={[fireballSpell, undamagedSpell]}
+        spellcasterClassIds={['wizard']}
+        ancestrySourceLabels={new Map()}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    const alarmRow = spellRowByName('Alarme');
+    // Aucune mention « NdX » dans la ligne alarme.
+    expect(within(alarmRow).queryByText(/\d+d\d+/)).not.toBeInTheDocument();
+  });
+});

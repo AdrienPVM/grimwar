@@ -9,6 +9,8 @@ import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
+import { SpellDamageChip } from './spell-damage-chip';
+
 interface SpellListProps {
   character: Character;
   spells: readonly Spell[];
@@ -290,6 +292,7 @@ function SpellRow({
               {ancestrySourceLabel}
             </span>
           ) : null}
+          <SpellDamageChip spell={spell} />
         </div>
       </div>
     </button>
