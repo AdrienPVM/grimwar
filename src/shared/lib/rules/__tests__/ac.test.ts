@@ -138,4 +138,123 @@ describe('computeDisplayedAc', () => {
     });
     expect(ac).toBe(13);
   });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // D13a — Armor of Shadows (Eldritch Invocation Warlock). Tests gravés
+  // par l'utilisateur dans la spec du chantier :
+  //  1. Warlock·armor-of-shadows sans armure → 13 + modDEX (= +3 sur base désarmée).
+  //  2. Warlock·armor-of-shadows + cotte → CA armure (PAS de +3).
+  //  3. Warlock·armor-of-shadows + bouclier seul → +3 cumulé (bouclier ≠ armure).
+  //  4. Warlock sans armor-of-shadows → pas de bonus (registre filtre).
+  //  5. Multi-classe Warlock·armor-of-shadows × Fighter·defense → exclusion mutuelle.
+  // ─────────────────────────────────────────────────────────────────────
+
+  function makeWarlock(opts: { invocations?: readonly string[] } = {}) {
+    return {
+      classId: 'warlock',
+      subclassId: null,
+      level: 1,
+      clericDivineOrder: null,
+      druidPrimalOrder: null,
+      fighterFightingStyle: null,
+      weaponMasteries: [],
+      expertiseSkills: [],
+      eldritchInvocations: [...(opts.invocations ?? [])],
+      wizardSpellbookL1: [],
+    };
+  }
+
+  it('D13a cas 1 : Warlock·armor-of-shadows sans armure (DEX 14) → 13 (= 10+DEX +3 Mage Armor)', () => {
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12, // valeur wizard désarmée : 10 + DEX +2
+        classes: [makeWarlock({ invocations: ['armor-of-shadows'] })],
+      },
+      acFromArmor: null,
+      hasEquippedBodyArmor: false,
+    });
+    expect(ac).toBe(15); // 12 + 3
+  });
+
+  it('D13a cas 2 : Warlock·armor-of-shadows + cotte de mailles → CA armure (pas de +3, Mage Armor veto)', () => {
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [makeWarlock({ invocations: ['armor-of-shadows'] })],
+      },
+      acFromArmor: 16, // cotte de mailles (acDexMax 0)
+      hasEquippedBodyArmor: true,
+    });
+    expect(ac).toBe(16);
+  });
+
+  it('D13a cas 3 : Warlock·armor-of-shadows + bouclier seul → +3 cumulé (bouclier ≠ armure au sens SRD)', () => {
+    // Bouclier seul : acFromArmor = 10 + DEX +2 + shield +2 = 14 (DEX 14).
+    // Mage Armor s'ajoute → 14 + 3 = 17.
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [makeWarlock({ invocations: ['armor-of-shadows'] })],
+      },
+      acFromArmor: 14,
+      hasEquippedBodyArmor: false,
+    });
+    expect(ac).toBe(17);
+  });
+
+  it('D13a cas 4 : Warlock·eldritch-mind (autre invocation L1) sans armure → 0 bonus (registre filtre)', () => {
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [makeWarlock({ invocations: ['eldritch-mind'] })],
+      },
+      acFromArmor: null,
+      hasEquippedBodyArmor: false,
+    });
+    expect(ac).toBe(12);
+  });
+
+  it('D13a cas 5 : multi-classe Warlock·armor-of-shadows × Fighter·defense + cotte → 17 (Defense actif, AoS veto)', () => {
+    // Armure portée → Defense +1 actif, AoS veto par requiresUnarmored.
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [
+          makeClass({ classId: 'fighter', fightingStyle: 'defense' }),
+          makeWarlock({ invocations: ['armor-of-shadows'] }),
+        ],
+      },
+      acFromArmor: 16, // cotte
+      hasEquippedBodyArmor: true,
+    });
+    expect(ac).toBe(17); // 16 + Defense 1 + AoS 0
+  });
+
+  it('D13a cas 5 bis : multi-classe Warlock·armor-of-shadows × Fighter·defense SANS armure → +3 (AoS actif, Defense veto)', () => {
+    // Pas d'armure → Defense veto par hasEquippedBodyArmor, AoS actif.
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [
+          makeClass({ classId: 'fighter', fightingStyle: 'defense' }),
+          makeWarlock({ invocations: ['armor-of-shadows'] }),
+        ],
+      },
+      acFromArmor: null,
+      hasEquippedBodyArmor: false,
+    });
+    expect(ac).toBe(15); // 12 + 3 (AoS), Defense bloqué
+  });
+
+  it('D13a anti-régression : slug inconnu (seed corrompu) → ne crash pas, 0 bonus', () => {
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [makeWarlock({ invocations: ['invocation-fantome-inexistante'] })],
+      },
+      acFromArmor: null,
+      hasEquippedBodyArmor: false,
+    });
+    expect(ac).toBe(12);
+  });
 });

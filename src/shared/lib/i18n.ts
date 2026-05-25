@@ -283,6 +283,11 @@ export type StringKey =
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
   | 'spell.damage.resolution.auto'
+  // Manifestations occultes (Eldritch Invocations) — section structurée
+  // « Mécanique » de la modale d'invocation (D13a).
+  | 'sheet.essence.invocation.mechanicsTitle'
+  | 'sheet.essence.invocation.armorOfShadows.label'
+  | 'sheet.essence.invocation.armorOfShadows.condition'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -640,6 +645,14 @@ const STRINGS: Record<Locale, Dict> = {
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
     'spell.damage.resolution.auto': 'Touche automatique',
+    // Manifestations occultes — D13a Armure d'ombres (terminologie WotC FR
+    // standard : « Armure du mage » = Mage Armor, présent dans le bundle SRD
+    // FR `public/data/spells.json` slug `armure-du-mage`).
+    'sheet.essence.invocation.mechanicsTitle': 'Mécanique',
+    'sheet.essence.invocation.armorOfShadows.label':
+      'CA = 13 + modificateur de Dextérité',
+    'sheet.essence.invocation.armorOfShadows.condition':
+      "S'applique uniquement sans armure équipée. Le bouclier reste cumulable.",
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -976,6 +989,11 @@ const STRINGS: Record<Locale, Dict> = {
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',
+    'sheet.essence.invocation.mechanicsTitle': 'Mechanics',
+    'sheet.essence.invocation.armorOfShadows.label':
+      'AC = 13 + Dexterity modifier',
+    'sheet.essence.invocation.armorOfShadows.condition':
+      'Applies only while not wearing armor. Shields still stack.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',
