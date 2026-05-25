@@ -19,6 +19,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 import {
   ANCESTRY_COMMON_SPELL_IDS,
+  ANCESTRY_SPELL_USAGES,
   DRAGON_ANCESTRIES,
   ELF_LINEAGES,
   GIANT_ANCESTRIES,
@@ -93,6 +94,13 @@ async function main(): Promise<void> {
     const common = ANCESTRY_COMMON_SPELL_IDS[a.id];
     if (common && common.length > 0) {
       next.commonSpellIds = common;
+    }
+    // Plan D12a — usage des sorts d'ascendance par slug. Même règle d'idempotence :
+    // un slug retiré de la map doit disparaître du JSON.
+    delete next.spellUsages;
+    const usages = ANCESTRY_SPELL_USAGES[a.id];
+    if (usages && Object.keys(usages).length > 0) {
+      next.spellUsages = usages;
     }
     return next;
   });

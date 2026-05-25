@@ -581,6 +581,19 @@ const REQUIRED_ANCESTRY_OPTION_KEY: Record<string, keyof AncestryOptions> = {
   human: 'skillfulOptions',
 };
 
+/**
+ * Plan D12a — type d'usage d'un sort à recharge. Hoisted ici (avant AncestrySchema)
+ * pour respecter l'ordre des déclarations TS — AncestrySchema le référence.
+ *
+ *   - `at-will`     : sans coût ressource (cantrips, prestidigitation, etc.).
+ *   - `long-rest`   : 1×/jour, recharge au repos long.
+ *   - `pb-per-rest` : `proficiencyBonus`×/repos long.
+ *
+ * Le rendu du compteur côté UI (D12b) consommera ces clés.
+ */
+export const spellUsageSchema = z.enum(['at-will', 'long-rest', 'pb-per-rest']);
+export type SpellUsage = z.infer<typeof spellUsageSchema>;
+
 export const AncestrySchema = z
   .object({
     id: slug,
@@ -605,6 +618,26 @@ export const AncestrySchema = z
      * vivent sur l'option correspondante, pas ici. Plan 13.14b (D18).
      */
     commonSpellIds: z.array(slug).optional(),
+    /**
+     * Plan D12a — usage des sorts d'ascendance (recharge / fréquence). Mappage
+     * par slug → `SpellUsage`. Sert pour TOUS les sorts d'ascendance — communs
+     * (`commonSpellIds`), de lignage (`options.elfLineages[*].cantripSpellId`, etc.)
+     * et de cantrips-list (`gnomeLineages[*].cantripSpellIds`). Les cantrips
+     * « at-will » sont omis par défaut (consommateur fait
+     * `ancestry.spellUsages?.[id] ?? 'at-will'`). Seuls les sorts L1+ avec
+     * recharge limitée (Tieffelin L3/L5 + Elf L3/L5 = `long-rest` ; Forest
+     * Gnome `communication-avec-les-animaux` = `pb-per-rest`) y figurent.
+     *
+     * Pourquoi par-slug et pas par-option : la même ascendance porte plusieurs
+     * sous-choix, chaque sort a une recharge propre. Un map slug→usage évite
+     * de polluer chaque schema d'option avec `*Usage` parallèle. Aucune
+     * collision de slug intra-ascendance — vérifié manuellement à D12a.
+     *
+     * Le rendu du compteur côté UI (D12b) consomme cette map ; tant que D12b
+     * n'est pas livré, la donnée est purement informative (consultable mais
+     * pas trackée).
+     */
+    spellUsages: z.record(slug, spellUsageSchema).optional(),
   })
   .superRefine((ancestry, ctx) => {
     // Validation cross-field : si l'ascendance a un sous-choix L1 SRD, la
