@@ -239,8 +239,8 @@
           "en": "Nature’s Ward"
         },
         "description": {
-          "fr": "Vous êtes immunisé contre l’état Empoisonné et bénéficiez de la Résistance contre les dégâts du type associé à votre choix d’environnement actuel pour l’aptitude Sorts de cercle, comme indiqué dans la table « Protégé de dame Nature ». Protégé de dame Nature EnvironnementRésistance ArideFeu PolaireFroid EnvironnementRésistance Te m pé réFoudre Tropic alPoison",
-          "en": "You are immune to the Poisoned condition, and you have Resistance to a damage type associated with your current land choice in the Circle Spells feature, as shown in the Nature’s Ward table. Nature’s Ward L a n d Ty p eResistance AridFire PolarCold L a n d Ty p eResistance Te m pe r at eLightning Tropic alPoison"
+          "fr": "Vous êtes immunisé contre l’état Empoisonné et bénéficiez de la Résistance contre les dégâts du type associé à votre choix d’environnement actuel pour l’aptitude Sorts de cercle, comme indiqué dans la table « Protégé de dame Nature ». Protégé de dame Nature EnvironnementRésistance ArideFeu PolaireFroid EnvironnementRésistance TempéréFoudre TropicalPoison",
+          "en": "You are immune to the Poisoned condition, and you have Resistance to a damage type associated with your current land choice in the Circle Spells feature, as shown in the Nature’s Ward table. Nature’s Ward Land TypeResistance AridFire PolarCold Land TypeResistance TemperateLightning TropicalPoison"
         }
       },
       {
@@ -266,7 +266,7 @@
     },
     "description": {
       "fr": "Un Champion cherche à tirer le meilleur parti de ses qualités martiales au service obstiné de la victoire. Les Champions conjuguent entraînement draconien et condition physique d’exception pour asséner des coups dévastateurs et endurer les périls, et enfin en récolter les lauriers. Qu’ils s’engagent dans une épreuve purement physique ou une bataille sanguinaire, ils n’ont qu’un objectif : le triomphe.",
-      "en": "A Champion focuses on the development of martial prowess in a relentless pursuit of victory. Champions combine rigorous training with physical excellence to deal devastating blows, withstand peril, and garner glory. Whether in athletic contests or bloody battle, Champions strive for the crown of the v ic tor."
+      "en": "A Champion focuses on the development of martial prowess in a relentless pursuit of victory. Champions combine rigorous training with physical excellence to deal devastating blows, withstand peril, and garner glory. Whether in athletic contests or bloody battle, Champions strive for the crown of the victor."
     },
     "features": [
       {
