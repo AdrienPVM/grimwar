@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T20:13:11.235Z",
+  "generatedAt": "2026-05-24T23:59:17.569Z",
   "counts": {
     "ancestries": 9,
     "backgrounds": 4,
@@ -13,7 +13,8 @@
     "rules": 0,
     "spells": 339,
     "subancestries": 0,
-    "subclasses": 12
+    "subclasses": 12,
+    "summoned-creatures": 4
   },
-  "contentHash": "1a5540a08111299ca00cae6f26990f104f940d027a0b5b3a7e7150bb8b47464c"
+  "contentHash": "6ae4b895e5e30988fd2a800e3aa99b9312716af1bd21a8b2e0f138103bfb3ff5"
 }

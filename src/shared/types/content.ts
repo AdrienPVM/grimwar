@@ -158,6 +158,47 @@ export const MonsterSchema = z.object({
 export type Monster = z.infer<typeof MonsterSchema>;
 
 // ─────────────────────────────────────────────────────────────────────
+// Summoned creature stat blocks (plan D14)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Profil de créature invoquée par un sort (Find Steed, Animate Objects,
+ * Giant Insect, Summon Dragon — D14). Distinct de `MonsterSchema` parce que :
+ *  - CA, PV, vitesse scalent avec le niveau d'emplacement de sort (formules
+ *    texte, pas valeurs fixes) — `MonsterSchema` exige `ac: number` + `hp.avg`.
+ *  - FP = `None`, donc `cr: z.number()` est inapproprié.
+ *  - Les variantes (taille, forme, type de céleste/fée/fiélon) sont conditionnelles
+ *    aux noms d'action (« (Spider Only) ») — pas d'entité distincte.
+ *
+ * Source : extraction hand-curated SRD 5.2.1 dans
+ * `scripts/data/srd-summoned-creatures.ts` (cite pages PDF EN + FR).
+ */
+export const SummonedCreatureStatBlockSchema = z.object({
+  id: slug,
+  name: I18nSchema,
+  /** Taille + type + alignement, format libre (« Large Dragon, Neutral »). */
+  sizeTypeAlignment: I18nSchema,
+  acFormula: I18nSchema,
+  hpFormula: I18nSchema,
+  speed: I18nSchema,
+  abilities: abilitiesSchema,
+  /** Résistances aux dégâts (libre, ex. « acide, feu, froid, foudre, poison »). */
+  resistances: I18nSchema.nullable(),
+  /** Immunités aux dégâts et/ou états (libre, ex. « Charmé, Effrayé, Empoisonné »). */
+  immunities: I18nSchema.nullable(),
+  senses: I18nSchema,
+  languages: I18nSchema,
+  /** Ligne FP — toujours « None (XP 0; PB equals your Proficiency Bonus) ». */
+  challenge: I18nSchema,
+  traits: z.array(namedDescription),
+  actions: z.array(namedDescription),
+  bonusActions: z.array(namedDescription),
+  reactions: z.array(namedDescription),
+  source: sourceTag,
+});
+export type SummonedCreatureStatBlock = z.infer<typeof SummonedCreatureStatBlockSchema>;
+
+// ─────────────────────────────────────────────────────────────────────
 // Items + Magic items
 // ─────────────────────────────────────────────────────────────────────
 
@@ -631,6 +672,7 @@ export type Rule = z.infer<typeof RuleSchema>;
 export const ContentTypeSchemas = {
   spells: SpellSchema,
   monsters: MonsterSchema,
+  'summoned-creatures': SummonedCreatureStatBlockSchema,
   items: ItemSchema,
   'magic-items': MagicItemSchema,
   classes: ClassSchema,
@@ -649,6 +691,7 @@ export type ContentTypeKey = keyof typeof ContentTypeSchemas;
 export type ContentEntityByKey = {
   spells: Spell;
   monsters: Monster;
+  'summoned-creatures': SummonedCreatureStatBlock;
   items: Item;
   'magic-items': MagicItem;
   classes: ClassEntity;
