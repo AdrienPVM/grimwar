@@ -1623,7 +1623,22 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "2d8",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "auto",
+        "condition": {
+          "fr": "Dégâts réactifs automatiques (pas de jet) : quand un attaquant à 1,50 m ou moins touche le lanceur en mêlée, il subit 2d8 dégâts. Variante « bouclier chaud » (feu, défaut) ou « bouclier froid » (froid 2d8) au choix à l’incantation. Le bouclier accorde aussi Résistance au type opposé (Froid pour warm, Feu pour chill).",
+          "en": "Automatic reactive damage (no save): when an attacker within 5 ft hits the caster with a melee attack, they take 2d8 damage. Variant « warm shield » (Fire, default) or « chill shield » (Cold 2d8) chosen at casting. Shield also grants Resistance to the opposite type (Cold for warm, Fire for chill)."
+        }
+      }
+    ]
   },
   {
     "id": "bouclier-de-la-foi",
@@ -1828,7 +1843,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "12d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Sphère de 6 m de rayon à l’explosion. La cible subit les dégâts ACCUMULÉS jusqu’à l’explosion : la base est 12d6 (à l’incantation) + 1d6 supplémentaires à la fin de chaque tour du lanceur tant que le sort dure (jusqu’à 1 minute de concentration). L’upcast augmente UNIQUEMENT la base (+1d6/L), pas le tic par tour.",
+          "en": "Dexterity saving throw; success = half damage. 20-ft-radius Sphere on explosion. Target takes ACCUMULATED damage: base 12d6 (on cast) + 1d6 at the end of each of caster’s turns while concentrating (up to 1 minute). Upcast only increases the base (+1d6/L), not the per-turn tic."
+        }
+      }
+    ]
   },
   {
     "id": "bourrasque",
@@ -2940,7 +2973,41 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Cylindre de 3 m de rayon × 12 m de haut centré dans la portée. Cumule avec la composante radiante (5d6 supplémentaires, même jet, même upcast +1d6/L).",
+          "en": "Dexterity saving throw; success = half damage. 10-ft-radius × 40-ft-high Cylinder within range. Stacks with the Radiant component (additional 5d6, same save, same +1d6/L upcast)."
+        }
+      },
+      {
+        "formula": "5d6",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Composante radiante simultanée à la composante feu (même jet, même cylindre, même upcast +1d6/L). Total combiné : 10d6 dégâts mixtes au niveau de base.",
+          "en": "Dexterity saving throw; success = half damage. Radiant component simultaneous with Fire (same save, same cylinder, same +1d6/L upcast). Combined total: 10d6 mixed damage at base level."
+        }
+      }
+    ]
   },
   {
     "id": "communication-a-distance",
@@ -4692,7 +4759,25 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "10d6+40",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+3d6"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Si les dégâts réduisent la cible à 0 PV, elle (et tout son équipement non magique) est désintégrée en poussière grise — seules True Resurrection ou Wish peuvent la ramener.",
+          "en": "Dexterity saving throw; success = no damage, failure = full damage. If damage reduces the target to 0 HP, it (and all nonmagical equipment) is disintegrated into gray dust — only True Resurrection or Wish can revive it."
+        }
+      }
+    ]
   },
   {
     "id": "detection-de-l-invisibilite",
@@ -5234,7 +5319,22 @@
       "warlock",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "7d8+30",
+        "type": "necrotic",
+        "typeLabel": {
+          "fr": "nécrotiques",
+          "en": "Necrotic"
+        },
+        "resolution": "saving-throw",
+        "condition": {
+          "fr": "Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Un Humanoïde tué par ce sort se relève au début du prochain tour du lanceur comme un Zombie qui obéit à ses ordres verbaux.",
+          "en": "Constitution saving throw; success = half damage. A Humanoid killed by this spell rises at the start of the caster’s next turn as a Zombie that follows verbal orders."
+        }
+      }
+    ]
   },
   {
     "id": "domination-de-bete",
@@ -5944,7 +6044,22 @@
       "bard",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "4d12",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "condition": {
+          "fr": "Sur un coup d’attaque magique au corps à corps, la cible subit 4d12 + modificateur de caractéristique d’incantation dégâts de force. Épée spectrale invoquée à portée (jusqu’à 27 m). Action bonus aux tours suivants : déplacer l’épée jusqu’à 9 m et répéter l’attaque (même cible ou autre).",
+          "en": "On a melee spell attack hit, target takes 4d12 + spellcasting ability modifier Force damage. Spectral sword summoned within range (90 ft). Bonus Action on later turns: move sword up to 30 ft and repeat the attack (same or different target)."
+        }
+      }
+    ]
   },
   {
     "id": "epine-mentale",
@@ -6126,7 +6241,25 @@
     "classes": [
       "cleric"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d8",
+        "type": "radiant",
+        "typeLabel": {
+          "fr": "radiants",
+          "en": "Radiant"
+        },
+        "resolution": "saving-throw",
+        "atHigherLevels": {
+          "perLevel": "+1d8"
+        },
+        "condition": {
+          "fr": "Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Émanation de 4,50 m autour du lanceur, vitesse divisée par 2. Type de dégâts : radiants si alignement Bon ou Neutre ; nécrotiques si alignement Mauvais. Une créature fait le jet la première fois qu’elle entre dans l’émanation ou y termine son tour (une fois par tour maximum).",
+          "en": "Wisdom saving throw; success = half damage. 15-ft Emanation around caster; Speed halved within. Damage type: Radiant if Good or Neutral alignment, Necrotic if Evil. Save when first entering the Emanation or ending a turn there (once per turn)."
+        }
+      }
+    ]
   },
   {
     "id": "eveil",
@@ -8643,7 +8776,25 @@
       "druid",
       "sorcerer"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "3d6",
+        "type": "fire",
+        "typeLabel": {
+          "fr": "feu",
+          "en": "Fire"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+1d6"
+        },
+        "condition": {
+          "fr": "Lame de feu évoquée dans la main libre (Action bonus). Sur un coup d’attaque magique au corps à corps (action Magique), la cible subit 3d6 + modificateur de caractéristique d’incantation dégâts de feu. +1d6 par niveau d’emplacement au-dessus du 2.",
+          "en": "Flame blade evoked in the free hand (Bonus Action). On a melee spell attack hit (Magic action), target takes 3d6 + spellcasting ability modifier Fire damage. +1d6 per spell slot level above 2."
+        }
+      }
+    ]
   },
   {
     "id": "lenteur",
@@ -9242,7 +9393,41 @@
       "sorcerer",
       "wizard"
     ],
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "damage": [
+      {
+        "formula": "5d8",
+        "type": "force",
+        "typeLabel": {
+          "fr": "force",
+          "en": "Force"
+        },
+        "resolution": "attack-roll",
+        "atHigherLevels": {
+          "perLevel": "+2d8"
+        },
+        "condition": {
+          "fr": "Effet « Poing fermé » : sur un coup d’attaque magique au corps à corps, la cible subit 5d8 dégâts de force. +2d8 par niveau d’emplacement au-dessus du 5.",
+          "en": "« Clenched Fist » effect: on a melee spell attack hit, target takes 5d8 Force damage. +2d8 per spell slot level above 5."
+        }
+      },
+      {
+        "formula": "4d6",
+        "type": "bludgeoning",
+        "typeLabel": {
+          "fr": "contondants",
+          "en": "Bludgeoning"
+        },
+        "resolution": "auto",
+        "atHigherLevels": {
+          "perLevel": "+2d6"
+        },
+        "condition": {
+          "fr": "Effet « Main agrippante » : après réussite du grapple (jet de Dextérité raté de la cible), action bonus pour écraser → 4d6 + modificateur de caractéristique d’incantation dégâts contondants automatiques (pas de jet supplémentaire). +2d6 par niveau d’emplacement au-dessus du 5.",
+          "en": "« Grasping Hand » effect: after grapple succeeds (target failed Dex save), Bonus Action to crush → 4d6 + spellcasting ability modifier Bludgeoning damage automatic (no further save). +2d6 per spell slot level above 5."
+        }
+      }
+    ]
   },
   {
     "id": "main-du-mage",

@@ -355,6 +355,88 @@ const PINNED_DAMAGES: readonly PinnedDamage[] = [
     typeLabelEn: 'Bludgeoning',
     resolution: 'saving-throw',
   },
+  // ─── D1a batch 4 (2026-05-25) — 9 sorts de dégâts haut profil ─────────
+  // Patterns supplémentaires : formule mixte « XdY+N », dégâts cumulatifs,
+  // dégâts réactifs auto. Cas particuliers (`colonne-de-flamme` 2 types,
+  // `main-arcanique` 2 effets) validés en dehors de PINNED_DAMAGES.
+  {
+    slug: 'desintegration',
+    formula: '10d6+40',
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+3d6',
+  },
+  {
+    slug: 'doigt-de-mort',
+    formula: '7d8+30',
+    type: 'necrotic',
+    typeLabelFr: 'nécrotiques',
+    typeLabelEn: 'Necrotic',
+    resolution: 'saving-throw',
+  },
+  {
+    slug: 'esprits-gardiens',
+    formula: '3d8',
+    type: 'radiant', // défaut (alignement Bon/Neutre) — variante nécrotique en condition
+    typeLabelFr: 'radiants',
+    typeLabelEn: 'Radiant',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d8',
+  },
+  {
+    slug: 'boule-de-feu-a-retardement',
+    formula: '12d6',
+    type: 'fire',
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d6',
+  },
+  {
+    slug: 'colonne-de-flamme',
+    formula: '5d6', // damage[0] = feu ; damage[1] = radiant (testé séparément)
+    type: 'fire',
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'saving-throw',
+    atHigherLevelsPerLevel: '+1d6',
+  },
+  {
+    slug: 'epee-arcanique',
+    formula: '4d12',
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'attack-roll',
+  },
+  {
+    slug: 'main-arcanique',
+    formula: '5d8', // damage[0] = Clenched Fist (force) ; damage[1] = Grasping Hand (bludg)
+    type: 'force',
+    typeLabelFr: 'force',
+    typeLabelEn: 'Force',
+    resolution: 'attack-roll',
+    atHigherLevelsPerLevel: '+2d8',
+  },
+  {
+    slug: 'lame-de-feu',
+    formula: '3d6',
+    type: 'fire',
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'attack-roll',
+    atHigherLevelsPerLevel: '+1d6',
+  },
+  {
+    slug: 'bouclier-de-feu',
+    formula: '2d8',
+    type: 'fire',
+    typeLabelFr: 'feu',
+    typeLabelEn: 'Fire',
+    resolution: 'auto', // dégâts réactifs auto sur attaque mêlée touchée
+  },
 ];
 
 /**
@@ -725,6 +807,102 @@ describe('cat. 4 — Dégâts canoniques de sort (D1)', () => {
     ];
     expect(batch3Slugs).toHaveLength(20);
     for (const slug of batch3Slugs) {
+      const spell = spells.find((s) => s.id === slug);
+      expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
+      expect(
+        spell?.damage,
+        `${slug} doit porter au moins une entrée damage[]`,
+      ).toBeDefined();
+      expect((spell?.damage ?? []).length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // D1a batch 4 — Sorts haut profil (formule mixte, dégâts cumulatifs,
+  // mécaniques spéciales). Test de damage[1] pour les 2 sorts à 2 effets.
+  // ──────────────────────────────────────────────────────────────────────
+  it('D1a batch 4 — colonne-de-flamme porte 2 entrées (feu + radiant) avec même upcast', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'colonne-de-flamme');
+    expect(spell?.damage, 'colonne-de-flamme doit avoir 2 formules').toHaveLength(2);
+    const radiant = spell?.damage?.[1];
+    expect(radiant?.formula).toBe('5d6');
+    expect(radiant?.type).toBe('radiant');
+    expect(radiant?.typeLabel.fr).toBe('radiants');
+    expect(radiant?.resolution).toBe('saving-throw');
+    expect(radiant?.atHigherLevels?.perLevel).toBe('+1d6');
+    expect(radiant?.condition?.fr).toContain('Dextérité');
+  });
+
+  it('D1a batch 4 — main-arcanique porte 2 entrées (Clenched Fist force + Grasping Hand bludg)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'main-arcanique');
+    expect(spell?.damage, 'main-arcanique doit avoir 2 formules').toHaveLength(2);
+    const grasping = spell?.damage?.[1];
+    expect(grasping?.formula).toBe('4d6');
+    expect(grasping?.type).toBe('bludgeoning');
+    expect(grasping?.typeLabel.fr).toBe('contondants');
+    expect(grasping?.resolution).toBe('auto'); // après grapple, écrasement automatique
+    expect(grasping?.atHigherLevels?.perLevel).toBe('+2d6');
+    expect(grasping?.condition?.fr).toContain('Main agrippante');
+  });
+
+  it('D1a batch 4 — desintegration porte formule mixte « 10d6+40 »', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'desintegration');
+    expect(spell?.damage?.[0]?.formula).toBe('10d6+40');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Dextérité');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('désintégrée');
+  });
+
+  it('D1a batch 4 — doigt-de-mort porte formule mixte « 7d8+30 »', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'doigt-de-mort');
+    expect(spell?.damage?.[0]?.formula).toBe('7d8+30');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Constitution');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Zombie');
+  });
+
+  it('D1a batch 4 — esprits-gardiens condition documente la variante nécrotique pour les Mauvais', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'esprits-gardiens');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Sagesse');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('nécrotiques');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('Mauvais');
+  });
+
+  it('D1a batch 4 — boule-de-feu-a-retardement documente le tic d\'accumulation', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'boule-de-feu-a-retardement');
+    expect(spell?.damage?.[0]?.formula).toBe('12d6');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('ACCUMULÉS');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('+ 1d6 supplémentaires');
+  });
+
+  it('D1a batch 4 — bouclier-de-feu utilise resolution: auto (dégâts réactifs sans save)', async () => {
+    const spells = await loadSpells();
+    const spell = spells.find((s) => s.id === 'bouclier-de-feu');
+    expect(spell?.damage?.[0]?.resolution).toBe('auto');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('réactifs');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('chaud');
+    expect(spell?.damage?.[0]?.condition?.fr).toContain('froid');
+  });
+
+  it('D1a batch 4 — 9 nouveaux sorts portent damage[] (sanity count)', async () => {
+    const spells = await loadSpells();
+    const batch4Slugs = [
+      'desintegration',
+      'doigt-de-mort',
+      'esprits-gardiens',
+      'boule-de-feu-a-retardement',
+      'colonne-de-flamme',
+      'epee-arcanique',
+      'main-arcanique',
+      'lame-de-feu',
+      'bouclier-de-feu',
+    ];
+    expect(batch4Slugs).toHaveLength(9);
+    for (const slug of batch4Slugs) {
       const spell = spells.find((s) => s.id === slug);
       expect(spell, `sort ${slug} absent du bundle`).toBeDefined();
       expect(

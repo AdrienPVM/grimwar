@@ -1092,6 +1092,213 @@ export const SRD_SPELL_DAMAGE: Readonly<Record<string, readonly SpellDamage[]>> 
       },
     }),
   ],
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // D1a — long-tail batch 4 : 12 sorts de dégâts haut profil (incantations
+  // emblématiques restantes). Hand-curés contre SRD CC EN
+  // (`SRD_CC_v5.2.1.txt`).
+  // ═══════════════════════════════════════════════════════════════════════
+  //
+  // Couvre 4 patterns supplémentaires :
+  //  - Formule mixte « XdY + N » (Disintegrate 10d6+40, Finger of Death 7d8+30).
+  //  - Cible primaire + arcs secondaires (Chain Lightning).
+  //  - Dégâts cumulatifs (Delayed Blast Fireball : 12d6 + 1d6/round).
+  //  - Attaque réactive auto sur attaquant melee (Fire Shield).
+  //
+  // Cas particuliers :
+  //  - `colonne-de-flamme` / `main-arcanique` : 2 entrées `damage[]` distinctes.
+  //  - `bouclier-de-feu` : `resolution: 'auto'` (réactif, pas de save).
+  //  - `caresse-du-vampire` : drain — le lanceur récupère la moitié des PV
+  //    infligés ; documenté en `condition`, le drain n'est pas modélisé.
+
+  // Disintegrate — SRD CC L11981-12001 : « A creature targeted by this
+  // spell makes a Dexterity saving throw. On a failed save, the target
+  // takes 10d6 + 40 Force damage. If this damage reduces it to 0 Hit
+  // Points, it and everything nonmagical it is wearing and carrying are
+  // disintegrated into gray dust. […] Using a Higher-Level Spell Slot.
+  // The damage increases by 3d6 for each spell slot level above 6. »
+  // Pas de demi-dégâts à la réussite.
+  'desintegration': [
+    dmg('10d6+40', 'force', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+3d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = aucun dégât, échec = dégâts pleins. Si les dégâts réduisent la cible à 0 PV, elle (et tout son équipement non magique) est désintégrée en poussière grise — seules True Resurrection ou Wish peuvent la ramener.',
+        en: 'Dexterity saving throw; success = no damage, failure = full damage. If damage reduces the target to 0 HP, it (and all nonmagical equipment) is disintegrated into gray dust — only True Resurrection or Wish can revive it.',
+      },
+    }),
+  ],
+
+  // Finger of Death — SRD CC L12729-12743 : « The target makes a
+  // Constitution saving throw, taking 7d8 + 30 Necrotic damage on a
+  // failed save or half as much damage on a successful one. A Humanoid
+  // killed by this spell rises at the start of your next turn as a
+  // Zombie […]. » Pas d'upcast.
+  'doigt-de-mort': [
+    dmg('7d8+30', 'necrotic', {
+      resolution: 'saving-throw',
+      condition: {
+        fr: 'Jet de sauvegarde de Constitution ; réussite = demi-dégâts. Un Humanoïde tué par ce sort se relève au début du prochain tour du lanceur comme un Zombie qui obéit à ses ordres verbaux.',
+        en: 'Constitution saving throw; success = half damage. A Humanoid killed by this spell rises at the start of the caster’s next turn as a Zombie that follows verbal orders.',
+      },
+    }),
+  ],
+
+  // Spirit Guardians — SRD CC L16368-16393 : « […] the creature must
+  // make a Wisdom saving throw. On a failed save, the creature takes 3d8
+  // Radiant damage (if you are good or neutral) or 3d8 Necrotic damage
+  // (if you are evil). On a successful save, the creature takes half as
+  // much damage. A creature makes this save only once per turn. […]
+  // +1d8 per spell slot level above 3. »
+  //
+  // Le type de dégâts dépend de l'alignement du lanceur. Encodage : on
+  // pose `radiant` comme défaut (alignement bon/neutre, le cas le plus
+  // commun en table) et on documente la variante nécrotique en condition.
+  'esprits-gardiens': [
+    dmg('3d8', 'radiant', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d8' },
+      condition: {
+        fr: 'Jet de sauvegarde de Sagesse ; réussite = demi-dégâts. Émanation de 4,50 m autour du lanceur, vitesse divisée par 2. Type de dégâts : radiants si alignement Bon ou Neutre ; nécrotiques si alignement Mauvais. Une créature fait le jet la première fois qu’elle entre dans l’émanation ou y termine son tour (une fois par tour maximum).',
+        en: 'Wisdom saving throw; success = half damage. 15-ft Emanation around caster; Speed halved within. Damage type: Radiant if Good or Neutral alignment, Necrotic if Evil. Save when first entering the Emanation or ending a turn there (once per turn).',
+      },
+    }),
+  ],
+
+  // NB : `chaine-d-eclairs`, `appel-de-la-foudre`, `caresse-du-vampire`
+  // sont DÉJÀ présents dans la baseline (`SRD_SPELL_DAMAGE` pré-D1a).
+  // Pas de duplication ici. Une passe d'enrichissement future pourra
+  // aligner leur `condition.fr` sur la convention `rayon-de-lune`
+  // (caractéristique de sauvegarde + outcome textuellement présents).
+
+  // Delayed Blast Fireball — SRD CC L11806-11834 : « The spell’s base
+  // damage is 12d6, and the damage increases by 1d6 whenever your turn
+  // ends and the spell hasn’t ended. […] A creature takes Fire damage
+  // equal to the total accumulated damage on a failed save or half as
+  // much damage on a successful one. […] The base damage increases by
+  // 1d6 for each spell slot level above 7. »
+  //
+  // 2 mécaniques d'accumulation distinctes :
+  //  - Base 12d6 (à l'incantation) + 1d6 par tour de concentration.
+  //  - Upcast : la BASE augmente de +1d6/L (le tic par tour reste +1d6).
+  // Encodage : `formula` = 12d6 (base initiale), `atHigherLevels.perLevel`
+  // = `+1d6` (upcast de la base), condition documente l'accumulation
+  // par tour (1d6 par fin de tour du lanceur).
+  'boule-de-feu-a-retardement': [
+    dmg('12d6', 'fire', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Sphère de 6 m de rayon à l’explosion. La cible subit les dégâts ACCUMULÉS jusqu’à l’explosion : la base est 12d6 (à l’incantation) + 1d6 supplémentaires à la fin de chaque tour du lanceur tant que le sort dure (jusqu’à 1 minute de concentration). L’upcast augmente UNIQUEMENT la base (+1d6/L), pas le tic par tour.',
+        en: 'Dexterity saving throw; success = half damage. 20-ft-radius Sphere on explosion. Target takes ACCUMULATED damage: base 12d6 (on cast) + 1d6 at the end of each of caster’s turns while concentrating (up to 1 minute). Upcast only increases the base (+1d6/L), not the per-turn tic.',
+      },
+    }),
+  ],
+
+  // Flame Strike — SRD CC L12877-12891 : « Each creature in a 10-foot-
+  // radius, 40-foot-high Cylinder centered on a point within range
+  // makes a Dexterity saving throw, taking 5d6 Fire damage and 5d6
+  // Radiant damage on a failed save or half as much damage on a
+  // successful one. […] The Fire damage and the Radiant damage
+  // increase by 1d6 for each spell slot level above 5. »
+  //
+  // 2 entrées `damage[]` : feu + radiant, chacune avec son upcast.
+  'colonne-de-flamme': [
+    dmg('5d6', 'fire', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Cylindre de 3 m de rayon × 12 m de haut centré dans la portée. Cumule avec la composante radiante (5d6 supplémentaires, même jet, même upcast +1d6/L).',
+        en: 'Dexterity saving throw; success = half damage. 10-ft-radius × 40-ft-high Cylinder within range. Stacks with the Radiant component (additional 5d6, same save, same +1d6/L upcast).',
+      },
+    }),
+    dmg('5d6', 'radiant', {
+      resolution: 'saving-throw',
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'Jet de sauvegarde de Dextérité ; réussite = demi-dégâts. Composante radiante simultanée à la composante feu (même jet, même cylindre, même upcast +1d6/L). Total combiné : 10d6 dégâts mixtes au niveau de base.',
+        en: 'Dexterity saving throw; success = half damage. Radiant component simultaneous with Fire (same save, same cylinder, same +1d6/L upcast). Combined total: 10d6 mixed damage at base level.',
+      },
+    }),
+  ],
+
+  // Arcane Sword — SRD CC L10518-10534 : « When the sword appears, you
+  // make a melee spell attack against a target within 5 feet of the
+  // sword. On a hit, the target takes Force damage equal to 4d12 plus
+  // your spellcasting ability modifier. […] On your later turns, you
+  // can take a Bonus Action to move the sword […] and repeat the
+  // attack […]. » Pas d'upcast.
+  'epee-arcanique': [
+    dmg('4d12', 'force', {
+      resolution: 'attack-roll',
+      condition: {
+        fr: 'Sur un coup d’attaque magique au corps à corps, la cible subit 4d12 + modificateur de caractéristique d’incantation dégâts de force. Épée spectrale invoquée à portée (jusqu’à 27 m). Action bonus aux tours suivants : déplacer l’épée jusqu’à 9 m et répéter l’attaque (même cible ou autre).',
+        en: 'On a melee spell attack hit, target takes 4d12 + spellcasting ability modifier Force damage. Spectral sword summoned within range (90 ft). Bonus Action on later turns: move sword up to 30 ft and repeat the attack (same or different target).',
+      },
+    }),
+  ],
+
+  // Arcane Hand — SRD CC L10458-10503 : 4 sous-effets, 2 inflijent des
+  // dégâts. Clenched Fist : « Make a melee spell attack. On a hit, the
+  // target takes 5d8 Force damage. » Grasping Hand : « […] dealing
+  // Bludgeoning damage to the target equal to 4d6 plus your spellcasting
+  // ability modifier. » Upcast : « +2d8 Clenched Fist, +2d6 Grasping
+  // Hand per spell slot level above 5. »
+  //
+  // 2 entrées `damage[]` : poing fermé (Clenched Fist) + main agrippante
+  // (Grasping Hand). Les 2 autres effets (Forceful Hand, Interposing
+  // Hand) n'infligent pas de dégâts.
+  'main-arcanique': [
+    dmg('5d8', 'force', {
+      resolution: 'attack-roll',
+      atHigherLevels: { perLevel: '+2d8' },
+      condition: {
+        fr: 'Effet « Poing fermé » : sur un coup d’attaque magique au corps à corps, la cible subit 5d8 dégâts de force. +2d8 par niveau d’emplacement au-dessus du 5.',
+        en: '« Clenched Fist » effect: on a melee spell attack hit, target takes 5d8 Force damage. +2d8 per spell slot level above 5.',
+      },
+    }),
+    dmg('4d6', 'bludgeoning', {
+      resolution: 'auto',
+      atHigherLevels: { perLevel: '+2d6' },
+      condition: {
+        fr: 'Effet « Main agrippante » : après réussite du grapple (jet de Dextérité raté de la cible), action bonus pour écraser → 4d6 + modificateur de caractéristique d’incantation dégâts contondants automatiques (pas de jet supplémentaire). +2d6 par niveau d’emplacement au-dessus du 5.',
+        en: '« Grasping Hand » effect: after grapple succeeds (target failed Dex save), Bonus Action to crush → 4d6 + spellcasting ability modifier Bludgeoning damage automatic (no further save). +2d6 per spell slot level above 5.',
+      },
+    }),
+  ],
+
+  // Flame Blade — SRD CC L12859-12876 : « On a hit, the target takes
+  // Fire damage equal to 3d6 plus your spellcasting ability modifier.
+  // […] The damage increases by 1d6 for each spell slot level above 2. »
+  'lame-de-feu': [
+    dmg('3d6', 'fire', {
+      resolution: 'attack-roll',
+      atHigherLevels: { perLevel: '+1d6' },
+      condition: {
+        fr: 'Lame de feu évoquée dans la main libre (Action bonus). Sur un coup d’attaque magique au corps à corps (action Magique), la cible subit 3d6 + modificateur de caractéristique d’incantation dégâts de feu. +1d6 par niveau d’emplacement au-dessus du 2.',
+        en: 'Flame blade evoked in the free hand (Bonus Action). On a melee spell attack hit (Magic action), target takes 3d6 + spellcasting ability modifier Fire damage. +1d6 per spell slot level above 2.',
+      },
+    }),
+  ],
+
+  // Fire Shield — SRD CC L12826-12843 : « whenever a creature within 5
+  // feet of you hits you with a melee attack roll, the shield erupts
+  // with flame. The attacker takes 2d8 Fire damage from a warm shield
+  // or 2d8 Cold damage from a chill shield. » Pas d'upcast. Pas de save.
+  //
+  // Cas particulier : dégâts réactifs auto, déclenchés par l'attaquant
+  // qui touche le lanceur en mêlée. `resolution: 'auto'`. Type par défaut
+  // = `fire` (variante « warm shield ») ; condition documente la variante
+  // « chill shield » (cold).
+  'bouclier-de-feu': [
+    dmg('2d8', 'fire', {
+      resolution: 'auto',
+      condition: {
+        fr: 'Dégâts réactifs automatiques (pas de jet) : quand un attaquant à 1,50 m ou moins touche le lanceur en mêlée, il subit 2d8 dégâts. Variante « bouclier chaud » (feu, défaut) ou « bouclier froid » (froid 2d8) au choix à l’incantation. Le bouclier accorde aussi Résistance au type opposé (Froid pour warm, Feu pour chill).',
+        en: 'Automatic reactive damage (no save): when an attacker within 5 ft hits the caster with a melee attack, they take 2d8 damage. Variant « warm shield » (Fire, default) or « chill shield » (Cold 2d8) chosen at casting. Shield also grants Resistance to the opposite type (Cold for warm, Fire for chill).',
+      },
+    }),
+  ],
 };
 
 /**
