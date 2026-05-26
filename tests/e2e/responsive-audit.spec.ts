@@ -51,6 +51,11 @@ test.describe('Plan 13.14 — Audit responsive (audit-only)', () => {
   test('Audit wizard L1 landing × 4 viewports', async ({
     page,
   }, testInfo) => {
+    // L'audit capture 16+ fullPage screenshots à 4 viewports — sur CI, le
+    // fullPage à 1024×1366 et 1440×900 sur des panneaux Sheet denses
+    // dépasse régulièrement le timeout par défaut de 60s. On le triple
+    // pour cette spec qui est audit-only, pas hot-path.
+    test.setTimeout(180_000);
     // L'avancement multi-step du wizard est complexe à automatiser
     // proprement à 4 viewports (chooser de classe, sous-choix conditionnels).
     // L'audit ici se limite au landing wizard + à un état avec nom rempli
@@ -71,6 +76,7 @@ test.describe('Plan 13.14 — Audit responsive (audit-only)', () => {
   test('Audit fiche personnage — Combat / Magie / Essence / Avoir / Ame × 4 viewports', async ({
     page,
   }, testInfo) => {
+    test.setTimeout(180_000);
     await page.goto('/');
     await waitForAppReady(page);
     const { charId } = await seedCharacter(page, wizardL5DamageD1);
