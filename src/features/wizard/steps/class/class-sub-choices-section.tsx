@@ -9,6 +9,7 @@ import { ClericDivineOrderChooser } from './cleric-divine-order-chooser';
 import { DruidPrimalOrderChooser } from './druid-primal-order-chooser';
 import { ExtraLanguagesChooser } from './extra-languages-chooser';
 import { FighterFightingStyleChooser } from './fighter-fighting-style-chooser';
+import { PactOfTheTomeChooser } from './pact-of-the-tome-chooser';
 import { WarlockInvocationChooser } from './warlock-invocation-chooser';
 import { WeaponMasteryChooser } from './weapon-mastery-chooser';
 import { WizardSpellbookChooser } from './wizard-spellbook-chooser';
@@ -79,9 +80,38 @@ export function ClassSubChoicesSection(): JSX.Element | null {
             <ExtraLanguagesChooser count={ROGUE_EXTRA_LANGUAGES_COUNT_L1} />
           </>
         ) : null}
-        {classId === 'warlock' ? <WarlockInvocationChooser /> : null}
+        {classId === 'warlock' ? (
+          <>
+            <WarlockInvocationChooser />
+            <WarlockPactSubChoosers />
+          </>
+        ) : null}
         {classId === 'wizard' ? <WizardSpellbookChooser /> : null}
       </div>
     </section>
   );
+}
+
+/**
+ * Sous-choosers conditionnels du Warlock — rendus seulement si l'invocation
+ * correspondante est sélectionnée dans `eldritchInvocations`. Pour D13e
+ * (Pact of the Tome) : choix de 3 cantrips + 2 rituels L1 de n'importe
+ * quelle classe.
+ *
+ * D13c (Pact of the Blade) : pas de chooser au L1 — l'arme est invoquée à
+ * la demande à l'action bonus en jeu, le SRD ne demande pas de pré-sélection.
+ * Si Adrien veut une « arme préférée », le champ data-layer
+ * `classes[].pactBladeWeapon` est prêt et un futur chooser viendra en
+ * mini-plan dédié.
+ */
+function WarlockPactSubChoosers(): JSX.Element | null {
+  const invocations = useWizardStore((s) => {
+    const warlock = s.draft.classes.find((c) => c.classId === 'warlock');
+    return warlock?.eldritchInvocations ?? [];
+  });
+
+  const showTome = invocations.includes('pact-of-the-tome');
+  if (!showTome) return null;
+
+  return <PactOfTheTomeChooser />;
 }

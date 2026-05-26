@@ -176,6 +176,13 @@ export async function buildCharacterFromWizard(
     expertiseSkills: [...c.expertiseSkills],
     eldritchInvocations: [...c.eldritchInvocations],
     wizardSpellbookL1: [...c.wizardSpellbookL1],
+    // D13c+e — choix Pact of the Blade/Tome propagés tels quels. Le wizard
+    // les vide quand l'invocation correspondante n'est pas prise (chooser
+    // démonté). Schema character.ts les tient en optional+nullable pour
+    // rétrocompat des fiches V2.
+    pactBladeWeapon: c.pactBladeWeapon ?? null,
+    pactTomeCantrips: [...(c.pactTomeCantrips ?? [])],
+    pactTomeRituals: [...(c.pactTomeRituals ?? [])],
   }));
   const computedTotalLevel = totalLevel(characterClasses);
 

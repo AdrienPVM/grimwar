@@ -198,6 +198,10 @@ export type StringKey =
   | 'wizard.subchoice.wizardSpellbook.preparedLegend'
   | 'wizard.subchoice.wizardSpellbook.preparedHelper'
   | 'wizard.subchoice.wizardSpellbook.preparedEmpty'
+  | 'wizard.subchoice.pactOfTheTome.cantripsLegend'
+  | 'wizard.subchoice.pactOfTheTome.cantripsHelper'
+  | 'wizard.subchoice.pactOfTheTome.ritualsLegend'
+  | 'wizard.subchoice.pactOfTheTome.ritualsHelper'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -573,6 +577,18 @@ const STRINGS: Record<Locale, Dict> = {
       "Choisis {count} sorts parmi ton grimoire — seuls les sorts préparés sont lançables aujourd'hui. Les autres restent inscrits mais inutilisables tant que tu ne les prépares pas.",
     'wizard.subchoice.wizardSpellbook.preparedEmpty':
       "Inscris d'abord les sorts dans ton grimoire ci-dessus.",
+    // D13e — Pacte du grimoire (Pact of the Tome). Terminologie WotC FR
+    // officielle (SRD FR p. 158 « Codex des Ombres ») : « sort mineur »
+    // (= cantrip), « rituel » (= ritual). « N'importe quelle classe »
+    // reprend la formulation SRD « from any class's spell list ».
+    'wizard.subchoice.pactOfTheTome.cantripsLegend':
+      'Codex des Ombres — sorts mineurs',
+    'wizard.subchoice.pactOfTheTome.cantripsHelper':
+      "Choisis {count} sorts mineurs de n'importe quelle classe. Préparés tant que le grimoire est sur toi.",
+    'wizard.subchoice.pactOfTheTome.ritualsLegend':
+      'Codex des Ombres — rituels du 1ᵉʳ niveau',
+    'wizard.subchoice.pactOfTheTome.ritualsHelper':
+      "Choisis {count} sorts du 1ᵉʳ niveau marqués « rituel » de n'importe quelle classe. Préparés tant que le grimoire est sur toi.",
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -975,6 +991,15 @@ const STRINGS: Record<Locale, Dict> = {
       'Pick {count} spells from your spellbook — only prepared spells are castable today. The others stay inscribed but unusable until prepared.',
     'wizard.subchoice.wizardSpellbook.preparedEmpty':
       'Inscribe spells in your spellbook above first.',
+    // D13e — Pact of the Tome (Warlock).
+    'wizard.subchoice.pactOfTheTome.cantripsLegend':
+      'Book of Shadows — cantrips',
+    'wizard.subchoice.pactOfTheTome.cantripsHelper':
+      'Choose {count} cantrips from any class. Prepared while the book is on your person.',
+    'wizard.subchoice.pactOfTheTome.ritualsLegend':
+      'Book of Shadows — level-1 rituals',
+    'wizard.subchoice.pactOfTheTome.ritualsHelper':
+      'Choose {count} level-1 spells with the Ritual tag from any class. Prepared while the book is on your person.',
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel
