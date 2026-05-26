@@ -124,10 +124,25 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
       className={cn('sheet-state relative min-h-screen pb-32', hpClass)}
       data-readonly={readOnly ? 'true' : 'false'}
     >
-      <HeroCard character={character} />
-      <StatusStrip character={character} displayedAc={displayedAc} />
-      <ModeTabs active={mode} onChange={setMode} />
-      <ActiveMode character={character} />
+      {/*
+        PROTOTYPE DESKTOP — Plan 13.14 prototype v0.
+        Mobile / tablet (< lg) : passthrough — les enfants gardent leur
+        `mx-auto max-w-[420px]` historique. Aucune régression visuelle.
+        lg+ : shell 2 colonnes — sidebar 280px sticky (hero + status + tabs
+        verticaux) + main area aérée (max-w-[860px], les modes restent en
+        cards 420px centrées dans la colonne large). La densification multi-col
+        des cards est différée à l'arbitrage v1.
+      */}
+      <div className="lg:mx-auto lg:grid lg:max-w-[1200px] lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-2">
+        <aside className="sheet-desktop-aside lg:sticky lg:top-2 lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:py-2">
+          <HeroCard character={character} />
+          <StatusStrip character={character} displayedAc={displayedAc} />
+          <ModeTabs active={mode} onChange={setMode} />
+        </aside>
+        <div className="sheet-desktop-main lg:min-w-0 lg:pt-2">
+          <ActiveMode character={character} />
+        </div>
+      </div>
       <button
         type="button"
         onClick={() => setHistoryOpen(true)}

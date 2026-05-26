@@ -532,6 +532,27 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **Owner** : `plans/D1a-spell-damage-longtail.md` (ouvert 2026-05-25, branche `fix/D1a-spell-damage-longtail`).
 - **Statut** : **RÉSOLUE 2026-05-25** aux commits 1-6 (`2df8f62`, `d652ba1`, `56c8371`, `95e78ad`, `6eabb91`, batch 6 SHA à insérer post-commit). **Couverture finale** : 96/339 sorts SRD avec `damage[]` canonique (vs 35 au départ → +61 nets en D1a, dont 50 nouvelles entrées via D1a + ~11 qui existaient déjà en baseline et n'ont pas été redéfinis). **13 sorts explicitement exclus** (heals, bonus, durées, table rolls, threshold, debuff) dans `SRD_SPELL_DAMAGE_EXCLUSIONS`. Test bidirectionnel `D1a — (a)/(b)/(b')` enforced ↔ 0 sort en zone grise. La regex stopgap `extractDamageFormula` reste maintenue (D1b ouvert) — couverture insuffisante pour la retirer sans régression silencieuse sur les sorts hors-inventaire (243 sorts non-damage du bundle). Voir `## Résolu > D1a` pour le récap complet.
 
+## D21 — CI GitHub Actions ne déclenche plus sur les PR (probable quota free tier épuisé)
+
+- **Owner** : Adrien (investigation manuelle Settings → Billing → Actions usage).
+- **Statut** : **OUVERT 2026-05-26** — découvert en clôture du PR #19 (CHANTIER 1 marathon nuit 3). Le workflow `.github/workflows/ci.yml` ne se déclenche PAS sur aucun push ni `pull_request` ouverture/reopen sur la branche `chore/13.14-desktop-prototype-combat-magie` (3 pushes + 1 close+reopen = 0 run créé). Le dernier run réussi sur le repo date du PR #18 (chore/map-proto-skeleton, 2026-05-26T09:04 UTC, 11m41s, success).
+- **Diagnostic réalisé** :
+  - Repo Actions enabled (`gh api .../actions/permissions` → `{enabled: true, allowed_actions: all}`).
+  - Workflow `ci.yml` `state: active`.
+  - Triggers `on: push: branches: [main]` + `on: pull_request:` sans path filter ni types filter.
+  - Pas de `workflow_dispatch` trigger configuré (manual run impossible).
+  - Aucune limitation côté repo (pas archived, pas disabled, pas un fork).
+  - 3 push retrigger + close/reopen PR sans effet — `gh api .../actions/runs` retourne strictement 0 run pour la branche.
+- **Hypothèse #1 (la plus probable)** : quota GitHub Actions free tier épuisé. Repo privé free tier = 2000 minutes Linux / mois. CI tourne ~11-12 min par run, 4 jobs parallèles. Cumul des marathons nuits 1-2-3 = ~15+ runs × ~12 min = ~180 min minimum déjà brûlés rien que ces 3 nuits, sans compter le travail antérieur. Possible que le mois soit en saturation.
+- **Hypothèse #2 (moins probable)** : incident GitHub Actions transitoire (à vérifier sur status.github.com au moment du diagnostic).
+- **Conséquence immédiate** : PR #19 (`feat(sheet-13.14): coquille desktop responsive v0 PROTOTYPE`) bloqué en attente du verdict CI 5/5 verte. Local quadruple gate (typecheck + test:fast 1120/1120 + sheet tests 354/354 + lint) verte sur commit `e1077f6`. Branche force-pushée nettoyée des empty retrigger commits parasites.
+- **À résoudre au matin** :
+  1. Vérifier Settings → Billing → Actions usage (quota du mois courant).
+  2. Si quota épuisé : upgrade plan OU attendre reset mensuel OU passer le repo en public (qui obtient des minutes gratuites illimitées).
+  3. Vérifier status.github.com pour incident en cours.
+  4. Une fois CI déblouée → re-pousser PR #19 (un commit vide suffit à retrigger) → merge si 5/5 verte.
+- **Risque structurel** : tant que ce point n'est pas résolu, le workflow CLAUDE.md « PR draft → CI verte → merge » est cassé. Toute PR ouverte aujourd'hui ne peut être validée que localement, ce qui dégrade la garantie de non-régression côté émulateur Firebase (les jobs e2e + rules NE TOURNENT pas localement sans Java/JRE 11+).
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
