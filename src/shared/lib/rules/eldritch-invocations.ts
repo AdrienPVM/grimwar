@@ -248,6 +248,26 @@ export function getInvocationEntry(
 }
 
 /**
+ * IDs des statblocks (cf. `public/data/summoned-creatures.json`) référencés
+ * par l'invocation `pact-of-the-chain`. Slugs FR cohérents avec le bundle
+ * SRD-FR (esprit-follet = Sprite, sphinx-merveilleux = Sphinx of Wonder).
+ *
+ * Le SRD 5.2.1 mentionne 7 formes spéciales (Imp / Pseudodragon / Quasit /
+ * Sprite / Sphinx of Wonder / Venomous Snake / Skeleton). Le bundle
+ * `invocations.json > pact-of-the-chain.summary` n'en liste qu'une partie
+ * (gap traqué D13d-followup-summary). Cette constante reflète les statblocks
+ * RÉELLEMENT bundlés à ce jour — utilisée par
+ * `tests/content-referential-integrity.test.ts` pour considérer ces 4
+ * statblocks comme « référencés par une invocation », pas orphelins.
+ */
+export const PACT_OF_THE_CHAIN_STATBLOCK_IDS = [
+  'pseudodragon',
+  'quasit',
+  'sphinx-merveilleux',
+  'esprit-follet',
+] as const;
+
+/**
  * Aplatit toutes les invocations connues d'un personnage (toutes entrées
  * `classes[]` confondues — multi-classe Warlock × autre possible) en ne
  * gardant que celles présentes au registre. Pas d'erreur sur slug inconnu

@@ -391,7 +391,7 @@ describe('<InvocationsCard>', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/Profils des familiers à venir/),
+      within(dialog).getByText(/Profils complets disponibles dans le bestiaire des invocations/),
     ).toBeInTheDocument();
   });
 

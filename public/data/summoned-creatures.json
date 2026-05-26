@@ -98,6 +98,97 @@
     "source": "srd-5.2.1"
   },
   {
+    "id": "esprit-follet",
+    "name": {
+      "fr": "Esprit follet",
+      "en": "Sprite"
+    },
+    "sizeTypeAlignment": {
+      "fr": "Fée de taille TP, Neutre Bonne",
+      "en": "Tiny Fey, Neutral Good"
+    },
+    "acFormula": {
+      "fr": "CA 15",
+      "en": "AC 15"
+    },
+    "hpFormula": {
+      "fr": "PV 10 (4d4)",
+      "en": "HP 10 (4d4)"
+    },
+    "speed": {
+      "fr": "Vitesse 3 m, vol 12 m",
+      "en": "Speed 10 ft., Fly 40 ft."
+    },
+    "abilities": {
+      "for": 3,
+      "dex": 18,
+      "con": 10,
+      "int": 14,
+      "sag": 13,
+      "cha": 11
+    },
+    "resistances": null,
+    "immunities": null,
+    "senses": {
+      "fr": "Perception passive 13",
+      "en": "Passive Perception 13"
+    },
+    "languages": {
+      "fr": "commun, elfique, sylvestre",
+      "en": "Common, Elvish, Sylvan"
+    },
+    "challenge": {
+      "fr": "FP 1/4 (50 PX ; BM +2)",
+      "en": "CR 1/4 (XP 50; PB +2)"
+    },
+    "traits": [],
+    "actions": [
+      {
+        "name": {
+          "fr": "Épée-aiguille",
+          "en": "Needle Sword"
+        },
+        "description": {
+          "fr": "Corps à corps : +6, allonge 1,50 m. Touché : 6 (1d4 + 4) dégâts perforants.",
+          "en": "Melee Attack Roll: +6, reach 5 ft. Hit: 6 (1d4 + 4) Piercing damage."
+        }
+      },
+      {
+        "name": {
+          "fr": "Arc enchanté",
+          "en": "Enchanting Bow"
+        },
+        "description": {
+          "fr": "À distance : +6, portée 12/48 m. Touché : 1 dégât perforant, et la cible subit l’état Charmé jusqu’au début du tour suivant de l’esprit follet.",
+          "en": "Ranged Attack Roll: +6, range 40/160 ft. Hit: 1 Piercing damage, and the target has the Charmed condition until the start of the sprite’s next turn."
+        }
+      },
+      {
+        "name": {
+          "fr": "Perception du for intérieur",
+          "en": "Heart Sight"
+        },
+        "description": {
+          "fr": "JS Charisme : DD 10, une créature que l’esprit follet voit dans un rayon de 1,50 m (Célestes, Fiélons et Morts-vivants ratent automatiquement ce JS). Échec : l’esprit follet perçoit l’alignement et l’affect actuel de la cible.",
+          "en": "Charisma Saving Throw: DC 10, one creature within 5 feet the sprite can see (Celestials, Fiends, and Undead automatically fail the save). Failure: The sprite knows the target’s emotions and alignment."
+        }
+      },
+      {
+        "name": {
+          "fr": "Invisibilité",
+          "en": "Invisibility"
+        },
+        "description": {
+          "fr": "L’esprit follet lance invisibilité sur lui-même, sans composante matérielle, le Charisme étant sa caractéristique d’incantation.",
+          "en": "The sprite casts Invisibility on itself, requiring no spell components and using Charisma as the spellcasting ability."
+        }
+      }
+    ],
+    "bonusActions": [],
+    "reactions": [],
+    "source": "srd-5.2.1"
+  },
+  {
     "id": "insecte-geant-invoque",
     "name": {
       "fr": "Insecte géant",
@@ -365,6 +456,292 @@
     ],
     "bonusActions": [],
     "reactions": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "pseudodragon",
+    "name": {
+      "fr": "Pseudodragon",
+      "en": "Pseudodragon"
+    },
+    "sizeTypeAlignment": {
+      "fr": "Dragon de taille TP, Neutre Bon",
+      "en": "Tiny Dragon, Neutral Good"
+    },
+    "acFormula": {
+      "fr": "CA 14",
+      "en": "AC 14"
+    },
+    "hpFormula": {
+      "fr": "PV 10 (3d4 + 3)",
+      "en": "HP 10 (3d4 + 3)"
+    },
+    "speed": {
+      "fr": "Vitesse 4,50 m, vol 18 m",
+      "en": "Speed 15 ft., Fly 60 ft."
+    },
+    "abilities": {
+      "for": 6,
+      "dex": 15,
+      "con": 13,
+      "int": 10,
+      "sag": 12,
+      "cha": 10
+    },
+    "resistances": null,
+    "immunities": null,
+    "senses": {
+      "fr": "Vision aveugle 3 m, Vision dans le noir 18 m ; Perception passive 15",
+      "en": "Blindsight 10 ft., Darkvision 60 ft.; Passive Perception 15"
+    },
+    "languages": {
+      "fr": "Comprend le commun et le draconique, mais ne parle pas",
+      "en": "Understands Common and Draconic but can’t speak"
+    },
+    "challenge": {
+      "fr": "FP 1/4 (50 PX ; BM +2)",
+      "en": "CR 1/4 (XP 50; PB +2)"
+    },
+    "traits": [
+      {
+        "name": {
+          "fr": "Résistance à la magie",
+          "en": "Magic Resistance"
+        },
+        "description": {
+          "fr": "Le pseudodragon a l’Avantage aux jets de sauvegarde contre les sorts et autres effets magiques.",
+          "en": "The pseudodragon has Advantage on saving throws against spells and other magical effects."
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": {
+          "fr": "Attaques multiples",
+          "en": "Multiattack"
+        },
+        "description": {
+          "fr": "Le pseudodragon effectue deux attaques de Morsure.",
+          "en": "The pseudodragon makes two Bite attacks."
+        }
+      },
+      {
+        "name": {
+          "fr": "Morsure",
+          "en": "Bite"
+        },
+        "description": {
+          "fr": "Corps à corps : +4, allonge 1,50 m. Touché : 4 (1d4 + 2) dégâts perforants.",
+          "en": "Melee Attack Roll: +4, reach 5 ft. Hit: 4 (1d4 + 2) Piercing damage."
+        }
+      },
+      {
+        "name": {
+          "fr": "Dard",
+          "en": "Sting"
+        },
+        "description": {
+          "fr": "JS Constitution : DD 12, une créature que le pseudodragon voit dans un rayon de 1,50 m. Échec : 5 (2d4) dégâts de poison, et la cible subit l’état Empoisonné pendant 1 heure. Échec de 5 ou plus : tant qu’elle est Empoisonnée, la cible subit en outre l’état Inconscient, qui prend fin prématurément si la cible subit des dégâts ou si une créature dans un rayon de 1,50 m consacre une action à la réveiller.",
+          "en": "Constitution Saving Throw: DC 12, one creature the pseudodragon can see within 5 feet. Failure: 5 (2d4) Poison damage, and the target has the Poisoned condition for 1 hour. Failure by 5 or More: While Poisoned, the target also has the Unconscious condition, which ends early if the target takes damage or a creature within 5 feet of it takes an action to wake it."
+        }
+      }
+    ],
+    "bonusActions": [],
+    "reactions": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "quasit",
+    "name": {
+      "fr": "Quasit",
+      "en": "Quasit"
+    },
+    "sizeTypeAlignment": {
+      "fr": "Fiélon (Démon) de taille TP, Chaotique Mauvais",
+      "en": "Tiny Fiend (Demon), Chaotic Evil"
+    },
+    "acFormula": {
+      "fr": "CA 13",
+      "en": "AC 13"
+    },
+    "hpFormula": {
+      "fr": "PV 25 (10d4)",
+      "en": "HP 25 (10d4)"
+    },
+    "speed": {
+      "fr": "Vitesse 12 m",
+      "en": "Speed 40 ft."
+    },
+    "abilities": {
+      "for": 5,
+      "dex": 17,
+      "con": 10,
+      "int": 7,
+      "sag": 10,
+      "cha": 10
+    },
+    "resistances": {
+      "fr": "feu, foudre, froid",
+      "en": "Cold, Fire, Lightning"
+    },
+    "immunities": {
+      "fr": "poison ; Empoisonné",
+      "en": "Poison; Poisoned"
+    },
+    "senses": {
+      "fr": "Vision dans le noir 36 m ; Perception passive 10",
+      "en": "Darkvision 120 ft.; Passive Perception 10"
+    },
+    "languages": {
+      "fr": "abyssal, commun",
+      "en": "Abyssal, Common"
+    },
+    "challenge": {
+      "fr": "FP 1 (200 PX ; BM +2)",
+      "en": "CR 1 (XP 200; PB +2)"
+    },
+    "traits": [
+      {
+        "name": {
+          "fr": "Résistance à la magie",
+          "en": "Magic Resistance"
+        },
+        "description": {
+          "fr": "Le quasit a l’Avantage aux jets de sauvegarde contre les sorts et autres effets magiques.",
+          "en": "The quasit has Advantage on saving throws against spells and other magical effects."
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": {
+          "fr": "Saignée",
+          "en": "Rend"
+        },
+        "description": {
+          "fr": "Corps à corps : +5, allonge 1,50 m. Touché : 5 (1d4 + 3) dégâts tranchants, et la cible subit l’état Empoisonné jusqu’au début du tour suivant du quasit.",
+          "en": "Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Slashing damage, and the target has the Poisoned condition until the start of the quasit’s next turn."
+        }
+      },
+      {
+        "name": {
+          "fr": "Invisibilité",
+          "en": "Invisibility"
+        },
+        "description": {
+          "fr": "Le quasit lance invisibilité sur lui-même, sans composante matérielle, le Charisme étant sa caractéristique d’incantation.",
+          "en": "The quasit casts Invisibility on itself, requiring no spell components and using Charisma as the spellcasting ability."
+        }
+      },
+      {
+        "name": {
+          "fr": "Frayeur (1/jour)",
+          "en": "Scare (1/Day)"
+        },
+        "description": {
+          "fr": "JS Sagesse : DD 10, une créature dans un rayon de 6 m. Échec : la cible subit l’état Effrayé. La cible réitère le JS à la fin de chacun de ses tours et met un terme à l’effet sur elle-même en cas de réussite. Au bout de 1 minute, elle réussit automatiquement ce JS.",
+          "en": "Wisdom Saving Throw: DC 10, one creature within 20 feet. Failure: The target has the Frightened condition. At the end of each of its turns, the target repeats the save, ending the effect on itself on a success. After 1 minute, it succeeds automatically."
+        }
+      },
+      {
+        "name": {
+          "fr": "Changement d’aspect",
+          "en": "Shape-Shift"
+        },
+        "description": {
+          "fr": "Le quasit se métamorphose en prenant l’aspect d’une chauve-souris (Vitesse 3 m, vol 12 m), d’un mille-pattes (12 m, escalade 12 m) ou d’un crapaud (12 m, nage 12 m) ou reprend sa forme véritable. Son profil reste le même sous chaque forme, à l’exception de sa Vitesse. Rien de ce qu’il porte n’est transformé.",
+          "en": "The quasit shape-shifts to resemble a bat (Speed 10 ft., Fly 40 ft.), a centipede (40 ft., Climb 40 ft.), or a toad (40 ft., Swim 40 ft.), or it returns to its true form. Its game statistics are the same in each form, except for its Speed. Any equipment it is wearing or carrying isn’t transformed."
+        }
+      }
+    ],
+    "bonusActions": [],
+    "reactions": [],
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "sphinx-merveilleux",
+    "name": {
+      "fr": "Sphinx merveilleux",
+      "en": "Sphinx of Wonder"
+    },
+    "sizeTypeAlignment": {
+      "fr": "Céleste de taille TP, Loyal Bon",
+      "en": "Tiny Celestial, Lawful Good"
+    },
+    "acFormula": {
+      "fr": "CA 13",
+      "en": "AC 13"
+    },
+    "hpFormula": {
+      "fr": "PV 24 (7d4 + 7)",
+      "en": "HP 24 (7d4 + 7)"
+    },
+    "speed": {
+      "fr": "Vitesse 6 m, vol 12 m",
+      "en": "Speed 20 ft., Fly 40 ft."
+    },
+    "abilities": {
+      "for": 6,
+      "dex": 17,
+      "con": 13,
+      "int": 15,
+      "sag": 12,
+      "cha": 11
+    },
+    "resistances": {
+      "fr": "nécrotiques, psychiques, radiants",
+      "en": "Necrotic, Psychic, Radiant"
+    },
+    "immunities": null,
+    "senses": {
+      "fr": "Vision dans le noir 18 m ; Perception passive 11",
+      "en": "Darkvision 60 ft.; Passive Perception 11"
+    },
+    "languages": {
+      "fr": "céleste, commun",
+      "en": "Celestial, Common"
+    },
+    "challenge": {
+      "fr": "FP 1 (200 PX ; BM +2)",
+      "en": "CR 1 (XP 200; PB +2)"
+    },
+    "traits": [
+      {
+        "name": {
+          "fr": "Résistance à la magie",
+          "en": "Magic Resistance"
+        },
+        "description": {
+          "fr": "Le sphinx a l’Avantage aux jets de sauvegarde contre les sorts et autres effets magiques.",
+          "en": "The sphinx has Advantage on saving throws against spells and other magical effects."
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": {
+          "fr": "Saignée",
+          "en": "Rend"
+        },
+        "description": {
+          "fr": "Corps à corps : +5, allonge 1,50 m. Touché : 5 (1d4 + 3) dégâts tranchants plus 7 (2d6) dégâts radiants.",
+          "en": "Melee Attack Roll: +5, reach 5 ft. Hit: 5 (1d4 + 3) Slashing damage plus 7 (2d6) Radiant damage."
+        }
+      }
+    ],
+    "bonusActions": [],
+    "reactions": [
+      {
+        "name": {
+          "fr": "Accès d’ingéniosité (2/jour)",
+          "en": "Burst of Ingenuity (2/Day)"
+        },
+        "description": {
+          "fr": "Déclencheur : le sphinx ou une autre créature dans un rayon de 9 m effectue un jet de sauvegarde ou un test de caractéristique. Conséquences : le sphinx ajoute 2 au jet.",
+          "en": "Trigger: The sphinx or another creature within 30 feet makes an ability check or a saving throw. Response: The sphinx adds 2 to the roll."
+        }
+      }
+    ],
     "source": "srd-5.2.1"
   }
 ]

@@ -272,7 +272,7 @@ test.describe('Class Warlock — render Essence (manifestation occulte + modale)
       ),
     ).toBeVisible();
     await expect(
-      dialog.getByText(/Profils des familiers à venir/),
+      dialog.getByText(/Profils complets disponibles dans le bestiaire des invocations/),
     ).toBeVisible();
 
     await takeStepScreenshot(page, testInfo, 'pact-chain-modal-open');
