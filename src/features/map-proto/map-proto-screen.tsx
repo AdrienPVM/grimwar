@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -7,6 +8,17 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react';
+
+import type { FogPolygon, MapPosition } from '@/shared/types/map';
+
+import { FogLayer } from './fog-layer';
+import {
+  appendManualMask,
+  appendManualReveal,
+  clearAllFog,
+  maskAllFog,
+  revealAroundToken,
+} from './fog-state';
 
 /**
  * Plan « mode carte » — prototype-skeleton (PAS production).
@@ -19,31 +31,78 @@ import {
  *   - hit-test gratuite (event listener sur `<g>` token) ;
  *   - transform `viewBox` gère pan + zoom sans calcul matriciel custom.
  *
+ * Périmètre étendu CHANTIER E nuit 3 : fog of war vectoriel.
+ *   - Toggle « Activer fog » ;
+ *   - Toggle « Vue MJ / Vue joueur » (opacité 0.45 vs 0.92) ;
+ *   - Auto-révélation au mouvement d'un token PJ (rayon de vision en px) ;
+ *   - Outils MJ : peindre une zone à révéler / re-masquer, tout révéler,
+ *     tout remasquer.
+ *
  * Hors périmètre strict :
- *   - fog of war / lumière dynamique / lignes de vue ;
+ *   - lumière dynamique (CHANTIER F) ;
+ *   - AoE templates (CHANTIER G) ;
  *   - persistance Firestore / sync temps réel ;
- *   - permissions joueur vs MJ ;
- *   - intégration fiche personnage.
+ *   - permissions joueur vs MJ runtime (le toggle est local).
  */
+
+type TokenKind = 'pj' | 'pnj' | 'marker';
 
 interface Token {
   readonly id: string;
   readonly label: string;
   readonly color: string;
+  readonly kind: TokenKind;
+  /**
+   * Rayon de vision en pixels image-source. Pour la phase prototype on
+   * raisonne en px ; la conversion px ↔ ft viendra avec la migration
+   * Firestore (où `feetPerSquare` × `gridSize` donne le facteur).
+   * `0` = ne révèle rien (PNJ, marker).
+   */
+  readonly visionRadius: number;
   x: number;
   y: number;
 }
 
 const INITIAL_TOKENS: readonly Token[] = [
-  { id: 't1', label: 'PJ-1', color: '#f59e0b', x: 200, y: 200 },
-  { id: 't2', label: 'PJ-2', color: '#3b82f6', x: 320, y: 240 },
-  { id: 't3', label: 'PNJ', color: '#ef4444', x: 480, y: 380 },
+  {
+    id: 't1',
+    label: 'PJ-1',
+    color: '#f59e0b',
+    kind: 'pj',
+    visionRadius: 110,
+    x: 200,
+    y: 200,
+  },
+  {
+    id: 't2',
+    label: 'PJ-2',
+    color: '#3b82f6',
+    kind: 'pj',
+    visionRadius: 110,
+    x: 320,
+    y: 240,
+  },
+  {
+    id: 't3',
+    label: 'PNJ',
+    color: '#ef4444',
+    kind: 'pnj',
+    visionRadius: 0,
+    x: 480,
+    y: 380,
+  },
 ];
 
 const VIEWBOX_BASE = { x: 0, y: 0, w: 1000, h: 700 };
 const TOKEN_RADIUS = 22;
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 4;
+const FOG_OPACITY_PLAYER = 0.92;
+const FOG_OPACITY_DM = 0.45;
+const PAINT_MIN_SEGMENT_PX = 8; // distance min entre 2 points capturés (anti-spam)
+const PAINT_MIN_POINTS = 6; // en-deçà, le clic n'engendre pas de polygone
+
+type PaintMode = 'off' | 'reveal' | 'mask';
 
 export function MapProtoScreen(): JSX.Element {
   const [bgUrl, setBgUrl] = useState<string | null>(null);
@@ -53,6 +112,13 @@ export function MapProtoScreen(): JSX.Element {
   const [showGrid, setShowGrid] = useState(true);
   const [draggingTokenId, setDraggingTokenId] = useState<string | null>(null);
   const [panning, setPanning] = useState(false);
+
+  // Fog of war state (CHANTIER E).
+  const [fogEnabled, setFogEnabled] = useState(true);
+  const [viewAsPlayer, setViewAsPlayer] = useState(false);
+  const [fogPolygons, setFogPolygons] = useState<readonly FogPolygon[]>([]);
+  const [paintMode, setPaintMode] = useState<PaintMode>('off');
+  const [paintStroke, setPaintStroke] = useState<readonly MapPosition[] | null>(null);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
@@ -67,6 +133,37 @@ export function MapProtoScreen(): JSX.Element {
     const y = VIEWBOX_BASE.y + pan.y;
     return `${x} ${y} ${w} ${h}`;
   }, [zoom, pan]);
+
+  /**
+   * Quand le fog est activé ou qu'un token PJ se déplace, on re-pose les
+   * cercles de révélation correspondants. revealAroundToken est idempotent
+   * (remplace l'entrée existante par token id), donc cette synchro reste
+   * O(nb_pj) par tick — pas un perf concern à 3 tokens.
+   *
+   * On purge aussi les reveals attachés à des tokens disparus / non-PJ
+   * (cas où un token a changé de kind).
+   */
+  useEffect(() => {
+    if (!fogEnabled) return;
+    setFogPolygons((prev) => {
+      // Retirer les auto-reveals dont le token n'existe plus ou n'est plus PJ.
+      const livePjIds = new Set(
+        tokens.filter((t) => t.kind === 'pj' && t.visionRadius > 0).map((t) => t.id),
+      );
+      const cleaned = prev.filter((p) => {
+        if (!p.id.startsWith('auto-reveal-')) return true;
+        const tokenId = p.id.replace(/^auto-reveal-/, '');
+        return livePjIds.has(tokenId);
+      });
+      // Ré-appliquer chaque PJ.
+      let next: readonly FogPolygon[] = cleaned;
+      for (const t of tokens) {
+        if (t.kind !== 'pj' || t.visionRadius <= 0) continue;
+        next = revealAroundToken(next, t.id, { x: t.x, y: t.y }, t.visionRadius);
+      }
+      return next;
+    });
+  }, [tokens, fogEnabled]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -98,6 +195,8 @@ export function MapProtoScreen(): JSX.Element {
 
   const handleTokenPointerDown = useCallback(
     (e: ReactPointerEvent<SVGGElement>, token: Token): void => {
+      // Quand on est en mode peinture, l'interaction token est suspendue.
+      if (paintMode !== 'off') return;
       e.stopPropagation();
       (e.target as Element).setPointerCapture(e.pointerId);
       const svgPos = screenToSvg(e.clientX, e.clientY);
@@ -109,7 +208,7 @@ export function MapProtoScreen(): JSX.Element {
       };
       setDraggingTokenId(token.id);
     },
-    [screenToSvg],
+    [paintMode, screenToSvg],
   );
 
   const handleTokenPointerMove = useCallback(
@@ -137,6 +236,13 @@ export function MapProtoScreen(): JSX.Element {
   const handleSvgPointerDown = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>): void => {
       if (draggingTokenId) return;
+      // Mode peinture : on capture un trait, pas de pan.
+      if (paintMode !== 'off') {
+        (e.currentTarget as Element).setPointerCapture(e.pointerId);
+        const svgPos = screenToSvg(e.clientX, e.clientY);
+        setPaintStroke([svgPos]);
+        return;
+      }
       (e.currentTarget as Element).setPointerCapture(e.pointerId);
       panStart.current = {
         clientX: e.clientX,
@@ -146,11 +252,25 @@ export function MapProtoScreen(): JSX.Element {
       };
       setPanning(true);
     },
-    [draggingTokenId, pan],
+    [draggingTokenId, paintMode, pan, screenToSvg],
   );
 
   const handleSvgPointerMove = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>): void => {
+      if (paintStroke) {
+        const svgPos = screenToSvg(e.clientX, e.clientY);
+        const last = paintStroke[paintStroke.length - 1];
+        if (!last) {
+          setPaintStroke([svgPos]);
+          return;
+        }
+        const dx = svgPos.x - last.x;
+        const dy = svgPos.y - last.y;
+        if (dx * dx + dy * dy >= PAINT_MIN_SEGMENT_PX * PAINT_MIN_SEGMENT_PX) {
+          setPaintStroke([...paintStroke, svgPos]);
+        }
+        return;
+      }
       if (!panning || !panStart.current) return;
       const dx = e.clientX - panStart.current.clientX;
       const dy = e.clientY - panStart.current.clientY;
@@ -160,13 +280,24 @@ export function MapProtoScreen(): JSX.Element {
         y: panStart.current.py - dy / zoom,
       });
     },
-    [panning, zoom],
+    [panStart, panning, paintStroke, screenToSvg, zoom],
   );
 
   const handleSvgPointerUp = useCallback((): void => {
+    if (paintStroke) {
+      if (paintStroke.length >= PAINT_MIN_POINTS) {
+        if (paintMode === 'reveal') {
+          setFogPolygons((prev) => appendManualReveal(prev, paintStroke));
+        } else if (paintMode === 'mask') {
+          setFogPolygons((prev) => appendManualMask(prev, paintStroke));
+        }
+      }
+      setPaintStroke(null);
+      return;
+    }
     setPanning(false);
     panStart.current = null;
-  }, []);
+  }, [paintMode, paintStroke]);
 
   const handleWheel = useCallback((e: ReactWheelEvent<SVGSVGElement>): void => {
     e.preventDefault();
@@ -178,7 +309,33 @@ export function MapProtoScreen(): JSX.Element {
     setZoom(1);
     setPan({ x: 0, y: 0 });
     setTokens(INITIAL_TOKENS);
+    setFogPolygons([]);
+    setPaintMode('off');
   }, []);
+
+  const handleRevealAll = useCallback((): void => {
+    setFogPolygons((prev) => clearAllFog(prev));
+    // Couvre toute la carte d'un grand reveal : on retire tout le fog
+    // ET on ajoute un reveal qui couvre le viewBox (au cas où l'effet
+    // futur serait juste de re-révéler sans purger).
+    const corner: MapPosition[] = [
+      { x: -50, y: -50 },
+      { x: VIEWBOX_BASE.w + 50, y: -50 },
+      { x: VIEWBOX_BASE.w + 50, y: VIEWBOX_BASE.h + 50 },
+      { x: -50, y: VIEWBOX_BASE.h + 50 },
+    ];
+    setFogPolygons((prev) => appendManualReveal(prev, corner));
+  }, []);
+
+  const handleMaskAll = useCallback((): void => {
+    setFogPolygons((prev) => maskAllFog(prev));
+  }, []);
+
+  const togglePaintMode = useCallback((mode: PaintMode): void => {
+    setPaintMode((prev) => (prev === mode ? 'off' : mode));
+  }, []);
+
+  const fogOpacity = viewAsPlayer ? FOG_OPACITY_PLAYER : FOG_OPACITY_DM;
 
   return (
     <div className="flex min-h-screen flex-col bg-bg text-text">
@@ -223,10 +380,72 @@ export function MapProtoScreen(): JSX.Element {
             </span>
           </div>
         </div>
+        {/* Bandeau outils fog (CHANTIER E). */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+            Fog of war
+          </span>
+          <button
+            type="button"
+            onClick={() => setFogEnabled((v) => !v)}
+            aria-pressed={fogEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+          >
+            {fogEnabled ? 'Fog activé' : 'Fog désactivé'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewAsPlayer((v) => !v)}
+            aria-pressed={viewAsPlayer}
+            disabled={!fogEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
+          >
+            {viewAsPlayer ? 'Vue joueur' : 'Vue MJ'}
+          </button>
+          <button
+            type="button"
+            onClick={() => togglePaintMode('reveal')}
+            aria-pressed={paintMode === 'reveal'}
+            disabled={!fogEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
+          >
+            Pinceau révéler
+          </button>
+          <button
+            type="button"
+            onClick={() => togglePaintMode('mask')}
+            aria-pressed={paintMode === 'mask'}
+            disabled={!fogEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
+          >
+            Pinceau gomme
+          </button>
+          <button
+            type="button"
+            onClick={handleRevealAll}
+            disabled={!fogEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Tout révéler
+          </button>
+          <button
+            type="button"
+            onClick={handleMaskAll}
+            disabled={!fogEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Tout remasquer
+          </button>
+        </div>
       </header>
       <main className="flex-1 p-4">
         <p className="mb-3 font-serif text-[12px] text-text-tertiary">
-          Importez une image de fond, faites glisser les tokens à la souris (ou au doigt sur tactile), molette pour zoomer, drag sur le fond pour déplacer la vue. <strong>Aucune persistance</strong> — un rafraîchissement réinitialise tout.
+          Importez une image de fond, faites glisser les tokens à la souris (ou au doigt sur tactile), molette pour zoomer, drag sur le fond pour déplacer la vue.
+          {fogEnabled ? (
+            <> Le brouillard est {viewAsPlayer ? 'opaque (vue joueur)' : 'translucide (vue MJ)'}, les PJ révèlent automatiquement autour d&apos;eux ; activez un pinceau pour peindre une zone manuellement.</>
+          ) : null}
+          <br />
+          <strong>Aucune persistance</strong> — un rafraîchissement réinitialise tout.
         </p>
         <div
           className="relative overflow-hidden rounded-lg border border-gold-dim/30 bg-black/40"
@@ -238,7 +457,9 @@ export function MapProtoScreen(): JSX.Element {
             preserveAspectRatio="xMidYMid meet"
             className="h-full w-full touch-none select-none"
             data-testid="map-proto-svg"
-            style={{ cursor: panning ? 'grabbing' : 'grab' }}
+            style={{
+              cursor: paintMode !== 'off' ? 'crosshair' : panning ? 'grabbing' : 'grab',
+            }}
             onPointerDown={handleSvgPointerDown}
             onPointerMove={handleSvgPointerMove}
             onPointerUp={handleSvgPointerUp}
@@ -310,6 +531,27 @@ export function MapProtoScreen(): JSX.Element {
                 </text>
               </g>
             ))}
+            {fogEnabled && (
+              <FogLayer
+                fogPolygons={fogPolygons}
+                maskId="map-proto-fog-mask"
+                width={VIEWBOX_BASE.w}
+                height={VIEWBOX_BASE.h}
+                opacity={fogOpacity}
+              />
+            )}
+            {/* Aperçu en temps réel du tracé pendant qu'on peint. */}
+            {paintStroke && paintStroke.length >= 2 && (
+              <polyline
+                data-testid="map-proto-paint-preview"
+                points={paintStroke.map((p) => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke={paintMode === 'reveal' ? '#fde68a' : '#a3a3a3'}
+                strokeWidth={3}
+                strokeDasharray="6 4"
+                pointerEvents="none"
+              />
+            )}
           </svg>
         </div>
       </main>
