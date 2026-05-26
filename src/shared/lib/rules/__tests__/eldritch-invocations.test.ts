@@ -7,18 +7,21 @@ import {
   getInvocationEntry,
   getKnownInvocationSlugs,
   hasConcentrationAdvantage,
+  hasPactOfTheBlade,
 } from '../eldritch-invocations';
 
 /**
- * D13a + D13b — Armor of Shadows + Eldritch Mind. Tests du registre + des
- * helpers de dérivation (AC bonus + concentration advantage). Couvre :
+ * D13a + D13b + D13c — Armor of Shadows + Eldritch Mind + Pact of the Blade.
+ * Tests du registre + des helpers de dérivation (AC bonus + concentration
+ * advantage + pact-of-the-blade feature). Couvre :
  *  - cat. 3 (fidélité bundle / registre) : les 5 slugs L1 connus du registre.
  *  - cat. 4 (calcul de règle) : Mage Armor +3 SSI pas d'armure portée ;
- *    `hasConcentrationAdvantage` retourne `true` SSI Eldritch Mind présent.
+ *    `hasConcentrationAdvantage` retourne `true` SSI Eldritch Mind présent ;
+ *    `hasPactOfTheBlade` retourne `true` SSI Pact of the Blade présent.
  *  - cat. 6 (intersections) : bouclier seul ne veto pas l'AC ; multi-classe
  *    (Warlock × Fighter) propage les bonus ; slug dupliqué = 1 bonus ;
- *    Eldritch Mind n'affecte PAS l'AC, Armor of Shadows n'affecte PAS la
- *    concentration (effets orthogonaux).
+ *    chaque effet est ORTHOGONAL aux autres (Eldritch Mind n'affecte ni
+ *    l'AC ni la feature Blade, etc.).
  */
 
 function makeClass(opts: {
@@ -73,10 +76,30 @@ describe('eldritch-invocations registry', () => {
     }
   });
 
-  it('les 3 autres invocations L1 sont au registre mais sans effet câblé (D13c-e)', () => {
-    for (const slug of ['pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome']) {
+  it('pact-of-the-blade a un effet feature-pact-weapon (Cha + simple/martial melee + 4 types de dégâts)', () => {
+    const entry = getInvocationEntry('pact-of-the-blade');
+    expect(entry).not.toBeNull();
+    expect(entry?.effect?.kind).toBe('feature-pact-weapon');
+    if (entry?.effect?.kind === 'feature-pact-weapon') {
+      expect(entry.effect.attackAbility).toBe('cha');
+      expect(entry.effect.bondedWeaponCategories).toEqual([
+        'simple-melee',
+        'martial-melee',
+      ]);
+      expect(entry.effect.damageTypeChoices).toEqual([
+        'necrotic',
+        'psychic',
+        'radiant',
+        'normal',
+      ]);
+      expect(entry.effect.actionType).toBe('bonus-action');
+    }
+  });
+
+  it('les 2 autres invocations L1 sont au registre mais sans effet câblé (D13d-e)', () => {
+    for (const slug of ['pact-of-the-chain', 'pact-of-the-tome']) {
       const entry = getInvocationEntry(slug);
-      expect(entry?.effect, `${slug} ne doit pas avoir d'effet runtime câblé en D13b`).toBeNull();
+      expect(entry?.effect, `${slug} ne doit pas avoir d'effet runtime câblé en D13c`).toBeNull();
     }
   });
 
@@ -230,5 +253,85 @@ describe('hasConcentrationAdvantage', () => {
       makeClass({ classId: 'warlock', invocations: ['invocation-fantome'] }),
     ]);
     expect(result).toBe(false);
+  });
+});
+
+describe('hasPactOfTheBlade', () => {
+  it('cat. 4 — Warlock pact-of-the-blade → true', () => {
+    const result = hasPactOfTheBlade([
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-blade'] }),
+    ]);
+    expect(result).toBe(true);
+  });
+
+  it('cat. 4 — Warlock sans pact-of-the-blade → false', () => {
+    const result = hasPactOfTheBlade([
+      makeClass({ classId: 'warlock', invocations: ['armor-of-shadows'] }),
+    ]);
+    expect(result).toBe(false);
+  });
+
+  it('cat. 6 — non-Warlock (Wizard pure) → false (registre filtre)', () => {
+    const result = hasPactOfTheBlade([makeClass({ classId: 'wizard' })]);
+    expect(result).toBe(false);
+  });
+
+  it('cat. 6 — multi-classe Warlock·pact-of-the-blade × Fighter → true', () => {
+    const result = hasPactOfTheBlade([
+      makeClass({ classId: 'fighter', fightingStyle: 'defense' }),
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-blade'] }),
+    ]);
+    expect(result).toBe(true);
+  });
+
+  it('cat. 6 — Warlock eldritch-mind + armor-of-shadows seuls → false (orthogonal)', () => {
+    const result = hasPactOfTheBlade([
+      makeClass({
+        classId: 'warlock',
+        invocations: ['eldritch-mind', 'armor-of-shadows'],
+      }),
+    ]);
+    expect(result).toBe(false);
+  });
+
+  it('cat. 6 — slug inconnu → false (anti-crash + ignoré)', () => {
+    const result = hasPactOfTheBlade([
+      makeClass({ classId: 'warlock', invocations: ['invocation-fantome'] }),
+    ]);
+    expect(result).toBe(false);
+  });
+});
+
+describe('orthogonalité des effets (cat. 6 — intersections)', () => {
+  // Triple combo Warlock idéal pour D13a+b+c — vérifie qu'aucun effet ne
+  // pollue les autres helpers.
+  it('Warlock avec les 3 invocations câblées → +3 AC, advantage concentration, pact-blade', () => {
+    const classes = [
+      makeClass({
+        classId: 'warlock',
+        invocations: ['armor-of-shadows', 'eldritch-mind', 'pact-of-the-blade'],
+      }),
+    ];
+    expect(
+      computeInvocationAcBonus({ classes, hasEquippedBodyArmor: false }),
+    ).toBe(3);
+    expect(hasConcentrationAdvantage(classes)).toBe(true);
+    expect(hasPactOfTheBlade(classes)).toBe(true);
+  });
+
+  it('Pact of the Blade ne contribue pas au bonus AC', () => {
+    const classes = [
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-blade'] }),
+    ];
+    expect(
+      computeInvocationAcBonus({ classes, hasEquippedBodyArmor: false }),
+    ).toBe(0);
+  });
+
+  it('Pact of the Blade ne contribue pas à l\'avantage Concentration', () => {
+    const classes = [
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-blade'] }),
+    ];
+    expect(hasConcentrationAdvantage(classes)).toBe(false);
   });
 });

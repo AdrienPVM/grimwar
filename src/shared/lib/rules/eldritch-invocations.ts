@@ -5,8 +5,9 @@
  *
  *  - D13a : `armor-of-shadows` — Armure du mage à volonté, passif AC.
  *  - D13b : `eldritch-mind` — avantage aux jets de Constitution pour
- *           maintenir la Concentration (passif save). LIVRÉ.
- *  - D13c à venir : `pact-of-the-blade` — arme virtuelle (active combat).
+ *           maintenir la Concentration (passif save).
+ *  - D13c : `pact-of-the-blade` — arme de pacte (feature active :
+ *           Charisme pour atk/dmg, type de dégâts au choix). LIVRÉ.
  *  - D13d à venir : `pact-of-the-chain` — familier amélioré (active utility).
  *  - D13e à venir : `pact-of-the-tome` — grant de cantrips + rituels.
  *
@@ -21,7 +22,17 @@
 
 import type { CharacterClassEntry } from '@/shared/types/character';
 
-/** Effets passifs qui s'appliquent sans action — calculés en dérivation. */
+/**
+ * Discriminated union des effets runtime câblés. Inclut deux catégories
+ * structurelles :
+ *
+ *  - **Passifs** (préfixe `passive-…`) : s'appliquent sans action joueur,
+ *    sont consommés par les dérivations de la fiche (AC, save advantage…).
+ *  - **Features actives** (préfixe `feature-…`) : nécessitent une action
+ *    joueur in-game (action bonus, magic action, etc.). Le moteur expose
+ *    la mécanique mais ne décide pas pour le joueur — celui-ci annonce ou
+ *    déclenche au MJ. Câblage combat à venir (D24 encounters).
+ */
 export type PassiveInvocationEffect =
   | {
       readonly kind: 'passive-mage-armor';
@@ -52,6 +63,38 @@ export type PassiveInvocationEffect =
        * physique ou par la couche dés digitale future).
        */
       readonly target: 'concentration-save';
+    }
+  | {
+      readonly kind: 'feature-pact-weapon';
+      /**
+       * Pact of the Blade SRD 5.2.1 : "As a Bonus Action, you can conjure
+       * a pact weapon in your hand — a Simple or Martial Melee weapon of
+       * your choice with which you bond…  Whenever you attack with the
+       * bonded weapon, you can use your Charisma modifier for the attack
+       * and damage rolls instead of using Strength or Dexterity; and you
+       * can cause the weapon to deal Necrotic, Psychic, or Radiant damage
+       * or its normal damage type."
+       *
+       * Le pact weapon n'est PAS un objet d'inventaire — c'est une feature
+       * runtime qui décrit COMMENT le joueur attaque quand il choisit
+       * d'invoquer son arme de pacte au combat. Le wizard chooser pour
+       * pré-sélectionner l'arme bonded est différé (mini-plan dédié post-
+       * D13c — convention par défaut SRD : choix au moment de l'invocation
+       * in-game, pas au wizard).
+       *
+       * Ces 4 champs encodent les paramètres mécaniques exposés au joueur
+       * via la modale Mécanique. Aucune intégration `attacks-list` côté
+       * Combat mode aujourd'hui — câblage différé à D24 (encounters).
+       */
+      readonly attackAbility: 'cha';
+      readonly bondedWeaponCategories: readonly ['simple-melee', 'martial-melee'];
+      readonly damageTypeChoices: readonly [
+        'necrotic',
+        'psychic',
+        'radiant',
+        'normal',
+      ];
+      readonly actionType: 'bonus-action';
     };
 
 export interface EldritchInvocationEntry {
@@ -89,8 +132,20 @@ const INVOCATION_REGISTRY: ReadonlyMap<string, EldritchInvocationEntry> =
         },
       },
     ],
-    // D13c-e — slugs L1 connus, effet câblé plus tard.
-    ['pact-of-the-blade', { slug: 'pact-of-the-blade', effect: null }],
+    [
+      'pact-of-the-blade',
+      {
+        slug: 'pact-of-the-blade',
+        effect: {
+          kind: 'feature-pact-weapon',
+          attackAbility: 'cha',
+          bondedWeaponCategories: ['simple-melee', 'martial-melee'],
+          damageTypeChoices: ['necrotic', 'psychic', 'radiant', 'normal'],
+          actionType: 'bonus-action',
+        },
+      },
+    ],
+    // D13d-e — slugs L1 connus, effet câblé plus tard.
     ['pact-of-the-chain', { slug: 'pact-of-the-chain', effect: null }],
     ['pact-of-the-tome', { slug: 'pact-of-the-tome', effect: null }],
   ]);
@@ -153,7 +208,11 @@ export function computeInvocationAcBonus(input: {
         // Concentration advantage ne touche pas la CA — pas de contribution
         // ici. Géré séparément par `hasConcentrationAdvantage`.
         break;
-      // D13c-e — futurs cas. Pas de `default` (exhaustivité TS strict).
+      case 'feature-pact-weapon':
+        // Pact of the Blade ne touche pas la CA — c'est une feature
+        // d'attaque, pas une protection. Pas de contribution ici.
+        break;
+      // D13d-e — futurs cas. Pas de `default` (exhaustivité TS strict).
     }
   }
   return bonus;
@@ -177,6 +236,30 @@ export function hasConcentrationAdvantage(
   for (const slug of slugs) {
     const effect = getInvocationEntry(slug)?.effect;
     if (effect?.kind === 'passive-concentration-advantage') return true;
+  }
+  return false;
+}
+
+/**
+ * D13c — Pact of the Blade. Le personnage a-t-il accès à la feature Arme
+ * de pacte ?
+ *
+ * Booléen (un personnage a, ou n'a pas, la feature ; en cas de multi-class
+ * Warlock × Warlock improbable, ou ré-introduction du slug par un grant
+ * futur, on retourne quand même `true` une seule fois).
+ *
+ * Le câblage côté Combat mode (attaques-list, intégration moteur de dés)
+ * est différé à un mini-plan post-D13c. Pour aujourd'hui, l'info est
+ * exposée pour 2 cas d'usage : (1) annonce manuelle au MJ ; (2) rendu UI
+ * structuré dans la modale d'invocation (`<InvocationEffectCard>`).
+ */
+export function hasPactOfTheBlade(
+  classes: readonly CharacterClassEntry[],
+): boolean {
+  const slugs = getKnownInvocationSlugs(classes);
+  for (const slug of slugs) {
+    const effect = getInvocationEntry(slug)?.effect;
+    if (effect?.kind === 'feature-pact-weapon') return true;
   }
   return false;
 }

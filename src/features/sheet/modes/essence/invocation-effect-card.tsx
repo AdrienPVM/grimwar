@@ -74,6 +74,39 @@ export function InvocationEffectCard({
     );
   }
 
+  if (effect.kind === 'feature-pact-weapon') {
+    // D13c — la modale rend la mécanique en plusieurs lignes structurées
+    // (action / capacité / catégorie d'arme / type de dégâts au choix).
+    // Pas de chooser d'arme aujourd'hui — convention par défaut SRD : choix
+    // au moment de l'invocation in-game, annoncé au MJ. Le câblage attaque-
+    // liste est différé (mini-plan post-D13c).
+    return (
+      <div
+        className="mt-4 rounded-card-sm border border-gold-dim/40 bg-gradient-to-b from-gold-bright/[0.08] to-gold/[0.02] px-4 py-3"
+        data-testid="invocation-effect-card"
+      >
+        <p className="mb-2 font-title text-[10px] font-bold uppercase tracking-[0.2em] text-gold-bright">
+          {t('sheet.essence.invocation.mechanicsTitle')}
+        </p>
+        <p
+          className="font-display text-[15px] font-bold text-gold-bright"
+          data-testid="invocation-effect-label"
+        >
+          {t('sheet.essence.invocation.pactOfTheBlade.label')}
+        </p>
+        <ul className="mt-2 list-disc space-y-1 pl-5 font-serif text-[12px] text-text-tertiary">
+          <li>{t('sheet.essence.invocation.pactOfTheBlade.action')}</li>
+          <li>{t('sheet.essence.invocation.pactOfTheBlade.weapon')}</li>
+          <li>{t('sheet.essence.invocation.pactOfTheBlade.attackAbility')}</li>
+          <li>{t('sheet.essence.invocation.pactOfTheBlade.damageTypes')}</li>
+        </ul>
+        <p className="mt-2 font-serif text-[11px] italic text-text-tertiary/70">
+          {t('sheet.essence.invocation.pactOfTheBlade.deferred')}
+        </p>
+      </div>
+    );
+  }
+
   // Pas de `default` — l'exhaustivité TS strict garantit qu'on traite chaque
   // `kind` du discriminated union au moment de l'ajout.
   return null;

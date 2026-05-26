@@ -641,6 +641,32 @@ export const warlockL1MultiInvocations: SeedPreset = {
 };
 
 /**
+ * Plan D13c — Occultiste niv. 1 avec Pacte de la lame. UAT visuel pour la
+ * section structurée « Mécanique » de la modale Pacte (4 lignes : action /
+ * arme / capacité / dégâts + caveat « différé »).
+ */
+export const warlockL1PactOfTheBlade: SeedPreset = {
+  name: 'Velinor du Voile-Mince',
+  classes: [
+    {
+      classId: 'warlock',
+      subclassId: null,
+      level: 1,
+      subChoices: { eldritchInvocations: ['pact-of-the-blade'] },
+    },
+  ],
+  primaryClassId: 'warlock',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'charlatan',
+  abilities: { for: 8, dex: 14, con: 13, int: 12, sag: 10, cha: 16 },
+  hp: { current: 9, max: 9 },
+  ac: 12,
+  hitDice: [{ classId: 'warlock', current: 1, max: 1, die: 'd8' }],
+  saves: { sag: true, cha: true },
+};
+
+/**
  * Plan 13.14b commit 3 — UAT visuel D19/D20 :
  * Guerrier·Defense niv. 1 portant une cotte de mailles équipée. Le StatusStrip
  * doit afficher **CA 17** (cotte 16 + DEX 0 capé + Defense +1). Comparable au
