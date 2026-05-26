@@ -19,6 +19,13 @@ const SheetScreen = lazy(async () => {
   return { default: mod.SheetScreen };
 });
 
+// Route /map-proto — squelette de prototype carte (PAS production).
+// Cf. plans/MAP-MODE-PROPOSAL.md. Pas listée au menu, accessible par URL.
+const MapProtoScreen = lazy(async () => {
+  const mod = await import('@/features/map-proto/map-proto-screen');
+  return { default: mod.MapProtoScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -27,6 +34,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/create" element={<WizardScreen />} />
         <Route path="/character/:id" element={<SheetScreen />} />
         <Route path="/debug-content" element={<DebugContent />} />
+        <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
