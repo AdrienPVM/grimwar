@@ -9,16 +9,25 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from 'react';
 
-import type { FogPolygon, MapPosition } from '@/shared/types/map';
+import type { FogPolygon, LightSource, MapPosition } from '@/shared/types/map';
 
 import { FogLayer } from './fog-layer';
 import {
   appendManualMask,
   appendManualReveal,
   clearAllFog,
+  createCirclePolygon,
   maskAllFog,
   revealAroundToken,
 } from './fog-state';
+import { LightLayer } from './light-layer';
+import {
+  addStaticLight,
+  attachLightToToken,
+  lightRevealId,
+  lightRevealRadius,
+  resolveLightPosition,
+} from './light-state';
 
 /**
  * Plan « mode carte » — prototype-skeleton (PAS production).
@@ -103,6 +112,7 @@ const PAINT_MIN_SEGMENT_PX = 8; // distance min entre 2 points capturés (anti-s
 const PAINT_MIN_POINTS = 6; // en-deçà, le clic n'engendre pas de polygone
 
 type PaintMode = 'off' | 'reveal' | 'mask';
+type PlaceMode = 'off' | 'place-torch';
 
 export function MapProtoScreen(): JSX.Element {
   const [bgUrl, setBgUrl] = useState<string | null>(null);
@@ -120,6 +130,11 @@ export function MapProtoScreen(): JSX.Element {
   const [paintMode, setPaintMode] = useState<PaintMode>('off');
   const [paintStroke, setPaintStroke] = useState<readonly MapPosition[] | null>(null);
 
+  // Dynamic lighting state (CHANTIER F).
+  const [lightingEnabled, setLightingEnabled] = useState(true);
+  const [lights, setLights] = useState<readonly LightSource[]>([]);
+  const [placeMode, setPlaceMode] = useState<PlaceMode>('off');
+
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
   const panStart = useRef<{ clientX: number; clientY: number; px: number; py: number } | null>(
@@ -135,6 +150,17 @@ export function MapProtoScreen(): JSX.Element {
   }, [zoom, pan]);
 
   /**
+   * Carte tokenId → position. Calculée dérivée à partir de `tokens`, sert
+   * (a) à résoudre la position des lumières attachées à un token, (b) à
+   * la couche `LightLayer` pour le rendu.
+   */
+  const tokenPositions = useMemo(() => {
+    const m = new Map<string, MapPosition>();
+    for (const t of tokens) m.set(t.id, { x: t.x, y: t.y });
+    return m;
+  }, [tokens]);
+
+  /**
    * Quand le fog est activé ou qu'un token PJ se déplace, on re-pose les
    * cercles de révélation correspondants. revealAroundToken est idempotent
    * (remplace l'entrée existante par token id), donc cette synchro reste
@@ -142,28 +168,68 @@ export function MapProtoScreen(): JSX.Element {
    *
    * On purge aussi les reveals attachés à des tokens disparus / non-PJ
    * (cas où un token a changé de kind).
+   *
+   * CHANTIER F : on inclut maintenant les reveals issus des sources
+   * lumineuses (statiques + attachées token). Pattern miroir, préfixe
+   * d'id distinct (`light-reveal-*`) → purge ciblée par préfixe.
    */
   useEffect(() => {
-    if (!fogEnabled) return;
+    if (!fogEnabled) {
+      // Fog désactivé : purger reveals automatiques mais garder les
+      // reveals/masks manuels du MJ.
+      setFogPolygons((prev) =>
+        prev.filter(
+          (p) => !p.id.startsWith('auto-reveal-') && !p.id.startsWith('light-reveal-'),
+        ),
+      );
+      return;
+    }
     setFogPolygons((prev) => {
-      // Retirer les auto-reveals dont le token n'existe plus ou n'est plus PJ.
       const livePjIds = new Set(
         tokens.filter((t) => t.kind === 'pj' && t.visionRadius > 0).map((t) => t.id),
       );
+      const liveLightIds = new Set(lightingEnabled ? lights.map((l) => l.id) : []);
       const cleaned = prev.filter((p) => {
-        if (!p.id.startsWith('auto-reveal-')) return true;
-        const tokenId = p.id.replace(/^auto-reveal-/, '');
-        return livePjIds.has(tokenId);
+        if (p.id.startsWith('auto-reveal-')) {
+          const tokenId = p.id.replace(/^auto-reveal-/, '');
+          return livePjIds.has(tokenId);
+        }
+        if (p.id.startsWith('light-reveal-')) {
+          const lightId = p.id.replace(/^light-reveal-/, '');
+          return liveLightIds.has(lightId);
+        }
+        return true;
       });
-      // Ré-appliquer chaque PJ.
       let next: readonly FogPolygon[] = cleaned;
+      // Reveals des PJ (darkvision-like).
       for (const t of tokens) {
         if (t.kind !== 'pj' || t.visionRadius <= 0) continue;
         next = revealAroundToken(next, t.id, { x: t.x, y: t.y }, t.visionRadius);
       }
+      // Reveals des lumières.
+      if (lightingEnabled) {
+        for (const light of lights) {
+          const pos = resolveLightPosition(light, tokenPositions);
+          if (!pos) continue;
+          const radius = lightRevealRadius(light);
+          if (radius <= 0) continue;
+          const id = lightRevealId(light.id);
+          // Manuellement : on retire l'ancienne entrée et on en pose une nouvelle.
+          const without = next.filter((p) => p.id !== id);
+          next = [
+            ...without,
+            {
+              id,
+              points: [...createCirclePolygon(pos, radius)],
+              kind: 'reveal',
+              createdAt: null,
+            },
+          ];
+        }
+      }
       return next;
     });
-  }, [tokens, fogEnabled]);
+  }, [tokens, fogEnabled, lights, lightingEnabled, tokenPositions]);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -236,6 +302,14 @@ export function MapProtoScreen(): JSX.Element {
   const handleSvgPointerDown = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>): void => {
       if (draggingTokenId) return;
+      // Mode placer-lumière : on dépose une torche statique au clic et
+      // on sort du mode (one-shot).
+      if (placeMode === 'place-torch') {
+        const svgPos = screenToSvg(e.clientX, e.clientY);
+        setLights((prev) => addStaticLight(prev, svgPos, 'torch'));
+        setPlaceMode('off');
+        return;
+      }
       // Mode peinture : on capture un trait, pas de pan.
       if (paintMode !== 'off') {
         (e.currentTarget as Element).setPointerCapture(e.pointerId);
@@ -252,7 +326,7 @@ export function MapProtoScreen(): JSX.Element {
       };
       setPanning(true);
     },
-    [draggingTokenId, paintMode, pan, screenToSvg],
+    [draggingTokenId, paintMode, pan, placeMode, screenToSvg],
   );
 
   const handleSvgPointerMove = useCallback(
@@ -311,7 +385,22 @@ export function MapProtoScreen(): JSX.Element {
     setTokens(INITIAL_TOKENS);
     setFogPolygons([]);
     setPaintMode('off');
+    setLights([]);
+    setPlaceMode('off');
   }, []);
+
+  const handleToggleTokenTorch = useCallback((tokenId: string): void => {
+    setLights((prev) => attachLightToToken(prev, tokenId, 'torch'));
+  }, []);
+
+  const handleClearAllLights = useCallback((): void => {
+    setLights([]);
+  }, []);
+
+  const tokenHasTorch = useCallback(
+    (tokenId: string): boolean => lights.some((l) => l.attachedTokenId === tokenId),
+    [lights],
+  );
 
   const handleRevealAll = useCallback((): void => {
     setFogPolygons((prev) => clearAllFog(prev));
@@ -437,6 +526,52 @@ export function MapProtoScreen(): JSX.Element {
             Tout remasquer
           </button>
         </div>
+        {/* Bandeau outils lumière dynamique (CHANTIER F). */}
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+            Lumière
+          </span>
+          <button
+            type="button"
+            onClick={() => setLightingEnabled((v) => !v)}
+            aria-pressed={lightingEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+          >
+            {lightingEnabled ? 'Lumière activée' : 'Lumière désactivée'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setPlaceMode((m) => (m === 'place-torch' ? 'off' : 'place-torch'))}
+            aria-pressed={placeMode === 'place-torch'}
+            disabled={!lightingEnabled}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
+          >
+            Placer torche
+          </button>
+          {tokens
+            .filter((t) => t.kind === 'pj')
+            .map((t) => (
+              <button
+                key={`torch-${t.id}`}
+                type="button"
+                onClick={() => handleToggleTokenTorch(t.id)}
+                aria-pressed={tokenHasTorch(t.id)}
+                disabled={!lightingEnabled}
+                data-testid={`toggle-torch-${t.id}`}
+                className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
+              >
+                Torche {t.label}
+              </button>
+            ))}
+          <button
+            type="button"
+            onClick={handleClearAllLights}
+            disabled={!lightingEnabled || lights.length === 0}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Effacer lumières
+          </button>
+        </div>
       </header>
       <main className="flex-1 p-4">
         <p className="mb-3 font-serif text-[12px] text-text-tertiary">
@@ -539,6 +674,10 @@ export function MapProtoScreen(): JSX.Element {
                 height={VIEWBOX_BASE.h}
                 opacity={fogOpacity}
               />
+            )}
+            {/* Teinte chaude de la lumière au-dessus du fog/tokens (CHANTIER F). */}
+            {lightingEnabled && lights.length > 0 && (
+              <LightLayer lights={lights} tokenPositions={tokenPositions} />
             )}
             {/* Aperçu en temps réel du tracé pendant qu'on peint. */}
             {paintStroke && paintStroke.length >= 2 && (
