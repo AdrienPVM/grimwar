@@ -284,19 +284,27 @@ describe('Intégrité référentielle — sort ↔ statblock invoqué (plan D14)
     ).toEqual([]);
   });
 
-  it('aucun statblock orphelin (référencé par 0 sort)', async () => {
+  it('aucun statblock orphelin (référencé par 0 sort ni 0 invocation)', async () => {
     const spells = await loadJson<SpellWithSummons[]>('public/data/spells.json');
     const creatures = await loadJson<SummonedCreatureEntry[]>(
       'public/data/summoned-creatures.json',
+    );
+    const { PACT_OF_THE_CHAIN_STATBLOCK_IDS } = await import(
+      '../src/shared/lib/rules/eldritch-invocations'
     );
     const referenced = new Set<string>();
     for (const s of spells) {
       for (const cid of s.summonedCreatureIds ?? []) referenced.add(cid);
     }
+    // Les statblocks référencés par une invocation (Pact of the Chain D13d
+    // câble Pseudodragon/Quasit/Sphinx merveilleux/Esprit follet sans passer
+    // par un `spell.summonedCreatureIds[]`) ne sont pas orphelins non plus.
+    for (const cid of PACT_OF_THE_CHAIN_STATBLOCK_IDS) referenced.add(cid);
     const orphans = creatures.filter((c) => !referenced.has(c.id)).map((c) => c.id);
-    expect(orphans, `statblocks orphelins (référencés par 0 sort) : ${orphans.join(', ')}`).toEqual(
-      [],
-    );
+    expect(
+      orphans,
+      `statblocks orphelins (référencés par 0 sort ni 0 invocation) : ${orphans.join(', ')}`,
+    ).toEqual([]);
   });
 
   it('les 4 sorts D14 portent exactement 1 summonedCreatureId chacun', async () => {

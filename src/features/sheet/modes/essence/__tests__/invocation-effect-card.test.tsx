@@ -126,7 +126,7 @@ describe('<InvocationEffectCard>', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Profils des familiers à venir/),
+      screen.getByText(/Profils complets disponibles dans le bestiaire des invocations/),
     ).toBeInTheDocument();
   });
 

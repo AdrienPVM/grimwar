@@ -13,7 +13,7 @@
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "test:fast": "vitest run --passWithNoTests src scripts tests/helpers",
-    "test:matrix": "vitest run tests/wizard-matrix tests/content-referential-integrity.test.ts tests/content-no-english-in-fr.test.ts tests/content-no-letter-spacing-breaks.test.ts tests/srd-counters.test.ts tests/srd-reference-entries.test.ts",
+    "test:matrix": "vitest run tests/wizard-matrix tests/content-referential-integrity.test.ts tests/content-no-english-in-fr.test.ts tests/content-no-letter-spacing-breaks.test.ts tests/srd-counters.test.ts tests/srd-reference-entries.test.ts tests/srd-summoned-creature-references.test.ts",
     "test:nightly": "pnpm test:matrix",
     "test:rules": "firebase emulators:exec --only firestore --project demo-grimwar \"vitest run tests/firestore-rules.test.ts\"",
     "test:e2e": "firebase emulators:exec --only firestore,auth --project demo-grimwar \"playwright test\"",

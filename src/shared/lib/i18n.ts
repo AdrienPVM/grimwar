@@ -708,7 +708,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.invocation.pactOfTheChain.specialForms':
       'Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite (en plus des formes normales du sort).',
     'sheet.essence.invocation.pactOfTheChain.deferred':
-      "Profils des familiers à venir — annoncez votre choix au MJ pour le moment.",
+      "Profils complets disponibles dans le bestiaire des invocations (Pseudodragon, Quasit, Sphinx merveilleux, Esprit follet). Annoncez votre forme au MJ à l'incantation — chooser in-app à venir.",
     // D13e Pacte du grimoire — terminologie WotC FR : « sort mineur(s) »
     // (sort officiel pour cantrip — pas « tour de magie », cf. règle
     // d'autorité terminologique CLAUDE.md), « rituel »/« sort rituel »
@@ -1087,7 +1087,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.invocation.pactOfTheChain.specialForms':
       'Special forms at choice: Imp, Pseudodragon, Quasit, or Sprite (in addition to the normal forms of the spell).',
     'sheet.essence.invocation.pactOfTheChain.deferred':
-      'Familiar stat blocks coming soon — announce your choice to the GM for now.',
+      'Full stat blocks available in the invocation bestiary (Pseudodragon, Quasit, Sphinx of Wonder, Sprite). Announce your form to the GM at casting — in-app chooser to come.',
     'sheet.essence.invocation.pactOfTheTome.label': 'Book of Shadows',
     'sheet.essence.invocation.pactOfTheTome.cantrips':
       'Learn 3 cantrips of your choice from any class.',
