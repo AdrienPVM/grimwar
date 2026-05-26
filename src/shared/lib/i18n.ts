@@ -202,6 +202,8 @@ export type StringKey =
   | 'wizard.subchoice.pactOfTheTome.cantripsHelper'
   | 'wizard.subchoice.pactOfTheTome.ritualsLegend'
   | 'wizard.subchoice.pactOfTheTome.ritualsHelper'
+  | 'wizard.subchoice.pactOfTheBlade.legend'
+  | 'wizard.subchoice.pactOfTheBlade.helper'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -589,6 +591,12 @@ const STRINGS: Record<Locale, Dict> = {
       'Codex des Ombres — rituels du 1ᵉʳ niveau',
     'wizard.subchoice.pactOfTheTome.ritualsHelper':
       "Choisis {count} sorts du 1ᵉʳ niveau marqués « rituel » de n'importe quelle classe. Préparés tant que le grimoire est sur toi.",
+    // D13c — Pacte de la lame (Pact of the Blade). Terminologie WotC FR
+    // officielle (SRD FR p. 158) : « arme de pacte », « corps-à-corps simple »,
+    // « corps-à-corps de guerre » (martial). Le chooser sélectionne UNE arme.
+    'wizard.subchoice.pactOfTheBlade.legend': 'Arme de pacte',
+    'wizard.subchoice.pactOfTheBlade.helper':
+      'Choisis une arme corps-à-corps simple OU de guerre à pré-bonder. Tu pourras toujours la changer en jeu (action bonus, contact 1 minute).',
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -1000,6 +1008,10 @@ const STRINGS: Record<Locale, Dict> = {
       'Book of Shadows — level-1 rituals',
     'wizard.subchoice.pactOfTheTome.ritualsHelper':
       'Choose {count} level-1 spells with the Ritual tag from any class. Prepared while the book is on your person.',
+    // D13c — Pact of the Blade (Warlock).
+    'wizard.subchoice.pactOfTheBlade.legend': 'Pact weapon',
+    'wizard.subchoice.pactOfTheBlade.helper':
+      'Choose one Simple or Martial Melee weapon to pre-bond. You can swap it in play (bonus action, 1-minute touch).',
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel

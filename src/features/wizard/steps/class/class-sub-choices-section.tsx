@@ -9,6 +9,7 @@ import { ClericDivineOrderChooser } from './cleric-divine-order-chooser';
 import { DruidPrimalOrderChooser } from './druid-primal-order-chooser';
 import { ExtraLanguagesChooser } from './extra-languages-chooser';
 import { FighterFightingStyleChooser } from './fighter-fighting-style-chooser';
+import { PactOfTheBladeChooser } from './pact-of-the-blade-chooser';
 import { PactOfTheTomeChooser } from './pact-of-the-tome-chooser';
 import { WarlockInvocationChooser } from './warlock-invocation-chooser';
 import { WeaponMasteryChooser } from './weapon-mastery-chooser';
@@ -94,15 +95,13 @@ export function ClassSubChoicesSection(): JSX.Element | null {
 
 /**
  * Sous-choosers conditionnels du Warlock — rendus seulement si l'invocation
- * correspondante est sélectionnée dans `eldritchInvocations`. Pour D13e
- * (Pact of the Tome) : choix de 3 cantrips + 2 rituels L1 de n'importe
- * quelle classe.
+ * correspondante est sélectionnée dans `eldritchInvocations`.
  *
- * D13c (Pact of the Blade) : pas de chooser au L1 — l'arme est invoquée à
- * la demande à l'action bonus en jeu, le SRD ne demande pas de pré-sélection.
- * Si Adrien veut une « arme préférée », le champ data-layer
- * `classes[].pactBladeWeapon` est prêt et un futur chooser viendra en
- * mini-plan dédié.
+ * - D13c (Pact of the Blade) : single-select d'une arme corps-à-corps Simple
+ *   ou Martiale à pré-bonder. L'arme peut toujours être changée en jeu
+ *   (action bonus + contact 1 minute, cf. SRD 5.2.1).
+ * - D13e (Pact of the Tome) : 3 cantrips + 2 rituels L1 de n'importe quelle
+ *   classe.
  */
 function WarlockPactSubChoosers(): JSX.Element | null {
   const invocations = useWizardStore((s) => {
@@ -110,8 +109,14 @@ function WarlockPactSubChoosers(): JSX.Element | null {
     return warlock?.eldritchInvocations ?? [];
   });
 
+  const showBlade = invocations.includes('pact-of-the-blade');
   const showTome = invocations.includes('pact-of-the-tome');
-  if (!showTome) return null;
+  if (!showBlade && !showTome) return null;
 
-  return <PactOfTheTomeChooser />;
+  return (
+    <>
+      {showBlade ? <PactOfTheBladeChooser /> : null}
+      {showTome ? <PactOfTheTomeChooser /> : null}
+    </>
+  );
 }
