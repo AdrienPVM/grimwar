@@ -7,6 +7,7 @@ import {
   warlockL1ArmorOfShadows,
   warlockL1MultiInvocations,
   warlockL1PactOfTheBlade,
+  warlockL1PactOfTheChain,
 } from './seed-character';
 
 /**
@@ -223,6 +224,58 @@ test.describe('Class Warlock — render Essence (manifestation occulte + modale)
 
     await takeStepScreenshot(page, testInfo, 'pact-blade-modal-open');
     await takeStepScreenshot(page, testInfo, 'pact-blade-modal-open', {
+      viewport: true,
+    });
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+
+  test("D13d — Warlock L1 Pacte de la chaîne → modale Mécanique 3 lignes structurées + caveat différé", async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { charId } = await seedCharacter(page, warlockL1PactOfTheChain);
+    await page.goto(`/character/${charId}`);
+
+    await expect(
+      page.getByText(warlockL1PactOfTheChain.name).first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('tab', { name: /^Essence$/i }).click();
+    const panel = page.locator('#sheet-mode-panel-essence');
+    await expect(panel).toBeVisible();
+
+    const trigger = page.getByRole('button', {
+      name: 'Manifestation occulte : Pacte de la chaîne',
+    });
+    await expect(trigger).toBeVisible();
+    await takeStepScreenshot(page, testInfo, 'essence-pact-of-the-chain');
+
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    await expect(dialog.getByText('Mécanique', { exact: true })).toBeVisible();
+    await expect(dialog.getByTestId('invocation-effect-label')).toHaveText(
+      /Appel de familier amélioré/,
+    );
+    await expect(
+      dialog.getByText(/Action magique pour lancer Appel de familier/),
+    ).toBeVisible();
+    await expect(
+      dialog.getByText(
+        /Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite/,
+      ),
+    ).toBeVisible();
+    await expect(
+      dialog.getByText(/Profils des familiers à venir/),
+    ).toBeVisible();
+
+    await takeStepScreenshot(page, testInfo, 'pact-chain-modal-open');
+    await takeStepScreenshot(page, testInfo, 'pact-chain-modal-open', {
       viewport: true,
     });
 

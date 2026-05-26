@@ -296,6 +296,11 @@ export type StringKey =
   | 'sheet.essence.invocation.pactOfTheBlade.attackAbility'
   | 'sheet.essence.invocation.pactOfTheBlade.damageTypes'
   | 'sheet.essence.invocation.pactOfTheBlade.deferred'
+  | 'sheet.essence.invocation.pactOfTheChain.label'
+  | 'sheet.essence.invocation.pactOfTheChain.action'
+  | 'sheet.essence.invocation.pactOfTheChain.noSlot'
+  | 'sheet.essence.invocation.pactOfTheChain.specialForms'
+  | 'sheet.essence.invocation.pactOfTheChain.deferred'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -685,6 +690,20 @@ const STRINGS: Record<Locale, Dict> = {
       'Type de dégâts au choix : nécrotiques, psychiques, radiants, ou le type normal de l’arme.',
     'sheet.essence.invocation.pactOfTheBlade.deferred':
       "Annoncez votre choix au MJ — l'intégration moteur de combat est différée à un plan ultérieur.",
+    // D13d Pacte de la chaîne — terminologie WotC FR : « Appel de familier »
+    // est le nom du sort dans le bundle SRD FR (`public/data/spells.json >
+    // appel-de-familier`). « Démon mineur / Pseudodragon / Quasit / Sprite »
+    // figurent intacts dans `pact-of-the-chain.summary.fr`.
+    'sheet.essence.invocation.pactOfTheChain.label':
+      'Appel de familier amélioré',
+    'sheet.essence.invocation.pactOfTheChain.action':
+      "Action magique pour lancer Appel de familier (le sort est appris gratuitement).",
+    'sheet.essence.invocation.pactOfTheChain.noSlot':
+      'Aucun emplacement de sort consommé à chaque incantation.',
+    'sheet.essence.invocation.pactOfTheChain.specialForms':
+      'Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite (en plus des formes normales du sort).',
+    'sheet.essence.invocation.pactOfTheChain.deferred':
+      "Profils des familiers à venir — annoncez votre choix au MJ pour le moment.",
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -1041,6 +1060,15 @@ const STRINGS: Record<Locale, Dict> = {
       'Damage type at choice: Necrotic, Psychic, Radiant, or the weapon’s normal type.',
     'sheet.essence.invocation.pactOfTheBlade.deferred':
       'Announce your choice to the GM — combat-engine integration is deferred to a later plan.',
+    'sheet.essence.invocation.pactOfTheChain.label': 'Enhanced Find Familiar',
+    'sheet.essence.invocation.pactOfTheChain.action':
+      'Magic action to cast Find Familiar (the spell is learned for free).',
+    'sheet.essence.invocation.pactOfTheChain.noSlot':
+      'No spell slot consumed when casting it this way.',
+    'sheet.essence.invocation.pactOfTheChain.specialForms':
+      'Special forms at choice: Imp, Pseudodragon, Quasit, or Sprite (in addition to the normal forms of the spell).',
+    'sheet.essence.invocation.pactOfTheChain.deferred':
+      'Familiar stat blocks coming soon — announce your choice to the GM for now.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',

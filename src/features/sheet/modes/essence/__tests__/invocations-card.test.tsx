@@ -364,8 +364,39 @@ describe('<InvocationsCard>', () => {
     ).toBeInTheDocument();
   });
 
-  it.each(['pact-of-the-chain', 'pact-of-the-tome'])(
-    'D13a/b/c — tap sur %s (D13d-e attendus) → modale NE rend PAS « Mécanique » (pas de faux signal)',
+  it('D13d — tap sur Pacte de la chaîne → modale rend « Mécanique » + 3 lignes structurées + caveat différé', () => {
+    const character = buildCharacter([
+      classEntry({
+        classId: 'warlock',
+        eldritchInvocations: ['pact-of-the-chain'],
+      }),
+    ]);
+    render(<InvocationsCard character={character} />);
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Manifestation occulte : Pacte de la chaîne/,
+      }),
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Mécanique')).toBeInTheDocument();
+    expect(
+      within(dialog).getByTestId('invocation-effect-label'),
+    ).toHaveTextContent(/Appel de familier amélioré/);
+    expect(
+      within(dialog).getByText(/Action magique pour lancer Appel de familier/),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        /Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Profils des familiers à venir/),
+    ).toBeInTheDocument();
+  });
+
+  it.each(['pact-of-the-tome'])(
+    'D13a/b/c/d — tap sur %s (D13e attendu) → modale NE rend PAS « Mécanique » (pas de faux signal)',
     (slug) => {
       const character = buildCharacter([
         classEntry({ classId: 'warlock', eldritchInvocations: [slug] }),
