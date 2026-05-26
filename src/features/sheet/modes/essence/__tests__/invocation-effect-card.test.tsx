@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { InvocationEffectCard } from '../invocation-effect-card';
 
 /**
- * D13a + D13b — InvocationEffectCard. Tests d'identité (cat. 2) + cas-limites
- * (cat. 6).
+ * D13a + D13b + D13c — InvocationEffectCard. Tests d'identité (cat. 2) +
+ * cas-limites (cat. 6).
  *
  *  - Pour `armor-of-shadows`, la carte rend EXACTEMENT le label canonique
  *    « CA = 13 + modificateur de Dextérité » + la condition d'application
@@ -13,9 +13,12 @@ import { InvocationEffectCard } from '../invocation-effect-card';
  *  - Pour `eldritch-mind` (D13b), la carte rend EXACTEMENT le label
  *    « Avantage aux jets de Constitution pour la Concentration » + la
  *    condition d'application.
- *  - Pour les 3 autres invocations L1 (`pact-of-the-blade`,
- *    `pact-of-the-chain`, `pact-of-the-tome`) la carte ne rend rien (effet
- *    runtime pas câblé — D13c-e). Pas de placeholder trompeur.
+ *  - Pour `pact-of-the-blade` (D13c), la carte rend le label
+ *    « Arme de pacte invoquée » + 4 lignes structurées (action / arme /
+ *    caractéristique d'attaque / types de dégâts) + caveat « différé ».
+ *  - Pour les 2 autres invocations L1 (`pact-of-the-chain`,
+ *    `pact-of-the-tome`) la carte ne rend rien (effet runtime pas câblé —
+ *    D13d-e). Pas de placeholder trompeur.
  *  - Pour un slug inconnu (seed corrompu) la carte ne rend rien sans crash.
  */
 describe('<InvocationEffectCard>', () => {
@@ -59,8 +62,50 @@ describe('<InvocationEffectCard>', () => {
     expect(screen.getByText('Mécanique')).toBeInTheDocument();
   });
 
-  it.each(['pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
-    'cat. 6 — %s (D13c-e attendus) ne rend rien (pas de placeholder trompeur)',
+  it('cat. 2 — pact-of-the-blade rend le label « Arme de pacte invoquée » + 4 lignes structurées', () => {
+    const { container } = render(
+      <InvocationEffectCard slug="pact-of-the-blade" />,
+    );
+    expect(container.firstChild).not.toBeNull();
+    expect(screen.getByTestId('invocation-effect-label')).toHaveTextContent(
+      /Arme de pacte invoquée/,
+    );
+    // Les 4 lignes structurées (action / arme / capacité / dégâts).
+    expect(
+      screen.getByText(
+        /Action bonus pour invoquer ou rappeler l'arme de pacte\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Arme de corps à corps simple ou de guerre, au choix au moment du lien\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Vous pouvez utiliser votre modificateur de Charisme aux jets d’attaque et de dégâts\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Type de dégâts au choix : nécrotiques, psychiques, radiants, ou le type normal de l’arme\./,
+      ),
+    ).toBeInTheDocument();
+    // Caveat « différé » présent.
+    expect(
+      screen.getByText(
+        /Annoncez votre choix au MJ — l'intégration moteur de combat est différée à un plan ultérieur\./,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('cat. 2 — pact-of-the-blade rend le titre « Mécanique »', () => {
+    render(<InvocationEffectCard slug="pact-of-the-blade" />);
+    expect(screen.getByText('Mécanique')).toBeInTheDocument();
+  });
+
+  it.each(['pact-of-the-chain', 'pact-of-the-tome'])(
+    'cat. 6 — %s (D13d-e attendus) ne rend rien (pas de placeholder trompeur)',
     (slug) => {
       const { container } = render(<InvocationEffectCard slug={slug} />);
       expect(container.firstChild).toBeNull();

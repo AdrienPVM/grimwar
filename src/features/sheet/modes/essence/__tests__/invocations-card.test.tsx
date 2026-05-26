@@ -284,10 +284,10 @@ describe('<InvocationsCard>', () => {
   );
 
   // ──────────────────────────────────────────────────────────────────────
-  // D13a + D13b — la modale rend la section « Mécanique » UNIQUEMENT pour
-  // les invocations dont l'effet runtime est câblé. Aujourd'hui :
-  // armor-of-shadows (D13a) + eldritch-mind (D13b). Le test sera étendu
-  // naturellement quand D13c-e atterrissent.
+  // D13a + D13b + D13c — la modale rend la section « Mécanique » UNIQUEMENT
+  // pour les invocations dont l'effet runtime est câblé. Aujourd'hui :
+  // armor-of-shadows (D13a) + eldritch-mind (D13b) + pact-of-the-blade
+  // (D13c). Le test sera étendu naturellement quand D13d-e atterrissent.
   // ──────────────────────────────────────────────────────────────────────
   it('D13a — tap sur Armure d\'ombres → modale rend la section « Mécanique » + le label CA', () => {
     const character = buildCharacter([
@@ -331,8 +331,41 @@ describe('<InvocationsCard>', () => {
     );
   });
 
-  it.each(['pact-of-the-blade', 'pact-of-the-chain', 'pact-of-the-tome'])(
-    'D13a/b — tap sur %s (D13c-e attendus) → modale NE rend PAS « Mécanique » (pas de faux signal)',
+  it('D13c — tap sur Pacte de la lame → modale rend « Mécanique » + 4 lignes structurées + caveat différé', () => {
+    const character = buildCharacter([
+      classEntry({
+        classId: 'warlock',
+        eldritchInvocations: ['pact-of-the-blade'],
+      }),
+    ]);
+    render(<InvocationsCard character={character} />);
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Manifestation occulte : Pacte de la lame/,
+      }),
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Mécanique')).toBeInTheDocument();
+    expect(
+      within(dialog).getByTestId('invocation-effect-label'),
+    ).toHaveTextContent(/Arme de pacte invoquée/);
+    expect(
+      within(dialog).getByText(
+        /Vous pouvez utiliser votre modificateur de Charisme/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(
+        /Type de dégâts au choix : nécrotiques, psychiques, radiants/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/intégration moteur de combat est différée/),
+    ).toBeInTheDocument();
+  });
+
+  it.each(['pact-of-the-chain', 'pact-of-the-tome'])(
+    'D13a/b/c — tap sur %s (D13d-e attendus) → modale NE rend PAS « Mécanique » (pas de faux signal)',
     (slug) => {
       const character = buildCharacter([
         classEntry({ classId: 'warlock', eldritchInvocations: [slug] }),

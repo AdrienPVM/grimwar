@@ -290,6 +290,12 @@ export type StringKey =
   | 'sheet.essence.invocation.armorOfShadows.condition'
   | 'sheet.essence.invocation.eldritchMind.label'
   | 'sheet.essence.invocation.eldritchMind.condition'
+  | 'sheet.essence.invocation.pactOfTheBlade.label'
+  | 'sheet.essence.invocation.pactOfTheBlade.action'
+  | 'sheet.essence.invocation.pactOfTheBlade.weapon'
+  | 'sheet.essence.invocation.pactOfTheBlade.attackAbility'
+  | 'sheet.essence.invocation.pactOfTheBlade.damageTypes'
+  | 'sheet.essence.invocation.pactOfTheBlade.deferred'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -662,6 +668,23 @@ const STRINGS: Record<Locale, Dict> = {
       'Avantage aux jets de Constitution pour la Concentration',
     'sheet.essence.invocation.eldritchMind.condition':
       "S'applique à chaque jet de sauvegarde de Constitution effectué pour maintenir la Concentration sur un sort.",
+    // D13c Pacte de la lame — terminologie WotC FR : tous les termes
+    // (« Action bonus », « arme de corps à corps simple ou de guerre »,
+    // « Charisme », « nécrotiques/psychiques/radiants ») figurent dans le
+    // bundle SRD FR (cf. `public/data/invocations.json > pact-of-the-blade
+    // .summary.fr`).
+    'sheet.essence.invocation.pactOfTheBlade.label':
+      'Arme de pacte invoquée',
+    'sheet.essence.invocation.pactOfTheBlade.action':
+      "Action bonus pour invoquer ou rappeler l'arme de pacte.",
+    'sheet.essence.invocation.pactOfTheBlade.weapon':
+      'Arme de corps à corps simple ou de guerre, au choix au moment du lien.',
+    'sheet.essence.invocation.pactOfTheBlade.attackAbility':
+      'Vous pouvez utiliser votre modificateur de Charisme aux jets d’attaque et de dégâts.',
+    'sheet.essence.invocation.pactOfTheBlade.damageTypes':
+      'Type de dégâts au choix : nécrotiques, psychiques, radiants, ou le type normal de l’arme.',
+    'sheet.essence.invocation.pactOfTheBlade.deferred':
+      "Annoncez votre choix au MJ — l'intégration moteur de combat est différée à un plan ultérieur.",
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -1007,6 +1030,17 @@ const STRINGS: Record<Locale, Dict> = {
       'Advantage on Constitution saves to maintain Concentration',
     'sheet.essence.invocation.eldritchMind.condition':
       'Applies to every Constitution saving throw rolled to maintain Concentration on a spell.',
+    'sheet.essence.invocation.pactOfTheBlade.label': 'Conjured pact weapon',
+    'sheet.essence.invocation.pactOfTheBlade.action':
+      'Bonus Action to conjure or recall the pact weapon.',
+    'sheet.essence.invocation.pactOfTheBlade.weapon':
+      'Simple or Martial Melee weapon, chosen at the moment of bonding.',
+    'sheet.essence.invocation.pactOfTheBlade.attackAbility':
+      'You can use your Charisma modifier for the attack and damage rolls.',
+    'sheet.essence.invocation.pactOfTheBlade.damageTypes':
+      'Damage type at choice: Necrotic, Psychic, Radiant, or the weapon’s normal type.',
+    'sheet.essence.invocation.pactOfTheBlade.deferred':
+      'Announce your choice to the GM — combat-engine integration is deferred to a later plan.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',
