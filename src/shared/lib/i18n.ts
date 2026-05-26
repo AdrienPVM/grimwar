@@ -301,6 +301,11 @@ export type StringKey =
   | 'sheet.essence.invocation.pactOfTheChain.noSlot'
   | 'sheet.essence.invocation.pactOfTheChain.specialForms'
   | 'sheet.essence.invocation.pactOfTheChain.deferred'
+  | 'sheet.essence.invocation.pactOfTheTome.label'
+  | 'sheet.essence.invocation.pactOfTheTome.cantrips'
+  | 'sheet.essence.invocation.pactOfTheTome.rituals'
+  | 'sheet.essence.invocation.pactOfTheTome.focus'
+  | 'sheet.essence.invocation.pactOfTheTome.deferred'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -704,6 +709,20 @@ const STRINGS: Record<Locale, Dict> = {
       'Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite (en plus des formes normales du sort).',
     'sheet.essence.invocation.pactOfTheChain.deferred':
       "Profils des familiers à venir — annoncez votre choix au MJ pour le moment.",
+    // D13e Pacte du grimoire — terminologie WotC FR : « sort mineur(s) »
+    // (sort officiel pour cantrip — pas « tour de magie », cf. règle
+    // d'autorité terminologique CLAUDE.md), « rituel »/« sort rituel »
+    // dans le bundle SRD FR, « focaliseur d'incantation » (cf.
+    // `public/data/items.json` — équipement d'incantation).
+    'sheet.essence.invocation.pactOfTheTome.label': 'Codex des Ombres',
+    'sheet.essence.invocation.pactOfTheTome.cantrips':
+      "Apprenez 3 sorts mineurs au choix de n'importe quelle classe.",
+    'sheet.essence.invocation.pactOfTheTome.rituals':
+      "Apprenez 2 sorts du 1ᵉʳ niveau marqués « Rituel » au choix de n'importe quelle classe.",
+    'sheet.essence.invocation.pactOfTheTome.focus':
+      "Le grimoire sert de focaliseur d'incantation pour vos sorts d'Occultiste.",
+    'sheet.essence.invocation.pactOfTheTome.deferred':
+      "Choisissez vos 5 sorts avec votre MJ — l'intégration au moteur de sorts est différée à un plan ultérieur.",
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -1069,6 +1088,15 @@ const STRINGS: Record<Locale, Dict> = {
       'Special forms at choice: Imp, Pseudodragon, Quasit, or Sprite (in addition to the normal forms of the spell).',
     'sheet.essence.invocation.pactOfTheChain.deferred':
       'Familiar stat blocks coming soon — announce your choice to the GM for now.',
+    'sheet.essence.invocation.pactOfTheTome.label': 'Book of Shadows',
+    'sheet.essence.invocation.pactOfTheTome.cantrips':
+      'Learn 3 cantrips of your choice from any class.',
+    'sheet.essence.invocation.pactOfTheTome.rituals':
+      'Learn 2 level-1 spells with the Ritual tag from any class.',
+    'sheet.essence.invocation.pactOfTheTome.focus':
+      'The book serves as a Spellcasting Focus for your Warlock spells.',
+    'sheet.essence.invocation.pactOfTheTome.deferred':
+      'Choose your 5 spells with your GM — spell-engine integration is deferred to a later plan.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',

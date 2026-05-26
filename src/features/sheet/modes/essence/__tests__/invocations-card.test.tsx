@@ -395,24 +395,37 @@ describe('<InvocationsCard>', () => {
     ).toBeInTheDocument();
   });
 
-  it.each(['pact-of-the-tome'])(
-    'D13a/b/c/d — tap sur %s (D13e attendu) → modale NE rend PAS « Mécanique » (pas de faux signal)',
-    (slug) => {
-      const character = buildCharacter([
-        classEntry({ classId: 'warlock', eldritchInvocations: [slug] }),
-      ]);
-      render(<InvocationsCard character={character} />);
-      const button = screen.getByRole('button', {
-        name: /Manifestation occulte :/,
-      });
-      fireEvent.click(button);
-      const dialog = screen.getByRole('dialog');
-      expect(within(dialog).queryByText('Mécanique')).not.toBeInTheDocument();
-      expect(
-        within(dialog).queryByTestId('invocation-effect-card'),
-      ).not.toBeInTheDocument();
-    },
-  );
+  it('D13e — tap sur Pacte du grimoire → modale rend « Mécanique » + 3 lignes structurées + caveat différé', () => {
+    const character = buildCharacter([
+      classEntry({
+        classId: 'warlock',
+        eldritchInvocations: ['pact-of-the-tome'],
+      }),
+    ]);
+    render(<InvocationsCard character={character} />);
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Manifestation occulte : Pacte du grimoire/,
+      }),
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText('Mécanique')).toBeInTheDocument();
+    expect(
+      within(dialog).getByTestId('invocation-effect-label'),
+    ).toHaveTextContent(/Codex des Ombres/);
+    expect(
+      within(dialog).getByText(/Apprenez 3 sorts mineurs/),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Apprenez 2 sorts du 1ᵉʳ niveau marqués « Rituel »/),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Le grimoire sert de focaliseur d'incantation/),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/Choisissez vos 5 sorts avec votre MJ/),
+    ).toBeInTheDocument();
+  });
 
   it('cat. 2 modale — Échap ferme la modale après tap', () => {
     const character = buildCharacter([

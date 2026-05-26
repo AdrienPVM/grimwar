@@ -9,8 +9,10 @@
  *  - D13c : `pact-of-the-blade` — arme de pacte (feature active :
  *           Charisme pour atk/dmg, type de dégâts au choix).
  *  - D13d : `pact-of-the-chain` — familier amélioré (feature active :
- *           Appel de familier gratuit + formes spéciales). LIVRÉ.
- *  - D13e à venir : `pact-of-the-tome` — grant de cantrips + rituels.
+ *           Appel de familier gratuit + formes spéciales).
+ *  - D13e : `pact-of-the-tome` — Codex des Ombres (feature active : grant
+ *           3 sorts mineurs + 2 rituels L1 de n'importe quelle classe).
+ *           LIVRÉ. Séquence D13a-e CLOSE.
  *
  * Source SRD 5.2.1 (CC) — texte EN cité au plus court pour audit, voir
  * `content-sources/extracted/raw/SRD_CC_v5.2.1.txt` pour la prose intégrale.
@@ -101,6 +103,33 @@ export type PassiveInvocationEffect =
       ];
       readonly actionType: 'magic-action';
       readonly noSlotRequired: true;
+    }
+  | {
+      readonly kind: 'feature-pact-tome-grant';
+      /**
+       * Pact of the Tome SRD 5.2.1 : "Cantrips and Rituals. When the book
+       * appears, choose three cantrips, and choose two level 1 spells that
+       * have the Ritual tag. The spells can be from any class's spell list,
+       * and they must be spells you don't already have prepared. While the
+       * book is on your person, you have the chosen spells prepared, and
+       * they function as Warlock spells for you. Spellcasting Focus. You
+       * can use the book as a Spellcasting Focus."
+       *
+       * 3 cantrips au choix de n'importe quelle classe + 2 sorts L1 marqués
+       * « Ritual » au choix de n'importe quelle classe. Préparés en dehors
+       * du quota Warlock standard.
+       *
+       * Le grant fonctionne au L1 dès la sélection du Pact. Le câblage
+       * `knownSpells['warlock-tome']` (entrée distincte dans la fiche pour
+       * matérialiser la source) + le chooser au wizard L1 sont différés à
+       * un mini-plan post-D13e (D13e-followup-grant). Aujourd'hui, l'info
+       * est exposée pour annonce manuelle au MJ via la modale.
+       */
+      readonly cantripsGranted: 3;
+      readonly ritualsGranted: 2;
+      readonly ritualSpellLevel: 1;
+      readonly spellSource: 'any-class';
+      readonly providesSpellcastingFocus: true;
     }
   | {
       readonly kind: 'feature-pact-weapon';
@@ -196,8 +225,20 @@ const INVOCATION_REGISTRY: ReadonlyMap<string, EldritchInvocationEntry> =
         },
       },
     ],
-    // D13e — slug L1 connu, effet câblé plus tard.
-    ['pact-of-the-tome', { slug: 'pact-of-the-tome', effect: null }],
+    [
+      'pact-of-the-tome',
+      {
+        slug: 'pact-of-the-tome',
+        effect: {
+          kind: 'feature-pact-tome-grant',
+          cantripsGranted: 3,
+          ritualsGranted: 2,
+          ritualSpellLevel: 1,
+          spellSource: 'any-class',
+          providesSpellcastingFocus: true,
+        },
+      },
+    ],
   ]);
 
 export function getInvocationEntry(
@@ -266,7 +307,11 @@ export function computeInvocationAcBonus(input: {
         // Pact of the Chain ne touche pas la CA — c'est une feature de
         // grant + invocation, pas de protection. Pas de contribution ici.
         break;
-      // D13e — futurs cas. Pas de `default` (exhaustivité TS strict).
+      case 'feature-pact-tome-grant':
+        // Pact of the Tome ne touche pas la CA — c'est un grant de sorts,
+        // pas de protection. Pas de contribution ici.
+        break;
+      // Séquence D13a-e CLOSE. Pas de `default` (exhaustivité TS strict).
     }
   }
   return bonus;
@@ -335,6 +380,28 @@ export function hasPactOfTheChain(
   for (const slug of slugs) {
     const effect = getInvocationEntry(slug)?.effect;
     if (effect?.kind === 'feature-pact-chain-familiar') return true;
+  }
+  return false;
+}
+
+/**
+ * D13e — Pact of the Tome. Le personnage a-t-il la feature Codex des
+ * Ombres (3 cantrips + 2 rituels L1 de n'importe quelle classe + focus
+ * d'incantation) ?
+ *
+ * Booléen, pattern miroir de `hasPactOfTheBlade` / `hasPactOfTheChain`.
+ * Câblage côté `knownSpells['warlock-tome']` (entrée distincte pour
+ * matérialiser la source du grant) + chooser au wizard L1 différés à un
+ * mini-plan post-D13e. Aujourd'hui, l'info est exposée pour annonce
+ * manuelle au MJ via la modale.
+ */
+export function hasPactOfTheTome(
+  classes: readonly CharacterClassEntry[],
+): boolean {
+  const slugs = getKnownInvocationSlugs(classes);
+  for (const slug of slugs) {
+    const effect = getInvocationEntry(slug)?.effect;
+    if (effect?.kind === 'feature-pact-tome-grant') return true;
   }
   return false;
 }

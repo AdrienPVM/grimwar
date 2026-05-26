@@ -105,6 +105,36 @@ export function InvocationEffectCard({
     );
   }
 
+  if (effect.kind === 'feature-pact-tome-grant') {
+    // D13e — Pact of the Tome : grant de 3 cantrips + 2 rituels L1 de
+    // n'importe quelle classe + spellcasting focus. Chooser wizard + grant
+    // sur knownSpells différés (mini-plan post-D13e).
+    return (
+      <div
+        className="mt-4 rounded-card-sm border border-gold-dim/40 bg-gradient-to-b from-gold-bright/[0.08] to-gold/[0.02] px-4 py-3"
+        data-testid="invocation-effect-card"
+      >
+        <p className="mb-2 font-title text-[10px] font-bold uppercase tracking-[0.2em] text-gold-bright">
+          {t('sheet.essence.invocation.mechanicsTitle')}
+        </p>
+        <p
+          className="font-display text-[15px] font-bold text-gold-bright"
+          data-testid="invocation-effect-label"
+        >
+          {t('sheet.essence.invocation.pactOfTheTome.label')}
+        </p>
+        <ul className="mt-2 list-disc space-y-1 pl-5 font-serif text-[12px] text-text-tertiary">
+          <li>{t('sheet.essence.invocation.pactOfTheTome.cantrips')}</li>
+          <li>{t('sheet.essence.invocation.pactOfTheTome.rituals')}</li>
+          <li>{t('sheet.essence.invocation.pactOfTheTome.focus')}</li>
+        </ul>
+        <p className="mt-2 font-serif text-[11px] italic text-text-tertiary/70">
+          {t('sheet.essence.invocation.pactOfTheTome.deferred')}
+        </p>
+      </div>
+    );
+  }
+
   if (effect.kind === 'feature-pact-weapon') {
     // D13c — la modale rend la mécanique en plusieurs lignes structurées
     // (action / capacité / catégorie d'arme / type de dégâts au choix).

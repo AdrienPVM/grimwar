@@ -135,13 +135,54 @@ describe('<InvocationEffectCard>', () => {
     expect(screen.getByText('Mécanique')).toBeInTheDocument();
   });
 
-  it.each(['pact-of-the-tome'])(
-    'cat. 6 — %s (D13e attendu) ne rend rien (pas de placeholder trompeur)',
-    (slug) => {
+  it('cat. 2 — pact-of-the-tome rend le label « Codex des Ombres » + 3 lignes structurées', () => {
+    const { container } = render(
+      <InvocationEffectCard slug="pact-of-the-tome" />,
+    );
+    expect(container.firstChild).not.toBeNull();
+    expect(screen.getByTestId('invocation-effect-label')).toHaveTextContent(
+      /Codex des Ombres/,
+    );
+    expect(
+      screen.getByText(
+        /Apprenez 3 sorts mineurs au choix de n'importe quelle classe\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Apprenez 2 sorts du 1ᵉʳ niveau marqués « Rituel » au choix de n'importe quelle classe\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Le grimoire sert de focaliseur d'incantation pour vos sorts d'Occultiste\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Choisissez vos 5 sorts avec votre MJ/),
+    ).toBeInTheDocument();
+  });
+
+  it('cat. 2 — pact-of-the-tome rend le titre « Mécanique »', () => {
+    render(<InvocationEffectCard slug="pact-of-the-tome" />);
+    expect(screen.getByText('Mécanique')).toBeInTheDocument();
+  });
+
+  it('cat. 6 — séquence D13a-e CLOSE : aucune invocation L1 ne renvoie null', () => {
+    for (const slug of [
+      'armor-of-shadows',
+      'eldritch-mind',
+      'pact-of-the-blade',
+      'pact-of-the-chain',
+      'pact-of-the-tome',
+    ]) {
       const { container } = render(<InvocationEffectCard slug={slug} />);
-      expect(container.firstChild).toBeNull();
-    },
-  );
+      expect(
+        container.firstChild,
+        `${slug} doit rendre la section Mécanique (séquence D13a-e close)`,
+      ).not.toBeNull();
+    }
+  });
 
   it('cat. 6 — slug inconnu (seed corrompu) ne rend rien sans crash', () => {
     const { container } = render(
