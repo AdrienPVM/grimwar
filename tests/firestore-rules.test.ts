@@ -161,6 +161,7 @@ describeIfEmulator('firestore.rules — caractères (multi-class)', () => {
 
   afterAll(async () => {
     if (env) await env.cleanup();
+    env = null;
   });
 
   beforeEach(async () => {
@@ -311,13 +312,23 @@ function makeTokenDoc(): Record<string, unknown> {
 }
 
 describeIfEmulator('firestore.rules — maps + tokens (CHANTIER D nuit 3)', () => {
+  // Re-init systématique : le describe précédent a posé un env dans une variable
+  // module-scoped puis l'a `cleanup()` dans son `afterAll`, mais la référence
+  // reste non-null — d'où une réutilisation d'env zombie qui plante
+  // `clearFirestore()`. On nettoie défensivement avant de reposer.
   beforeAll(async () => {
-    if (!env) {
-      env = await initializeTestEnvironment({
-        projectId: PROJECT_ID,
-        firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
-      });
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up — pas grave
+      }
+      env = null;
     }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
   });
 
   afterAll(async () => {
