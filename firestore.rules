@@ -234,6 +234,25 @@ service cloud.firestore {
       match /maps/{mapId} {
         allow read: if isMemberOf(campaignId);
         allow create, update, delete: if isDMOf(campaignId);
+
+        // ── Tokens (sous-collection — CHANTIER D nuit 3) ────────
+        // Tokens vivent en sous-collection pour borner le coût des writes
+        // individuels (un déplacement = un write). Read pour tous les
+        // membres ; write pour le MJ uniquement à ce stade (V1). Les
+        // joueurs déplacent leur token via le MJ — l'autorisation de
+        // self-write par PJ viendra avec un check `linkedCharacterId ==
+        // ma propre fiche` en chantier ultérieur (plan map-phase3).
+        //
+        // Choix d'architecture : fog/lights/aoe restent INLINE sur le
+        // doc `maps/{mid}` plutôt qu'en sous-collections. Justification :
+        // ils sont peu fréquents (révélation manuelle, pose d'AoE) → la
+        // granularité par-doc des sous-collections n'apporte pas de gain
+        // mesurable et complique le service. Cf. `MapMeta` dans
+        // `src/shared/types/map.ts`.
+        match /tokens/{tokenId} {
+          allow read: if isMemberOf(campaignId);
+          allow create, update, delete: if isDMOf(campaignId);
+        }
       }
 
       // ── Handouts (S3, plan 27) ────────────────────────────────

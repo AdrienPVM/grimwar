@@ -161,6 +161,7 @@ describeIfEmulator('firestore.rules — caractères (multi-class)', () => {
 
   afterAll(async () => {
     if (env) await env.cleanup();
+    env = null;
   });
 
   beforeEach(async () => {
@@ -248,5 +249,176 @@ describeIfEmulator('firestore.rules — caractères (multi-class)', () => {
     const ref = doc(db, 'users', UID, 'characters', 'char-v1-001');
     // makeMulticlassPayload() émet schemaVersion: 1 sans les sous-objets v2.
     await assertSucceeds(setDoc(ref, makeMulticlassPayload()));
+  });
+});
+
+/**
+ * CHANTIER D nuit 3 — Mode Carte phase 2 : invariants Firestore Rules pour
+ * `campaigns/{cid}/maps/{mid}` + sous-collection `tokens/{tid}`.
+ *
+ * Invariants vérifiés :
+ *   1. DM peut créer/lire/modifier/supprimer une map dans sa campagne.
+ *   2. Membre non-DM peut LIRE la map mais pas l'écrire.
+ *   3. Étranger (non-membre) ne peut ni lire ni écrire.
+ *   4. Mêmes règles s'appliquent à la sous-collection `tokens/`.
+ */
+const CAMPAIGN_ID = 'camp-001';
+const MAP_ID = 'map-001';
+const TOKEN_ID = 'token-001';
+const DM_UID = 'dm-alice';
+const MEMBER_UID = 'player-bob';
+const OUTSIDER_UID = 'outsider-charlie';
+
+function makeCampaignDoc(dmUid: string): Record<string, unknown> {
+  return {
+    name: 'Campagne test',
+    dmUserId: dmUid,
+    status: 'active',
+    schemaVersion: 1,
+    createdAt: serverTimestamp(),
+  };
+}
+
+function makeMapDoc(): Record<string, unknown> {
+  return {
+    id: MAP_ID,
+    name: 'Donjon n°1',
+    imageUrl: null,
+    gridSize: 70,
+    feetPerSquare: 5,
+    showGrid: true,
+    fogEnabled: true,
+    lightingEnabled: false,
+    fogPolygons: [],
+    lightSources: [],
+    aoeTemplates: [],
+    schemaVersion: 1,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    updatedBy: DM_UID,
+  };
+}
+
+function makeTokenDoc(): Record<string, unknown> {
+  return {
+    id: TOKEN_ID,
+    kind: 'pj',
+    label: 'Sigrid',
+    position: { x: 100, y: 200 },
+    color: '#f3c44a',
+    updatedAt: serverTimestamp(),
+    updatedBy: DM_UID,
+  };
+}
+
+describeIfEmulator('firestore.rules — maps + tokens (CHANTIER D nuit 3)', () => {
+  // Re-init systématique : le describe précédent a posé un env dans une variable
+  // module-scoped puis l'a `cleanup()` dans son `afterAll`, mais la référence
+  // reste non-null — d'où une réutilisation d'env zombie qui plante
+  // `clearFirestore()`. On nettoie défensivement avant de reposer.
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up — pas grave
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (env) await env.clearFirestore();
+    if (env) {
+      // Seed : campagne + membership joueur pour les tests downstream.
+      await env.withSecurityRulesDisabled(async (context) => {
+        const adminDb = context.firestore();
+        await setDoc(doc(adminDb, 'campaigns', CAMPAIGN_ID), makeCampaignDoc(DM_UID));
+        // Le DM est aussi un membre (pour passer isMemberOf le cas échéant).
+        await setDoc(
+          doc(adminDb, 'campaigns', CAMPAIGN_ID, 'memberships', DM_UID),
+          { userId: DM_UID, role: 'dm', status: 'active' },
+        );
+        await setDoc(
+          doc(adminDb, 'campaigns', CAMPAIGN_ID, 'memberships', MEMBER_UID),
+          { userId: MEMBER_UID, role: 'player', status: 'active' },
+        );
+      });
+    }
+  });
+
+  it('DM CRÉE une map dans sa campagne', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID), makeMapDoc()),
+    );
+  });
+
+  it("MEMBRE non-DM ne peut PAS créer une map", async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID), makeMapDoc()),
+    );
+  });
+
+  it("ÉTRANGER (non-membre) ne peut ni lire ni écrire une map", async () => {
+    if (!env) throw new Error('env not initialized');
+    // Seed la map en tant qu'admin.
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID),
+        makeMapDoc(),
+      );
+    });
+    const db = env.authenticatedContext(OUTSIDER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID), makeMapDoc()),
+    );
+  });
+
+  it('DM peut créer un token dans la sous-collection tokens/', async () => {
+    if (!env) throw new Error('env not initialized');
+    // Seed la map.
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID),
+        makeMapDoc(),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID, 'tokens', TOKEN_ID),
+        makeTokenDoc(),
+      ),
+    );
+  });
+
+  it("MEMBRE non-DM ne peut PAS créer/déplacer un token (V1 — DM only)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID),
+        makeMapDoc(),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID, 'tokens', TOKEN_ID),
+        makeTokenDoc(),
+      ),
+    );
   });
 });
