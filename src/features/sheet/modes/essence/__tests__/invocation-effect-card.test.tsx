@@ -104,8 +104,39 @@ describe('<InvocationEffectCard>', () => {
     expect(screen.getByText('Mécanique')).toBeInTheDocument();
   });
 
-  it.each(['pact-of-the-chain', 'pact-of-the-tome'])(
-    'cat. 6 — %s (D13d-e attendus) ne rend rien (pas de placeholder trompeur)',
+  it('cat. 2 — pact-of-the-chain rend le label « Appel de familier amélioré » + 3 lignes structurées', () => {
+    const { container } = render(
+      <InvocationEffectCard slug="pact-of-the-chain" />,
+    );
+    expect(container.firstChild).not.toBeNull();
+    expect(screen.getByTestId('invocation-effect-label')).toHaveTextContent(
+      /Appel de familier amélioré/,
+    );
+    expect(
+      screen.getByText(/Action magique pour lancer Appel de familier/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Aucun emplacement de sort consommé à chaque incantation\./,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Profils des familiers à venir/),
+    ).toBeInTheDocument();
+  });
+
+  it('cat. 2 — pact-of-the-chain rend le titre « Mécanique »', () => {
+    render(<InvocationEffectCard slug="pact-of-the-chain" />);
+    expect(screen.getByText('Mécanique')).toBeInTheDocument();
+  });
+
+  it.each(['pact-of-the-tome'])(
+    'cat. 6 — %s (D13e attendu) ne rend rien (pas de placeholder trompeur)',
     (slug) => {
       const { container } = render(<InvocationEffectCard slug={slug} />);
       expect(container.firstChild).toBeNull();

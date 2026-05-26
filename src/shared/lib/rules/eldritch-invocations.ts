@@ -7,8 +7,9 @@
  *  - D13b : `eldritch-mind` — avantage aux jets de Constitution pour
  *           maintenir la Concentration (passif save).
  *  - D13c : `pact-of-the-blade` — arme de pacte (feature active :
- *           Charisme pour atk/dmg, type de dégâts au choix). LIVRÉ.
- *  - D13d à venir : `pact-of-the-chain` — familier amélioré (active utility).
+ *           Charisme pour atk/dmg, type de dégâts au choix).
+ *  - D13d : `pact-of-the-chain` — familier amélioré (feature active :
+ *           Appel de familier gratuit + formes spéciales). LIVRÉ.
  *  - D13e à venir : `pact-of-the-tome` — grant de cantrips + rituels.
  *
  * Source SRD 5.2.1 (CC) — texte EN cité au plus court pour audit, voir
@@ -63,6 +64,43 @@ export type PassiveInvocationEffect =
        * physique ou par la couche dés digitale future).
        */
       readonly target: 'concentration-save';
+    }
+  | {
+      readonly kind: 'feature-pact-chain-familiar';
+      /**
+       * Pact of the Chain SRD 5.2.1 : "You learn the Find Familiar spell
+       * and can cast it as a Magic action without expending a spell slot.
+       * When you cast the spell, you choose one of the normal forms for
+       * your familiar or one of the following special forms…"
+       *
+       * Le bundle `invocations.json > pact-of-the-chain.summary` liste 4
+       * formes spéciales (Imp / Pseudodragon / Quasit / Sprite) — extrait
+       * de `scripts/data/srd-invocations.ts`. Le SRD 5.2.1 réel en mentionne
+       * 7 (ajoute Skeleton, Sphinx of Wonder, Venomous Snake) — l'écart
+       * entre bundle et SRD est documenté en DEBT D13d-followup-summary
+       * et corrigeable indépendamment. La liste ci-dessous reflète
+       * STRICTEMENT le bundle pour éviter une divergence registre↔bundle.
+       *
+       * Action `magic-action` (pas `ritual` malgré le wording FR du bundle
+       * — le SRD 5.2.1 distingue `Magic action` de `Ritual` ; Pact of the
+       * Chain est l'action magique sans slot, le sort sous-jacent reste
+       * Rituel s'il est lancé hors-feature). La distinction est posée pour
+       * D24 (encounters) où l'action timer compte.
+       *
+       * Statblocks des formes spéciales : 4 entrées à ajouter dans
+       * `public/data/summoned-creatures.json` (D13d-followup-statblocks),
+       * différé hors scope D13d-data-layer pour ne pas mélanger
+       * extraction PDF + câblage feature.
+       */
+      readonly grantedSpellId: 'find-familiar';
+      readonly specialForms: readonly [
+        'imp',
+        'pseudodragon',
+        'quasit',
+        'sprite',
+      ];
+      readonly actionType: 'magic-action';
+      readonly noSlotRequired: true;
     }
   | {
       readonly kind: 'feature-pact-weapon';
@@ -145,8 +183,20 @@ const INVOCATION_REGISTRY: ReadonlyMap<string, EldritchInvocationEntry> =
         },
       },
     ],
-    // D13d-e — slugs L1 connus, effet câblé plus tard.
-    ['pact-of-the-chain', { slug: 'pact-of-the-chain', effect: null }],
+    [
+      'pact-of-the-chain',
+      {
+        slug: 'pact-of-the-chain',
+        effect: {
+          kind: 'feature-pact-chain-familiar',
+          grantedSpellId: 'find-familiar',
+          specialForms: ['imp', 'pseudodragon', 'quasit', 'sprite'],
+          actionType: 'magic-action',
+          noSlotRequired: true,
+        },
+      },
+    ],
+    // D13e — slug L1 connu, effet câblé plus tard.
     ['pact-of-the-tome', { slug: 'pact-of-the-tome', effect: null }],
   ]);
 
@@ -212,7 +262,11 @@ export function computeInvocationAcBonus(input: {
         // Pact of the Blade ne touche pas la CA — c'est une feature
         // d'attaque, pas une protection. Pas de contribution ici.
         break;
-      // D13d-e — futurs cas. Pas de `default` (exhaustivité TS strict).
+      case 'feature-pact-chain-familiar':
+        // Pact of the Chain ne touche pas la CA — c'est une feature de
+        // grant + invocation, pas de protection. Pas de contribution ici.
+        break;
+      // D13e — futurs cas. Pas de `default` (exhaustivité TS strict).
     }
   }
   return bonus;
@@ -260,6 +314,27 @@ export function hasPactOfTheBlade(
   for (const slug of slugs) {
     const effect = getInvocationEntry(slug)?.effect;
     if (effect?.kind === 'feature-pact-weapon') return true;
+  }
+  return false;
+}
+
+/**
+ * D13d — Pact of the Chain. Le personnage a-t-il la feature Pacte de la
+ * chaîne (Appel de familier gratuit + formes spéciales) ?
+ *
+ * Booléen, pattern miroir de `hasPactOfTheBlade`. Câblage côté moteur
+ * d'invocation (déclenchement de Find Familiar + affichage des formes
+ * spéciales en chooser) différé à un mini-plan post-D13d. Aujourd'hui,
+ * l'info est exposée pour annonce manuelle au MJ via la modale
+ * `<InvocationEffectCard>`.
+ */
+export function hasPactOfTheChain(
+  classes: readonly CharacterClassEntry[],
+): boolean {
+  const slugs = getKnownInvocationSlugs(classes);
+  for (const slug of slugs) {
+    const effect = getInvocationEntry(slug)?.effect;
+    if (effect?.kind === 'feature-pact-chain-familiar') return true;
   }
   return false;
 }

@@ -8,6 +8,7 @@ import {
   getKnownInvocationSlugs,
   hasConcentrationAdvantage,
   hasPactOfTheBlade,
+  hasPactOfTheChain,
 } from '../eldritch-invocations';
 
 /**
@@ -96,11 +97,26 @@ describe('eldritch-invocations registry', () => {
     }
   });
 
-  it('les 2 autres invocations L1 sont au registre mais sans effet câblé (D13d-e)', () => {
-    for (const slug of ['pact-of-the-chain', 'pact-of-the-tome']) {
-      const entry = getInvocationEntry(slug);
-      expect(entry?.effect, `${slug} ne doit pas avoir d'effet runtime câblé en D13c`).toBeNull();
+  it('pact-of-the-chain a un effet feature-pact-chain-familiar (Find Familiar gratuit + 4 formes spéciales)', () => {
+    const entry = getInvocationEntry('pact-of-the-chain');
+    expect(entry).not.toBeNull();
+    expect(entry?.effect?.kind).toBe('feature-pact-chain-familiar');
+    if (entry?.effect?.kind === 'feature-pact-chain-familiar') {
+      expect(entry.effect.grantedSpellId).toBe('find-familiar');
+      expect(entry.effect.specialForms).toEqual([
+        'imp',
+        'pseudodragon',
+        'quasit',
+        'sprite',
+      ]);
+      expect(entry.effect.actionType).toBe('magic-action');
+      expect(entry.effect.noSlotRequired).toBe(true);
     }
+  });
+
+  it('le dernier slug L1 (pact-of-the-tome) reste sans effet câblé (D13e)', () => {
+    const entry = getInvocationEntry('pact-of-the-tome');
+    expect(entry?.effect, "pact-of-the-tome ne doit pas avoir d'effet runtime câblé en D13d").toBeNull();
   });
 
   it('slug inconnu → null (anti-régression : ne crash pas la fiche sur seed corrompu)', () => {
@@ -302,14 +318,55 @@ describe('hasPactOfTheBlade', () => {
   });
 });
 
+describe('hasPactOfTheChain', () => {
+  it('cat. 4 — Warlock pact-of-the-chain → true', () => {
+    const result = hasPactOfTheChain([
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-chain'] }),
+    ]);
+    expect(result).toBe(true);
+  });
+
+  it('cat. 4 — Warlock sans pact-of-the-chain → false', () => {
+    const result = hasPactOfTheChain([
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-blade'] }),
+    ]);
+    expect(result).toBe(false);
+  });
+
+  it('cat. 6 — non-Warlock → false', () => {
+    const result = hasPactOfTheChain([makeClass({ classId: 'wizard' })]);
+    expect(result).toBe(false);
+  });
+
+  it('cat. 6 — multi-classe Warlock·pact-of-the-chain × Fighter → true', () => {
+    const result = hasPactOfTheChain([
+      makeClass({ classId: 'fighter', fightingStyle: 'defense' }),
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-chain'] }),
+    ]);
+    expect(result).toBe(true);
+  });
+
+  it('cat. 6 — slug inconnu → false (anti-crash)', () => {
+    const result = hasPactOfTheChain([
+      makeClass({ classId: 'warlock', invocations: ['invocation-fantome'] }),
+    ]);
+    expect(result).toBe(false);
+  });
+});
+
 describe('orthogonalité des effets (cat. 6 — intersections)', () => {
-  // Triple combo Warlock idéal pour D13a+b+c — vérifie qu'aucun effet ne
-  // pollue les autres helpers.
-  it('Warlock avec les 3 invocations câblées → +3 AC, advantage concentration, pact-blade', () => {
+  // Quadruple combo Warlock idéal pour D13a+b+c+d — vérifie qu'aucun effet
+  // ne pollue les autres helpers.
+  it('Warlock avec les 4 invocations câblées → +3 AC, advantage concentration, pact-blade, pact-chain', () => {
     const classes = [
       makeClass({
         classId: 'warlock',
-        invocations: ['armor-of-shadows', 'eldritch-mind', 'pact-of-the-blade'],
+        invocations: [
+          'armor-of-shadows',
+          'eldritch-mind',
+          'pact-of-the-blade',
+          'pact-of-the-chain',
+        ],
       }),
     ];
     expect(
@@ -317,6 +374,7 @@ describe('orthogonalité des effets (cat. 6 — intersections)', () => {
     ).toBe(3);
     expect(hasConcentrationAdvantage(classes)).toBe(true);
     expect(hasPactOfTheBlade(classes)).toBe(true);
+    expect(hasPactOfTheChain(classes)).toBe(true);
   });
 
   it('Pact of the Blade ne contribue pas au bonus AC', () => {
@@ -333,5 +391,16 @@ describe('orthogonalité des effets (cat. 6 — intersections)', () => {
       makeClass({ classId: 'warlock', invocations: ['pact-of-the-blade'] }),
     ];
     expect(hasConcentrationAdvantage(classes)).toBe(false);
+  });
+
+  it('Pact of the Chain ne contribue ni à l\'AC, ni à la Concentration, ni à la feature Blade', () => {
+    const classes = [
+      makeClass({ classId: 'warlock', invocations: ['pact-of-the-chain'] }),
+    ];
+    expect(
+      computeInvocationAcBonus({ classes, hasEquippedBodyArmor: false }),
+    ).toBe(0);
+    expect(hasConcentrationAdvantage(classes)).toBe(false);
+    expect(hasPactOfTheBlade(classes)).toBe(false);
   });
 });
