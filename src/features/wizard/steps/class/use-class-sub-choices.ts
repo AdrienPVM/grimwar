@@ -24,7 +24,10 @@ export type ClassSubChoiceKey =
   | 'weaponMasteries'
   | 'expertiseSkills'
   | 'eldritchInvocations'
-  | 'wizardSpellbookL1';
+  | 'wizardSpellbookL1'
+  | 'pactTomeCantrips'
+  | 'pactTomeRituals'
+  | 'pactBladeWeapon';
 
 /** Roublard L1 — 2 compétences en Expertise (SRD 5.2.1 §Rogue Features L1). */
 export const ROGUE_EXPERTISE_COUNT_L1 = 2;
@@ -36,6 +39,10 @@ export const WARLOCK_INVOCATIONS_COUNT_L1 = 1;
 export const WIZARD_SPELLBOOK_INSCRIBED_COUNT_L1 = 6;
 /** Magicien L1 — 4 sorts préparés (= INT mod + niveau, clamp à L1). */
 export const WIZARD_SPELLBOOK_PREPARED_COUNT_L1 = 4;
+/** Warlock D13e — 3 sorts mineurs au choix de toute classe (Pact of the Tome). */
+export const WARLOCK_PACT_TOME_CANTRIPS_COUNT = 3;
+/** Warlock D13e — 2 sorts L1 marqués Rituel au choix de toute classe (Pact of the Tome). */
+export const WARLOCK_PACT_TOME_RITUALS_COUNT = 2;
 
 /**
  * Sous-choix L1 par classId. Source : `docs/AUDIT-SRD-COMPLETUDE.md > B`.
@@ -52,7 +59,18 @@ const REQUIREMENTS_BY_CLASS: Record<string, readonly ClassSubChoiceKey[]> = {
   paladin: ['weaponMasteries'],
   ranger: ['weaponMasteries'],
   rogue: ['weaponMasteries', 'expertiseSkills'],
-  warlock: ['eldritchInvocations'],
+  // Warlock D13c+e — `pactBladeWeapon`, `pactTomeCantrips`, `pactTomeRituals`
+  // ne s'appliquent que si `eldritchInvocations` contient l'invocation
+  // correspondante. La validation conditionnelle est portée par
+  // `isSubChoiceMet` (return true si le pact n'est pas choisi). Les clés sont
+  // déclarées ici parce que le hook ne connaît pas le contenu de l'entrée —
+  // il agit par classId.
+  warlock: [
+    'eldritchInvocations',
+    'pactBladeWeapon',
+    'pactTomeCantrips',
+    'pactTomeRituals',
+  ],
   wizard: ['wizardSpellbookL1'],
   // Sorcerer / Bard / Monk : aucun sous-choix L1 SRD imposé.
   sorcerer: [],
@@ -94,6 +112,13 @@ export function getRequiredCount(
       return WARLOCK_INVOCATIONS_COUNT_L1;
     case 'wizardSpellbookL1':
       return WIZARD_SPELLBOOK_INSCRIBED_COUNT_L1;
+    case 'pactTomeCantrips':
+      return WARLOCK_PACT_TOME_CANTRIPS_COUNT;
+    case 'pactTomeRituals':
+      return WARLOCK_PACT_TOME_RITUALS_COUNT;
+    case 'pactBladeWeapon':
+      // Single-value (radio), convention 1.
+      return 1;
     default: {
       const _never: never = key;
       void _never;
@@ -127,6 +152,19 @@ function isSubChoiceMet(
       return entry.eldritchInvocations.length === required;
     case 'wizardSpellbookL1':
       return entry.wizardSpellbookL1.length === required;
+    case 'pactTomeCantrips':
+      // Tolérant : si Pact of the Tome n'est pas choisi, le chooser ne s'affiche
+      // pas et le sous-choix n'est pas applicable → marqué satisfait.
+      if (!entry.eldritchInvocations.includes('pact-of-the-tome')) return true;
+      return (entry.pactTomeCantrips?.length ?? 0) === required;
+    case 'pactTomeRituals':
+      if (!entry.eldritchInvocations.includes('pact-of-the-tome')) return true;
+      return (entry.pactTomeRituals?.length ?? 0) === required;
+    case 'pactBladeWeapon':
+      // Tolérant : si Pact of the Blade n'est pas choisi, le chooser ne s'affiche
+      // pas → marqué satisfait.
+      if (!entry.eldritchInvocations.includes('pact-of-the-blade')) return true;
+      return entry.pactBladeWeapon != null;
     default: {
       const _never: never = key;
       void _never;
@@ -176,6 +214,14 @@ export const CLASS_STEP_SUB_CHOICE_KEYS: ReadonlySet<ClassSubChoiceKey> = new Se
   'weaponMasteries',
   'eldritchInvocations',
   'wizardSpellbookL1',
+  // D13c+e Pact of the Blade/Tome — les 3 sous-choix conditionnels sont
+  // rendus dans la même section que `eldritchInvocations` (= step Classe)
+  // parce que l'invocation est posée là. Si l'invocation correspondante n'est
+  // pas sélectionnée, la clé est auto-satisfaite (cf. `isSubChoiceMet`
+  // ci-dessus) — pas de blocage sur les autres Warlocks.
+  'pactTomeCantrips',
+  'pactTomeRituals',
+  'pactBladeWeapon',
 ]);
 
 /**

@@ -60,6 +60,16 @@ export function upgradeCharacterV1ToV2(raw: unknown): unknown {
           wizardSpellbookL1: Array.isArray(entry.wizardSpellbookL1)
             ? (entry.wizardSpellbookL1 as string[])
             : sentinels.wizardSpellbookL1,
+          pactTomeCantrips: Array.isArray(entry.pactTomeCantrips)
+            ? (entry.pactTomeCantrips as string[])
+            : sentinels.pactTomeCantrips,
+          pactTomeRituals: Array.isArray(entry.pactTomeRituals)
+            ? (entry.pactTomeRituals as string[])
+            : sentinels.pactTomeRituals,
+          pactBladeWeapon:
+            typeof entry.pactBladeWeapon === 'string'
+              ? (entry.pactBladeWeapon as string)
+              : sentinels.pactBladeWeapon,
           clericDivineOrder: entry.clericDivineOrder ?? sentinels.clericDivineOrder,
           druidPrimalOrder: entry.druidPrimalOrder ?? sentinels.druidPrimalOrder,
           fighterFightingStyle:

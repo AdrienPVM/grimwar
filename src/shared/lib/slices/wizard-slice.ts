@@ -50,6 +50,23 @@ export interface WizardClassEntry {
   eldritchInvocations: string[];
   /** Ids de sorts (spells.json) inscrits dans le grimoire L1 (Magicien). */
   wizardSpellbookL1: string[];
+  /**
+   * D13e — 3 sorts mineurs au choix de n'importe quelle classe (Pact of the Tome).
+   * OPTIONNEL pour rétrocompatibilité des seeds de test antérieurs au chooser.
+   * À l'exécution, traité comme `[]` si absent.
+   */
+  pactTomeCantrips?: string[];
+  /**
+   * D13e — 2 sorts L1 marqués Rituel au choix de n'importe quelle classe.
+   * Cf. `pactTomeCantrips`.
+   */
+  pactTomeRituals?: string[];
+  /**
+   * D13c — Pact of the Blade : slug de l'arme corps-à-corps Simple OU Martiale
+   * pré-bondée au L1. `null` = pas d'arme pré-bondée (l'invocation au combat
+   * choisira). OPTIONNEL pour rétrocompatibilité.
+   */
+  pactBladeWeapon?: string | null;
 }
 
 export type ClassSubChoiceKey =
@@ -59,12 +76,16 @@ export type ClassSubChoiceKey =
   | 'weaponMasteries'
   | 'expertiseSkills'
   | 'eldritchInvocations'
-  | 'wizardSpellbookL1';
+  | 'wizardSpellbookL1'
+  | 'pactTomeCantrips'
+  | 'pactTomeRituals'
+  | 'pactBladeWeapon';
 
 export type ClassSubChoiceValue =
   | DivineOrder
   | PrimalOrder
   | FightingStyle
+  | string
   | string[]
   | null;
 

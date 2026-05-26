@@ -331,6 +331,109 @@ describe('buildCharacterFromWizard — propagation draft → character.classes[i
     );
     expect(character.classes[0]?.clericDivineOrder).toBe('protector');
   });
+
+  /**
+   * D13c-followup-chooser — Pact of the Blade pré-bonde une arme au L1. Le
+   * chooser est conditionnel sur l'invocation `pact-of-the-blade` ; si elle
+   * n'est pas prise, `pactBladeWeapon` reste `null` et le submit ne throw pas.
+   */
+  it('Occultiste sans Pact of the Blade : pactBladeWeapon reste null (rétrocompat)', async () => {
+    const character = await buildCharacterFromWizard(
+      buildArgs(
+        draftFor(
+          'warlock',
+          { eldritchInvocations: ['armor-of-shadows'] },
+          { pickedSkills: ['arcana', 'deception'] },
+        ),
+      ),
+    );
+    expect(character.classes[0]?.pactBladeWeapon ?? null).toBeNull();
+  });
+
+  it('Occultiste avec Pact of the Blade + arme pré-bondée → pactBladeWeapon propagé', async () => {
+    const character = await buildCharacterFromWizard(
+      buildArgs(
+        draftFor(
+          'warlock',
+          {
+            eldritchInvocations: ['pact-of-the-blade'],
+            pactBladeWeapon: 'longsword',
+          },
+          { pickedSkills: ['arcana', 'deception'] },
+        ),
+      ),
+    );
+    expect(character.classes[0]?.pactBladeWeapon).toBe('longsword');
+  });
+
+  it('Occultiste avec Pact of the Blade SANS arme → throw (sous-choix conditionnel manquant)', async () => {
+    await expect(
+      buildCharacterFromWizard(
+        buildArgs(
+          draftFor(
+            'warlock',
+            { eldritchInvocations: ['pact-of-the-blade'] },
+            { pickedSkills: ['arcana', 'deception'] },
+          ),
+        ),
+      ),
+    ).rejects.toThrow(/sous-choix de classe manquant/);
+  });
+
+  /**
+   * D13e-followup-grant — Pact of the Tome ajoute 3 cantrips + 2 rituels L1 de
+   * n'importe quelle classe. Conditionnel sur l'invocation `pact-of-the-tome`.
+   */
+  it('Occultiste avec Pact of the Tome + 3 cantrips + 2 rituels → propagés', async () => {
+    const character = await buildCharacterFromWizard(
+      buildArgs(
+        draftFor(
+          'warlock',
+          {
+            eldritchInvocations: ['pact-of-the-tome'],
+            pactTomeCantrips: ['light', 'sacred-flame', 'guidance'],
+            pactTomeRituals: ['detect-magic', 'identify'],
+          },
+          { pickedSkills: ['arcana', 'deception'] },
+        ),
+      ),
+    );
+    const cls = character.classes[0];
+    expect(cls?.pactTomeCantrips).toEqual(['light', 'sacred-flame', 'guidance']);
+    expect(cls?.pactTomeRituals).toEqual(['detect-magic', 'identify']);
+  });
+
+  it('Occultiste avec Pact of the Tome SANS sorts choisis → throw', async () => {
+    await expect(
+      buildCharacterFromWizard(
+        buildArgs(
+          draftFor(
+            'warlock',
+            { eldritchInvocations: ['pact-of-the-tome'] },
+            { pickedSkills: ['arcana', 'deception'] },
+          ),
+        ),
+      ),
+    ).rejects.toThrow(/sous-choix de classe manquant/);
+  });
+
+  it('Occultiste avec Pact of the Tome + 2 cantrips (manque 1) → throw', async () => {
+    await expect(
+      buildCharacterFromWizard(
+        buildArgs(
+          draftFor(
+            'warlock',
+            {
+              eldritchInvocations: ['pact-of-the-tome'],
+              pactTomeCantrips: ['light', 'sacred-flame'],
+              pactTomeRituals: ['detect-magic', 'identify'],
+            },
+            { pickedSkills: ['arcana', 'deception'] },
+          ),
+        ),
+      ),
+    ).rejects.toThrow(/sous-choix de classe manquant/);
+  });
 });
 
 describe('buildCharacterFromWizard — knownSpells.wizard reflète le grimoire inscrit', () => {

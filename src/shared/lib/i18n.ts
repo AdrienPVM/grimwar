@@ -198,6 +198,12 @@ export type StringKey =
   | 'wizard.subchoice.wizardSpellbook.preparedLegend'
   | 'wizard.subchoice.wizardSpellbook.preparedHelper'
   | 'wizard.subchoice.wizardSpellbook.preparedEmpty'
+  | 'wizard.subchoice.pactOfTheTome.cantripsLegend'
+  | 'wizard.subchoice.pactOfTheTome.cantripsHelper'
+  | 'wizard.subchoice.pactOfTheTome.ritualsLegend'
+  | 'wizard.subchoice.pactOfTheTome.ritualsHelper'
+  | 'wizard.subchoice.pactOfTheBlade.legend'
+  | 'wizard.subchoice.pactOfTheBlade.helper'
   // Mobile : déclencheur explicite « ? » + label de fermeture modale
   | 'wizard.helpPanel.viewDetail'
   | 'wizard.helpPanel.close'
@@ -573,6 +579,24 @@ const STRINGS: Record<Locale, Dict> = {
       "Choisis {count} sorts parmi ton grimoire — seuls les sorts préparés sont lançables aujourd'hui. Les autres restent inscrits mais inutilisables tant que tu ne les prépares pas.",
     'wizard.subchoice.wizardSpellbook.preparedEmpty':
       "Inscris d'abord les sorts dans ton grimoire ci-dessus.",
+    // D13e — Pacte du grimoire (Pact of the Tome). Terminologie WotC FR
+    // officielle (SRD FR p. 158 « Codex des Ombres ») : « sort mineur »
+    // (= cantrip), « rituel » (= ritual). « N'importe quelle classe »
+    // reprend la formulation SRD « from any class's spell list ».
+    'wizard.subchoice.pactOfTheTome.cantripsLegend':
+      'Codex des Ombres — sorts mineurs',
+    'wizard.subchoice.pactOfTheTome.cantripsHelper':
+      "Choisis {count} sorts mineurs de n'importe quelle classe. Préparés tant que le grimoire est sur toi.",
+    'wizard.subchoice.pactOfTheTome.ritualsLegend':
+      'Codex des Ombres — rituels du 1ᵉʳ niveau',
+    'wizard.subchoice.pactOfTheTome.ritualsHelper':
+      "Choisis {count} sorts du 1ᵉʳ niveau marqués « rituel » de n'importe quelle classe. Préparés tant que le grimoire est sur toi.",
+    // D13c — Pacte de la lame (Pact of the Blade). Terminologie WotC FR
+    // officielle (SRD FR p. 158) : « arme de pacte », « corps-à-corps simple »,
+    // « corps-à-corps de guerre » (martial). Le chooser sélectionne UNE arme.
+    'wizard.subchoice.pactOfTheBlade.legend': 'Arme de pacte',
+    'wizard.subchoice.pactOfTheBlade.helper':
+      'Choisis une arme corps-à-corps simple OU de guerre à pré-bonder. Tu pourras toujours la changer en jeu (action bonus, contact 1 minute).',
     'wizard.helpPanel.viewDetail': 'Voir le détail',
     'wizard.helpPanel.close': 'Fermer',
     // Spell detail panel
@@ -975,6 +999,19 @@ const STRINGS: Record<Locale, Dict> = {
       'Pick {count} spells from your spellbook — only prepared spells are castable today. The others stay inscribed but unusable until prepared.',
     'wizard.subchoice.wizardSpellbook.preparedEmpty':
       'Inscribe spells in your spellbook above first.',
+    // D13e — Pact of the Tome (Warlock).
+    'wizard.subchoice.pactOfTheTome.cantripsLegend':
+      'Book of Shadows — cantrips',
+    'wizard.subchoice.pactOfTheTome.cantripsHelper':
+      'Choose {count} cantrips from any class. Prepared while the book is on your person.',
+    'wizard.subchoice.pactOfTheTome.ritualsLegend':
+      'Book of Shadows — level-1 rituals',
+    'wizard.subchoice.pactOfTheTome.ritualsHelper':
+      'Choose {count} level-1 spells with the Ritual tag from any class. Prepared while the book is on your person.',
+    // D13c — Pact of the Blade (Warlock).
+    'wizard.subchoice.pactOfTheBlade.legend': 'Pact weapon',
+    'wizard.subchoice.pactOfTheBlade.helper':
+      'Choose one Simple or Martial Melee weapon to pre-bond. You can swap it in play (bonus action, 1-minute touch).',
     'wizard.helpPanel.viewDetail': 'See details',
     'wizard.helpPanel.close': 'Close',
     // Spell detail panel

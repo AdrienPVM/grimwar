@@ -54,6 +54,24 @@ export const characterClassEntrySchema = z.object({
   expertiseSkills: z.array(slug),
   eldritchInvocations: z.array(slug),
   wizardSpellbookL1: z.array(slug),
+  /**
+   * Pact of the Tome (Warlock D13e) — 3 sorts mineurs au choix de n'importe
+   * quelle classe. Vide si Warlock n'a pas choisi cette invocation. Optionnel
+   * pour rétrocompatibilité des fiches V2 antérieures à l'ajout du chooser.
+   */
+  pactTomeCantrips: z.array(slug).optional(),
+  /**
+   * Pact of the Tome (Warlock D13e) — 2 sorts du 1ᵉʳ niveau marqués Rituel
+   * au choix de n'importe quelle classe. Cf. `pactTomeCantrips`.
+   */
+  pactTomeRituals: z.array(slug).optional(),
+  /**
+   * Pact of the Blade (Warlock D13c) — slug de l'arme corps-à-corps Simple OU
+   * Martiale pré-bondée au L1. `null` quand l'invocation `pact-of-the-blade`
+   * n'est pas prise ; sinon référence un slug de `items.json`. Optionnel pour
+   * rétrocompatibilité des fiches V2 antérieures à l'ajout du chooser.
+   */
+  pactBladeWeapon: slug.nullable().optional(),
 });
 export type CharacterClassEntry = z.infer<typeof characterClassEntrySchema>;
 
@@ -140,6 +158,9 @@ export function createEmptyClassSubChoices(): {
   expertiseSkills: string[];
   eldritchInvocations: string[];
   wizardSpellbookL1: string[];
+  pactTomeCantrips: string[];
+  pactTomeRituals: string[];
+  pactBladeWeapon: string | null;
 } {
   return {
     clericDivineOrder: null,
@@ -149,6 +170,9 @@ export function createEmptyClassSubChoices(): {
     expertiseSkills: [],
     eldritchInvocations: [],
     wizardSpellbookL1: [],
+    pactTomeCantrips: [],
+    pactTomeRituals: [],
+    pactBladeWeapon: null,
   };
 }
 
