@@ -234,6 +234,46 @@ service cloud.firestore {
       match /maps/{mapId} {
         allow read: if isMemberOf(campaignId);
         allow create, update, delete: if isDMOf(campaignId);
+
+        // ── Tokens (sous-collection — CHANTIER D nuit 3) ────────
+        // Tokens vivent en sous-collection pour borner le coût des writes
+        // individuels (un déplacement = un write). Read pour tous les
+        // membres ; write pour le MJ uniquement à ce stade (V1). Les
+        // joueurs déplacent leur token via le MJ — l'autorisation de
+        // self-write par PJ viendra avec un check `linkedCharacterId ==
+        // ma propre fiche` en chantier ultérieur (plan map-phase3).
+        match /tokens/{tokenId} {
+          allow read: if isMemberOf(campaignId);
+          allow create, update, delete: if isDMOf(campaignId);
+        }
+
+        // ── Fog of war polygons (CHANTIER E nuit 3) ─────────────
+        // Polygones de zone révélée superposés à la carte. Read pour les
+        // membres (auto-revealed sur PJ proche), write pour le MJ (qui
+        // peint/efface manuellement).
+        match /fog/{fogId} {
+          allow read: if isMemberOf(campaignId);
+          allow create, update, delete: if isDMOf(campaignId);
+        }
+
+        // ── Light sources (CHANTIER F nuit 3) ───────────────────
+        // Sources lumineuses (statiques ou attachées à un token). Read
+        // membres (rendu radial bright/dim), write MJ.
+        match /lights/{lightId} {
+          allow read: if isMemberOf(campaignId);
+          allow create, update, delete: if isDMOf(campaignId);
+        }
+
+        // ── AoE templates (CHANTIER G nuit 3) ───────────────────
+        // Templates SVG de sort de zone (sphère, cône, ligne, cube).
+        // Read membres (rendu visuel + détection cible différée D24),
+        // write MJ + tout membre qui déclenche un sort depuis sa fiche.
+        // V1 : MJ-only pour simplifier ; permissions étendues à venir
+        // quand le pipeline « sort → AoE » sera câblé.
+        match /aoe/{aoeId} {
+          allow read: if isMemberOf(campaignId);
+          allow create, update, delete: if isDMOf(campaignId);
+        }
       }
 
       // ── Handouts (S3, plan 27) ────────────────────────────────
