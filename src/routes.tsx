@@ -35,6 +35,13 @@ const MapsCloudScreen = lazy(async () => {
   return { default: mod.MapsCloudScreen };
 });
 
+// Route /map-proto/cloud/:cid/maps/:mid — vue live d'une carte (CHANTIER D
+// phase 2, tracer D.4) : tokens persistés via Firestore, drag-and-drop → updateToken.
+const MapLiveScreen = lazy(async () => {
+  const mod = await import('@/features/map-proto/map-live-screen');
+  return { default: mod.MapLiveScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -45,6 +52,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />
+        <Route path="/map-proto/cloud/:cid/maps/:mid" element={<MapLiveScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
