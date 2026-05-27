@@ -653,6 +653,21 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - Option (c) : abandonner Periapt of Health dans `magic-items.json` ; le couvrir via le futur système d'import de contenu custom (plan 13.11) côté DM. Pragmatique mais retire un item SRD legit du bundle public.
 - **Risque** : faible — pas de bug bloquant, juste une incohérence de nommage et l'absence de Periapt of Health SRD. Arbitrage Adrien recommandé avant cleanup.
 
+## D25 — Mode carte phase 2 : UI complet + services Firestore live
+
+- **Owner** : `plans/D-map-phase2-ui.md` (ouvert 2026-05-27, branche `feat/D-map-phase2-ui`).
+- **Statut** : **EN COURS 2026-05-27** — D.1 livré (PR #35 mergée `f082ff7`), reste D.2..D.6.
+- **Suite chantier D phase 1** (PR #22 — schémas + `useMap` listener + rules Firestore, data-layer-only). Le prototype `/map-proto` reste en mode localStorage offline ; cette phase 2 le connecte à Firestore live via `campaigns/{cid}/maps/{mid}`.
+- **Tracer-bullets** :
+  - **D.1 — Services Firestore write-side** ✅ mergé PR #35 `f082ff7` — `src/shared/lib/services/maps.ts` (createMap / updateMap / deleteMap / createToken / updateToken / deleteToken / addFogPolygon / removeFogPolygon / addLightSource / removeLightSource / addAoeTemplate / removeAoeTemplate) + 12 unit tests mockés Firestore. Aucune UI touchée.
+  - **D.2 — `useMaps` listener liste cartes par campagne** (à faire).
+  - **D.3 — UI MJ création + édition d'une carte** (à faire).
+  - **D.4 — Connexion `/map-proto` → Firestore live** (à faire).
+  - **D.5 — Persistance fog of war + lumière + AoE depuis UI** (à faire).
+  - **D.6 — e2e parcours MJ complet** (à faire).
+- **Hors scope phase 2** : Firebase Storage (upload image), self-write par PJ sur token lié (`linkedCharacterId == ma fiche`). Différés à `map-phase3`.
+- **Risque** : moyen — 2220 LOC dans `src/features/map-proto/` à migrer (D.4-D.5) ; les autres tracers sont isolables.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
