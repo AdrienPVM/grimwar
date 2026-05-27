@@ -579,16 +579,22 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 
 ## D22 — `magic-items.json` SRD-sourcing incomplet (potions livrées en C.1, ≥86 items restants)
 
-- **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27, branche `feat/C-magic-items-srd-common-uncommon`).
-- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** au tracer-bullet C.1 (potions) — 9 entrées Common+Uncommon (8 remplacements + 1 nouveau slug `potion-de-guerison-importante`). Les ~77 magic items Common+Uncommon restants (wondrous, anneaux, armes, armures, parchemins…) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
+- **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27).
+- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (potions, PR #28 `85d8397`) + C.2 (wondrous wearables, PR #29 `4dcec6c`) — **33 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables, dont 2 nouveaux slugs `potion-de-guerison-importante` et `gants-de-chapardeur`). Les ~53 magic items Common+Uncommon restants (anneaux, amulettes, armes magiques, armures, parchemins, wondrous utilitaires/poudres/gemmes) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
 - **Drifts mécaniques corrigés au tracer C.1** (preuve de valeur ajoutée du SRD-sourcing) :
   - `potion-d-agrandissement` : durée AideDD `1d4 heures` → SRD officiel **`10 minutes`**.
   - `potion-de-respiration-aquatique` : durée AideDD `1 heure` → SRD officiel **`24 heures`**.
   - `potion-d-amitie-avec-les-animaux` : mécanique AideDD `cast à volonté 1 heure` → SRD officiel **`cast au 3ᵉ niveau (DD 13)`**.
   - `potion-de-force-de-geant` : rareté AideDD `common` → SRD officiel **`uncommon` (variante collines)**.
   - `potion-de-poison` : `name.fr` AideDD `« Potion de poison »` → SRD FR officiel **`« Potion toxique »`** (slug stable).
-- **Suite recommandée** : tracer-bullets C.2..C.7 dans l'ordre du plan (wondrous → anneaux+amulettes → armes → armures+boucliers → parchemins/bag/tools → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder `scripts/extract-srd-magic-items.ts` + tests cat. 3 pin + quadruple gate + PR + merge.
-- **Effet collatéral résolu** : régénération de `public/data/index.json` au passage corrige un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8 (D13d-followup-statblocks avait ajouté 4 entrées sans re-rendre `index.json`).
+- **Drifts mécaniques/terminologiques corrigés au tracer C.2** (suite) :
+  - `lunettes-de-nuit` : `name.fr` AideDD `« Lunettes de nuit »` → SRD FR officiel **`« Lunettes du nyctalope »`** (slug stable).
+  - `yeux-grossissants` : `name.fr` AideDD `« Yeux grossissants »` → SRD FR officiel **`« Lentilles de netteté »`** (slug stable).
+  - `robe-de-camelot` : `name.fr` AideDD `« Robe de camelot »` → SRD FR officiel **`« Robe du camelot »`** (article défini, slug stable).
+  - `bottes-elfiques` + `heaume-de-comprehension-des-langues` + `lunettes-de-nuit` + `yeux-de-lynx` + `yeux-grossissants` : `attunement: true` → **`false`** (SRD 5.2.1 ne requiert PAS attunement, drift baseline AideDD).
+  - `gants-de-chapardeur` : **NOUVELLE ENTRÉE AJOUTÉE** (Gloves of Thievery — SRD officiel, mais absent du bundle baseline AideDD).
+- **Suite recommandée** : tracer-bullets C.3..C.7 dans l'ordre du plan (anneaux+amulettes → armes → armures+boucliers → wondrous utilitaires/parchemins → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder + tests cat. 3 pin + quadruple gate + PR + merge.
+- **Effet collatéral résolu (C.1)** : régénération de `public/data/index.json` au passage a corrigé un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8.
 
 ## D23 — `potion-de-souffle-enflamme` : item AideDD homebrew dans le bundle « magic-items »
 
