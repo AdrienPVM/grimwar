@@ -40,8 +40,16 @@ vi.mock('@/features/map-proto/use-map', () => ({
 }));
 
 const mockUpdateToken = vi.fn();
+const mockUpdateMap = vi.fn();
+const mockAddFogPolygon = vi.fn();
+const mockAddLightSource = vi.fn();
+const mockAddAoeTemplate = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
+  updateMap: (...args: unknown[]) => mockUpdateMap(...args),
+  addFogPolygon: (...args: unknown[]) => mockAddFogPolygon(...args),
+  addLightSource: (...args: unknown[]) => mockAddLightSource(...args),
+  addAoeTemplate: (...args: unknown[]) => mockAddAoeTemplate(...args),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({
@@ -133,6 +141,10 @@ beforeEach(() => {
   useMapState.isLoading = false;
   useMapState.error = null;
   mockUpdateToken.mockReset().mockResolvedValue(undefined);
+  mockUpdateMap.mockReset().mockResolvedValue(undefined);
+  mockAddFogPolygon.mockReset().mockResolvedValue(undefined);
+  mockAddLightSource.mockReset().mockResolvedValue(undefined);
+  mockAddAoeTemplate.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
 
@@ -240,5 +252,166 @@ describe('MapLiveScreen', () => {
     // Petit délai pour que le handleAsync settle.
     await new Promise((r) => setTimeout(r, 10));
     expect(mockUpdateToken).not.toHaveBeenCalled();
+  });
+
+  // ── D.5 fog / lights / AoE ─────────────────────────────────────────────
+
+  it('renders fog/lights/AoE counters from MapMeta', () => {
+    useMapState.map = mkMap({
+      fogPolygons: [
+        { id: 'p1', kind: 'reveal', points: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], createdAt: null },
+      ],
+      lightSources: [],
+      aoeTemplates: [
+        {
+          id: 'a1',
+          shape: 'sphere',
+          position: { x: 0, y: 0 },
+          dimensions: { radius: 20 },
+          pinned: false,
+        },
+        {
+          id: 'a2',
+          shape: 'cone',
+          position: { x: 0, y: 0 },
+          dimensions: { radius: 30 },
+          pinned: false,
+        },
+      ],
+    });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.getByTestId('map-live-fog-count').textContent).toContain('(1)');
+    expect(screen.getByTestId('map-live-lights-count').textContent).toContain('(0)');
+    expect(screen.getByTestId('map-live-aoe-count').textContent).toContain('(2)');
+  });
+
+  it('calls addFogPolygon with reveal kind when reveal button clicked', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-fog-reveal'));
+    await waitFor(() => {
+      expect(mockAddFogPolygon).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, currentArg, polygonArg, uidArg] = mockAddFogPolygon.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(currentArg).toEqual([]);
+    expect(uidArg).toBe('user-alice');
+    const polygon = polygonArg as { kind: string; points: unknown[] };
+    expect(polygon.kind).toBe('reveal');
+    expect(polygon.points.length).toBeGreaterThan(2);
+  });
+
+  it('calls addFogPolygon with mask kind when mask button clicked', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-fog-mask'));
+    await waitFor(() => {
+      expect(mockAddFogPolygon).toHaveBeenCalledTimes(1);
+    });
+    const polygon = mockAddFogPolygon.mock.calls[0]![3] as { kind: string };
+    expect(polygon.kind).toBe('mask');
+  });
+
+  it('calls updateMap with empty fogPolygons when "Effacer fog" clicked', async () => {
+    useMapState.map = mkMap({
+      fogPolygons: [
+        { id: 'p1', kind: 'reveal', points: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], createdAt: null },
+      ],
+    });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const btn = screen.getByTestId('map-live-clear-fog') as HTMLButtonElement;
+    expect(btn.disabled).toBe(false);
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, patchArg] = mockUpdateMap.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(patchArg).toEqual({ fogPolygons: [] });
+  });
+
+  it('disables "Effacer fog" when no fog polygons', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const btn = screen.getByTestId('map-live-clear-fog') as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+  });
+
+  it('calls addLightSource with torch preset when torch button clicked', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-torch'));
+    await waitFor(() => {
+      expect(mockAddLightSource).toHaveBeenCalledTimes(1);
+    });
+    const light = mockAddLightSource.mock.calls[0]![3] as {
+      preset: string;
+      brightRadius: number;
+      position: { x: number; y: number };
+    };
+    expect(light.preset).toBe('torch');
+    expect(light.brightRadius).toBeGreaterThan(0);
+    expect(light.position).toBeDefined();
+  });
+
+  it('calls updateMap with empty lightSources when "Effacer lumières" clicked', async () => {
+    useMapState.map = mkMap({
+      lightSources: [
+        {
+          id: 'l1',
+          position: { x: 0, y: 0 },
+          brightRadius: 20,
+          dimRadius: 20,
+          preset: 'torch',
+        },
+      ],
+    });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-clear-lights'));
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ lightSources: [] });
+  });
+
+  it('calls addAoeTemplate with sphere shape when AoE button clicked', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-sphere-aoe'));
+    await waitFor(() => {
+      expect(mockAddAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const template = mockAddAoeTemplate.mock.calls[0]![3] as {
+      shape: string;
+      dimensions: { radius: number };
+    };
+    expect(template.shape).toBe('sphere');
+    expect(template.dimensions.radius).toBeGreaterThan(0);
+  });
+
+  it('calls updateMap with empty aoeTemplates when "Effacer AoE" clicked', async () => {
+    useMapState.map = mkMap({
+      aoeTemplates: [
+        {
+          id: 'a1',
+          shape: 'sphere',
+          position: { x: 0, y: 0 },
+          dimensions: { radius: 20 },
+          pinned: false,
+        },
+      ],
+    });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-clear-aoe'));
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ aoeTemplates: [] });
+  });
+
+  it('surfaces fog write error in writeError panel', async () => {
+    mockAddFogPolygon.mockRejectedValueOnce(new Error('rules-denied'));
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-fog-reveal'));
+    await waitFor(() => {
+      expect(screen.getByTestId('map-live-write-error').textContent).toContain('rules-denied');
+    });
   });
 });
