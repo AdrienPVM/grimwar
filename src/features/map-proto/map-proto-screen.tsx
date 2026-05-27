@@ -9,8 +9,21 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from 'react';
 
-import type { FogPolygon, LightSource, MapPosition } from '@/shared/types/map';
+import type {
+  AoeTemplate,
+  FogPolygon,
+  LightSource,
+  MapPosition,
+} from '@/shared/types/map';
 
+import { AoeLayer } from './aoe-layer';
+import {
+  addAoe,
+  clearAoes,
+  removeAoe,
+  rotateAoe,
+  type AoeShape,
+} from './aoe-state';
 import { FogLayer } from './fog-layer';
 import {
   appendManualMask,
@@ -134,6 +147,10 @@ export function MapProtoScreen(): JSX.Element {
   const [lightingEnabled, setLightingEnabled] = useState(true);
   const [lights, setLights] = useState<readonly LightSource[]>([]);
   const [placeMode, setPlaceMode] = useState<PlaceMode>('off');
+
+  // AoE templates state (CHANTIER G).
+  const [aoeTemplates, setAoeTemplates] = useState<readonly AoeTemplate[]>([]);
+  const [aoeShape, setAoeShape] = useState<AoeShape | null>(null);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
@@ -302,6 +319,14 @@ export function MapProtoScreen(): JSX.Element {
   const handleSvgPointerDown = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>): void => {
       if (draggingTokenId) return;
+      // Mode placer-AoE : on dépose un template au clic et on sort du
+      // mode (one-shot, comme placeMode='place-torch').
+      if (aoeShape) {
+        const svgPos = screenToSvg(e.clientX, e.clientY);
+        setAoeTemplates((prev) => addAoe(prev, aoeShape, svgPos));
+        setAoeShape(null);
+        return;
+      }
       // Mode placer-lumière : on dépose une torche statique au clic et
       // on sort du mode (one-shot).
       if (placeMode === 'place-torch') {
@@ -326,7 +351,7 @@ export function MapProtoScreen(): JSX.Element {
       };
       setPanning(true);
     },
-    [draggingTokenId, paintMode, pan, placeMode, screenToSvg],
+    [aoeShape, draggingTokenId, paintMode, pan, placeMode, screenToSvg],
   );
 
   const handleSvgPointerMove = useCallback(
@@ -387,10 +412,33 @@ export function MapProtoScreen(): JSX.Element {
     setPaintMode('off');
     setLights([]);
     setPlaceMode('off');
+    setAoeTemplates([]);
+    setAoeShape(null);
   }, []);
 
   const handleToggleTokenTorch = useCallback((tokenId: string): void => {
     setLights((prev) => attachLightToToken(prev, tokenId, 'torch'));
+  }, []);
+
+  const handleSelectAoeShape = useCallback((shape: AoeShape): void => {
+    setAoeShape((prev) => (prev === shape ? null : shape));
+  }, []);
+
+  const handleClickAoe = useCallback((id: string): void => {
+    // Clic = retire l'AoE (UX simple, sans modale de confirmation).
+    setAoeTemplates((prev) => removeAoe(prev, id));
+  }, []);
+
+  const handleRotateLastAoe = useCallback((deltaDeg: number): void => {
+    setAoeTemplates((prev) => {
+      const last = prev[prev.length - 1];
+      if (!last) return prev;
+      return rotateAoe(prev, last.id, deltaDeg);
+    });
+  }, []);
+
+  const handleClearAoes = useCallback((): void => {
+    setAoeTemplates((prev) => clearAoes(prev));
   }, []);
 
   const handleClearAllLights = useCallback((): void => {
@@ -572,6 +620,56 @@ export function MapProtoScreen(): JSX.Element {
             Effacer lumières
           </button>
         </div>
+        {/* Bandeau outils AoE (CHANTIER G). */}
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+            AoE
+          </span>
+          {(['sphere', 'cone', 'line', 'cube'] as const).map((shape) => (
+            <button
+              key={`aoe-shape-${shape}`}
+              type="button"
+              onClick={() => handleSelectAoeShape(shape)}
+              aria-pressed={aoeShape === shape}
+              data-testid={`aoe-shape-${shape}`}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+            >
+              {shape === 'sphere'
+                ? 'Sphère'
+                : shape === 'cone'
+                  ? 'Cône'
+                  : shape === 'line'
+                    ? 'Ligne'
+                    : 'Cube'}
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => handleRotateLastAoe(-15)}
+            disabled={aoeTemplates.length === 0}
+            data-testid="aoe-rotate-ccw"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            ↺ -15°
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRotateLastAoe(15)}
+            disabled={aoeTemplates.length === 0}
+            data-testid="aoe-rotate-cw"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            ↻ +15°
+          </button>
+          <button
+            type="button"
+            onClick={handleClearAoes}
+            disabled={aoeTemplates.length === 0}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Effacer AoE
+          </button>
+        </div>
       </header>
       <main className="flex-1 p-4">
         <p className="mb-3 font-serif text-[12px] text-text-tertiary">
@@ -678,6 +776,11 @@ export function MapProtoScreen(): JSX.Element {
             {/* Teinte chaude de la lumière au-dessus du fog/tokens (CHANTIER F). */}
             {lightingEnabled && lights.length > 0 && (
               <LightLayer lights={lights} tokenPositions={tokenPositions} />
+            )}
+            {/* AoE templates au-dessus de tout (CHANTIER G).
+               Cliquer sur un AoE le retire (UX simple). */}
+            {aoeTemplates.length > 0 && (
+              <AoeLayer aoes={aoeTemplates} onClickAoe={handleClickAoe} />
             )}
             {/* Aperçu en temps réel du tracé pendant qu'on peint. */}
             {paintStroke && paintStroke.length >= 2 && (
