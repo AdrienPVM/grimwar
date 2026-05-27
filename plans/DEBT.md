@@ -580,7 +580,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D22 — `magic-items.json` SRD-sourcing incomplet (potions livrées en C.1, ≥86 items restants)
 
 - **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27).
-- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) + C.4 (PR #31 `185af74`) + C.5 (PR #32 `081fceb`) — **51 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables + 9 anneaux/amulettes + 5 armes + 4 armures/boucliers ; dont 4 nouveaux slugs `potion-de-guerison-importante`, `gants-de-chapardeur`, `arme-vigilante`, `bouclier-sentinelle`). Les ~35 magic items Common+Uncommon restants (parchemins + wondrous utilitaires/poudres/gemmes, reliquat) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
+- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) + C.4 (PR #31 `185af74`) + C.5 (PR #32 `081fceb`) + C.6 (PR #33 `32fd0ab`) — **67 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables + 9 anneaux/amulettes + 5 armes + 4 armures/boucliers + 16 wondrous utilitaires ; dont 5 nouveaux slugs `potion-de-guerison-importante`, `gants-de-chapardeur`, `arme-vigilante`, `bouclier-sentinelle`, `perle-nutritive`). Les ~19 magic items Common+Uncommon restants (reliquat : Corde, Sending Stones, Pierre porte-bonheur, Éventail, Spell Scroll, Philtre d'amour, etc.) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
 - **Drifts mécaniques corrigés au tracer C.1** (preuve de valeur ajoutée du SRD-sourcing) :
   - `potion-d-agrandissement` : durée AideDD `1d4 heures` → SRD officiel **`10 minutes`**.
   - `potion-de-respiration-aquatique` : durée AideDD `1 heure` → SRD officiel **`24 heures`**.
@@ -602,7 +602,14 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - `armure-d-adamantium` : `name.fr "Armure d'adamantium"` → SRD FR officiel **`"Armure en adamantium"`** (préposition).
   - `bouclier-sentinelle` : **NOUVELLE ENTRÉE AJOUTÉE** (Sentinel Shield — SRD officiel, mais absent du bundle baseline AideDD).
   - Hors scope préservé : `armure-de-matelot` (Mariner's Armor) **pas dans SRD CC v5.2.1** → reste grandfathered.
-- **Suite recommandée** : tracer-bullets C.6..C.7 (wondrous utilitaires/parchemins → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder + tests cat. 3 pin + quadruple gate + PR + merge.
+- **Drifts au tracer C.6** (5 corrections terminologiques + 1 nouveau common) :
+  - `bouteille-fumigene` : `name.fr "Bouteille fumigène"` → SRD FR officiel **`"Urne fumigène"`**.
+  - `carquois-d-ehlonna` : `name.fr "Carquois d'Ehlonna"` (setting non-SRD) → SRD FR officiel **`"Carquois efficace"`**.
+  - `cartes-d-illusion` : `name.fr "Cartes d'illusion"` → SRD FR officiel **`"Tarot fantasmagorique"`**.
+  - `perle-de-pouvoir` : `name.fr "Perle de pouvoir"` → SRD FR officiel **`"Perle de thaumaturgie"`**.
+  - `poussiere-dessiccative` : `name.fr "Poussière dessiccative"` → SRD FR officiel **`"Poudre dessiccative"`**.
+  - `perle-nutritive` : **NOUVELLE ENTRÉE COMMON AJOUTÉE** (Bead of Nourishment — premier common SRD-sourcé hors potions).
+- **Suite recommandée** : tracer-bullet C.7 (reliquat ~19 items : Corde, Sending Stones, Stone of Good Luck, Wind Fan, Spell Scroll, Philtre d'amour, etc.) → clôture D22.
 - **Effet collatéral résolu (C.1)** : régénération de `public/data/index.json` au passage a corrigé un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8.
 
 ## D23 — `potion-de-souffle-enflamme` : item AideDD homebrew dans le bundle « magic-items »
