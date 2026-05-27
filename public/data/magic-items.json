@@ -2690,13 +2690,15 @@
   {
     "id": "potion-d-agrandissement",
     "name": {
-      "fr": "Potion d'agrandissement"
+      "fr": "Potion d'agrandissement",
+      "en": "Potion of Growth"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Lorsque vous buvez cette potion, vous bénéficiez de l'effet « agrandissement » du sort agrandissement/rapetissement pendant 1d4 heures (aucune concentration n'est requise). Une couleur rouge s'étend depuis une petite perle pour colorer le liquide clair de la potion, puis se contracte. Secouer la fiole n'interrompt pas ce processus."
+      "fr": "Lorsque vous buvez cette potion, vous recevez l'effet « agrandissement » du sort agrandissement/rapetissement pendant 10 minutes (aucune Concentration requise).\n\nLa partie rouge du liquide de la potion se dilate et se contracte en boucle, d'une petite perle colorant le liquide incolore et vice-versa. Le processus ne s'interrompt pas, même quand on secoue la bouteille.",
+      "en": "When you drink this potion, you gain the \"enlarge\" effect of the Enlarge/Reduce spell for 10 minutes (no Concentration required).\n\nThe red in the potion’s liquid continuously expands from a tiny bead to color the clear liquid around it and then contracts. Shaking the bottle fails to interrupt this process."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2704,13 +2706,15 @@
   {
     "id": "potion-d-amitie-avec-les-animaux",
     "name": {
-      "fr": "Potion d'amitié avec les animaux"
+      "fr": "Potion d'amitié avec les animaux",
+      "en": "Potion of Animal Friendship"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Quand vous buvez cette potion, vous pouvez lancer le sort amitié avec les animaux (sauvegarde DD 13) pendant 1 heure à volonté. Agiter ce liquide boueux fait apparaître de petits morceaux : une écaille de poisson, une langue de colibri, une griffe de chat ou un poil d'écureuil."
+      "fr": "Lorsque vous buvez cette potion, vous pouvez lancer le sort amitié avec les animaux au 3ᵉ niveau (DD de sauvegarde 13).\n\nAgiter ce liquide trouble permet de distinguer les menus objets qui y flottent : écaille de poisson, plume de colibri, griffe de chat, poil d'écureuil.",
+      "en": "When you drink this potion, you can cast the level 3 version of the Animal Friendship spell (save DC 13).\n\nAgitating this potion’s muddy liquid brings little bits into view: a fish scale, a hummingbird feather, a cat claw, or a squirrel hair."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2718,13 +2722,15 @@
   {
     "id": "potion-d-escalade",
     "name": {
-      "fr": "Potion d'escalade"
+      "fr": "Potion d'escalade",
+      "en": "Potion of Climbing"
     },
     "category": "gear",
     "rarity": "common",
     "attunement": false,
     "magicDescription": {
-      "fr": "Quand vous buvez cette potion, vous gagnez une vitesse d'escalade égale à votre vitesse de marche pendant 1 heure. Pendant ce temps, vous avez un avantage aux jets de Force (Athlétisme) que vous effectuez pour escalader. La potion est séparée en bandes brune, argent et grise qui ressemblent à des couches de pierre. Secouer la bouteille ne mélange pas les couleurs."
+      "fr": "Lorsque vous buvez cette potion, vous recevez une Vitesse d'escalade égale à votre Vitesse pendant 1 heure. Pendant cette heure, vous avez l'Avantage aux tests de Force (Athlétisme) effectués pour l'escalade.\n\nLa potion est divisée en nappes brunes, argentées et grises évoquant des strates dans la roche. Ces couleurs ne se mélangent pas, même quand on secoue la bouteille.",
+      "en": "When you drink this potion, you gain a Climb Speed equal to your Speed for 1 hour. During this time, you have Advantage on Strength (Athletics) checks to climb.\n\nThis potion is separated into brown, silver, and gray layers resembling bands of stone. Shaking the bottle fails to mix the colors."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2802,13 +2808,15 @@
   {
     "id": "potion-de-force-de-geant",
     "name": {
-      "fr": "Potion de force de géant"
+      "fr": "Potion de force de géant (collines)",
+      "en": "Potion of Giant Strength (hill)"
     },
     "category": "gear",
-    "rarity": "common",
+    "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Lorsque vous buvez cette potion, votre valeur de Force change pour 1 heure. Le type du géant détermine la valeur (voir le tableau ci-dessous). La potion n'a aucun effet sur vous si votre Force est égale ou supérieure à celle indiquée.\n\nDans le liquide transparent de cette potion flotte un morceau d'ongle d'un géant du type approprié. Une potion de force de géant du givre et une potion de géant des pierres ont le même effet.\n\nType de géantForceRaretéGéant des collines21Peu communGéant des pierres/du givre23RareGéant du feu25RareGéant des nuages27Très rareGéant des tempêtes29Légendaire"
+      "fr": "Lorsque vous buvez cette potion, votre valeur de Force change pendant 1 heure. Le type de géant détermine cette valeur (cf. table ci-dessous). Si votre Force est déjà supérieure ou égale à la valeur octroyée par la potion, celle-ci n’a aucun effet sur vous.\n\nCe liquide transparent contient un éclat de lumière flottant qui évoque l’ongle d’un géant.\n\nPotion de force de géant (collines) : Force 21 — Peu courante.\n(Les variantes givre/pierres, feu, nuages et tempêtes existent en raretés Rare à Légendaire et sont hors scope de cette entrée.)",
+      "en": "When you drink this potion, your Strength score changes for 1 hour. The type of giant determines the score (see the table below). The potion has no effect on you if your Strength is equal to or greater than that score.\n\nThis potion’s transparent liquid has floating in it a sliver of light resembling a giant’s fingernail.\n\nPotion of Giant Strength (hill): Strength 21 — Uncommon.\n(The frost/stone, fire, cloud, and storm variants exist at Rare through Legendary rarities and are out of scope for this entry.)"
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2830,13 +2838,31 @@
   {
     "id": "potion-de-guerison",
     "name": {
-      "fr": "Potion de guérison"
+      "fr": "Potion de guérison",
+      "en": "Potion of Healing"
     },
     "category": "gear",
     "rarity": "common",
     "attunement": false,
     "magicDescription": {
-      "fr": "Lorsque vous buvez cette potion, vous regagnez des points de vie. Le nombre de points de vie dépend de la rareté de la potion, comme indiqué dans la table ci-dessous. Quelle que soit sa puissance, le liquide rouge de la potion se met à luire lorsqu'il est agité.\n\nPotion de ...Raretépv regagnésGuérisonCommun2d4 + 2Guérison majeurePeu commun4d4 + 4Guérison supérieureRare8d4 + 8Guérison suprêmeTrès rare10d4 + 20"
+      "fr": "Vous récupérez des points de vie en buvant cette potion. Le nombre de points de vie dépend de la rareté de la potion, comme indiqué sur la table ci-après.\n\nQuelle que soit la puissance de la potion, son liquide rouge étincelle lorsqu’on l’agite.\n\nPotion de guérison (courante) : 2d4 + 2 points de vie récupérés.\nPotion de guérison (importante, peu courante) : 4d4 + 4.\nPotion de guérison (supérieure, rare) : 8d4 + 8.\nPotion de guérison (suprême, très rare) : 10d4 + 20.",
+      "en": "You regain Hit Points when you drink this potion. The number of Hit Points depends on the potion's rarity, as shown in the table below.\n\nWhatever its potency, the potion's red liquid glimmers when agitated.\n\nPotion of Healing (Common): 2d4 + 2 HP regained.\nPotion of Healing (greater, Uncommon): 4d4 + 4.\nPotion of Healing (superior, Rare): 8d4 + 8.\nPotion of Healing (supreme, Very Rare): 10d4 + 20."
+    },
+    "description": null,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "potion-de-guerison-importante",
+    "name": {
+      "fr": "Potion de guérison (importante)",
+      "en": "Potion of Healing (greater)"
+    },
+    "category": "gear",
+    "rarity": "uncommon",
+    "attunement": false,
+    "magicDescription": {
+      "fr": "Vous récupérez 4d4 + 4 points de vie en buvant cette potion. Quelle que soit la puissance de la potion, son liquide rouge étincelle lorsqu’on l’agite.",
+      "en": "You regain 4d4 + 4 Hit Points when you drink this potion. Whatever its potency, the potion’s red liquid glimmers when agitated."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2858,13 +2884,15 @@
   {
     "id": "potion-de-poison",
     "name": {
-      "fr": "Potion de poison"
+      "fr": "Potion toxique",
+      "en": "Potion of Poison"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Cette concoction ressemble, sent et a le gout d'une potion de guérison ou de toute autre potion bénéfique. Cependant, c'est effectivement du poison masqué par une illusion magique. Un sort d'identification révèle sa vraie nature.\n\nSi vous buvez cette potion, vous subissez 3d6 dégâts de poison, et devez réussir un jet de sauvegarde de Constitution DD 13 pour ne pas être empoisonné. Au début de chacun de vos tours, tant que vous êtes empoisonné de cette façon, vous subissez 3d6 dégâts de poison. À la fin de chacun de vos tours, vous pouvez rejeter le jet de sauvegarde. En cas de réussite, les dégâts de poison que vous subissez aux tours suivants diminuent de 1d6. Le poison n'a plus d'effet lorsque les dégâts tombent à 0."
+      "fr": "Cette décoction a l'apparence, l'odeur et le goût d'une potion de guérison ou d'une autre potion bénéfique. Il s'agit toutefois d'un poison masqué par quelque illusion magique. Le sort identification révèle sa véritable nature.\n\nSi vous en buvez le contenu, vous subissez 4d6 dégâts de poison et devez réussir un jet de sauvegarde de Constitution DD 13 sous peine de subir l'état Empoisonné pendant 1 heure.",
+      "en": "This concoction looks, smells, and tastes like a Potion of Healing or another beneficial potion. However, it is actually poison masked by illusion magic. Identify reveals its true nature.\n\nIf you drink this potion, you take 4d6 Poison damage and must succeed on a DC 13 Constitution saving throw or have the Poisoned condition for 1 hour."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2872,13 +2900,15 @@
   {
     "id": "potion-de-resistance",
     "name": {
-      "fr": "Potion de résistance"
+      "fr": "Potion de résistance",
+      "en": "Potion of Resistance"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Lorsque vous buvez cette potion, vous gagnez une résistance à un type de dégâts pendant 1 heure. Le MD choisit le type ou le détermine au hasard parmi les options ci-dessous.\n\nd10Type de dégâts1Acide2Froid3Feu4Force5Foudre6Nécrotique7Poison8Psychique9Radiant10Tonnerre"
+      "fr": "Lorsque vous buvez cette potion, vous recevez la Résistance à un type de dégâts pendant 1 heure. Le MJ en choisit le type ou le détermine aléatoirement selon la table suivante.\n\n1d10 — Type de dégâts : 1 Acide, 2 Feu, 3 Force, 4 Foudre, 5 Froid, 6 Nécrotiques, 7 Poison, 8 Psychiques, 9 Radiants, 10 Tonnerre.",
+      "en": "When you drink this potion, you have Resistance to one type of damage for 1 hour. The GM chooses the type or determines it randomly by rolling on the following table.\n\n1d10 — Damage Type: 1 Acid, 2 Cold, 3 Fire, 4 Force, 5 Lightning, 6 Necrotic, 7 Poison, 8 Psychic, 9 Radiant, 10 Thunder."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2886,13 +2916,15 @@
   {
     "id": "potion-de-respiration-aquatique",
     "name": {
-      "fr": "Potion de respiration aquatique"
+      "fr": "Potion de respiration aquatique",
+      "en": "Potion of Water Breathing"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous pouvez respirer sous l'eau pendant 1 heure après avoir bu cette potion. Son fluide vert nuageux sent la mer et une bulle ressemblant à une méduse y flotte en suspension."
+      "fr": "Vous pouvez respirer sous l'eau pendant 24 heures après avoir bu cette potion.\n\nCe liquide vert laiteux, dans lequel flotte une bulle aux allures de méduse (acalèphe), dégage des senteurs marines.",
+      "en": "You can breathe underwater for 24 hours after drinking this potion.\n\nThis potion’s cloudy green fluid smells of the sea and has a jellyfish-like bubble floating in it."
     },
     "description": null,
     "source": "srd-5.2.1"
