@@ -1,9 +1,9 @@
 /**
- * scripts/extract-srd-magic-items.ts — tracer-bullet C.1 (potions).
+ * scripts/extract-srd-magic-items.ts — tracer-bullets C.1 (potions) + C.2 (wondrous wearables).
  *
  * Régénère `public/data/magic-items.json` en :
- *   - Mergeant les entrées SRD-sourced de `scripts/data/srd-magic-items-potions.ts`
- *     (et, plus tard, des autres modules `srd-magic-items-*.ts` pour C.2..C.7).
+ *   - Mergeant les entrées SRD-sourced de `scripts/data/srd-magic-items-*.ts`
+ *     (potions C.1 + wondrous wearables C.2 ; autres modules pour C.3..C.7).
  *   - Préservant byte-identique tous les autres items du bundle existant
  *     (les ≥ Rare grandfathered AideDD restent intouchés — pattern explicitement
  *     validé par le decision log « Pass-through (reformulation D17 #2) »).
@@ -23,6 +23,10 @@ import {
   SRD_MAGIC_ITEMS_POTIONS_COUNTS,
   type SrdMagicItemEntry,
 } from './data/srd-magic-items-potions';
+import {
+  SRD_MAGIC_ITEMS_WONDROUS,
+  SRD_MAGIC_ITEMS_WONDROUS_COUNTS,
+} from './data/srd-magic-items-wondrous';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -59,8 +63,23 @@ async function main(): Promise<void> {
     throw new Error(`[extract-srd-magic-items] ${MAGIC_ITEMS_PATH} doit être un tableau`);
   }
 
-  // 2. Collecter les modules SRD-sourced (potions pour C.1 ; autres viendront).
-  const srdEntries: SrdMagicItemEntry[] = [...SRD_MAGIC_ITEMS_POTIONS];
+  // 2. Collecter les modules SRD-sourced (potions C.1 + wondrous wearables C.2).
+  const srdEntries: SrdMagicItemEntry[] = [
+    ...SRD_MAGIC_ITEMS_POTIONS,
+    ...SRD_MAGIC_ITEMS_WONDROUS,
+  ];
+
+  // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
+  const seenIds = new Set<string>();
+  for (const entry of srdEntries) {
+    if (seenIds.has(entry.id)) {
+      throw new Error(
+        `[extract-srd-magic-items] PARSE STRICT FAIL — slug "${entry.id}" déclaré dans plus d'un module SRD.`,
+      );
+    }
+    seenIds.add(entry.id);
+  }
+
   const srdById = new Map(srdEntries.map((e) => [e.id, e] as const));
 
   // 3. Fusion : pour chaque entrée existante, remplacer si elle a un override SRD ;
@@ -91,6 +110,16 @@ async function main(): Promise<void> {
       `[extract-srd-magic-items] PARSE STRICT FAIL — potions C.1 attendu 2 common + 7 uncommon, trouvé ${SRD_MAGIC_ITEMS_POTIONS_COUNTS.common} + ${SRD_MAGIC_ITEMS_POTIONS_COUNTS.uncommon}.`,
     );
   }
+  if (SRD_MAGIC_ITEMS_WONDROUS_COUNTS.total !== SRD_MAGIC_ITEMS_WONDROUS.length) {
+    throw new Error(
+      '[extract-srd-magic-items] PARSE STRICT FAIL — compteur wondrous wearables désynchronisé',
+    );
+  }
+  if (SRD_MAGIC_ITEMS_WONDROUS_COUNTS.common !== 0 || SRD_MAGIC_ITEMS_WONDROUS_COUNTS.uncommon !== 24) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — wondrous wearables C.2 attendu 0 common + 24 uncommon, trouvé ${SRD_MAGIC_ITEMS_WONDROUS_COUNTS.common} + ${SRD_MAGIC_ITEMS_WONDROUS_COUNTS.uncommon}.`,
+    );
+  }
 
   // 6. Tri déterministe par id (stable, l'array existant ne l'était pas
   //    forcément — on canonicalise ici pour idempotence pleine).
@@ -102,7 +131,7 @@ async function main(): Promise<void> {
 
   console.log(
     `[extract-srd-magic-items] OK — ${merged.length} entrées total, ` +
-      `${srdEntries.length} SRD-sourced (potions C.1 : ${replacedIds.size} remplacées + ${
+      `${srdEntries.length} SRD-sourced (C.1 potions + C.2 wondrous wearables ; ${replacedIds.size} remplacées + ${
         srdEntries.length - replacedIds.size
       } nouvelles).`,
   );

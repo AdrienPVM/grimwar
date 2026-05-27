@@ -25,13 +25,13 @@ catégories suivantes.
 
 ## Ordre des tracer-bullets
 
-1. **C.1 — Potions** (≈8 entrées common+uncommon SRD) — *ce commit*
-2. C.2 — Wondrous items (poudres, baguettes utilitaires, casques, etc.) — ~30 entrées
-3. C.3 — Anneaux + amulettes — ~10 entrées
-4. C.4 — Armes magiques (+1, Quarterstaff, etc.) — ~10 entrées
+1. **C.1 — Potions** (9 entrées) — ✅ mergé PR #28 (`85d8397`)
+2. **C.2 — Wondrous wearables** (24 entrées uncommon : bottes/capes/gants/heaumes/chaussons/diadème/bandeau/bracelets/broche/chapeau/regard/yeux/lunettes/robe) — *ce commit*
+3. C.3 — Anneaux + amulettes (5 anneaux uncommon SRD + amulettes/colliers/périapt) — ~10 entrées
+4. C.4 — Armes magiques (+1, Quarterstaff de lance-mort, Mace of Smiting, etc.) — ~10 entrées
 5. C.5 — Armures + boucliers magiques — ~8 entrées
-6. C.6 — Parchemins + bag/tools — ~10 entrées
-7. C.7 — Reliquat (≈10 items dispersés)
+6. C.6 — Wondrous utilitaires + parchemins (sacs/balais/carafe/cartes/poudres/gemmes/pipes/corde/sending stones/wind fan/pearl/bead) — ~15 entrées
+7. C.7 — Reliquat (≈5 items dispersés)
 
 Chaque tracer livre :
 - `scripts/data/srd-magic-items-<cat>.ts` — hand-curated SRD-sourced
@@ -114,7 +114,39 @@ Chaque tracer livre :
 - Terminologie FR : uniquement la traduction officielle WotC FR depuis le PDF
   SRD FR CC v5.2.1 (et non pas l'intuition ni Baldur's Gate).
 
-## Notes pour les prochains tracer-bullets (C.2–C.7)
+## C.2 — Wondrous wearables (ce commit)
+
+### Livrables
+
+- [x] `scripts/data/srd-magic-items-wondrous.ts` — 24 entrées hand-curated
+  (0 common + 24 uncommon).
+- [x] `scripts/extract-srd-magic-items.ts` étendu pour merger le nouveau module
+  (garde-fou anti-double-slug entre modules SRD).
+- [x] `public/data/magic-items.json` régénéré : 253 entrées total (251 → 253
+  car 23 wondrous existants remplacés + 1 nouveau slug `gants-de-chapardeur`).
+- [x] `public/data/index.json` régénéré (counts + contentHash).
+- [x] `scripts/__tests__/srd-magic-items-wondrous.test.ts` — cat. 3 pin sur
+  6 items vérifiés contre PDF (Bracelets d'archer, Cape de protection, Lunettes
+  du nyctalope, Lentilles de netteté, Gantelets d'ogre, Gants de chapardeur).
+
+### Drifts AideDD↔SRD corrigés (transparence valeur produit)
+
+1. **`lunettes-de-nuit` → "Lunettes du nyctalope"** (officiel WotC FR — drift
+   terminologique de la baseline AideDD).
+2. **`yeux-grossissants` → "Lentilles de netteté"** (officiel WotC FR — drift
+   terminologique idem).
+3. **`robe-de-camelot` → "Robe du camelot"** (officiel WotC FR — article défini
+   « du » vs « de »).
+4. **`bottes-elfiques`** : `attunement` → `false` (SRD 5.2.1 officiel ne requiert
+   PAS attunement pour les Boots of Elvenkind ; AideDD baseline incohérent).
+5. **`heaume-de-comprehension-des-langues`** : `attunement` → `false` (SRD ne
+   requiert PAS attunement).
+6. **`lunettes-de-nuit`** : `attunement` → `false` (SRD ne requiert PAS).
+7. **`yeux-de-lynx`, `yeux-grossissants`** : `attunement` → `false` (SRD idem).
+8. **`gants-de-chapardeur`** : ENTRÉE AJOUTÉE (absent du bundle baseline AideDD
+   alors qu'il est SRD-officiel — Gloves of Thievery).
+
+## Notes pour les prochains tracer-bullets (C.3–C.7)
 
 - Le builder `extract-srd-magic-items.ts` doit être conçu pour
   **fusionner plusieurs modules de données** (potions, wondrous, etc.) sans
