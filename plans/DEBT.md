@@ -580,7 +580,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D22 — `magic-items.json` SRD-sourcing incomplet (potions livrées en C.1, ≥86 items restants)
 
 - **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27).
-- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (potions, PR #28 `85d8397`) + C.2 (wondrous wearables, PR #29 `4dcec6c`) — **33 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables, dont 2 nouveaux slugs `potion-de-guerison-importante` et `gants-de-chapardeur`). Les ~53 magic items Common+Uncommon restants (anneaux, amulettes, armes magiques, armures, parchemins, wondrous utilitaires/poudres/gemmes) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
+- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) — **42 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables + 9 anneaux/amulettes ; dont 2 nouveaux slugs `potion-de-guerison-importante` et `gants-de-chapardeur`). Les ~44 magic items Common+Uncommon restants (armes magiques, armures, parchemins, wondrous utilitaires/poudres/gemmes, reliquat) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
 - **Drifts mécaniques corrigés au tracer C.1** (preuve de valeur ajoutée du SRD-sourcing) :
   - `potion-d-agrandissement` : durée AideDD `1d4 heures` → SRD officiel **`10 minutes`**.
   - `potion-de-respiration-aquatique` : durée AideDD `1 heure` → SRD officiel **`24 heures`**.
@@ -593,7 +593,9 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - `robe-de-camelot` : `name.fr` AideDD `« Robe de camelot »` → SRD FR officiel **`« Robe du camelot »`** (article défini, slug stable).
   - `bottes-elfiques` + `heaume-de-comprehension-des-langues` + `lunettes-de-nuit` + `yeux-de-lynx` + `yeux-grossissants` : `attunement: true` → **`false`** (SRD 5.2.1 ne requiert PAS attunement, drift baseline AideDD).
   - `gants-de-chapardeur` : **NOUVELLE ENTRÉE AJOUTÉE** (Gloves of Thievery — SRD officiel, mais absent du bundle baseline AideDD).
-- **Suite recommandée** : tracer-bullets C.3..C.7 dans l'ordre du plan (anneaux+amulettes → armes → armures+boucliers → wondrous utilitaires/parchemins → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder + tests cat. 3 pin + quadruple gate + PR + merge.
+- **Drifts au tracer C.3** : 9 entrées remplacées byte-identique côté slug, formulations FR alignées sur SRD FR officiel. Pas de drift mécanique majeur détecté (les 5 anneaux + 4 cous baseline AideDD étaient cohérents).
+- **Différé au C.3** : **Periapt of Health (uncommon SRD)** non livré — collision de slug avec doublet AideDD grandfathered `amulette-de-sante` (uncommon, "immunité maladies" homebrew) / `amulette-de-bonne-sante` (rare, Constitution=19 = Amulet of Health, FR name erroné). Résolution propre nécessite un cleanup global — routé vers nouvelle dette **D24** ci-dessous.
+- **Suite recommandée** : tracer-bullets C.4..C.7 dans l'ordre du plan (armes → armures+boucliers → wondrous utilitaires/parchemins → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder + tests cat. 3 pin + quadruple gate + PR + merge.
 - **Effet collatéral résolu (C.1)** : régénération de `public/data/index.json` au passage a corrigé un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8.
 
 ## D23 — `potion-de-souffle-enflamme` : item AideDD homebrew dans le bundle « magic-items »
@@ -603,6 +605,21 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - Option (a) : retirer (destructif sur inventaires existants éventuels).
   - Option (b) : re-taguer en `aidedd-homebrew` (plus précis sémantiquement, sans rupture référentielle).
 - **Risque** : faible — l'item est cohérent mécaniquement, ne casse aucune référence, mais sa présence dans le bundle « magic-items » avec un tag SRD pourrait induire en erreur l'utilisateur sur la provenance.
+
+## D24 — Doublet `amulette-de-sante` / `amulette-de-bonne-sante` (collision sémantique grandfathered)
+
+- **Owner** : non assigné (cleanup post-D22 complet, vraisemblablement même cleanup global).
+- **Statut** : **OUVERTE 2026-05-27** — découverte au tracer C.3.
+- **Description** : le bundle grandfathered AideDD contient 2 amulettes de santé avec un mapping inversé vs SRD CC v5.2.1 :
+  - `amulette-de-sante` (uncommon, `name.fr: "Amulette de santé"`, mécanique « immunité aux maladies ») : cette mécanique **n'existe PAS dans le SRD 5.2.1** — l'item est un homebrew/legacy AideDD.
+  - `amulette-de-bonne-sante` (rare, `name.fr: "Amulette de bonne santé"`, mécanique « Constitution → 19 ») : cette mécanique correspond à **"Amulet of Health"** du SRD 5.2.1 — mais le `name.fr` officiel WotC FR pour Amulet of Health (rare) est **"Amulette de santé"** (PAS "Amulette de bonne santé").
+  - Conséquence : aucun slug ne peut accueillir proprement "Periapt of Health" (uncommon SRD, `name.fr` officiel "Amulette de bonne santé") sans collision.
+- **Différé du C.3** : Periapt of Health (uncommon SRD) non livré pour cette raison.
+- **Options de résolution** :
+  - Option (a) : renommer `amulette-de-bonne-sante` → `amulette-de-sante-srd` (rare, Constitution=19), name.fr "Amulette de santé" (officiel) + remplacer `amulette-de-sante` (uncommon) par Periapt of Health (SRD), name.fr "Amulette de bonne santé" + supprimer l'homebrew « immunité maladies ». Destructif sur inventaires.
+  - Option (b) : créer un 3ᵉ slug `periapt-de-bonne-sante` (uncommon SRD-sourced), garder les 2 grandfathered intacts (avec inconsistance terminologique connue). Conservateur, mais 3 amulettes co-existent.
+  - Option (c) : abandonner Periapt of Health dans `magic-items.json` ; le couvrir via le futur système d'import de contenu custom (plan 13.11) côté DM. Pragmatique mais retire un item SRD legit du bundle public.
+- **Risque** : faible — pas de bug bloquant, juste une incohérence de nommage et l'absence de Periapt of Health SRD. Arbitrage Adrien recommandé avant cleanup.
 
 ## Conventions de ce registre
 
