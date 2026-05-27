@@ -71,13 +71,24 @@ describe('ensureCampaignExists', () => {
     expect(path.join('/')).toBe(`campaigns/${CID}`);
   });
 
-  it('propagates getDoc errors (transport / rules)', async () => {
-    mockGetDoc.mockRejectedValue(new Error('permission-denied'));
-    await expect(ensureCampaignExists(CID, UID)).rejects.toThrow('permission-denied');
+  it('propagates non-permission getDoc errors', async () => {
+    mockGetDoc.mockRejectedValue(new Error('quota-exceeded'));
+    await expect(ensureCampaignExists(CID, UID)).rejects.toThrow('quota-exceeded');
     expect(mockSetDoc).not.toHaveBeenCalled();
   });
 
-  it('propagates setDoc errors (transport / rules)', async () => {
+  it('falls through to setDoc on permission-denied getDoc (doc absent or non-DM read)', async () => {
+    // Simule un permission-denied — soit la campagne n'existe pas, soit
+    // l'utilisateur n'est ni DM ni membre. Dans les deux cas on tente le
+    // create (qui passera si la campagne n'existe pas).
+    const { FirebaseError } = await import('firebase/app');
+    mockGetDoc.mockRejectedValue(new FirebaseError('permission-denied', 'denied'));
+    const created = await ensureCampaignExists(CID, UID);
+    expect(created).toBe(true);
+    expect(mockSetDoc).toHaveBeenCalledTimes(1);
+  });
+
+  it('propagates setDoc errors (transport / rules) after fall-through', async () => {
     mockGetDoc.mockResolvedValue({ exists: () => false });
     mockSetDoc.mockRejectedValue(new Error('quota-exceeded'));
     await expect(ensureCampaignExists(CID, UID)).rejects.toThrow('quota-exceeded');

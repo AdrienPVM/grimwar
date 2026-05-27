@@ -231,8 +231,13 @@ service cloud.firestore {
       }
 
       // ── Maps ──────────────────────────────────────────────────
+      // Read : DM (par défaut) OU membre — le DM n'a pas de doc
+      // `memberships/{uid}` (cf. plan 13.13 et la rule de
+      // `campaigns/{cid}` ligne 156 qui combine déjà les deux), donc
+      // restreindre à `isMemberOf` seul exclurait le DM de ses propres
+      // cartes. CHANTIER D phase 2 D.6 — fix bug rules.
       match /maps/{mapId} {
-        allow read: if isMemberOf(campaignId);
+        allow read: if isDMOf(campaignId) || isMemberOf(campaignId);
         allow create, update, delete: if isDMOf(campaignId);
 
         // ── Tokens (sous-collection — CHANTIER D nuit 3) ────────
@@ -250,7 +255,7 @@ service cloud.firestore {
         // mesurable et complique le service. Cf. `MapMeta` dans
         // `src/shared/types/map.ts`.
         match /tokens/{tokenId} {
-          allow read: if isMemberOf(campaignId);
+          allow read: if isDMOf(campaignId) || isMemberOf(campaignId);
           allow create, update, delete: if isDMOf(campaignId);
         }
       }

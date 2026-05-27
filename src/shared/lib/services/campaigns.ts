@@ -23,24 +23,50 @@ import {
   serverTimestamp,
   setDoc,
 } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 
 import { getDb } from '@/shared/lib/firebase';
 
 /**
  * Crée le doc `campaigns/{cid}` si absent, avec l'utilisateur courant
- * comme MJ. No-op si le doc existe déjà (même MJ ou autre — pas de check
- * `dmUserId === uid` ici : les rules refuseront le write si l'utilisateur
- * n'est pas le DM).
+ * comme MJ. No-op si le doc existe déjà ET que l'utilisateur est DM.
  *
- * Retourne `true` si le doc a été créé, `false` s'il existait déjà.
+ * Subtilité Firestore rules : `campaigns/{cid}` n'autorise la `read` qu'aux
+ * DMs et membres (firestore.rules:156). Un signed-in qui veut juste tester
+ * l'existence d'une campagne pour un cid arbitraire reçoit
+ * `permission-denied` au `getDoc` — c'est attendu, ça protège le doc des
+ * non-membres. Stratégie :
+ *   1. On tente `getDoc` — si ça passe (snap.exists()), on est déjà DM ou
+ *      membre, no-op.
+ *   2. Si `permission-denied`, le doc existe peut-être mais on n'est pas
+ *      autorisé, OU il n'existe pas et le get a évalué une rule qui
+ *      référence un doc absent (les `get()` de rules sur un doc absent
+ *      tombent comme deny par défaut). On tente alors `setDoc` create.
+ *   3. Si setDoc passe, la campagne n'existait pas → on en est DM. Si
+ *      setDoc échoue à son tour avec permission-denied, le doc existe avec
+ *      un autre DM → on propage l'erreur (l'UI devra afficher un message
+ *      « cette campagne ne vous appartient pas »).
+ *
+ * Retourne `true` si le doc a été créé, `false` s'il existait déjà
+ * (et qu'on en est DM ou membre).
  */
 export async function ensureCampaignExists(
   campaignId: string,
   uid: string,
 ): Promise<boolean> {
   const ref = doc(getDb(), 'campaigns', campaignId);
-  const snap = await getDoc(ref);
-  if (snap.exists()) return false;
+  try {
+    const snap = await getDoc(ref);
+    if (snap.exists()) return false;
+  } catch (err: unknown) {
+    // `permission-denied` est attendu si l'utilisateur n'est pas DM/membre,
+    // ou si la campagne n'existe pas (rules avec get() sur un doc absent
+    // évaluent à deny). On enchaîne sur le create — si la campagne existe
+    // déjà avec un autre DM, le setDoc échouera à son tour.
+    if (!(err instanceof FirebaseError) || err.code !== 'permission-denied') {
+      throw err;
+    }
+  }
   await setDoc(ref, {
     name: campaignId,
     dmUserId: uid,

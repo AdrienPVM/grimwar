@@ -62,12 +62,19 @@ function buildMapInput(name: string): CreateMapInput {
 export function MapsCloudScreen(): JSX.Element {
   const { cid } = useParams<{ cid: string }>();
   const { user, isReady } = useAuth();
-  const { maps, isLoading, error } = useMapsList(cid);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [ensureError, setEnsureError] = useState<string | null>(null);
   const [ensureDone, setEnsureDone] = useState<boolean>(false);
+
+  // Gate le listener `useMapsList` derrière `ensureDone` — sinon le
+  // `onSnapshot` s'abonne avant que la campagne stub soit posée et reçoit
+  // permission-denied terminal (les rules sur `campaigns/{cid}/maps` font un
+  // `get()` sur le parent qui n'existe pas encore = eval error → deny).
+  // Une fois la campagne créée, on passe le `cid` réel et le listener
+  // démarre proprement.
+  const { maps, isLoading, error } = useMapsList(ensureDone ? cid : undefined);
 
   // Crée la campagne stub si absente, dès qu'un utilisateur signé-in arrive.
   useEffect(() => {
