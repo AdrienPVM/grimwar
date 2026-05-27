@@ -656,11 +656,11 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D25 — Mode carte phase 2 : UI complet + services Firestore live
 
 - **Owner** : `plans/D-map-phase2-ui.md` (ouvert 2026-05-27, branche `feat/D-map-phase2-ui`).
-- **Statut** : **EN COURS 2026-05-27** — D.1 livré (PR #35 mergée `f082ff7`), reste D.2..D.6.
+- **Statut** : **EN COURS 2026-05-27** — D.1 + D.2 livrés (PR #35 mergée `f082ff7`, PR #36 mergée `f2381ff`), reste D.3..D.6.
 - **Suite chantier D phase 1** (PR #22 — schémas + `useMap` listener + rules Firestore, data-layer-only). Le prototype `/map-proto` reste en mode localStorage offline ; cette phase 2 le connecte à Firestore live via `campaigns/{cid}/maps/{mid}`.
 - **Tracer-bullets** :
   - **D.1 — Services Firestore write-side** ✅ mergé PR #35 `f082ff7` — `src/shared/lib/services/maps.ts` (createMap / updateMap / deleteMap / createToken / updateToken / deleteToken / addFogPolygon / removeFogPolygon / addLightSource / removeLightSource / addAoeTemplate / removeAoeTemplate) + 12 unit tests mockés Firestore. Aucune UI touchée.
-  - **D.2 — `useMaps` listener liste cartes par campagne** (à faire).
+  - **D.2 — `useMapsList` listener liste cartes par campagne** ✅ mergé PR #36 `f2381ff` — `src/features/map-proto/use-maps-list.ts` (onSnapshot `campaigns/{cid}/maps/*`, tri Firestore updatedAt desc + fallback client name asc, gating user/campaignId, parsing Zod + filtrage silencieux des docs invalides) + 6 unit tests Vitest mockés. Aucune UI consommatrice — pendant contractuel de `useCharactersList` (plan 06).
   - **D.3 — UI MJ création + édition d'une carte** (à faire).
   - **D.4 — Connexion `/map-proto` → Firestore live** (à faire).
   - **D.5 — Persistance fog of war + lumière + AoE depuis UI** (à faire).
