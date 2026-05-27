@@ -577,11 +577,26 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   4. Une fois CI déblouée → re-pousser PR #19 (un commit vide suffit à retrigger) → merge si 5/5 verte.
 - **Risque structurel** : tant que ce point n'est pas résolu, le workflow CLAUDE.md « PR draft → CI verte → merge » est cassé. Toute PR ouverte aujourd'hui ne peut être validée que localement, ce qui dégrade la garantie de non-régression côté émulateur Firebase (les jobs e2e + rules NE TOURNENT pas localement sans Java/JRE 11+).
 
-## D22 — `magic-items.json` SRD-sourcing incomplet (potions livrées en C.1, ≥86 items restants)
+## D22 — `magic-items.json` SRD-sourcing — **RÉSOLU 2026-05-27**
 
-- **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27).
-- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) + C.4 (PR #31 `185af74`) + C.5 (PR #32 `081fceb`) + C.6 (PR #33 `32fd0ab`) — **67 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables + 9 anneaux/amulettes + 5 armes + 4 armures/boucliers + 16 wondrous utilitaires ; dont 5 nouveaux slugs `potion-de-guerison-importante`, `gants-de-chapardeur`, `arme-vigilante`, `bouclier-sentinelle`, `perle-nutritive`). Les ~19 magic items Common+Uncommon restants (reliquat : Corde, Sending Stones, Pierre porte-bonheur, Éventail, Spell Scroll, Philtre d'amour, etc.) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
-- **Drifts mécaniques corrigés au tracer C.1** (preuve de valeur ajoutée du SRD-sourcing) :
+- **Owner** : `plans/C-magic-items-srd-common-uncommon.md`.
+- **Statut** : **RÉSOLU 2026-05-27** par 7 tracer-bullets enchaînés : C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) + C.4 (PR #31 `185af74`) + C.5 (PR #32 `081fceb`) + C.6 (PR #33 `32fd0ab`) + C.7 (PR #34 `76d5f0b`).
+- **Total livré** : **75 entrées Common+Uncommon SRD-sourcés** (couverture complète du SRD CC v5.2.1 sur ces raretés) :
+  - 9 potions (C.1)
+  - 24 wondrous wearables (C.2)
+  - 9 anneaux/amulettes/colliers/médaillon (C.3)
+  - 5 armes magiques (C.4)
+  - 4 armures/boucliers (C.5)
+  - 16 wondrous utilitaires (C.6)
+  - 8 reliquat (C.7)
+- **6 nouveaux slugs** : `potion-de-guerison-importante`, `gants-de-chapardeur`, `arme-vigilante`, `bouclier-sentinelle`, `perle-nutritive` (premier common hors potions), `pierres-messageres`.
+- **Bundle final** : 257 entrées (165 ≥rare grandfathered pass-through + 75 SRD-sourcés + 17 anomalies grandfathered intentionnellement préservées comme Mariner's Armor / Bottes de sept lieues non-SRD).
+- **Dettes ouvertes héritées (à arbitrer plus tard)** :
+  - **D24** : doublet `amulette-de-sante` / `amulette-de-bonne-sante` — empêche le livraison de Periapt of Health uncommon (différé en C.3).
+  - **D23** : `potion-de-souffle-enflamme` AideDD homebrew dans le bundle SRD-tagué.
+### Drifts AideDD↔SRD corrigés (preuve de valeur ajoutée du sourcing) — 13 au total
+
+- **Drifts mécaniques corrigés au tracer C.1** :
   - `potion-d-agrandissement` : durée AideDD `1d4 heures` → SRD officiel **`10 minutes`**.
   - `potion-de-respiration-aquatique` : durée AideDD `1 heure` → SRD officiel **`24 heures`**.
   - `potion-d-amitie-avec-les-animaux` : mécanique AideDD `cast à volonté 1 heure` → SRD officiel **`cast au 3ᵉ niveau (DD 13)`**.
@@ -609,7 +624,10 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - `perle-de-pouvoir` : `name.fr "Perle de pouvoir"` → SRD FR officiel **`"Perle de thaumaturgie"`**.
   - `poussiere-dessiccative` : `name.fr "Poussière dessiccative"` → SRD FR officiel **`"Poudre dessiccative"`**.
   - `perle-nutritive` : **NOUVELLE ENTRÉE COMMON AJOUTÉE** (Bead of Nourishment — premier common SRD-sourcé hors potions).
-- **Suite recommandée** : tracer-bullet C.7 (reliquat ~19 items : Corde, Sending Stones, Stone of Good Luck, Wind Fan, Spell Scroll, Philtre d'amour, etc.) → clôture D22.
+- **Drifts au tracer C.7** :
+  - `corde-d-escalade` : `name.fr "Corde d'escalade"` → SRD FR officiel **`"Corde d'ascension"`**.
+  - `pierres-messageres` : **NOUVELLE ENTRÉE AJOUTÉE** (Sending Stones — SRD officiel, absent du baseline).
+- **D22 désormais RÉSOLU** (couverture SRD complète sur Common+Uncommon).
 - **Effet collatéral résolu (C.1)** : régénération de `public/data/index.json` au passage a corrigé un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8.
 
 ## D23 — `potion-de-souffle-enflamme` : item AideDD homebrew dans le bundle « magic-items »
