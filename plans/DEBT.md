@@ -580,7 +580,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D22 — `magic-items.json` SRD-sourcing incomplet (potions livrées en C.1, ≥86 items restants)
 
 - **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27).
-- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) — **42 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables + 9 anneaux/amulettes ; dont 2 nouveaux slugs `potion-de-guerison-importante` et `gants-de-chapardeur`). Les ~44 magic items Common+Uncommon restants (armes magiques, armures, parchemins, wondrous utilitaires/poudres/gemmes, reliquat) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
+- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** aux tracer-bullets C.1 (PR #28 `85d8397`) + C.2 (PR #29 `4dcec6c`) + C.3 (PR #30 `5c6a1fb`) + C.4 (PR #31 `185af74`) — **47 entrées Common+Uncommon SRD-sourcés** (9 potions + 24 wondrous wearables + 9 anneaux/amulettes + 5 armes ; dont 3 nouveaux slugs `potion-de-guerison-importante`, `gants-de-chapardeur`, `arme-vigilante`). Les ~39 magic items Common+Uncommon restants (armures+boucliers, parchemins+wondrous utilitaires/poudres/gemmes, reliquat) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
 - **Drifts mécaniques corrigés au tracer C.1** (preuve de valeur ajoutée du SRD-sourcing) :
   - `potion-d-agrandissement` : durée AideDD `1d4 heures` → SRD officiel **`10 minutes`**.
   - `potion-de-respiration-aquatique` : durée AideDD `1 heure` → SRD officiel **`24 heures`**.
@@ -595,7 +595,10 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - `gants-de-chapardeur` : **NOUVELLE ENTRÉE AJOUTÉE** (Gloves of Thievery — SRD officiel, mais absent du bundle baseline AideDD).
 - **Drifts au tracer C.3** : 9 entrées remplacées byte-identique côté slug, formulations FR alignées sur SRD FR officiel. Pas de drift mécanique majeur détecté (les 5 anneaux + 4 cous baseline AideDD étaient cohérents).
 - **Différé au C.3** : **Periapt of Health (uncommon SRD)** non livré — collision de slug avec doublet AideDD grandfathered `amulette-de-sante` (uncommon, "immunité maladies" homebrew) / `amulette-de-bonne-sante` (rare, Constitution=19 = Amulet of Health, FR name erroné). Résolution propre nécessite un cleanup global — routé vers nouvelle dette **D24** ci-dessous.
-- **Suite recommandée** : tracer-bullets C.4..C.7 dans l'ordre du plan (armes → armures+boucliers → wondrous utilitaires/parchemins → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder + tests cat. 3 pin + quadruple gate + PR + merge.
+- **Drifts au tracer C.4** :
+  - `munition-1-2-ou-3` : `name.fr "Munition +1, +2 ou +3"` → SRD FR officiel **`"Projectile +1, +2 ou +3"`** (slug stable).
+  - `arme-vigilante` : **NOUVELLE ENTRÉE AJOUTÉE** (Weapon of Warning — SRD officiel, mais absent du bundle baseline AideDD).
+- **Suite recommandée** : tracer-bullets C.5..C.7 dans l'ordre du plan (armures+boucliers → wondrous utilitaires/parchemins → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder + tests cat. 3 pin + quadruple gate + PR + merge.
 - **Effet collatéral résolu (C.1)** : régénération de `public/data/index.json` au passage a corrigé un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8.
 
 ## D23 — `potion-de-souffle-enflamme` : item AideDD homebrew dans le bundle « magic-items »
