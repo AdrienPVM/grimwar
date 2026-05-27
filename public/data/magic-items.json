@@ -436,13 +436,15 @@
   {
     "id": "arme-1-2-ou-3",
     "name": {
-      "fr": "Arme +1, +2 ou +3"
+      "fr": "Arme +1, +2 ou +3",
+      "en": "Weapon, +1, +2, or +3"
     },
     "category": "weapon",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous avez un bonus aux jets d'attaque et de dégâts effectués avec cette arme magique. Le bonus est déterminé par la rareté de l'arme."
+      "fr": "Vous recevez un bonus aux jets d'attaque et de dégâts effectués avec cette arme magique. Ce bonus est déterminé par la rareté de l'arme (+1 = peu courante, +2 = rare, +3 = très rare).",
+      "en": "You have a bonus to attack rolls and damage rolls made with this magic weapon. The bonus is determined by the weapon's rarity (+1 = Uncommon, +2 = Rare, +3 = Very Rare)."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -457,6 +459,22 @@
     "attunement": false,
     "magicDescription": {
       "fr": "Lorsque vous obtenez un 20 naturel à votre jet d'attaque avec cette arme magique, votre coup critique inflige 7 dégâts supplémentaires du type correspondant à l'arme."
+    },
+    "description": null,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "arme-vigilante",
+    "name": {
+      "fr": "Arme vigilante",
+      "en": "Weapon of Warning"
+    },
+    "category": "weapon",
+    "rarity": "uncommon",
+    "attunement": true,
+    "magicDescription": {
+      "fr": "Tant que cette arme est à portée d'allonge et que persiste votre Harmonisation avec elle, vous-même et vos alliés dans un rayon de 9 m recevez les bénéfices suivants.\n\nAlarme. L'arme réveille magiquement chaque sujet endormi lorsqu'un combat commence. Ce bénéfice ne tire pas un sujet d'un sommeil provoqué magiquement.\n\nVigilance surnaturelle. Chaque sujet a l'Avantage aux jets d'Initiative.",
+      "en": "As long as this weapon is within your reach and you are attuned to it, you and allies within 30 feet of you gain the following benefits.\n\nAlarm. The weapon magically awakens each subject who is sleeping naturally when combat begins. This benefit doesn’t wake a subject from magically induced sleep.\n\nSupernatural Readiness. Each subject has Advantage on its Initiative rolls."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2324,13 +2342,15 @@
   {
     "id": "javeline-de-foudre",
     "name": {
-      "fr": "Javeline de foudre"
+      "fr": "Javeline de foudre",
+      "en": "Javelin of Lightning"
     },
     "category": "weapon",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Cette javeline est une arme magique. Quand vous la lancez et prononcez son mot de commande, elle se transforme en un éclair formant une ligne de 1,50 mètre de large qui s'étend de vous jusqu'à une cible éloignée de 36 mètres au maximum. Chaque créature sur la ligne à l'exception de vous et de la cible subit 4d6 dégâts de foudre. Un jet de sauvegarde de Dextérité DD 13 réussit permet de réduire ces dégâts de moitié. L'éclair se retransforme en javeline une fois qu'il atteint sa cible. Faites une attaque à distance contre la cible. Si vous la touchez, elle subit les dégâts de la javeline plus 4d6 dégâts de foudre. Cette propriété de la javeline ne peut être réutilisée avant la prochaine aube. Entre temps, la javeline peut toujours être utilisée comme une arme magique."
+      "fr": "Chaque fois que vous réussissez un jet d'attaque avec cette arme magique, vous pouvez choisir d'infliger des dégâts de foudre au lieu de dégâts perforants.\n\nÉclair. Lorsque vous lancez cette arme sur une cible située à 36 m ou moins de vous, vous pouvez renoncer au jet d'attaque à distance pour transformer l'arme en éclair. Cet éclair forme une Ligne de 1,50 m de large entre vous et la cible. La cible et chaque créature prise dans la Ligne (vous excepté) effectuent un jet de sauvegarde de Dextérité DD 13, et subissent 4d6 dégâts de foudre en cas d'échec, la moitié en cas de réussite. Aussitôt après avoir infligé ces dégâts, l'arme réapparaît dans votre main. Cette propriété ne peut plus resservir avant l'aube suivante.",
+      "en": "Each time you make an attack roll with this magic weapon and hit, you can have it deal Lightning damage instead of Piercing damage.\n\nLightning Bolt. When you throw this weapon at a target no farther than 120 feet from you, you can forgo making a ranged attack roll and instead turn the weapon into a bolt of lightning. This bolt forms a 5-foot-wide Line between you and the target. The target and each other creature in the Line (excluding you) makes a DC 13 Dexterity saving throw, taking 4d6 Lightning damage on a failed save or half as much damage on a successful one. Immediately after dealing this damage, the weapon reappears in your hand. This property can’t be used again until the next dawn."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2594,13 +2614,15 @@
   {
     "id": "munition-1-2-ou-3",
     "name": {
-      "fr": "Munition +1, +2 ou +3"
+      "fr": "Projectile +1, +2 ou +3",
+      "en": "Ammunition, +1, +2, or +3"
     },
     "category": "weapon",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous obtenez un bonus à l'attaque et aux dégâts effectués avec cette munition magique. Le bonus est déterminé par la rareté de la munition. Une fois qu'elle touche une cible, la munition n'est plus magique."
+      "fr": "Vous recevez un bonus aux jets d'attaque et de dégâts effectués avec ces munitions magiques. Ce bonus est déterminé par la rareté du projectile. Dès qu'il touche une cible, le projectile perd ses propriétés magiques.\n\nCes munitions sont généralement trouvées ou vendues par quantités de dix ou vingt. Dix projectiles équivalent en valeur à une potion de même rareté.",
+      "en": "You have a bonus to attack rolls and damage rolls made with this piece of magic ammunition. The bonus is determined by the rarity of the ammunition. Once it hits a target, the ammunition is no longer magical.\n\nThis ammunition is typically found or sold in quantities of ten or twenty pieces. Ten pieces of this ammunition are equivalent in value to a potion of the same rarity."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3526,13 +3548,15 @@
   {
     "id": "trident-de-domination-aquatique",
     "name": {
-      "fr": "Trident de domination aquatique"
+      "fr": "Trident de domination aquatique",
+      "en": "Trident of Fish Command"
     },
     "category": "weapon",
     "rarity": "uncommon",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Ce trident est une arme magique. Il dispose de 3 charges. Si vous le tenez, vous pouvez utiliser une action et dépenser 1 charge pour lancer domination de bête (sauvegarde DD 15) depuis le trident sur une bête qui a une vitesse de nage innée. Le trident récupère 1d3 charges dépensées chaque jour à l'aube."
+      "fr": "Cette arme magique dispose de 3 charges et récupère quotidiennement 1d3 charges dépensées, à l'aube. Tant que vous la portez, vous pouvez dépenser 1 charge pour lancer le sort domination de bête (DD de sauvegarde 15) par son biais sur une Bête dotée d'une Vitesse de nage.",
+      "en": "This magic weapon has 3 charges, and it regains 1d3 expended charges daily at dawn. While you carry it, you can expend 1 charge to cast Dominate Beast (save DC 15) from it on a Beast that has a Swim Speed."
     },
     "description": null,
     "source": "srd-5.2.1"
