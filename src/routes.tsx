@@ -26,6 +26,15 @@ const MapProtoScreen = lazy(async () => {
   return { default: mod.MapProtoScreen };
 });
 
+// Route /map-proto/cloud/:cid — prototype MJ gestion de cartes Firestore
+// (CHANTIER D phase 2, tracer D.3). Reste un prototype tant que la feature
+// `campaigns/` (S2) n'a pas livré son selector / sa liste. Le cid arrive
+// par URL, la campagne stub est créée à l'arrivée si absente.
+const MapsCloudScreen = lazy(async () => {
+  const mod = await import('@/features/map-proto/maps-cloud-screen');
+  return { default: mod.MapsCloudScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -35,6 +44,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/character/:id" element={<SheetScreen />} />
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="/map-proto" element={<MapProtoScreen />} />
+        <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
