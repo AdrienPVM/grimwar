@@ -33,6 +33,17 @@ import {
   maskAllFog,
   revealAroundToken,
 } from './fog-state';
+import { snapToGrid } from './grid-snap';
+import {
+  addEntry,
+  clearInitiative,
+  EMPTY_INITIATIVE,
+  nextTurn,
+  removeEntry,
+  updateHp,
+  type Initiative,
+  type InitiativeEntry,
+} from './initiative-state';
 import { LightLayer } from './light-layer';
 import {
   addStaticLight,
@@ -41,6 +52,15 @@ import {
   lightRevealRadius,
   resolveLightPosition,
 } from './light-state';
+import {
+  addAnchor,
+  clearRuler,
+  EMPTY_RULER,
+  formatFeet,
+  rulerLengthFeet,
+  setCursor,
+  type Ruler,
+} from './ruler-state';
 
 /**
  * Plan « mode carte » — prototype-skeleton (PAS production).
@@ -151,6 +171,16 @@ export function MapProtoScreen(): JSX.Element {
   // AoE templates state (CHANTIER G).
   const [aoeTemplates, setAoeTemplates] = useState<readonly AoeTemplate[]>([]);
   const [aoeShape, setAoeShape] = useState<AoeShape | null>(null);
+
+  // QoL VTT state (CHANTIER H — PROTOTYPE, pending Adrien arbitration).
+  // PROTOTYPE — pending Adrien arbitration : règle de distance multi-segments.
+  const [rulerMode, setRulerMode] = useState(false);
+  const [ruler, setRuler] = useState<Ruler>(EMPTY_RULER);
+  // PROTOTYPE — pending Adrien arbitration : aimant grille au lâcher de token.
+  const [gridSnapEnabled, setGridSnapEnabled] = useState(false);
+  // PROTOTYPE — pending Adrien arbitration : tracker initiative avec PV éditables.
+  const [initiative, setInitiative] = useState<Initiative>(EMPTY_INITIATIVE);
+  const [initiativePanelOpen, setInitiativePanelOpen] = useState(false);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
@@ -312,13 +342,25 @@ export function MapProtoScreen(): JSX.Element {
   );
 
   const handleTokenPointerUp = useCallback((): void => {
+    if (draggingTokenId && gridSnapEnabled) {
+      setTokens((prev) =>
+        prev.map((t) => (t.id === draggingTokenId ? { ...t, ...snapToGrid({ x: t.x, y: t.y }) } : t)),
+      );
+    }
     setDraggingTokenId(null);
     dragStart.current = null;
-  }, []);
+  }, [draggingTokenId, gridSnapEnabled]);
 
   const handleSvgPointerDown = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>): void => {
       if (draggingTokenId) return;
+      // Mode règle : chaque clic ajoute un ancrage de segment. Priorité
+      // la plus haute pour ne pas être avalé par les autres modes.
+      if (rulerMode) {
+        const svgPos = screenToSvg(e.clientX, e.clientY);
+        setRuler((prev) => addAnchor(prev, svgPos));
+        return;
+      }
       // Mode placer-AoE : on dépose un template au clic et on sort du
       // mode (one-shot, comme placeMode='place-torch').
       if (aoeShape) {
@@ -351,11 +393,17 @@ export function MapProtoScreen(): JSX.Element {
       };
       setPanning(true);
     },
-    [aoeShape, draggingTokenId, paintMode, pan, placeMode, screenToSvg],
+    [aoeShape, draggingTokenId, paintMode, pan, placeMode, rulerMode, screenToSvg],
   );
 
   const handleSvgPointerMove = useCallback(
     (e: ReactPointerEvent<SVGSVGElement>): void => {
+      // Règle : on suit le curseur pour la prévue de segment.
+      if (rulerMode) {
+        const svgPos = screenToSvg(e.clientX, e.clientY);
+        setRuler((prev) => setCursor(prev, svgPos));
+        return;
+      }
       if (paintStroke) {
         const svgPos = screenToSvg(e.clientX, e.clientY);
         const last = paintStroke[paintStroke.length - 1];
@@ -379,7 +427,7 @@ export function MapProtoScreen(): JSX.Element {
         y: panStart.current.py - dy / zoom,
       });
     },
-    [panStart, panning, paintStroke, screenToSvg, zoom],
+    [panStart, panning, paintStroke, rulerMode, screenToSvg, zoom],
   );
 
   const handleSvgPointerUp = useCallback((): void => {
@@ -414,6 +462,11 @@ export function MapProtoScreen(): JSX.Element {
     setPlaceMode('off');
     setAoeTemplates([]);
     setAoeShape(null);
+    setRulerMode(false);
+    setRuler(EMPTY_RULER);
+    setGridSnapEnabled(false);
+    setInitiative(EMPTY_INITIATIVE);
+    setInitiativePanelOpen(false);
   }, []);
 
   const handleToggleTokenTorch = useCallback((tokenId: string): void => {
@@ -439,6 +492,57 @@ export function MapProtoScreen(): JSX.Element {
 
   const handleClearAoes = useCallback((): void => {
     setAoeTemplates((prev) => clearAoes(prev));
+  }, []);
+
+  // ── CHANTIER H — ruler / initiative / grid-snap handlers ───────
+  const handleToggleRuler = useCallback((): void => {
+    setRulerMode((m) => {
+      const next = !m;
+      // Sortie du mode = clear de la règle (l'aperçu serait orphelin).
+      if (!next) setRuler(EMPTY_RULER);
+      return next;
+    });
+  }, []);
+
+  const handleClearRuler = useCallback((): void => {
+    setRuler((prev) => clearRuler(prev));
+  }, []);
+
+  const handleAddTokensToInitiative = useCallback((): void => {
+    // Auto-seed l'initiative avec les 3 tokens initiaux (init aléatoire
+    // 1d20+0 pour le prototype).
+    setInitiative(() => {
+      let next = EMPTY_INITIATIVE;
+      for (const t of tokens) {
+        const entry: InitiativeEntry = {
+          id: t.id,
+          name: t.label,
+          // Pseudo-init déterministe basée sur l'ordre dans le tableau
+          // (évite la non-déterminisme aux tests).
+          initiative: 20 - tokens.findIndex((x) => x.id === t.id) * 4,
+          hp: 10,
+          hpMax: 10,
+        };
+        next = addEntry(next, entry);
+      }
+      return next;
+    });
+  }, [tokens]);
+
+  const handleNextTurn = useCallback((): void => {
+    setInitiative((prev) => nextTurn(prev));
+  }, []);
+
+  const handleClearInitiative = useCallback((): void => {
+    setInitiative((prev) => clearInitiative(prev));
+  }, []);
+
+  const handleUpdateHp = useCallback((id: string, hp: number): void => {
+    setInitiative((prev) => updateHp(prev, id, hp));
+  }, []);
+
+  const handleRemoveInitEntry = useCallback((id: string): void => {
+    setInitiative((prev) => removeEntry(prev, id));
   }, []);
 
   const handleClearAllLights = useCallback((): void => {
@@ -670,6 +774,48 @@ export function MapProtoScreen(): JSX.Element {
             Effacer AoE
           </button>
         </div>
+        {/* Bandeau VTT QoL prototype (CHANTIER H — PROTOTYPE, pending Adrien). */}
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+            VTT (prototype)
+          </span>
+          <button
+            type="button"
+            onClick={handleToggleRuler}
+            aria-pressed={rulerMode}
+            data-testid="toggle-ruler"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+          >
+            Règle {rulerMode && ruler.anchors.length > 0 ? `(${formatFeet(rulerLengthFeet(ruler))})` : ''}
+          </button>
+          {rulerMode && ruler.anchors.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearRuler}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              Effacer règle
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setGridSnapEnabled((v) => !v)}
+            aria-pressed={gridSnapEnabled}
+            data-testid="toggle-grid-snap"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+          >
+            Aimant grille {gridSnapEnabled ? 'on' : 'off'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setInitiativePanelOpen((v) => !v)}
+            aria-pressed={initiativePanelOpen}
+            data-testid="toggle-initiative-panel"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+          >
+            Initiative {initiativePanelOpen ? '▲' : '▼'}
+          </button>
+        </div>
       </header>
       <main className="flex-1 p-4">
         <p className="mb-3 font-serif text-[12px] text-text-tertiary">
@@ -782,6 +928,66 @@ export function MapProtoScreen(): JSX.Element {
             {aoeTemplates.length > 0 && (
               <AoeLayer aoes={aoeTemplates} onClickAoe={handleClickAoe} />
             )}
+            {/* Règle de distance (CHANTIER H — PROTOTYPE). */}
+            {rulerMode && ruler.anchors.length > 0 && (
+              <g data-testid="ruler-layer" pointerEvents="none">
+                {/* Segments validés. */}
+                {ruler.anchors.slice(1).map((p, i) => {
+                  const prev = ruler.anchors[i]!;
+                  return (
+                    <line
+                      key={`seg-${i}`}
+                      x1={prev.x}
+                      y1={prev.y}
+                      x2={p.x}
+                      y2={p.y}
+                      stroke="#fbbf24"
+                      strokeWidth={3}
+                    />
+                  );
+                })}
+                {/* Segment vivant (dernier anchor → cursor). */}
+                {ruler.cursor && (
+                  <line
+                    x1={ruler.anchors[ruler.anchors.length - 1]!.x}
+                    y1={ruler.anchors[ruler.anchors.length - 1]!.y}
+                    x2={ruler.cursor.x}
+                    y2={ruler.cursor.y}
+                    stroke="#fbbf24"
+                    strokeWidth={3}
+                    strokeDasharray="6 4"
+                  />
+                )}
+                {/* Marqueurs aux ancrages. */}
+                {ruler.anchors.map((p, i) => (
+                  <circle
+                    key={`a-${i}`}
+                    cx={p.x}
+                    cy={p.y}
+                    r={5}
+                    fill="#fbbf24"
+                    stroke="#78350f"
+                    strokeWidth={1.5}
+                  />
+                ))}
+                {/* Étiquette distance totale près du curseur. */}
+                {ruler.cursor && (
+                  <text
+                    x={ruler.cursor.x + 12}
+                    y={ruler.cursor.y - 8}
+                    fontFamily="sans-serif"
+                    fontWeight="bold"
+                    fontSize="14"
+                    fill="#fde68a"
+                    stroke="#000"
+                    strokeWidth={0.6}
+                    data-testid="ruler-distance"
+                  >
+                    {formatFeet(rulerLengthFeet(ruler))}
+                  </text>
+                )}
+              </g>
+            )}
             {/* Aperçu en temps réel du tracé pendant qu'on peint. */}
             {paintStroke && paintStroke.length >= 2 && (
               <polyline
@@ -796,6 +1002,93 @@ export function MapProtoScreen(): JSX.Element {
             )}
           </svg>
         </div>
+        {/* Initiative tracker (CHANTIER H — PROTOTYPE). */}
+        {initiativePanelOpen && (
+          <section
+            data-testid="initiative-panel"
+            className="mt-4 rounded-lg border border-gold-dim/30 bg-bg-elev/80 p-3"
+          >
+            <header className="mb-2 flex flex-wrap items-center gap-2">
+              <h2 className="font-title text-[12px] uppercase tracking-[0.16em] text-gold-bright">
+                Initiative
+              </h2>
+              <button
+                type="button"
+                onClick={handleAddTokensToInitiative}
+                data-testid="initiative-seed"
+                className="rounded-pill border border-gold-dim/40 px-2.5 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+              >
+                Seed depuis tokens
+              </button>
+              <button
+                type="button"
+                onClick={handleNextTurn}
+                disabled={initiative.entries.length === 0}
+                data-testid="initiative-next-turn"
+                className="rounded-pill border border-gold-dim/40 px-2.5 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+              >
+                Tour suivant ▶
+              </button>
+              <button
+                type="button"
+                onClick={handleClearInitiative}
+                disabled={initiative.entries.length === 0}
+                className="rounded-pill border border-gold-dim/40 px-2.5 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+              >
+                Réinit
+              </button>
+            </header>
+            {initiative.entries.length === 0 ? (
+              <p className="font-serif text-[12px] text-text-tertiary">
+                Aucune entrée. Cliquez « Seed depuis tokens » pour démarrer.
+              </p>
+            ) : (
+              <ol className="space-y-1.5">
+                {initiative.entries.map((e, i) => {
+                  const isActive = i === initiative.turnIndex;
+                  return (
+                    <li
+                      key={e.id}
+                      data-testid={`initiative-entry-${e.id}`}
+                      className={`flex flex-wrap items-center gap-2 rounded-md border px-2 py-1.5 font-mono text-[11px] transition-colors duration-200 ease-base ${
+                        isActive
+                          ? 'border-gold-bright bg-gold-bright/15 text-gold-bright'
+                          : 'border-gold-dim/20 text-text'
+                      }`}
+                    >
+                      <span className="w-6 text-text-tertiary">{e.initiative}</span>
+                      <span className="flex-1">{e.name}</span>
+                      <label className="flex items-center gap-1">
+                        <span className="text-text-tertiary">PV</span>
+                        <input
+                          type="number"
+                          value={e.hp}
+                          onChange={(ev) => {
+                            const n = Number.parseInt(ev.target.value, 10);
+                            if (!Number.isNaN(n)) handleUpdateHp(e.id, n);
+                          }}
+                          data-testid={`initiative-hp-${e.id}`}
+                          className="w-12 rounded border border-gold-dim/30 bg-bg px-1 py-0.5 text-right text-text"
+                          min={0}
+                          max={e.hpMax}
+                        />
+                        <span className="text-text-tertiary">/ {e.hpMax}</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveInitEntry(e.id)}
+                        aria-label={`Retirer ${e.name}`}
+                        className="rounded-pill border border-gold-dim/30 px-1.5 py-0.5 text-[10px] text-text-tertiary transition-colors duration-200 ease-base hover:bg-gold/5"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </section>
+        )}
       </main>
     </div>
   );
