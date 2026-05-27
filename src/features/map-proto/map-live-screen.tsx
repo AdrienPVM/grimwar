@@ -8,9 +8,21 @@ import {
 import { useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
-import { updateToken } from '@/shared/lib/services/maps';
-import type { MapToken } from '@/shared/types/map';
+import {
+  addAoeTemplate,
+  addFogPolygon,
+  addLightSource,
+  updateMap,
+  updateToken,
+} from '@/shared/lib/services/maps';
+import type {
+  AoeTemplate,
+  FogPolygon,
+  LightSource,
+  MapToken,
+} from '@/shared/types/map';
 
+import { createCirclePolygon } from './fog-state';
 import { useMap } from './use-map';
 
 /**
@@ -41,6 +53,18 @@ import { useMap } from './use-map';
 const VIEWBOX_W = 1000;
 const VIEWBOX_H = 700;
 const TOKEN_RADIUS = 22;
+const CENTER_X = VIEWBOX_W / 2;
+const CENTER_Y = VIEWBOX_H / 2;
+const FOG_DEFAULT_RADIUS = 120;
+const LIGHT_TORCH_BRIGHT = 20; // ft
+const LIGHT_TORCH_DIM = 20; // ft
+const AOE_SPHERE_RADIUS = 20; // ft
+
+function randomSlug(prefix: string): string {
+  // 8 chars [a-z0-9] — conforme au regex slug de mapMetaSchema.
+  const rand = Math.random().toString(36).slice(2, 10) || 'x';
+  return `${prefix}-${rand}`;
+}
 
 export function MapLiveScreen(): JSX.Element {
   const { cid, mid } = useParams<{ cid: string; mid: string }>();
@@ -144,6 +168,110 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, draggingTokenId, localPositions, mid, user]);
 
+  // ── D.5 : fog / lights / AoE persistence via service maps.ts ───────────
+  // Toutes les actions inline qui suivent posent la valeur côté Firestore et
+  // attendent que le listener `useMap` ré-émette le snapshot — la UI ne
+  // maintient pas d'override local pour ces 3 surfaces (peu fréquentes,
+  // pas de besoin de réactivité < frame). Sur erreur de write : surface
+  // dans `writeError`.
+
+  const handleAddFogReveal = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    const polygon: FogPolygon = {
+      id: randomSlug('manual-reveal'),
+      points: [...createCirclePolygon({ x: CENTER_X, y: CENTER_Y }, FOG_DEFAULT_RADIUS)],
+      kind: 'reveal',
+      createdAt: null,
+    };
+    try {
+      await addFogPolygon(cid, mid, map.fogPolygons, polygon, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
+  const handleAddFogMask = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    const polygon: FogPolygon = {
+      id: randomSlug('manual-mask'),
+      points: [...createCirclePolygon({ x: CENTER_X, y: CENTER_Y }, FOG_DEFAULT_RADIUS)],
+      kind: 'mask',
+      createdAt: null,
+    };
+    try {
+      await addFogPolygon(cid, mid, map.fogPolygons, polygon, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
+  const handleClearFog = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user) return;
+    try {
+      await updateMap(cid, mid, { fogPolygons: [] }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, mid, user]);
+
+  const handleAddTorch = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    const light: LightSource = {
+      id: randomSlug('manual-torch'),
+      position: { x: CENTER_X, y: CENTER_Y },
+      attachedTokenId: null,
+      brightRadius: LIGHT_TORCH_BRIGHT,
+      dimRadius: LIGHT_TORCH_DIM,
+      preset: 'torch',
+    };
+    try {
+      await addLightSource(cid, mid, map.lightSources, light, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
+  const handleClearLights = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user) return;
+    try {
+      await updateMap(cid, mid, { lightSources: [] }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, mid, user]);
+
+  const handleAddSphereAoe = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    const template: AoeTemplate = {
+      id: randomSlug('manual-sphere'),
+      shape: 'sphere',
+      position: { x: CENTER_X, y: CENTER_Y },
+      dimensions: { radius: AOE_SPHERE_RADIUS },
+      pinned: false,
+    };
+    try {
+      await addAoeTemplate(cid, mid, map.aoeTemplates, template, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
+  const handleClearAoe = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user) return;
+    try {
+      await updateMap(cid, mid, { aoeTemplates: [] }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, mid, user]);
+
   if (!cid || !mid) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
@@ -237,6 +365,104 @@ export function MapLiveScreen(): JSX.Element {
             Écriture refusée : {writeError}
           </p>
         )}
+        {/* D.5 — boutons persistance fog / lights / AoE. */}
+        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span
+            data-testid="map-live-fog-count"
+            className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
+          >
+            Fog ({map.fogPolygons.length})
+          </span>
+          <button
+            type="button"
+            data-testid="map-live-add-fog-reveal"
+            onClick={() => {
+              void handleAddFogReveal();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Reveal au centre
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-add-fog-mask"
+            onClick={() => {
+              void handleAddFogMask();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Mask au centre
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-clear-fog"
+            onClick={() => {
+              void handleClearFog();
+            }}
+            disabled={map.fogPolygons.length === 0}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Effacer fog
+          </button>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span
+            data-testid="map-live-lights-count"
+            className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
+          >
+            Lumières ({map.lightSources.length})
+          </span>
+          <button
+            type="button"
+            data-testid="map-live-add-torch"
+            onClick={() => {
+              void handleAddTorch();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Torche au centre
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-clear-lights"
+            onClick={() => {
+              void handleClearLights();
+            }}
+            disabled={map.lightSources.length === 0}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Effacer lumières
+          </button>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span
+            data-testid="map-live-aoe-count"
+            className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
+          >
+            AoE ({map.aoeTemplates.length})
+          </span>
+          <button
+            type="button"
+            data-testid="map-live-add-sphere-aoe"
+            onClick={() => {
+              void handleAddSphereAoe();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Sphère 20 ft au centre
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-clear-aoe"
+            onClick={() => {
+              void handleClearAoe();
+            }}
+            disabled={map.aoeTemplates.length === 0}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Effacer AoE
+          </button>
+        </div>
       </header>
 
       <div
