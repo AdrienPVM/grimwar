@@ -577,6 +577,27 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   4. Une fois CI déblouée → re-pousser PR #19 (un commit vide suffit à retrigger) → merge si 5/5 verte.
 - **Risque structurel** : tant que ce point n'est pas résolu, le workflow CLAUDE.md « PR draft → CI verte → merge » est cassé. Toute PR ouverte aujourd'hui ne peut être validée que localement, ce qui dégrade la garantie de non-régression côté émulateur Firebase (les jobs e2e + rules NE TOURNENT pas localement sans Java/JRE 11+).
 
+## D22 — `magic-items.json` SRD-sourcing incomplet (potions livrées en C.1, ≥86 items restants)
+
+- **Owner** : `plans/C-magic-items-srd-common-uncommon.md` (ouvert 2026-05-27, branche `feat/C-magic-items-srd-common-uncommon`).
+- **Statut** : **PARTIELLEMENT RÉSOLUE 2026-05-27** au tracer-bullet C.1 (potions) — 9 entrées Common+Uncommon (8 remplacements + 1 nouveau slug `potion-de-guerison-importante`). Les ~77 magic items Common+Uncommon restants (wondrous, anneaux, armes, armures, parchemins…) **NE SONT PAS** encore SRD-sourcés et restent grandfathered AideDD pré-LOCKED. Les ~165 items ≥ Rare sont par décision en pass-through identique (cf. decision log « Pass-through (reformulation D17 #2) »).
+- **Drifts mécaniques corrigés au tracer C.1** (preuve de valeur ajoutée du SRD-sourcing) :
+  - `potion-d-agrandissement` : durée AideDD `1d4 heures` → SRD officiel **`10 minutes`**.
+  - `potion-de-respiration-aquatique` : durée AideDD `1 heure` → SRD officiel **`24 heures`**.
+  - `potion-d-amitie-avec-les-animaux` : mécanique AideDD `cast à volonté 1 heure` → SRD officiel **`cast au 3ᵉ niveau (DD 13)`**.
+  - `potion-de-force-de-geant` : rareté AideDD `common` → SRD officiel **`uncommon` (variante collines)**.
+  - `potion-de-poison` : `name.fr` AideDD `« Potion de poison »` → SRD FR officiel **`« Potion toxique »`** (slug stable).
+- **Suite recommandée** : tracer-bullets C.2..C.7 dans l'ordre du plan (wondrous → anneaux+amulettes → armes → armures+boucliers → parchemins/bag/tools → reliquat). Chaque tracer livre un module `scripts/data/srd-magic-items-<cat>.ts` + extension du builder `scripts/extract-srd-magic-items.ts` + tests cat. 3 pin + quadruple gate + PR + merge.
+- **Effet collatéral résolu** : régénération de `public/data/index.json` au passage corrige un drift latent — le compteur `summoned-creatures` passait silencieusement de 4 à 8 (D13d-followup-statblocks avait ajouté 4 entrées sans re-rendre `index.json`).
+
+## D23 — `potion-de-souffle-enflamme` : item AideDD homebrew dans le bundle « magic-items »
+
+- **Owner** : non assigné (cleanup post tracer C.1–C.7 complet).
+- **Statut** : **OUVERTE 2026-05-27** — découverte au tracer C.1. L'entrée `potion-de-souffle-enflamme` (Potion of Fire Breath) **n'existe PAS dans le SRD CC v5.2.1** (ni EN ni FR) ; vérifié par recherche dans `content-sources/extracted/raw/SRD_CC_v5.2.1.txt` (seulement présent comme capacité de stat-block de dragon, jamais comme potion). Tag actuel `source: 'basic-rules'` — cohérent avec le decision log « Politique de contenu LOCKED » (non-SRD est autorisé via grandfathering), mais sera à arbitrer au moment du cleanup global magic-items :
+  - Option (a) : retirer (destructif sur inventaires existants éventuels).
+  - Option (b) : re-taguer en `aidedd-homebrew` (plus précis sémantiquement, sans rupture référentielle).
+- **Risque** : faible — l'item est cohérent mécaniquement, ne casse aucune référence, mais sa présence dans le bundle « magic-items » avec un tag SRD pourrait induire en erreur l'utilisateur sur la provenance.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
