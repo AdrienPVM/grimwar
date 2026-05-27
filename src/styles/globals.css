@@ -233,3 +233,43 @@ body {
     margin-right: 0;
   }
 }
+
+/* ===========================================================================
+   PROTOTYPE DESKTOP v1 — Plan 13.14 / CHANTIER I marathon nuit 3.
+   À xl+ (1280px+), les modes Essence et Avoir basculent en 2 colonnes de
+   cards (~420px chacune + gap). Le mode Combat / Magie est intentionnellement
+   conservé en flux vertical pour cette itération PROTOTYPE — il a une logique
+   d'ordre vertical plus contrainte (HP en haut, attaques sous, conditions
+   sous, etc.) qui justifie un traitement séparé.
+
+   Implémentation : surcharge CSS-only sur les modes ciblés via leur `id`
+   panneau (`sheet-mode-panel-essence`, `sheet-mode-panel-avoir`). Mobile et
+   tablet < xl restent inchangés — passthrough byte-identique.
+
+   Cards internes : gardent leur `max-w-[420px]` mais s'inscrivent dans des
+   colonnes de grille au lieu d'un flux vertical. Les cards très larges
+   (Hexagram, InventoryList) peuvent dépasser visuellement — à arbitrer en
+   v2 (col-span-2 manuel ou refactor card par card).
+   =========================================================================== */
+@media (min-width: 1280px) {
+  .sheet-state .sheet-desktop-main #sheet-mode-panel-essence,
+  .sheet-state .sheet-desktop-main #sheet-mode-panel-avoir {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 420px));
+    column-gap: 1.5rem;
+    row-gap: 0.75rem;
+    max-width: none;
+    width: 100%;
+    align-items: start;
+  }
+
+  /* Cards à l'intérieur des grilles : reset des marges latérales auto et
+     suppression du cap 420px sur le wrapper (le wrapper EST la cellule). */
+  .sheet-state .sheet-desktop-main #sheet-mode-panel-essence > *,
+  .sheet-state .sheet-desktop-main #sheet-mode-panel-avoir > * {
+    max-width: 420px;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
+}
