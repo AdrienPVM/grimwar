@@ -1242,13 +1242,15 @@
   {
     "id": "bouteille-fumigene",
     "name": {
-      "fr": "Bouteille fumigène"
+      "fr": "Urne fumigène",
+      "en": "Eversmoking Bottle"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "De la fumée s'échappe de l'orifice de cette bouteille en laiton fermée par un bouchon de plomb. La bouteille pèse 500 grammes. Lorsque vous utilisez votre action pour enlever le bouchon, un épais nuage de fumée s'échappe de la bouteille dans un rayon de 18 mètres. La zone a une visibilité nulle. Chaque minute que la bouteille reste ouverte tout en étant dans le nuage, le rayon augmente de 3 mètres jusqu'à atteindre un rayon maximum de 36 mètres.\n\nLe nuage reste en place aussi longtemps que la bouteille est ouverte. Fermer la bouteille nécessite que vous prononciez le mot de commande en utilisant une action. Une fois que la bouteille est refermée, le nuage se disperse en 10 minutes. Un vent modéré (16 à 30 kilomètres par heure) peut également disperser la fumée en 1 minute, et un vent fort (plus de 30 kilomètres par heure) peut disperser le nuage un 1 tour."
+      "fr": "Au prix de l'action Magie, vous ouvrez ou refermez cette urne.\n\nL'ouvrir provoque l'expulsion d'une fumée épaisse qui génère un nuage sous forme d'une Émanation de 18 m centrée sur l'urne. La zone enfumée est à Visibilité nulle.\n\nChaque minute que l'urne reste ouverte, la taille de l'Émanation augmente de 3 m jusqu'à avoir atteint sa taille maximale de 36 m.\n\nLa fermeture de l'urne provoque l'immobilisation du nuage, qui se disperse au bout de 10 minutes. Un vent fort (tel que celui créé par le sort bourrasque) disperse le nuage en 1 minute.",
+      "en": "As a Magic action, you can open or close this bottle.\n\nOpening the bottle causes thick smoke to billow out, forming a cloud that fills a 60-foot Emanation originating from the bottle. The area within the smoke is Heavily Obscured.\n\nEach minute the bottle remains open, the size of the Emanation increases by 10 feet until it reaches its maximum size of 120 feet.\n\nClosing the bottle causes the cloud to become fixed in place until it disperses after 10 minutes. A strong wind (such as that created by the Gust of Wind spell) disperses the cloud after 1 minute."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1434,13 +1436,15 @@
   {
     "id": "carafe-intarissable",
     "name": {
-      "fr": "Carafe intarissable"
+      "fr": "Carafe intarissable",
+      "en": "Decanter of Endless Water"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Cette flasque bouchée fait de petits clapotis lorsqu'elle est secouée, comme si elle contenait de l'eau. La carafe pèse 1 kg.\n\nVous pouvez utiliser une action pour enlever le bouchon et prononcer l'un des trois mots de commande, après quoi une certaine quantité d'eau douce ou d'eau salée (selon votre choix) se déverse de la flasque. L'eau cesse de s'écouler au début de votre prochain tour. Choisissez l'une des options suivantes :\n\n• « Ruisseau » produit 4 litres d'eau.\n\n• « Fontaine » produit 20 litres d'eau.\n\n• « Geyser » produit 120 litres d'eau qui apparaissent en un violent jet de 9 mètres de long et 30 cm de diamètre. En utilisant une action bonus pendant que vous tenez la carafe, vous pouvez braquer le jet sur une créature que vous pouvez voir et se trouvant à 9 mètres maximum de vous. La cible doit réussir un jet de sauvegarde de Force DD 13 sous peine de subir 1d4 dégâts contondants et être jetée à terre. Au lieu d'une créature, vous pouvez cibler un objet qui n'est ni porté ni transporté et dont le poids ne dépasse pas les 100 kg. L'objet est soit mis à terre, soit repoussé de vous sur 4,50 mètres."
+      "fr": "Ce récipient muni d'un bouchon clapote quand on l'agite, comme s'il contenait de l'eau. La carafe pèse 1 kg.\n\nVous pouvez consacrer l'action Magie à retirer le bouchon et prononcer l'un des trois mots de commande, après quoi une quantité d'eau douce ou d'eau salée (au choix) s'écoule de la carafe. L'eau cesse de couler au début de votre tour suivant.\n\nÉclaboussure : 4 litres d'eau.\nFontaine : 20 litres d'eau.\nGeyser : 120 litres en Ligne de 9 m × 30 cm (cible JS Force DD 13 ou 1d4 contondants + À terre ; objet ≤ 100 kg renversé).",
+      "en": "This stoppered flask sloshes when shaken, as if it contains water. The decanter weighs 2 pounds.\n\nYou can take a Magic action to remove the stopper and issue one of three command words: fresh or salt water pours out (your choice). The water stops at the start of your next turn.\n\nSplash: 1 gallon. Fountain: 5 gallons. Geyser: 30 gallons in a 30-foot Line, 1 foot wide (creature DC 13 Strength save or 1d4 Bludgeoning + Prone; ≤ 200 lb object knocked over)."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1462,13 +1466,15 @@
   {
     "id": "carquois-d-ehlonna",
     "name": {
-      "fr": "Carquois d'Ehlonna"
+      "fr": "Carquois efficace",
+      "en": "Efficient Quiver"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Chacun des trois compartiments du carquois est connecté à un espace extradimensionnel qui permet au carquois de contenir un grand nombre d'objets tout en ne pesant jamais plus de 1 kg au total. Le plus petit compartiment peut contenir jusqu'à 60 flèches, carreaux, ou objets similaires. Le compartiment de taille moyenne peut contenir jusqu'à 18 javelines ou objets similaires. Le plus grand compartiment peut contenir jusqu'à 6 longs objets, comme un arc, un bâton, ou une lance.\n\nVous pouvez récupérer tout objet que le carquois contient comme vous le feriez avec un carquois normal ou un fourreau."
+      "fr": "Chacun des trois compartiments de ce carquois est lié à un espace extradimensionnel qui permet au carquois de contenir de nombreux objets sans jamais peser plus de 1 kg. Le compartiment court peut contenir jusqu'à 60 flèches, carreaux ou objets comparables. Le compartiment de taille intermédiaire peut contenir jusqu'à 18 javelines ou objets comparables. Le compartiment long peut contenir jusqu'à 6 objets longs de type arc, bâton de combat ou lance.\n\nVous pouvez extraire n'importe quel objet contenu dans le carquois comme si vous le tiriez d'un carquois ou d'un fourreau ordinaire.",
+      "en": "Each of the quiver’s three compartments connects to an extradimensional space that allows the quiver to hold numerous items while never weighing more than 2 pounds. The shortest compartment can hold up to 60 Arrows, Bolts, or similar objects. The midsize compartment holds up to 18 Javelins or similar objects. The longest compartment holds up to 6 long objects, such as bows, Quarterstaffs, or Spears.\n\nYou can draw any item the quiver contains as if doing so from a regular quiver or scabbard."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1476,13 +1482,15 @@
   {
     "id": "cartes-d-illusion",
     "name": {
-      "fr": "Cartes d'illusion"
+      "fr": "Tarot fantasmagorique",
+      "en": "Deck of Illusions"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "L'étui contient un ensemble de cartes en parchemin. Un jeu complet comprend 34 cartes. Un paquet trouvé dans un trésor a généralement perdu 1d20 - 1 cartes.\n\nLa magie de ce paquet de cartes ne fonctionne que si les cartes sont tirées de manière aléatoire (vous pouvez utiliser un jet de cartes à jouer modifié pour simuler ce paquet de cartes magiques). Vous pouvez utiliser une action pour tirer aléatoirement une carte du paquet et la jeter sur le sol en un point situé à 9 mètres de vous maximum.\n\nUne illusion d'une ou de plusieurs créatures se forme au-dessus de la carte jetée et reste en place jusqu'à ce qu'elle soit dissipée. Une créature illusoire semble réelle, de la bonne taille, et se comporte de la même manière qu'une créature réelle, elle ne peut cependant pas faire de mal. Tant que vous vous trouvez dans un rayon de 36 mètres de la créature illusoire et que vous pouvez la voir, vous pouvez utiliser une action pour la déplacer n'importe où dans un rayon de 9 mètres autour de sa carte. Toute interaction physique avec la créature illusoire révèle qu'il s'agit d'une illusion, car les objets passent au travers. Quelqu'un qui utilise son action pour inspecter visuellement la créature identifie qu'il s'agit d'une illusion en réussissant un jet d'Intelligence (Investigation) DD 15. La créature semble alors translucide.\n\nL'illusion reste en place jusqu'à ce que la carte soit déplacée ou que l'illusion soit dissipée. Lorsque l'illusion prend fin, l'image sur la carte disparait, et cette carte ne peut plus être réutilisée.\n\nCarte à jouerIllusionAs de cœurUn dragon rougeRoi de cœurUn chevalier et quatre gardesDame de cœurUne succube ou un incubeValet de cœurUn druide10 de cœurUn géant des nuages9 de cœurUn ettin8 de cœurUn gobelours7 de cœurUn gobelin&nbsp;&nbsp;As de carreauUn tyrannoeilRoi de carreauUn archimage et son apprentiDame de carreauUne tormanteValet de carreauUn assassin10 de carreauUn géant du feu9 de carreauUn ogre mage8 de carreauUn gnoll7 de carreauUn kobold&nbsp;&nbsp;As de piqueUne licheRoi de piqueUn prêtre et deux acolytesDame de piqueUne méduseValet de piqueUn vétéran de guerre10 de piqueUn géant du givre9 de piqueUn troll8 de piqueUn hobgobelin7 de piqueUn gobelin&nbsp;&nbsp;As de trèfleUn golem de ferRoi de trèfleTrois brigands et leur capitaineDame de trèfleUne érinyeValet de trèfleUn berserker10 de trèfleUn géant des collines9 de trèfleUn ogre8 de trèfleUn orc7 de trèfleUn kobold&nbsp;&nbsp;Jokers (2)Vous (le propriétaire des cartes)"
+      "fr": "Cette boîte contient un jeu de cartes. Un jeu complet se compose de 34 cartes (« lames ») : 32 représentent des créatures spécifiques, les deux dernières ont une surface réfléchissante. Il manque généralement 1d20 − 1 cartes à un jeu trouvé comme trésor.\n\nLa magie du tarot n'opère que si les lames sont piochées au hasard. Vous pouvez consacrer l'action Magie à piocher une lame au hasard et à la jeter au sol, en un point situé dans un rayon de 9 m. L'illusion d'une créature (table « Tarot fantasmagorique » SRD p. 240) se forme au-dessus de la carte et persiste jusqu'à dissipation. La créature illusoire ressemble à une vraie créature de son espèce et se comporte comme telle, mais elle est parfaitement inoffensive.\n\nTant que vous êtes dans un rayon de 36 m et que vous la voyez, vous pouvez consacrer l'action Magie à la déplacer en n'importe quel point situé dans un rayon de 9 m de sa carte d'origine.\n\nToute interaction physique perce l'illusion (intangible). Action Étude + test d'Intelligence (Investigation) DD 15 = perce l'illusion. L'illusion persiste jusqu'à sa dissipation (sort dissipation de la magie) ou que sa carte soit déplacée. Carte usée = image effacée, carte inutilisable.",
+      "en": "This box contains a set of cards. A full deck has 34 cards: 32 depicting specific creatures and two with a mirrored surface. A deck found as treasure is usually missing 1d20 − 1 cards.\n\nThe magic of the deck functions only if its cards are drawn at random. You can take a Magic action to draw a card at random from the deck and throw it to the ground at a point within 30 feet. An illusion of a creature (Deck of Illusions table, SRD p. 217) forms over the thrown card and remains until dispelled.\n\nWhile you are within 120 feet of the illusory creature and can see it, you can take a Magic action to move it anywhere within 30 feet of its card.\n\nAny physical interaction reveals it to be false. A Study action + DC 15 Intelligence (Investigation) check identifies it as an illusion. The illusion lasts until its card is moved or dispelled. When the illusion ends, the card image disappears and the card can't be used again."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2016,13 +2024,15 @@
   {
     "id": "flute-des-egouts",
     "name": {
-      "fr": "Flûte des égouts"
+      "fr": "Flûte des égouts",
+      "en": "Pipes of the Sewers"
     },
     "category": "gear",
     "rarity": "uncommon",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous devez avoir la maîtrise des instruments à vent pour utiliser cette flûte. Tant que vous êtes lié à cette flûte, les rats ordinaires et les rats géants sont indifférent à votre égard à moins que vous ne les attaquiez, les menaciez ou les blessiez.\n\nLa flûte possède 3 charges. Si vous utilisez une action pour jouer de la flûte, vous pouvez, en tant qu'action bonus, dépenser 1 à 3 charges pour appeler une nuée de rat par charges pour autant qu'il y ait suffisamment des rats dans un rayon de 800 mètres à la ronde. S'il n'y a pas assez de rats pour faire une nuée, la charge est perdue. La nuée se contente de suivre la musique par le chemin le plus court mais n'est pas sous votre contrôle. la flûte récupère 1d3 charges dépensées chaque jour à l'aube.\n\nQuand une nuée de rat qui n'est pas sous le contrôle d'une autre créature se trouve à 6 mètres ou moins de vous alors que vous jouez de la flûte, vous pouvez faire un jet de Charisme contre la Sagesse de la nuée. Si vous échouez, la nuée se comporte normalement et ne peut plus être charmée par la flûte pendant 24 heures. Si vous remportez l'opposition, la nuée est subjuguée par la mélodie qui émane de la flûte et devient amicale envers vous et vos compagnons tant que vous jouez (ce qui vous coûte votre action chaque tour). Une nuée amicale obéit à vos ordres. Si vous ne lui en donnez aucun, elle se contente de se défendre sans entreprendre d'autres actions. Une nuée amicale qui commence son tour sans entendre la musique de la flûte se libère de votre contrôle, adopte son comportement normal et ne peut plus être charmé de la sorte avant 24 heures."
+      "fr": "Tant que cette flûte est sur vous, les rats ordinaires et les rats géants vous sont Indifférents et ne vous attaqueront pas, sauf si vous les menacez ou leur faites du mal.\n\nCette flûte dispose de 3 charges et récupère quotidiennement 1d3 charges dépensées, à l'aube. Si vous en jouez au prix de l'action Magie, vous pouvez dépenser 1 à 3 charges par une action Bonus, appelant à vous une nuée de rats pour chaque charge dépensée (rayon 750 m). Chaque nuée de rats arrivant dans un rayon de 9 m effectue un JS Sagesse DD 15. Réussite : la nuée se comporte normalement et est immunisée 24 h. Échec : la nuée est envoûtée et devient Amicale envers vous et vos alliés tant que vous continuez à jouer chaque round.",
+      "en": "While these pipes are on your person, ordinary rats and giant rats are Indifferent toward you and won't attack you unless you threaten or harm them.\n\nThe pipes have 3 charges and regain 1d3 expended charges daily at dawn. If you play the pipes as a Magic action, you can take a Bonus Action to expend 1 to 3 charges, calling forth one Swarm of Rats with each expended charge (half a mile range). Each swarm coming within 30 feet makes a DC 15 Wisdom save: success = behaves normally + immune 24h; failure = becomes Friendly to you and your allies for as long as you continue playing each round."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2030,13 +2040,15 @@
   {
     "id": "flute-terrifiante",
     "name": {
-      "fr": "Flûte terrifiante"
+      "fr": "Flûte terrifiante",
+      "en": "Pipes of Haunting"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous devez avoir la maîtrise des instruments à vent pour pouvoir utiliser cette flûte. Elle a 3 charges. Par une action vous pouvez jouer de cette flûte et dépenser une charge pour produire un air envoûtant et mystérieux. Chaque créature dans les 9 mètres qui vous entend jouer doit réussir un jet de sauvegarde de Sagesse DD 15 ou être effrayée pendant 1 minute. Si vous le souhaitez, toutes les créatures à portée qui ne vous sont pas hostiles peuvent réussir automatiquement ce jet de sauvegarde. Une créature qui échoue peut retenter le jet de sauvegarde à la fin de chacun de ses tours, mettant ainsi fin à l'effet en cas de réussite. Une créature qui réussit le jet de sauvegarde devient immunisée contre cette flûte pour 24 heures. La flûte récupère 1d3 charges dépensées chaque jour à l'aube."
+      "fr": "Cette flûte dispose de 3 charges et récupère quotidiennement 1d3 charges dépensées, à l'aube. Vous pouvez entreprendre l'action Magie pour en jouer et dépenser 1 charge afin de faire naître une mélodie envoûtante. Chaque créature de votre choix dans un rayon de 9 m doit réussir un jet de sauvegarde de Sagesse DD 15 sous peine de subir l'état Effrayé pendant 1 minute. En cas d'échec, la créature peut réitérer ce JS à la fin de chacun de ses tours. En cas de réussite, la créature est immunisée contre l'effet de cette flûte pendant 24 heures.",
+      "en": "These pipes have 3 charges and regain 1d3 expended charges daily at dawn. You can take a Magic action to play them and expend 1 charge to create an eerie, spellbinding tune. Each creature of your choice within 30 feet of you must succeed on a DC 15 Wisdom saving throw or have the Frightened condition for 1 minute. A creature that fails the save repeats it at the end of each of its turns. A creature that succeeds is immune to the effect of these pipes for 24 hours."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2136,13 +2148,15 @@
   {
     "id": "gemme-d-illumination",
     "name": {
-      "fr": "Gemme d'illumination"
+      "fr": "Gemme d'illumination",
+      "en": "Gem of Brightness"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Ce prisme possède 50 charges. Tant que vous le tenez, vous pouvez utiliser une action pour prononcer l'un des trois mots de commande et ainsi provoquer l'un des trois effets suivants :\n\n• Premier mot de commande : la gemme se met à émettre une forte lueur dans un rayon de 9 mètres et une faible lueur dans un rayon supplémentaire de 9 mètres. Cet effet ne dépense pas de charge. Il perdure jusqu'à ce que vous utilisiez une action bonus pour répéter le mot de commande ou jusqu'à ce que vous utilisiez une autre fonction de la gemme.\n\n• Second mot de commande : Ce mot dépense 1 charge. La gemme tire un puissant rayon de lumière sur une créature que vous pouvez voir et se trouvant dans un rayon de 18 mètres de vous. La créature doit réussir un jet de sauvegarde de Constitution DD 15 sous peine d'être aveuglée pendant 1 minute. La créature peut retenter son jet de sauvegarde à la fin de chacun de ses tours, mettant un terme à l'effet qui l'affecte en cas de réussite au jet.\n\n• Troisième mot de commande : Ce mot dépense 5 charges. La gemme rayonne d'une lumière aveuglante dans un cône de 9 mètres dont elle est l'origine. Chaque créature présente dans le cône doit effectuer un jet de sauvegarde comme si elle était la cible d'un rayon lumineux créé par le second mot de commande.\n\nLorsque toutes les charges de la gemme sont dépensées, la gemme devient un joyau non magique d'une valeur de 50 po."
+      "fr": "Ce prisme dispose de 50 charges. Tant que vous le tenez, vous pouvez consacrer l'action Magie à prononcer l'un de ses trois mots de commande afin de lui faire produire l'un des effets suivants :\n\nPremier mot de commande. La gemme projette une Lumière vive sur un rayon de 9 m, et une Lumière faible sur 9 m de plus. Cet effet ne consomme pas de charge.\n\nDeuxième mot de commande. Vous dépensez 1 charge et projetez un faisceau de lumière éclatante sur une créature que vous voyez dans un rayon de 18 m. La créature doit réussir un jet de sauvegarde de Constitution DD 15 sous peine de subir l'état Aveuglé pendant 1 minute.\n\nTroisième mot de commande. Dépensez 5 charges : la gemme projette une lumière aveuglante dans un Cône de 9 m. Chaque créature prise dans le Cône effectue le même JS Constitution DD 15.\n\nUne fois toutes les charges dépensées, la gemme devient un joyau non magique d'une valeur de 50 po.",
+      "en": "This prism has 50 charges. While you are holding it, you can take a Magic action and use one of three command words.\n\nFirst Command Word. The gem sheds Bright Light in a 30-foot radius and Dim Light for an additional 30 feet. This effect doesn't expend a charge.\n\nSecond Command Word. You expend 1 charge and fire a brilliant beam of light at one creature you can see within 60 feet. DC 15 Constitution save or Blinded for 1 minute.\n\nThird Command Word. You expend 5 charges and flare with intense light in a 30-foot Cone. Each creature in the Cone makes the same save.\n\nWhen all charges are expended, the gem becomes a nonmagical jewel worth 50 GP."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2164,13 +2178,15 @@
   {
     "id": "gemme-elementaire",
     "name": {
-      "fr": "Gemme élémentaire"
+      "fr": "Gemme élémentaire",
+      "en": "Elemental Gem"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Cette gemme contient un brin d'énergie élémentaire. Lorsque vous utilisez une action pour briser la gemme, un élémentaire est invoqué comme si vous aviez jeté le sort invocation d'élémentaire, et la magie de la gemme est perdue. Le type de gemme détermine l'élémentaire invoqué par le sort.\n\nGemmeÉlémentaire invoquéSaphir bleuÉlémentaire de l'airDiamant jauneÉlémentaire de la terreCorindon rougeÉlémentaire du feuÉmeraudeÉlémentaire de l'eau"
+      "fr": "Cette gemme contient une particule d'énergie élémentaire. Lorsque vous entreprenez l'action Utilisation pour briser la gemme, cela convoque un élémentaire et la gemme perd sa magie. L'élémentaire apparaît en un espace inoccupé aussi près que possible de la gemme brisée, comprend les mêmes langues que vous, obéit à vos ordres et joue son tour juste après vous à votre rang d'initiative. Il disparaît au bout de 1 heure, s'il meurt, ou si vous le révoquez par une action Bonus.\n\nType de gemme → Élémentaire : Corindon rouge → feu ; Diamant jaune → terre ; Émeraude → eau ; Saphir bleu → air.",
+      "en": "This gem contains a mote of elemental energy. When you take a Utilize action to break the gem, an elemental is summoned, and the gem ceases to be magical. The elemental appears in an unoccupied space as close to the broken gem as possible, understands your languages, obeys your commands, and takes its turn immediately after you on your Initiative count. The elemental disappears after 1 hour, when it dies, or when you dismiss it as a Bonus Action.\n\nGem → Elemental: Blue sapphire → Air; Emerald → Water; Red corundum → Fire; Yellow diamond → Earth."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2394,13 +2410,15 @@
   {
     "id": "lanterne-de-revelation",
     "name": {
-      "fr": "Lanterne de révélation"
+      "fr": "Lanterne de révélation",
+      "en": "Lantern of Revealing"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Tant qu'elle est allumée, cette lanterne à capote brûle un demi-litre d'huile en 6 heures et produit une lumière vive dans un rayon de 9 mètres et une lumière faible dans les 9 mètres suivants. Les créature et objets invisibles deviennent visible tant qu'ils sont dans le halo de la lumière vive. Vous pouvez utiliser une action pour rabattre la capote de la lanterne, réduisant la luminosité à un halo de lumière réduite de 1,50 mètre de rayon."
+      "fr": "Lorsqu'elle est allumée, cette lanterne à capote brûle pendant 6 heures avec 50 cl d'huile, en projetant une Lumière vive dans un rayon de 9 m et une Lumière faible sur 9 m supplémentaires. Les créatures et objets Invisibles sont visibles sous la Lumière vive de la lanterne. Vous pouvez entreprendre l'action Utilisation pour abaisser la capote, ce qui réduit la lumière de la lanterne à une Lumière faible dans un rayon de 1,50 m.",
+      "en": "While lit, this hooded lantern burns for 6 hours on 1 pint of oil, shedding Bright Light in a 30-foot radius and Dim Light for an additional 30 feet. Invisible creatures and objects are visible as long as they are in the lantern’s Bright Light. You can take a Utilize action to lower the hood, reducing the lantern’s light to Dim Light in a 5-foot radius."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2708,13 +2726,31 @@
   {
     "id": "perle-de-pouvoir",
     "name": {
-      "fr": "Perle de pouvoir"
+      "fr": "Perle de thaumaturgie",
+      "en": "Pearl of Power"
     },
     "category": "gear",
     "rarity": "uncommon",
+    "attunement": true,
+    "magicDescription": {
+      "fr": "Tant que cette perle est sur vous, vous pouvez entreprendre l'action Magie pour récupérer un emplacement de sort dépensé du 3ᵉ niveau ou inférieur. Une fois la perle utilisée, vous ne pouvez plus y recourir avant l'aube suivante.",
+      "en": "While this pearl is on your person, you can take a Magic action to regain one expended spell slot of level 3 or lower. Once you use the pearl, it can’t be used again until the next dawn."
+    },
+    "description": null,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "perle-nutritive",
+    "name": {
+      "fr": "Perle nutritive",
+      "en": "Bead of Nourishment"
+    },
+    "category": "gear",
+    "rarity": "common",
     "attunement": false,
     "magicDescription": {
-      "fr": "Tant que cette perle est sur vous, vous pouvez utiliser une action pour prononcer son mot de commande et récupérer un emplacement de sort dépensé. Si l'emplacement de sort était de niveau 4 ou supérieur, le nouvel emplacement est de niveau 3. Une fois que vous avez utilisé la perle, elle ne peut être réutilisée avant la prochaine aube."
+      "fr": "Cette perle gélatineuse sans saveur fond sur la langue et fournit l'équivalent nutritif de 1 jour de rations.",
+      "en": "This flavorless, gelatinous bead dissolves on your tongue and provides as much nourishment as 1 day of Rations."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3104,13 +3140,15 @@
   {
     "id": "poudre-a-eternuer",
     "name": {
-      "fr": "Poudre à éternuer"
+      "fr": "Poudre à éternuer",
+      "en": "Dust of Sneezing and Choking"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Trouvée dans un petit contenant, cette poudre ressemble à du sable très fin. Il ressemble à de la poussière de disparition, et un sort d'identification l'indique comme tel. Il y a suffisamment de poudre pour une seule utilisation.\n\nLorsque vous utilisez une action pour lancer une poignée de cette poudre dans les airs, vous, et toute créature ayant besoin de respirer et se trouvant à 9 mètres de vous, devez réussir un jet de sauvegarde de Constitution DD 15 sous peine d'être incapable de respirer à cause d'une quinte d'éternuements incontrôlables. Une créature affectée de cette manière est incapable d'agir et suffoque. Aussi longtemps qu'elle est consciente, une créature peut retenter ce jet de sauvegarde à la fin de chacun de ses tours, mettant un terme à l'effet qui l'affecte en cas de réussite. Le sort restauration partielle peut également mettre un terme à cet effet sur une créature."
+      "fr": "Trouvée dans un petit récipient, cette fine poudre ressemble à de la poussière de disparition, même le sort identification la percevant comme telle. Il y en a assez pour une utilisation.\n\nAu prix de l'action Utilisation, vous pouvez lancer cette poudre en l'air, ce qui vous soumet ainsi que chaque créature prise dans une Émanation de 9 m centrée sur vous à un jet de sauvegarde de Constitution DD 15. Artificiels, Élémentaires, Morts-vivants, Plantes et Vases réussissent automatiquement ce JS.\n\nEn cas d'échec, une créature se met à éternuer de façon incontrôlable ; elle subit l'état Neutralisé et s'asphyxie. La créature réitère le JS à la fin de chacun de ses tours et met un terme à l'effet en cas de réussite. L'effet prend également fin sur toute créature cible du sort restauration partielle.",
+      "en": "Found in a small container, this powder resembles Dust of Disappearance, and Identify reveals it to be such. There is enough of it for one use.\n\nAs a Utilize action, you can throw the dust into the air, forcing yourself and every creature in a 30-foot Emanation originating from you to make a DC 15 Constitution saving throw. Constructs, Elementals, Oozes, Plants, and Undead succeed on the save automatically.\n\nOn a failed save, a creature begins sneezing uncontrollably; it has the Incapacitated condition and is suffocating. The creature repeats the save at the end of each of its turns, ending the effect on itself on a success. The effect also ends on any creature targeted by a Lesser Restoration spell."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3118,13 +3156,15 @@
   {
     "id": "poussiere-de-disparition",
     "name": {
-      "fr": "Poussière de disparition"
+      "fr": "Poussière de disparition",
+      "en": "Dust of Disappearance"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Rangée dans un petit paquet, cette poudre ressemble à du sable très fin. Il y en a assez pour une utilisation. Lorsque vous utilisez une action pour jeter la poussière dans l'air, vous et toute créature et objet dans un rayon de 3 mètres autour de vous devenez invisibles pour 2d4 minutes. La durée est la même pour tous les sujets, et la poussière est consommée lorsque sa magie prend effet. Si une créature affectée par la poussière attaque ou lance un sort, l'invisibilité se termine pour cette créature."
+      "fr": "Cette poudre ressemble à du sable fin. Il y en a assez pour une utilisation. Lorsque vous entreprenez l'action Utilisation pour lancer la poudre en l'air, vous-même et chaque créature ou objet pris dans une Émanation de 3 m centrée sur vous recevez l'état Invisible pendant 2d4 minutes. La durée est la même pour tous les sujets, et la poussière est détruite quand sa magie s'active. Aussitôt après qu'une créature affectée effectue un jet d'attaque, inflige des dégâts ou lance un sort, l'état Invisible prend fin pour elle.",
+      "en": "This powder resembles fine sand. There is enough of it for one use. When you take a Utilize action to throw the dust into the air, you and each creature and object within a 10-foot Emanation originating from you have the Invisible condition for 2d4 minutes. The duration is the same for all subjects, and the dust is consumed when its magic takes effect. Immediately after an affected creature makes an attack roll, deals damage, or casts a spell, the Invisible condition ends for that creature."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3132,13 +3172,15 @@
   {
     "id": "poussiere-dessiccative",
     "name": {
-      "fr": "Poussière dessiccative"
+      "fr": "Poudre dessiccative",
+      "en": "Dust of Dryness"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Ce petit paquet contient 1d6 + 4 pincées de poussière. Vous pouvez utiliser une action pour en saupoudrer une pincée sur de l'eau.\n\nLa poussière transforme un cube d'eau de 4,50 mètres d'arête en une boule de la taille d'une bille qui flotte ou reste près du lieu où la poussière a été aspergée. Le poids de la bille est négligeable.\n\nQuelqu'un peut utiliser une action pour écraser la bille contre une surface dure, ce qui la brise et libère l'eau que la poussière a absorbée. Cela met fin à l'effet magique.\n\nUn élémentaire composé principalement d'eau et qui est exposé à une pincée de cette poussière doit faire un jet de sauvegarde de Constitution DD 13, subissant 10d6 dégâts nécrotiques en cas d'échec, ou la moitié de ces dégâts en cas de réussite."
+      "fr": "Cette petite pochette contient 1d6 + 4 pincées de poudre. Au prix de l'action Utilisation, vous dispersez une pincée de cette poudre sur de l'eau, transformant un Cube d'eau de 4,50 m en une boulette de la taille d'une bille, qui flotte ou repose près de l'endroit où la poudre a été appliquée. Le poids de la boulette est négligeable. Une créature qui projette violemment la boulette contre une surface dure provoque son éclatement, ce qui libère la quantité d'eau absorbée.\n\nAu prix de l'action Utilisation, vous pouvez disperser une pincée de cette poudre sur un Élémentaire essentiellement composé d'eau situé dans un rayon de 1,50 m. Exposée à une pincée, la créature effectue un jet de sauvegarde de Constitution DD 13 et subit 10d6 dégâts nécrotiques en cas d'échec, la moitié en cas de réussite.",
+      "en": "This small packet contains 1d6 + 4 pinches of dust. As a Utilize action, you can sprinkle a pinch of the dust over water, turning up to a 15-foot Cube of water into one marble-sized pellet, which floats or rests near where the dust was sprinkled. A creature can take a Utilize action to smash the pellet against a hard surface, causing the pellet to shatter and release the water.\n\nAs a Utilize action, you can sprinkle a pinch of the dust on an Elemental within 5 feet of yourself that is composed mostly of water. Such a creature makes a DC 13 Constitution saving throw, taking 10d6 Necrotic damage on a failed save or half as much damage on a successful one."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3262,13 +3304,15 @@
   {
     "id": "sac-a-malices",
     "name": {
-      "fr": "Sac à malices"
+      "fr": "Sac à malices",
+      "en": "Bag of Tricks"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Ce sac ordinaire, fait d'un tissu gris, couleur rouille, ou ocre, semble vide. Cependant, mettre la main dans le sac révèle la présence d'un petit objet poilu. Le sac pèse 250 grammes.\n\nVous pouvez utiliser une action pour prendre l'objet poilu du sac et le lancer jusqu'à 6 mètres. Lorsque l'objet touche le sol, il se transforme en une créature déterminée aléatoirement en lançant un d8 et en consultant la table correspondant à la couleur du sac. La créature disparaît à l'aube suivante ou quand elle tombe à 0 point de vie.\n\nLa créature a une attitude amicale envers vous et vos compagnons, et agit pendant votre tour. Vous pouvez utiliser une action bonus pour décider la façon dont la créature se déplacera et quelle action elle utilisera lors de son prochain tour, ou bien pour lui donner des ordres généraux, comme celui d'attaquer vos ennemis. En l'absence de tels ordres, la créature agit d'une manière appropriée à sa nature.\n\nUne fois que trois objets poilus ont été pris dans le sac, le sac ne peut plus être réutilisé avant la prochaine aube.\n\nSac à malices (gris)\n\nd8Créature1Belette2Rat géant3Blaireau4Sanglier5Panthère6Blaireau géant7Loup sanguinaire8Élan géant\n\nSac à malices (rouille)\n\nd8Créature1Rat2Hibou3Molosse4Chèvre5Chèvre géante6Sanglier géant7Lion8Ours brun\n\nSac à malices (ocre)\n\nd8Créature1Chacal2Singe3Babouin4Bec de hache5Ours noir6Belette géante7Hyène géante8Tigre"
+      "fr": "Ce sac en toile grise, rouille ou brune, semble vide. Pourtant, pour peu que l'on fouille à l'intérieur du sac, on sent la présence d'un petit objet pelucheux.\n\nEntreprendre l'action Magie permet d'extraire du sac l'objet pelucheux et de le lancer à une distance maximale de 6 m. Quand il retombe, il se transforme en une créature que vous déterminez en lançant le dé selon la table « Sac à malices » SRD p. 213 (3 tables selon couleur : gris/rouille/brun). La créature disparaît à l'aube suivante, ou plus tôt si elle est réduite à 0 point de vie.\n\nAmicale envers vous et vos alliés, la créature agit juste après vous. Par une action Bonus, vous pouvez diriger son déplacement et son action.\n\nUne fois que trois objets pelucheux ont été sortis du sac, celui-ci ne peut plus être réutilisé avant l'aube suivante.",
+      "en": "This bag made from gray, rust, or tan cloth appears empty. Reaching inside the bag reveals the presence of a small, fuzzy object.\n\nYou can take a Magic action to pull the fuzzy object from the bag and throw it up to 20 feet. When the object lands, it transforms into a creature you determine by rolling on the Bag of Tricks tables (3 tables per color: Gray/Rust/Tan, SRD p. 213). The creature vanishes at the next dawn or when it is reduced to 0 Hit Points.\n\nThe creature is Friendly to you and your allies, and it acts immediately after you. You can take a Bonus Action to command its movement and action.\n\nOnce three fuzzy objects have been pulled from the bag, the bag can't be used again until the next dawn."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3304,13 +3348,15 @@
   {
     "id": "sac-sans-fond",
     "name": {
-      "fr": "Sac sans fond"
+      "fr": "Sac sans fond",
+      "en": "Bag of Holding"
     },
     "category": "gear",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Ce sac de toile a un espace intérieur beaucoup plus grand que ses dimensions extérieures, environ 60 cm de diamètre à l'ouverture et 1,20 m de profondeur. Le sac peut contenir jusqu'à 250 kg, sans être plus volumineux qu'un cube de 1,20 m d'arête. Le sac pèse 7,5 kg, indépendamment de son contenu. Récupérer un élément du sac demande une action.\n\nSi le sac est surchargé, percé ou déchiré, il se rompt et est détruit, et son contenu est dispersé sur le plan Astral. Si le sac est retourné, son contenu se déverse, en bon état, mais le sac doit être remis à l'endroit pour pouvoir être utilisé de nouveau. Si des créatures qui respirent sont placées dans le sac, elles ne peuvent survivre qu'un nombre de minutes égal à 10 minutes divisé par le nombre de créatures (minimum 1 minute), après quoi elles commencent à suffoquer.\n\nPlacer un sac sans fond dans un espace extradimensionnel créé par un havresac magique d'Hévard, un puits portable ou un objet similaire, détruit instantanément les deux objets et ouvre un portail sur le plan Astral. Le portail s'ouvre là où le premier objet a été placé à l'intérieur de l'autre. Toute créature dans un rayon de 3 mètres autour du portail est aspirée par celle-ci et se retrouve à un endroit aléatoire sur le plan Astral. Puis le portail se referme. Celui-ci est à sens unique et ne peut pas être réouvert."
+      "fr": "L'espace de stockage de ce sac est considérablement plus grand que le laissent penser ses dimensions extérieures : 1,20 m de profondeur pour 60 cm de section. Le sac peut contenir jusqu'à 250 kg, pour un volume maximal de 1 800 litres. Il pèse 2,5 kg quel que soit son contenu. Récupérer un objet nécessite l'action Utilisation.\n\nS'il est surchargé, troué ou déchiré, il est détruit. Son contenu est alors disséminé sur le Plan Astral. Si le sac est retourné comme un gant, son contenu se déverse sans que rien ne se brise, mais le sac doit être remis à l'endroit avant de pouvoir être réutilisé. Le sac contient suffisamment d'air pour 10 minutes de ventilation, divisées par le nombre de créatures qui respirent à l'intérieur.\n\nPlacer un sac sans fond dans l'espace extradimensionnel créé par un havresac magique, un puits portable ou tout autre objet comparable détruit instantanément les deux objets et ouvre un portail vers le Plan Astral.",
+      "en": "This bag has an interior space considerably larger than its outside dimensions — roughly 2 feet square and 4 feet deep on the inside. The bag can hold up to 500 pounds, not exceeding a volume of 64 cubic feet. The bag weighs 5 pounds, regardless of its contents. Retrieving an item from the bag requires a Utilize action.\n\nIf the bag is overloaded, pierced, or torn, it is destroyed, and its contents are scattered in the Astral Plane. If the bag is turned inside out, its contents spill forth unharmed, but the bag must be put right before it can be used again. The bag holds enough air for 10 minutes of breathing, divided by the number of breathing creatures inside.\n\nPlacing a Bag of Holding inside an extradimensional space created by a Handy Haversack, Portable Hole, or similar item instantly destroys both items and opens a gate to the Astral Plane."
     },
     "description": null,
     "source": "srd-5.2.1"
