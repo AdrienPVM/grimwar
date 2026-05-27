@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-27T11:36:07.175Z",
+  "generatedAt": "2026-05-27T13:30:10.511Z",
   "counts": {
     "ancestries": 9,
     "backgrounds": 4,
@@ -8,7 +8,7 @@
     "feats": 17,
     "invocations": 28,
     "items": 190,
-    "magic-items": 254,
+    "magic-items": 255,
     "monsters": 0,
     "rules": 0,
     "spells": 339,
@@ -16,5 +16,5 @@
     "subclasses": 12,
     "summoned-creatures": 8
   },
-  "contentHash": "16d589c655d12a8911b3c676fa8a013e9ff9dbe4b4a6e0eb3d948557ef5ff515"
+  "contentHash": "ffe57cf5715760cabee573c30d54d4d6b2f331eb42a55048d32f7072e429257f"
 }

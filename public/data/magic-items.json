@@ -496,13 +496,15 @@
   {
     "id": "armure-d-adamantium",
     "name": {
-      "fr": "Armure d'adamantium"
+      "fr": "Armure en adamantium",
+      "en": "Adamantine Armor"
     },
     "category": "armor",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Cette armure est renforcée par de l'adamantium, l'une des plus robustes substances au monde. Lorsque vous la portez, tout coup critique contre vous devient un coup normal."
+      "fr": "Les parties en adamantium, l'un des matériaux les plus résistants qui existent, augmentent la solidité de cette armure. Tant que vous la portez, tout Coup critique contre vous devient un coup normal.",
+      "en": "This suit of armor is reinforced with adamantine, one of the hardest substances in existence. While you’re wearing it, any Critical Hit against you becomes a normal hit."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -566,13 +568,15 @@
   {
     "id": "armure-de-mithral",
     "name": {
-      "fr": "Armure de mithral"
+      "fr": "Armure de mithral",
+      "en": "Mithral Armor"
     },
     "category": "armor",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Le mithral est un métal souple et léger. Une chemise de mailles ou une cuirasse en mithral peuvent être portées sous des vêtements normaux. Si l'armure impose normalement un désavantage aux jets de Dextérité (Discrétion) ou a un prérequis de Force, la version en mithral de l'armure ne l'a pas."
+      "fr": "Le mithral est un métal léger et souple. Une armure fabriquée dans ce matériau peut être portée sous des vêtements normaux. Si l'armure dans sa version normale impose le Désavantage aux tests de Dextérité (Discrétion) ou requiert une valeur de Force minimale, ce n'est pas le cas de la version en mithral.",
+      "en": "Mithral is a light, flexible metal. Armor made of this substance can be worn under normal clothes. If the armor normally imposes Disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version of the armor doesn't."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1122,13 +1126,15 @@
   {
     "id": "bouclier-1-2-ou-3",
     "name": {
-      "fr": "Bouclier +1, +2 ou +3"
+      "fr": "Bouclier +1, +2 ou +3",
+      "en": "Shield, +1, +2, or +3"
     },
     "category": "armor",
     "rarity": "uncommon",
     "attunement": false,
     "magicDescription": {
-      "fr": "Si vous tenez en main ce bouclier, vous obtenez un bonus à la CA déterminé par la rareté du bouclier. Ce bonus vient en plus du bonus normal du bouclier à la CA."
+      "fr": "Tant que vous tenez ce bouclier, vous bénéficiez à la classe d'armure d'un bonus déterminé par la rareté du bouclier, en plus du bonus normal du bouclier à la CA.",
+      "en": "While holding this Shield, you have a bonus to Armor Class determined by the Shield’s rarity, in addition to the Shield’s normal bonus to AC."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1185,6 +1191,22 @@
     "attunement": false,
     "magicDescription": {
       "fr": "Tant que vous tenez ce bouclier, vous avez un avantage à vos jets de sauvegarde effectués contre des sorts ou tout autre effet magique, et les attaques avec un sort ont un désavantage contre vous."
+    },
+    "description": null,
+    "source": "srd-5.2.1"
+  },
+  {
+    "id": "bouclier-sentinelle",
+    "name": {
+      "fr": "Bouclier sentinelle",
+      "en": "Sentinel Shield"
+    },
+    "category": "armor",
+    "rarity": "uncommon",
+    "attunement": false,
+    "magicDescription": {
+      "fr": "Tant que vous tenez ce bouclier, vous bénéficiez de l'Avantage aux jets d'Initiative et aux tests de Sagesse (Perception). Ce bouclier est orné d'un symbole représentant un œil.",
+      "en": "While holding this Shield, you have Advantage on Initiative rolls and Wisdom (Perception) checks. The Shield is emblazoned with a symbol of an eye."
     },
     "description": null,
     "source": "srd-5.2.1"
