@@ -43,6 +43,10 @@ import {
   SRD_MAGIC_ITEMS_UTILITY,
   SRD_MAGIC_ITEMS_UTILITY_COUNTS,
 } from './data/srd-magic-items-utility';
+import {
+  SRD_MAGIC_ITEMS_RELIQUAT,
+  SRD_MAGIC_ITEMS_RELIQUAT_COUNTS,
+} from './data/srd-magic-items-reliquat';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -79,7 +83,7 @@ async function main(): Promise<void> {
     throw new Error(`[extract-srd-magic-items] ${MAGIC_ITEMS_PATH} doit être un tableau`);
   }
 
-  // 2. Collecter les modules SRD-sourced (C.1 → C.6).
+  // 2. Collecter les modules SRD-sourced (C.1 → C.7 = chantier C complet).
   const srdEntries: SrdMagicItemEntry[] = [
     ...SRD_MAGIC_ITEMS_POTIONS,
     ...SRD_MAGIC_ITEMS_WONDROUS,
@@ -87,6 +91,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_WEAPONS,
     ...SRD_MAGIC_ITEMS_ARMOR_SHIELDS,
     ...SRD_MAGIC_ITEMS_UTILITY,
+    ...SRD_MAGIC_ITEMS_RELIQUAT,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -174,6 +179,14 @@ async function main(): Promise<void> {
       `[extract-srd-magic-items] PARSE STRICT FAIL — utility C.6 attendu 1 common + 15 uncommon, trouvé ${SRD_MAGIC_ITEMS_UTILITY_COUNTS.common} + ${SRD_MAGIC_ITEMS_UTILITY_COUNTS.uncommon}.`,
     );
   }
+  if (SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.total !== SRD_MAGIC_ITEMS_RELIQUAT.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur reliquat désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.common !== 1 || SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.uncommon !== 7) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — reliquat C.7 attendu 1 common + 7 uncommon, trouvé ${SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.common} + ${SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.uncommon}.`,
+    );
+  }
 
   // 6. Tri déterministe par id (stable, l'array existant ne l'était pas
   //    forcément — on canonicalise ici pour idempotence pleine).
@@ -185,7 +198,7 @@ async function main(): Promise<void> {
 
   console.log(
     `[extract-srd-magic-items] OK — ${merged.length} entrées total, ` +
-      `${srdEntries.length} SRD-sourced (C.1 → C.6 ; ${replacedIds.size} remplacées + ${
+      `${srdEntries.length} SRD-sourced (C.1 → C.7 = chantier C complet ; ${replacedIds.size} remplacées + ${
         srdEntries.length - replacedIds.size
       } nouvelles).`,
   );
