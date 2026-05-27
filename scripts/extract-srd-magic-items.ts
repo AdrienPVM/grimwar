@@ -31,6 +31,10 @@ import {
   SRD_MAGIC_ITEMS_RINGS_AMULETS,
   SRD_MAGIC_ITEMS_RINGS_AMULETS_COUNTS,
 } from './data/srd-magic-items-rings-amulets';
+import {
+  SRD_MAGIC_ITEMS_WEAPONS,
+  SRD_MAGIC_ITEMS_WEAPONS_COUNTS,
+} from './data/srd-magic-items-weapons';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -67,11 +71,12 @@ async function main(): Promise<void> {
     throw new Error(`[extract-srd-magic-items] ${MAGIC_ITEMS_PATH} doit être un tableau`);
   }
 
-  // 2. Collecter les modules SRD-sourced (C.1 potions + C.2 wondrous wearables + C.3 anneaux/amulettes).
+  // 2. Collecter les modules SRD-sourced (C.1 potions + C.2 wondrous + C.3 anneaux + C.4 armes).
   const srdEntries: SrdMagicItemEntry[] = [
     ...SRD_MAGIC_ITEMS_POTIONS,
     ...SRD_MAGIC_ITEMS_WONDROUS,
     ...SRD_MAGIC_ITEMS_RINGS_AMULETS,
+    ...SRD_MAGIC_ITEMS_WEAPONS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -135,6 +140,14 @@ async function main(): Promise<void> {
       `[extract-srd-magic-items] PARSE STRICT FAIL — rings/amulets C.3 attendu 0 common + 9 uncommon, trouvé ${SRD_MAGIC_ITEMS_RINGS_AMULETS_COUNTS.common} + ${SRD_MAGIC_ITEMS_RINGS_AMULETS_COUNTS.uncommon}.`,
     );
   }
+  if (SRD_MAGIC_ITEMS_WEAPONS_COUNTS.total !== SRD_MAGIC_ITEMS_WEAPONS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur weapons désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_WEAPONS_COUNTS.common !== 0 || SRD_MAGIC_ITEMS_WEAPONS_COUNTS.uncommon !== 5) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — weapons C.4 attendu 0 common + 5 uncommon, trouvé ${SRD_MAGIC_ITEMS_WEAPONS_COUNTS.common} + ${SRD_MAGIC_ITEMS_WEAPONS_COUNTS.uncommon}.`,
+    );
+  }
 
   // 6. Tri déterministe par id (stable, l'array existant ne l'était pas
   //    forcément — on canonicalise ici pour idempotence pleine).
@@ -146,7 +159,7 @@ async function main(): Promise<void> {
 
   console.log(
     `[extract-srd-magic-items] OK — ${merged.length} entrées total, ` +
-      `${srdEntries.length} SRD-sourced (C.1 potions + C.2 wondrous + C.3 anneaux/amulettes ; ${replacedIds.size} remplacées + ${
+      `${srdEntries.length} SRD-sourced (C.1 potions + C.2 wondrous + C.3 anneaux + C.4 armes ; ${replacedIds.size} remplacées + ${
         srdEntries.length - replacedIds.size
       } nouvelles).`,
   );
