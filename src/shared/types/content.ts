@@ -344,6 +344,66 @@ export const rarityScheme = z.enum([
 ]);
 export type Rarity = z.infer<typeof rarityScheme>;
 
+/**
+ * `abilityCodeSchema` est défini dans `character.ts`. Pour éviter une dépendance
+ * circulaire content → character, on duplique strictement la même enum ici.
+ * Un test garde-fou vérifie qu'elles restent alignées. Si une 7e abilité
+ * apparaissait (jamais en SRD 5e), la duplication péterait au typecheck.
+ */
+const magicEffectAbilityCodeSchema = z.enum([
+  'for',
+  'dex',
+  'con',
+  'int',
+  'sag',
+  'cha',
+]);
+
+/**
+ * Effets actifs structurés d'un magic item — JALON 1B v0.
+ *
+ * Modèle minimal pour les **bonus statiques additifs** et un cas spécial
+ * « set-floor » très courant en 5e (Amulette de santé : CON = max(CON, 19),
+ * Ceinture de force de géant : FOR = max(FOR, 21|23|25)).
+ *
+ * v0 — kinds supportés :
+ *  - `ability-set-floor` : porte une caractéristique à un minimum si plus bas
+ *  - `ac-bonus` : bonus AC plat (cumulable avec armure, bouclier, defense, etc.)
+ *  - `save-bonus-all` : bonus +N sur TOUTES les sauvegardes
+ *  - `speed-bonus` : bonus de vitesse en ft (additif)
+ *
+ * v0+ (V1.1 prévu) — kinds prévus : `damage-resistance`, `attack-bonus-weapon`,
+ * `conditional` (ex. seulement si pas d'armure), `dice-bonus`, etc.
+ *
+ * Activation : un effet n'est appliqué que si l'objet est **équipé** ET
+ * (si l'objet requiert attunement) **attuné**. Pattern identique à
+ * `computeDisplayedAc` (13.14b) — extension naturelle, pas de magie.
+ *
+ * Source de vérité = bundle SRD `public/data/magic-items.json`. Effets
+ * portés à la racine de l'item, JAMAIS dans la description textuelle (qui
+ * reste source secondaire pour l'affichage).
+ */
+export const MagicItemEffectSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('ability-set-floor'),
+    ability: magicEffectAbilityCodeSchema,
+    minimum: z.number().int().min(1).max(30),
+  }),
+  z.object({
+    kind: z.literal('ac-bonus'),
+    bonus: z.number().int(),
+  }),
+  z.object({
+    kind: z.literal('save-bonus-all'),
+    bonus: z.number().int(),
+  }),
+  z.object({
+    kind: z.literal('speed-bonus'),
+    bonus: z.number().int(),
+  }),
+]);
+export type MagicItemEffect = z.infer<typeof MagicItemEffectSchema>;
+
 export const MagicItemSchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -353,6 +413,11 @@ export const MagicItemSchema = z.object({
   magicDescription: I18nSchema,
   description: I18nSchema.nullable(),
   source: sourceTag,
+  /**
+   * Effets actifs structurés (JALON 1B v0). Optional → pas de migration des
+   * 251 items SRD existants ; les items v0 candidats sont backfillés en 1B.2.
+   */
+  effects: z.array(MagicItemEffectSchema).optional(),
 });
 export type MagicItem = z.infer<typeof MagicItemSchema>;
 
