@@ -340,7 +340,10 @@ export type StringKey =
   | 'library.card.aliveLabel'
   | 'library.card.deadLabel'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
-  | 'avoir.customItem.placeholder';
+  | 'avoir.customItem.placeholder'
+  // Connectivité (jalon 1D — mode offline)
+  | 'connectivity.offline.title'
+  | 'connectivity.offline.body';
 
 type Dict = Record<StringKey, string>;
 
@@ -781,6 +784,13 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.deadLabel': 'Mort.e',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
+    // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
+    // écritures en file et les rejoue à la reconnexion, le cache Dexie
+    // restitue les bundles publics, et le SW Workbox sert les assets.
+    // L'utilisateur garde la lecture et l'édition locale.
+    'connectivity.offline.title': 'Tu es hors ligne',
+    'connectivity.offline.body':
+      'La lecture reste disponible. Tes modifications seront synchronisées au retour de la connexion.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1165,6 +1175,9 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.aliveLabel': 'Alive',
     'library.card.deadLabel': 'Dead',
     'avoir.customItem.placeholder': 'My personal treasure',
+    'connectivity.offline.title': 'You are offline',
+    'connectivity.offline.body':
+      'Reading still works. Your changes will sync when you reconnect.',
   },
 };
 
