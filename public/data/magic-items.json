@@ -18,13 +18,15 @@
   {
     "id": "amulette-de-bonne-sante",
     "name": {
-      "fr": "Amulette de bonne santé"
+      "fr": "Amulette de bonne santé",
+      "en": "Periapt of Health"
     },
     "category": "gear",
-    "rarity": "rare",
-    "attunement": false,
+    "rarity": "uncommon",
+    "attunement": true,
     "magicDescription": {
-      "fr": "Votre Constitution passe à 19 tant que vous portez cette amulette. L'amulette n'a aucun effet sur vous si votre Constitution est de 19 ou plus sans elle."
+      "fr": "Tant que vous portez ce pendentif, vous pouvez entreprendre l'action Magie pour récupérer 2d4 + 2 points de vie. Une fois utilisée, cette propriété ne peut plus resservir avant l'aube suivante.\n\nTant que vous portez ce pendentif, vous bénéficiez en outre de l'Avantage aux jets de sauvegarde visant à éviter l'état Empoisonné ou à y mettre fin.",
+      "en": "While wearing this pendant, you can take a Magic action to regain 2d4 + 2 Hit Points. Once used, this property can't be used again until the next dawn.\n\nIn addition, you have Advantage on saving throws to avoid or end the Poisoned condition while you wear this pendant."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -62,13 +64,15 @@
   {
     "id": "amulette-de-sante",
     "name": {
-      "fr": "Amulette de santé"
+      "fr": "Amulette de santé",
+      "en": "Amulet of Health"
     },
     "category": "gear",
-    "rarity": "uncommon",
-    "attunement": false,
+    "rarity": "rare",
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous êtes immunisé contre toutes les maladies tant que vous portez ce pendentif. Si vous êtes déjà infecté par une maladie, les effets de celle-ci disparaissent tant que vous portez le pendentif."
+      "fr": "Votre Constitution est de 19 tant que vous portez cette amulette. Elle est sans effet sur vous si votre Constitution est déjà supérieure ou égale à 19.",
+      "en": "Your Constitution is 19 while you wear this amulet. It has no effect on you if your Constitution is 19 or higher without it."
     },
     "description": null,
     "source": "srd-5.2.1"

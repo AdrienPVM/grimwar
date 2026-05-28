@@ -16,15 +16,16 @@
  *   - 4 wondrous "cou" Uncommon : Amulette d'antidétection, Amulette de
  *     cicatrisation, Collier d'adaptation, Médaillon des pensées.
  *
- * **Périapt de bonne santé (Periapt of Health) DIFFÉRÉ** : collision de slug
- * avec l'entrée AideDD grandfathered `amulette-de-sante` (uncommon, mécanique
- * "immunité aux maladies" — non-SRD). Le SRD officiel a 2 amulettes de santé :
- *   - "Amulette de bonne santé" (uncommon, Periapt of Health, 2d4+2 hp)
- *   - "Amulette de santé" (rare, Amulet of Health, Constitution = 19)
- *
- * Le bundle baseline AideDD a swappé les noms ET ajouté un homebrew "immunité
- * maladies" — résolution propre nécessite un cleanup global non-trivial
- * (tracker DEBT.md > D24).
+ * **Amulettes de santé (Amulet of Health rare + Periapt of Health uncommon)** :
+ * doublet résolu par D24 (cf. `plans/DEBT.md > ## Résolu`). Les 2 entrées
+ * vivent directement dans `public/data/magic-items.json` sous leurs slugs SRD-
+ * fidèles (`amulette-de-sante` = Amulet of Health rare CON=19 ; `amulette-de-
+ * bonne-sante` = Periapt of Health uncommon 2d4+2 PV + advantage Empoisonné).
+ * Le garde-fou `tests/d24-amulets-of-health-srd.test.ts` fige le mapping. Ces
+ * 2 amulettes ne sont PAS ré-introduites dans le module C.3 (qui reste à 9
+ * entrées) : leur SRD-sourcing via script vivra dans un plan dédié de cleanup
+ * global magic-items (politique LOCKED 2026-05-20 — `content:build` ne touche
+ * pas `magic-items.json`, préservé byte-identique en pass-through).
  *
  * Politique :
  *   - Slugs préservés byte-identique aux entrées grandfathered.
