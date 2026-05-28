@@ -38,6 +38,34 @@ Adrien lira ce fichier à l'UAT final et arbitrera les décisions qui ne lui con
 
 ---
 
+### [JALON-1C] Dépendance non capturée — 1C suppose campagnes + memberships (S2) (2026-05-29)
+
+**Contexte** : MVP-V1-SPEC.md liste 1C dans le JALON 1 (« Fondations restantes ») : « Mode MJ niveau 1 — voir fiches joueurs en lecture seule. Firestore Rules rôles `gm` vs `member`. » L'inventaire pré-code révèle que :
+
+- Aucune feature `campaigns/` / `invitations/` / `dm-view/` n'existe sous `src/features/`.
+- `permissions-context.tsx` pose explicitement `isDM: false` en S1, avec commentaire « la DM authority arrive en plan 16 ».
+- `firestore.rules::requestUserSharesACampaignWith` retourne hardcodé `false` pour S1 et commente « no campaigns yet ».
+- Plans 14 (campaigns-model), 15 (invitations), 16 (memberships-permissions), 21 (dm-dashboard) sont tous **non livrés** — c'est le périmètre Sprint 2 originel.
+
+**Le problème** : « MJ voit fiches joueurs en lecture seule » présuppose qu'une campagne existe (sinon il n'y a pas de « MJ ») et qu'un joueur est membre (sinon pas de « fiche joueur » à voir). Sans le data layer campagnes + memberships, 1C n'a rien à opérer — c'est un mode MJ vide.
+
+**Options envisagées** :
+1. Implémenter 1C tel quel en câblant aussi les fondations campagnes/memberships (= absorber plans 14 + 15 + 16 + un stub dm-view dans le périmètre 1C). Scope creep massif : ~3-5 PRs supplémentaires pour livrer une campagne minimale + invitation + membership + DM-view. Risque de saturation contexte.
+2. Implémenter UNIQUEMENT les Firestore Rules ouvrant la lecture DM (`requestUserSharesACampaignWith` réelle, ajout d'un champ dénormalisé `accessibleByDmIds: string[]` sur Character pour autoriser le `request.auth.uid in resource.data.accessibleByDmIds`). Pas de UI, pas de route, pas de loader cross-user. Le wire UI arrive plus tard. Risque : les Rules autorisent une lecture qui n'a aucun consommateur, dette tracée.
+3. Différer 1C à un sous-jalon ultérieur (JALON 1.5 ou intercaler entre JALON 2 et JALON 4). Adrien décide où le repositionner dans la séquence. Le JALON 1 se termine sur 1A + 1B + 1D.
+
+**Décision prise (conservative par défaut, à arbitrer Adrien)** : Option 3. Le JALON 1 livre 1A + 1B + 1D. 1C est différé jusqu'à ce qu'au moins un data layer campagnes minimal existe (plans 14 + 16, soit naturellement avant JALON 4 « Mode MJ complet » qui les présuppose de toute façon). Le mode MJ niveau 1 (lecture seule) devient un sous-jalon de l'enchaînement vers JALON 4 plutôt qu'une fondation isolée.
+
+Justification : (a) Option 1 = scope creep majeur non explicitement validé par Adrien ; (b) Option 2 = Rules sans consommateur = dette structurelle pour zéro valeur utilisateur ; (c) Option 3 = position naturelle vu l'ordre des dépendances (campagnes → memberships → DM read).
+
+**À traiter** : Adrien arbitre à l'UAT final OU en cours de route (avant JALON 4) si l'option 3 est validée. Si oui, JALON 1 = 1A + 1B + 1D et 1C remonte en JALON 4 ou intercalé.
+
+**Référence** : commit doc-only à venir sur main (paths non protégés).
+
+**Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
 ### [JALON-1B.2] `ability-set-floor` non câblé dans l'UI en v0 (2026-05-28)
 
 **Contexte** : Le moteur d'effets actifs (1B.1) supporte 4 kinds dont `ability-set-floor` (Amulet of Health CON=19, Gauntlets of Ogre Power FOR=19). Le backfill 1B.2 a ajouté l'effet structuré sur les 2 items SRD candidats. Mais l'UI ne consomme pas encore le score d'ability modifié — Hexagram / SavesRow / HpMegaCard utilisent toujours `character.abilities[ability]` brut.
