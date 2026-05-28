@@ -38,6 +38,25 @@ Adrien lira ce fichier à l'UAT final et arbitrera les décisions qui ne lui con
 
 ---
 
+### [JALON-1B.2] `ability-set-floor` non câblé dans l'UI en v0 (2026-05-28)
+
+**Contexte** : Le moteur d'effets actifs (1B.1) supporte 4 kinds dont `ability-set-floor` (Amulet of Health CON=19, Gauntlets of Ogre Power FOR=19). Le backfill 1B.2 a ajouté l'effet structuré sur les 2 items SRD candidats. Mais l'UI ne consomme pas encore le score d'ability modifié — Hexagram / SavesRow / HpMegaCard utilisent toujours `character.abilities[ability]` brut.
+
+**Options envisagées** :
+1. Câbler immédiatement Hexagram + SavesRow + HpMegaCard à `computeDisplayedAbility`. Câbler aussi les rolls (un test STR avec Gauntlets équipés roule sur FOR=19 modifié). Mais HP max stocké en base doit-il être recalculé ? Si CON passe de 14 à 19, le HP max gagne du CON × HD — mais c'est un champ stocké, pas dérivé, dont la recompute touche `useUpdateCharacter`. Scope creep majeur, risque de corrompre des persos existants.
+2. Câbler uniquement l'affichage Hexagram (badge « 19 » à la place de « 14 » pour CON quand Amulet équipée) sans recompute HP max ni propagation aux saves dérivées. Demi-livraison sémantiquement bancale.
+3. Différer entièrement l'affichage `ability-set-floor` à 1B.3. Le moteur le supporte (testé en 1B.1), le bundle le porte (backfill 1B.2), mais l'UI n'expose pas encore. Cap-AC + cap-saves + cap-speed restent les démos visibles du moteur v0.
+
+**Décision prise** : Option 3 — `ability-set-floor` reste « engine-ready, UI-deferred » en v0. Justification : (a) impact sur les champs dérivés stockés (HP max, save bonuses calculés) trop large pour être livré sans plan dédié ; (b) la démo visible 1B.2 v0 sur AC+save+speed suffit à valider la mécanique de propagation ; (c) Option 1 expose au risque de corruption HP, Option 2 livre un demi-modèle confusant.
+
+**À traiter en 1B.3 ou plan dédié V1 jalon 1 ultérieur** : câblage Hexagram à `computeDisplayedAbility`, recompute HP max conditionnel à l'équipement Amulet of Health (avec migration safe pour persos existants), propagation à SavesRow / SkillsList.
+
+**Référence** : PR à venir (feat/1B-2-magic-effects-wire-backfill)
+
+**Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
 ### [JALON-1A.2] Mode Âme reste placeholder en V1 jalon 1 (2026-05-28)
 
 **Contexte** : MVP-V1-SPEC.md JALON 1A demande « Sheet desktop complet pour LES 5 MODES (Identité/Âme, Combat, Magie, Essence, Avoir) ». Le mode Âme est actuellement un placeholder vide (ownerisé par plan 20 / Sprint 2). Lui donner du « traitement desktop » sans contenu réel = layout responsive d'une page vide.

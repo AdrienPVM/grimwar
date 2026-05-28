@@ -257,4 +257,49 @@ describe('computeDisplayedAc', () => {
     });
     expect(ac).toBe(12);
   });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // JALON 1B.2 — bonus AC issus des magic items équipés (et attunés si
+  // requis). Cumulables avec Defense + invocations, additif au final.
+  // ─────────────────────────────────────────────────────────────────────
+
+  it('1B.2 : magicItemsAcBonus +1 (Cape de protection) cumule avec armure équipée', () => {
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 11,
+        classes: [makeClass({ classId: 'rogue' })],
+      },
+      acFromArmor: 14, // cuir clouté + DEX +2
+      hasEquippedBodyArmor: true,
+      magicItemsAcBonus: 1,
+    });
+    expect(ac).toBe(15);
+  });
+
+  it('1B.2 : magicItemsAcBonus +2 (Cape + Anneau de protection) cumule avec Defense', () => {
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 11,
+        classes: [makeClass({ classId: 'fighter', fightingStyle: 'defense' })],
+      },
+      acFromArmor: 16, // cotte de mailles
+      hasEquippedBodyArmor: true,
+      magicItemsAcBonus: 2,
+    });
+    expect(ac).toBe(19); // 16 + Defense 1 + magic 2
+  });
+
+  it('1B.2 : magicItemsAcBonus optional → comportement strictement identique à avant le wire', () => {
+    // Test garde-fou : sans `magicItemsAcBonus`, le résultat est inchangé
+    // par rapport aux call sites legacy. Protège contre une régression silencieuse.
+    const ac = computeDisplayedAc({
+      character: {
+        ac: 12,
+        classes: [makeClass({ classId: 'rogue' })],
+      },
+      acFromArmor: null,
+      hasEquippedBodyArmor: false,
+    });
+    expect(ac).toBe(12);
+  });
 });

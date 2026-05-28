@@ -1,5 +1,7 @@
+import { computeDisplayedSaveBonus } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
 
+import { useInventoryDerived } from './avoir/use-inventory-derived';
 import { isSheetReadOnly } from './combat/hp-combat';
 import { DivineOrderCard } from './essence/divine-order-card';
 import { EssenceHeader } from './essence/essence-header';
@@ -24,6 +26,12 @@ interface EssenceModeProps {
  */
 export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
   const readOnly = isSheetReadOnly(character);
+  // JALON 1B.2 — bonus de sauvegarde issus des magic items équipés (Cloak /
+  // Ring of Protection). Le hook est ré-évalué ici plutôt que de propager
+  // depuis sheet-screen pour ne pas faire enfler les props ; useInventoryDerived
+  // est conçu pour être appelé de plusieurs sites (useMemos internes stables).
+  const inv = useInventoryDerived(character);
+  const extraSaveBonus = computeDisplayedSaveBonus(inv.activeMagicEffects);
   return (
     <section
       role="tabpanel"
@@ -33,7 +41,11 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
     >
       <EssenceHeader character={character} readOnly={readOnly} />
       <Hexagram character={character} readOnly={readOnly} />
-      <SavesRow character={character} readOnly={readOnly} />
+      <SavesRow
+        character={character}
+        readOnly={readOnly}
+        extraSaveBonus={extraSaveBonus}
+      />
       <DivineOrderCard character={character} />
       <PrimalOrderCard character={character} />
       <InvocationsCard character={character} />

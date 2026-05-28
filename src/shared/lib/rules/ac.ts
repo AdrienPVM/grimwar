@@ -12,16 +12,24 @@ import { computeInvocationAcBonus } from './eldritch-invocations';
  *    qu'au moins une entrée de `classes[]` a `fighterFightingStyle === 'defense'` ;
  *  - le bonus d'Armure d'ombres (D13a) : +3 quand pas d'armure portée pour un
  *    Occultiste qui a choisi l'invocation `armor-of-shadows`. Cumule avec
- *    bouclier (qui n'est pas une armure au sens SRD) ; veto par armure portée.
+ *    bouclier (qui n'est pas une armure au sens SRD) ; veto par armure portée ;
+ *  - les bonus AC des magic items équipés (JALON 1B.2) : Ring of Protection,
+ *    Cloak of Protection, etc. Cumulables avec tous les autres.
  *
  * Pur, sans dépendance React. Le wiring vers l'UI (StatusStrip) se fait dans
  * `sheet-screen.tsx` via `useInventoryDerived`. Pattern « seul consommateur de
- * tous les modificateurs CA » — pas de logique CA ailleurs (D19 + D20 + D13a).
+ * tous les modificateurs CA » — pas de logique CA ailleurs (D19 + D20 + D13a + 1B).
  */
 export interface DisplayedAcInput {
   character: Pick<Character, 'ac' | 'classes'>;
   acFromArmor: number | null;
   hasEquippedBodyArmor: boolean;
+  /**
+   * Bonus AC plat issus des magic items équipés (et attunés si requis),
+   * agrégé par `effectsContributingAcBonus`. Optional → backwards-compat
+   * pour les call sites qui ne consomment pas encore le moteur d'effets.
+   */
+  magicItemsAcBonus?: number;
 }
 
 export function computeDisplayedAc(input: DisplayedAcInput): number {
@@ -35,5 +43,6 @@ export function computeDisplayedAc(input: DisplayedAcInput): number {
     classes: input.character.classes,
     hasEquippedBodyArmor: input.hasEquippedBodyArmor,
   });
-  return base + defenseBonus + invocationBonus;
+  const magicBonus = input.magicItemsAcBonus ?? 0;
+  return base + defenseBonus + invocationBonus + magicBonus;
 }

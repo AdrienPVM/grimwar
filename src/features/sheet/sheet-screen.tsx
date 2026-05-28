@@ -10,6 +10,7 @@ import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
 import { computeDisplayedAc } from '@/shared/lib/rules/ac';
+import { computeDisplayedSpeed } from '@/shared/lib/rules/active-effects';
 
 import { HeroCard } from './hero/hero-card';
 import { hpStateFor } from './hp-state';
@@ -109,15 +110,21 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
   // dès maintenant pour héberger le toggle Digital/Physique (plan 12.5).
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
 
-  // CA affichée : dérivée d'inventaire + Defense +1 conditionnel (D19/D20).
-  // L'appel est dupliqué dans AvoirMode (qui en a besoin pour weight/derived) —
-  // les useMemo internes au hook rendent ce doublon stable côté charge.
+  // CA affichée : dérivée d'inventaire + Defense +1 conditionnel (D19/D20) +
+  // bonus magic items (JALON 1B.2). L'appel est dupliqué dans AvoirMode (qui en
+  // a besoin pour weight/derived) — les useMemo internes au hook rendent ce
+  // doublon stable côté charge.
   const derived = useInventoryDerived(character);
   const displayedAc = computeDisplayedAc({
     character,
     acFromArmor: derived.acFromArmor,
     hasEquippedBodyArmor: derived.hasEquippedBodyArmor,
+    magicItemsAcBonus: derived.magicItemsAcBonus,
   });
+  const displayedSpeed = computeDisplayedSpeed(
+    character.speed,
+    derived.activeMagicEffects,
+  );
 
   return (
     <main
@@ -136,7 +143,11 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
       <div className="lg:mx-auto lg:grid lg:max-w-[1200px] lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-2">
         <aside className="sheet-desktop-aside lg:sticky lg:top-2 lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:py-2">
           <HeroCard character={character} />
-          <StatusStrip character={character} displayedAc={displayedAc} />
+          <StatusStrip
+            character={character}
+            displayedAc={displayedAc}
+            displayedSpeed={displayedSpeed}
+          />
           <ModeTabs active={mode} onChange={setMode} />
         </aside>
         <div className="sheet-desktop-main lg:min-w-0 lg:pt-2">
