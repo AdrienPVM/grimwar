@@ -5,18 +5,18 @@ import { takeStepScreenshot } from './helpers/screenshot';
 import { seedCharacter, wizardL5DamageD1 } from './seed-character';
 
 /**
- * JALON 1A.1 — UAT desktop multi-col v1 sur les 4 modes contentés.
+ * JALON 1A — UAT desktop sur les 5 modes de fiche.
  *
- * État livré :
+ * État livré (1A.1 + 1A.2) :
  * - Coquille desktop (lg+ 1024 : sidebar 280 + main aérée) — PR #19.
  * - xl+ (1280) bascule en grille 2 colonnes pour les 4 modes contentés
- *   (combat / magie / essence / avoir) — PR JALON 1A.1.
- *   Précédemment, seuls essence + avoir étaient en 2-col (PR #27 CHANTIER I) ;
- *   1A.1 étend le même pattern CSS-only à combat + magie.
- * - Mode Âme = placeholder (plan 20 / S2) — hors scope ici, traité en 1A.2.
+ *   (combat / magie / essence / avoir) — PR #47 JALON 1A.1.
+ * - Mode Âme = placeholder rendu en `<section>` cohérent (1A.2). Reste centré
+ *   au xl (pas de grille 2-col vide). Contenu réel = plan 20 / S2 / V1 jalon
+ *   ultérieur — pas dans le périmètre V1 jalon 1.
  *
- * Captures aux 4 viewports cibles (375 / 1024 / 1280 / 1440) pour confirmer
- * la non-régression mobile / tablet et le rendu xl 2-col à l'horizontale.
+ * Captures aux 4 viewports cibles (375 / 1024 / 1280 / 1440) sur les 5 modes
+ * = 20 fichiers, curé dans `uat-review/jalon-1/1A.2/` après UAT.
  */
 
 const VIEWPORTS = [
@@ -46,7 +46,7 @@ async function captureMode(
   }
 }
 
-test.describe('UAT sheet desktop multi-col (JALON 1A.1)', () => {
+test.describe('UAT sheet desktop (JALON 1A)', () => {
   test.beforeAll(async () => {
     const ok = await isEmulatorReachable();
     test.skip(
@@ -55,7 +55,7 @@ test.describe('UAT sheet desktop multi-col (JALON 1A.1)', () => {
     );
   });
 
-  test('Combat × 4 viewports + Magie × 4 viewports + Essence × 4 viewports + Avoir × 4 viewports', async ({
+  test('5 modes × 4 viewports — combat / magie / essence / avoir / âme', async ({
     page,
   }, testInfo) => {
     test.setTimeout(360_000);
@@ -63,9 +63,10 @@ test.describe('UAT sheet desktop multi-col (JALON 1A.1)', () => {
     await waitForAppReady(page);
     const { charId } = await seedCharacter(page, wizardL5DamageD1);
 
-    await captureMode(page, testInfo, charId, 'Combat', '1A1-combat');
-    await captureMode(page, testInfo, charId, 'Magie', '1A1-magie');
-    await captureMode(page, testInfo, charId, 'Essence', '1A1-essence');
-    await captureMode(page, testInfo, charId, 'Avoir', '1A1-avoir');
+    await captureMode(page, testInfo, charId, 'Combat', '1A-combat');
+    await captureMode(page, testInfo, charId, 'Magie', '1A-magie');
+    await captureMode(page, testInfo, charId, 'Essence', '1A-essence');
+    await captureMode(page, testInfo, charId, 'Avoir', '1A-avoir');
+    await captureMode(page, testInfo, charId, 'Âme', '1A-ame');
   });
 });
