@@ -12,6 +12,10 @@ import {
   resolveAncestrySpellEntries,
 } from './magie/ancestry-source-label';
 import { MagicCircle } from './magie/magic-circle';
+import {
+  buildPactTomeSourceLabelMap,
+  resolvePactTomeSpellEntries,
+} from './magie/pact-tome-source-label';
 import { SpellDetailModal } from './magie/spell-detail-modal';
 import { SpellList } from './magie/spell-list';
 import { SpellStatsBar } from './magie/spell-stats-bar';
@@ -63,6 +67,15 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
     );
   }, [character, ancestries, spells]);
 
+  // D13e-followup-grant-display — sorts grantés par l'invocation `pact-of-the-
+  // tome` (3 cantrips + 2 rituels L1) persistés dans `classes[i].pactTomeCantrips`
+  // / `.pactTomeRituals`. Rendu dans la SpellList avec chip dédié « Pacte du
+  // grimoire » + modale détail.
+  const pactTomeSourceLabels = useMemo(
+    () => buildPactTomeSourceLabelMap(resolvePactTomeSpellEntries(character, spells)),
+    [character, spells],
+  );
+
   const [activeSpell, setActiveSpell] = useState<Spell | null>(null);
 
   // Sorts d'ascendance (plan 13.8) : un perso peut être « lanceur » sans classe
@@ -70,6 +83,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
   // n'affiche le placeholder « aucun art arcanique » que si NI classe lanceuse
   // NI sorts d'ascendance ne sont présents.
   const hasAncestrySpells = (character.knownSpells.ancestry ?? []).length > 0;
+  const hasPactTomeSpells = pactTomeSourceLabels.size > 0;
 
   // Source d'ascendance pour la modale détail — label propre au sort actif.
   const activeSpellAncestrySource = useMemo(() => {
@@ -78,7 +92,15 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
     return label ? { label } : null;
   }, [activeSpell, ancestrySourceLabels]);
 
-  if (castingClasses.length === 0 && !hasAncestrySpells) {
+  // Source Pacte du grimoire pour la modale détail — label propre au sort
+  // actif. `null` si le sort ne vient pas du Pacte.
+  const activeSpellPactTomeSource = useMemo(() => {
+    if (!activeSpell) return null;
+    const label = pactTomeSourceLabels.get(activeSpell.id);
+    return label ? { label } : null;
+  }, [activeSpell, pactTomeSourceLabels]);
+
+  if (castingClasses.length === 0 && !hasAncestrySpells && !hasPactTomeSpells) {
     return (
       <section
         role="tabpanel"
@@ -124,12 +146,13 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
           onSpellSelect={(spell) => setActiveSpell(spell)}
         />
       ) : (
-        (castingClasses.length > 0 || hasAncestrySpells) && (
+        (castingClasses.length > 0 || hasAncestrySpells || hasPactTomeSpells) && (
           <SpellList
             character={character}
             spells={spells}
             spellcasterClassIds={castingClassIds}
             ancestrySourceLabels={ancestrySourceLabels}
+            pactTomeSourceLabels={pactTomeSourceLabels}
             onSpellSelect={(spell) => setActiveSpell(spell)}
           />
         )
@@ -140,6 +163,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
           spell={activeSpell}
           spellcastingClasses={castingClasses}
           ancestrySource={activeSpellAncestrySource}
+          pactTomeSource={activeSpellPactTomeSource}
           readOnly={readOnly}
           onClose={() => setActiveSpell(null)}
         />

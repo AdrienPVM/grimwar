@@ -336,4 +336,51 @@ test.describe('Class Warlock — render Essence (manifestation occulte + modale)
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
   });
+
+  test("D13e-followup-grant-display — Warlock L1 Pacte du grimoire → les 5 sorts grantés sont rendus en mode Magie avec chip « Pacte du grimoire »", async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { charId } = await seedCharacter(page, warlockL1PactOfTheTome);
+    await page.goto(`/character/${charId}`);
+
+    await expect(
+      page.getByText(warlockL1PactOfTheTome.name).first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('tab', { name: /^Magie$/i }).click();
+    const panel = page.locator('#sheet-mode-panel-magie');
+    await expect(panel).toBeVisible();
+
+    // Les 5 sorts grantés sont rendus.
+    await expect(panel.getByText('Illusion mineure')).toBeVisible();
+    await expect(panel.getByText('Lumière')).toBeVisible();
+    await expect(panel.getByText('Thaumaturgie')).toBeVisible();
+    await expect(panel.getByText('Détection de la magie')).toBeVisible();
+    await expect(panel.getByText('Communication avec les animaux')).toBeVisible();
+
+    // Le chip « Pacte du grimoire » est rendu (au moins une fois) dans la liste.
+    await expect(panel.getByText('Pacte du grimoire').first()).toBeVisible();
+
+    await takeStepScreenshot(page, testInfo, 'magie-pact-tome-spell-list');
+
+    // Tap sur Illusion mineure ouvre la modale détail avec chip dédié.
+    await panel.getByText('Illusion mineure').first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('heading', { name: 'Illusion mineure' }),
+    ).toBeVisible();
+    await expect(dialog.getByText('Pacte du grimoire')).toBeVisible();
+
+    await takeStepScreenshot(page, testInfo, 'magie-pact-tome-modal-open');
+    await takeStepScreenshot(page, testInfo, 'magie-pact-tome-modal-open', {
+      viewport: true,
+    });
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
 });

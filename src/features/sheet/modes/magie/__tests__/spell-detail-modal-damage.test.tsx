@@ -124,6 +124,7 @@ function renderModal(character: Character, spell: Spell) {
         { classId: 'wizard', name: 'Magicien', level: character.totalLevel, ability: 'int', progression: 'full' },
       ]}
       ancestrySource={null}
+        pactTomeSource={null}
       readOnly={false}
       onClose={() => undefined}
     />,

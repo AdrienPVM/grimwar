@@ -196,6 +196,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -215,6 +216,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -237,6 +239,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -263,6 +266,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         spells={INSCRIBED_SPELLS}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -284,6 +288,7 @@ describe('SpellList Magicien — grimoire (6 inscrits) + préparés (4 ⊂ grimo
         spells={[...INSCRIBED_SPELLS, fireBall]}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );

@@ -152,7 +152,28 @@ const GNOME_ANCESTRY: Ancestry = {
   },
 };
 
-// Aucun perso de ces tests n'est caster — on retourne `[]` pour classes.
+// Catalogue de classes du mock : WARLOCK_CLASS exposé pour résoudre le label
+// « Sorcier » dans le scénario D13e (Pacte du grimoire). Les autres persos de
+// ce fichier (Tieffelin/Elfe/Gnome roublard) n'ont pas de classe lanceuse
+// dans le catalogue → leur résolution `spellcastingClasses(...)` reste [].
+const WARLOCK_CLASS: ClassEntity = {
+  id: 'warlock',
+  name: { fr: 'Occultiste', en: 'Warlock' },
+  hitDie: 'd8',
+  primaryAbility: ['cha'],
+  saveProficiencies: ['sag', 'cha'],
+  armorProficiencies: [],
+  weaponProficiencies: [],
+  toolProficiencies: [],
+  skillChoices: { count: 2, from: ['arcana'] },
+  spellcasting: { ability: 'cha', progression: 'pact' },
+  startingEquipment: { options: [{ items: [], coins: null }] },
+  description: { fr: '', en: '' },
+  features: [],
+  weaponMasteryCount: 0,
+  source: 'srd-5.2.1',
+} as unknown as ClassEntity;
+
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'spells') return { data: SPELLS_FIXTURE, isLoading: false, error: null };
@@ -162,7 +183,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
         isLoading: false,
         error: null,
       };
-    if (type === 'classes') return { data: [] as ClassEntity[], isLoading: false, error: null };
+    if (type === 'classes') return { data: [WARLOCK_CLASS], isLoading: false, error: null };
     return { data: [], isLoading: false, error: null };
   },
 }));
@@ -347,5 +368,102 @@ describe('<MagieMode> — sort d\'ascendance ouvre la modale détail (non-caster
       'title',
       "Lancement des sorts d'ascendance pas encore implémenté.",
     );
+  });
+});
+
+describe('<MagieMode> — D13e-followup-grant-display : Pacte du grimoire', () => {
+  function warlockL1WithPactTome(): Character {
+    return {
+      id: 'test-warlock',
+      name: 'Test Warlock',
+      status: 'alive',
+      classes: [
+        {
+          classId: 'warlock',
+          subclassId: null,
+          level: 1,
+          clericDivineOrder: null,
+          druidPrimalOrder: null,
+          fighterFightingStyle: null,
+          weaponMasteries: [],
+          expertiseSkills: [],
+          eldritchInvocations: ['pact-of-the-tome'],
+          wizardSpellbookL1: [],
+          pactTomeCantrips: ['illusion-mineure'],
+          pactTomeRituals: [],
+        },
+      ],
+      totalLevel: 1,
+      primaryClassId: 'warlock',
+      ancestryId: 'human',
+      ancestrySubChoices: {
+        dragonAncestry: null,
+        tieflingLegacy: null,
+        elfLineage: null,
+        gnomeLineage: null,
+        goliathAncestry: null,
+        ancestryCastingAbility: null,
+        ancestryExtraSkill: null,
+        ancestrySize: 'medium',
+      },
+      backgroundId: 'sage',
+      extraLanguages: [],
+      experience: 0,
+      alignment: 'NB',
+      abilities: { for: 10, dex: 12, con: 12, int: 10, sag: 10, cha: 16 },
+      saves: { for: false, dex: false, con: false, int: false, sag: true, cha: true },
+      skills: {},
+      hp: { current: 8, max: 8, temp: 0 },
+      ac: 11,
+      speed: 30,
+      initiative: 1,
+      hitDice: [{ classId: 'warlock', current: 1, max: 1, die: 'd8' }],
+      deathSaves: { success: 0, fail: 0 },
+      conditions: [],
+      inspiration: false,
+      exhaustion: 0,
+      currentConcentration: null,
+      classResources: {},
+      spellSlots: { '1': { current: 1, max: 1 } },
+      preparedSpells: {},
+      knownSpells: { warlock: [] },
+      spellcastingAbility: { warlock: 'cha' },
+      inventory: { items: [], coins: { cu: 0, ar: 0, el: 0, or: 0, pl: 0 }, weightCache: 0 },
+      personality: { trait: '', ideal: '', bond: '', flaw: '', backstory: '' },
+      featureUsage: {},
+      extraProficiencies: { armor: [], weapons: [], tools: [], languages: [] },
+      presentInCampaigns: [],
+      homeCampaignId: null,
+      stats: { totalRolls: 0, totalD20Sum: 0, crits: 0, fumbles: 0, skillUses: {} },
+      portrait: { type: 'letter', value: 'W' },
+      schemaVersion: 2,
+      createdAt: null as never,
+      updatedAt: null as never,
+      updatedBy: 'test-uid',
+    };
+  }
+
+  it('Sorcier L1 avec Pacte du grimoire → Illusion mineure rendue avec chip « Pacte du grimoire » dans la SpellList', () => {
+    render(<MagieMode character={warlockL1WithPactTome()} />);
+    // Le sort granté apparaît bien dans la liste (passe par knownSet via la
+    // map pactTomeSourceLabels calculée dans MagieMode).
+    expect(screen.getByText('Illusion mineure')).toBeInTheDocument();
+    // Le chip dédié est visible.
+    expect(screen.getByText('Pacte du grimoire')).toBeInTheDocument();
+  });
+
+  it('Sorcier L1 avec Pacte du grimoire → tap sur le sort ouvre la modale avec chip « Pacte du grimoire » dans l\'en-tête', () => {
+    render(<MagieMode character={warlockL1WithPactTome()} />);
+    // L'élément `<div>` interne contient le nom ; on remonte au `<button>`
+    // parent (l'aria-label n'est pas posé sur la ligne SpellList).
+    const nameNode = screen.getByText('Illusion mineure');
+    const button = nameNode.closest('button');
+    if (!button) throw new Error('Pas de <button> parent pour Illusion mineure');
+    fireEvent.click(button);
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: 'Illusion mineure' })).toBeInTheDocument();
+    // Chip Pacte du grimoire visible dans l'en-tête de la modale.
+    expect(within(dialog).getByText('Pacte du grimoire')).toBeInTheDocument();
   });
 });

@@ -285,6 +285,10 @@ export type StringKey =
   // « Présence d'outre-monde » → thaumaturgie, commun aux 3 héritages.
   | 'sheet.magie.ancestry.tieflingCommonSource'
   | 'sheet.magie.cantNotImplementedAncestry'
+  // Source des sorts grantés par l'invocation Pacte du grimoire (D13e-followup-
+  // grant-display) — 3 sorts mineurs + 2 sorts L1 rituels au choix de n'importe
+  // quelle classe, persistés dans `classes[warlock].pactTomeCantrips`/`.pactTomeRituals`.
+  | 'sheet.magie.pactTome.sourceLabel'
   // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
@@ -683,6 +687,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.tieflingCommonSource': "Présence d’outre-monde",
     'sheet.magie.cantNotImplementedAncestry':
       "Lancement des sorts d'ascendance pas encore implémenté.",
+    // D13e-followup-grant-display — nom de l'invocation `pact-of-the-tome`
+    // (SRD FR : « Pacte du grimoire » — invocations.json > pact-of-the-tome.name.fr).
+    'sheet.magie.pactTome.sourceLabel': 'Pacte du grimoire',
     // Plan D1 — modes de résolution des dégâts de sort (modale détail)
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
@@ -1093,6 +1100,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.tieflingCommonSource': 'Otherworldly Presence',
     'sheet.magie.cantNotImplementedAncestry':
       'Casting ancestry spells is not yet implemented.',
+    'sheet.magie.pactTome.sourceLabel': 'Pact of the Tome',
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',

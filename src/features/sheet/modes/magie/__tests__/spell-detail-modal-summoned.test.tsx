@@ -140,6 +140,7 @@ describe('SpellDetailModal — rendu statblock créature invoquée (plan D14)', 
             { classId: 'wizard', name: 'Magicien', level: 5, ability: 'int', progression: 'full' },
           ]}
           ancestrySource={null}
+        pactTomeSource={null}
           readOnly={false}
           onClose={() => undefined}
         />,
@@ -176,6 +177,7 @@ describe('SpellDetailModal — rendu statblock créature invoquée (plan D14)', 
           { classId: 'wizard', name: 'Magicien', level: 5, ability: 'int', progression: 'full' },
         ]}
         ancestrySource={null}
+        pactTomeSource={null}
         readOnly={false}
         onClose={() => undefined}
       />,
