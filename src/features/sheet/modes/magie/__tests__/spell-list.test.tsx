@@ -104,9 +104,28 @@ const WIZARD_CLASS: ClassEntity = {
   source: 'srd-5.2.1',
 } as unknown as ClassEntity;
 
+const WARLOCK_CLASS: ClassEntity = {
+  id: 'warlock',
+  name: { fr: 'Occultiste', en: 'Warlock' },
+  hitDie: 'd8',
+  primaryAbility: ['cha'],
+  saveProficiencies: ['sag', 'cha'],
+  armorProficiencies: [],
+  weaponProficiencies: [],
+  toolProficiencies: [],
+  skillChoices: { count: 2, from: ['arcana'] },
+  spellcasting: { ability: 'cha', progression: 'pact' },
+  startingEquipment: { options: [{ items: [], coins: null }] },
+  description: { fr: '', en: '' },
+  features: [],
+  weaponMasteryCount: 0,
+  source: 'srd-5.2.1',
+} as unknown as ClassEntity;
+
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'classes') return { data: [WIZARD_CLASS], isLoading: false, error: null };
+    if (type === 'classes')
+      return { data: [WIZARD_CLASS, WARLOCK_CLASS], isLoading: false, error: null };
     return { data: [], isLoading: false, error: null };
   },
 }));
@@ -272,6 +291,7 @@ describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={[]}
         ancestrySourceLabels={new Map([['illusion-mineure', 'Lignage Gnome des forêts']])}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={onSpellSelect}
       />,
     );
@@ -292,6 +312,7 @@ describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={[]}
         ancestrySourceLabels={new Map([['fire-bolt', 'Héritage Infernal']])}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={onSpellSelect}
       />,
     );
@@ -316,6 +337,7 @@ describe('<SpellList> — non-caster avec sorts d\'ascendance', () => {
             ['fire-bolt', 'Héritage Infernal'],
           ])
         }
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={vi.fn()}
       />,
     );
@@ -339,6 +361,7 @@ describe('<SpellList> — caster × ascendance (cohabitation lisible)', () => {
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map([['lumieres-dansantes', 'Lignage Drow']])}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={vi.fn()}
       />,
     );
@@ -368,6 +391,7 @@ describe('<SpellList> — caster × ascendance (cohabitation lisible)', () => {
         spells={SPELLS_FIXTURE}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map([['lumieres-dansantes', 'Lignage Drow']])}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={onSpellSelect}
       />,
     );
@@ -463,6 +487,7 @@ describe('Plan D1 — chip Dégâts sur les sorts du bundle', () => {
         spells={[fireballSpell, undamagedSpell]}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
@@ -478,11 +503,208 @@ describe('Plan D1 — chip Dégâts sur les sorts du bundle', () => {
         spells={[fireballSpell, undamagedSpell]}
         spellcasterClassIds={['wizard']}
         ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
         onSpellSelect={() => undefined}
       />,
     );
     const alarmRow = spellRowByName('Alarme');
     // Aucune mention « NdX » dans la ligne alarme.
     expect(within(alarmRow).queryByText(/\d+d\d+/)).not.toBeInTheDocument();
+  });
+});
+
+describe("<SpellList> — D13e-followup-grant-display : Pacte du grimoire (Warlock)", () => {
+  // Sorts grantés possibles : 3 cantrips quelconques + 2 rituels L1.
+  // On utilise illusion-mineure (cantrip, déjà au fixture), thaumaturgie
+  // (cantrip), et un nouveau stub `alarme-rit` pour le rituel.
+  const ritualSpell: Spell = {
+    id: 'alarme-rit',
+    name: { fr: 'Alarme', en: 'Alarm' },
+    level: 1,
+    school: 'abjuration',
+    castingTime: { fr: '1 minute', en: '1 Minute' },
+    range: { fr: '9 m', en: '30 ft' },
+    components: { v: true, s: true, m: true },
+    duration: { fr: '8 heures', en: '8 Hours' },
+    concentration: false,
+    ritual: true,
+    description: { fr: '', en: '' },
+    atHigherLevels: null,
+    classes: ['wizard'],
+    source: 'srd-5.2.1',
+  };
+
+  function warlockL1WithPactTome(p: {
+    cantrips: string[];
+    rituals: string[];
+    classCantrip?: string;
+  }): Character {
+    const c = baseCharacter();
+    c.classes = [
+      {
+        classId: 'warlock',
+        subclassId: null,
+        level: 1,
+        clericDivineOrder: null,
+        druidPrimalOrder: null,
+        fighterFightingStyle: null,
+        weaponMasteries: [],
+        expertiseSkills: [],
+        eldritchInvocations: ['pact-of-the-tome'],
+        wizardSpellbookL1: [],
+        pactTomeCantrips: p.cantrips,
+        pactTomeRituals: p.rituals,
+      },
+    ];
+    c.primaryClassId = 'warlock';
+    // Warlock peut connaître un cantrip de classe en plus.
+    c.knownSpells = {
+      warlock: p.classCantrip ? [p.classCantrip] : [],
+      ancestry: [],
+    };
+    c.spellcastingAbility = { warlock: 'cha' };
+    return c;
+  }
+
+  it('5 sorts Pacte rendus dans la SpellList avec chip « Pacte du grimoire » (3 cantrips + 2 rituels)', () => {
+    const c = warlockL1WithPactTome({
+      cantrips: ['illusion-mineure', 'thaumaturgie', 'lumieres-dansantes'],
+      rituals: ['alarme-rit'], // 1 rituel pour ce test (le 2e est trivial)
+    });
+    render(
+      <SpellList
+        character={c}
+        spells={[...SPELLS_FIXTURE, ritualSpell]}
+        spellcasterClassIds={['warlock']}
+        ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={
+          new Map([
+            ['illusion-mineure', 'Pacte du grimoire'],
+            ['thaumaturgie', 'Pacte du grimoire'],
+            ['lumieres-dansantes', 'Pacte du grimoire'],
+            ['alarme-rit', 'Pacte du grimoire'],
+          ])
+        }
+        onSpellSelect={vi.fn()}
+      />,
+    );
+
+    // Les 4 sorts Pacte sont rendus dans la liste.
+    for (const name of ['Illusion mineure', 'Thaumaturgie', 'Lumières dansantes', 'Alarme']) {
+      expect(screen.getByText(name)).toBeInTheDocument();
+    }
+    // Chaque ligne porte le chip « Pacte du grimoire » (identité, pas présence).
+    for (const name of ['Illusion mineure', 'Thaumaturgie', 'Lumières dansantes', 'Alarme']) {
+      const row = spellRowByName(name);
+      expect(within(row).getByText('Pacte du grimoire')).toBeInTheDocument();
+    }
+  });
+
+  it('Sort Pacte → visuel doré (préparé) + badge « Rituel » sur les rituels', () => {
+    const c = warlockL1WithPactTome({
+      cantrips: [],
+      rituals: ['alarme-rit'],
+    });
+    render(
+      <SpellList
+        character={c}
+        spells={[ritualSpell]}
+        spellcasterClassIds={['warlock']}
+        ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map([['alarme-rit', 'Pacte du grimoire']])}
+        onSpellSelect={vi.fn()}
+      />,
+    );
+    const row = spellRowByName('Alarme');
+    // Badge Rituel présent (depuis spell.ritual: true).
+    expect(within(row).getByText('Rituel')).toBeInTheDocument();
+    // Visuel préparé : la classe doré (`gold-dim`) doit être appliquée.
+    expect(row.className).toContain('gold-dim');
+  });
+
+  it('Pacte ne pollue PAS un Magicien sans Pacte du grimoire (régression)', () => {
+    const c = baseCharacter();
+    c.classes = [
+      {
+        classId: 'wizard',
+        subclassId: null,
+        level: 1,
+        clericDivineOrder: null,
+        druidPrimalOrder: null,
+        fighterFightingStyle: null,
+        weaponMasteries: [],
+        expertiseSkills: [],
+        eldritchInvocations: [],
+        wizardSpellbookL1: [],
+      },
+    ];
+    c.primaryClassId = 'wizard';
+    c.knownSpells = { wizard: ['fire-bolt'] };
+    c.spellcastingAbility = { wizard: 'int' };
+    render(
+      <SpellList
+        character={c}
+        spells={SPELLS_FIXTURE}
+        spellcasterClassIds={['wizard']}
+        ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map()}
+        onSpellSelect={vi.fn()}
+      />,
+    );
+    // Aucun chip « Pacte du grimoire » nulle part.
+    expect(screen.queryByText('Pacte du grimoire')).not.toBeInTheDocument();
+    // Trait de feu reste là avec son chip Magicien.
+    const row = spellRowByName('Trait de feu');
+    expect(within(row).getByText('Magicien')).toBeInTheDocument();
+  });
+
+  it('Collision : sort connu côté Warlock + Pacte → UNE ligne avec DEUX chips', () => {
+    const c = warlockL1WithPactTome({
+      cantrips: ['illusion-mineure'],
+      rituals: [],
+      classCantrip: 'illusion-mineure',
+    });
+    render(
+      <SpellList
+        character={c}
+        spells={SPELLS_FIXTURE}
+        spellcasterClassIds={['warlock']}
+        ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={new Map([['illusion-mineure', 'Pacte du grimoire']])}
+        onSpellSelect={vi.fn()}
+      />,
+    );
+    // Une seule occurrence du nom.
+    expect(screen.getAllByText('Illusion mineure')).toHaveLength(1);
+    const row = spellRowByName('Illusion mineure');
+    // Les deux chips co-existent.
+    expect(within(row).getByText('Occultiste')).toBeInTheDocument();
+    expect(within(row).getByText('Pacte du grimoire')).toBeInTheDocument();
+  });
+
+  it('Compteur filtre « Rituels · N » inclut les rituels Pacte', () => {
+    const c = warlockL1WithPactTome({
+      cantrips: ['illusion-mineure'],
+      rituals: ['alarme-rit'],
+    });
+    render(
+      <SpellList
+        character={c}
+        spells={[...SPELLS_FIXTURE, ritualSpell]}
+        spellcasterClassIds={['warlock']}
+        ancestrySourceLabels={new Map()}
+        pactTomeSourceLabels={
+          new Map([
+            ['illusion-mineure', 'Pacte du grimoire'],
+            ['alarme-rit', 'Pacte du grimoire'],
+          ])
+        }
+        onSpellSelect={vi.fn()}
+      />,
+    );
+    // Filtre Rituels compté à 1 (l'unique rituel Pacte).
+    expect(screen.getByText(/Rituels · 1/)).toBeInTheDocument();
+    // Filtre Tours compté à 1 (le cantrip Pacte).
+    expect(screen.getByText(/Tours · 1/)).toBeInTheDocument();
   });
 });

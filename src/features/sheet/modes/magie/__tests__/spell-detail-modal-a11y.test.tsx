@@ -129,6 +129,7 @@ function renderModal(onClose = vi.fn()): { onClose: ReturnType<typeof vi.fn> } {
           { classId: 'wizard', name: 'Magicien', level: 3, ability: 'int', progression: 'full' },
         ]}
         ancestrySource={null}
+        pactTomeSource={null}
         readOnly={false}
         onClose={onClose}
       />

@@ -122,6 +122,12 @@ export interface SeedClassSubChoices {
   expertiseSkills?: string[];
   eldritchInvocations?: string[];
   wizardSpellbookL1?: string[];
+  /** Warlock D13e — 3 sorts mineurs choisis pour Pacte du grimoire. */
+  pactTomeCantrips?: string[];
+  /** Warlock D13e — 2 sorts L1 rituels choisis pour Pacte du grimoire. */
+  pactTomeRituals?: string[];
+  /** Warlock D13c — slug de l'arme de pacte (`pactBladeWeapon`). */
+  pactBladeWeapon?: string | null;
 }
 
 export interface SeedClassEntry {
@@ -652,7 +658,19 @@ export const warlockL1PactOfTheTome: SeedPreset = {
       classId: 'warlock',
       subclassId: null,
       level: 1,
-      subChoices: { eldritchInvocations: ['pact-of-the-tome'] },
+      subChoices: {
+        eldritchInvocations: ['pact-of-the-tome'],
+        // D13e-followup-grant-display — 3 cantrips + 2 rituels L1 grantés par
+        // le Pacte du grimoire (« sorts mineurs et rituels » SRD FR p. 142).
+        // Tous choisis dans `public/data/spells.json` :
+        //  • illusion-mineure (cantrip illusion, any-class via wizard/warlock/etc.)
+        //  • lumiere (cantrip evocation)
+        //  • thaumaturgie (cantrip transmutation, classes: ['cleric'])
+        //  • detection-de-la-magie (L1 divination ritual)
+        //  • communication-avec-les-animaux (L1 divination ritual)
+        pactTomeCantrips: ['illusion-mineure', 'lumiere', 'thaumaturgie'],
+        pactTomeRituals: ['detection-de-la-magie', 'communication-avec-les-animaux'],
+      },
     },
   ],
   primaryClassId: 'warlock',
@@ -1006,6 +1024,9 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
           expertiseSkills: sc.expertiseSkills ?? [],
           eldritchInvocations: sc.eldritchInvocations ?? [],
           wizardSpellbookL1: sc.wizardSpellbookL1 ?? [],
+          pactTomeCantrips: sc.pactTomeCantrips ?? [],
+          pactTomeRituals: sc.pactTomeRituals ?? [],
+          pactBladeWeapon: sc.pactBladeWeapon ?? null,
         };
       })
     : preset.classes.map((c) => ({

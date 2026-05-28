@@ -23,6 +23,14 @@ interface SpellListProps {
    * (trait commun) ne porte plus le label « Héritage X » du sous-choix.
    */
   ancestrySourceLabels: ReadonlyMap<string, string>;
+  /**
+   * Label de source PAR sortId pour les sorts grantés par l'invocation
+   * `pact-of-the-tome` (D13e-followup-grant-display). Préparé par le parent
+   * via `buildPactTomeSourceLabelMap`. Per SRD FR 5.2.1 : ces 5 sorts (3
+   * cantrips + 2 rituels L1) « sont préparés et fonctionnent comme des sorts
+   * d'Occultiste » — donc injectés dans `knownSet` + `preparedSet` ici.
+   */
+  pactTomeSourceLabels: ReadonlyMap<string, string>;
   onSpellSelect: (spell: Spell) => void;
 }
 
@@ -38,6 +46,11 @@ interface SpellSource {
   classNames: string[];
   /** `true` si le sort vient aussi de `knownSpells.ancestry`. */
   fromAncestry: boolean;
+  /**
+   * `true` si le sort vient aussi de l'invocation `pact-of-the-tome`
+   * (D13e-followup-grant-display).
+   */
+  fromPactTome: boolean;
 }
 
 /**
@@ -59,6 +72,7 @@ export function SpellList({
   spells,
   spellcasterClassIds,
   ancestrySourceLabels,
+  pactTomeSourceLabels,
   onSpellSelect,
 }: SpellListProps): JSX.Element {
   const { data: classCatalog } = useContent('classes');
@@ -79,7 +93,7 @@ export function SpellList({
     function ensure(spellId: string): SpellSource {
       let src = sources.get(spellId);
       if (!src) {
-        src = { classNames: [], fromAncestry: false };
+        src = { classNames: [], fromAncestry: false, fromPactTome: false };
         sources.set(spellId, src);
       }
       return src;
@@ -105,12 +119,22 @@ export function SpellList({
       ensure(id).fromAncestry = true;
     }
 
+    // D13e-followup-grant-display — sorts grantés par le Pacte du grimoire.
+    // Per SRD FR 5.2.1 : ils sont préparés tant que le grimoire est sur le
+    // perso. On les pousse donc dans `knownSet` + `preparedSet`.
+    for (const id of pactTomeSourceLabels.keys()) {
+      known.add(id);
+      prepared.add(id);
+      ensure(id).fromPactTome = true;
+    }
+
     return { knownSet: known, preparedSet: prepared, sourceMap: sources };
   }, [
     character.knownSpells,
     character.preparedSpells,
     spellcasterClassIds,
     classNameById,
+    pactTomeSourceLabels,
   ]);
 
   const knownSpells = useMemo(
@@ -188,13 +212,20 @@ export function SpellList({
             </h4>
             <ul className="flex flex-col gap-2">
               {items.map((spell) => {
-                const src = sourceMap.get(spell.id) ?? { classNames: [], fromAncestry: false };
+                const src = sourceMap.get(spell.id) ?? {
+                  classNames: [],
+                  fromAncestry: false,
+                  fromPactTome: false,
+                };
                 // « Visuel préparé » réservé aux sources de classe (cantrip
                 // d'ascendance seul → variante améthyste plus sobre, pas le
-                // doré des sorts préparés).
+                // doré des sorts préparés). D13e : les sorts du Pacte du
+                // grimoire sont « préparés » per SRD → visuel doré comme les
+                // sorts préparés de classe.
                 const preparedVisual =
                   preparedSet.has(spell.id) ||
-                  (spell.level === 0 && src.classNames.length > 0);
+                  (spell.level === 0 && src.classNames.length > 0) ||
+                  src.fromPactTome;
                 return (
                   <li key={spell.id}>
                     <SpellRow
@@ -203,6 +234,9 @@ export function SpellList({
                       sourceClassNames={src.classNames}
                       ancestrySourceLabel={
                         src.fromAncestry ? ancestrySourceLabels.get(spell.id) ?? null : null
+                      }
+                      pactTomeSourceLabel={
+                        src.fromPactTome ? pactTomeSourceLabels.get(spell.id) ?? null : null
                       }
                       onClick={() => onSpellSelect(spell)}
                     />
@@ -229,6 +263,11 @@ interface SpellRowProps {
   sourceClassNames: readonly string[];
   /** Label ascendance — `null` si le sort ne vient pas de `knownSpells.ancestry`. */
   ancestrySourceLabel: string | null;
+  /**
+   * Label Pacte du grimoire — `null` si le sort ne vient pas de
+   * l'invocation `pact-of-the-tome` (D13e-followup-grant-display).
+   */
+  pactTomeSourceLabel: string | null;
   onClick: () => void;
 }
 
@@ -237,6 +276,7 @@ function SpellRow({
   prepared,
   sourceClassNames,
   ancestrySourceLabel,
+  pactTomeSourceLabel,
   onClick,
 }: SpellRowProps): JSX.Element {
   const schoolLabel = t(`school.${spell.school}`);
@@ -290,6 +330,11 @@ function SpellRow({
           {ancestrySourceLabel ? (
             <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-1.5 py-0.5 text-[8px] text-amethyst">
               {ancestrySourceLabel}
+            </span>
+          ) : null}
+          {pactTomeSourceLabel ? (
+            <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-1.5 py-0.5 text-[8px] text-amethyst">
+              {pactTomeSourceLabel}
             </span>
           ) : null}
           <SpellDamageChip spell={spell} />

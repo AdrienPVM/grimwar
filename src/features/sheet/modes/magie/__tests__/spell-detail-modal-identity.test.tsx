@@ -164,6 +164,7 @@ describe('SpellDetailModal — identité contre spells.json (cat. 2)', () => {
             { classId: 'wizard', name: 'Magicien', level: 3, ability: 'int', progression: 'full' },
           ]}
           ancestrySource={null}
+        pactTomeSource={null}
           readOnly={false}
           onClose={() => undefined}
         />,
@@ -216,6 +217,7 @@ describe('SpellDetailModal — identité contre spells.json (cat. 2)', () => {
           { classId: 'wizard', name: 'Magicien', level: 3, ability: 'int', progression: 'full' },
         ]}
         ancestrySource={null}
+        pactTomeSource={null}
         readOnly={false}
         onClose={() => undefined}
       />,

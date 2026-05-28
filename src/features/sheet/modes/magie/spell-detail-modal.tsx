@@ -30,6 +30,14 @@ interface SpellDetailModalProps {
    * ces sorts viendra avec D12.
    */
   ancestrySource: { label: string } | null;
+  /**
+   * Source Pacte du grimoire (D13e-followup-grant-display). Si non-null, un
+   * chip distinct est affiché dans l'en-tête. Per SRD FR 5.2.1 ces sorts
+   * fonctionnent comme des sorts d'Occultiste — pas de disable spécifique,
+   * le caster Warlock gère le cast normalement (cantrips libres ; rituels via
+   * le tag `ritual: true` du sort).
+   */
+  pactTomeSource: { label: string } | null;
   readOnly: boolean;
   onClose: () => void;
 }
@@ -58,6 +66,7 @@ export function SpellDetailModal({
   spell,
   spellcastingClasses,
   ancestrySource,
+  pactTomeSource,
   readOnly,
   onClose,
 }: SpellDetailModalProps): JSX.Element {
@@ -231,7 +240,7 @@ export function SpellDetailModal({
             {spell.concentration && ' · Concentration'}
             {spell.ritual && ' · Rituel'}
           </p>
-          {(spellcastingClasses.length > 0 || ancestrySource) && (
+          {(spellcastingClasses.length > 0 || ancestrySource || pactTomeSource) && (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {spellcastingClasses.map((c) => (
                 <span
@@ -244,6 +253,11 @@ export function SpellDetailModal({
               {ancestrySource ? (
                 <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-amethyst">
                   {ancestrySource.label}
+                </span>
+              ) : null}
+              {pactTomeSource ? (
+                <span className="rounded-full border border-amethyst/40 bg-amethyst/10 px-2 py-0.5 font-title text-[9px] uppercase tracking-[0.16em] text-amethyst">
+                  {pactTomeSource.label}
                 </span>
               ) : null}
             </div>
