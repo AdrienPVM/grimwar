@@ -8,11 +8,19 @@ interface StatusStripProps {
   character: Character;
   /**
    * CA effectivement affichée — déjà combinée par `computeDisplayedAc` au
-   * niveau de `CharacterSheet` (armure équipée + Fighting Style Defense +1).
-   * Distincte de `character.ac` qui ne porte que la valeur désarmée posée au
-   * wizard ; passée en prop pour découpler le strip de l'inventaire dérivé.
+   * niveau de `CharacterSheet` (armure équipée + Fighting Style Defense +1 +
+   * bonus magic items 1B.2). Distincte de `character.ac` qui ne porte que la
+   * valeur désarmée posée au wizard ; passée en prop pour découpler le strip
+   * de l'inventaire dérivé.
    */
   displayedAc: number;
+  /**
+   * Vitesse effectivement affichée — déjà combinée par `computeDisplayedSpeed`
+   * au niveau de `CharacterSheet` (base + bonus de magic items équipés). JALON
+   * 1B.2. Optional pour rétro-compat avec les tests existants qui n'ont pas
+   * encore le moteur d'effets.
+   */
+  displayedSpeed?: number;
 }
 
 /**
@@ -20,8 +28,13 @@ interface StatusStripProps {
  * tap-friendly (44px min cible). Aucune action en S1 — purement informatif.
  * Les + / – HP arrivent dans le mode Combat (plan 07).
  */
-export function StatusStrip({ character, displayedAc }: StatusStripProps): JSX.Element {
+export function StatusStrip({
+  character,
+  displayedAc,
+  displayedSpeed,
+}: StatusStripProps): JSX.Element {
   const initSign = character.initiative >= 0 ? '+' : '';
+  const speedValue = displayedSpeed ?? character.speed;
   return (
     <section
       aria-label={t('sheet.statusStrip.aria')}
@@ -47,7 +60,7 @@ export function StatusStrip({ character, displayedAc }: StatusStripProps): JSX.E
       <StatusCell
         icon="i-speed"
         label={t('sheet.stat.speed')}
-        value={`${character.speed}`}
+        value={`${speedValue}`}
         sub="m"
       />
     </section>

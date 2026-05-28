@@ -75,7 +75,10 @@
       "en": "Your Constitution is 19 while you wear this amulet. It has no effect on you if your Constitution is 19 or higher without it."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "effects": [
+      { "kind": "ability-set-floor", "ability": "con", "minimum": 19 }
+    ]
   },
   {
     "id": "amulette-des-plans",
@@ -279,7 +282,11 @@
       "fr": "Vous obtenez un bonus de +1 à la CA et aux jets de sauvegarde lorsque vous portez cet anneau."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "effects": [
+      { "kind": "ac-bonus", "bonus": 1 },
+      { "kind": "save-bonus-all", "bonus": 1 }
+    ]
   },
   {
     "id": "anneau-de-rayons-x",
@@ -1391,7 +1398,11 @@
       "en": "You gain a +1 bonus to Armor Class and saving throws while you wear this cloak."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "effects": [
+      { "kind": "ac-bonus", "bonus": 1 },
+      { "kind": "save-bonus-all", "bonus": 1 }
+    ]
   },
   {
     "id": "cape-de-vol",
@@ -2089,7 +2100,10 @@
       "en": "Your Strength is 19 while you wear these gauntlets. They have no effect on you if your Strength is 19 or higher without them."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "effects": [
+      { "kind": "ability-set-floor", "ability": "for", "minimum": 19 }
+    ]
   },
   {
     "id": "gants-de-chapardeur",

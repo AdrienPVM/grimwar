@@ -15,6 +15,13 @@ import { useUpdateCharacter } from '../../use-update-character';
 interface SavesRowProps {
   character: Character;
   readOnly: boolean;
+  /**
+   * Bonus plat additionné à toutes les sauvegardes (JALON 1B.2 — Cloak /
+   * Ring of Protection). Appliqué au mod affiché ET au roll. Optional pour
+   * rétro-compat avec les tests qui n'instancient pas encore le moteur
+   * d'effets — défaut 0.
+   */
+  extraSaveBonus?: number;
 }
 
 const ABILITY_SHORT: Record<AbilityCode, string> = {
@@ -31,7 +38,11 @@ const ABILITY_SHORT: Record<AbilityCode, string> = {
  * de la sauvegarde (ajoute le PB au mod). Tap = jet normal, long-press = menu
  * avantage/désav. partagé avec l'hexagramme.
  */
-export function SavesRow({ character, readOnly }: SavesRowProps): JSX.Element {
+export function SavesRow({
+  character,
+  readOnly,
+  extraSaveBonus = 0,
+}: SavesRowProps): JSX.Element {
   const [menuFor, setMenuFor] = useState<AbilityCode | null>(null);
   const { updateCharacter } = useUpdateCharacter(character.id);
   const pb = proficiencyBonus(totalLevel(character.classes));
@@ -39,7 +50,10 @@ export function SavesRow({ character, readOnly }: SavesRowProps): JSX.Element {
   async function performSave(ability: AbilityCode, advantage: Advantage): Promise<void> {
     if (readOnly) return;
     const proficient = character.saves[ability];
-    const mod = abilityModifier(character.abilities[ability]) + (proficient ? pb : 0);
+    const mod =
+      abilityModifier(character.abilities[ability]) +
+      (proficient ? pb : 0) +
+      extraSaveBonus;
     // Plan 12.5 : `result === null` si Passer en mode physique. Pas de side-effect.
     const result = await rollWithFlags({
       character,
@@ -66,6 +80,7 @@ export function SavesRow({ character, readOnly }: SavesRowProps): JSX.Element {
             score={character.abilities[ability]}
             proficient={character.saves[ability]}
             profBonus={pb}
+            extraBonus={extraSaveBonus}
             disabled={readOnly}
             onTap={() => void performSave(ability, 'normal')}
             onLongPress={() => setMenuFor(ability)}
@@ -93,6 +108,7 @@ interface SaveChipProps {
   score: number;
   proficient: boolean;
   profBonus: number;
+  extraBonus: number;
   disabled: boolean;
   onTap: () => void;
   onLongPress: () => void;
@@ -103,12 +119,14 @@ function SaveChip({
   score,
   proficient,
   profBonus,
+  extraBonus,
   disabled,
   onTap,
   onLongPress,
 }: SaveChipProps): JSX.Element {
   const handlers = useLongPress(onTap, onLongPress);
-  const mod = abilityModifier(score) + (proficient ? profBonus : 0);
+  const mod =
+    abilityModifier(score) + (proficient ? profBonus : 0) + extraBonus;
   const signed = mod >= 0 ? `+${mod}` : `${mod}`;
   return (
     <button

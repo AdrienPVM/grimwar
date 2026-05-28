@@ -3,8 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/features/auth/use-auth';
 import { useContent } from '@/shared/hooks/use-content';
 import { loadUserContent } from '@/shared/lib/content-loader';
+import {
+  aggregateEffects,
+  effectsContributingAcBonus,
+  type ResolvedMagicInventoryRow,
+} from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
-import type { Item, MagicItem } from '@/shared/types/content';
+import type { Item, MagicItem, MagicItemEffect } from '@/shared/types/content';
 import type { InventoryItem } from '@/shared/lib/inventory';
 
 import {
@@ -54,6 +59,15 @@ export interface InventoryDerived {
   hasEquippedBodyArmor: boolean;
   /** Items équipés en attunement (cap 5e = 3). */
   attunedCount: number;
+  /**
+   * Effets actifs agrégés depuis les magic items équipés et attunés
+   * (JALON 1B.2). Liste plate d'effets, consommée par les sites de calcul
+   * (`computeDisplayedAc`, StatusStrip pour la vitesse, SavesRow pour le
+   * bonus de sauvegarde, etc.).
+   */
+  activeMagicEffects: readonly MagicItemEffect[];
+  /** Somme des bonus AC issus des effets actifs — dérivé prêt à l'emploi. */
+  magicItemsAcBonus: number;
   loading: boolean;
   refreshUserItems: () => Promise<void>;
 }
@@ -166,6 +180,29 @@ export function useInventoryDerived(character: Character): InventoryDerived {
     [character.inventory.items],
   );
 
+  // JALON 1B.2 — agrégateur d'effets actifs. Ne traite que les rows magiques
+  // résolues (les items non-magiques n'ont pas de `effects[]`). Le filtre
+  // équipé + attuné est appliqué dans `aggregateEffects`.
+  const magicRows = useMemo<readonly ResolvedMagicInventoryRow[]>(() => {
+    const out: ResolvedMagicInventoryRow[] = [];
+    for (const row of resolvedItems) {
+      if (row.isMagic && row.content) {
+        out.push({ inventory: row.inventory, magic: row.content });
+      }
+    }
+    return out;
+  }, [resolvedItems]);
+
+  const activeMagicEffects = useMemo(
+    () => aggregateEffects(magicRows),
+    [magicRows],
+  );
+
+  const magicItemsAcBonus = useMemo(
+    () => effectsContributingAcBonus(activeMagicEffects),
+    [activeMagicEffects],
+  );
+
   return {
     resolvedItems,
     weightTotal,
@@ -174,6 +211,8 @@ export function useInventoryDerived(character: Character): InventoryDerived {
     acFromArmor,
     hasEquippedBodyArmor: hasBodyArmor,
     attunedCount,
+    activeMagicEffects,
+    magicItemsAcBonus,
     loading: itemsLoading || magicLoading || userLoading,
     refreshUserItems: loadCustom,
   };
