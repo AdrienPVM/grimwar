@@ -7,7 +7,7 @@ import {
   assertFails,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 
 /**
@@ -419,6 +419,34 @@ describeIfEmulator('firestore.rules — maps + tokens (CHANTIER D nuit 3)', () =
         doc(db, 'campaigns', CAMPAIGN_ID, 'maps', MAP_ID, 'tokens', TOKEN_ID),
         makeTokenDoc(),
       ),
+    );
+  });
+
+  it("DM sans membership peut lire ses propres maps (CHANTIER D phase 2 D.6 fix)", async () => {
+    // Cas concret du marathon : un user qui crée sa campagne via
+    // `ensureCampaignExists` n'a PAS de doc `memberships/{uid}` à ce stade
+    // (la membership DM est sous-entendue par `dmUserId` sur le doc parent).
+    // Avant le fix : la rule de read sur maps exigeait `isMemberOf` seul,
+    // donc le DM lui-même ne pouvait pas lister ses cartes — bug bloquant
+    // pour `useMapsList`.
+    if (!env) throw new Error('env not initialized');
+    // Setup spécial : campagne sans membership DM.
+    const DM_ONLY = 'dm-only-uid';
+    const DM_ONLY_CAMPAIGN = 'dm-only-camp';
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', DM_ONLY_CAMPAIGN), {
+        ...makeCampaignDoc(DM_ONLY),
+      });
+      await setDoc(
+        doc(adminDb, 'campaigns', DM_ONLY_CAMPAIGN, 'maps', MAP_ID),
+        makeMapDoc(),
+      );
+    });
+    const db = env.authenticatedContext(DM_ONLY).firestore();
+    // Le DM doit pouvoir lire ses cartes même sans membership.
+    await assertSucceeds(
+      getDoc(doc(db, 'campaigns', DM_ONLY_CAMPAIGN, 'maps', MAP_ID)),
     );
   });
 });
