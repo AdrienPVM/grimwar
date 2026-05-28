@@ -737,9 +737,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.invocation.pactOfTheChain.noSlot':
       'Aucun emplacement de sort consommé à chaque incantation.',
     'sheet.essence.invocation.pactOfTheChain.specialForms':
-      'Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite (en plus des formes normales du sort).',
+      'Formes spéciales au choix : Diablotin, esprit follet, pseudodragon, quasit, sphinx merveilleux, serpent venimeux ou squelette (en plus des formes normales du sort).',
     'sheet.essence.invocation.pactOfTheChain.deferred':
-      "Profils complets disponibles dans le bestiaire des invocations (Pseudodragon, Quasit, Sphinx merveilleux, Esprit follet). Annoncez votre forme au MJ à l'incantation — chooser in-app à venir.",
+      "Profils complets bundlés à ce jour : Pseudodragon, Quasit, Sphinx merveilleux, Esprit follet. Les autres formes (Diablotin, Squelette, Serpent venimeux) sont citées par le SRD mais leur profil n'est pas encore intégré — annoncez votre choix au MJ à l'incantation.",
     // D13e Pacte du grimoire — terminologie WotC FR : « sort mineur(s) »
     // (sort officiel pour cantrip — pas « tour de magie », cf. règle
     // d'autorité terminologique CLAUDE.md), « rituel »/« sort rituel »
@@ -1130,9 +1130,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.invocation.pactOfTheChain.noSlot':
       'No spell slot consumed when casting it this way.',
     'sheet.essence.invocation.pactOfTheChain.specialForms':
-      'Special forms at choice: Imp, Pseudodragon, Quasit, or Sprite (in addition to the normal forms of the spell).',
+      'Special forms at choice: Imp, Pseudodragon, Quasit, Skeleton, Sphinx of Wonder, Sprite, or Venomous Snake (in addition to the normal forms of the spell).',
     'sheet.essence.invocation.pactOfTheChain.deferred':
-      'Full stat blocks available in the invocation bestiary (Pseudodragon, Quasit, Sphinx of Wonder, Sprite). Announce your form to the GM at casting — in-app chooser to come.',
+      'Full stat blocks bundled to date: Pseudodragon, Quasit, Sphinx of Wonder, Sprite. The other forms (Imp, Skeleton, Venomous Snake) are cited by the SRD but their stat block is not bundled yet — announce your choice to the GM at casting.',
     'sheet.essence.invocation.pactOfTheTome.label': 'Book of Shadows',
     'sheet.essence.invocation.pactOfTheTome.cantrips':
       'Learn 3 cantrips of your choice from any class.',

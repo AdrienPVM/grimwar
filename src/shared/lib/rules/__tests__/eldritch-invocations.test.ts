@@ -98,17 +98,22 @@ describe('eldritch-invocations registry', () => {
     }
   });
 
-  it('pact-of-the-chain a un effet feature-pact-chain-familiar (Find Familiar gratuit + 4 formes spéciales)', () => {
+  it('pact-of-the-chain a un effet feature-pact-chain-familiar (Find Familiar gratuit + 7 formes spéciales SRD)', () => {
     const entry = getInvocationEntry('pact-of-the-chain');
     expect(entry).not.toBeNull();
     expect(entry?.effect?.kind).toBe('feature-pact-chain-familiar');
     if (entry?.effect?.kind === 'feature-pact-chain-familiar') {
       expect(entry.effect.grantedSpellId).toBe('find-familiar');
+      // D13d-followup-summary résolu 2026-05-28 : 7 formes SRD 5.2.1
+      // (slugs EN-normalisés du registre).
       expect(entry.effect.specialForms).toEqual([
         'imp',
         'pseudodragon',
         'quasit',
+        'skeleton',
+        'sphinx-of-wonder',
         'sprite',
+        'venomous-snake',
       ]);
       expect(entry.effect.actionType).toBe('magic-action');
       expect(entry.effect.noSlotRequired).toBe(true);

@@ -266,13 +266,15 @@ test.describe('Class Warlock — render Essence (manifestation occulte + modale)
     await expect(
       dialog.getByText(/Action magique pour lancer Appel de familier/),
     ).toBeVisible();
+    // D13d-followup-summary résolu 2026-05-28 : terminologie WotC FR
+    // officielle SRD 5.2.1 — 7 formes spéciales.
     await expect(
       dialog.getByText(
-        /Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite/,
+        /Formes spéciales au choix : Diablotin, esprit follet, pseudodragon, quasit, sphinx merveilleux, serpent venimeux ou squelette/,
       ),
     ).toBeVisible();
     await expect(
-      dialog.getByText(/Profils complets disponibles dans le bestiaire des invocations/),
+      dialog.getByText(/Profils complets bundlés à ce jour/),
     ).toBeVisible();
 
     await takeStepScreenshot(page, testInfo, 'pact-chain-modal-open');
