@@ -7,14 +7,17 @@ interface ModePlaceholderProps {
 }
 
 /**
- * Bloc vide unique pour les 5 modes en S1 — le contenu réel arrive plans 07-10 + 20.
- * Centré, glass-light, message "À venir" + clé localisée du mode. On ne crée
- * pas 5 fichiers identiques de 5 lignes — le mode change quand le contenu réel
- * existe.
+ * Bloc vide unique pour les modes encore non contentés (Âme arrive plan 20 / S2).
+ * Rendu en `<section>` pour homogénéité DOM avec les 4 modes contentés (combat /
+ * magie / essence / avoir) — le placeholder hérite ainsi du même reset CSS scoped
+ * `.sheet-state .sheet-desktop-main > section` à lg+ et reste cohérent visuellement
+ * aux 4 viewports. À xl+ il NE bascule PAS en grille 2-col (volontairement absent du
+ * sélecteur xl 2-col : un placeholder centré dans une cellule unique aérée est plus
+ * lisible qu'éclaté en 2 col vides).
  */
 export function ModePlaceholder({ mode }: ModePlaceholderProps): JSX.Element {
   return (
-    <div
+    <section
       role="tabpanel"
       id={`sheet-mode-panel-${mode}`}
       aria-labelledby={`sheet-mode-tab-${mode}`}
@@ -26,6 +29,6 @@ export function ModePlaceholder({ mode }: ModePlaceholderProps): JSX.Element {
       <p className="mt-3 text-center font-serif italic text-text-tertiary">
         {t('sheet.placeholder.todo')}
       </p>
-    </div>
+    </section>
   );
 }
