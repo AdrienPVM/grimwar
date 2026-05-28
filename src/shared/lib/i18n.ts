@@ -343,7 +343,9 @@ export type StringKey =
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
   | 'connectivity.offline.title'
-  | 'connectivity.offline.body';
+  | 'connectivity.offline.body'
+  | 'connectivity.syncing.title'
+  | 'connectivity.syncing.body';
 
 type Dict = Record<StringKey, string>;
 
@@ -791,6 +793,9 @@ const STRINGS: Record<Locale, Dict> = {
     'connectivity.offline.title': 'Tu es hors ligne',
     'connectivity.offline.body':
       'La lecture reste disponible. Tes modifications seront synchronisées au retour de la connexion.',
+    'connectivity.syncing.title': 'Synchronisation en cours…',
+    'connectivity.syncing.body':
+      'Tes modifications sont envoyées au serveur.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1178,6 +1183,8 @@ const STRINGS: Record<Locale, Dict> = {
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':
       'Reading still works. Your changes will sync when you reconnect.',
+    'connectivity.syncing.title': 'Syncing…',
+    'connectivity.syncing.body': 'Your changes are being sent to the server.',
   },
 };
 

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { getDb } from '@/shared/lib/firebase';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import type { Character } from '@/shared/types/character';
 
 interface UseUpdateCharacterResult {
@@ -34,12 +35,19 @@ export function useUpdateCharacter(characterId: string | undefined): UseUpdateCh
       setIsUpdating(true);
       setError(null);
       try {
-        const ref = doc(getDb(), 'users', user.uid, 'characters', characterId);
-        await updateDoc(ref, {
-          ...patch,
-          updatedAt: serverTimestamp(),
-          updatedBy: user.uid,
-        });
+        const firestore = getDb();
+        const ref = doc(firestore, 'users', user.uid, 'characters', characterId);
+        // trackPendingWrite : compteur global incrémenté immédiatement,
+        // décrémenté quand l'ack backend résout (cf. JALON 1D.2). Le wrapper
+        // ne bloque pas l'appelant — `updateDoc` reste rapide en local.
+        await trackPendingWrite(
+          firestore,
+          updateDoc(ref, {
+            ...patch,
+            updatedAt: serverTimestamp(),
+            updatedBy: user.uid,
+          }),
+        );
       } catch (err) {
         const wrapped = err instanceof Error ? err : new Error(String(err));
         setError(wrapped);
