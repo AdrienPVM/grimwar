@@ -29,7 +29,7 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-essence"
       aria-labelledby="sheet-mode-tab-essence"
-      className="mx-auto mt-4 flex w-full max-w-[460px] flex-col gap-3 px-4"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4"
     >
       <EssenceHeader character={character} readOnly={readOnly} />
       <Hexagram character={character} readOnly={readOnly} />
