@@ -385,13 +385,15 @@ describe('<InvocationsCard>', () => {
     expect(
       within(dialog).getByText(/Action magique pour lancer Appel de familier/),
     ).toBeInTheDocument();
+    // D13d-followup-summary résolu 2026-05-28 : terminologie WotC FR
+    // officielle SRD 5.2.1 — 7 formes spéciales.
     expect(
       within(dialog).getByText(
-        /Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite/,
+        /Formes spéciales au choix : Diablotin, esprit follet, pseudodragon, quasit, sphinx merveilleux, serpent venimeux ou squelette/,
       ),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/Profils complets disponibles dans le bestiaire des invocations/),
+      within(dialog).getByText(/Profils complets bundlés à ce jour/),
     ).toBeInTheDocument();
   });
 

@@ -75,13 +75,11 @@ export type PassiveInvocationEffect =
        * When you cast the spell, you choose one of the normal forms for
        * your familiar or one of the following special forms…"
        *
-       * Le bundle `invocations.json > pact-of-the-chain.summary` liste 4
-       * formes spéciales (Imp / Pseudodragon / Quasit / Sprite) — extrait
-       * de `scripts/data/srd-invocations.ts`. Le SRD 5.2.1 réel en mentionne
-       * 7 (ajoute Skeleton, Sphinx of Wonder, Venomous Snake) — l'écart
-       * entre bundle et SRD est documenté en DEBT D13d-followup-summary
-       * et corrigeable indépendamment. La liste ci-dessous reflète
-       * STRICTEMENT le bundle pour éviter une divergence registre↔bundle.
+       * Le bundle `invocations.json > pact-of-the-chain.summary` liste les
+       * **7 formes spéciales** SRD 5.2.1 officielles, terminologie WotC FR
+       * (Diablotin / esprit follet / pseudodragon / quasit / sphinx
+       * merveilleux / serpent venimeux / squelette). Cohérent avec le
+       * registre ci-dessous — pas de divergence registre↔bundle.
        *
        * Action `magic-action` (pas `ritual` malgré le wording FR du bundle
        * — le SRD 5.2.1 distingue `Magic action` de `Ritual` ; Pact of the
@@ -89,17 +87,23 @@ export type PassiveInvocationEffect =
        * Rituel s'il est lancé hors-feature). La distinction est posée pour
        * D24 (encounters) où l'action timer compte.
        *
-       * Statblocks des formes spéciales : 4 entrées à ajouter dans
-       * `public/data/summoned-creatures.json` (D13d-followup-statblocks),
-       * différé hors scope D13d-data-layer pour ne pas mélanger
-       * extraction PDF + câblage feature.
+       * Statblocks bundlés dans `public/data/summoned-creatures.json` :
+       * 4 entrées disponibles à ce jour (pseudodragon / quasit /
+       * sphinx-merveilleux / esprit-follet — cf. `PACT_OF_THE_CHAIN_STATBLOCK_IDS`
+       * ci-dessous). Les 3 formes restantes (Imp/Diablotin, Skeleton/Squelette,
+       * Venomous Snake/Serpent venimeux) sont citées dans le summary mais
+       * n'ont pas encore de statblock bundlé — extraction SRD différée à un
+       * follow-up dédié.
        */
       readonly grantedSpellId: 'find-familiar';
       readonly specialForms: readonly [
         'imp',
         'pseudodragon',
         'quasit',
+        'skeleton',
+        'sphinx-of-wonder',
         'sprite',
+        'venomous-snake',
       ];
       readonly actionType: 'magic-action';
       readonly noSlotRequired: true;
@@ -219,7 +223,15 @@ const INVOCATION_REGISTRY: ReadonlyMap<string, EldritchInvocationEntry> =
         effect: {
           kind: 'feature-pact-chain-familiar',
           grantedSpellId: 'find-familiar',
-          specialForms: ['imp', 'pseudodragon', 'quasit', 'sprite'],
+          specialForms: [
+            'imp',
+            'pseudodragon',
+            'quasit',
+            'skeleton',
+            'sphinx-of-wonder',
+            'sprite',
+            'venomous-snake',
+          ],
           actionType: 'magic-action',
           noSlotRequired: true,
         },
@@ -252,11 +264,13 @@ export function getInvocationEntry(
  * par l'invocation `pact-of-the-chain`. Slugs FR cohérents avec le bundle
  * SRD-FR (esprit-follet = Sprite, sphinx-merveilleux = Sphinx of Wonder).
  *
- * Le SRD 5.2.1 mentionne 7 formes spéciales (Imp / Pseudodragon / Quasit /
- * Sprite / Sphinx of Wonder / Venomous Snake / Skeleton). Le bundle
- * `invocations.json > pact-of-the-chain.summary` n'en liste qu'une partie
- * (gap traqué D13d-followup-summary). Cette constante reflète les statblocks
- * RÉELLEMENT bundlés à ce jour — utilisée par
+ * Le SRD 5.2.1 mentionne 7 formes spéciales — toutes citées dans le summary
+ * FR + EN du bundle `invocations.json` depuis D13d-followup-summary
+ * (résolu 2026-05-28). Cette constante reflète les statblocks
+ * RÉELLEMENT bundlés (4/7 à ce jour : pseudodragon, quasit,
+ * sphinx-merveilleux, esprit-follet). Les 3 formes restantes (Diablotin,
+ * Squelette, Serpent venimeux) sont citées dans le summary mais leur
+ * statblock n'est pas encore extrait — utilisé par
  * `tests/content-referential-integrity.test.ts` pour considérer ces 4
  * statblocks comme « référencés par une invocation », pas orphelins.
  */

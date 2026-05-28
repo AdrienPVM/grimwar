@@ -39,6 +39,7 @@ interface FeatEntry {
 interface InvocationEntry {
   id: string;
   prerequisiteWarlockLevel: number | null;
+  summary?: { fr?: string; en?: string };
 }
 
 interface ItemEntry {
@@ -174,6 +175,44 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
           'pact-of-the-tome',
         ].sort(),
       );
+    });
+
+    /**
+     * D13d-followup-summary (résolu 2026-05-28) : le summary de Pact of the
+     * Chain doit lister les **7 formes spéciales** SRD 5.2.1 officielles avec
+     * la terminologie WotC FR exacte (FR_SRD_CC_v5.2.1.pdf p. 142).
+     *
+     * Garde cat. 3 (fidélité bundle vs SRD officiel) : un test plus laxe (« contient
+     * Imp ») laisserait passer un drift « Démon mineur » ou « Sprite » non-WotC-FR
+     * — d'où l'assertion explicite par terme.
+     */
+    it('D13d-followup-summary — pact-of-the-chain.summary liste les 7 formes WotC FR + EN officielles', async () => {
+      const inv = await loadJson<InvocationEntry[]>('public/data/invocations.json');
+      const chain = inv.find((i) => i.id === 'pact-of-the-chain');
+      expect(chain).toBeDefined();
+      const fr = chain?.summary?.fr ?? '';
+      const en = chain?.summary?.en ?? '';
+
+      // FR — terminologie WotC officielle SRD 5.2.1 (PAS « Démon mineur », PAS « Sprite »)
+      expect(fr, 'FR summary doit citer Diablotin (PAS Démon mineur)').toMatch(/Diablotin/i);
+      expect(fr, 'FR summary doit citer esprit follet (PAS Sprite anglicisme)').toMatch(/esprit follet/i);
+      expect(fr).toMatch(/pseudodragon/i);
+      expect(fr).toMatch(/quasit/i);
+      expect(fr).toMatch(/sphinx merveilleux/i);
+      expect(fr).toMatch(/serpent venimeux/i);
+      expect(fr).toMatch(/squelette/i);
+      // Garde anti-régression sur les drifts terminologiques EN→FR :
+      expect(fr, 'FR summary ne doit PAS contenir l\'ancien drift « Démon mineur »').not.toMatch(/Démon mineur/i);
+      expect(fr, 'FR summary ne doit PAS contenir l\'anglicisme « Sprite »').not.toMatch(/\bSprite\b/);
+
+      // EN — terminologie SRD CC EN officielle
+      expect(en).toMatch(/\bImp\b/);
+      expect(en).toMatch(/Pseudodragon/i);
+      expect(en).toMatch(/Quasit/i);
+      expect(en).toMatch(/Skeleton/i);
+      expect(en).toMatch(/Sphinx of Wonder/i);
+      expect(en).toMatch(/\bSprite\b/i);
+      expect(en).toMatch(/Venomous Snake/i);
     });
   });
 

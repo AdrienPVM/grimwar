@@ -120,13 +120,15 @@ describe('<InvocationEffectCard>', () => {
         /Aucun emplacement de sort consommé à chaque incantation\./,
       ),
     ).toBeInTheDocument();
+    // D13d-followup-summary résolu 2026-05-28 : terminologie WotC FR
+    // officielle (SRD FR 5.2.1 p. 142) — 7 formes spéciales.
     expect(
       screen.getByText(
-        /Formes spéciales au choix : Démon mineur, Pseudodragon, Quasit, ou Sprite/,
+        /Formes spéciales au choix : Diablotin, esprit follet, pseudodragon, quasit, sphinx merveilleux, serpent venimeux ou squelette/,
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Profils complets disponibles dans le bestiaire des invocations/),
+      screen.getByText(/Profils complets bundlés à ce jour/),
     ).toBeInTheDocument();
   });
 

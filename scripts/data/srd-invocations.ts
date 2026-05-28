@@ -65,8 +65,12 @@ export const SRD_INVOCATIONS: SrdInvocationEntry[] = [
     prerequisiteWarlockLevel: null,
     prerequisiteOther: null,
     summary: {
-      fr: "Vous apprenez Appel de familier (rituel) et pouvez invoquer des formes spéciales : Démon mineur, Pseudodragon, Quasit, Sprite.",
-      en: 'You learn Find Familiar (as a ritual) and can summon special forms: Imp, Pseudodragon, Quasit, or Sprite.',
+      // Terminologie WotC FR officielle SRD 5.2.1 (`FR_SRD_CC_v5.2.1.pdf`
+      // p. 142) : « Diablotin, esprit follet, pseudodragon, quasit, sphinx
+      // merveilleux, serpent venimeux ou squelette ». 7 formes spéciales
+      // (pas 4 — résolu D13d-followup-summary 2026-05-28).
+      fr: "Vous apprenez Appel de familier (rituel) et pouvez invoquer des formes spéciales : Diablotin, esprit follet, pseudodragon, quasit, sphinx merveilleux, serpent venimeux ou squelette.",
+      en: 'You learn Find Familiar (as a ritual) and can summon special forms: Imp, Pseudodragon, Quasit, Skeleton, Sphinx of Wonder, Sprite, or Venomous Snake.',
     },
     source: 'srd-5.2.1',
   },
