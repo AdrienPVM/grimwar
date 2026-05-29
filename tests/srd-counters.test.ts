@@ -144,6 +144,33 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
       const total = classes.reduce((sum, c) => sum + (c.weaponMasteryCount ?? 0), 0);
       expect(total).toBe(11);
     });
+
+    it('weaponMasteryEligibility cohérent avec weaponMasteryCount (JALON 2A.5)', async () => {
+      // Invariant : count > 0 ⇔ eligibility présent (et inversement).
+      // Sémantique data-driven : 4 classes 'all-proficient' (Barb/Fighter/
+      // Pala/Ranger), 1 classe 'rogue-finesse-light' (Rogue), 7 classes
+      // sans champ (Bard/Cleric/Druid/Monk/Sorcerer/Warlock/Wizard).
+      const classes = await loadJson<
+        (ClassEntry & {
+          weaponMasteryEligibility?: 'all-proficient' | 'rogue-finesse-light';
+        })[]
+      >('public/data/classes.json');
+      let allProficient = 0;
+      let rogueFinesseLight = 0;
+      let withoutEligibility = 0;
+      for (const cls of classes) {
+        const hasCount = (cls.weaponMasteryCount ?? 0) > 0;
+        const hasEligibility = cls.weaponMasteryEligibility !== undefined;
+        expect(hasCount).toBe(hasEligibility);
+        if (cls.weaponMasteryEligibility === 'all-proficient') allProficient += 1;
+        else if (cls.weaponMasteryEligibility === 'rogue-finesse-light')
+          rogueFinesseLight += 1;
+        else withoutEligibility += 1;
+      }
+      expect(allProficient).toBe(4);
+      expect(rogueFinesseLight).toBe(1);
+      expect(withoutEligibility).toBe(7);
+    });
   });
 
   describe('feats.json', () => {

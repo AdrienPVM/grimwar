@@ -293,6 +293,38 @@ export const weaponMasteryPropertySchema = z.enum([
 ]);
 export type WeaponMasteryProperty = z.infer<typeof weaponMasteryPropertySchema>;
 
+/**
+ * Politique d'éligibilité aux Weapon Masteries — data-driven (JALON 2A.5).
+ *
+ * Pourquoi : avant 2A.5, `weapon-mastery.ts` portait un `switch (classId)`
+ * qui hardcodait la liste des classes pouvant prendre des masteries (et le
+ * sous-ensemble particulier du Roublard). Cette logique vit désormais
+ * dans la donnée — chaque classe déclare son éligibilité, le code dispatch
+ * sur la valeur du champ. Le hardcoding `classId === 'rogue'` disparaît,
+ * et une classe custom (JALON 3) peut déclarer `'all-proficient'` sans
+ * patcher le code.
+ *
+ * Sémantique des deux valeurs SRD 5.2.1 (cf. docs/AUDIT-SRD-COMPLETUDE.md
+ * § C.1) :
+ *   - `all-proficient` : toute arme du SRD portant un `masteryProperty`
+ *     est éligible (Barbare, Guerrier, Paladin, Rôdeur — qui ont accès à
+ *     l'ensemble simple+martial).
+ *   - `rogue-finesse-light` : sous-ensemble réservé au Roublard : armes
+ *     simples OU armes martiales portant Finesse ou Light.
+ *
+ * Une classe qui ne reçoit AUCUNE Weapon Mastery à L1 omet ce champ
+ * (`weaponMasteryCount: 0` + `weaponMasteryEligibility: undefined`). Le
+ * `superRefine` de `ClassSchema` impose le couple cohérent : count > 0
+ * ⇒ eligibility présent.
+ */
+export const weaponMasteryEligibilitySchema = z.enum([
+  'all-proficient',
+  'rogue-finesse-light',
+]);
+export type WeaponMasteryEligibility = z.infer<
+  typeof weaponMasteryEligibilitySchema
+>;
+
 export const ItemSchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -507,6 +539,14 @@ export const ClassSchema = z
      * superRefine. Le chooser 13.9 utilise cette valeur comme `count` exact.
      */
     weaponMasteryCount: z.number().int().min(0).max(6),
+    /**
+     * Politique d'éligibilité aux Weapon Masteries (JALON 2A.5). Optionnel ;
+     * absent quand la classe ne reçoit aucune mastery à L1 (count = 0). Le
+     * `superRefine` ci-dessous exige le couple cohérent : count > 0 ⇒
+     * eligibility présent (et inversement). Lu par `getEligibleWeaponMasteryIds`
+     * pour filtrer les armes éligibles — voir `weaponMasteryEligibilitySchema`.
+     */
+    weaponMasteryEligibility: weaponMasteryEligibilitySchema.optional(),
     source: sourceTag,
   })
   .superRefine((cls, ctx) => {
@@ -530,6 +570,24 @@ export const ClassSchema = z
           message: 'Class "druid" doit fournir primalOrders non vide (SRD 5.2.1 sub-choice L1).',
         });
       }
+    }
+    // JALON 2A.5 — cohérence count/eligibility : si la classe reçoit au moins
+    // une Weapon Mastery, elle DOIT déclarer une politique d'éligibilité, et
+    // inversement. Sinon, un chooser tomberait sur un filtre indéfini → 0
+    // armes éligibles → wizard bloqué.
+    if (cls.weaponMasteryCount > 0 && !cls.weaponMasteryEligibility) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['weaponMasteryEligibility'],
+        message: `Class "${cls.id}" déclare weaponMasteryCount=${cls.weaponMasteryCount} sans weaponMasteryEligibility (SRD 5.2.1 — JALON 2A.5).`,
+      });
+    }
+    if (cls.weaponMasteryCount === 0 && cls.weaponMasteryEligibility) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['weaponMasteryEligibility'],
+        message: `Class "${cls.id}" déclare weaponMasteryEligibility sans weaponMasteryCount > 0 (incohérence — JALON 2A.5).`,
+      });
     }
   });
 export type ClassEntity = z.infer<typeof ClassSchema>;

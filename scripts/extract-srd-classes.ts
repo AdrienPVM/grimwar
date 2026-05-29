@@ -19,6 +19,7 @@ import {
   SRD_CLASS_SKILL_CHOICES_OVERRIDE,
   SRD_CLASSES_COUNTS,
   SRD_WEAPON_MASTERY_COUNT_PER_CLASS,
+  SRD_WEAPON_MASTERY_ELIGIBILITY_PER_CLASS,
 } from './data/srd-classes-l1';
 
 const CLASSES_PATH = 'public/data/classes.json';
@@ -29,6 +30,7 @@ interface ClassJsonEntry {
   divineOrders?: typeof CLERIC_DIVINE_ORDERS;
   primalOrders?: typeof DRUID_PRIMAL_ORDERS;
   weaponMasteryCount?: number;
+  weaponMasteryEligibility?: 'all-proficient' | 'rogue-finesse-light';
   skillChoices?: { count: number; from: string[] };
   [k: string]: unknown;
 }
@@ -73,6 +75,21 @@ async function main(): Promise<void> {
       );
     }
     out.weaponMasteryCount = count;
+    // JALON 2A.5 — éligibilité Weapon Mastery data-driven. La map peut
+    // retourner `null` (classes sans mastery) — dans ce cas on OMET la clé du
+    // bundle final pour rester strict avec le superRefine de ClassSchema
+    // (count == 0 ⇔ eligibility absent).
+    const eligibility = SRD_WEAPON_MASTERY_ELIGIBILITY_PER_CLASS[cls.id];
+    if (eligibility === undefined) {
+      throw new Error(
+        `[extract-srd-classes] PARSE STRICT FAIL — class id "${cls.id}" n'a pas d'allocation weaponMasteryEligibility définie (mappe null pour les classes sans mastery).`,
+      );
+    }
+    if (eligibility !== null) {
+      out.weaponMasteryEligibility = eligibility;
+    } else {
+      delete out.weaponMasteryEligibility;
+    }
     return out;
   });
 
