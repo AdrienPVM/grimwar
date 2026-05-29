@@ -101,3 +101,27 @@ Justification : option 1 explose le scope du jalon 1 (1A = sheet desktop, pas co
 **Référence** : PR à venir (feat/1A-2-sheet-ame-placeholder-desktop), commit à venir
 
 **Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
+### [JALON-1D.4a] Spec offline-sync e2e — scénarios (a) + (d) ; (b) custom item + (c) map différés (2026-05-29)
+
+**Contexte** : MVP-V1-SPEC.md JALON 1D.4 demande 4 scénarios e2e offline : (a) édition fiche, (b) création custom item, (c) déplacement token carte, (d) écritures multiples. La PR 1D.4a livre une `tests/e2e/offline-sync.spec.ts` couvrant (a) + (d). Les 2 autres scénarios sont différés pour des raisons documentées ci-dessous, pas par oubli.
+
+**Scénario (b) — custom item en offline + reconnect** :
+- Le flow `custom-item-form.tsx > handleSubmit` enchaîne 4 opérations Firestore : (1) `setDoc` sur `users/{uid}/customContent/items/{id}` (write 1), (2) `invalidateUserContent('items', uid)` qui touche le cache Dexie, (3) `addItemToInventory` → `resolveContent` qui fait un round-trip Firestore pour valider l'item, (4) `updateCharacter` (write 2).
+- En offline, (3) `resolveContent` lit-il fiable depuis le cache du SDK Firestore ? La question demande un audit dédié du chemin offline de `resolveContent` + tests unitaires de comportement avant de pouvoir asserter un parcours e2e déterministe.
+- **Décision** : différer (b) à un sous-jalon ultérieur (1D.4c ou similar) qui auditera explicitement le flow custom item offline. Le test (a) couvre déjà le pattern d'écriture le plus critique (édition fiche) et (d) couvre l'ordering des writes multiples.
+
+**Scénario (c) — déplacement token map en offline + reconnect** :
+- `src/features/map-proto/` est un PROTOTYPE — la liste des sites d'écriture est mouvante, plusieurs slices Zustand pas-encore-Firestore (initiative, fog, lighting, AoE, ruler) seront déplacées vers Firestore via plan JALON 5 VTT complet (3-5 sem de chantier).
+- Tester l'offline contre un proto qui changera incessamment = bug fixture-cassée garantie à chaque refactor du map.
+- **Décision** : différer (c) au JALON 5 (VTT Foundry-level) — quand les sites d'écriture map seront stabilisés. Le mode offline du joueur sur la carte est une fonctionnalité moins critique que l'édition de fiche en V1 (le DM contrôle généralement la carte ; les joueurs peuvent attendre sa propagation pour voir leurs propres tokens).
+
+**Décision prise** : Spec 1D.4a couvre (a) édition HP fiche en offline + (d) 3 writes successives offline avec propagation ordonnée à reconnect + garde-fous OfflineBanner (offline → syncing → null). (b) et (c) tracés explicitement dans cette décision pour ne pas être oubliés. Le critère « 4 scénarios e2e offline verts » de la spec V1 est partiellement honoré ; le reste s'enchaîne quand les pré-requis sont levés.
+
+Justification : conservative-by-default — on livre ce qui peut l'être proprement maintenant sans inventer un protocole offline pour des chemins (custom item, map proto) qui n'y sont pas explicitement préparés.
+
+**Référence** : PR à venir (feat/1D-4a-offline-sync-e2e)
+
+**Status** : à arbitrer par Adrien à l'UAT final
