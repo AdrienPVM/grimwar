@@ -564,6 +564,26 @@ export const ClassSchema = z
           .length(20),
       )
       .optional(),
+    /**
+     * JALON 2B.2c — Progression SRD 5.2.1 des sorts et cantrips connus/préparés
+     * L1→L20. Optionnel : les classes non-incantatrices (Barbarian, Fighter,
+     * Monk, Rogue à la base — Eldritch Knight et Arcane Trickster sont des
+     * sous-classes traitées séparément) n'ont pas cette clé.
+     *
+     * - `spellsKnownOrPrepared` : compteur fixe tiré de la colonne « Prepared
+     *   Spells » (full casters, half casters, Warlock Pact Magic). Le SRD CC
+     *   5.2.1 (PHB 2024) a standardisé tous les casters sur une colonne de
+     *   table — les formules `WIS mod + level` du 2014 ne s'appliquent plus
+     *   comme règle générale. Toujours présent quand `spellProgression` l'est.
+     * - `cantripsKnown` : optionnel — Paladin/Ranger n'ont aucune colonne
+     *   Cantrips dans leur table SRD ; on omet le champ plutôt que de zero-fill.
+     */
+    spellProgression: z
+      .object({
+        cantripsKnown: z.array(z.number().int().nonnegative()).length(20).optional(),
+        spellsKnownOrPrepared: z.array(z.number().int().nonnegative()).length(20),
+      })
+      .optional(),
     source: sourceTag,
   })
   .superRefine((cls, ctx) => {

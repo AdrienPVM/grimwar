@@ -29,6 +29,11 @@ import {
   SRD_CLASS_RESOURCE_PROGRESSION_COUNTS,
   type ResourceProgression,
 } from './data/srd-class-resource-progression';
+import {
+  SRD_SPELL_PROGRESSION,
+  SRD_SPELL_PROGRESSION_COUNTS,
+  type SpellProgressionTable,
+} from './data/srd-spell-progression';
 
 const CLASSES_PATH = 'public/data/classes.json';
 const EXPECTED_CLASS_COUNT = 12;
@@ -48,6 +53,7 @@ interface ClassJsonEntry {
   skillChoices?: { count: number; from: string[] };
   features?: ClassFeature[];
   classResourceProgression?: Record<string, ResourceProgression>;
+  spellProgression?: SpellProgressionTable;
   [k: string]: unknown;
 }
 
@@ -85,6 +91,7 @@ async function main(): Promise<void> {
   let skillOverridesApplied = 0;
   let asiBackfillsApplied = 0;
   let resourceProgressionsApplied = 0;
+  let spellProgressionsApplied = 0;
   const enriched = classes.map((cls) => {
     const out: ClassJsonEntry = { ...cls };
 
@@ -178,6 +185,21 @@ async function main(): Promise<void> {
     } else {
       delete out.classResourceProgression;
     }
+    // JALON 2B.2c — Tables canoniques de progression sorts/cantrips. Idempotent.
+    // Présent uniquement sur les 8 classes incantatrices de base SRD CC 5.2.1.
+    const spellProgression = SRD_SPELL_PROGRESSION[cls.id];
+    if (spellProgression !== undefined) {
+      const next: SpellProgressionTable = {
+        spellsKnownOrPrepared: [...spellProgression.spellsKnownOrPrepared],
+      };
+      if (spellProgression.cantripsKnown !== undefined) {
+        next.cantripsKnown = [...spellProgression.cantripsKnown];
+      }
+      out.spellProgression = next;
+      spellProgressionsApplied += 1;
+    } else {
+      delete out.spellProgression;
+    }
     return out;
   });
 
@@ -196,7 +218,7 @@ async function main(): Promise<void> {
 
   const totalMasteries = SRD_CLASSES_COUNTS.totalWeaponMasteries;
   console.log(
-    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s), ${asiBackfillsApplied} ASI feature(s) backfillée(s) (cible ${SRD_CLASSES_COUNTS.totalAsiEntries} entrées totales), ${resourceProgressionsApplied} progressions de ressources écrites (cible ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalResources} sur ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalClasses} classes).`,
+    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s), ${asiBackfillsApplied} ASI feature(s) backfillée(s) (cible ${SRD_CLASSES_COUNTS.totalAsiEntries} entrées totales), ${resourceProgressionsApplied} progressions de ressources écrites (cible ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalResources} sur ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalClasses} classes), ${spellProgressionsApplied} progressions sorts/cantrips écrites (cible ${SRD_SPELL_PROGRESSION_COUNTS.totalClasses} classes dont ${SRD_SPELL_PROGRESSION_COUNTS.classesWithCantrips} avec cantrips).`,
   );
 }
 
