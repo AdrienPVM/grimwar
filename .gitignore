@@ -11,6 +11,7 @@ dist-ssr/
 # Test outputs
 coverage/
 playwright-report/
+playwright-report-preview/
 test-results/
 
 # UAT review folder — visual captures gathered per UI commit for Adrien to review.
