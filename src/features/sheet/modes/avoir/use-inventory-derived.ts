@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { useContent } from '@/shared/hooks/use-content';
-import { loadUserContent } from '@/shared/lib/content-loader';
+import { useCampaignContent } from '@/shared/lib/campaign-content-context';
+import {
+  loadCampaignContent,
+  loadUserContent,
+} from '@/shared/lib/content-loader';
 import {
   aggregateEffects,
   effectsContributingAcBonus,
@@ -36,8 +40,13 @@ export type { EncumbranceLevel };
  *    indexe par id. `refreshUserItems()` permet de re-fetch après création
  *    d'un nouvel objet maison. Pas d'onSnapshot pour limiter la consommation
  *    Firestore en S1 — la création passe par invalidation explicite.
- *  - `campaign` : non géré ici (plan 19, S2). Les items campaign-scopés
- *    apparaissent comme `content: null` en attendant.
+ *  - `campaign` : on lit le `campaignId` du Context `CampaignContentContext`
+ *    (JALON 2A.2) et on charge `campaigns/{cid}/customContent/items`. Pas
+ *    de Provider monté en V1 jalon 2 → `campaignId` reste `null` et le
+ *    branchement est inerte (comportement strictement identique à avant
+ *    la migration). Le JALON 4 (campagnes) montera le Provider à la
+ *    frontière route, et les items custom MJ deviendront résolus
+ *    automatiquement.
  */
 
 export type ResolvedInventoryRow =
@@ -77,16 +86,29 @@ const MAGIC_ITEM_WEIGHT = 0;
 
 export function useInventoryDerived(character: Character): InventoryDerived {
   const { user } = useAuth();
+  const { campaignId } = useCampaignContent();
   const { data: items, loading: itemsLoading } = useContent('items');
   const { data: magicItems, loading: magicLoading } = useContent('magic-items');
 
   const [userItems, setUserItems] = useState<readonly Item[]>([]);
   const [userLoading, setUserLoading] = useState<boolean>(false);
+  const [campaignItems, setCampaignItems] = useState<readonly Item[]>([]);
+  const [campaignLoading, setCampaignLoading] = useState<boolean>(false);
 
   // Détecte si on a au moins un item user-scope dans l'inventaire avant de
   // charger la collection custom — pas de fetch si zéro custom item.
   const hasUserItems = useMemo(
     () => character.inventory.items.some((i) => i.contentScope === 'user'),
+    [character.inventory.items],
+  );
+
+  // Idem pour campaign : on ne paye le round-trip Firestore que si au moins
+  // un item de l'inventaire est campaign-scopé ET qu'un Provider campagne
+  // est monté. Tant qu'on est hors campagne, `campaignId` est `null` et
+  // ce chargement reste inerte — comportement strictement identique à
+  // l'état pré-2A.4.
+  const hasCampaignItems = useMemo(
+    () => character.inventory.items.some((i) => i.contentScope === 'campaign'),
     [character.inventory.items],
   );
 
@@ -104,14 +126,37 @@ export function useInventoryDerived(character: Character): InventoryDerived {
     }
   }
 
+  async function loadCampaignCustom(): Promise<void> {
+    if (!campaignId || !hasCampaignItems) {
+      setCampaignItems([]);
+      return;
+    }
+    setCampaignLoading(true);
+    try {
+      const fetched = await loadCampaignContent('items', campaignId);
+      setCampaignItems(fetched);
+    } finally {
+      setCampaignLoading(false);
+    }
+  }
+
   useEffect(() => {
     void loadCustom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, hasUserItems]);
 
+  useEffect(() => {
+    void loadCampaignCustom();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId, hasCampaignItems]);
+
   const itemsById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const magicById = useMemo(() => new Map(magicItems.map((i) => [i.id, i])), [magicItems]);
   const userById = useMemo(() => new Map(userItems.map((i) => [i.id, i])), [userItems]);
+  const campaignById = useMemo(
+    () => new Map(campaignItems.map((i) => [i.id, i])),
+    [campaignItems],
+  );
 
   const resolvedItems = useMemo<readonly ResolvedInventoryRow[]>(() => {
     return character.inventory.items.map<ResolvedInventoryRow>((inv) => {
@@ -127,10 +172,14 @@ export function useInventoryDerived(character: Character): InventoryDerived {
         if (asUser) return { inventory: inv, content: asUser, isMagic: false };
         return { inventory: inv, content: null, isMagic: false };
       }
-      // campaign scope — non géré en S1 (plan 19)
+      // campaign scope (JALON 2A.4) : résolution active quand un Provider
+      // `CampaignContentProvider` est monté (JALON 4). Sans Provider,
+      // `campaignById` est vide → fallback null (identique à avant 2A.4).
+      const asCampaign = campaignById.get(inv.contentId);
+      if (asCampaign) return { inventory: inv, content: asCampaign, isMagic: false };
       return { inventory: inv, content: null, isMagic: false };
     });
-  }, [character.inventory.items, itemsById, magicById, userById]);
+  }, [character.inventory.items, itemsById, magicById, userById, campaignById]);
 
   const weightTotal = useMemo(() => {
     let total = 0;
@@ -213,7 +262,7 @@ export function useInventoryDerived(character: Character): InventoryDerived {
     attunedCount,
     activeMagicEffects,
     magicItemsAcBonus,
-    loading: itemsLoading || magicLoading || userLoading,
+    loading: itemsLoading || magicLoading || userLoading || campaignLoading,
     refreshUserItems: loadCustom,
   };
 }
