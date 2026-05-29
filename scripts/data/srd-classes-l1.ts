@@ -155,6 +155,41 @@ export const SRD_WEAPON_MASTERY_ELIGIBILITY_PER_CLASS: Record<
   wizard: null,
 };
 
+/**
+ * Niveaux où chaque classe gagne une Ability Score Improvement (SRD 5.2.1).
+ *
+ * Tableau ordonné des niveaux ASI génériques par classe — JALON 2B.2a.
+ *
+ * SRD 5.2.1 (vérifié contre `content-sources/extracted/raw/SRD_CC_v5.2.1.txt`) :
+ *  - 10 classes "normales" : ASI à L4/8/12/16 (4 ASIs)
+ *  - Fighter : ASI à L4/6/8/12/14/16 (6 ASIs — la classe martial "elite")
+ *  - Rogue : ASI à L4/8/10/12/16 (5 ASIs — 1 extra à L10)
+ *
+ * Tous les ASI suivent la même mécanique L4 (cf. `apply-level-up.ts` en 2B.3).
+ *
+ * L19 = **Epic Boon** dans la table de classe (pas un ASI générique) — déjà
+ * encodé comme feature « Faveur épique » dans `classes.json`, hors de ce
+ * tableau.
+ *
+ * Multi-class L2+ : hors scope 2B.2 — porté par JALON 2D. Les ASI restent
+ * comptés par classe (cf. SRD : un Fighter 4 / Rogue 4 a 1 ASI Fighter L4 +
+ * 1 ASI Rogue L4, pas 2 ASIs totaux).
+ */
+export const SRD_ASI_LEVELS_PER_CLASS: Record<string, readonly number[]> = {
+  barbarian: [4, 8, 12, 16],
+  bard: [4, 8, 12, 16],
+  cleric: [4, 8, 12, 16],
+  druid: [4, 8, 12, 16],
+  fighter: [4, 6, 8, 12, 14, 16],
+  monk: [4, 8, 12, 16],
+  paladin: [4, 8, 12, 16],
+  ranger: [4, 8, 12, 16],
+  rogue: [4, 8, 10, 12, 16],
+  sorcerer: [4, 8, 12, 16],
+  warlock: [4, 8, 12, 16],
+  wizard: [4, 8, 12, 16],
+};
+
 /** Compteurs de référence pour `tests/srd-counters.test.ts`. */
 export const SRD_CLASSES_COUNTS = {
   divineOrders: CLERIC_DIVINE_ORDERS.length, // 2
@@ -163,4 +198,9 @@ export const SRD_CLASSES_COUNTS = {
     (sum, n) => sum + n,
     0,
   ), // 2+3+2+2+2 = 11
+  /** Total des entrées ASI dans `classes.json` après backfill 2B.2a. */
+  totalAsiEntries: Object.values(SRD_ASI_LEVELS_PER_CLASS).reduce(
+    (sum, levels) => sum + levels.length,
+    0,
+  ), // 10×4 + 6 + 5 = 51
 };
