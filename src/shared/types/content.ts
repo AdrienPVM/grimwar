@@ -547,6 +547,23 @@ export const ClassSchema = z
      * pour filtrer les armes éligibles — voir `weaponMasteryEligibilitySchema`.
      */
     weaponMasteryEligibility: weaponMasteryEligibilitySchema.optional(),
+    /**
+     * JALON 2B.2b — Tables canoniques SRD 5.2.1 de progression L1→L20 des
+     * ressources de classe (Rage, Channel Divinity, Sneak Attack dice, Pact
+     * Magic, etc.). Optionnel : les classes sans ressource progressive ne
+     * déclarent pas la clé. Chaque progression est un tableau de 20 entrées
+     * (index = level - 1), chaque entrée est un compteur (`number`, `0` =
+     * non disponible à ce niveau) ou une chaîne (dé `d6`/`1d6`, voire
+     * symbole textuel). Source : tables `<Class> Features` du SRD CC 5.2.1.
+     */
+    classResourceProgression: z
+      .record(
+        z.string().min(1),
+        z
+          .array(z.union([z.number().int().nonnegative(), z.string().min(1)]))
+          .length(20),
+      )
+      .optional(),
     source: sourceTag,
   })
   .superRefine((cls, ctx) => {

@@ -327,7 +327,53 @@
     ],
     "source": "srd-5.2.1",
     "weaponMasteryCount": 2,
-    "weaponMasteryEligibility": "all-proficient"
+    "weaponMasteryEligibility": "all-proficient",
+    "classResourceProgression": {
+      "rage": [
+        2,
+        2,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        6,
+        6,
+        6,
+        6
+      ],
+      "rage-damage": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    }
   },
   {
     "id": "bard",
@@ -586,7 +632,31 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "bardic-inspiration-die": [
+        "d6",
+        "d6",
+        "d6",
+        "d6",
+        "d8",
+        "d8",
+        "d8",
+        "d8",
+        "d8",
+        "d10",
+        "d10",
+        "d10",
+        "d10",
+        "d10",
+        "d12",
+        "d12",
+        "d12",
+        "d12",
+        "d12",
+        "d12"
+      ]
+    }
   },
   {
     "id": "cleric",
@@ -849,7 +919,31 @@
         }
       }
     ],
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "channel-divinity": [
+        0,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4
+      ]
+    }
   },
   {
     "id": "druid",
@@ -1142,7 +1236,31 @@
         }
       }
     ],
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "wild-shape": [
+        0,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4
+      ]
+    }
   },
   {
     "id": "fighter",
@@ -1488,7 +1606,53 @@
     ],
     "source": "srd-5.2.1",
     "weaponMasteryCount": 3,
-    "weaponMasteryEligibility": "all-proficient"
+    "weaponMasteryEligibility": "all-proficient",
+    "classResourceProgression": {
+      "second-wind": [
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "action-surge": [
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        2
+      ]
+    }
   },
   {
     "id": "monk",
@@ -1845,7 +2009,53 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "martial-arts-die": [
+        "1d6",
+        "1d6",
+        "1d6",
+        "1d6",
+        "1d8",
+        "1d8",
+        "1d8",
+        "1d8",
+        "1d8",
+        "1d8",
+        "1d10",
+        "1d10",
+        "1d10",
+        "1d10",
+        "1d10",
+        "1d10",
+        "1d12",
+        "1d12",
+        "1d12",
+        "1d12"
+      ],
+      "focus-points": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ]
+    }
   },
   {
     "id": "paladin",
@@ -2159,7 +2369,53 @@
     ],
     "source": "srd-5.2.1",
     "weaponMasteryCount": 2,
-    "weaponMasteryEligibility": "all-proficient"
+    "weaponMasteryEligibility": "all-proficient",
+    "classResourceProgression": {
+      "channel-divinity": [
+        0,
+        0,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ],
+      "lay-on-hands": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        55,
+        60,
+        65,
+        70,
+        75,
+        80,
+        85,
+        90,
+        95,
+        100
+      ]
+    }
   },
   {
     "id": "ranger",
@@ -2826,7 +3082,31 @@
     ],
     "source": "srd-5.2.1",
     "weaponMasteryCount": 2,
-    "weaponMasteryEligibility": "rogue-finesse-light"
+    "weaponMasteryEligibility": "rogue-finesse-light",
+    "classResourceProgression": {
+      "sneak-attack-dice": [
+        "1d6",
+        "1d6",
+        "2d6",
+        "2d6",
+        "3d6",
+        "3d6",
+        "4d6",
+        "4d6",
+        "5d6",
+        "5d6",
+        "6d6",
+        "6d6",
+        "7d6",
+        "7d6",
+        "8d6",
+        "8d6",
+        "9d6",
+        "9d6",
+        "10d6",
+        "10d6"
+      ]
+    }
   },
   {
     "id": "sorcerer",
@@ -3049,7 +3329,31 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "sorcery-points": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ]
+    }
   },
   {
     "id": "warlock",
@@ -3270,7 +3574,97 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "eldritch-invocations": [
+        1,
+        3,
+        3,
+        3,
+        5,
+        5,
+        6,
+        6,
+        7,
+        7,
+        7,
+        8,
+        8,
+        8,
+        9,
+        9,
+        9,
+        10,
+        10,
+        10
+      ],
+      "pact-magic-slots": [
+        1,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4
+      ],
+      "pact-magic-slot-level": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "mystic-arcanum": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4
+      ]
+    }
   },
   {
     "id": "wizard",
@@ -3498,6 +3892,30 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 0
+    "weaponMasteryCount": 0,
+    "classResourceProgression": {
+      "arcane-recovery-slot-level": [
+        1,
+        1,
+        2,
+        2,
+        3,
+        3,
+        4,
+        4,
+        5,
+        5,
+        6,
+        6,
+        7,
+        7,
+        8,
+        8,
+        9,
+        9,
+        10,
+        10
+      ]
+    }
   }
 ]

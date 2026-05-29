@@ -24,6 +24,11 @@ import {
   SRD_WEAPON_MASTERY_COUNT_PER_CLASS,
   SRD_WEAPON_MASTERY_ELIGIBILITY_PER_CLASS,
 } from './data/srd-classes-l1';
+import {
+  SRD_CLASS_RESOURCE_PROGRESSION,
+  SRD_CLASS_RESOURCE_PROGRESSION_COUNTS,
+  type ResourceProgression,
+} from './data/srd-class-resource-progression';
 
 const CLASSES_PATH = 'public/data/classes.json';
 const EXPECTED_CLASS_COUNT = 12;
@@ -42,6 +47,7 @@ interface ClassJsonEntry {
   weaponMasteryEligibility?: 'all-proficient' | 'rogue-finesse-light';
   skillChoices?: { count: number; from: string[] };
   features?: ClassFeature[];
+  classResourceProgression?: Record<string, ResourceProgression>;
   [k: string]: unknown;
 }
 
@@ -78,6 +84,7 @@ async function main(): Promise<void> {
   let druidFound = false;
   let skillOverridesApplied = 0;
   let asiBackfillsApplied = 0;
+  let resourceProgressionsApplied = 0;
   const enriched = classes.map((cls) => {
     const out: ClassJsonEntry = { ...cls };
 
@@ -155,6 +162,22 @@ async function main(): Promise<void> {
     } else {
       delete out.weaponMasteryEligibility;
     }
+    // JALON 2B.2b — Tables canoniques de progression des ressources. Idempotent :
+    // on remplace systématiquement le bloc par la constante SRD (source de
+    // vérité). Les classes non recensées (ex. ranger en V1) n'ont pas de
+    // progressions encodées — la clé reste absente.
+    const progression = SRD_CLASS_RESOURCE_PROGRESSION[cls.id];
+    if (progression !== undefined) {
+      out.classResourceProgression = Object.fromEntries(
+        Object.entries(progression).map(([resourceId, values]) => [
+          resourceId,
+          [...values],
+        ]),
+      ) as Record<string, ResourceProgression>;
+      resourceProgressionsApplied += Object.keys(progression).length;
+    } else {
+      delete out.classResourceProgression;
+    }
     return out;
   });
 
@@ -173,7 +196,7 @@ async function main(): Promise<void> {
 
   const totalMasteries = SRD_CLASSES_COUNTS.totalWeaponMasteries;
   console.log(
-    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s), ${asiBackfillsApplied} ASI feature(s) backfillée(s) (cible ${SRD_CLASSES_COUNTS.totalAsiEntries} entrées totales).`,
+    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s), ${asiBackfillsApplied} ASI feature(s) backfillée(s) (cible ${SRD_CLASSES_COUNTS.totalAsiEntries} entrées totales), ${resourceProgressionsApplied} progressions de ressources écrites (cible ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalResources} sur ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalClasses} classes).`,
   );
 }
 
