@@ -18,6 +18,11 @@ vi.mock('firebase/firestore', () => ({
   getDoc: (...args: unknown[]) => mockGetDoc(...args),
   setDoc: (...args: unknown[]) => mockSetDoc(...args),
   serverTimestamp: () => mockServerTimestamp(),
+  // `waitForPendingWrites` est appelé par `trackPendingWrite` (JALON 1D.3) pour
+  // décrémenter le compteur quand l'écriture est ack backend. Le mock résout
+  // immédiatement — la sémantique offline réelle est testée dans
+  // `track-pending-write.test.ts` (qui mocke proprement la latence d'ack).
+  waitForPendingWrites: () => Promise.resolve(),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({

@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/use-auth';
 import { getDb } from '@/shared/lib/firebase';
 import { CharacterSchema, type Character } from '@/shared/types/character';
 import { migrateSpellRecord } from '@/shared/lib/rules/spell-aliases';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import {
   needsV1ToV2Upgrade,
   upgradeCharacterV1ToV2,
@@ -113,7 +114,13 @@ export function useCharacter(characterId: string | undefined): UseCharacterResul
                 `[sheet] spell.ids-migrated character=${snap.id} (2014 → SRD 5.2.1, plan 13.10)`,
               );
             }
-            void setDoc(ref, finalCharacter).catch((err) => {
+            // Fire-and-forget mais tracké : la migration peut tomber offline,
+            // l'utilisateur doit voir « Synchronisation » via OfflineBanner
+            // jusqu'à l'ack backend (JALON 1D.3).
+            void trackPendingWrite(
+              getDb(),
+              setDoc(ref, finalCharacter),
+            ).catch((err) => {
               console.warn(
                 `[sheet] character upgrade write failed for ${snap.id}:`,
                 err,

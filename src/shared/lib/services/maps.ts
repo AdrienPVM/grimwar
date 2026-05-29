@@ -28,6 +28,7 @@ import {
 } from 'firebase/firestore';
 
 import { getDb } from '@/shared/lib/firebase';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import type {
   AoeTemplate,
   FogPolygon,
@@ -68,7 +69,8 @@ export async function createMap(
   input: CreateMapInput,
   uid: string,
 ): Promise<string> {
-  const ref = doc(getDb(), 'campaigns', campaignId, 'maps', mapId);
+  const firestore = getDb();
+  const ref = doc(firestore, 'campaigns', campaignId, 'maps', mapId);
   const payload: Omit<MapMeta, 'id'> = {
     ...input,
     schemaVersion: 1,
@@ -76,7 +78,8 @@ export async function createMap(
     updatedAt: serverTimestamp(),
     updatedBy: uid,
   };
-  await setDoc(ref, payload);
+  // Écriture MJ bloquante hors-ligne (JALON 1D.3).
+  await trackPendingWrite(firestore, setDoc(ref, payload));
   return mapId;
 }
 
@@ -86,17 +89,25 @@ export async function updateMap(
   patch: UpdateMapPatch,
   uid: string,
 ): Promise<void> {
-  const ref = doc(getDb(), 'campaigns', campaignId, 'maps', mapId);
-  await updateDoc(ref, {
-    ...patch,
-    updatedAt: serverTimestamp(),
-    updatedBy: uid,
-  });
+  const firestore = getDb();
+  const ref = doc(firestore, 'campaigns', campaignId, 'maps', mapId);
+  // Wrapper transitif : addFogPolygon/addLightSource/addAoeTemplate (et
+  // leurs symétriques) passent par updateMap → tous trackés (JALON 1D.3).
+  await trackPendingWrite(
+    firestore,
+    updateDoc(ref, {
+      ...patch,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    }),
+  );
 }
 
 export async function deleteMap(campaignId: string, mapId: string): Promise<void> {
-  const ref = doc(getDb(), 'campaigns', campaignId, 'maps', mapId);
-  await deleteDoc(ref);
+  const firestore = getDb();
+  const ref = doc(firestore, 'campaigns', campaignId, 'maps', mapId);
+  // Suppression = écriture user-initiated comme une autre côté SDK.
+  await trackPendingWrite(firestore, deleteDoc(ref));
 }
 
 // ─── Tokens (sous-collection) ──────────────────────────────────────────────
@@ -111,12 +122,16 @@ export async function createToken(
   input: CreateTokenInput,
   uid: string,
 ): Promise<string> {
-  const col = collection(getDb(), 'campaigns', campaignId, 'maps', mapId, 'tokens');
-  const docRef = await addDoc(col, {
-    ...input,
-    updatedAt: serverTimestamp(),
-    updatedBy: uid,
-  });
+  const firestore = getDb();
+  const col = collection(firestore, 'campaigns', campaignId, 'maps', mapId, 'tokens');
+  const docRef = await trackPendingWrite(
+    firestore,
+    addDoc(col, {
+      ...input,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    }),
+  );
   return docRef.id;
 }
 
@@ -127,8 +142,9 @@ export async function updateToken(
   patch: UpdateTokenPatch,
   uid: string,
 ): Promise<void> {
+  const firestore = getDb();
   const ref = doc(
-    getDb(),
+    firestore,
     'campaigns',
     campaignId,
     'maps',
@@ -136,11 +152,14 @@ export async function updateToken(
     'tokens',
     tokenId,
   );
-  await updateDoc(ref, {
-    ...patch,
-    updatedAt: serverTimestamp(),
-    updatedBy: uid,
-  });
+  await trackPendingWrite(
+    firestore,
+    updateDoc(ref, {
+      ...patch,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    }),
+  );
 }
 
 export async function deleteToken(
@@ -148,8 +167,9 @@ export async function deleteToken(
   mapId: string,
   tokenId: string,
 ): Promise<void> {
+  const firestore = getDb();
   const ref = doc(
-    getDb(),
+    firestore,
     'campaigns',
     campaignId,
     'maps',
@@ -157,7 +177,7 @@ export async function deleteToken(
     'tokens',
     tokenId,
   );
-  await deleteDoc(ref);
+  await trackPendingWrite(firestore, deleteDoc(ref));
 }
 
 // ─── Fog polygons (inline sur MapMeta) ─────────────────────────────────────
