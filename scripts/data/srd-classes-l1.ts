@@ -119,6 +119,42 @@ export const SRD_WEAPON_MASTERY_COUNT_PER_CLASS: Record<string, number> = {
   wizard: 0,
 };
 
+/**
+ * Politique d'éligibilité Weapon Mastery par classe (JALON 2A.5).
+ *
+ * Pourquoi : avant 2A.5, ce mapping vivait en `switch (classId)` dans
+ * `src/shared/lib/rules/weapon-mastery.ts`. On le déplace en data pour que
+ * le moteur de wizard reste agnostique de la liste fermée des classes SRD
+ * (le custom content campagne pourra déclarer ses propres classes avec
+ * leur eligibility — JALON 3).
+ *
+ * Sémantique :
+ *   - `'all-proficient'` : armes simples ET martiales (Barb/Fighter/Pala/Rgr).
+ *   - `'rogue-finesse-light'` : armes simples + martiales Finesse OU Light.
+ *   - `null` : pas de Weapon Mastery à L1 → champ omis dans le bundle final.
+ *
+ * Le couple count/eligibility est validé par le `superRefine` de
+ * `ClassSchema` (cf. `src/shared/types/content.ts`) : count > 0 ⇔
+ * eligibility présente.
+ */
+export const SRD_WEAPON_MASTERY_ELIGIBILITY_PER_CLASS: Record<
+  string,
+  'all-proficient' | 'rogue-finesse-light' | null
+> = {
+  barbarian: 'all-proficient',
+  bard: null,
+  cleric: null,
+  druid: null,
+  fighter: 'all-proficient',
+  monk: null,
+  paladin: 'all-proficient',
+  ranger: 'all-proficient',
+  rogue: 'rogue-finesse-light',
+  sorcerer: null,
+  warlock: null,
+  wizard: null,
+};
+
 /** Compteurs de référence pour `tests/srd-counters.test.ts`. */
 export const SRD_CLASSES_COUNTS = {
   divineOrders: CLERIC_DIVINE_ORDERS.length, // 2

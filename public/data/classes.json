@@ -293,7 +293,8 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 2
+    "weaponMasteryCount": 2,
+    "weaponMasteryEligibility": "all-proficient"
   },
   {
     "id": "bard",
@@ -1299,7 +1300,8 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 3
+    "weaponMasteryCount": 3,
+    "weaponMasteryEligibility": "all-proficient"
   },
   {
     "id": "monk",
@@ -1903,7 +1905,8 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 2
+    "weaponMasteryCount": 2,
+    "weaponMasteryEligibility": "all-proficient"
   },
   {
     "id": "ranger",
@@ -2192,7 +2195,8 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 2
+    "weaponMasteryCount": 2,
+    "weaponMasteryEligibility": "all-proficient"
   },
   {
     "id": "rogue",
@@ -2491,7 +2495,8 @@
       }
     ],
     "source": "srd-5.2.1",
-    "weaponMasteryCount": 2
+    "weaponMasteryCount": 2,
+    "weaponMasteryEligibility": "rogue-finesse-light"
   },
   {
     "id": "sorcerer",

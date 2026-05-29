@@ -1,45 +1,55 @@
 import type { Character, FightingStyle } from '@/shared/types/character';
-import type { Item } from '@/shared/types/content';
+import type { Item, WeaponMasteryEligibility } from '@/shared/types/content';
 
 /**
- * Règles Weapon Mastery SRD 5.2.1 (plan 13.9).
+ * Règles Weapon Mastery SRD 5.2.1 (plan 13.9, refactor data-driven 2A.5).
  *
  * Source : `docs/AUDIT-SRD-COMPLETUDE.md > C.1` — table d'allocation par
  * classe. À L1, la classe accède à un sous-ensemble d'armes éligibles selon
  * ses maîtrises (proficiencies) :
  *
- * - Barbare / Guerrier / Paladin / Rôdeur : simple OU martiale → toutes les
- *   armes du SRD avec `masteryProperty` sont éligibles.
- * - Roublard : simple OU (martiale ayant Finesse OU Light) → sous-ensemble.
+ * - `all-proficient` (Barb/Fighter/Paladin/Ranger) : toutes les armes SRD
+ *   avec `masteryProperty` sont éligibles.
+ * - `rogue-finesse-light` (Rogue) : simple OU (martiale ayant Finesse OU
+ *   Light) — sous-ensemble.
  *
- * Le moine n'a PAS Weapon Mastery au SRD (cf. plan 13.9 Notes — `weaponMasteryCount`
- * = 0 dans le bundle → pas d'appel à cette fonction).
+ * Le moine n'a PAS Weapon Mastery au SRD (cf. plan 13.9 Notes —
+ * `weaponMasteryCount` = 0 dans le bundle → `eligibility` absent → aucune
+ * arme éligible).
+ *
+ * JALON 2A.5 — l'éligibilité est désormais portée par la donnée
+ * (`weaponMasteryEligibility` sur `ClassEntity`). Plus de `switch (classId)`
+ * dans le code : une classe custom (JALON 3) peut déclarer son éligibilité
+ * sans patcher ce fichier.
  */
 
 /**
- * Renvoie les ids d'items éligibles à Weapon Mastery pour une classe donnée.
- * Filtré sur `masteryProperty` présent ET sur les maîtrises de classe SRD.
+ * Renvoie les ids d'items éligibles à Weapon Mastery pour une politique
+ * d'éligibilité donnée. Filtré sur `masteryProperty` présent ET sur la
+ * sémantique de la politique (cf. en-tête).
  *
  * Le tri stable (par nom) est appliqué pour que l'ordre des cartes du chooser
  * reste constant entre les sessions — pas de "ça bouge à chaque F5".
+ *
+ * `eligibility = null | undefined` → tableau vide. C'est le cas des classes
+ * sans Weapon Mastery à L1 (chooser non monté en pratique, mais on retourne
+ * `[]` plutôt que de jeter pour rester robuste face à un appel défensif).
  */
 export function getEligibleWeaponMasteryIds(
-  classId: string,
+  eligibility: WeaponMasteryEligibility | null | undefined,
   items: readonly Item[],
   locale: 'fr' | 'en' = 'fr',
 ): readonly Item[] {
+  if (!eligibility) return [];
   const withMastery = items.filter(
     (it) => it.category === 'weapon' && it.masteryProperty,
   );
   let eligible: Item[];
-  switch (classId) {
-    case 'barbarian':
-    case 'fighter':
-    case 'paladin':
-    case 'ranger':
+  switch (eligibility) {
+    case 'all-proficient':
       eligible = [...withMastery];
       break;
-    case 'rogue':
+    case 'rogue-finesse-light':
       eligible = withMastery.filter((it) => {
         const props = it.properties ?? [];
         const isSimple =
@@ -52,8 +62,6 @@ export function getEligibleWeaponMasteryIds(
         return false;
       });
       break;
-    default:
-      eligible = [];
   }
   return eligible.sort((a, b) => {
     const an = a.name[locale] ?? a.name.fr;

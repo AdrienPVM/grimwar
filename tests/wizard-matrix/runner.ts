@@ -195,9 +195,17 @@ function buildClassEntry(
   const allowedSkills = resolveSkillIds([...cls.skillChoices.from]);
   const pickedSkills = applyReferenceSkills(classId, allowedSkills, cls.skillChoices.count);
 
+  // JALON 2A.5 — éligibilité Weapon Mastery désormais portée par la donnée
+  // (`cls.weaponMasteryEligibility`). On lit le champ du bundle au lieu de
+  // hardcoder un classId — un trou de cohérence côté `extract-srd-classes` ou
+  // côté schéma serait immédiatement visible (eligible vide → matrice rouge).
   const weaponMasteries =
     cls.weaponMasteryCount > 0
-      ? getEligibleWeaponMasteryIds(classId, bundles.items, 'fr')
+      ? getEligibleWeaponMasteryIds(
+          cls.weaponMasteryEligibility ?? null,
+          bundles.items,
+          'fr',
+        )
           .slice(0, cls.weaponMasteryCount)
           .map((it) => it.id)
       : [];

@@ -63,9 +63,18 @@ export function WeaponMasteryChooser({ classId }: Props): JSX.Element {
     [classId, classes.data],
   );
 
+  // JALON 2A.5 — la politique d'éligibilité est désormais portée par la
+  // donnée (`weaponMasteryEligibility` sur `ClassEntity`). On lit le champ
+  // depuis le bundle classe résolu et on le passe à
+  // `getEligibleWeaponMasteryIds` — plus de switch classId côté code.
+  const eligibility = useMemo(() => {
+    const cls = classes.data.find((c) => c.id === classId);
+    return cls?.weaponMasteryEligibility ?? null;
+  }, [classId, classes.data]);
+
   const eligible = useMemo(
-    () => getEligibleWeaponMasteryIds(classId, items.data, 'fr'),
-    [classId, items.data],
+    () => getEligibleWeaponMasteryIds(eligibility, items.data, 'fr'),
+    [eligibility, items.data],
   );
 
   const selected = entry?.weaponMasteries ?? [];
