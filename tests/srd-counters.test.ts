@@ -145,6 +145,74 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
       expect(total).toBe(11);
     });
 
+    it('ASI levels par classe = SRD 5.2.1 (JALON 2B.2a)', async () => {
+      // SRD 5.2.1 — niveaux ASI génériques (Epic Boon L19 hors compte, c'est
+      // une feature distincte « Faveur épique »).
+      // Source : `content-sources/extracted/raw/SRD_CC_v5.2.1.txt`, tables de
+      // progression de classe.
+      const expected: Record<string, number[]> = {
+        barbarian: [4, 8, 12, 16],
+        bard: [4, 8, 12, 16],
+        cleric: [4, 8, 12, 16],
+        druid: [4, 8, 12, 16],
+        fighter: [4, 6, 8, 12, 14, 16], // 2 ASIs supplémentaires (L6, L14)
+        monk: [4, 8, 12, 16],
+        paladin: [4, 8, 12, 16],
+        ranger: [4, 8, 12, 16],
+        rogue: [4, 8, 10, 12, 16], // 1 ASI supplémentaire (L10)
+        sorcerer: [4, 8, 12, 16],
+        warlock: [4, 8, 12, 16],
+        wizard: [4, 8, 12, 16],
+      };
+      const classes = await loadJson<
+        (ClassEntry & {
+          features: { level: number; name: { fr: string; en: string } }[];
+        })[]
+      >('public/data/classes.json');
+      for (const cls of classes) {
+        const asiLevels = cls.features
+          .filter((f) => f.name.en === 'Ability Score Improvement')
+          .map((f) => f.level);
+        expect(asiLevels).toEqual(expected[cls.id]);
+      }
+      // Compte total SRD-vérifié : 10 normales × 4 + Fighter 6 + Rogue 5 = 51.
+      const total = classes.reduce(
+        (sum, cls) =>
+          sum +
+          cls.features.filter((f) => f.name.en === 'Ability Score Improvement').length,
+        0,
+      );
+      expect(total).toBe(51);
+    });
+
+    it('chaque entrée ASI a la description SRD 2024 canonique (JALON 2B.2a)', async () => {
+      // Test de vérité du contenu (cat. 2 — identité, pas présence). La
+      // description française et anglaise des entrées ASI doit suivre la
+      // forme SRD officielle, jamais une approximation.
+      const classes = await loadJson<
+        (ClassEntry & {
+          features: {
+            level: number;
+            name: { fr: string; en: string };
+            description: { fr: string; en: string };
+          }[];
+        })[]
+      >('public/data/classes.json');
+      const expectedFr = /(Vous (recevez|gagnez) le don Amélioration de caractéristique)/;
+      const expectedEn = /(You gain the Ability Score Improvement feat)/;
+      for (const cls of classes) {
+        const asiFeatures = cls.features.filter(
+          (f) => f.name.en === 'Ability Score Improvement',
+        );
+        expect(asiFeatures.length).toBeGreaterThanOrEqual(4);
+        for (const asi of asiFeatures) {
+          expect(asi.name.fr).toBe('Amélioration de caractéristique');
+          expect(asi.description.fr).toMatch(expectedFr);
+          expect(asi.description.en).toMatch(expectedEn);
+        }
+      }
+    });
+
     it('weaponMasteryEligibility cohérent avec weaponMasteryCount (JALON 2A.5)', async () => {
       // Invariant : count > 0 ⇔ eligibility présent (et inversement).
       // Sémantique data-driven : 4 classes 'all-proficient' (Barb/Fighter/
