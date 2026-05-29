@@ -26,6 +26,7 @@ import {
 import { FirebaseError } from 'firebase/app';
 
 import { getDb } from '@/shared/lib/firebase';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 
 /**
  * Crée le doc `campaigns/{cid}` si absent, avec l'utilisateur courant
@@ -54,7 +55,8 @@ export async function ensureCampaignExists(
   campaignId: string,
   uid: string,
 ): Promise<boolean> {
-  const ref = doc(getDb(), 'campaigns', campaignId);
+  const firestore = getDb();
+  const ref = doc(firestore, 'campaigns', campaignId);
   try {
     const snap = await getDoc(ref);
     if (snap.exists()) return false;
@@ -67,13 +69,18 @@ export async function ensureCampaignExists(
       throw err;
     }
   }
-  await setDoc(ref, {
-    name: campaignId,
-    dmUserId: uid,
-    status: 'active',
-    schemaVersion: 1,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+  // Création de campagne = écriture user-initiated bloquante hors-ligne
+  // (JALON 1D.3) — la bannière OfflineBanner doit refléter l'attente d'ack.
+  await trackPendingWrite(
+    firestore,
+    setDoc(ref, {
+      name: campaignId,
+      dmUserId: uid,
+      status: 'active',
+      schemaVersion: 1,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+  );
   return true;
 }

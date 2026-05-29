@@ -7,6 +7,7 @@ import { invalidateUserContent } from '@/shared/lib/content-loader';
 import { getDb } from '@/shared/lib/firebase';
 import { t } from '@/shared/lib/i18n';
 import { addItemToInventory } from '@/shared/lib/inventory';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   ItemSchema,
@@ -95,15 +96,21 @@ export function CustomItemForm({
           `Schéma invalide : ${parsed.error.errors.map((e) => e.message).join(', ')}`,
         );
       }
+      const firestore = getDb();
       const itemRef = doc(
-        getDb(),
+        firestore,
         'users',
         user.uid,
         'customContent',
         'items',
         id,
       );
-      await setDoc(itemRef, { ...parsed.data, createdAt: serverTimestamp() });
+      // trackPendingWrite : la création d'item custom doit signaler la
+      // bannière offline (JALON 1D.3) tant que l'ack backend n'est pas reçu.
+      await trackPendingWrite(
+        firestore,
+        setDoc(itemRef, { ...parsed.data, createdAt: serverTimestamp() }),
+      );
       // Invalidation du cache user pour que refreshUserItems voie l'objet.
       await invalidateUserContent('items', user.uid);
 

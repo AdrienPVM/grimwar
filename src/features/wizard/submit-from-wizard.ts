@@ -5,6 +5,7 @@ import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { maxHp, totalLevel } from '@/shared/lib/rules/multiclass';
 import { buildSkillProficiencies } from '@/shared/lib/rules/skill-proficiencies';
 import { getDb } from '@/shared/lib/firebase';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import {
   CharacterSchema,
   type Character,
@@ -389,6 +390,11 @@ export async function submitFromWizard(
   }
   const firestore = getDb();
   const docRef = doc(firestore, 'users', input.uid, 'characters', character.id);
-  await setDoc(docRef, character);
+  // Création offline-safe : trackPendingWrite incrémente le compteur de
+  // pendingWrites pour que la bannière OfflineBanner affiche « Synchronisation »
+  // (variant syncing) tant que le backend n'a pas accusé réception. Sans ce
+  // wrapper, la création serait silencieuse côté UI tant que l'ack n'est pas
+  // arrivé, ce qui contredit la spec V1 jalon 1D « sync queue à reconnexion ».
+  await trackPendingWrite(firestore, setDoc(docRef, character));
   return { id: character.id, character };
 }

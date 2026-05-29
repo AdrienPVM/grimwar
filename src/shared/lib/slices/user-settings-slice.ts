@@ -18,6 +18,7 @@ import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { create } from 'zustand';
 
 import { getDb } from '@/shared/lib/firebase';
+import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import {
   DEFAULT_USER_DICE_SETTINGS,
   type DiceMode,
@@ -52,8 +53,14 @@ export const useUserSettingsStore = create<UserSettingsState>((set) => ({
  */
 export async function setDiceMode(uid: string, next: DiceMode): Promise<void> {
   useUserSettingsStore.setState({ diceMode: next });
-  const ref = doc(getDb(), 'users', uid);
-  await setDoc(ref, { settings: { diceMode: next } }, { merge: true });
+  const firestore = getDb();
+  const ref = doc(firestore, 'users', uid);
+  // Changement de mode de dés : la persistance est asynchrone mais l'UI doit
+  // signaler l'attente d'ack via OfflineBanner (JALON 1D.3).
+  await trackPendingWrite(
+    firestore,
+    setDoc(ref, { settings: { diceMode: next } }, { merge: true }),
+  );
 }
 
 /**

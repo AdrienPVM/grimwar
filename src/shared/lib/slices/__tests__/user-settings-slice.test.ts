@@ -14,6 +14,11 @@ vi.mock('firebase/firestore', async () => {
     doc: (..._args: unknown[]) => ({ _args }),
     setDoc: vi.fn(async () => undefined),
     onSnapshot: vi.fn(() => () => {}),
+    // `waitForPendingWrites` est appelé par `trackPendingWrite` (JALON 1D.3)
+    // pour décrémenter le compteur quand le backend ack. Le mock résout
+    // immédiatement — la sémantique offline réelle est testée dans
+    // `track-pending-write.test.ts`.
+    waitForPendingWrites: vi.fn(async () => undefined),
   };
 });
 
