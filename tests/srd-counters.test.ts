@@ -321,6 +321,151 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
       expect(get('wizard', 'arcane-recovery-slot-level', 20)).toBe(10);
     });
 
+    it('spellProgression SRD 5.2.1 — couverture des 8 classes incantatrices de base (JALON 2B.2c)', async () => {
+      // 8 classes ont une `spellProgression` au niveau classe SRD CC 5.2.1 :
+      // Bard, Cleric, Druid, Paladin, Ranger, Sorcerer, Warlock, Wizard.
+      // Eldritch Knight (Fighter) et Arcane Trickster (Rogue) sont des sous-
+      // classes traitées sur `subclasses.json` — hors scope 2B.2c.
+      const classes = await loadJson<
+        (ClassEntry & {
+          spellProgression?: {
+            cantripsKnown?: number[];
+            spellsKnownOrPrepared?: number[];
+          };
+        })[]
+      >('public/data/classes.json');
+      const expectedClassesWithSpells = [
+        'bard',
+        'cleric',
+        'druid',
+        'paladin',
+        'ranger',
+        'sorcerer',
+        'warlock',
+        'wizard',
+      ];
+      for (const id of expectedClassesWithSpells) {
+        const cls = classes.find((c) => c.id === id);
+        expect(cls?.spellProgression, `${id} doit avoir spellProgression`).toBeDefined();
+        expect(
+          cls?.spellProgression?.spellsKnownOrPrepared,
+          `${id}.spellsKnownOrPrepared doit avoir 20 entrées`,
+        ).toHaveLength(20);
+      }
+      // Paladin et Ranger n'ont PAS de colonne Cantrips dans leur table SRD.
+      const paladin = classes.find((c) => c.id === 'paladin');
+      const ranger = classes.find((c) => c.id === 'ranger');
+      expect(paladin?.spellProgression?.cantripsKnown).toBeUndefined();
+      expect(ranger?.spellProgression?.cantripsKnown).toBeUndefined();
+      // Les 6 autres incantatrices DOIVENT avoir cantripsKnown.
+      for (const id of ['bard', 'cleric', 'druid', 'sorcerer', 'warlock', 'wizard']) {
+        const cls = classes.find((c) => c.id === id);
+        expect(
+          cls?.spellProgression?.cantripsKnown,
+          `${id} doit avoir cantripsKnown`,
+        ).toHaveLength(20);
+      }
+      // Les 4 classes non-incantatrices NE DOIVENT PAS avoir spellProgression.
+      for (const id of ['barbarian', 'fighter', 'monk', 'rogue']) {
+        const cls = classes.find((c) => c.id === id);
+        expect(
+          cls?.spellProgression,
+          `${id} (non-incantateur) ne doit PAS avoir spellProgression`,
+        ).toBeUndefined();
+      }
+    });
+
+    it('spellProgression — vérité du contenu cat. 3 (valeurs SRD figées, JALON 2B.2c)', async () => {
+      // Vérification humaine UNE FOIS contre SRD 5.2.1 (cf.
+      // `content-sources/extracted/raw/SRD_CC_v5.2.1.txt`, tables
+      // « <Class> Features », colonnes Cantrips + Prepared Spells).
+      // Le test fige la vérité ensuite. Niveaux d'inflexion choisis pour
+      // attraper les sauts (L4/L10 cantrips, L1/L5/L11/L17 prep).
+      const classes = await loadJson<
+        (ClassEntry & {
+          spellProgression?: {
+            cantripsKnown?: number[];
+            spellsKnownOrPrepared?: number[];
+          };
+        })[]
+      >('public/data/classes.json');
+      const prep = (classId: string, level: number): number => {
+        const cls = classes.find((c) => c.id === classId);
+        const arr = cls?.spellProgression?.spellsKnownOrPrepared;
+        if (!arr) throw new Error(`${classId}.spellsKnownOrPrepared introuvable`);
+        const v = arr[level - 1];
+        if (v === undefined) throw new Error(`${classId}.spellsKnownOrPrepared sans L${level}`);
+        return v;
+      };
+      const cantrips = (classId: string, level: number): number => {
+        const cls = classes.find((c) => c.id === classId);
+        const arr = cls?.spellProgression?.cantripsKnown;
+        if (!arr) throw new Error(`${classId}.cantripsKnown introuvable`);
+        const v = arr[level - 1];
+        if (v === undefined) throw new Error(`${classId}.cantripsKnown sans L${level}`);
+        return v;
+      };
+      // Bard (SRD L3194) — Prep L1=4, L5=9, L11=16, L20=22 ; Cantrips L1=2 → L10=4.
+      expect(prep('bard', 1)).toBe(4);
+      expect(prep('bard', 5)).toBe(9);
+      expect(prep('bard', 20)).toBe(22);
+      expect(cantrips('bard', 1)).toBe(2);
+      expect(cantrips('bard', 4)).toBe(3);
+      expect(cantrips('bard', 10)).toBe(4);
+      // Cleric (SRD L3625) — Prep L1=4, L11=16, L20=22 ; Cantrips L1=3 → L10=5.
+      expect(prep('cleric', 1)).toBe(4);
+      expect(prep('cleric', 20)).toBe(22);
+      expect(cantrips('cleric', 1)).toBe(3);
+      expect(cantrips('cleric', 10)).toBe(5);
+      // Druid (SRD L4054) — colonne Prepared identique aux full prepared casters.
+      expect(prep('druid', 1)).toBe(4);
+      expect(prep('druid', 11)).toBe(16);
+      // Paladin (SRD L5136) — half caster, pas de cantrips. Prep L1=2, L20=15.
+      expect(prep('paladin', 1)).toBe(2);
+      expect(prep('paladin', 5)).toBe(6);
+      expect(prep('paladin', 20)).toBe(15);
+      // Ranger (SRD L5584) — half caster, prep identique Paladin.
+      expect(prep('ranger', 1)).toBe(2);
+      expect(prep('ranger', 20)).toBe(15);
+      // Sorcerer (SRD L6193) — Prep L1=2 (différent Bard/Cleric/Druid à L1-2).
+      expect(prep('sorcerer', 1)).toBe(2);
+      expect(prep('sorcerer', 2)).toBe(4);
+      expect(prep('sorcerer', 20)).toBe(22);
+      expect(cantrips('sorcerer', 1)).toBe(4);
+      expect(cantrips('sorcerer', 10)).toBe(6);
+      // Warlock (SRD L6760) — Pact Magic. Prep L1=2 → L20=15.
+      expect(prep('warlock', 1)).toBe(2);
+      expect(prep('warlock', 9)).toBe(10);
+      expect(prep('warlock', 20)).toBe(15);
+      expect(cantrips('warlock', 1)).toBe(2);
+      // Wizard (SRD L7310) — diverge à L14+ (spellbook > prepared standard).
+      expect(prep('wizard', 1)).toBe(4);
+      expect(prep('wizard', 13)).toBe(17);
+      expect(prep('wizard', 14)).toBe(18); // L14 = 18 (vs 17 Cleric/Druid/Bard)
+      expect(prep('wizard', 20)).toBe(25); // SRD L20 = 25 (max prep wizard)
+      expect(cantrips('wizard', 1)).toBe(3);
+      expect(cantrips('wizard', 10)).toBe(5);
+    });
+
+    it('spellProgression aligné avec spellcasting (JALON 2B.2c)', async () => {
+      // Invariant : `spellProgression` présent ⇔ `spellcasting` non null.
+      // Une classe non-incantatrice (spellcasting=null) NE DOIT PAS avoir
+      // de progression de sorts ; une classe incantatrice DOIT en avoir.
+      const classes = await loadJson<
+        (ClassEntry & {
+          spellcasting?: { ability: string; progression: string } | null;
+          spellProgression?: { spellsKnownOrPrepared?: number[] };
+        })[]
+      >('public/data/classes.json');
+      for (const cls of classes) {
+        const isCaster = cls.spellcasting !== null && cls.spellcasting !== undefined;
+        const hasProgression = cls.spellProgression !== undefined;
+        expect(hasProgression, `${cls.id}: spellProgression doit refléter spellcasting`).toBe(
+          isCaster,
+        );
+      }
+    });
+
     it('weaponMasteryEligibility cohérent avec weaponMasteryCount (JALON 2A.5)', async () => {
       // Invariant : count > 0 ⇔ eligibility présent (et inversement).
       // Sémantique data-driven : 4 classes 'all-proficient' (Barb/Fighter/
