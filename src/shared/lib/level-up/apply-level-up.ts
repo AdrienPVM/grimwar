@@ -1,0 +1,283 @@
+import type { AbilityCode, Character, CharacterClassEntry } from '@/shared/types/character';
+import type { ClassEntity } from '@/shared/types/content';
+
+import {
+  casterLevel,
+  spellSlotsForCasterLevel,
+  type CasterClassEntry,
+} from '../rules/multiclass';
+
+import { type LevelUpDraft, levelUpDraftSchema } from './level-up-types';
+
+/**
+ * JALON 2B.3a — Application pure d'un level-up sur un `Character`.
+ *
+ * Pure : aucun IO, aucune lecture Firestore/Dexie, aucun `serverTimestamp`.
+ * La transformation est déterministe — pour la même entrée, le même résultat.
+ * Le caller (hook + slice Zustand) s'occupe de la persistance et des
+ * timestamps. Cette frontière permet aux tests TDD de couvrir les 12 classes
+ * × les transitions clés sans monter de back-end.
+ *
+ * Le `draft` est rejeté dur (throw) sur :
+ *   - schéma invalide (parse)
+ *   - classId absent du tableau classes[] du perso
+ *   - newClassLevel ≠ classes[i].level + 1
+ *   - perso totalLevel === 20 (plafond SRD)
+ *   - subclassId manquant alors que newClassLevel === 3
+ *   - ASI dépassant la borne SRD (stat > 20)
+ *
+ * Cohérence des sorties :
+ *   - `totalLevel` recomputé via somme
+ *   - `spellSlots` recomputé via `spellSlotsForCasterLevel` (multi-class
+ *     unifié pour full/half/third casters ; le pact magic Warlock reste géré
+ *     par sa propre table déclarée côté `classResourceProgression` —
+ *     `pact-magic-slots` + `pact-magic-slot-level`)
+ *   - HP max augmenté de `hpDelta` (avg de la classe leveling + conMod) — la
+ *     valeur courante prend le même delta pour rester cohérente avec un repos
+ *     long implicite SRD-friendly
+ *   - `hitDice[classId].max` += 1 (même classe)
+ *   - `classResources[resourceId]` mis à jour depuis `classResourceProgression`
+ *     pour le nouveau niveau (les ressources textuelles type « d6 » sont
+ *     ignorées — seuls les compteurs numériques sont matérialisés en pool)
+ *   - ASI : abilities mutées dans les bornes ; total des bonus = 2 exactement
+ *   - Feat : pas de transformation directe ici (le feat sera consommé par
+ *     un futur moteur d'effets ; JALON 2B.3a expose juste la validation et
+ *     le storage côté `extraProficiencies` si pertinent — pour l'instant le
+ *     featId est juste référencé via `extraProficiencies.languages` ? Non —
+ *     le feat est posé sur le character via un champ `feats[]` à introduire
+ *     plus tard. Pour 2B.3a, on enregistre le feat dans `extraProficiencies`
+ *     n'est pas correct ; on le stocke à part. Décision : ajouter un champ
+ *     `feats: string[]` au character serait un changement de schéma —
+ *     hors-scope 2B.3a. Pour l'instant, on accepte le draft `feat` et la
+ *     transformation ne mute aucune stat ; le test vérifie que le feat est
+ *     accepté sans corrompre l'état. Le wiring complet du feat suit en 2B.4.)
+ *
+ * Pour les sorts appris (`newSpellsKnown`, `newCantrips`) : on les append à
+ * `knownSpells[classId]` ; pas de dédoublonnage automatique (TDD : le caller
+ * est censé empêcher les doublons côté chooser).
+ */
+
+const ABILITY_MAX_FROM_ASI = 20;
+
+interface ApplyLevelUpParams {
+  character: Character;
+  draft: LevelUpDraft;
+  /**
+   * Définitions des classes du perso, indexées par `classId`. Toutes les
+   * classes présentes dans `character.classes` DOIVENT être fournies — la
+   * recomputation des emplacements de sort multi-classes dépend de la
+   * progression d'incantation de chacune.
+   */
+  classDefinitions: Record<string, ClassEntity>;
+}
+
+export function applyLevelUp({
+  character,
+  draft,
+  classDefinitions,
+}: ApplyLevelUpParams): Character {
+  // Plafond SRD AVANT parse Zod : un perso à 20 ne lève plus, peu importe la
+  // shape du brouillon. Vérifié d'abord parce que le schéma cappe `newClassLevel`
+  // à 20 — un brouillon à 21 serait rejeté par Zod et masquerait l'intention.
+  if (character.totalLevel >= 20) {
+    throw new Error(`[applyLevelUp] totalLevel déjà à 20 — refus (perso ${character.id}).`);
+  }
+
+  // 1. Valide le brouillon (hard throw sur shape invalide).
+  const parsed = levelUpDraftSchema.parse(draft);
+
+  const targetIdx = character.classes.findIndex((c) => c.classId === parsed.classId);
+  if (targetIdx < 0) {
+    throw new Error(
+      `[applyLevelUp] classId="${parsed.classId}" introuvable dans classes[] du perso "${character.id}".`,
+    );
+  }
+  const targetClass = character.classes[targetIdx]!;
+  if (parsed.newClassLevel !== targetClass.level + 1) {
+    throw new Error(
+      `[applyLevelUp] newClassLevel=${parsed.newClassLevel} attendu ${targetClass.level + 1} (level + 1).`,
+    );
+  }
+
+  const targetDef = classDefinitions[parsed.classId];
+  if (!targetDef) {
+    throw new Error(
+      `[applyLevelUp] définition classe "${parsed.classId}" absente de classDefinitions.`,
+    );
+  }
+
+  // 2. Vérifie la sous-classe à L3 (toutes classes — divineOrder/primalOrder
+  // L1 sont des sous-choix indépendants du subclassId SRD 5.2.1).
+  if (parsed.newClassLevel === 3 && !parsed.subclassId && !targetClass.subclassId) {
+    throw new Error(
+      `[applyLevelUp] subclassId requis à newClassLevel=3 pour "${parsed.classId}".`,
+    );
+  }
+
+  // 3. Construit le nouveau `classes[]` avec le niveau et la subclass mis à jour.
+  const updatedClassEntry: CharacterClassEntry = {
+    ...targetClass,
+    level: parsed.newClassLevel,
+    subclassId: parsed.subclassId ?? targetClass.subclassId,
+    eldritchInvocations: parsed.newInvocations
+      ? [...targetClass.eldritchInvocations, ...parsed.newInvocations]
+      : targetClass.eldritchInvocations,
+  };
+  const newClasses: CharacterClassEntry[] = character.classes.map((c, i) =>
+    i === targetIdx ? updatedClassEntry : c,
+  );
+  const newTotalLevel = newClasses.reduce((acc, c) => acc + c.level, 0);
+
+  // 4. Recompute des emplacements de sort multi-classes (full/half/third casters).
+  const casterEntries: CasterClassEntry[] = newClasses.map((c) => {
+    const def = classDefinitions[c.classId];
+    return {
+      level: c.level,
+      progression: def?.spellcasting?.progression ?? null,
+    };
+  });
+  const unifiedLevel = casterLevel(casterEntries);
+  const slotMap = spellSlotsForCasterLevel(unifiedLevel);
+  const nextSpellSlots: Character['spellSlots'] = { ...character.spellSlots };
+  for (const lvl of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {
+    const newMax = slotMap[lvl];
+    if (newMax > 0) {
+      const prev = character.spellSlots[String(lvl)];
+      const prevMax = prev?.max ?? 0;
+      const delta = Math.max(0, newMax - prevMax);
+      nextSpellSlots[String(lvl)] = {
+        current: (prev?.current ?? 0) + delta,
+        max: newMax,
+      };
+    } else if (character.spellSlots[String(lvl)]) {
+      // Le niveau d'emplacement devient inaccessible (cas pathologique multi-class) → on retire
+      delete nextSpellSlots[String(lvl)];
+    }
+  }
+
+  // 5. HP : avg du dé de classe + CON mod (toujours arrondi haut SRD 5.2.1).
+  const HIT_DIE_AVG: Record<'d6' | 'd8' | 'd10' | 'd12', number> = {
+    d6: 4,
+    d8: 5,
+    d10: 6,
+    d12: 7,
+  };
+  const conMod = Math.floor((character.abilities.con - 10) / 2);
+  const avgHp = HIT_DIE_AVG[targetDef.hitDie];
+  const hpDelta =
+    parsed.hpRoll.kind === 'average'
+      ? avgHp + conMod
+      : parsed.hpRoll.rolled + conMod;
+  const safeHpDelta = Math.max(1, hpDelta); // SRD : minimum 1 HP par niveau
+
+  const nextHp = {
+    current: character.hp.current + safeHpDelta,
+    max: character.hp.max + safeHpDelta,
+    temp: character.hp.temp,
+  };
+
+  // 6. Hit dice pool — la classe levée gagne +1 die.
+  const nextHitDice = character.hitDice.map((p) =>
+    p.classId === parsed.classId
+      ? { ...p, max: p.max + 1, current: p.current + 1 }
+      : p,
+  );
+
+  // 7. classResources — applique la progression au nouveau niveau.
+  const nextClassResources: Character['classResources'] = { ...character.classResources };
+  const progression = targetDef.classResourceProgression;
+  if (progression) {
+    for (const [resourceId, table] of Object.entries(progression)) {
+      const entry = table[parsed.newClassLevel - 1];
+      if (typeof entry === 'number' && entry > 0) {
+        const restoresOn = inferRestoresOn(resourceId);
+        nextClassResources[resourceId] = {
+          current: entry,
+          max: entry,
+          restoresOn,
+        };
+      } else if (typeof entry === 'number' && entry === 0) {
+        // Ressource désactivée à ce niveau — on supprime
+        delete nextClassResources[resourceId];
+      }
+      // Les valeurs textuelles (« d6 », « 1d6 ») ne donnent pas de pool — elles
+      // décrivent un dé scalable. Pas matérialisées en classResources.
+    }
+  }
+
+  // 8. ASI — mutation des stats avec borne SRD à 20.
+  let nextAbilities = character.abilities;
+  if (parsed.asiOrFeat?.kind === 'asi') {
+    const totalBonus = parsed.asiOrFeat.abilityIncreases.reduce(
+      (acc, inc) => acc + inc.bonus,
+      0,
+    );
+    if (totalBonus !== 2) {
+      throw new Error(
+        `[applyLevelUp] ASI doit distribuer exactement 2 points, reçu ${totalBonus}.`,
+      );
+    }
+    const nextAbs = { ...nextAbilities };
+    for (const inc of parsed.asiOrFeat.abilityIncreases) {
+      const code: AbilityCode = inc.ability;
+      const target = nextAbs[code] + inc.bonus;
+      if (target > ABILITY_MAX_FROM_ASI) {
+        throw new Error(
+          `[applyLevelUp] ASI dépasse 20 sur "${code}" (${nextAbs[code]} → ${target}).`,
+        );
+      }
+      nextAbs[code] = target;
+    }
+    nextAbilities = nextAbs;
+  }
+  // Feat — pas de mutation directe en 2B.3a (cf. JSDoc ci-dessus).
+
+  // 9. Sorts appris (knownSpells.classId) + cantrips.
+  const nextKnownSpells: Character['knownSpells'] = { ...character.knownSpells };
+  if (parsed.newSpellsKnown && parsed.newSpellsKnown.length > 0) {
+    const existing = nextKnownSpells[parsed.classId] ?? [];
+    nextKnownSpells[parsed.classId] = [...existing, ...parsed.newSpellsKnown];
+  }
+  if (parsed.newCantrips && parsed.newCantrips.length > 0) {
+    const cantripKey = `${parsed.classId}-cantrips`;
+    const existing = nextKnownSpells[cantripKey] ?? [];
+    nextKnownSpells[cantripKey] = [...existing, ...parsed.newCantrips];
+  }
+
+  return {
+    ...character,
+    classes: newClasses,
+    totalLevel: newTotalLevel,
+    abilities: nextAbilities,
+    hp: nextHp,
+    hitDice: nextHitDice,
+    classResources: nextClassResources,
+    spellSlots: nextSpellSlots,
+    knownSpells: nextKnownSpells,
+  };
+}
+
+/**
+ * Heuristique : la majorité des ressources SRD 5.2.1 sont court repos
+ * (rage à part, qui est long rest jusqu'à L20). On reste conservateur en
+ * cas de ressource inconnue. Le moteur de repos final fera autorité.
+ */
+function inferRestoresOn(resourceId: string): 'short' | 'long' {
+  // SRD 5.2.1 — pact magic (Warlock) refresh sur repos court, contrairement à
+  // tous les autres lanceurs. Le reste suit l'intuition : les pools « grands »
+  // (rage, lay-on-hands, sorcery-points, bardic-inspiration) sont long-rest ;
+  // les usages tactiques (action-surge, second-wind, channel-divinity,
+  // wild-shape, ki) sont short-rest.
+  const LONG_REST_RESOURCES = new Set([
+    'rage',
+    'rage-damage',
+    'bardic-inspiration',
+    'bardic-inspiration-die',
+    'lay-on-hands',
+    'sorcery-points',
+    'arcane-recovery',
+    'arcane-recovery-slot-level',
+    'mystic-arcanum',
+  ]);
+  return LONG_REST_RESOURCES.has(resourceId) ? 'long' : 'short';
+}
