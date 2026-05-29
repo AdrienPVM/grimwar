@@ -125,3 +125,28 @@ Justification : conservative-by-default — on livre ce qui peut l'être proprem
 **Référence** : PR à venir (feat/1D-4a-offline-sync-e2e)
 
 **Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
+### [JALON-1D.4b] PWA assets placeholder + e2e offline-load via `vite preview` (2026-05-29)
+
+**Contexte** : MVP-V1-SPEC.md JALON 1D.4 demande « Service Worker minimal pour offline-load » avec un « test e2e qui valide ouvrir app online → setOffline(true) → reload → l'app se charge ». L'inventaire pré-code révèle que :
+- VitePWA était déjà configuré dans `vite.config.ts` avec `registerType: 'autoUpdate'` + Workbox precache complet (33 entrées : HTML, JS, CSS, `public/data/*.json`).
+- `dist/registerSW.js` + `<script id="vite-plugin-pwa:register-sw">` sont auto-injectés au build : **aucun ajout de code dans `src/main.tsx` n'est requis**.
+- Manifest référence 3 PNGs (192/512/maskable) + `index.html` référence `favicon.svg` + `apple-touch-icon.png` — TOUS absents sur disque (manifest techniquement invalide, 404 console).
+
+**Décisions prises** :
+
+1. **Assets PWA placeholder générés par script reproductible** (`scripts/generate-pwa-placeholder-icons.ts` + `pnpm content:pwa-icons`) — 4 PNGs solides aux dimensions correctes (192×192, 512×512, 512×512 maskable, 180×180 apple-touch) + 1 SVG favicon stylisé "G" doré sur fond brand-ink. Couleur : `#08060e` (brand-ink GrimWar). Pure Node + zlib, zéro dépendance externe. Adrien fournira les vrais assets de marque en V1.1.
+
+2. **`registerSW` explicite côté `main.tsx` : NON ajouté**. VitePWA injecte déjà la registration via `<script src="/registerSW.js">` dans `dist/index.html`. Ajouter un `import { registerSW } from 'virtual:pwa-register'` doublerait l'enregistrement et n'apporte rien tant qu'on n'a pas besoin d'un hook UI (« nouvelle version disponible »). Quand ce besoin viendra (V1.5+), on basculera à l'enregistrement explicite.
+
+3. **`devOptions.enabled`: false (inchangé)**. Enabler le SW en dev mode interfère avec le HMR de Vite (le SW intercepte les modules avant le HMR). Le test offline-load tourne contre `vite preview` qui sert le build de prod — environnement réaliste, pas de pollution du flow dev d'Adrien.
+
+4. **Config Playwright dédiée `playwright.preview.config.ts`** (`pnpm test:e2e:preview`) — boote `pnpm build && pnpm preview --port 5180`, ne tourne QUE `tests/e2e/offline-load.spec.ts`. La config dev (`playwright.config.ts`) exclut explicitement ce spec via `testIgnore: ['**/offline-load.spec.ts']` pour ne pas le ramasser sans le SW prod.
+
+5. **`tests/e2e/offline-load.spec.ts` scopé au chargement de l'app**, pas à la fiche du joueur en offline. La spec V1 disait « fiche du joueur lisible depuis Dexie cache » mais en pratique la fiche est dans Firestore (pas Dexie), et l'auth anon offline vs. émulateur indispo demande un setup hors-scope. On prouve le critère structurel : **HTML + JS + CSS servis depuis le précache → app boote → LibraryScreen rend** après `setOffline(true)` + `reload()`. Tester la fiche en offline-load demande un setup multi-couches (Firestore IndexedDB persistence + Dexie + SW) qui mérite son propre PR si jugé nécessaire ultérieurement.
+
+**Référence** : PR à venir (feat/1D-4b-sw-precache-offline-load)
+
+**Status** : à arbitrer par Adrien à l'UAT final

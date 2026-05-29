@@ -25,6 +25,12 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: 'tests/e2e',
+  // `offline-load.spec.ts` requiert le SW de production (Workbox généré au
+  // build). Dev mode ne sert PAS le SW (devOptions.enabled false côté
+  // vite.config.ts) — la spec échouerait systématiquement. Elle tourne via
+  // `pnpm test:e2e:preview` qui boote `vite build && vite preview`
+  // (cf. `playwright.preview.config.ts`). Acté JALON 1D.4b 2026-05-29.
+  testIgnore: ['**/offline-load.spec.ts'],
   // Réchauffement Vite global (plan 13.9 fix point 2 UAT 2026-05-18) — évite
   // le timeout `waitForAppReady` sur la 1ʳᵉ spec qui paie le cold-start Vite
   // (compilation lazy chunks wizard sur Pixel 7 emu).
