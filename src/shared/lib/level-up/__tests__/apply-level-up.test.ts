@@ -31,6 +31,14 @@ import type { LevelUpDraft } from '../level-up-types';
  *   - Cleric (full caster prepared, classResourceProgression `channel-divinity` qui
  *     passe de 0 (L1, non matérialisé) à 2 (L2, matérialisé en {2/2, short rest}))
  *
+ * JALON 2B.3c — Extension à 3 classes supplémentaires :
+ *   - Druid (full caster prepared, `wild-shape` passe de 0 (L1, non matérialisé)
+ *     à 2 (L2, short rest))
+ *   - Monk (martial pur, `focus-points` passe de 0 (L1) à 2 (L2, short rest) +
+ *     vérifie que le `martial-arts-die` textuel ("1d6") n'est PAS matérialisé)
+ *   - Paladin (half caster, `lay-on-hands` passe de 5 (L1) à 10 (L2, long rest) +
+ *     déblocage des emplacements à L2 (casterLevel=floor(2/2)=1 → 2×L1))
+ *
  * Cible explicite : test-vérité du contenu catégorie 4 — résultat chiffré
  * (HP, slots, classResources max) contre la table SRD 5.2.1.
  */
@@ -608,6 +616,185 @@ describe('applyLevelUp · Cleric L1→L2', () => {
       classDefinitions: ALL_CLASSES,
     });
     expect(next.hp.max).toBe(cleric.hp.max + 7);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3c — Druid L1 → L2 (full caster prepared + wild-shape)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Druid L1→L2', () => {
+  const druid = buildL1Character({ classId: 'druid', hitDie: 'd8' });
+  const draft: LevelUpDraft = {
+    classId: 'druid',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('recompute spellSlots à L2 druid : 3×L1 (full caster table SRD)', () => {
+    const next = applyLevelUp({
+      character: druid,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.spellSlots['1']).toEqual({ current: 3, max: 3 });
+    expect(next.spellSlots['2']).toBeUndefined();
+  });
+
+  it('matérialise `wild-shape` à 2/2 (short rest, SRD L2 = 2 uses)', () => {
+    const next = applyLevelUp({
+      character: druid,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['wild-shape']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'short',
+    });
+  });
+
+  it('adds 5 + CON-mod HP en moyenne (d8 → 5, CON +2) → +7', () => {
+    const next = applyLevelUp({
+      character: druid,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(druid.hp.max + 7);
+  });
+
+  it('bumps Druid hit dice pool à 2/2', () => {
+    const next = applyLevelUp({
+      character: druid,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hitDice[0]!.max).toBe(2);
+    expect(next.hitDice[0]!.current).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3c — Monk L1 → L2 (martial pur + focus-points + die textuel)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Monk L1→L2', () => {
+  const monk = buildL1Character({ classId: 'monk', hitDie: 'd8' });
+  const draft: LevelUpDraft = {
+    classId: 'monk',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('matérialise `focus-points` à 2/2 (short rest, SRD L2 = 2 points)', () => {
+    const next = applyLevelUp({
+      character: monk,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['focus-points']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'short',
+    });
+  });
+
+  it('`martial-arts-die` textuel ("1d6") n\'est PAS matérialisé en pool', () => {
+    const next = applyLevelUp({
+      character: monk,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    // La progression encode "1d6" (string) à L1/L2 — l'engine ignore les
+    // valeurs textuelles et ne crée pas d'entrée pool. Le die de l'art martial
+    // est dérivé à l'usage, pas stocké comme compteur de charges.
+    expect(next.classResources['martial-arts-die']).toBeUndefined();
+  });
+
+  it('L1→L2 : pas de spellSlots (Monk non-incantateur)', () => {
+    const next = applyLevelUp({
+      character: monk,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(Object.keys(next.spellSlots)).toEqual([]);
+  });
+
+  it('adds 5 + CON-mod HP en moyenne (d8 → 5, CON +2) → +7', () => {
+    const next = applyLevelUp({
+      character: monk,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(monk.hp.max + 7);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3c — Paladin L1 → L2 (half caster + lay-on-hands)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Paladin L1→L2', () => {
+  const paladin = buildL1Character({ classId: 'paladin', hitDie: 'd10' });
+  const draft: LevelUpDraft = {
+    classId: 'paladin',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('recompute spellSlots à L2 paladin : 2×L1 (half caster, casterLevel=floor(2/2)=1)', () => {
+    const next = applyLevelUp({
+      character: paladin,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.spellSlots['1']).toEqual({ current: 2, max: 2 });
+    expect(next.spellSlots['2']).toBeUndefined();
+  });
+
+  it('bumps `lay-on-hands` à 10/10 (long rest, SRD L1=5 → L2=10)', () => {
+    // Édge case important : la progression existe déjà à L1 (5 pts) — vérifie
+    // que la matérialisation passe bien à 10/10 et que le `current` est reset
+    // au max (le moteur de repos long fera autorité plus tard, mais la
+    // transformation level-up rétablit `current = max` à l'application).
+    const next = applyLevelUp({
+      character: paladin,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['lay-on-hands']).toEqual({
+      current: 10,
+      max: 10,
+      restoresOn: 'long',
+    });
+  });
+
+  it('pas de `channel-divinity` à L2 (SRD L1=0, L2=0 → matérialisation à L3 seulement)', () => {
+    const next = applyLevelUp({
+      character: paladin,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['channel-divinity']).toBeUndefined();
+  });
+
+  it('adds 6 + CON-mod HP en moyenne (d10 → 6, CON +2) → +8', () => {
+    const next = applyLevelUp({
+      character: paladin,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(paladin.hp.max + 8);
+  });
+
+  it('bumps Paladin hit dice pool à 2/2', () => {
+    const next = applyLevelUp({
+      character: paladin,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hitDice[0]!.max).toBe(2);
+    expect(next.hitDice[0]!.current).toBe(2);
   });
 });
 
