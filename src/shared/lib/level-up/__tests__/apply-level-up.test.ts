@@ -24,6 +24,13 @@ import type { LevelUpDraft } from '../level-up-types';
  *   - max level → no-op (refus)
  *   - subclassId requis à newClassLevel=3
  *
+ * JALON 2B.3b — Extension à 3 classes complémentaires :
+ *   - Barbarian (martial pur, classResourceProgression `rage` + `rage-damage`)
+ *   - Bard (full caster, classResourceProgression textuelle `bardic-inspiration-die`
+ *     — vérifie que les valeurs textuelles type "d6" ne polluent PAS `classResources`)
+ *   - Cleric (full caster prepared, classResourceProgression `channel-divinity` qui
+ *     passe de 0 (L1, non matérialisé) à 2 (L2, matérialisé en {2/2, short rest}))
+ *
  * Cible explicite : test-vérité du contenu catégorie 4 — résultat chiffré
  * (HP, slots, classResources max) contre la table SRD 5.2.1.
  */
@@ -426,6 +433,181 @@ describe('applyLevelUp · Rogue progression', () => {
       classDefinitions: ALL_CLASSES,
     });
     expect(rogueL4.abilities).toEqual(rogueL3.abilities);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3b — Barbarian L1 → L2 → L3 (martial + rage progression)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Barbarian progression', () => {
+  const barbarian = buildL1Character({ classId: 'barbarian', hitDie: 'd12' });
+
+  it('L1→L2 : matérialise `rage` à 2/2 (long rest, table SRD)', () => {
+    const next = applyLevelUp({
+      character: barbarian,
+      draft: { classId: 'barbarian', newClassLevel: 2, hpRoll: averageRoll },
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['rage']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'long',
+    });
+  });
+
+  it('L1→L2 : matérialise `rage-damage` à 2/2 (bonus dégâts SRD)', () => {
+    const next = applyLevelUp({
+      character: barbarian,
+      draft: { classId: 'barbarian', newClassLevel: 2, hpRoll: averageRoll },
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['rage-damage']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'long',
+    });
+  });
+
+  it('L1→L2 : pas de spellSlots (Barbarian non-incantateur)', () => {
+    const next = applyLevelUp({
+      character: barbarian,
+      draft: { classId: 'barbarian', newClassLevel: 2, hpRoll: averageRoll },
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(Object.keys(next.spellSlots)).toEqual([]);
+  });
+
+  it('L1→L2 : adds 7 + CON-mod HP (d12 → 7, CON 14 → +2) → +9', () => {
+    const next = applyLevelUp({
+      character: barbarian,
+      draft: { classId: 'barbarian', newClassLevel: 2, hpRoll: averageRoll },
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(barbarian.hp.max + 9);
+  });
+
+  it('L2→L3 (avec subclass `berserker`) : `rage` bump à 3/3 (table SRD)', () => {
+    const barbL2 = applyLevelUp({
+      character: barbarian,
+      draft: { classId: 'barbarian', newClassLevel: 2, hpRoll: averageRoll },
+      classDefinitions: ALL_CLASSES,
+    });
+    const barbL3 = applyLevelUp({
+      character: barbL2,
+      draft: {
+        classId: 'barbarian',
+        newClassLevel: 3,
+        hpRoll: averageRoll,
+        subclassId: 'berserker',
+      },
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(barbL3.classResources['rage']).toEqual({
+      current: 3,
+      max: 3,
+      restoresOn: 'long',
+    });
+    expect(barbL3.classes[0]!.subclassId).toBe('berserker');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3b — Bard L1 → L2 (full caster + die textuel non matérialisé)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Bard L1→L2', () => {
+  const bard = buildL1Character({ classId: 'bard', hitDie: 'd8' });
+  const draft: LevelUpDraft = {
+    classId: 'bard',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('recompute spellSlots à L2 bard : 3×L1 (full caster table SRD)', () => {
+    const next = applyLevelUp({
+      character: bard,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.spellSlots['1']).toEqual({ current: 3, max: 3 });
+    expect(next.spellSlots['2']).toBeUndefined();
+  });
+
+  it('`bardic-inspiration-die` textuel ("d6") n\'est PAS matérialisé en pool', () => {
+    const next = applyLevelUp({
+      character: bard,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    // La progression encode "d6" (string) à L1/L2 — l'engine ignore les
+    // valeurs textuelles et ne crée pas d'entrée pool. La taille du dé est
+    // dérivée à l'usage, pas stockée comme compteur de charges.
+    expect(next.classResources['bardic-inspiration-die']).toBeUndefined();
+  });
+
+  it('adds 5 + CON-mod HP en moyenne (d8 → 5, CON +2) → +7', () => {
+    const next = applyLevelUp({
+      character: bard,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(bard.hp.max + 7);
+  });
+
+  it('bumps Bard hit dice pool à 2/2', () => {
+    const next = applyLevelUp({
+      character: bard,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hitDice[0]!.max).toBe(2);
+    expect(next.hitDice[0]!.current).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3b — Cleric L1 → L2 (full caster prepared + channel divinity)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Cleric L1→L2', () => {
+  const cleric = buildL1Character({ classId: 'cleric', hitDie: 'd8' });
+  const draft: LevelUpDraft = {
+    classId: 'cleric',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('recompute spellSlots à L2 cleric : 3×L1 (full caster table SRD)', () => {
+    const next = applyLevelUp({
+      character: cleric,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.spellSlots['1']).toEqual({ current: 3, max: 3 });
+    expect(next.spellSlots['2']).toBeUndefined();
+  });
+
+  it('matérialise `channel-divinity` à 2/2 (short rest, SRD L2 = 2 uses)', () => {
+    const next = applyLevelUp({
+      character: cleric,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['channel-divinity']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'short',
+    });
+  });
+
+  it('adds 5 + CON-mod HP en moyenne (d8 → 5, CON +2) → +7', () => {
+    const next = applyLevelUp({
+      character: cleric,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(cleric.hp.max + 7);
   });
 });
 
