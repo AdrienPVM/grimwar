@@ -1,16 +1,125 @@
 # JALON 2A — Inventaire pré-refactor « agnostique-de-source »
 
-**Status** : audit pré-code (2A.1)
-**Date** : 2026-05-29
-**Owner** : MVP V1 — JALON 2A
+**Status** : ✅ JALON 2A complet (2A.1 → 2A.6).
+**Owner** : MVP V1 — JALON 2A.
+**Dates** : audit 2026-05-29 (2A.1) → doc post-refactor 2026-05-29 (2A.6).
 
-> Cet inventaire est le pré-requis du refactor 2A. Il documente l'état actuel
+> Cet inventaire est le pré-requis du refactor 2A. Il documente l'état initial
 > du chargement de contenu SRD dans `src/`, identifie les call sites à migrer,
-> et trace le plan de refactor en sous-tracer-bullets PR.
+> trace le plan de refactor en sous-tracer-bullets PR, et expose **l'état
+> post-refactor + le pattern d'usage** pour les sprints suivants (en
+> particulier JALON 3 — custom content campagne).
 
 ---
 
-## 1. État de l'architecture
+## 0. État final (2A.6 — post-refactor)
+
+### 0.1 Ce qui est livré
+
+| Sous-jalon | PR | Livrable |
+|---|---|---|
+| 2A.1 | #56 | Audit (ce document, première version) |
+| 2A.2 | #57 | `CampaignContentContext` + `CampaignContentProvider` + `useCampaignContent` |
+| 2A.3 | #58 | `resolveContentMulti(type, id, { campaignId, userId })` + `useContentResolver` |
+| 2A.4 | #59 | `use-inventory-derived` consomme `useCampaignContent` + `loadCampaignContent` (campaign-scope items résolus) |
+| 2A.5 | #60 | `weaponMasteryEligibility` data-driven (schéma + bundle + helper dispatch) |
+| 2A.6 | (ce PR) | Doc post-refactor |
+
+### 0.2 Ce qui N'est PAS livré (volontairement)
+
+Trois call sites restent en `'public'` hardcodé. **C'est légitime**, pas une dette :
+
+1. `src/features/wizard/submit-from-wizard.ts` lignes 262/272 :
+   `addItemToInventory(..., 'public', ...)`. Le starting equipment d'un perso
+   neuf vient TOUJOURS du SRD — il n'existe pas (en V1) de scénario où un MJ
+   définirait du starting equipment custom. À ré-évaluer si JALON 3 ouvre la
+   personnalisation du wizard côté MJ.
+2. `src/features/sheet/modes/avoir/custom-item-form.tsx` ligne 126 :
+   `addItemToInventory(..., 'user', ..., user.uid)`. Le formulaire VIENT
+   d'écrire en user scope, le scope est connu localement.
+3. `src/features/sheet/modes/avoir/add-item-modal.tsx` ligne 74 : la modale
+   browse ne montre QUE du contenu public en V1. L'extension à user/campaign
+   est JALON 3 (feature, pas refactor).
+
+### 0.3 Pattern d'usage (cheat-sheet pour JALON 3+)
+
+**Cas 1 — Composant qui résout 1 contenu par id (e.g. modal détail) :**
+
+```tsx
+import { useContentResolver } from '@/shared/hooks/use-content-resolver';
+
+function ItemDetail({ itemId }: { itemId: string }) {
+  const resolve = useContentResolver();
+  useEffect(() => {
+    void resolve('items', itemId).then((resolved) => {
+      if (!resolved) return; // 404 — pas dans public ni user ni campaign
+      // resolved.source ∈ {'campaign', 'user', 'public'} — utile pour badge UI
+      // resolved.entity = l'item lui-même
+    });
+  }, [itemId, resolve]);
+  // …
+}
+```
+
+**Cas 2 — Composant qui itère sur l'inventaire d'un perso (avec scope stocké
+sur chaque entrée) :**
+
+```tsx
+import { useCampaignContent } from '@/shared/lib/campaign-content-context';
+import { loadCampaignContent } from '@/shared/lib/content-loader';
+
+function CharacterInventory({ character }) {
+  const { campaignId } = useCampaignContent();
+  // Bulk-load des 3 scopes nécessaires (1 fetch par scope, pas N par item)
+  // puis dispatch sync sur item.contentScope. Cf. use-inventory-derived.ts
+  // pour l'implémentation de référence.
+}
+```
+
+**Cas 3 — Frontière route à monter le Provider (JALON 4) :**
+
+```tsx
+// src/features/campaigns/campaign-route.tsx (futur)
+<CampaignContentProvider campaignId={routeParams.cid}>
+  <Outlet />
+</CampaignContentProvider>
+```
+
+Hors campagne (library, /character/:id sans campagne, settings),
+**aucun Provider** est monté. `campaignId === null`, le merge custom reste
+inerte, comportement public-seul — identique à pré-2A.
+
+### 0.4 Hook pour JALON 3 (custom content campagne)
+
+Pour activer le custom content campagne (= MJ ajoute un item/sort/feat dans
+sa campagne via une UI dédiée), il faut :
+
+1. **Écriture** : poser une UI (DM uniquement, vérifié côté `firestore.rules`)
+   qui écrit dans `campaigns/{cid}/customContent/{type}/{id}`. Côté Firestore,
+   les rules sont DÉJÀ scopées correctement (cf. `firestore.rules`).
+2. **Invalidation** : à chaque création/édition côté MJ, appeler
+   `invalidateCampaignContent(type, campaignId)` pour flusher le cache Dexie 1h.
+3. **Lecture** : le `CampaignContentProvider` à la frontière route fournit
+   `campaignId` ; `useContentResolver` et le pattern bulk-load (cas 2 ci-dessus)
+   font le reste. **Zéro modification de signature côté call sites
+   `useContent(type)` existants** — c'était le critère architectural.
+4. **UI badge** : `resolved.source === 'campaign'` permet d'afficher un badge
+   « custom » sur les entrées issues du custom content.
+
+### 0.5 Politique de conflits d'ID
+
+Quand `campaignId` + `userId` sont posés ET que `custom` et `srd` partagent
+un même `id` (cas typique : MJ override un sort SRD), `resolveContentMulti`
+retourne la version `campaign` en premier (priorité **campaign > user > public**).
+
+Cette politique est **câblée et testée en 2A.3**
+(`src/shared/lib/__tests__/resolve-content-multi.test.ts`). Les tests
+d'intégrité référentielle continueront à passer tant que le custom ne
+réfère pas vers du custom inexistant.
+
+---
+
+## 1. État de l'architecture (pré-refactor — pour mémoire)
 
 ### 1.1 Couche déjà agnostique
 
@@ -27,16 +136,16 @@ Trois fonctions exposées :
 - `loadCampaignContent(type, campaignId)` — campaign seul
 - `resolveContent(type, id, { scope, scopeId })` — lookup un id précis dans un scope
 
-**Le problème** : la couche est agnostique côté loader, mais **aucun call site applicatif ne consomme les scopes `user`/`campaign`**. Toute la couche UI passe par `useContent(type)` qui appelle `loadPublicContent` en dur.
+**Le problème (pré-2A)** : la couche est agnostique côté loader, mais **aucun call site applicatif ne consomme les scopes `user`/`campaign`**. Toute la couche UI passait par `useContent(type)` qui appelait `loadPublicContent` en dur. Les inventaires `campaign`-scopés résolvaient à `content: null`. Les éligibilités Weapon Mastery hardcodaient les classIds SRD.
 
 ### 1.2 Hot spot du refactor
 
-- **65 call sites `useContent()`** (cf. § 3.1)
-- **2 call sites `resolveContent()`** (inventory)
-- **0 hardcoding via `as const` / union type fermé** en code prod
-- **1 switch hardcodé par classId** (`weapon-mastery.ts`)
+- **65 call sites `useContent()`** (cf. § 3.1) — aucun migré (signature inchangée, le Provider fait passer le contexte).
+- **2 call sites `resolveContent()`** (inventory) — déjà scope-aware via `item.contentScope` ; pas de migration nécessaire.
+- **0 hardcoding via `as const` / union type fermé** en code prod.
+- **1 switch hardcodé par classId** (`weapon-mastery.ts`) — **migré en 2A.5** (data-driven via `weaponMasteryEligibility`).
 
-L'absence de listes hardcodées en prod est une **bonne nouvelle structurelle** : le refactor n'a pas à casser des unions de types ou des constantes, juste à étendre le canal d'injection de scope.
+L'absence de listes hardcodées en prod était une **bonne nouvelle structurelle** : le refactor n'a pas eu à casser des unions de types ou des constantes, juste à étendre le canal d'injection de scope.
 
 ---
 
@@ -54,29 +163,30 @@ L'absence de listes hardcodées en prod est une **bonne nouvelle structurelle** 
 - Le merge SRD + custom est encapsulé dans le hook, invisible côté UI
 - Compatible avec le mode « création hors campagne » (pas de context = scope public seul)
 
-### 2.2 Stratégie de merge SRD + custom
+### 2.2 Stratégie de merge SRD + custom (livré 2A.3+)
 
-Pour cette PR (2A), le merge **n'est PAS implémenté** côté UI — c'est le hook posé en JALON 3. Pour 2A on garantit que :
+`resolveContentMulti(type, id, { campaignId, userId })` consulte les 3 scopes
+dans l'ordre **campaign > user > public** et retourne la première résolution
+trouvée, accompagnée de son `source: 'campaign' | 'user' | 'public'`.
 
-- L'API `useContent` accepte un campaignId optionnel via Context (rétro-compat : `useContent(type)` actuel reste identique)
-- En l'absence de campaignId (= toujours, en V1 jalon 2), le comportement est strictement identique à aujourd'hui — zéro régression
-- Le hook expose une discriminant `source: 'srd' | 'custom'` sur chaque entrée pour distinguer à terme dans l'UI (badge « custom » optionnel)
-- Le merge concret (réelle fusion des listes) est livré en JALON 3 quand le système `customContent[campaignId]` existe en Firestore
+Le hook `useContentResolver()` injecte automatiquement le `campaignId` du
+Context et le `userId` du store d'auth — les call sites consomment juste
+`resolve('items', id)`.
 
-### 2.3 Politique de conflits d'ID (préparé pour JALON 3)
+### 2.3 Politique de conflits d'ID
 
 Quand custom et SRD partagent un même `id` (cas : MJ override `wizard`) :
 - **Custom wins** pour les listes — la version custom remplace la version SRD
 - Le metadata `source: 'custom'` est exposé pour permettre un badge UI
 - Les tests d'intégrité référentielle doivent supporter ce cas (à câbler en JALON 3)
 
-Cette politique est documentée ici mais non câblée en 2A — elle borne le scope du JALON 3.
+Cette politique est documentée ici et **câblée + testée en 2A.3**.
 
 ---
 
 ## 3. Inventaire des call sites (résultat audit)
 
-### 3.1 `useContent()` — 65 occurrences
+### 3.1 `useContent()` — 65 occurrences (signature inchangée post-2A)
 
 **Wizard steps** (10 call sites principaux) :
 
@@ -108,99 +218,94 @@ Cette politique est documentée ici mais non câblée en 2A — elle borne le sc
 
 ### 3.2 `loadPublicContent()` directs (hors tests)
 
-| Fichier | Ligne | Type | Contexte |
-|---|---|---|---|
-| `shared/lib/content-loader.ts` | 354, 395 | divers | Implémentation interne (`resolveContent` + `searchContent`) |
-| `shared/lib/inventory.ts` | 76, 79 | `items` + `magic-items` | Résolution d'objets à l'ajout d'inventaire |
-| `features/debug/debug-content.tsx` | 70 | générique | Outil debug — bypass volontaire |
-| `shared/hooks/use-content.ts` | 26 | générique | Implémentation interne du hook |
+| Fichier | Ligne | Type | Contexte | État post-2A |
+|---|---|---|---|---|
+| `shared/lib/content-loader.ts` | 354, 395 | divers | Implémentation interne (`resolveContent` + `searchContent`) | inchangé (impl) |
+| `shared/lib/inventory.ts` | 76, 79 | `items` + `magic-items` | Résolution stricte pre-write scope public | inchangé (perf optim légitime) |
+| `features/debug/debug-content.tsx` | 70 | générique | Outil debug — bypass volontaire | inchangé |
+| `shared/hooks/use-content.ts` | 26 | générique | Implémentation interne du hook | inchangé |
 
 ### 3.3 `resolveContent()` — 2 call sites
 
-| Fichier | Ligne | Appel |
-|---|---|---|
-| `shared/lib/inventory.ts` | 50 | `resolveContent('items', itemId, { scope: 'public' })` |
-| `shared/lib/inventory.ts` | 55 | `resolveContent('magic-items', itemId, { scope: 'public' })` |
+| Fichier | Ligne | Appel actuel | État post-2A |
+|---|---|---|---|
+| `shared/lib/inventory.ts` | 50 | `resolveContent('items', itemId, { scope: item.contentScope, scopeId: item.contentSource })` | inchangé (déjà scope-aware via `item.contentScope`) |
+| `shared/lib/inventory.ts` | 55 | `resolveContent('magic-items', itemId, { ... })` | inchangé (idem) |
 
-### 3.4 Hardcoding résiduel
+**Note** : l'audit initial 2A.1 indiquait `{ scope: 'public' }` pour ces deux lignes. Lecture en profondeur du module : faux positif — le scope vient de `item.contentScope` (le stockage durable porte sa propre scope). Aucune migration nécessaire au niveau `inventory.ts` ; la migration 2A.4 a porté sur le HOOK consommateur (`use-inventory-derived.ts`) pour activer la résolution campaign-scope sous Provider.
 
-| Fichier | Pattern | Action 2A |
-|---|---|---|
-| `shared/lib/rules/weapon-mastery.ts:35-57` | `switch(classId)` 6 cas | **Déplacer en data** : ajouter `classes[].weaponMastery` au schéma, supprimer le switch (JALON 2A.5+) |
-| Aucune autre constante `as const` en code prod | — | — |
+### 3.4 Hardcoding résiduel (état post-2A.5)
 
----
-
-## 4. Découpage en tracer-bullets PR
-
-### 2A.1 — Audit (CE PR, doc-only)
-
-Livre ce document.
-**Diff stat estimé** : 1 file, +XXX lignes (ce fichier).
-**Tests** : aucun, doc-only.
-**Branche** : `feat/2A-1-agnostic-source-inventory`.
-
-### 2A.2 — Infrastructure ContentProvider (à venir)
-
-- `src/shared/contexts/campaign-content-context.tsx` — Context React
-- `useContent(type)` étendu pour lire le campaignId du Context (rétro-compat 100%)
-- En l'absence de Context : comportement actuel inchangé
-- Le merge custom + public est posé en stub (pour l'instant retourne toujours public seul, même avec un campaignId — c'est le hook pour JALON 3)
-- Tests unitaires :
-  - `useContent(type)` sans Context = public seul (parité)
-  - `useContent(type)` avec Context sans campaignId = public seul (parité)
-  - `useContent(type)` avec Context + campaignId stubbé = public seul (puisque le merge est posé en stub) + assertion structurelle que le campaignId est bien lu
-
-**Critère de non-régression** : tous les tests existants restent verts sans modification.
-
-### 2A.3 — Migration inventory (resolveContent)
-
-- `inventory.ts` lit le campaignId du Context si fourni
-- `resolveContent(type, id, { scope: 'campaign', scopeId: campaignId })` est passé en parallèle de public
-- Si la résolution custom retourne une entrée, elle override public
-- Tests : 2 nouveaux tests (resolve d'un item custom override SRD, fallback SRD si custom absent)
-
-### 2A.4 — Migration choosers/steps (gros chantier)
-
-- Aucun changement de signature côté call sites
-- Vérifier en passant que les choosers spécialisés (warlock-invocation, pact-of-the-tome, etc.) consomment bien `useContent(type)` et non un import direct du bundle
-- Si certains choosers utilisent une logique conditionnelle "si classe X afficher Y" basée sur un hardcoding, normaliser via un champ data (ex. `class.subChoiceKind: 'invocation' | 'fightingStyle' | ...`)
-
-### 2A.5 — Suppression switch weapon-mastery hardcodé
-
-- Ajouter au schéma `Class` un champ `weaponMastery: { allowed: boolean; count?: number }`
-- Migrer le bundle `public/data/classes.json` (path protégé → PR dédiée avec ce point comme critère DoD principal)
-- Supprimer le switch
-- Tests d'intégrité du bundle
-
-### 2A.6 — Documentation post-refactor
-
-- Compléter ce document avec l'état post-refactor (call sites migrés, hooks finals)
-- Mettre à jour `docs/ARCHITECTURE.md` avec le pattern Context + merge
+| Fichier | Pattern initial | Action 2A | État |
+|---|---|---|---|
+| `shared/lib/rules/weapon-mastery.ts:35-57` (PRÉ-2A.5) | `switch (classId)` 6 cas | **Déplacé en data** : champ `weaponMasteryEligibility` ajouté au schéma `ClassEntity` + populated par `scripts/extract-srd-classes.ts` ; helper dispatch sur l'enum, plus aucune connaissance des classIds SRD côté code. | ✅ 2A.5 |
+| Aucune autre constante `as const` en code prod | — | — | — |
 
 ---
 
-## 5. Critère de complétion JALON 2A global
+## 4. Découpage en tracer-bullets PR — récap final
 
-- Tous les sites de hardcoding identifiés à l'audit sont migrés vers le ContentProvider (ou actés comme non-migrables avec justification)
-- Tests existants passent (zéro régression côté UI)
-- Nouveaux tests unitaires ContentProvider verts
-- La structure permet à JALON 3 d'ajouter `customContent[campaignId]` sans toucher au reste du code
-- État final documenté dans ce fichier
+### 2A.1 — Audit (PR #56, doc-only) ✅
+
+Livre la première version de ce document.
+
+### 2A.2 — Infrastructure CampaignContentContext (PR #57) ✅
+
+- `src/shared/lib/campaign-content-context.tsx` — Context React + Provider + hook
+- Behavior par défaut (sans Provider) = `campaignId: null`
+- Zéro modification d'API existante
+
+### 2A.3 — resolveContentMulti + useContentResolver (PR #58) ✅
+
+- `src/shared/lib/resolve-content-multi.ts` — primitive multi-scope
+- `src/shared/hooks/use-content-resolver.ts` — hook qui injecte `campaignId` + `userId`
+- Politique `campaign > user > public` testée
+
+### 2A.4 — Migration use-inventory-derived (PR #59) ✅
+
+- `use-inventory-derived.ts` consomme `useCampaignContent` + `loadCampaignContent`
+- Items campaign-scope résolus quand Provider monté (avant : `content: null`)
+- Inerte tant que JALON 4 n'a pas monté le Provider → zéro régression V1
+- 4 nouveaux tests (hors Provider / sous Provider / garde `hasCampaignItems` / `campaignId: null`)
+
+### 2A.5 — weapon-mastery switch → data-driven (PR #60) ✅
+
+- Schéma `ClassEntity` : `weaponMasteryEligibility?: 'all-proficient' | 'rogue-finesse-light'`
+- `superRefine` impose `count > 0 ⇔ eligibility présent`
+- `scripts/data/srd-classes-l1.ts` : map déclarative pour les 12 classes SRD
+- `scripts/extract-srd-classes.ts` enrichit `public/data/classes.json`
+- `weapon-mastery.ts` dispatch sur l'enum, plus aucun classId
+- `weapon-mastery-chooser.tsx` + runner matrice mis à jour
+- 5 nouveaux tests sur le helper + 1 invariant bundle
+
+### 2A.6 — Documentation post-refactor (CE PR, doc-only) ✅
+
+Complète ce document avec l'état post-refactor et le pattern d'usage pour
+JALON 3+.
+
+---
+
+## 5. Critère de complétion JALON 2A global — atteint
+
+- ✅ Tous les sites de hardcoding identifiés à l'audit sont migrés (ou actés comme non-migrables avec justification — cf. § 0.2)
+- ✅ Tests existants restent verts (zéro régression côté UI)
+- ✅ Nouveaux tests unitaires verts (+9 tests sur 2A.4 + 2A.5)
+- ✅ La structure permet à JALON 3 d'ajouter `customContent[campaignId]` sans toucher au reste du code (vérifié : la migration 2A.4 utilise déjà ce pattern, et le hook `useContentResolver` est prêt à être consommé par n'importe quel composant)
+- ✅ État final documenté dans ce fichier
 
 ---
 
 ## 6. Décisions UX non couvertes par MVP-V1-SPEC.md
 
-Aucune en 2A.1 — c'est du pur refactor architectural sans surface utilisateur visible. Toute décision d'override (badge custom dans l'UI, alerte de conflit d'ID) est repoussée au JALON 3 et sera documentée dans `MVP-V1-DECISIONS-PRISES.md` à ce moment-là.
+Aucune en 2A — c'est du pur refactor architectural sans surface utilisateur visible. Toute décision d'override (badge custom dans l'UI, alerte de conflit d'ID) est repoussée au JALON 3 et sera documentée dans `MVP-V1-DECISIONS-PRISES.md` à ce moment-là.
 
 ---
 
-## 7. Risques identifiés
+## 7. Risques identifiés — bilan
 
-| Risque | Mitigation |
-|---|---|
-| Régression silencieuse sur les 65 call sites `useContent()` | Tests existants doivent rester verts sans modification — c'est le gate principal |
-| Surface du refactor 2A.5 (weapon-mastery → data) touche `classes.json` (path protégé) | PR dédiée pour 2A.5, séparée de 2A.4 |
-| Context React non monté à la frontière route (oubli quand on intégrera campagnes) | Documenter explicitement dans 2A.2 le wiring attendu côté JALON 4 (campagnes) |
-| Conflits d'ID custom vs SRD | Politique « custom wins » documentée en § 2.3, à câbler en JALON 3 avec tests dédiés |
+| Risque initial | Mitigation appliquée | État |
+|---|---|---|
+| Régression silencieuse sur les 65 call sites `useContent()` | Tests existants restent verts sans modification — gate principal | ✅ vérifié |
+| Surface du refactor 2A.5 (weapon-mastery → data) touche `classes.json` (path protégé) | PR #60 dédiée avec flow merge-commit, `protected-paths-guard` vert | ✅ vérifié |
+| Context React non monté à la frontière route (oubli quand on intégrera campagnes) | Documenté en § 0.3 et § 4 (JALON 4) | ⏳ JALON 4 |
+| Conflits d'ID custom vs SRD | Politique « campaign > user > public » câblée + testée en 2A.3 | ✅ câblé, ⏳ exposition UI = JALON 3 |
