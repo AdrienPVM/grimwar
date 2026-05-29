@@ -213,6 +213,114 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
       }
     });
 
+    it('classResourceProgression SRD 5.2.1 — couverture des 11 classes (JALON 2B.2b)', async () => {
+      // 11 des 12 classes ont une table de progression de ressources dans le
+      // SRD 5.2.1. Le Ranger n'en a pas en V1 jalon 2 (favored-enemy est
+      // déclaré dans une colonne dédiée mais hors scope V1).
+      const classes = await loadJson<
+        (ClassEntry & {
+          classResourceProgression?: Record<string, (number | string)[]>;
+        })[]
+      >('public/data/classes.json');
+      const expectedClassesWithProgression = [
+        'barbarian',
+        'bard',
+        'cleric',
+        'druid',
+        'fighter',
+        'monk',
+        'paladin',
+        'rogue',
+        'sorcerer',
+        'warlock',
+        'wizard',
+      ];
+      for (const id of expectedClassesWithProgression) {
+        const cls = classes.find((c) => c.id === id);
+        expect(cls?.classResourceProgression, `${id} doit avoir classResourceProgression`).toBeDefined();
+        const progression = cls?.classResourceProgression ?? {};
+        expect(Object.keys(progression).length).toBeGreaterThan(0);
+        for (const [resourceId, values] of Object.entries(progression)) {
+          expect(values, `${id}.${resourceId} doit avoir 20 entrées`).toHaveLength(20);
+        }
+      }
+      // Ranger en V1 jalon 2 : pas de classResourceProgression (out of scope).
+      const ranger = classes.find((c) => c.id === 'ranger');
+      expect(ranger?.classResourceProgression).toBeUndefined();
+    });
+
+    it('classResourceProgression — vérité du contenu cat. 3 (18 valeurs SRD figées, JALON 2B.2b)', async () => {
+      // Vérification humaine UNE FOIS contre SRD 5.2.1 (cf.
+      // `content-sources/extracted/raw/SRD_CC_v5.2.1.txt`, tables
+      // « <Class> Features »). Le test fige la vérité ensuite.
+      // Pour chaque progression : un niveau d'inflexion + sa valeur SRD canonique.
+      const classes = await loadJson<
+        (ClassEntry & {
+          classResourceProgression?: Record<string, (number | string)[]>;
+        })[]
+      >('public/data/classes.json');
+      const get = (classId: string, resourceId: string, level: number): number | string => {
+        const cls = classes.find((c) => c.id === classId);
+        const progression = cls?.classResourceProgression?.[resourceId];
+        if (!progression) {
+          throw new Error(`Progression ${classId}.${resourceId} introuvable`);
+        }
+        const value = progression[level - 1];
+        if (value === undefined) {
+          throw new Error(`Progression ${classId}.${resourceId} sans valeur à L${level}`);
+        }
+        return value;
+      };
+      // Barbarian (SRD L2909) — Rages, Rage Damage
+      expect(get('barbarian', 'rage', 1)).toBe(2);
+      expect(get('barbarian', 'rage', 17)).toBe(6);
+      expect(get('barbarian', 'rage-damage', 9)).toBe(3); // SRD : +3 à partir de L9
+      // Bard (SRD L3194) — Bardic Inspiration die
+      expect(get('bard', 'bardic-inspiration-die', 1)).toBe('d6');
+      expect(get('bard', 'bardic-inspiration-die', 5)).toBe('d8'); // SRD : « d8 à partir du niveau 5 »
+      expect(get('bard', 'bardic-inspiration-die', 15)).toBe('d12');
+      // Cleric (SRD L3625) — Channel Divinity (none L1)
+      expect(get('cleric', 'channel-divinity', 1)).toBe(0);
+      expect(get('cleric', 'channel-divinity', 2)).toBe(2); // SRD : gagné L2
+      expect(get('cleric', 'channel-divinity', 18)).toBe(4);
+      // Druid (SRD L4054) — Wild Shape (none L1, gained L2)
+      expect(get('druid', 'wild-shape', 2)).toBe(2);
+      expect(get('druid', 'wild-shape', 17)).toBe(4);
+      // Fighter (SRD L4613) — Second Wind, Action Surge
+      expect(get('fighter', 'second-wind', 1)).toBe(2);
+      expect(get('fighter', 'second-wind', 10)).toBe(4);
+      expect(get('fighter', 'action-surge', 2)).toBe(1); // SRD : « one use » L2
+      expect(get('fighter', 'action-surge', 17)).toBe(2); // SRD : « two uses » L17
+      // Monk (SRD L4868) — Martial Arts die, Focus Points
+      expect(get('monk', 'martial-arts-die', 1)).toBe('1d6');
+      expect(get('monk', 'martial-arts-die', 11)).toBe('1d10');
+      expect(get('monk', 'martial-arts-die', 17)).toBe('1d12');
+      expect(get('monk', 'focus-points', 1)).toBe(0); // pas de focus L1
+      expect(get('monk', 'focus-points', 10)).toBe(10); // SRD : FP = level
+      // Paladin (SRD L5136) — Channel Divinity, Lay On Hands pool
+      expect(get('paladin', 'channel-divinity', 2)).toBe(0); // pas de CD L2
+      expect(get('paladin', 'channel-divinity', 3)).toBe(2); // SRD : gagné L3
+      expect(get('paladin', 'lay-on-hands', 1)).toBe(5); // SRD : pool = level × 5
+      expect(get('paladin', 'lay-on-hands', 20)).toBe(100);
+      // Rogue (SRD L5928) — Sneak Attack dice
+      expect(get('rogue', 'sneak-attack-dice', 1)).toBe('1d6');
+      expect(get('rogue', 'sneak-attack-dice', 19)).toBe('10d6');
+      // Sorcerer (SRD L6193) — Sorcery Points (none L1)
+      expect(get('sorcerer', 'sorcery-points', 1)).toBe(0);
+      expect(get('sorcerer', 'sorcery-points', 20)).toBe(20);
+      // Warlock (SRD L6760) — Pact Magic slots/slot-level + Mystic Arcanum + EI
+      expect(get('warlock', 'pact-magic-slots', 1)).toBe(1);
+      expect(get('warlock', 'pact-magic-slots', 17)).toBe(4);
+      expect(get('warlock', 'pact-magic-slot-level', 9)).toBe(5); // cap L5 atteint à L9
+      expect(get('warlock', 'mystic-arcanum', 11)).toBe(1); // SRD : MA L6 spell débloqué L11
+      expect(get('warlock', 'mystic-arcanum', 17)).toBe(4);
+      expect(get('warlock', 'eldritch-invocations', 1)).toBe(1);
+      expect(get('warlock', 'eldritch-invocations', 20)).toBe(10);
+      // Wizard (SRD L7426) — Arcane Recovery combined slot level = ceil(level/2)
+      expect(get('wizard', 'arcane-recovery-slot-level', 1)).toBe(1);
+      expect(get('wizard', 'arcane-recovery-slot-level', 20)).toBe(10);
+    });
+
     it('weaponMasteryEligibility cohérent avec weaponMasteryCount (JALON 2A.5)', async () => {
       // Invariant : count > 0 ⇔ eligibility présent (et inversement).
       // Sémantique data-driven : 4 classes 'all-proficient' (Barb/Fighter/
