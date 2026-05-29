@@ -39,8 +39,18 @@ import type { LevelUpDraft } from '../level-up-types';
  *   - Paladin (half caster, `lay-on-hands` passe de 5 (L1) à 10 (L2, long rest) +
  *     déblocage des emplacements à L2 (casterLevel=floor(2/2)=1 → 2×L1))
  *
+ * JALON 2B.3d — Extension aux 3 dernières classes SRD :
+ *   - Ranger (half caster sans `classResourceProgression` — vérifie qu'absence
+ *     de table n'erre PAS + déblocage des emplacements à L2 via half caster)
+ *   - Sorcerer (full caster, `sorcery-points` passe de 0 (L1) à 2 (L2, long rest))
+ *   - Warlock (pact caster — `pact-magic-slots` à 2/2 short rest,
+ *     `pact-magic-slot-level` à 1/1 short, `eldritch-invocations` à 3/3 short,
+ *     `mystic-arcanum` non matérialisé à L2 car progression=0)
+ *
  * Cible explicite : test-vérité du contenu catégorie 4 — résultat chiffré
  * (HP, slots, classResources max) contre la table SRD 5.2.1.
+ *
+ * Couverture cumulée 2B.3a→d : 12/12 classes SRD applyLevelUp.
  */
 
 // ─────────────────────────────────────────────────────────────────────
@@ -795,6 +805,226 @@ describe('applyLevelUp · Paladin L1→L2', () => {
     });
     expect(next.hitDice[0]!.max).toBe(2);
     expect(next.hitDice[0]!.current).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3d — Ranger L1 → L2 (half caster sans classResourceProgression)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Ranger L1→L2', () => {
+  const ranger = buildL1Character({ classId: 'ranger', hitDie: 'd10' });
+  const draft: LevelUpDraft = {
+    classId: 'ranger',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('recompute spellSlots à L2 ranger : 2×L1 (half caster, casterLevel=floor(2/2)=1)', () => {
+    const next = applyLevelUp({
+      character: ranger,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.spellSlots['1']).toEqual({ current: 2, max: 2 });
+    expect(next.spellSlots['2']).toBeUndefined();
+  });
+
+  it('classResources reste vide (Ranger SRD 5.2.1 n\'a pas de classResourceProgression)', () => {
+    // Garde-fou : si la classe n'a aucune table de progression ressources, le
+    // moteur ne doit ni throw ni polluer `classResources`. Le Ranger SRD 5.2.1
+    // gère ses signature features (Favored Enemy, Hunter's Mark) comme des
+    // sorts/features sans pool de charges dédié au niveau du resource tracker.
+    const next = applyLevelUp({
+      character: ranger,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources).toEqual({});
+  });
+
+  it('adds 6 + CON-mod HP en moyenne (d10 → 6, CON +2) → +8', () => {
+    const next = applyLevelUp({
+      character: ranger,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(ranger.hp.max + 8);
+  });
+
+  it('bumps Ranger hit dice pool à 2/2', () => {
+    const next = applyLevelUp({
+      character: ranger,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hitDice[0]!.max).toBe(2);
+    expect(next.hitDice[0]!.current).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3d — Sorcerer L1 → L2 (full caster + sorcery-points)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Sorcerer L1→L2', () => {
+  const sorcerer = buildL1Character({ classId: 'sorcerer', hitDie: 'd6' });
+  const draft: LevelUpDraft = {
+    classId: 'sorcerer',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('recompute spellSlots à L2 sorcerer : 3×L1 (full caster table SRD)', () => {
+    const next = applyLevelUp({
+      character: sorcerer,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.spellSlots['1']).toEqual({ current: 3, max: 3 });
+    expect(next.spellSlots['2']).toBeUndefined();
+  });
+
+  it('matérialise `sorcery-points` à 2/2 (long rest, SRD L2 = 2 points)', () => {
+    const next = applyLevelUp({
+      character: sorcerer,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['sorcery-points']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'long',
+    });
+  });
+
+  it('adds 4 + CON-mod HP en moyenne (d6 → 4, CON +2) → +6', () => {
+    const next = applyLevelUp({
+      character: sorcerer,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(sorcerer.hp.max + 6);
+  });
+
+  it('bumps Sorcerer hit dice pool à 2/2', () => {
+    const next = applyLevelUp({
+      character: sorcerer,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hitDice[0]!.max).toBe(2);
+    expect(next.hitDice[0]!.current).toBe(2);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// JALON 2B.3d — Warlock L1 → L2 (pact caster + invocations + slot-level)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyLevelUp · Warlock L1→L2', () => {
+  const warlock = buildL1Character({ classId: 'warlock', hitDie: 'd8' });
+  const draft: LevelUpDraft = {
+    classId: 'warlock',
+    newClassLevel: 2,
+    hpRoll: averageRoll,
+  };
+
+  it('PAS de spellSlots `pact` standards (le pact magic vit dans classResources, pas dans spellSlots)', () => {
+    // Garde-fou architectural : la progression Warlock est `pact` (pas full/half/
+    // third), donc `casterLevel(pact)` renvoie 0 et `spellSlotsForCasterLevel(0)`
+    // renvoie 0 partout. Aucun emplacement standard n'est créé. Le pact magic
+    // est encodé séparément via `pact-magic-slots` + `pact-magic-slot-level`.
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(Object.keys(next.spellSlots)).toEqual([]);
+  });
+
+  it('matérialise `pact-magic-slots` à 2/2 (short rest, SRD L2 = 2 slots)', () => {
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['pact-magic-slots']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'short',
+    });
+  });
+
+  it('matérialise `pact-magic-slot-level` à 1/1 (short rest, SRD L1=1, L2=1 — pas de bump)', () => {
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['pact-magic-slot-level']).toEqual({
+      current: 1,
+      max: 1,
+      restoresOn: 'short',
+    });
+  });
+
+  it('matérialise `eldritch-invocations` à 3/3 (short rest, SRD 5.2.1 L2 = 3 invocations connues)', () => {
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['eldritch-invocations']).toEqual({
+      current: 3,
+      max: 3,
+      restoresOn: 'short',
+    });
+  });
+
+  it('PAS de `mystic-arcanum` à L2 (SRD progression = 0 jusqu\'à L11)', () => {
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classResources['mystic-arcanum']).toBeUndefined();
+  });
+
+  it('adds 5 + CON-mod HP en moyenne (d8 → 5, CON +2) → +7', () => {
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hp.max).toBe(warlock.hp.max + 7);
+  });
+
+  it('bumps Warlock hit dice pool à 2/2', () => {
+    const next = applyLevelUp({
+      character: warlock,
+      draft,
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.hitDice[0]!.max).toBe(2);
+    expect(next.hitDice[0]!.current).toBe(2);
+  });
+
+  it('newInvocations dans le draft s\'append à `classes[].eldritchInvocations`', () => {
+    // Le chooser d'invocations est wiré côté UI (à venir) ; en attendant, on
+    // valide que le moteur respecte la sémantique : append, pas remplacement.
+    const next = applyLevelUp({
+      character: warlock,
+      draft: {
+        ...draft,
+        newInvocations: ['agonizing-blast', 'devils-sight'],
+      },
+      classDefinitions: ALL_CLASSES,
+    });
+    expect(next.classes[0]!.eldritchInvocations).toEqual([
+      'agonizing-blast',
+      'devils-sight',
+    ]);
   });
 });
 
