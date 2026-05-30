@@ -411,13 +411,19 @@ const ABILITY_LABELS: Record<AbilityCode, string> = {
   cha: 'Charisme',
 };
 
-function AsiOrFeatStep({ state, dispatch }: StepBodyProps): JSX.Element {
+function AsiOrFeatStep({ state, dispatch, newClassLevel }: StepBodyProps): JSX.Element {
   const { data: feats, loading } = useContent('feats');
-  const generalFeats = useMemo(
-    () => feats.filter((f) => f.category === 'general'),
-    [feats],
+  // SRD 5.2.1 (PHB 2024) : à L19 le choix « Epic Boon » tire dans la catégorie
+  // `epic-boon`, pas dans `general`. Les autres niveaux ASI (4/6/8/10/12/14/16)
+  // tirent dans `general`. Cf. matrice ASI 2C.2.
+  const isEpicBoonLevel = newClassLevel === 19;
+  const featCategory: 'general' | 'epic-boon' = isEpicBoonLevel ? 'epic-boon' : 'general';
+  const candidateFeats = useMemo(
+    () => feats.filter((f) => f.category === featCategory),
+    [feats, featCategory],
   );
   const mode = state.asiOrFeat?.kind ?? null;
+  const featLabel = isEpicBoonLevel ? 'Don épique' : 'Don général';
 
   return (
     <section aria-labelledby="step-asi-title" className="space-y-4">
@@ -426,11 +432,14 @@ function AsiOrFeatStep({ state, dispatch }: StepBodyProps): JSX.Element {
           id="step-asi-title"
           className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
         >
-          Amélioration de caractéristique ou don
+          {isEpicBoonLevel
+            ? 'Amélioration de caractéristique ou don épique'
+            : 'Amélioration de caractéristique ou don'}
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">
-          Tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou
-          +1/+1 sur deux), soit prendre un don général à la place.
+          {isEpicBoonLevel
+            ? 'À ce niveau tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou +1/+1 sur deux), soit prendre un don épique à la place.'
+            : 'Tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou +1/+1 sur deux), soit prendre un don général à la place.'}
         </p>
       </header>
 
@@ -454,7 +463,7 @@ function AsiOrFeatStep({ state, dispatch }: StepBodyProps): JSX.Element {
           onClick={() =>
             dispatch({
               type: 'set-asi-or-feat',
-              value: { kind: 'feat', featId: generalFeats[0]?.id ?? '' },
+              value: { kind: 'feat', featId: candidateFeats[0]?.id ?? '' },
             })
           }
         />
@@ -469,8 +478,9 @@ function AsiOrFeatStep({ state, dispatch }: StepBodyProps): JSX.Element {
       {mode === 'feat' && (
         <FeatPicker
           state={state}
-          feats={generalFeats}
+          feats={candidateFeats}
           loading={loading}
+          label={featLabel}
           onChange={(value) => dispatch({ type: 'set-asi-or-feat', value })}
         />
       )}
@@ -583,18 +593,20 @@ function FeatPicker({
   state,
   feats,
   loading,
+  label,
   onChange,
 }: {
   state: LevelUpFlowState;
   feats: { id: string; name: I18n }[];
   loading: boolean;
+  label: string;
   onChange: (value: { kind: 'feat'; featId: string }) => void;
 }): JSX.Element {
   const featId = state.asiOrFeat?.kind === 'feat' ? state.asiOrFeat.featId : '';
   return (
     <div className="space-y-3 rounded-card border border-white-8 bg-glass p-4">
       <label className="block font-serif text-body-sm text-text">
-        Don général
+        {label}
         {loading ? (
           <p className="mt-1 font-serif text-body-sm italic text-text-tertiary">
             Chargement des dons…
