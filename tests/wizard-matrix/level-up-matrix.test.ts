@@ -68,7 +68,12 @@ vi.mock('@/shared/lib/inventory', () => ({
 let bundles: MatrixBundles;
 let l1Snapshots: Map<string, Character>;
 
-const targetPersonas = ['base-fighter', 'base-wizard', 'base-rogue'] as const;
+const targetPersonas = [
+  'base-fighter',
+  'base-wizard',
+  'base-rogue',
+  'base-paladin',
+] as const;
 
 beforeAll(async () => {
   bundles = loadBundles();
@@ -379,5 +384,168 @@ describe('matrice level-up — éligibilité Lutteur sur Wizard/Fighter L4 (JALO
       { kind: 'character-level', minimum: 4 },
       { kind: 'ability-score', ability: 'for', minimum: 13 },
     ]);
+  });
+});
+
+/**
+ * Matrix pins — multi-class (JALON 2D.5).
+ *
+ * Cat. 4 (résultat chiffré) + cat. 6 (cas-limite SRD intersection) :
+ *
+ *   - Slots unifiés au multiclass-add (Fighter L3 + Wizard L1 → table SRD
+ *     `spellSlotsForCasterLevel(1)` = 2 emplacements L1).
+ *   - HP au multiclass-add forcé à l'avg (audit 2D Décision 2 — réservé à
+ *     la primaryClassId au L1 de prendre le dé max).
+ *   - `extraProficiencies` accumule le subset multiclass de la classe
+ *     ajoutée (Wizard multiclass = 0 armure, Fighter multiclass = light
+ *     + medium + shields + martial weapons).
+ *   - Hit dice pool : nouvelle entrée appendée (pas un +1 sur existant).
+ *   - `applyLevelUp` refuse l'add quand `multiclassPrerequisite` non
+ *     satisfait (defense in depth — l'UI grise déjà).
+ *   - `applyLevelUp` refuse l'add quand `classes.length >= 4` (borne SRD).
+ */
+describe('matrice level-up — multi-class add-class (JALON 2D.5)', () => {
+  function fighterL3IntellectualLite(): Character {
+    const base = l1('base-fighter');
+    // Tweak abilities pour respecter Wizard prereq (INT 13).
+    return {
+      ...base,
+      abilities: { ...base.abilities, int: 13 },
+    };
+  }
+
+  it("Fighter L3 (INT 13) + add Wizard L1 → slots L1=2 + HP avg + extraProficiencies vides Wizard", () => {
+    const base = fighterL3IntellectualLite();
+    // Monte Fighter à L3 d'abord pour valider l'add-class à L4 total.
+    const fighterL3 = applyChain(base, [
+      { classId: 'fighter', newClassLevel: 2, hpRoll: { kind: 'average' } },
+      {
+        classId: 'fighter',
+        newClassLevel: 3,
+        hpRoll: { kind: 'average' },
+        subclassId: 'champion',
+      },
+    ]);
+    expect(fighterL3.totalLevel).toBe(3);
+    const hpBeforeAdd = fighterL3.hp.max;
+
+    const wizardDef = bundles.classes.find((c) => c.id === 'wizard');
+    expect(wizardDef).toBeDefined();
+
+    // Add Wizard L1 (multiclass).
+    const fighter3Wizard1 = applyLevelUp({
+      character: fighterL3,
+      draft: {
+        classId: 'wizard',
+        newClassLevel: 1,
+        hpRoll: { kind: 'average' },
+        addClassSubChoices: {
+          wizardSpellbookL1: [
+            'mains-brulantes',
+            'projectile-magique',
+            'armure-du-mage',
+            'detection-de-la-magie',
+            'identification',
+            'sommeil',
+          ],
+        },
+      },
+      classDefinitions: { ...classDefs(fighterL3), wizard: wizardDef! },
+    });
+
+    // Total level + classes shape
+    expect(fighter3Wizard1.totalLevel).toBe(4);
+    expect(fighter3Wizard1.classes).toHaveLength(2);
+    expect(fighter3Wizard1.classes[1]?.classId).toBe('wizard');
+    expect(fighter3Wizard1.classes[1]?.level).toBe(1);
+
+    // Slots SRD unifié : caster level = 0 (Fighter non-caster) + 1 (Wizard
+    // full) = 1 → SLOT_TABLE[1] = { 1: 2 }.
+    expect(fighter3Wizard1.spellSlots).toMatchObject({
+      1: { max: 2 },
+    });
+
+    // HP au multiclass-add : Wizard d6 avg=4 + CON 14 → conMod=+2 → +6 HP.
+    expect(fighter3Wizard1.hp.max).toBe(hpBeforeAdd + 6);
+
+    // Hit dice : nouvelle entrée Wizard (1 d6, current=1, max=1).
+    expect(fighter3Wizard1.hitDice).toContainEqual(
+      expect.objectContaining({ classId: 'wizard', max: 1, die: 'd6' }),
+    );
+
+    // extraProficiencies Wizard multiclass = aucune (SRD 2024 — cf. 2D.2).
+    // Le subset Wizard est { armor: [], weapons: [], tools: [] }. Vérifie que
+    // l'append n'a rien polué côté Fighter (qui avait déjà ses profs au L1).
+    expect(fighter3Wizard1.extraProficiencies.armor).toEqual(
+      fighterL3.extraProficiencies.armor,
+    );
+    expect(fighter3Wizard1.extraProficiencies.weapons).toEqual(
+      fighterL3.extraProficiencies.weapons,
+    );
+  });
+
+  it("Paladin standard (CHA 8) + tentative add Bard → throw (CHA <13)", () => {
+    // Construit un Paladin synthétique à partir d'un L1 Fighter et tweak.
+    const base = l1('base-fighter');
+    const paladinSynthetic: Character = {
+      ...base,
+      classes: [
+        { ...base.classes[0]!, classId: 'paladin' },
+      ],
+      primaryClassId: 'paladin',
+      hitDice: [{ classId: 'paladin', current: 1, max: 1, die: 'd10' }],
+      abilities: { ...base.abilities, for: 15, cha: 8 },
+    };
+
+    const bardDef = bundles.classes.find((c) => c.id === 'bard');
+    const paladinDef = bundles.classes.find((c) => c.id === 'paladin');
+    expect(bardDef).toBeDefined();
+    expect(paladinDef).toBeDefined();
+
+    expect(() =>
+      applyLevelUp({
+        character: paladinSynthetic,
+        draft: {
+          classId: 'bard',
+          newClassLevel: 1,
+          hpRoll: { kind: 'average' },
+        },
+        classDefinitions: { paladin: paladinDef!, bard: bardDef! },
+      }),
+    ).toThrow(/prérequis multiclass non satisfaits.*CHA/i);
+  });
+
+  it("Borne 4 classes : add-class refusé quand classes.length === 4", () => {
+    const base = l1('base-fighter');
+    // Construit un perso bourré à 4 classes synthétiques.
+    const fourClassChar: Character = {
+      ...base,
+      classes: [
+        { ...base.classes[0]!, classId: 'fighter' },
+        { ...base.classes[0]!, classId: 'rogue' },
+        { ...base.classes[0]!, classId: 'wizard' },
+        { ...base.classes[0]!, classId: 'cleric' },
+      ],
+      totalLevel: 4,
+    };
+    const barbarianDef = bundles.classes.find((c) => c.id === 'barbarian');
+    expect(barbarianDef).toBeDefined();
+    const classDefMap = Object.fromEntries(
+      bundles.classes
+        .filter((c) => ['fighter', 'rogue', 'wizard', 'cleric', 'barbarian'].includes(c.id))
+        .map((c) => [c.id, c] as const),
+    );
+
+    expect(() =>
+      applyLevelUp({
+        character: fourClassChar,
+        draft: {
+          classId: 'barbarian',
+          newClassLevel: 1,
+          hpRoll: { kind: 'average' },
+        },
+        classDefinitions: classDefMap,
+      }),
+    ).toThrow(/classes\.length=4.*max=4/);
   });
 });
