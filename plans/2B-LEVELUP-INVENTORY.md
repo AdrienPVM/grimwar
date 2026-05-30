@@ -290,3 +290,89 @@ Justification : éviter de transformer le level-up en mini-wizard. Si la sous-cl
 - **Custom content campagne** (classes/sous-classes/feats homebrew) → JALON 3
 - **Subclasses additionnelles** (le bundle SRD ne ship qu'1 subclass par classe — l'extension à 3+ subclasses par classe sortira soit du custom content soit d'un sprint d'enrichissement bundle post-V1)
 - **3D dice au moment du roll HP** → S5
+
+---
+
+## 9. État final post-2B.6 (clôture JALON 2B)
+
+JALON 2B est livré dans son intégralité — 11 sous-PRs mergées entre le
+2026-05-29 (PR #67) et le 2026-05-30 (PR #79). Architecture finale stable :
+
+### Couche pure (transformations & validation)
+
+| Module | Rôle | Test |
+|---|---|---|
+| `src/shared/lib/level-up/level-up-types.ts` | `LevelUpDraft` + Zod schema | `level-up-types.test.ts` |
+| `src/shared/lib/level-up/apply-level-up.ts` | `applyLevelUp(character, draft, classDefinitions) → Character` (pure) | `apply-level-up.test.ts` × 12 classes |
+| `src/shared/lib/level-up/level-up-choices.ts` | `levelUpChoices(…) → LevelUpStep[]` (introspection) | `level-up-choices.test.ts` |
+| `src/shared/lib/level-up/level-up-flow.ts` | reducer du wizard step-par-step + `buildLevelUpDraft` | `level-up-flow.test.ts` |
+
+### Couche UI
+
+| Composant | Rôle |
+|---|---|
+| `src/features/level-up/use-level-up.ts` | hook bridge `applyLevelUp` + `useUpdateCharacter` (patch partiel Firestore) |
+| `src/features/level-up/level-up-modal.tsx` | wizard 1-N étapes — consomme `useContent` pour les pickers SRD |
+| `src/features/level-up/level-up-button.tsx` | FAB hero-card + state submitting/error |
+
+### Couverture de tests (post-2B.6)
+
+- **Unitaires (vitest)** : 1599 tests verts, dont 17 dédiés level-up.
+- **Matrice level-up (`tests/wizard-matrix/level-up-matrix.test.ts`)** : 4 pins
+  Fighter L1→L4 + Wizard L1→L4 + Rogue L1→L3, plus 1 cas-limite « L3 sans
+  subclassId → throw ». Vérifie les RÉSULTATS CHIFFRÉS (HP max, abilities,
+  subclassId, spell slots SLOT_TABLE, hit dice pool) contre les formules SRD.
+- **e2e Playwright** :
+  - `tests/e2e/level-up-fighter.spec.ts` — L1→L4 martial complet (HP +
+    Champion + ASI FOR + reload persist).
+  - `tests/e2e/level-up-wizard.spec.ts` — L1→L4 full caster (HP + sorts +
+    cantrips + Évocateur + ASI INT via picker explicite).
+  - `tests/e2e/level-up-rogue.spec.ts` — L1→L3 skill (HP + Voleur + survie
+    des sous-choix L1 `expertiseSkills` après patch partiel).
+- **Garde-fous bundle** : `srd-counters.test.ts` confirme la couverture
+  ASI/Feat par classe (12 × 5-7 niveaux d'ASI), `srd-reference-entries.test.ts`
+  pinne les features Champion + Évocateur + Voleur à leur level canonique.
+
+### Bénéfice JALON 2A (refactor source-agnostic) déjà actif
+
+`applyLevelUp` et `levelUpChoices` consomment un `classDefinitions: Record<string, ClassEntity>`
+construit par `useContent('classes')` → la résolution est multi-scope
+(`public/data` + custom content campagne) côté `content-loader.ts`. Une
+classe homebrew JALON 3 chargée en `customContent['classes']` apparaîtra
+automatiquement dans le LevelUpModal sans modification du moteur — c'est
+exactement le bénéfice promis par le refactor 2A.
+
+### Fix collatéral — modale state-reset entre ouvertures
+
+Acté pendant 2B.6a (PR #77) : le `useReducer(levelUpFlowReducer)` à
+l'intérieur de `LevelUpModal` ne reset PAS quand `open` repasse de
+`false` à `true` (le composant reste monté, juste DetailModal retourne
+null). Sans fix, une seconde ouverture héritait du `stepIdx` du
+level-up précédent. Fix : `{open && <LevelUpModal />}` côté
+`LevelUpButton` — la modale unmount à la fermeture, le reducer
+ré-initialise à chaque ouverture.
+
+### Décisions UX intégrées (cf. § 6 + `plans/MVP-V1-DECISIONS-PRISES.md`)
+
+- HP par défaut = **moyenne** SRD. Bouton « Lancer le dé » bypass-able.
+- À chaque ASI level : choix radio **ASI** (somme=2, validée par
+  superRefine 2C.1) OU **Feat** (catégorie `general` aux L4/8/12/16,
+  catégorie `epic-boon` au L19 — détection 2C.2/2C.3).
+- Sous-classe choisie à L3, un seul écran (pas de wizard imbriqué).
+- Spell preparation : la liste préparée se reset à `[]` au level-up — la
+  bannière prévient « repos long pour préparer ».
+
+### Reste à faire en JALON 2 (post-2B)
+
+- **JALON 2C** : durcir les `prerequisites` des feats à structure typée
+  (Fighting Style, STR 13+, etc.) — actuellement champ string FR libre
+  côté `feats.json`. 2C.1-3 ont durci l'ASI et l'Epic Boon ; 2C.4
+  porterait `computeFeatAvailability(character, feat)` + gating UI.
+- **JALON 2D** : multiclassing avec slot table multi-class SRD.
+- **JALON 2E** : 3 méthodes de génération de stats (point buy /
+  4d6 / standard array) au wizard de création.
+
+Tout test de level-up futur (nouvelles classes custom, scenarios
+multi-class, etc.) étend `tests/wizard-matrix/level-up-matrix.test.ts`
+selon le pattern ci-dessus : `applyChain(start, drafts[])` puis pins
+chiffrés contre la formule SRD.
