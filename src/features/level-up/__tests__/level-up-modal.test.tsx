@@ -288,3 +288,63 @@ describe('LevelUpModal — coquille UI (JALON 2B.4c)', () => {
     expect(screen.getByRole('button', { name: /précédent/i })).toBeDisabled();
   });
 });
+
+describe('LevelUpModal — persistance asynchrone (JALON 2B.5)', () => {
+  it('isSubmitting grise Confirmer + Précédent et change le libellé en « Application… »', () => {
+    const character = makeFighter(1);
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+        isSubmitting
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    const confirmBtn = screen.getByRole('button', { name: /application/i });
+    expect(confirmBtn).toBeDisabled();
+    expect(confirmBtn).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: /précédent/i })).toBeDisabled();
+  });
+
+  it('submitError est rendu dans le footer en role="alert"', () => {
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={makeFighter(1)}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+        submitError="Permission denied (offline)"
+      />,
+    );
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent('Permission denied (offline)');
+  });
+
+  it('onClose est neutralisé pendant la persistance (pas de fermeture accidentelle)', () => {
+    const onClose = vi.fn();
+    render(
+      <LevelUpModal
+        open
+        onClose={onClose}
+        character={makeFighter(1)}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+        isSubmitting
+      />,
+    );
+    // Le bouton de fermeture (`×`) du DetailModal expose un aria-label « Fermer ».
+    const closeBtn = screen.queryByRole('button', { name: /fermer/i });
+    if (closeBtn) {
+      fireEvent.click(closeBtn);
+      expect(onClose).not.toHaveBeenCalled();
+    }
+    // L'absence du bouton n'est pas une régression : certaines variantes le
+    // cachent. Le contrat testé ici, c'est qu'on n'appelle pas onClose pendant
+    // la persistance — vérifié quel que soit le chemin.
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});

@@ -6,33 +6,39 @@ import type { LevelUpDraft } from '@/shared/lib/level-up/level-up-types';
 import type { Character } from '@/shared/types/character';
 
 import { LevelUpModal } from './level-up-modal';
+import { useLevelUp } from './use-level-up';
 
 /**
- * JALON 2B.4c — Bouton « Monter de niveau » + ouverture de la modale.
+ * JALON 2B.4c → 2B.5 — Bouton « Monter de niveau » + persistance Firestore.
  *
- * Visible uniquement quand le perso n'est pas déjà au cap SRD (L20) et que
- * la définition de classe primaire est chargée depuis `useContent('classes')`.
- * Le bouton reste inerte (mais visible) pendant le chargement initial du
- * bundle pour éviter un flash de disparition.
+ * Visible uniquement quand la classe primaire n'est pas déjà au cap SRD (L20)
+ * et que la définition de classe est chargée depuis `useContent('classes')`.
  *
- * Pour 2B.4c le `onConfirm` n'est PAS branché à Firestore — c'est le
- * périmètre de 2B.5. La modale se ferme simplement au confirm (no-op de
- * persistance), ce qui permet de livrer la coquille UI testable de bout
- * en bout sans tirer la couche persistance.
+ * Comportement de submit (2B.5) :
+ *  - sans `onConfirm` fourni : délègue à `useLevelUp(character)` qui applique
+ *    la transformation pure puis patche Firestore (Partial<Character>).
+ *  - avec `onConfirm` fourni : escape hatch pour tests + futurs callers qui
+ *    veulent inspecter le draft avant de persister eux-mêmes.
+ *
+ * La modale reste ouverte tant que l'écriture n'a pas acquitté ; au succès
+ * elle se referme ; sur rejet (offline / permission denied / draft invalide),
+ * l'erreur est rendue dans le footer pour permettre correction ou retry.
+ *
+ * Mono-class only ; multi-class repoussé à JALON 2D (le reducer + le builder
+ * de draft acceptent déjà un `classId` paramétrable sans changement).
  */
 
 interface LevelUpButtonProps {
   character: Character;
-  /**
-   * Optionnel — handler de submit. Branché à Firestore au plan 2B.5.
-   * Pour 2B.4c, l'appelant peut passer un no-op et la modale se ferme.
-   */
-  onConfirm?: (draft: LevelUpDraft) => void;
+  onConfirm?: (draft: LevelUpDraft) => void | Promise<void>;
 }
 
 export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX.Element | null {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { data: classes } = useContent('classes');
+  const { applyAndPersist } = useLevelUp(character);
 
   const classDefinition = useMemo(
     () => classes.find((c) => c.id === character.primaryClassId) ?? null,
@@ -40,17 +46,32 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
   );
 
   const primaryEntry = character.classes.find((c) => c.classId === character.primaryClassId);
-  // Décision JALON 2B : la modale ne couvre que mono-class et n'augmente que
-  // la classe primaire. Multi-class repoussé à JALON 2D. Du coup on cache le
-  // bouton si la classe primaire est déjà à 20 — peu importe les autres
-  // classes (qui n'existent que pour les fiches d'avant 2D, et le cas est
-  // borderline ici).
   if (!primaryEntry || primaryEntry.level >= 20) return null;
   if (!classDefinition) return null;
 
-  function handleConfirm(draft: LevelUpDraft): void {
-    onConfirm?.(draft);
+  async function handleConfirm(draft: LevelUpDraft): Promise<void> {
+    if (isSubmitting) return;
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      if (onConfirm) {
+        await onConfirm(draft);
+      } else {
+        await applyAndPersist(draft);
+      }
+      setOpen(false);
+    } catch (err) {
+      const wrapped = err instanceof Error ? err.message : String(err);
+      setSubmitError(wrapped);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleClose(): void {
+    if (isSubmitting) return;
     setOpen(false);
+    setSubmitError(null);
   }
 
   return (
@@ -65,10 +86,12 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
       </Button>
       <LevelUpModal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
         character={character}
         classDefinition={classDefinition}
         onConfirm={handleConfirm}
+        isSubmitting={isSubmitting}
+        submitError={submitError}
       />
     </>
   );
