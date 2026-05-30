@@ -47,6 +47,17 @@ interface LevelUpModalProps {
   character: Character;
   classDefinition: ClassEntity;
   onConfirm: (draft: LevelUpDraft) => void;
+  /**
+   * 2B.5 — Quand la persistance est en cours (parent attend l'ack Firestore),
+   * on grise navigation + Confirmer pour empêcher la double-soumission et la
+   * fermeture par Escape pendant l'écriture.
+   */
+  isSubmitting?: boolean;
+  /**
+   * 2B.5 — Message d'erreur de persistance rendu sous le footer. Reset par le
+   * parent à chaque nouvelle tentative.
+   */
+  submitError?: string | null;
 }
 
 export function LevelUpModal({
@@ -55,6 +66,8 @@ export function LevelUpModal({
   character,
   classDefinition,
   onConfirm,
+  isSubmitting = false,
+  submitError = null,
 }: LevelUpModalProps): JSX.Element | null {
   const titleId = 'level-up-modal-title';
 
@@ -96,10 +109,15 @@ export function LevelUpModal({
     onConfirm(draft);
   }
 
+  // Pendant la persistance, on neutralise onClose pour empêcher la fermeture
+  // par Escape / clic backdrop. DetailModal réutilise la prop telle quelle —
+  // un no-op suffit, pas besoin de patcher le primitif.
+  const safeOnClose = isSubmitting ? () => {} : onClose;
+
   return (
     <DetailModal
       open={open}
-      onClose={onClose}
+      onClose={safeOnClose}
       titleId={titleId}
       className="max-w-[560px]"
     >
@@ -134,34 +152,45 @@ export function LevelUpModal({
         )}
       </div>
 
-      <footer className="flex items-center justify-between gap-3 border-t border-white-8 px-6 py-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => dispatch({ type: 'go-prev' })}
-          disabled={state.stepIdx === 0}
-        >
-          Précédent
-        </Button>
-        {isLast ? (
+      <footer className="flex flex-col gap-2 border-t border-white-8 px-6 py-4">
+        <div className="flex items-center justify-between gap-3">
           <Button
-            variant="primary"
-            size="md"
-            onClick={handleConfirm}
-            disabled={!allFilled}
+            variant="ghost"
+            size="sm"
+            onClick={() => dispatch({ type: 'go-prev' })}
+            disabled={state.stepIdx === 0 || isSubmitting}
           >
-            Confirmer
+            Précédent
           </Button>
-        ) : (
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => dispatch({ type: 'go-next' })}
-            disabled={!isStepFilled(current, state)}
+          {isLast ? (
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleConfirm}
+              disabled={!allFilled || isSubmitting}
+              aria-busy={isSubmitting || undefined}
+            >
+              {isSubmitting ? 'Application…' : 'Confirmer'}
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => dispatch({ type: 'go-next' })}
+              disabled={!isStepFilled(current, state) || isSubmitting}
+            >
+              Suivant
+            </Button>
+          )}
+        </div>
+        {submitError ? (
+          <p
+            role="alert"
+            className="font-serif text-body-sm text-crimson"
           >
-            Suivant
-          </Button>
-        )}
+            {submitError}
+          </p>
+        ) : null}
       </footer>
     </DetailModal>
   );

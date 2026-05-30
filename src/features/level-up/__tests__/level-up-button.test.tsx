@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
@@ -116,15 +116,40 @@ describe('LevelUpButton (JALON 2B.4c)', () => {
     expect(container.querySelector('button')).toBeNull();
   });
 
-  it('clic ouvre la modale, qui se ferme au confirm', () => {
-    const onConfirm = vi.fn();
+  it('clic ouvre la modale, qui se ferme au confirm', async () => {
+    const onConfirm = vi.fn().mockResolvedValue(undefined);
     render(<LevelUpButton character={makeChar(1)} onConfirm={onConfirm} />);
     fireEvent.click(screen.getByRole('button', { name: /monter au niveau 2/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    // Choisir « Moyenne » et confirmer ferme la modale + appelle onConfirm.
     fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
     fireEvent.click(screen.getByRole('button', { name: /confirmer/i }));
     expect(onConfirm).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    // La fermeture suit l'await de onConfirm — la modale disparait après
+    // résolution du microtask.
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('rejet de onConfirm : modale reste ouverte, erreur affichée, retry possible', async () => {
+    const onConfirm = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Firestore indisponible'))
+      .mockResolvedValueOnce(undefined);
+    render(<LevelUpButton character={makeChar(1)} onConfirm={onConfirm} />);
+    fireEvent.click(screen.getByRole('button', { name: /monter au niveau 2/i }));
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /confirmer/i }));
+    // Première tentative : message d'erreur rendu sous le footer, modale OUVERTE.
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/firestore indisponible/i);
+    });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // Retry : second clic confirme et ferme la modale.
+    fireEvent.click(screen.getByRole('button', { name: /confirmer/i }));
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+    expect(onConfirm).toHaveBeenCalledTimes(2);
   });
 });
