@@ -17,12 +17,33 @@
 
 export type FeatCategory = 'origin' | 'general' | 'fighting-style' | 'epic-boon';
 
+/**
+ * Prérequis structuré d'un feat — JALON 2C-feat-2.
+ * Source de vérité audit : `plans/2C-FEAT-PREREQS-AUDIT.md`.
+ *
+ * Le type est dupliqué ici (vs `src/shared/types/content.ts > featPrerequisiteSchema`)
+ * pour garder le script SRD autonome (pas d'import depuis `src/`). Le Zod schema
+ * côté `content-loader` valide chaque entrée à la lecture du bundle.
+ */
+type FeatAbilityCode = 'for' | 'dex' | 'con' | 'int' | 'sag' | 'cha';
+
+export type SrdFeatPrerequisite =
+  | { kind: 'character-level'; minimum: number }
+  | { kind: 'ability-score'; ability: FeatAbilityCode; minimum: number }
+  | { kind: 'class-feature'; featureNameEn: string }
+  | { kind: 'spellcasting' };
+
 export interface SrdFeatEntry {
   id: string;
   name: { fr: string; en: string };
   category: FeatCategory;
   prerequisite: { fr: string; en: string } | null;
   summary: { fr: string; en: string };
+  /**
+   * Prérequis exécutables (AND strict). Absent / `[]` = aucun prérequis.
+   * Audit feat-par-feat : `plans/2C-FEAT-PREREQS-AUDIT.md`.
+   */
+  prerequisites?: SrdFeatPrerequisite[];
   source: 'srd-5.2.1';
 }
 
@@ -83,6 +104,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: 'Augmentez de 2 une caractéristique au choix, ou de 1 deux caractéristiques différentes. Aucune ne peut dépasser 20. Ce feat peut être pris plusieurs fois.',
       en: 'Raise one ability score by 2, or two ability scores by 1 each. No score may exceed 20. Repeatable.',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 4 }],
     source: 'srd-5.2.1',
   },
   {
@@ -94,6 +116,10 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: "Avantage aux jets d'attaque contre une créature avec laquelle vous êtes en lutte. Vous pouvez utiliser votre action pour bloquer une créature en lutte (vous et elle entravés).",
       en: 'Advantage on attack rolls against a creature you are grappling. You can use your action to pin a grappled creature (both Restrained until the grapple ends).',
     },
+    prerequisites: [
+      { kind: 'character-level', minimum: 4 },
+      { kind: 'ability-score', ability: 'for', minimum: 13 },
+    ],
     source: 'srd-5.2.1',
   },
 
@@ -153,6 +179,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: 'Quand vous ratez une attaque, vous pouvez la convertir en touche automatique (1 fois par tour).',
       en: 'When you miss an attack, you may turn it into an automatic hit (once per turn).',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 19 }],
     source: 'srd-5.2.1',
   },
   {
@@ -164,6 +191,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: "En action bonus, téléportez-vous jusqu'à 9 m vers un endroit visible. PB usages par repos long.",
       en: 'As a bonus action, teleport up to 30 ft. to a visible spot. PB uses per long rest.',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 19 }],
     source: 'srd-5.2.1',
   },
   {
@@ -175,6 +203,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: "Quand une autre créature dans 18 m fait un d20 Test, ajoutez 2d6 au résultat. PB usages par repos long.",
       en: 'When another creature within 60 ft. makes a d20 Test, add 2d6 to the result. PB uses per long rest.',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 19 }],
     source: 'srd-5.2.1',
   },
   {
@@ -186,6 +215,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: 'Vos attaques ignorent la résistance aux dégâts contondants/perçants/tranchants. Sur 20 naturel, ajoutez votre niveau aux dégâts.',
       en: 'Your attacks ignore bludgeoning/piercing/slashing resistance. On a nat 20, add your level to damage.',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 19 }],
     source: 'srd-5.2.1',
   },
   {
@@ -197,6 +227,10 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: 'Quand vous lancez un sort avec un slot ≤ 4, JS Cha (DD 15) : succès → le slot n\'est pas consommé.',
       en: 'When casting a spell using a slot of level 4 or lower, make a Cha save (DC 15): success → slot is not expended.',
     },
+    prerequisites: [
+      { kind: 'character-level', minimum: 19 },
+      { kind: 'spellcasting' },
+    ],
     source: 'srd-5.2.1',
   },
   {
@@ -208,6 +242,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: "Dans le noir : invisible jusqu'à ce que vous attaquiez ou lanciez un sort. Résistance aux dégâts froids/nécrotiques/psychiques.",
       en: 'In Darkness: Invisible until you attack or cast a spell. Resistance to cold, necrotic, and psychic damage.',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 19 }],
     source: 'srd-5.2.1',
   },
   {
@@ -219,6 +254,7 @@ export const SRD_FEATS: SrdFeatEntry[] = [
       fr: 'Truesight 18 m permanent.',
       en: 'Permanent Truesight to a range of 60 ft.',
     },
+    prerequisites: [{ kind: 'character-level', minimum: 19 }],
     source: 'srd-5.2.1',
   },
 ];

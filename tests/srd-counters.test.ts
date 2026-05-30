@@ -31,9 +31,16 @@ interface ClassEntry {
   weaponMasteryCount?: number;
 }
 
+type FeatPrerequisite =
+  | { kind: 'character-level'; minimum: number }
+  | { kind: 'ability-score'; ability: string; minimum: number }
+  | { kind: 'class-feature'; featureNameEn: string }
+  | { kind: 'spellcasting' };
+
 interface FeatEntry {
   id: string;
   category?: string;
+  prerequisites?: FeatPrerequisite[];
 }
 
 interface InvocationEntry {
@@ -503,6 +510,60 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
       expect(byCat('general')).toBe(2);
       expect(byCat('fighting-style')).toBe(4);
       expect(byCat('epic-boon')).toBe(7);
+    });
+
+    /**
+     * JALON 2C-feat-2 — pin catégorie 3 (fidélité bundle SRD) sur les
+     * prérequis structurés. Source : `plans/2C-FEAT-PREREQS-AUDIT.md`.
+     *
+     * Garde-fou : `computeFeatAvailability` (2C-feat-3) lira ce champ ; un
+     * drift de structure (kind renommé, ability sur mauvais code) casserait
+     * la modale de level-up silencieusement.
+     */
+    it('2C-feat-2 — prerequisites[] pin les feats à prérequis exécutables', async () => {
+      const feats = await loadJson<FeatEntry[]>('public/data/feats.json');
+      const byId = (id: string) => feats.find((f) => f.id === id);
+
+      // Origin feats (4) → AUCUN prerequisites[] (sentinelle absente).
+      for (const id of ['alert', 'magic-initiate', 'savage-attacker', 'skilled']) {
+        expect(byId(id)?.prerequisites, `${id} ne doit pas porter prerequisites`).toBeUndefined();
+      }
+
+      // Fighting Style feats (4) → AUCUN prerequisites[] (filtre par catégorie).
+      for (const id of ['archery', 'defense', 'great-weapon-fighting', 'two-weapon-fighting']) {
+        expect(byId(id)?.prerequisites, `${id} ne doit pas porter prerequisites`).toBeUndefined();
+      }
+
+      // General — ASI = Level 4+.
+      expect(byId('ability-score-improvement')?.prerequisites).toEqual([
+        { kind: 'character-level', minimum: 4 },
+      ]);
+
+      // General — Lutteur = Level 4+ AND Force 13+.
+      expect(byId('lutteur')?.prerequisites).toEqual([
+        { kind: 'character-level', minimum: 4 },
+        { kind: 'ability-score', ability: 'for', minimum: 13 },
+      ]);
+
+      // Epic Boons (6 sur 7) = Level 19+ seul.
+      for (const id of [
+        'boon-of-combat-prowess',
+        'boon-of-dimensional-travel',
+        'boon-of-fate',
+        'boon-of-irresistible-offense',
+        'boon-of-the-night-spirit',
+        'boon-of-truesight',
+      ]) {
+        expect(byId(id)?.prerequisites, `${id} doit avoir prereq Level 19`).toEqual([
+          { kind: 'character-level', minimum: 19 },
+        ]);
+      }
+
+      // Epic Boon — Spell Recall = Level 19+ AND spellcasting.
+      expect(byId('boon-of-spell-recall')?.prerequisites).toEqual([
+        { kind: 'character-level', minimum: 19 },
+        { kind: 'spellcasting' },
+      ]);
     });
   });
 
