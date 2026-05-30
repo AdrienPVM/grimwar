@@ -991,6 +991,80 @@ export const druidL9D14: SeedPreset = {
   spellcastingAbility: { druid: 'sag' },
 };
 
+/**
+ * Fighter L3 Champion (JALON 2D.5) — INT 13 pour satisfaire le prereq
+ * multiclass Wizard (INT 13 SRD 2024). Sert le scénario e2e
+ * « ajouter Wizard L1 en multiclass » : le picker laisse Wizard cliquable,
+ * la modale propose le step Sous-choix L1 (Wizard spellbook).
+ *
+ * Stats : FOR 16 / DEX 12 / CON 14 / INT 13 / SAG 10 / CHA 10. CON +2 mod.
+ * HP L3 : 12 (L1 d10 max + CON) + 8 + 8 = 28. AC 14 (cuir clouté + DEX 1).
+ */
+export const fighterL3MulticlassReady: SeedPreset = {
+  name: 'Edrick le Lettré',
+  classes: [
+    {
+      classId: 'fighter',
+      subclassId: 'champion',
+      level: 3,
+      subChoices: {
+        fighterFightingStyle: 'defense',
+        weaponMasteries: ['longsword', 'shortbow'],
+      },
+    },
+  ],
+  primaryClassId: 'fighter',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 12, con: 14, int: 13, sag: 10, cha: 10 },
+  hp: { current: 28, max: 28 },
+  ac: 14,
+  hitDice: [{ classId: 'fighter', current: 3, max: 3, die: 'd10' }],
+  saves: { for: true, con: true },
+  inventory: {
+    items: [{ contentId: 'longsword', equipped: true, qty: 1 }],
+  },
+};
+
+/**
+ * Paladin L1 (JALON 2D.5) — CHA 12 (en-dessous du seuil SRD 13). Tous les
+ * multiclass requérant CHA 13 (Bard, Sorcerer, Warlock, Paladin) DOIVENT
+ * être grisés dans le picker. Fighter (FOR 13 OR DEX 13) reste éligible
+ * via FOR 13, ce qui permet au bouton « Ajouter une classe » de s'afficher
+ * (il dépend d'au moins UNE classe éligible). Le test asserte le grisage
+ * de Bard avec sa raison `CHA 12/13`.
+ *
+ * Note schéma : la fiche Paladin elle-même n'aurait pas pu être créée via
+ * wizard avec CHA 12 (Paladin requiert FOR 13 + CHA 13 au L1) — le seed
+ * pose le doc directement en bypass des rules creation-time, scénario
+ * légitime puisqu'on simule un perso déjà existant qui veut multiclasser
+ * sans avoir bumpé son CHA.
+ */
+export const paladinL1MulticlassBlocked: SeedPreset = {
+  name: 'Sigvald le Stoïque',
+  classes: [
+    {
+      classId: 'paladin',
+      subclassId: null,
+      level: 1,
+    },
+  ],
+  primaryClassId: 'paladin',
+  ancestryId: 'human',
+  ancestrySubChoices: {},
+  backgroundId: 'soldier',
+  // FOR 13 → Fighter/Barbarian éligibles (au moins un éligible nécessaire
+  // pour que le bouton add-class s'affiche). INT 8 / SAG 12 / DEX 10 →
+  // Wizard/Cleric/Druid/Ranger/Rogue/Monk bloqués. CHA 12 → Bard/Sorcerer/
+  // Warlock/Paladin bloqués (12 < 13 → unmet score `CHA 12/13`).
+  abilities: { for: 13, dex: 10, con: 14, int: 8, sag: 12, cha: 12 },
+  hp: { current: 12, max: 12 },
+  ac: 14,
+  hitDice: [{ classId: 'paladin', current: 1, max: 1, die: 'd10' }],
+  saves: { sag: true, cha: true },
+};
+
 // ─────────────────────────────────────────────────────────────────────────
 // Build & seed
 // ─────────────────────────────────────────────────────────────────────────

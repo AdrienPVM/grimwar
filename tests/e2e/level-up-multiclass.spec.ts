@@ -1,0 +1,203 @@
+import { expect, test } from '@playwright/test';
+
+import { isEmulatorReachable, waitForAppReady } from './fixtures';
+import { takeStepScreenshot } from './helpers/screenshot';
+import {
+  fighterL3MulticlassReady,
+  paladinL1MulticlassBlocked,
+  readBackCharacter,
+  seedCharacter,
+} from './seed-character';
+
+/**
+ * JALON 2D.5 — e2e parcours add-class (multiclass) côté UI.
+ *
+ * Couvre deux pivots du flow 2D côté utilisateur :
+ *
+ *  1. **Add-class succès** — Fighter L3 (INT 13) ouvre la modale via le
+ *     bouton « Ajouter une classe », pick Wizard (éligible), sélectionne
+ *     les 6 sorts de grimoire L1 imposés par le SRD 2024, confirme. On
+ *     vérifie côté Firestore (`readBackCharacter`) :
+ *       - `totalLevel === 4`,
+ *       - `classes.length === 2`, `classes[1].classId === 'wizard'`,
+ *       - `classes[1].level === 1`, `wizardSpellbookL1` posé,
+ *       - `spellSlots['1'].max === 2` (caster level unifié = 1).
+ *     Preuve que le flow add-class (2D.4a→2D.4d) persiste correctement
+ *     l'état multiclass et déclenche le recompute SRD des slots.
+ *
+ *  2. **Add-class blocked par prereq** — Paladin L1 avec CHA 12 voit le
+ *     picker mais la rangée Bard est `aria-disabled='true'` et porte la
+ *     raison `CHA 12/13`. Preuve que `computeMulticlassEligibility`
+ *     (2D.3) + le grey-out (2D.4c) gardent un MJ déloyal de bypasser la
+ *     règle. Le Fighter reste cliquable (FOR 13 satisfait le OR du
+ *     prereq Fighter — sans quoi le bouton « Ajouter une classe » ne
+ *     s'afficherait même pas).
+ *
+ * Pré-requis : émulateur Firebase actif (`pnpm e2e:emulators`). Sans
+ * émulateur, le `test.skip` du beforeAll garantit pas de faux-vert.
+ */
+test.describe('Level-up multiclass — add-class flow + prereq gating', () => {
+  test.beforeAll(async () => {
+    const ok = await isEmulatorReachable();
+    test.skip(
+      !ok,
+      'Firestore emulator unreachable on 127.0.0.1:8080 — start it with `pnpm e2e:emulators` (requires Java/JRE 11+). Skipping level-up multiclass.',
+    );
+  });
+
+  test('Fighter L3 (INT 13) → ajoute Wizard L1 : slots unifiés + persistance', async ({
+    page,
+  }, testInfo) => {
+    // ── Boot + seed ───────────────────────────────────────────────────
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { uid, charId } = await seedCharacter(page, fighterL3MulticlassReady);
+    await page.goto(`/character/${charId}`);
+
+    await expect(
+      page.getByText(fighterL3MulticlassReady.name).first(),
+      'Hero card doit afficher le nom du Fighter seedé.',
+    ).toBeVisible({ timeout: 10_000 });
+    await takeStepScreenshot(page, testInfo, '00-sheet-fighter-l3');
+
+    // ── Ouverture modale add-class ────────────────────────────────────
+    const addClassButton = page.getByRole('button', { name: /Ajouter une classe/i });
+    await expect(
+      addClassButton,
+      'Le bouton « Ajouter une classe » doit être visible sur la fiche Fighter L3 (au moins 1 classe éligible).',
+    ).toBeVisible();
+    await addClassButton.click();
+
+    let dialog = page.getByRole('dialog');
+    await expect(dialog, 'Modale add-class doit s\'ouvrir au tap.').toBeVisible();
+    await expect(
+      dialog.getByText(/Choisis ta nouvelle classe/i),
+      'Le titre doit refléter le picker initial.',
+    ).toBeVisible();
+    await takeStepScreenshot(page, testInfo, '01-modal-add-class-picker');
+
+    // ── Pick Wizard (éligible car INT 13) ─────────────────────────────
+    const wizardOption = dialog.getByRole('radio', { name: /Magicien/i });
+    await expect(
+      wizardOption,
+      'L\'option Magicien doit être présente et cliquable.',
+    ).toBeVisible();
+    await expect(wizardOption).not.toHaveAttribute('aria-disabled', 'true');
+    await wizardOption.click();
+
+    // Étape suivante : sub-choices L1 du Magicien (grimoire 6 sorts).
+    await dialog.getByRole('button', { name: /^Suivant$/i }).click();
+
+    const spellbookLegend = dialog.getByText(/Sorts du grimoire/i);
+    await expect(
+      spellbookLegend,
+      'Le multi-select Spellbook L1 (6 sorts) doit apparaître pour la classe Wizard.',
+    ).toBeVisible();
+    await takeStepScreenshot(page, testInfo, '02-modal-wizard-spellbook');
+
+    // 6 premiers sorts L1 du bundle SRD wizard — l'ordre alphabétique FR
+    // remonte des slugs déterministes. On clique 6 cases pour atteindre
+    // le quota; tap sur 7e doit être disabled (aria-disabled).
+    const checkboxes = dialog.getByRole('checkbox');
+    // Sélection des 6 premières cases visibles dans le spellbook.
+    for (let i = 0; i < 6; i++) {
+      await checkboxes.nth(i).click();
+    }
+    await expect(
+      dialog.getByText(/^6 \/ 6$/),
+      'Compteur doit afficher 6 / 6 quand le quota est atteint.',
+    ).toBeVisible();
+
+    // ── Confirm ───────────────────────────────────────────────────────
+    await dialog.getByRole('button', { name: /^Confirmer$/i }).click();
+    await expect(dialog, 'Modale doit se fermer après Confirmer.').toBeHidden({
+      timeout: 5_000,
+    });
+
+    // ── Vérification Firestore via Admin SDK ──────────────────────────
+    await expect
+      .poll(
+        async () => {
+          const doc = await readBackCharacter(uid, charId);
+          const classes = (doc?.classes as Array<{ classId: string; level: number }>) ?? [];
+          const slots = doc?.spellSlots as Record<string, { max: number }> | undefined;
+          return {
+            totalLevel: doc?.totalLevel,
+            classesLength: classes.length,
+            secondClassId: classes[1]?.classId,
+            secondClassLevel: classes[1]?.level,
+            slotsL1Max: slots?.['1']?.max,
+          };
+        },
+        {
+          message:
+            'Le doc Firestore doit refléter Fighter L3 + Wizard L1 multiclass après Confirmer.',
+          timeout: 5_000,
+        },
+      )
+      .toEqual({
+        totalLevel: 4,
+        classesLength: 2,
+        secondClassId: 'wizard',
+        secondClassLevel: 1,
+        slotsL1Max: 2,
+      });
+
+    await takeStepScreenshot(page, testInfo, '03-sheet-multiclass-fighter-wizard');
+  });
+
+  test('Paladin L1 (CHA 12) → Bard grisé dans le picker (CHA 12/13)', async ({
+    page,
+  }, testInfo) => {
+    // ── Boot + seed ───────────────────────────────────────────────────
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { charId } = await seedCharacter(page, paladinL1MulticlassBlocked);
+    await page.goto(`/character/${charId}`);
+
+    await expect(
+      page.getByText(paladinL1MulticlassBlocked.name).first(),
+      'Hero card doit afficher le nom du Paladin seedé.',
+    ).toBeVisible({ timeout: 10_000 });
+    await takeStepScreenshot(page, testInfo, '00-sheet-paladin-l1');
+
+    // ── Le bouton add-class doit être visible car Fighter (FOR 13)
+    //     est éligible — sans quoi `LevelUpButton` masque l'entrée.
+    const addClassButton = page.getByRole('button', { name: /Ajouter une classe/i });
+    await expect(
+      addClassButton,
+      'Le bouton « Ajouter une classe » doit être visible (Fighter éligible via FOR 13).',
+    ).toBeVisible();
+    await addClassButton.click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await takeStepScreenshot(page, testInfo, '01-modal-picker-with-blocked-options');
+
+    // ── Bard doit être présent dans le picker mais grisé avec raison ──
+    const bardOption = dialog.getByRole('radio', { name: /Barde/i });
+    await expect(
+      bardOption,
+      'Le Barde doit être listé dans le picker (présent mais bloqué).',
+    ).toBeVisible();
+    await expect(
+      bardOption,
+      'aria-disabled doit valoir "true" pour le Barde (CHA <13).',
+    ).toHaveAttribute('aria-disabled', 'true');
+
+    // La raison textuelle doit afficher le score actuel vs minimum.
+    // Pattern rendu par `AddClassPickerStep` : `CHA {actual}/{minimum}`.
+    await expect(
+      bardOption,
+      'Le bouton Barde doit porter la raison « CHA 12/13 » comme contenu.',
+    ).toContainText(/CHA 12\/13/i);
+
+    // ── Sanity : Fighter reste cliquable (preuve que le picker n'est
+    //     pas bloqué globalement par un bug — seul Bard est grisé) ────
+    const fighterOption = dialog.getByRole('radio', { name: /Guerrier/i });
+    await expect(fighterOption).toBeVisible();
+    await expect(fighterOption).not.toHaveAttribute('aria-disabled', 'true');
+  });
+});
