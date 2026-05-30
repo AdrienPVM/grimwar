@@ -32,7 +32,25 @@ export type LevelUpStep =
   | { kind: 'asi-or-feat' }
   | { kind: 'cantrips'; count: number }
   | { kind: 'spells'; count: number }
-  | { kind: 'invocations'; count: number };
+  | { kind: 'invocations'; count: number }
+  /**
+   * JALON 2D.4b — Sélecteur de classe à ajouter en multiclass. Affiche la
+   * grille des 12 classes SRD avec grey-out + tooltip via
+   * `computeMulticlassEligibility`. La sélection est posée dans
+   * `LevelUpFlowState.addClassTargetId` par l'action `set-add-class-target`.
+   */
+  | { kind: 'add-class-pick' }
+  /**
+   * JALON 2D.4b — Sous-choix L1 de la classe ajoutée. Le composant lit la
+   * classe cible dans `LevelUpFlowState.addClassTargetId` puis rend les
+   * choosers SRD via `getAddClassL1SubChoiceKeys(targetId)`. La saisie est
+   * agrégée dans `LevelUpFlowState.addClassSubChoices` (bloc partiel).
+   *
+   * HP au multiclass-add est forcé à `average` (audit 2D Décision 2) — pas
+   * d'étape `hp-roll` séparée pour ce path ; le builder injecte
+   * `hpRoll: { kind: 'average' }` automatiquement.
+   */
+  | { kind: 'add-class-sub-choices' };
 
 interface LevelUpChoicesParams {
   classEntry: CharacterClassEntry;
@@ -95,6 +113,27 @@ export function levelUpChoices({
   }
 
   return steps;
+}
+
+/**
+ * JALON 2D.4b — Étapes du path « ajouter une nouvelle classe en multiclass ».
+ *
+ * Séquence fixe en 2 temps :
+ *   1. `add-class-pick` — sélection de la classe à ajouter (grey-out via
+ *      `computeMulticlassEligibility`).
+ *   2. `add-class-sub-choices` — sous-choix L1 de la classe choisie
+ *      (Divine Order pour Clerc, Fighting Style pour Guerrier, etc. — cf.
+ *      `getAddClassL1SubChoiceKeys`).
+ *
+ * HP est forcé à `average` au multiclass-add (audit 2D Décision 2) — pas
+ * d'étape `hp-roll` ; `buildLevelUpDraft` l'injecte automatiquement.
+ *
+ * La séquence est statique (ne dépend pas de la classe cible — l'étape de
+ * sous-choix se rend différemment selon `addClassTargetId`, pas via une
+ * variation du tableau de steps).
+ */
+export function addClassChoices(): readonly LevelUpStep[] {
+  return [{ kind: 'add-class-pick' }, { kind: 'add-class-sub-choices' }];
 }
 
 /**
