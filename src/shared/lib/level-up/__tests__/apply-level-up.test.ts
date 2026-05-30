@@ -1077,6 +1077,10 @@ describe('applyLevelUp · cas-limites', () => {
   });
 
   it("throw si ASI total ≠ 2 points", () => {
+    // Depuis JALON 2C.1, la `superRefine` de `asiChoiceSchema` rejette le
+    // shape avant même que `applyLevelUp` n'évalue ses propres bornes : la
+    // somme des bonus DOIT valoir 2. Le test couvre donc l'erreur Zod et
+    // non plus le throw runtime de `applyLevelUp`.
     expect(() =>
       applyLevelUp({
         character: fighter,
@@ -1086,13 +1090,11 @@ describe('applyLevelUp · cas-limites', () => {
           hpRoll: averageRoll,
           asiOrFeat: {
             kind: 'asi',
-            // 2 + 2 = 4 points → la transformation refuse (total > 2). Le
-            // schéma Zod ne capture pas la somme (chaque bonus est ∈ {1,2}).
             abilityIncreases: [{ ability: 'for', bonus: 2 }, { ability: 'dex', bonus: 2 }],
           },
         },
         classDefinitions: ALL_CLASSES,
       }),
-    ).toThrow(/2 points/);
+    ).toThrow(/somme.*2/i);
   });
 });

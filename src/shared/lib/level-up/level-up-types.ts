@@ -28,22 +28,49 @@ export const hpRollSchema = z.union([
 export type HpRoll = z.infer<typeof hpRollSchema>;
 
 /**
- * Choix ASI : 2 points à répartir (+2/+0 sur une stat OU +1/+1 sur 2 stats).
- * Le SRD 5.2.1 plafonne chaque stat à 20 avant la magie — borne portée par
- * `applyLevelUp` (pas par le schéma) parce qu'elle dépend des stats actuelles.
+ * Choix ASI : 2 points à répartir (+2 sur une stat OU +1/+1 sur 2 stats
+ * distinctes). Le SRD 5.2.1 plafonne chaque stat à 20 avant la magie — borne
+ * portée par `applyLevelUp` parce qu'elle dépend des stats actuelles.
+ *
+ * Durcissement JALON 2C.1 : superRefine garantit que la somme des bonus est
+ * EXACTEMENT 2 et que le split (2 entrées) cible 2 caractéristiques
+ * distinctes. Évite les shapes intermédiaires que le wizard pourrait laisser
+ * passer (un seul +1, deux +2, +2 sur la même stat dupliquée, etc.).
  */
-export const asiChoiceSchema = z.object({
-  kind: z.literal('asi'),
-  abilityIncreases: z
-    .array(
-      z.object({
-        ability: abilityCodeSchema,
-        bonus: z.union([z.literal(1), z.literal(2)]),
-      }),
-    )
-    .min(1)
-    .max(2),
-});
+export const asiChoiceSchema = z
+  .object({
+    kind: z.literal('asi'),
+    abilityIncreases: z
+      .array(
+        z.object({
+          ability: abilityCodeSchema,
+          bonus: z.union([z.literal(1), z.literal(2)]),
+        }),
+      )
+      .min(1)
+      .max(2),
+  })
+  .superRefine((value, ctx) => {
+    const sum = value.abilityIncreases.reduce((acc, inc) => acc + inc.bonus, 0);
+    if (sum !== 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['abilityIncreases'],
+        message: `ASI invalide : la somme des bonus doit valoir 2 (reçu ${sum}).`,
+      });
+    }
+    if (value.abilityIncreases.length === 2) {
+      const [a, b] = value.abilityIncreases;
+      if (a && b && a.ability === b.ability) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['abilityIncreases'],
+          message:
+            'ASI invalide : un split +1/+1 doit cibler deux caractéristiques distinctes.',
+        });
+      }
+    }
+  });
 export type AsiChoice = z.infer<typeof asiChoiceSchema>;
 
 export const featChoiceSchema = z.object({
