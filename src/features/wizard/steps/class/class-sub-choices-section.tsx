@@ -17,7 +17,7 @@ import { WizardSpellbookChooser } from './wizard-spellbook-chooser';
 import {
   ROGUE_EXTRA_LANGUAGES_COUNT_L1,
   getClassSubChoiceKeys,
-} from './use-class-sub-choices';
+} from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Section ombrelle qui assemble les choosers requis pour la classe primaire

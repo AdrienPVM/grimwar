@@ -18,7 +18,7 @@ import { ListWithHelpPanel } from '../../help/list-with-help-panel';
 import { ChooserMissingDataBanner } from '../chooser-missing-data-banner';
 
 import { toggleBoundedSelection } from './chooser-utils';
-import { getRequiredCount } from './use-class-sub-choices';
+import { getRequiredCount } from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Chooser Weapon Mastery — composant générique partagé par Barbare, Guerrier,

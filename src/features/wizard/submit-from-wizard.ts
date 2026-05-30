@@ -25,7 +25,7 @@ import { getMissingAncestrySubChoiceKeys } from './steps/ancestry/use-ancestry-s
 import {
   areAllClassSubChoicesCompleted,
   getMissingClassSubChoiceKeys,
-} from './steps/class/use-class-sub-choices';
+} from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Submit wizard → Firestore (plan 05 §F).

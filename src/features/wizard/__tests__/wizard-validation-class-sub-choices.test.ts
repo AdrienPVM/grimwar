@@ -5,7 +5,7 @@ import { EMPTY_ANCESTRY_SUB_CHOICES, createEmptyClassSubChoices } from '@/shared
 import type { ClassEntity } from '@/shared/types/content';
 
 import { isClassValid } from '../wizard-validation';
-import { areAllClassStepSubChoicesCompleted } from '../steps/class/use-class-sub-choices';
+import { areAllClassStepSubChoicesCompleted } from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Tests rouge-puis-vert pour la garde « sous-choix de classe niveau 1 requis »

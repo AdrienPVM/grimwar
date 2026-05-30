@@ -12,7 +12,7 @@ import { resolveSkillIds } from '../skill-resolver';
 import { ChooserDependencyHint } from '../chooser-dependency-hint';
 
 import { toggleBoundedSelection } from './chooser-utils';
-import { ROGUE_EXPERTISE_COUNT_L1 } from './use-class-sub-choices';
+import { ROGUE_EXPERTISE_COUNT_L1 } from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Chooser Roublard — Expertise (2 compétences SRD 5.2.1).

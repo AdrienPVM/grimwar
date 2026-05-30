@@ -14,7 +14,7 @@ import { toggleBoundedSelection } from './chooser-utils';
 import {
   WARLOCK_PACT_TOME_CANTRIPS_COUNT,
   WARLOCK_PACT_TOME_RITUALS_COUNT,
-} from './use-class-sub-choices';
+} from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * D13e — Pact of the Tome chooser (SRD 5.2.1).

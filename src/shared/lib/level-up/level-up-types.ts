@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { abilityCodeSchema } from '@/shared/types/character';
+import {
+  abilityCodeSchema,
+  divineOrderSchema,
+  fightingStyleSchema,
+  primalOrderSchema,
+} from '@/shared/types/character';
 
 /**
  * JALON 2B.3a — Schéma du brouillon de level-up agrégé par la modale.
@@ -87,6 +92,31 @@ export const asiOrFeatSchema = z.union([asiChoiceSchema, featChoiceSchema]);
 export type AsiOrFeat = z.infer<typeof asiOrFeatSchema>;
 
 /**
+ * JALON 2D.4a — Sous-choix L1 transmis quand on AJOUTE une nouvelle classe
+ * (newClassLevel === 1). Tous les champs sont optionnels — la modale fournit
+ * uniquement ceux qui s'appliquent à la classe ajoutée. `applyLevelUp` mappe
+ * ces champs sur la nouvelle entrée `CharacterClassEntry` en remplacement
+ * des sentinelles `createEmptyClassSubChoices()`.
+ *
+ * Le schéma rejette dur la présence de ce champ quand `newClassLevel !== 1`
+ * (superRefine sur `levelUpDraftSchema`) — un level-up classique ne doit
+ * JAMAIS écraser les sous-choix L1 d'une classe existante.
+ */
+export const addClassSubChoicesSchema = z.object({
+  clericDivineOrder: divineOrderSchema.optional(),
+  druidPrimalOrder: primalOrderSchema.optional(),
+  fighterFightingStyle: fightingStyleSchema.optional(),
+  weaponMasteries: z.array(slug).optional(),
+  expertiseSkills: z.array(slug).optional(),
+  eldritchInvocations: z.array(slug).optional(),
+  wizardSpellbookL1: z.array(slug).optional(),
+  pactTomeCantrips: z.array(slug).optional(),
+  pactTomeRituals: z.array(slug).optional(),
+  pactBladeWeapon: slug.optional(),
+});
+export type AddClassSubChoices = z.infer<typeof addClassSubChoicesSchema>;
+
+/**
  * Brouillon complet d'un level-up. `classId` désigne la classe qui monte de
  * niveau ; `newClassLevel` est le niveau atteint par cette classe.
  *   - `newClassLevel ≥ 2` → level-up classique (la classe existe déjà dans
@@ -97,15 +127,31 @@ export type AsiOrFeat = z.infer<typeof asiOrFeatSchema>;
  *
  * Le niveau total du perso devient `totalLevel + 1` dans les deux cas (la
  * transformation s'occupe du calcul, le brouillon porte juste l'intention).
+ *
+ * JALON 2D.4a — `addClassSubChoices` porte les sous-choix L1 de la classe
+ * ajoutée (style de combat, ordre divin, grimoire, etc.). Présent UNIQUEMENT
+ * quand `newClassLevel === 1` — superRefine ci-dessous.
  */
-export const levelUpDraftSchema = z.object({
-  classId: slug,
-  newClassLevel: z.number().int().min(1).max(20),
-  hpRoll: hpRollSchema,
-  asiOrFeat: asiOrFeatSchema.optional(),
-  subclassId: slug.optional(),
-  newSpellsKnown: z.array(slug).optional(),
-  newCantrips: z.array(slug).optional(),
-  newInvocations: z.array(slug).optional(),
-});
+export const levelUpDraftSchema = z
+  .object({
+    classId: slug,
+    newClassLevel: z.number().int().min(1).max(20),
+    hpRoll: hpRollSchema,
+    asiOrFeat: asiOrFeatSchema.optional(),
+    subclassId: slug.optional(),
+    newSpellsKnown: z.array(slug).optional(),
+    newCantrips: z.array(slug).optional(),
+    newInvocations: z.array(slug).optional(),
+    addClassSubChoices: addClassSubChoicesSchema.optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.addClassSubChoices !== undefined && value.newClassLevel !== 1) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['addClassSubChoices'],
+        message:
+          "addClassSubChoices n'est valide que sur l'ajout d'une nouvelle classe (newClassLevel === 1) — refus sur level-up classique.",
+      });
+    }
+  });
 export type LevelUpDraft = z.infer<typeof levelUpDraftSchema>;

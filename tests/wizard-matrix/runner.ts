@@ -14,7 +14,7 @@ import {
   WARLOCK_INVOCATIONS_COUNT_L1,
   WIZARD_SPELLBOOK_INSCRIBED_COUNT_L1,
   WIZARD_SPELLBOOK_PREPARED_COUNT_L1,
-} from '@/features/wizard/steps/class/use-class-sub-choices';
+} from '@/shared/lib/rules/class-l1-sub-choices';
 import { getEligibleWeaponMasteryIds } from '@/shared/lib/rules/weapon-mastery';
 import type { SubmitFromWizardInput } from '@/features/wizard/submit-from-wizard';
 import {

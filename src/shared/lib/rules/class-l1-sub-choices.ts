@@ -1,4 +1,8 @@
-import type { WizardClassEntry } from '@/shared/lib/slices/wizard-slice';
+import type {
+  DivineOrder,
+  FightingStyle,
+  PrimalOrder,
+} from '@/shared/types/character';
 import type { ClassEntity } from '@/shared/types/content';
 
 /**
@@ -8,8 +12,18 @@ import type { ClassEntity } from '@/shared/types/content';
  * - quels sous-choix sont REQUIS par classId
  * - combien d'éléments doivent être sélectionnés (cas multi-select)
  *
- * Lu par les chooser components (commit 1) ET par `wizard-validation.ts`
- * (commit 3). Aucune duplication ailleurs dans le code.
+ * Lu par les chooser components du wizard ET par `wizard-validation.ts`
+ * (plan 13.9 commits 1+3), et par le moteur de level-up multi-class
+ * (JALON 2D.4a) — `getAddClassL1SubChoiceKeys` + `getMissingAddClassL1SubChoiceKeys`
+ * exposent les mêmes données pour le path « ajouter une classe en multiclass ».
+ *
+ * Relocalisé `src/features/wizard/steps/class/use-class-sub-choices.ts` →
+ * `src/shared/lib/rules/class-l1-sub-choices.ts` au JALON 2D.4a — l'ancien
+ * emplacement empêchait `src/features/level-up/` et `apply-level-up.ts` de
+ * consommer ces données. Pas de changement de signature pour les consommateurs
+ * existants (`getClassSubChoiceKeys`, `getRequiredCount`,
+ * `getMissingClassSubChoiceKeys`, `areAllClassSubChoicesCompleted`,
+ * `areAllClassStepSubChoicesCompleted`).
  *
  * Pour les sous-choix multi-select (weaponMasteries, expertiseSkills,
  * eldritchInvocations, wizardSpellbookL1), le `count` exact vient soit du
@@ -128,12 +142,35 @@ export function getRequiredCount(
 }
 
 /**
+ * Forme structurelle commune aux entrées de classe consommées par les
+ * validateurs ci-dessous. Satisfaite par `WizardClassEntry`
+ * (`@/shared/lib/slices/wizard-slice`) ET par `CharacterClassEntry`
+ * (`@/shared/types/character`) — pas d'import croisé features/, pas de
+ * dépendance sur Zod. Permet à `getMissingClassSubChoiceKeys` d'être
+ * réutilisé par le moteur de level-up (JALON 2D.4a) qui manipule des
+ * `CharacterClassEntry` plutôt que des drafts wizard.
+ */
+export interface ClassEntryL1Shape {
+  classId: string;
+  clericDivineOrder: DivineOrder | null;
+  druidPrimalOrder: PrimalOrder | null;
+  fighterFightingStyle: FightingStyle | null;
+  weaponMasteries: readonly string[];
+  expertiseSkills: readonly string[];
+  eldritchInvocations: readonly string[];
+  wizardSpellbookL1: readonly string[];
+  pactTomeCantrips?: readonly string[];
+  pactTomeRituals?: readonly string[];
+  pactBladeWeapon?: string | null;
+}
+
+/**
  * Sous-choix posé ? Pour les single-value (cleric/druid/fighter style), on
  * vérifie `!== null`. Pour les multi-select, on vérifie `length === count`
  * (pas moins, pas plus — Roublard avec 1 Expertise est invalide).
  */
 function isSubChoiceMet(
-  entry: WizardClassEntry,
+  entry: ClassEntryL1Shape,
   key: ClassSubChoiceKey,
   required: number,
 ): boolean {
@@ -178,7 +215,7 @@ function isSubChoiceMet(
  * Utile pour `wizard-validation.ts` (commit 3) et pour la garde de submit.
  */
 export function getMissingClassSubChoiceKeys(
-  entry: WizardClassEntry,
+  entry: ClassEntryL1Shape,
   classes: readonly ClassEntity[],
 ): readonly ClassSubChoiceKey[] {
   const keys = getClassSubChoiceKeys(entry.classId);
@@ -193,7 +230,7 @@ export function getMissingClassSubChoiceKeys(
  * (Cas multi-class : chacune doit être valide indépendamment.)
  */
 export function areAllClassSubChoicesCompleted(
-  entries: readonly WizardClassEntry[],
+  entries: readonly ClassEntryL1Shape[],
   classes: readonly ClassEntity[],
 ): boolean {
   return entries.every((e) => getMissingClassSubChoiceKeys(e, classes).length === 0);
@@ -232,11 +269,106 @@ export const CLASS_STEP_SUB_CHOICE_KEYS: ReadonlySet<ClassSubChoiceKey> = new Se
  * par `isSkillsValid` à la step suivante).
  */
 export function areAllClassStepSubChoicesCompleted(
-  entries: readonly WizardClassEntry[],
+  entries: readonly ClassEntryL1Shape[],
   classes: readonly ClassEntity[],
 ): boolean {
   return entries.every((entry) => {
     const missing = getMissingClassSubChoiceKeys(entry, classes);
     return missing.every((key) => !CLASS_STEP_SUB_CHOICE_KEYS.has(key));
   });
+}
+
+/* ----------------------------------------------------------------------------
+ * JALON 2D.4a — Sous-choix L1 quand on AJOUTE une classe en multiclass.
+ *
+ * Le moteur `applyLevelUp` (`@/shared/lib/level-up/apply-level-up.ts`) accepte
+ * un `addClassSubChoices?: AddClassSubChoices` sur le `LevelUpDraft` (cf.
+ * `level-up-types.ts:105` — schéma livré JALON 2D.3). Ce bloc partiel surcharge
+ * les sentinelles `createEmptyClassSubChoices()` quand `newClassLevel === 1`.
+ *
+ * Pour piloter l'UI `LevelUpModal` du path add-class (JALON 2D.4b), on a
+ * besoin de :
+ *   1. savoir QUELS sous-choix L1 doivent être collectés pour la nouvelle
+ *      classe (Divine Order pour Clerc, Fighting Style pour Guerrier, etc.) ;
+ *   2. savoir si les sous-choix collectés JUSQU'ICI sont COMPLETS — pour
+ *      activer/désactiver le bouton « Valider » de la modale.
+ *
+ * Interprétation SRD 2024 LOCKED par l'audit
+ * (`plans/2D-MULTICLASS-AUDIT.md > Gap 5`) : les caractéristiques de L1 d'une
+ * classe ajoutée en multiclass sont IDENTIQUES à celles d'un perso primaire L1
+ * de cette classe (Divine Order, Fighting Style, Eldritch Invocations, etc.).
+ * La SEULE différence SRD entre multiclass et primary L1 porte sur les
+ * PROFICIENCIES — gérée séparément par `multiclassProficiencies` sur
+ * `ClassEntity` (peuplé JALON 2D.2) et appliquée par `applyLevelUp` (JALON 2D.3).
+ *
+ * En conséquence les helpers ci-dessous délèguent à
+ * `getClassSubChoiceKeys` / `getMissingClassSubChoiceKeys`. L'indirection
+ * existe pour :
+ *   - documenter la décision LOCKED (toute divergence future devra modifier
+ *     CETTE section, pas le contrat wizard) ;
+ *   - donner un point d'entrée typé qui consomme `AddClassSubChoices`
+ *     (forme du level-up draft) plutôt qu'un `ClassEntryL1Shape` complet —
+ *     l'UI 2D.4b construit progressivement le bloc partiel, pas une entrée
+ *     pleine.
+ * -------------------------------------------------------------------------- */
+
+/**
+ * Forme « bloc partiel des sous-choix L1 d'une classe ajoutée ». Mirror
+ * structurel de `AddClassSubChoices` de `level-up-types.ts` — re-déclaré
+ * localement pour éviter une dépendance circulaire `rules/` → `level-up/`
+ * (les rules ne doivent pas dépendre du level-up).
+ */
+export interface AddClassL1SubChoicesShape {
+  clericDivineOrder?: DivineOrder;
+  druidPrimalOrder?: PrimalOrder;
+  fighterFightingStyle?: FightingStyle;
+  weaponMasteries?: readonly string[];
+  expertiseSkills?: readonly string[];
+  eldritchInvocations?: readonly string[];
+  wizardSpellbookL1?: readonly string[];
+  pactTomeCantrips?: readonly string[];
+  pactTomeRituals?: readonly string[];
+  pactBladeWeapon?: string;
+}
+
+/**
+ * Sous-choix L1 à collecter pour une classe ajoutée en multiclass. MVP V1 :
+ * délègue à `getClassSubChoiceKeys` (interprétation SRD 2024 LOCKED par
+ * l'audit 2D — voir bloc commentaire ci-dessus).
+ */
+export function getAddClassL1SubChoiceKeys(
+  classId: string | null,
+): readonly ClassSubChoiceKey[] {
+  return getClassSubChoiceKeys(classId);
+}
+
+/**
+ * Sous-choix L1 encore manquants pour un bloc `addClassSubChoices` partiel.
+ * Mappe le bloc partiel sur la forme `ClassEntryL1Shape` (sentinelles `null`
+ * / `[]` quand un champ n'est pas encore fourni) et réutilise la même règle
+ * de complétude que le wizard.
+ *
+ * Le caller (UI 2D.4b ou validateur d'`applyLevelUp`) garantit que `classId`
+ * est bien la classe ajoutée — pas de cross-check ici.
+ */
+export function getMissingAddClassL1SubChoiceKeys(
+  classId: string,
+  addClassSubChoices: AddClassL1SubChoicesShape | undefined,
+  classes: readonly ClassEntity[],
+): readonly ClassSubChoiceKey[] {
+  const overrides = addClassSubChoices ?? {};
+  const shape: ClassEntryL1Shape = {
+    classId,
+    clericDivineOrder: overrides.clericDivineOrder ?? null,
+    druidPrimalOrder: overrides.druidPrimalOrder ?? null,
+    fighterFightingStyle: overrides.fighterFightingStyle ?? null,
+    weaponMasteries: overrides.weaponMasteries ?? [],
+    expertiseSkills: overrides.expertiseSkills ?? [],
+    eldritchInvocations: overrides.eldritchInvocations ?? [],
+    wizardSpellbookL1: overrides.wizardSpellbookL1 ?? [],
+    pactTomeCantrips: overrides.pactTomeCantrips,
+    pactTomeRituals: overrides.pactTomeRituals,
+    pactBladeWeapon: overrides.pactBladeWeapon ?? null,
+  };
+  return getMissingClassSubChoiceKeys(shape, classes);
 }
