@@ -42,6 +42,13 @@ interface LevelUpChoicesParams {
 }
 
 const ASI_FEATURE_NAME_EN = 'Ability Score Improvement';
+/**
+ * SRD 5.2.1 (PHB 2024) : à L19 toutes les classes reçoivent « Epic Boon »
+ * au lieu d'un « Ability Score Improvement ». Mécaniquement c'est la même
+ * étape pour le joueur (choisir un feat — incluant Ability Score Improvement
+ * comme feat valide). On traite Epic Boon comme une variante du choix ASI.
+ */
+const EPIC_BOON_FEATURE_NAME_EN = 'Epic Boon';
 const FIGHTER_FIGHTING_STYLE_NAME = /style de combat|fighting style/i;
 
 export function levelUpChoices({
@@ -109,7 +116,7 @@ function hasAsiAtLevel(def: ClassEntity, level: number): boolean {
     if (FIGHTER_FIGHTING_STYLE_NAME.test(en) || FIGHTER_FIGHTING_STYLE_NAME.test(f.name.fr)) {
       return false;
     }
-    return en === ASI_FEATURE_NAME_EN;
+    return en === ASI_FEATURE_NAME_EN || en === EPIC_BOON_FEATURE_NAME_EN;
   });
 }
 
