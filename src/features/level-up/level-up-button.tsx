@@ -84,15 +84,17 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
       >
         Monter de niveau
       </Button>
-      <LevelUpModal
-        open={open}
-        onClose={handleClose}
-        character={character}
-        classDefinition={classDefinition}
-        onConfirm={handleConfirm}
-        isSubmitting={isSubmitting}
-        submitError={submitError}
-      />
+      {open && (
+        <LevelUpModal
+          open
+          onClose={handleClose}
+          character={character}
+          classDefinition={classDefinition}
+          onConfirm={handleConfirm}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
+        />
+      )}
     </>
   );
 }
