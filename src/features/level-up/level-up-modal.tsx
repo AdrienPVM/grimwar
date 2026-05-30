@@ -1,4 +1,4 @@
-import { useMemo, useReducer, type JSX } from 'react';
+import { useEffect, useMemo, useReducer, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
@@ -6,6 +6,7 @@ import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize } from '@/shared/lib/i18n';
 import {
+  addClassChoices,
   levelUpChoices,
   type LevelUpStep,
 } from '@/shared/lib/level-up/level-up-choices';
@@ -15,11 +16,14 @@ import {
   initialLevelUpFlowState,
   levelUpFlowReducer,
   type LevelUpFlowState,
+  type LevelUpMode,
 } from '@/shared/lib/level-up/level-up-flow';
 import type { LevelUpDraft } from '@/shared/lib/level-up/level-up-types';
 import { computeFeatAvailability } from '@/shared/lib/rules/feat-availability';
 import type { AbilityCode, Character } from '@/shared/types/character';
 import type { ClassEntity, Feat, FeatPrerequisite, I18n, Subclass } from '@/shared/types/content';
+
+import { AddClassPickerStep, AddClassSubChoicesStep } from './add-class-steps';
 
 /**
  * JALON 2B.4c — Coquille UI de la modale de level-up.
@@ -59,6 +63,13 @@ interface LevelUpModalProps {
    * parent à chaque nouvelle tentative.
    */
   submitError?: string | null;
+  /**
+   * JALON 2D.4c — Mode initial de la modale. `level-up` (défaut) = monte la
+   * classe primaire ; `add-class` = ouvre le picker de nouvelle classe à
+   * ajouter en multiclass. Câblé par le LevelUpButton via deux entrées
+   * distinctes (« Monter de niveau » vs « Ajouter une classe »).
+   */
+  initialMode?: LevelUpMode;
 }
 
 export function LevelUpModal({
@@ -69,13 +80,13 @@ export function LevelUpModal({
   onConfirm,
   isSubmitting = false,
   submitError = null,
+  initialMode = 'level-up',
 }: LevelUpModalProps): JSX.Element | null {
   const titleId = 'level-up-modal-title';
 
-  // Pour 2B.4c : la classe qui monte est la primaire. Multi-class déclaré
-  // hors scope 2B (JALON 2D — un sélecteur de classe sera ajouté à ce
-  // moment-là sans toucher au reducer ni à `applyLevelUp`, qui acceptent
-  // déjà un `classId` paramétrable).
+  // Classe primaire utilisée par le path level-up ; reste référencée en mode
+  // add-class pour le calcul de HP (CON mod) mais le step `add-class-pick`
+  // ne dépend pas de cette entrée.
   const classEntry = useMemo(
     () =>
       character.classes.find((c) => c.classId === character.primaryClassId) ??
@@ -85,19 +96,41 @@ export function LevelUpModal({
 
   const newClassLevel = classEntry ? classEntry.level + 1 : 2;
 
+  const { data: allClasses } = useContent('classes');
+
+  // Initialise l'état avec le mode souhaité par le parent. `useReducer`
+  // accepte une fonction d'initialisation pour ne pas créer un état impur
+  // (équivalent à `initialLevelUpFlowState` enrichi du mode initial).
+  const [state, dispatch] = useReducer(
+    levelUpFlowReducer,
+    initialMode,
+    (mode): LevelUpFlowState => ({ ...initialLevelUpFlowState, mode }),
+  );
+
+  // Si le parent re-mount la modale avec un `initialMode` différent
+  // (changement de bouton « Monter » → « Ajouter une classe » entre deux
+  // ouvertures), reset explicite — `useReducer` n'observe pas l'initializer.
+  useEffect(() => {
+    if (state.mode !== initialMode) {
+      dispatch({ type: 'set-mode', mode: initialMode });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on initialMode change uniquement
+  }, [initialMode]);
+
   const steps = useMemo<readonly LevelUpStep[]>(() => {
+    if (state.mode === 'add-class') {
+      return addClassChoices();
+    }
     if (!classEntry) return [];
     if (classEntry.level >= 20) return [];
     return levelUpChoices({ classEntry, classDefinition, newClassLevel });
-  }, [classEntry, classDefinition, newClassLevel]);
-
-  const [state, dispatch] = useReducer(levelUpFlowReducer, initialLevelUpFlowState);
+  }, [state.mode, classEntry, classDefinition, newClassLevel]);
 
   if (!classEntry) return null;
 
   const isLast = state.stepIdx >= steps.length - 1;
   const current = steps[state.stepIdx];
-  const allFilled = canSubmitFlow(state, steps);
+  const allFilled = canSubmitFlow(state, steps, allClasses);
 
   function handleConfirm(): void {
     if (!allFilled) return;
@@ -124,13 +157,15 @@ export function LevelUpModal({
     >
       <header className="border-b border-white-8 px-6 py-4 pr-14">
         <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-          Montée de niveau
+          {state.mode === 'add-class' ? 'Ajouter une classe' : 'Montée de niveau'}
         </p>
         <h2
           id={titleId}
           className="mt-1 font-display text-[20px] font-black tracking-[-0.02em] text-gold-bright"
         >
-          {localize(classDefinition.name)} — Niveau {classEntry.level} → {newClassLevel}
+          {state.mode === 'add-class'
+            ? renderAddClassHeading(state, allClasses)
+            : `${localize(classDefinition.name)} — Niveau ${classEntry.level} → ${newClassLevel}`}
         </h2>
         <StepIndicator stepIdx={state.stepIdx} total={steps.length} />
       </header>
@@ -145,6 +180,7 @@ export function LevelUpModal({
             classEntry={classEntry}
             newClassLevel={newClassLevel}
             dispatch={dispatch}
+            allClasses={allClasses}
           />
         ) : (
           <p className="font-serif text-body-sm italic text-text-tertiary">
@@ -217,6 +253,13 @@ interface StepBodyProps {
   classEntry: Character['classes'][number];
   newClassLevel: number;
   dispatch: React.Dispatch<Parameters<typeof levelUpFlowReducer>[1]>;
+  /**
+   * JALON 2D.4c — Bundle complet `classes.json`, requis pour les steps
+   * add-class (picker éligibilité + sub-choosers L1). Chargé une fois par le
+   * caller via `useContent('classes')` puis transmis ici — évite un
+   * `useContent` cascadé par step.
+   */
+  allClasses: readonly ClassEntity[];
 }
 
 function StepBody(props: StepBodyProps): JSX.Element {
@@ -234,18 +277,24 @@ function StepBody(props: StepBodyProps): JSX.Element {
     case 'invocations':
       return <InvocationsStep {...props} count={props.step.count} />;
     case 'add-class-pick':
+      return <AddClassPickerStep {...props} />;
     case 'add-class-sub-choices':
-      // JALON 2D.4b — Stubs des steps add-class. Le rendu réel arrive en 2D.4c
-      // (intégration UI complète : picker éligibilité + sub-choosers L1). La
-      // séquence n'est jamais montée par le LevelUpButton actuel — il n'expose
-      // pas encore le mode add-class — donc ce branch n'est pas reachable
-      // runtime tant que 2D.4c n'a pas câblé le bouton « Ajouter une classe ».
-      return (
-        <p className="font-serif text-body-sm italic text-text-tertiary">
-          Add-class flow — UI 2D.4c à venir.
-        </p>
-      );
+      return <AddClassSubChoicesStep {...props} />;
   }
+}
+
+/**
+ * JALON 2D.4c — Titre du header en mode add-class. Avant la sélection :
+ * libellé générique. Après : « [Nom classe localisé] — Niveau 1 ».
+ */
+function renderAddClassHeading(
+  state: LevelUpFlowState,
+  allClasses: readonly ClassEntity[],
+): string {
+  if (!state.addClassTargetId) return 'Choisis ta nouvelle classe';
+  const def = allClasses.find((c) => c.id === state.addClassTargetId);
+  if (!def) return 'Choisis ta nouvelle classe';
+  return `${localize(def.name)} — Niveau 1`;
 }
 
 /**
