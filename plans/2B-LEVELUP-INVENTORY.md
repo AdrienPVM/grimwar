@@ -212,11 +212,13 @@ Livre ce document. PR direct main (paths plans/ non protégés).
 - Consommation `useContent('classes' | 'subclasses' | 'feats' | 'spells' | 'invocations')` standard
 - e2e Playwright : Fighter L1 → L2 → L3 (sous-classe Champion), Wizard L1 → L4 (ASI), Rogue L1 → L3 (Thief)
 
-### 2B.5 — Wire-up Zustand + persistance Firestore
+### 2B.5 — Wire-up Zustand + persistance Firestore — **LIVRÉ** (PR #73, commit `151e21f`)
 
-- Action `applyLevelUpAndPersist` dans le slice character
-- Pattern `trackPendingWrite(setDoc(...))` réutilisé (JALON 1D.3)
-- Tests d'intégration : modale → action → Firestore emulator → reload fiche → vérifie HP/slots/features alignés
+- Pas de slice Zustand intermédiaire — pattern « hook bridge » à la place : `useLevelUp(character)` (src/features/level-up/use-level-up.ts) compose `applyLevelUp` (pure, validée Zod) + `useUpdateCharacter` (qui réutilise déjà `trackPendingWrite`)
+- Patch partiel envoyé à Firestore (seuls les 10 champs mutés : totalLevel, classes, abilities, hp, hitDice, spellSlots, classResources, knownSpells, preparedSpells, spellcastingAbility) — préserve `createdAt`/`schemaVersion`, économise la bande passante
+- `LevelUpButton` : state UI submitting + error gérée localement ; modale grisée pendant l'écriture (`isSubmitting`), erreur Firestore rendue `role="alert"` dans le footer (`submitError`) — retry possible sans fermeture
+- Tests unit : 4 boutons + 9 modale + 2 hook (15 total) ; quadruple gate verte (typecheck + 1576 unit + 151 matrix + lint) + emulator CI vert
+- Reste pour 2B.6 : e2e Playwright Fighter L1→L3 + Wizard L1→L4 + Rogue L1→L3 + extension matrice wizard
 
 ### 2B.6 — Doc post-livraison + checklist couverture
 
