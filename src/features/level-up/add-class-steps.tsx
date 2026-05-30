@@ -11,12 +11,14 @@ import type {
 import {
   getAddClassL1SubChoiceKeys,
   getMissingAddClassL1SubChoiceKeys,
+  getRequiredCount,
   type ClassSubChoiceKey,
 } from '@/shared/lib/rules/class-l1-sub-choices';
 import {
   computeMulticlassEligibility,
   type MulticlassEligibility,
 } from '@/shared/lib/rules/multiclass-eligibility';
+import { getEligibleWeaponMasteryIds } from '@/shared/lib/rules/weapon-mastery';
 import type {
   AbilityCode,
   Character,
@@ -174,6 +176,10 @@ export function AddClassSubChoicesStep({
   // des hooks (Rules of Hooks). On filtre l'usage après si targetId est null
   // ou la définition introuvable.
   const { data: feats } = useContent('feats');
+  const { data: items } = useContent('items');
+  const { data: invocations } = useContent('invocations');
+  const { data: spells } = useContent('spells');
+
   const fightingStyleOptions = useMemo(() => {
     return feats
       .filter((f) => f.category === 'fighting-style')
@@ -184,6 +190,53 @@ export function AddClassSubChoicesStep({
       }));
   }, [feats]);
 
+  const targetDef = targetId
+    ? allClasses.find((c) => c.id === targetId) ?? null
+    : null;
+
+  // 2D.4d — Weapon Mastery éligibilité data-driven (mirror du wizard chooser).
+  const weaponMasteryOptions = useMemo(() => {
+    if (!targetDef) return [];
+    const eligibility = targetDef.weaponMasteryEligibility ?? null;
+    return getEligibleWeaponMasteryIds(eligibility, items, 'fr').map((it) => ({
+      id: it.id,
+      name: localize(it.name),
+      summary: it.masteryProperty ? `Maîtrise · ${it.masteryProperty}` : '',
+    }));
+  }, [targetDef, items]);
+  const weaponMasteryCount = useMemo(
+    () =>
+      targetId
+        ? getRequiredCount(targetId, 'weaponMasteries', allClasses)
+        : 0,
+    [targetId, allClasses],
+  );
+
+  // 2D.4d — Eldritch Invocations (Warlock L1) : filtre
+  // `prerequisiteWarlockLevel === null` → 5 invocations éligibles SRD CC.
+  const invocationOptions = useMemo(() => {
+    return invocations
+      .filter((inv) => inv.prerequisiteWarlockLevel === null)
+      .sort((a, b) => localize(a.name).localeCompare(localize(b.name), 'fr'))
+      .map((inv) => ({
+        id: inv.id,
+        name: localize(inv.name),
+        summary: inv.summary ? localize(inv.summary) : '',
+      }));
+  }, [invocations]);
+
+  // 2D.4d — Wizard Spellbook L1 : sorts L1 disponibles pour Magicien.
+  const wizardSpellbookOptions = useMemo(() => {
+    return spells
+      .filter((sp) => sp.level === 1 && sp.classes.includes('wizard'))
+      .sort((a, b) => localize(a.name).localeCompare(localize(b.name), 'fr'))
+      .map((sp) => ({
+        id: sp.id,
+        name: localize(sp.name),
+        summary: sp.school ? `École · ${sp.school}` : '',
+      }));
+  }, [spells]);
+
   if (!targetId) {
     return (
       <p className="font-serif text-body-sm italic text-text-tertiary">
@@ -191,7 +244,6 @@ export function AddClassSubChoicesStep({
       </p>
     );
   }
-  const targetDef = allClasses.find((c) => c.id === targetId);
   if (!targetDef) {
     return (
       <p className="font-serif text-body-sm italic text-crimson">
@@ -230,12 +282,21 @@ export function AddClassSubChoicesStep({
     state.addClassSubChoices,
     allClasses,
   );
-  const hasOnlySingleSelect = requiredKeys.every(
-    (k) =>
-      k === 'clericDivineOrder' ||
-      k === 'druidPrimalOrder' ||
-      k === 'fighterFightingStyle',
-  );
+
+  // 2D.4d — Clés wirées avec un chooser fonctionnel. Le reste (Expertise,
+  // pact-of-the-tome cantrips/rituals, pact-of-the-blade weapon) reste en
+  // banner « à venir » : Expertise dépend des skill proficiencies déjà
+  // posées au L1 (UX nestée) ; pact-of-the-* est conditionnel à
+  // l'invocation choisie.
+  const WIRED_KEYS: ReadonlySet<ClassSubChoiceKey> = new Set([
+    'clericDivineOrder',
+    'druidPrimalOrder',
+    'fighterFightingStyle',
+    'weaponMasteries',
+    'eldritchInvocations',
+    'wizardSpellbookL1',
+  ]);
+  const hasUnwiredKey = requiredKeys.some((k) => !WIRED_KEYS.has(k));
 
   return (
     <section
@@ -304,29 +365,161 @@ export function AddClassSubChoicesStep({
         />
       ) : null}
 
-      {!hasOnlySingleSelect ? (
+      {requiredKeys.includes('weaponMasteries') ? (
+        <MultiSelectChooser
+          legend={`Maîtrises d'armes (${weaponMasteryCount})`}
+          helper={`Sélectionne ${weaponMasteryCount} armes éligibles à la maîtrise SRD 5.2.1.`}
+          options={weaponMasteryOptions}
+          values={state.addClassSubChoices.weaponMasteries ?? []}
+          count={weaponMasteryCount}
+          onChange={(ids) =>
+            dispatch({
+              type: 'patch-add-class-sub-choices',
+              patch: { weaponMasteries: ids },
+            })
+          }
+        />
+      ) : null}
+
+      {requiredKeys.includes('eldritchInvocations') ? (
+        <MultiSelectChooser
+          legend="Invocation occulte (1)"
+          helper="Choisis ton invocation occulte initiale. Pact of the Tome / Blade exposeront leurs sous-choix dans une prochaine itération."
+          options={invocationOptions}
+          values={state.addClassSubChoices.eldritchInvocations ?? []}
+          count={1}
+          onChange={(ids) =>
+            dispatch({
+              type: 'patch-add-class-sub-choices',
+              patch: { eldritchInvocations: ids },
+            })
+          }
+        />
+      ) : null}
+
+      {requiredKeys.includes('wizardSpellbookL1') ? (
+        <MultiSelectChooser
+          legend="Sorts du grimoire (6 sorts L1)"
+          helper="Sélectionne 6 sorts L1 du Magicien à inscrire dans ton grimoire de départ."
+          options={wizardSpellbookOptions}
+          values={state.addClassSubChoices.wizardSpellbookL1 ?? []}
+          count={6}
+          onChange={(ids) =>
+            dispatch({
+              type: 'patch-add-class-sub-choices',
+              patch: { wizardSpellbookL1: ids },
+            })
+          }
+        />
+      ) : null}
+
+      {hasUnwiredKey ? (
         <div
           role="note"
           className="rounded-card border border-amber/40 bg-amber/10 p-3"
         >
           <p className="font-serif text-body-sm text-text">
-            <strong className="font-semibold text-amber">À venir (2D.4d)</strong>
-            {' — '}les sous-choix complexes de {className} (maîtrises d&apos;armes,
-            Expertise, invocations occultistes, grimoire) seront wirés dans la
-            prochaine itération. Pour l&apos;instant l&apos;ajout est possible
-            pour les classes sans sous-choix (Ensorceleur, Barde, Moine) et
-            celles à sous-choix simples (Clerc, Druide, Guerrier).
+            <strong className="font-semibold text-amber">À venir</strong>
+            {' — '}les sous-choix conditionnels (Expertise du Roublard, Pact
+            of the Tome / Blade de l&apos;Occultiste) seront wirés dans une
+            prochaine itération. Confirmer reste bloqué si tu sélectionnes
+            une invocation de pact qui requiert ces sous-choix.
           </p>
         </div>
       ) : null}
 
-      {missing.length > 0 && hasOnlySingleSelect ? (
+      {missing.length > 0 ? (
         <p className="font-serif text-body-sm italic text-text-tertiary">
           Encore {missing.length} sous-choix à compléter avant de pouvoir
           confirmer.
         </p>
       ) : null}
     </section>
+  );
+}
+
+interface MultiSelectChooserProps {
+  legend: string;
+  helper?: string;
+  options: readonly RadioRowGroupOption[];
+  values: readonly string[];
+  count: number;
+  onChange: (ids: string[]) => void;
+}
+
+/**
+ * 2D.4d — Multi-select borné par `count`. Tap sur option cochée → décoche ;
+ * tap sur option non cochée → coche si on a encore de la place, sinon
+ * ignore (cartes grisées visuellement quand cap atteint). `aria-live`
+ * annonce le ratio sélectionné/requis pour lecteurs d'écran.
+ */
+function MultiSelectChooser({
+  legend,
+  helper,
+  options,
+  values,
+  count,
+  onChange,
+}: MultiSelectChooserProps): JSX.Element {
+  const valueSet = useMemo(() => new Set(values), [values]);
+  const reachedCap = values.length >= count;
+  function toggle(id: string): void {
+    if (valueSet.has(id)) {
+      onChange(values.filter((v) => v !== id));
+      return;
+    }
+    if (reachedCap) return;
+    onChange([...values, id]);
+  }
+  return (
+    <fieldset className="space-y-2 rounded-card border border-white-8 bg-glass-2/40 p-3">
+      <legend className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
+        {legend}
+      </legend>
+      {helper ? (
+        <p className="font-serif text-meta text-text-secondary">{helper}</p>
+      ) : null}
+      <p
+        className="font-serif text-body-sm text-text-secondary"
+        aria-live="polite"
+      >
+        {values.length} / {count}
+      </p>
+      <div className="grid gap-2">
+        {options.map((opt) => {
+          const checked = valueSet.has(opt.id);
+          const disabled = !checked && reachedCap;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              role="checkbox"
+              aria-checked={checked}
+              aria-disabled={disabled || undefined}
+              disabled={disabled}
+              onClick={() => toggle(opt.id)}
+              className={cn(
+                'flex w-full flex-col items-start gap-1 rounded-card border px-3 py-2 text-left transition-colors ease-base duration-200',
+                checked
+                  ? 'border-gold bg-gold-bright/10 text-gold-bright'
+                  : disabled
+                    ? 'cursor-not-allowed border-white-8 bg-glass-2/40 text-text-tertiary opacity-60'
+                    : 'border-white-8 bg-glass text-text hover:border-soft',
+              )}
+            >
+              <span className="font-serif text-body-sm font-semibold">
+                {opt.name}
+              </span>
+              {opt.summary ? (
+                <span className="font-serif text-meta text-text-secondary">
+                  {opt.summary}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }
 
