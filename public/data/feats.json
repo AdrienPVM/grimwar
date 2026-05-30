@@ -15,7 +15,13 @@
       "en": "Raise one ability score by 2, or two ability scores by 1 each. No score may exceed 20. Repeatable."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 4
+      }
+    ]
   },
   {
     "id": "alert",
@@ -66,7 +72,13 @@
       "en": "When you miss an attack, you may turn it into an automatic hit (once per turn)."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      }
+    ]
   },
   {
     "id": "boon-of-dimensional-travel",
@@ -84,7 +96,13 @@
       "en": "As a bonus action, teleport up to 30 ft. to a visible spot. PB uses per long rest."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      }
+    ]
   },
   {
     "id": "boon-of-fate",
@@ -102,7 +120,13 @@
       "en": "When another creature within 60 ft. makes a d20 Test, add 2d6 to the result. PB uses per long rest."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      }
+    ]
   },
   {
     "id": "boon-of-irresistible-offense",
@@ -120,7 +144,13 @@
       "en": "Your attacks ignore bludgeoning/piercing/slashing resistance. On a nat 20, add your level to damage."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      }
+    ]
   },
   {
     "id": "boon-of-spell-recall",
@@ -138,7 +168,16 @@
       "en": "When casting a spell using a slot of level 4 or lower, make a Cha save (DC 15): success → slot is not expended."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      },
+      {
+        "kind": "spellcasting"
+      }
+    ]
   },
   {
     "id": "boon-of-the-night-spirit",
@@ -156,7 +195,13 @@
       "en": "In Darkness: Invisible until you attack or cast a spell. Resistance to cold, necrotic, and psychic damage."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      }
+    ]
   },
   {
     "id": "boon-of-truesight",
@@ -174,7 +219,13 @@
       "en": "Permanent Truesight to a range of 60 ft."
     },
     "description": null,
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 19
+      }
+    ]
   },
   {
     "id": "defense",
@@ -230,7 +281,18 @@
     "description": {
       "fr": "Vous avez développé les compétences nécessaires pour vous défendre tout seul dans les combats de rues. Vous obtenez les avantages suivants&nbsp;:\n\nVous avez un avantage aux jets d'attaque contre une créature avec laquelle vous êtes engagé dans une lutte.Vous pouvez utiliser votre action pour tenter de bloquer une créature avec qui vous avez engagé une lutte. Dans ce cas, faites un nouveau jet de lutte. Si vous réussissez, vous et la créature êtes tous deux entravés jusqu'à ce que la lutte se termine."
     },
-    "source": "srd-5.2.1"
+    "source": "srd-5.2.1",
+    "prerequisites": [
+      {
+        "kind": "character-level",
+        "minimum": 4
+      },
+      {
+        "kind": "ability-score",
+        "ability": "for",
+        "minimum": 13
+      }
+    ]
   },
   {
     "id": "magic-initiate",

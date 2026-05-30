@@ -865,6 +865,35 @@ export type Background = z.infer<typeof BackgroundSchema>;
  * Fighter L1 du plan 13.9 (filtre les 4 styles SRD parmi les 17 feats).
  * `optional` parce que les feats hors-catégorie pré-13.7 ne l'ont pas encore.
  */
+
+/**
+ * Prérequis structuré d'un feat (JALON 2C-feat-2). Le champ texte `prerequisite`
+ * reste l'affichage utilisateur officiel SRD ; `prerequisites[]` est la règle
+ * exécutable consommée par `computeFeatAvailability` (2C-feat-3).
+ *
+ * Sémantique : multiple entrées = AND strict. Pas de OR dans le SRD 5.2.1 ship.
+ * Si un custom-content feat (JALON 3) introduit du OR, on étendra l'union avec
+ * `{ kind: 'one-of'; choices: FeatPrerequisite[] }` à ce moment-là.
+ */
+export const featPrerequisiteSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('character-level'),
+    minimum: z.number().int().min(1).max(20),
+  }),
+  z.object({
+    kind: z.literal('ability-score'),
+    ability: magicEffectAbilityCodeSchema,
+    minimum: z.number().int().min(1).max(30),
+  }),
+  z.object({
+    kind: z.literal('class-feature'),
+    /** Nom EN canonique de la class feature requise (ex. « Fighting Style »). */
+    featureNameEn: z.string().min(1),
+  }),
+  z.object({ kind: z.literal('spellcasting') }),
+]);
+export type FeatPrerequisite = z.infer<typeof featPrerequisiteSchema>;
+
 export const FeatSchema = z.object({
   id: slug,
   name: I18nSchema,
@@ -878,6 +907,12 @@ export const FeatSchema = z.object({
    */
   description: I18nSchema.nullable().optional(),
   category: z.string().optional(),
+  /**
+   * Prérequis structurés (JALON 2C-feat-2). `[]` ou absent = feat sans prérequis
+   * exécutable. Le picker level-up consomme ce champ pour griser les feats non
+   * éligibles (2C-feat-4).
+   */
+  prerequisites: z.array(featPrerequisiteSchema).optional(),
   source: sourceTag,
 });
 export type Feat = z.infer<typeof FeatSchema>;

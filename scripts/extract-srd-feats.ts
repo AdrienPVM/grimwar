@@ -13,7 +13,7 @@
  */
 import { readFile, writeFile } from 'node:fs/promises';
 
-import { SRD_FEATS, SRD_FEATS_COUNTS } from './data/srd-feats';
+import { SRD_FEATS, SRD_FEATS_COUNTS, type SrdFeatPrerequisite } from './data/srd-feats';
 
 const FEATS_PATH = 'public/data/feats.json';
 
@@ -24,12 +24,14 @@ interface FeatJsonEntry {
   prerequisite?: { fr: string; en?: string } | null;
   summary?: { fr: string; en?: string } | string | null;
   description?: { fr: string; en?: string } | null;
+  /** Prérequis exécutables (JALON 2C-feat-2). Omis si pas de prérequis. */
+  prerequisites?: SrdFeatPrerequisite[];
   source: string;
   [k: string]: unknown;
 }
 
 function buildEntry(feat: (typeof SRD_FEATS)[number]): FeatJsonEntry {
-  return {
+  const entry: FeatJsonEntry = {
     id: feat.id,
     name: feat.name,
     category: feat.category,
@@ -38,6 +40,12 @@ function buildEntry(feat: (typeof SRD_FEATS)[number]): FeatJsonEntry {
     description: null, // Description SRD complète à enrichir au consommateur (13.8/13.9).
     source: feat.source,
   };
+  // On n'écrit `prerequisites` que si non vide — préserve la compatibilité
+  // avec les feats sans prérequis exécutable (Origin, Fighting Style).
+  if (feat.prerequisites && feat.prerequisites.length > 0) {
+    entry.prerequisites = feat.prerequisites;
+  }
+  return entry;
 }
 
 async function main(): Promise<void> {
