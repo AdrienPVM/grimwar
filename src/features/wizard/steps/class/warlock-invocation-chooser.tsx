@@ -14,7 +14,7 @@ import { HelpTriggerButton } from '../../help/help-trigger-button';
 import { ListWithHelpPanel } from '../../help/list-with-help-panel';
 
 import { toggleBoundedSelection } from './chooser-utils';
-import { WARLOCK_INVOCATIONS_COUNT_L1 } from './use-class-sub-choices';
+import { WARLOCK_INVOCATIONS_COUNT_L1 } from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Chooser Occultiste — Invocation occulte (Eldritch Invocation — SRD 5.2.1).

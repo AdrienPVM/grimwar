@@ -18,7 +18,7 @@ import { toggleBoundedSelection } from './chooser-utils';
 import {
   WIZARD_SPELLBOOK_INSCRIBED_COUNT_L1,
   WIZARD_SPELLBOOK_PREPARED_COUNT_L1,
-} from './use-class-sub-choices';
+} from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Chooser Magicien — Grimoire L1 (Spellbook — SRD 5.2.1).

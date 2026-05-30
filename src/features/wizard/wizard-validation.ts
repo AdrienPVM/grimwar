@@ -8,7 +8,7 @@ import {
 import type { WizardDraft, WizardStepId } from '@/shared/lib/slices/wizard-slice';
 
 import { isAncestrySubChoicesCompleted } from './steps/ancestry/use-ancestry-sub-choices';
-import { areAllClassStepSubChoicesCompleted } from './steps/class/use-class-sub-choices';
+import { areAllClassStepSubChoicesCompleted } from '@/shared/lib/rules/class-l1-sub-choices';
 
 /**
  * Validation per-step (plan 05 §C.3.c).
