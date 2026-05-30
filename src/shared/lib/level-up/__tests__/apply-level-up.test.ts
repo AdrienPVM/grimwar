@@ -1035,14 +1035,17 @@ describe('applyLevelUp · Warlock L1→L2', () => {
 describe('applyLevelUp · cas-limites', () => {
   const fighter = buildL1Character({ classId: 'fighter', hitDie: 'd10' });
 
-  it("throw si classId absent des classes[]", () => {
+  it("throw si classId absent des classes[] avec newClassLevel ≠ 1 (refus add-class non-L1)", () => {
+    // JALON 2D.3 : classId absent + newClassLevel === 1 = add-class valide.
+    // Mais classId absent + newClassLevel ≠ 1 reste un refus dur — un draft
+    // « monter Wizard à L2 » sans Wizard existant est incohérent.
     expect(() =>
       applyLevelUp({
         character: fighter,
         draft: { classId: 'wizard', newClassLevel: 2, hpRoll: averageRoll },
         classDefinitions: ALL_CLASSES,
       }),
-    ).toThrow(/introuvable/);
+    ).toThrow(/absent de classes\[\].*≠ 1|absent.*newClassLevel=2/);
   });
 
   it("throw si newClassLevel ≠ current + 1", () => {

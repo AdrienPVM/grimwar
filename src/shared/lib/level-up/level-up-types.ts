@@ -88,13 +88,19 @@ export type AsiOrFeat = z.infer<typeof asiOrFeatSchema>;
 
 /**
  * Brouillon complet d'un level-up. `classId` désigne la classe qui monte de
- * niveau ; `newClassLevel` est le niveau atteint par cette classe (≥ 2). Le
- * niveau total du perso devient `totalLevel + 1` (la transformation s'occupe
- * du calcul, le brouillon porte juste l'intention).
+ * niveau ; `newClassLevel` est le niveau atteint par cette classe.
+ *   - `newClassLevel ≥ 2` → level-up classique (la classe existe déjà dans
+ *     `character.classes[]`, on monte son niveau de +1).
+ *   - `newClassLevel === 1` → AJOUT d'une nouvelle classe en multiclass
+ *     (JALON 2D.3). `applyLevelUp` valide alors les prérequis SRD 2024 via
+ *     `computeMulticlassEligibility` + la borne `classes.length < 4`.
+ *
+ * Le niveau total du perso devient `totalLevel + 1` dans les deux cas (la
+ * transformation s'occupe du calcul, le brouillon porte juste l'intention).
  */
 export const levelUpDraftSchema = z.object({
   classId: slug,
-  newClassLevel: z.number().int().min(2).max(20),
+  newClassLevel: z.number().int().min(1).max(20),
   hpRoll: hpRollSchema,
   asiOrFeat: asiOrFeatSchema.optional(),
   subclassId: slug.optional(),

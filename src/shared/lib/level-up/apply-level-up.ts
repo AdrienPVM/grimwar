@@ -1,4 +1,5 @@
 import type { AbilityCode, Character, CharacterClassEntry } from '@/shared/types/character';
+import { createEmptyClassSubChoices } from '@/shared/types/character';
 import type { ClassEntity } from '@/shared/types/content';
 
 import {
@@ -6,8 +7,12 @@ import {
   spellSlotsForCasterLevel,
   type CasterClassEntry,
 } from '../rules/multiclass';
+import { computeMulticlassEligibility } from '../rules/multiclass-eligibility';
 
 import { type LevelUpDraft, levelUpDraftSchema } from './level-up-types';
+
+/** Borne haute du nombre de classes (cf. `CharacterSchema.classes.max(4)`). */
+const MAX_CLASSES_PER_CHARACTER = 4;
 
 /**
  * JALON 2B.3a — Application pure d'un level-up sur un `Character`.
@@ -87,16 +92,41 @@ export function applyLevelUp({
   const parsed = levelUpDraftSchema.parse(draft);
 
   const targetIdx = character.classes.findIndex((c) => c.classId === parsed.classId);
-  if (targetIdx < 0) {
-    throw new Error(
-      `[applyLevelUp] classId="${parsed.classId}" introuvable dans classes[] du perso "${character.id}".`,
-    );
-  }
-  const targetClass = character.classes[targetIdx]!;
-  if (parsed.newClassLevel !== targetClass.level + 1) {
-    throw new Error(
-      `[applyLevelUp] newClassLevel=${parsed.newClassLevel} attendu ${targetClass.level + 1} (level + 1).`,
-    );
+  const isAddingNewClass = targetIdx < 0;
+  // `existingClass` est non-null UNIQUEMENT sur le path level-up (la classe
+  // existait déjà). Sur l'add-class path il reste null — utilisé partout
+  // ci-dessous via `if (existingClass)` plutôt que via `!isAddingNewClass`
+  // pour le narrowing TypeScript.
+  const existingClass: CharacterClassEntry | null = isAddingNewClass
+    ? null
+    : character.classes[targetIdx]!;
+
+  // JALON 2D.3 — Détection du path "ajouter une nouvelle classe".
+  // Si la classe est inconnue, `newClassLevel` doit valoir 1 (L1 d'une nouvelle
+  // classe). Tout autre niveau pour une classe absente = corruption du draft.
+  if (isAddingNewClass) {
+    if (parsed.newClassLevel !== 1) {
+      throw new Error(
+        `[applyLevelUp] classId="${parsed.classId}" absent de classes[] et newClassLevel=${parsed.newClassLevel} ≠ 1 — refus (l'ajout multiclass démarre toujours à L1).`,
+      );
+    }
+    if (character.classes.length >= MAX_CLASSES_PER_CHARACTER) {
+      throw new Error(
+        `[applyLevelUp] character.classes.length=${character.classes.length} atteint la borne max=${MAX_CLASSES_PER_CHARACTER} (refus add-class).`,
+      );
+    }
+  } else {
+    // Path classique : level-up d'une classe existante (newClassLevel ≥ 2).
+    if (parsed.newClassLevel === 1) {
+      throw new Error(
+        `[applyLevelUp] classId="${parsed.classId}" déjà présent dans classes[] (level=${existingClass!.level}) — newClassLevel=1 attendu uniquement pour une CLASSE NOUVELLE.`,
+      );
+    }
+    if (parsed.newClassLevel !== existingClass!.level + 1) {
+      throw new Error(
+        `[applyLevelUp] newClassLevel=${parsed.newClassLevel} attendu ${existingClass!.level + 1} (level + 1).`,
+      );
+    }
   }
 
   const targetDef = classDefinitions[parsed.classId];
@@ -106,26 +136,64 @@ export function applyLevelUp({
     );
   }
 
+  // JALON 2D.3 — Defense in depth : valide les prérequis multiclass aussi
+  // côté pure-function (l'UI 2D.4 fait déjà le grisage, mais on défend les
+  // appels programmatiques / tests / éventuels bypass UI).
+  if (isAddingNewClass) {
+    const eligibility = computeMulticlassEligibility(
+      character,
+      targetDef.multiclassPrerequisite ?? null,
+    );
+    if (!eligibility.eligible) {
+      const unmet = eligibility.unmetScores
+        .map((s) => `${s.ability.toUpperCase()} ${s.actual}/${s.minimum}`)
+        .join(', ');
+      throw new Error(
+        `[applyLevelUp] prérequis multiclass non satisfaits pour "${parsed.classId}" : ${unmet}.`,
+      );
+    }
+  }
+
   // 2. Vérifie la sous-classe à L3 (toutes classes — divineOrder/primalOrder
   // L1 sont des sous-choix indépendants du subclassId SRD 5.2.1).
-  if (parsed.newClassLevel === 3 && !parsed.subclassId && !targetClass.subclassId) {
+  // Sur add-class L1, ce check ne s'applique pas (la sous-classe attendra
+  // le L3 DE CETTE CLASSE ajoutée).
+  if (
+    existingClass &&
+    parsed.newClassLevel === 3 &&
+    !parsed.subclassId &&
+    !existingClass.subclassId
+  ) {
     throw new Error(
       `[applyLevelUp] subclassId requis à newClassLevel=3 pour "${parsed.classId}".`,
     );
   }
 
-  // 3. Construit le nouveau `classes[]` avec le niveau et la subclass mis à jour.
-  const updatedClassEntry: CharacterClassEntry = {
-    ...targetClass,
-    level: parsed.newClassLevel,
-    subclassId: parsed.subclassId ?? targetClass.subclassId,
-    eldritchInvocations: parsed.newInvocations
-      ? [...targetClass.eldritchInvocations, ...parsed.newInvocations]
-      : targetClass.eldritchInvocations,
-  };
-  const newClasses: CharacterClassEntry[] = character.classes.map((c, i) =>
-    i === targetIdx ? updatedClassEntry : c,
-  );
+  // 3. Construit le nouveau `classes[]`.
+  let newClasses: CharacterClassEntry[];
+  if (existingClass) {
+    // Path level-up : on remplace l'entrée existante.
+    const updatedClassEntry: CharacterClassEntry = {
+      ...existingClass,
+      level: parsed.newClassLevel,
+      subclassId: parsed.subclassId ?? existingClass.subclassId,
+      eldritchInvocations: parsed.newInvocations
+        ? [...existingClass.eldritchInvocations, ...parsed.newInvocations]
+        : existingClass.eldritchInvocations,
+    };
+    newClasses = character.classes.map((c, i) =>
+      i === targetIdx ? updatedClassEntry : c,
+    );
+  } else {
+    // Path add-class : append une nouvelle entrée avec sentinelles fraîches.
+    const newClassEntry: CharacterClassEntry = {
+      classId: parsed.classId,
+      subclassId: null,
+      level: 1,
+      ...createEmptyClassSubChoices(),
+    };
+    newClasses = [...character.classes, newClassEntry];
+  }
   const newTotalLevel = newClasses.reduce((acc, c) => acc + c.level, 0);
 
   // 4. Recompute des emplacements de sort multi-classes (full/half/third casters).
@@ -176,12 +244,40 @@ export function applyLevelUp({
     temp: character.hp.temp,
   };
 
-  // 6. Hit dice pool — la classe levée gagne +1 die.
-  const nextHitDice = character.hitDice.map((p) =>
-    p.classId === parsed.classId
-      ? { ...p, max: p.max + 1, current: p.current + 1 }
-      : p,
-  );
+  // 6. Hit dice pool — append nouvelle entrée pour add-class, +1 die pour level-up.
+  const nextHitDice = existingClass
+    ? character.hitDice.map((p) =>
+        p.classId === parsed.classId
+          ? { ...p, max: p.max + 1, current: p.current + 1 }
+          : p,
+      )
+    : [
+        ...character.hitDice,
+        { classId: parsed.classId, current: 1, max: 1, die: targetDef.hitDie },
+      ];
+
+  // 6b. JALON 2D.3 — extraProficiencies : add-class applique le subset
+  // multiclass de la nouvelle classe (armor/weapons/tools). Level-up pur ne
+  // touche pas à ces tableaux (déjà appliqués au L1 de chaque classe). Pas
+  // de dédup ici — l'UI sera autorité pour ne pas re-proposer une prof déjà
+  // possédée (cf. JALON 2D.4).
+  const nextExtraProficiencies = !existingClass && targetDef.multiclassProficiencies
+    ? {
+        ...character.extraProficiencies,
+        armor: [
+          ...character.extraProficiencies.armor,
+          ...targetDef.multiclassProficiencies.armor,
+        ],
+        weapons: [
+          ...character.extraProficiencies.weapons,
+          ...targetDef.multiclassProficiencies.weapons,
+        ],
+        tools: [
+          ...character.extraProficiencies.tools,
+          ...targetDef.multiclassProficiencies.tools,
+        ],
+      }
+    : character.extraProficiencies;
 
   // 7. classResources — applique la progression au nouveau niveau.
   const nextClassResources: Character['classResources'] = { ...character.classResources };
@@ -254,6 +350,7 @@ export function applyLevelUp({
     classResources: nextClassResources,
     spellSlots: nextSpellSlots,
     knownSpells: nextKnownSpells,
+    extraProficiencies: nextExtraProficiencies,
   };
 }
 
