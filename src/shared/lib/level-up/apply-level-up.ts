@@ -185,12 +185,28 @@ export function applyLevelUp({
       i === targetIdx ? updatedClassEntry : c,
     );
   } else {
-    // Path add-class : append une nouvelle entrée avec sentinelles fraîches.
+    // Path add-class : append une nouvelle entrée avec sentinelles fraîches,
+    // puis applique les sous-choix L1 fournis par le draft (2D.4a). Les
+    // sentinelles servent de fallback pour les champs non renseignés —
+    // l'UI mode add-class reste responsable de présenter tous les choosers
+    // SRD-requis pour la classe ajoutée.
+    const sentinels = createEmptyClassSubChoices();
+    const overrides = parsed.addClassSubChoices ?? {};
     const newClassEntry: CharacterClassEntry = {
       classId: parsed.classId,
       subclassId: null,
       level: 1,
-      ...createEmptyClassSubChoices(),
+      clericDivineOrder: overrides.clericDivineOrder ?? sentinels.clericDivineOrder,
+      druidPrimalOrder: overrides.druidPrimalOrder ?? sentinels.druidPrimalOrder,
+      fighterFightingStyle:
+        overrides.fighterFightingStyle ?? sentinels.fighterFightingStyle,
+      weaponMasteries: overrides.weaponMasteries ?? sentinels.weaponMasteries,
+      expertiseSkills: overrides.expertiseSkills ?? sentinels.expertiseSkills,
+      eldritchInvocations: overrides.eldritchInvocations ?? sentinels.eldritchInvocations,
+      wizardSpellbookL1: overrides.wizardSpellbookL1 ?? sentinels.wizardSpellbookL1,
+      pactTomeCantrips: overrides.pactTomeCantrips ?? sentinels.pactTomeCantrips,
+      pactTomeRituals: overrides.pactTomeRituals ?? sentinels.pactTomeRituals,
+      pactBladeWeapon: overrides.pactBladeWeapon ?? sentinels.pactBladeWeapon,
     };
     newClasses = [...character.classes, newClassEntry];
   }
