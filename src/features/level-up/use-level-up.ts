@@ -32,6 +32,11 @@ interface UseLevelUpResult {
   error: Error | null;
 }
 
+/**
+ * JALON 2D.4c — `extraProficiencies` ajoute le subset multiclass-armor/weapons
+ * /tools quand `applyLevelUp` détecte un add-class path. Sans cette clé, les
+ * proficiencies SRD 2024 du multiclass ne descendraient PAS jusqu'à Firestore.
+ */
 const PATCHED_KEYS = [
   'totalLevel',
   'classes',
@@ -43,6 +48,7 @@ const PATCHED_KEYS = [
   'knownSpells',
   'preparedSpells',
   'spellcastingAbility',
+  'extraProficiencies',
 ] as const satisfies readonly (keyof Character)[];
 
 export function useLevelUp(character: Character): UseLevelUpResult {
@@ -52,9 +58,16 @@ export function useLevelUp(character: Character): UseLevelUpResult {
   const applyAndPersist = useCallback(
     async (draft: LevelUpDraft): Promise<void> => {
       const classDefinitions: Record<string, ClassEntity> = {};
+      // Charge les classes déjà sur le perso (pour la recomputation slots
+      // multi-class) + la classe ciblée par le draft (add-class L1 ou
+      // level-up classique — `applyLevelUp` exige `classDefinitions[draft.classId]`).
       for (const c of character.classes) {
         const def = classes.find((cd) => cd.id === c.classId);
         if (def) classDefinitions[c.classId] = def;
+      }
+      if (!classDefinitions[draft.classId]) {
+        const def = classes.find((cd) => cd.id === draft.classId);
+        if (def) classDefinitions[draft.classId] = def;
       }
       const updated = applyLevelUp({ character, draft, classDefinitions });
       const patch: Partial<Character> = {};
