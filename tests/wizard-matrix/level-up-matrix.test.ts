@@ -1,9 +1,12 @@
+import { readFileSync } from 'node:fs';
+
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { applyLevelUp } from '@/shared/lib/level-up/apply-level-up';
 import type { LevelUpDraft } from '@/shared/lib/level-up/level-up-types';
+import { computeFeatAvailability } from '@/shared/lib/rules/feat-availability';
 import type { Character } from '@/shared/types/character';
-import type { ClassEntity } from '@/shared/types/content';
+import type { ClassEntity, Feat } from '@/shared/types/content';
 
 import { submitWizardAndDeriveSheet } from '../helpers/content-truth';
 import {
@@ -261,5 +264,120 @@ describe('matrice level-up — Rogue L1 → L3 (HP + Thief)', () => {
         classDefinitions: classDefs(l2),
       }),
     ).toThrow(/subclassId requis/);
+  });
+});
+
+/**
+ * Matrix pin — éligibilité du feat « Lutteur » (Grappler) — JALON 2C-feat-5.
+ *
+ * Cat. 3 (fidélité bundle) + cat. 6 (cas-limite de règles) cumulés :
+ * vérifie que `computeFeatAvailability` (2C-feat-3) consomme correctement
+ * les `prerequisites[]` du bundle live `public/data/feats.json` (2C-feat-2)
+ * sur deux personas représentatifs canoniques :
+ *
+ *   - Wizard L4 (standard array : FOR 8) → Lutteur (Lvl 4+ AND FOR 13+)
+ *     bloqué par la borne FOR.
+ *   - Fighter L4 (standard array : FOR 15, +2 ASI au L4 → 17) → Lutteur
+ *     éligible (les 2 prereqs satisfaits).
+ *
+ * Le pin tape directement sur le bundle SRD (pas de mock) : un drift
+ * structurel des `prerequisites[]` sur `lutteur` (renommé, mauvais kind,
+ * borne décalée) fait rougir cette matrice.
+ */
+describe('matrice level-up — éligibilité Lutteur sur Wizard/Fighter L4 (JALON 2C-feat-5)', () => {
+  let lutteur: Feat;
+
+  beforeAll(() => {
+    const allFeats = JSON.parse(
+      readFileSync('public/data/feats.json', 'utf-8'),
+    ) as Feat[];
+    const found = allFeats.find((f) => f.id === 'lutteur');
+    if (!found) throw new Error('[matrix 2C-feat-5] feat « lutteur » absent du bundle');
+    lutteur = found;
+  });
+
+  it("Wizard L4 (FOR 8) — Lutteur bloqué par la borne FOR 13+", () => {
+    const wizardL4 = applyChain(l1('base-wizard'), [
+      {
+        classId: 'wizard',
+        newClassLevel: 2,
+        hpRoll: { kind: 'average' },
+        newSpellsKnown: ['mains-brulantes'],
+      },
+      {
+        classId: 'wizard',
+        newClassLevel: 3,
+        hpRoll: { kind: 'average' },
+        subclassId: 'evoker',
+        newSpellsKnown: ['identification'],
+      },
+      {
+        classId: 'wizard',
+        newClassLevel: 4,
+        hpRoll: { kind: 'average' },
+        asiOrFeat: {
+          kind: 'asi',
+          abilityIncreases: [{ ability: 'int', bonus: 2 }],
+        },
+        newCantrips: ['lumiere'],
+        newSpellsKnown: ['comprehension-des-langues'],
+      },
+    ]);
+
+    // Standard array Wizard : FOR 8 (cf. reference-builds/wizard.ts).
+    expect(wizardL4.abilities.for).toBe(8);
+    expect(wizardL4.totalLevel).toBe(4);
+
+    const availability = computeFeatAvailability(wizardL4, lutteur.prerequisites);
+    expect(availability.available).toBe(false);
+    // Le prereq character-level=4 EST satisfait (totalLevel=4) ;
+    // seul ability-score FOR 13+ est unmet → on pin la liste exacte.
+    expect(availability.unmetPrerequisites).toEqual([
+      { kind: 'ability-score', ability: 'for', minimum: 13 },
+    ]);
+  });
+
+  it("Fighter L4 (FOR 17 post-ASI) — Lutteur éligible", () => {
+    const fighterL4 = applyChain(l1('base-fighter'), [
+      { classId: 'fighter', newClassLevel: 2, hpRoll: { kind: 'average' } },
+      {
+        classId: 'fighter',
+        newClassLevel: 3,
+        hpRoll: { kind: 'average' },
+        subclassId: 'champion',
+      },
+      {
+        classId: 'fighter',
+        newClassLevel: 4,
+        hpRoll: { kind: 'average' },
+        asiOrFeat: {
+          kind: 'asi',
+          abilityIncreases: [{ ability: 'for', bonus: 2 }],
+        },
+      },
+    ]);
+
+    // Standard array Fighter : FOR 15 + ASI +2 = 17.
+    expect(fighterL4.abilities.for).toBe(17);
+    expect(fighterL4.totalLevel).toBe(4);
+
+    const availability = computeFeatAvailability(fighterL4, lutteur.prerequisites);
+    expect(availability.available).toBe(true);
+    expect(availability.unmetPrerequisites).toEqual([]);
+  });
+
+  it("Wizard L1 (FOR 8) — Lutteur bloqué par les DEUX prereqs (level + FOR)", () => {
+    const wizardL1 = l1('base-wizard');
+    expect(wizardL1.totalLevel).toBe(1);
+    expect(wizardL1.abilities.for).toBe(8);
+
+    const availability = computeFeatAvailability(wizardL1, lutteur.prerequisites);
+    expect(availability.available).toBe(false);
+    // Pin de l'AND strict : on doit voir les 2 prérequis unmet dans
+    // l'ordre du bundle (level puis ability-score).
+    expect(availability.unmetPrerequisites).toEqual([
+      { kind: 'character-level', minimum: 4 },
+      { kind: 'ability-score', ability: 'for', minimum: 13 },
+    ]);
   });
 });
