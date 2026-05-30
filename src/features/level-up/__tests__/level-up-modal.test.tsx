@@ -62,6 +62,16 @@ const fighterClass: ClassEntity = {
       name: { fr: 'Sous-classe de Guerrier', en: 'Fighter Subclass' },
       description: { fr: '', en: '' },
     },
+    {
+      level: 4,
+      name: { fr: 'Amélioration de caractéristique', en: 'Ability Score Improvement' },
+      description: { fr: '', en: '' },
+    },
+    {
+      level: 19,
+      name: { fr: 'Faveur épique', en: 'Epic Boon' },
+      description: { fr: '', en: '' },
+    },
   ],
   weaponMasteryCount: 3,
   source: 'srd-5.2.1',
@@ -74,7 +84,10 @@ vi.mock('@/shared/hooks/use-content', () => ({
     }
     if (type === 'feats') {
       return {
-        data: [{ id: 'fou-de-combat', name: { fr: 'Fou de combat', en: 'Berserker' }, category: 'general' }],
+        data: [
+          { id: 'fou-de-combat', name: { fr: 'Fou de combat', en: 'Berserker' }, category: 'general' },
+          { id: 'don-epique-de-force', name: { fr: 'Don épique de Force', en: 'Epic Boon of Strength' }, category: 'epic-boon' },
+        ],
         loading: false,
         error: null,
       };
@@ -346,5 +359,49 @@ describe('LevelUpModal — persistance asynchrone (JALON 2B.5)', () => {
     // cachent. Le contrat testé ici, c'est qu'on n'appelle pas onClose pendant
     // la persistance — vérifié quel que soit le chemin.
     expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+describe('LevelUpModal — Epic Boon filter à L19 (JALON 2C.3)', () => {
+  it('Fighter L18 → L19 : étape Don propose les feats epic-boon (pas general)', () => {
+    const character = makeFighter(18);
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /suivant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^don$/i }));
+    // Le titre L19 mentionne « don épique » ; on cible le `combobox` (select)
+    // directement plutôt que le label pour éviter l'ambiguïté.
+    const featSelect = screen.getByRole('combobox') as HTMLSelectElement;
+    const options = Array.from(featSelect.options).map((o) => o.textContent);
+    expect(options.join(' ')).toMatch(/don épique de force/i);
+    expect(options.join(' ')).not.toMatch(/fou de combat/i);
+  });
+
+  it('Fighter L3 → L4 : étape ASI/feat propose les feats general (pas epic-boon)', () => {
+    const character = makeFighter(3);
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /suivant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^don$/i }));
+    const featSelect = screen.getByRole('combobox') as HTMLSelectElement;
+    const options = Array.from(featSelect.options).map((o) => o.textContent);
+    expect(options.join(' ')).toMatch(/fou de combat/i);
+    expect(options.join(' ')).not.toMatch(/don épique de force/i);
   });
 });
