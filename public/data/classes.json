@@ -373,6 +373,24 @@
         4,
         4
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "for",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Shields"
+      ],
+      "weapons": [
+        "Martial weapons"
+      ],
+      "tools": []
     }
   },
   {
@@ -701,6 +719,24 @@
         4,
         4,
         4
+      ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "cha",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light"
+      ],
+      "weapons": [],
+      "tools": [
+        "1 musical instrument"
       ]
     }
   },
@@ -1035,6 +1071,24 @@
         5,
         5
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "sag",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapons": [],
+      "tools": []
     }
   },
   {
@@ -1398,6 +1452,20 @@
         4,
         4
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "sag",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [],
+      "weapons": [],
+      "tools": []
     }
   },
   {
@@ -1790,6 +1858,30 @@
         2,
         2
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "or",
+      "scores": [
+        {
+          "ability": "for",
+          "minimum": 13
+        },
+        {
+          "ability": "dex",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapons": [
+        "Martial weapons"
+      ],
+      "tools": []
     }
   },
   {
@@ -2193,6 +2285,24 @@
         19,
         20
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "dex",
+          "minimum": 13
+        },
+        {
+          "ability": "sag",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [],
+      "weapons": [],
+      "tools": []
     }
   },
   {
@@ -2577,6 +2687,28 @@
         15,
         15
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "for",
+          "minimum": 13
+        },
+        {
+          "ability": "cha",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapons": [],
+      "tools": []
     }
   },
   {
@@ -2924,6 +3056,30 @@
         15,
         15
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "dex",
+          "minimum": 13
+        },
+        {
+          "ability": "sag",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light",
+        "Medium armor",
+        "Shields"
+      ],
+      "weapons": [
+        "Martial weapons"
+      ],
+      "tools": []
     }
   },
   {
@@ -3292,6 +3448,24 @@
         "10d6",
         "10d6"
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "dex",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light"
+      ],
+      "weapons": [],
+      "tools": [
+        "Thieves’ tools"
+      ]
     }
   },
   {
@@ -3585,6 +3759,20 @@
         6,
         6
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "cha",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [],
+      "weapons": [],
+      "tools": []
     }
   },
   {
@@ -3942,6 +4130,22 @@
         4,
         4
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "cha",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [
+        "Light"
+      ],
+      "weapons": [],
+      "tools": []
     }
   },
   {
@@ -4240,6 +4444,20 @@
         5,
         5
       ]
+    },
+    "multiclassPrerequisite": {
+      "combinator": "and",
+      "scores": [
+        {
+          "ability": "int",
+          "minimum": 13
+        }
+      ]
+    },
+    "multiclassProficiencies": {
+      "armor": [],
+      "weapons": [],
+      "tools": []
     }
   }
 ]
