@@ -17,8 +17,9 @@ import {
   type LevelUpFlowState,
 } from '@/shared/lib/level-up/level-up-flow';
 import type { LevelUpDraft } from '@/shared/lib/level-up/level-up-types';
+import { computeFeatAvailability } from '@/shared/lib/rules/feat-availability';
 import type { AbilityCode, Character } from '@/shared/types/character';
-import type { ClassEntity, I18n, Subclass } from '@/shared/types/content';
+import type { ClassEntity, Feat, FeatPrerequisite, I18n, Subclass } from '@/shared/types/content';
 
 /**
  * JALON 2B.4c — Coquille UI de la modale de level-up.
@@ -411,7 +412,12 @@ const ABILITY_LABELS: Record<AbilityCode, string> = {
   cha: 'Charisme',
 };
 
-function AsiOrFeatStep({ state, dispatch, newClassLevel }: StepBodyProps): JSX.Element {
+function AsiOrFeatStep({
+  state,
+  character,
+  dispatch,
+  newClassLevel,
+}: StepBodyProps): JSX.Element {
   const { data: feats, loading } = useContent('feats');
   // SRD 5.2.1 (PHB 2024) : à L19 le choix « Epic Boon » tire dans la catégorie
   // `epic-boon`, pas dans `general`. Les autres niveaux ASI (4/6/8/10/12/14/16)
@@ -422,8 +428,32 @@ function AsiOrFeatStep({ state, dispatch, newClassLevel }: StepBodyProps): JSX.E
     () => feats.filter((f) => f.category === featCategory),
     [feats, featCategory],
   );
+  // 2C-feat-4 : éligibilité par feat → grise le `<option>` + tooltip raison.
+  // On évalue contre le perso APRÈS le level-up (totalLevel + 1) — sinon un
+  // feat à prereq L4+ resterait grisé pendant le step L3→L4 alors qu'on est
+  // précisément en train d'acquérir L4. Mono-class : trivial. Multi-class
+  // (2D) : `totalLevel + 1` reste correct car on monte exactement d'un niveau.
+  const postLevelUpCharacter = useMemo<Character>(
+    () => ({ ...character, totalLevel: character.totalLevel + 1 }),
+    [character],
+  );
+  const availabilityByFeatId = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof computeFeatAvailability>>();
+    for (const f of candidateFeats) {
+      map.set(f.id, computeFeatAvailability(postLevelUpCharacter, f.prerequisites));
+    }
+    return map;
+  }, [candidateFeats, postLevelUpCharacter]);
   const mode = state.asiOrFeat?.kind ?? null;
   const featLabel = isEpicBoonLevel ? 'Don épique' : 'Don général';
+
+  // Au toggle « Don », auto-pick le premier feat ÉLIGIBLE pour éviter d'amorcer
+  // la sélection sur un feat grisé (cas Wizard L4 sur catégorie `general` avec
+  // Lutteur en tête de liste).
+  const firstAvailableFeatId =
+    candidateFeats.find((f) => availabilityByFeatId.get(f.id)?.available)?.id ??
+    candidateFeats[0]?.id ??
+    '';
 
   return (
     <section aria-labelledby="step-asi-title" className="space-y-4">
@@ -463,7 +493,7 @@ function AsiOrFeatStep({ state, dispatch, newClassLevel }: StepBodyProps): JSX.E
           onClick={() =>
             dispatch({
               type: 'set-asi-or-feat',
-              value: { kind: 'feat', featId: candidateFeats[0]?.id ?? '' },
+              value: { kind: 'feat', featId: firstAvailableFeatId },
             })
           }
         />
@@ -479,6 +509,7 @@ function AsiOrFeatStep({ state, dispatch, newClassLevel }: StepBodyProps): JSX.E
         <FeatPicker
           state={state}
           feats={candidateFeats}
+          availabilityByFeatId={availabilityByFeatId}
           loading={loading}
           label={featLabel}
           onChange={(value) => dispatch({ type: 'set-asi-or-feat', value })}
@@ -589,15 +620,35 @@ function AsiPicker({
   );
 }
 
+/**
+ * Formate un prérequis non satisfait en libellé FR humain pour tooltip / a11y.
+ * Garde la sémantique de `computeFeatAvailability` mais reste local au composant
+ * (pas de duplication dans le helper règles — c'est du rendu UI).
+ */
+function formatPrerequisiteReason(prereq: FeatPrerequisite): string {
+  switch (prereq.kind) {
+    case 'character-level':
+      return `Niveau ${prereq.minimum}+ requis`;
+    case 'ability-score':
+      return `${ABILITY_LABELS[prereq.ability]} ${prereq.minimum}+ requis`;
+    case 'spellcasting':
+      return 'Capacité à lancer un sort requise';
+    case 'class-feature':
+      return `Aptitude de classe « ${prereq.featureNameEn} » requise`;
+  }
+}
+
 function FeatPicker({
   state,
   feats,
+  availabilityByFeatId,
   loading,
   label,
   onChange,
 }: {
   state: LevelUpFlowState;
-  feats: { id: string; name: I18n }[];
+  feats: Feat[];
+  availabilityByFeatId: Map<string, ReturnType<typeof computeFeatAvailability>>;
   loading: boolean;
   label: string;
   onChange: (value: { kind: 'feat'; featId: string }) => void;
@@ -620,11 +671,24 @@ function FeatPicker({
             <option value="" disabled>
               Choisir un don…
             </option>
-            {feats.map((f) => (
-              <option key={f.id} value={f.id}>
-                {localize(f.name)}
-              </option>
-            ))}
+            {feats.map((f) => {
+              const availability = availabilityByFeatId.get(f.id);
+              const blocked = availability ? !availability.available : false;
+              const reasons = availability?.unmetPrerequisites
+                .map(formatPrerequisiteReason)
+                .join(' · ');
+              return (
+                <option
+                  key={f.id}
+                  value={f.id}
+                  disabled={blocked}
+                  title={blocked ? `Prérequis non rempli — ${reasons}` : undefined}
+                >
+                  {localize(f.name)}
+                  {blocked ? ` — ${reasons}` : ''}
+                </option>
+              );
+            })}
           </select>
         )}
       </label>
