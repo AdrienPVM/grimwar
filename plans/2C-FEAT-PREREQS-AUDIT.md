@@ -1,8 +1,18 @@
 # JALON 2C — Feat prerequisites Zod-hard (audit)
 
-**Statut** : audit livré. Implémentation en 4 PRs (2C-feat-2/3/4/5).
+**Statut** : ✅ **CLOS 2026-05-30** — les 4 sous-PR sont livrées et mergées sur `main`.
 **Date audit** : 2026-05-30.
 **Périmètre** : `public/data/feats.json` (17 feats SRD 5.2.1 bundlés au repo).
+
+## Livraison
+
+| PR | Commit | Statut |
+|---|---|---|
+| 2C-feat-1 (audit) | `4859db7` | ✅ livré |
+| 2C-feat-2 (schéma Zod + peuplement `prerequisites[]` + pin SRD) | `3cc61d3` (merge PR #80) | ✅ livré |
+| 2C-feat-3 (`computeFeatAvailability` + 16 tests TDD) | `35e8075` (squash PR #81) | ✅ livré |
+| 2C-feat-4 (UI grisage `FeatPicker` + tooltip + 4 tests) | `f9c00e7` (squash PR #82) | ✅ livré |
+| 2C-feat-5 (matrix pin Wizard L4 / Fighter L4 sur Lutteur) | _(cette PR)_ | en cours |
 
 ## Objectif
 
