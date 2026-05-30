@@ -1,6 +1,6 @@
 # JALON 2D — Multiclassing (audit + découpage PR)
 
-> **Statut** : 2D.1 audit livré (ce doc). 2D.2 → 2D.5 à enchaîner.
+> **Statut** : ✅ JALON 2D LIVRÉ (clôture 2026-05-31). 2D.1 audit (PR direct main) → 2D.2 data SRD 2024 (PR #84) → 2D.3 rules + applyLevelUp add-class (PR #85) → 2D.4a data layer L1 sub-choices (PR #86) → 2D.4b reducer/builder add-class (PR #87) → 2D.4c UI complète (PR #88) → 2D.5 matrix pins + clôture (PR #89, ce commit). UAT navigateur Adrien restera à valider sensoriellement le picker + sub-choosers avant clôture absolue.
 > **Périmètre V1** : SRD 2024 multiclassing — prérequis par classe, ajout d'une nouvelle classe via level-up, sous-ensemble de proficiencies, table de spell slots unifiée. Cf. décision LOCKED `CLAUDE.md > Multi-classing` et SPEC `plans/MVP-V1-SPEC.md > Levelling V1`.
 > **Auditeur** : Claude session du 2026-05-30. État de référence : `main` à `36ca29e` (post JALON 2C-feat-5).
 
@@ -141,15 +141,17 @@ SRD 2024 : quand on multiclasse, on ne reçoit qu'un **sous-ensemble** des profi
 
 Compte tenu de l'audit, le périmètre se réduit. **5 PR au lieu des 5 du brief, mais redistribuées** :
 
-| Sous-PR | Périmètre | Path | Flow |
-|---|---|---|---|
-| **2D.1** | Cet audit (doc-only) | `plans/2D-MULTICLASS-AUDIT.md` | direct main (non protégé) |
-| **2D.2** | Schéma `ClassEntity` étendu (`multiclassPrerequisite` + `multiclassProficiencies`) + peuplement 12 classes via `scripts/data/srd-classes-l1.ts` + re-extraction `public/data/classes.json` + tests cat. 3 pin (3 classes représentatives) | `src/shared/types/content.ts`, `scripts/data/srd-classes-l1.ts`, `public/data/classes.json` (protégé) | **PR merge-commit** (path protégé) |
-| **2D.3** | Helper `computeMulticlassEligibility` pur + TDD 12 classes + extension `applyLevelUp` add-new-class path + extension `levelUpDraftSchema` + TDD | `src/shared/lib/rules/multiclass-eligibility.ts`, `src/shared/lib/level-up/apply-level-up.ts`, `level-up-types.ts` + tests | PR squash |
-| **2D.4** | UI `LevelUpModal` : choix "lever" vs "ajouter" + liste classes éligibles grisées + sub-choosers L1 + hook `useLevelUp` étendu si besoin | `src/features/level-up/*.tsx` + tests UI | PR squash |
-| **2D.5** | e2e Fighter+Wizard / Paladin bloqué CHA / matrix pins multi-class + doc clôture 2D | `tests/e2e/level-up-multiclass.spec.ts`, `tests/wizard-matrix/level-up-matrix.test.ts` | PR squash |
+| Sous-PR | Statut | Périmètre | Path | Flow |
+|---|---|---|---|---|
+| **2D.1** | ✅ commit `b3093fb` | Cet audit (doc-only) | `plans/2D-MULTICLASS-AUDIT.md` | direct main (non protégé) |
+| **2D.2** | ✅ PR #84 → `386ee79` | Schéma `ClassEntity` étendu (`multiclassPrerequisite` + `multiclassProficiencies`) + peuplement 12 classes via `scripts/data/srd-classes-l1.ts` + re-extraction `public/data/classes.json` + tests cat. 3 pin (3 classes représentatives) | `src/shared/types/content.ts`, `scripts/data/srd-classes-l1.ts`, `public/data/classes.json` (protégé) | **PR merge-commit** (path protégé) |
+| **2D.3** | ✅ PR #85 → `5c1fdcc` | Helper `computeMulticlassEligibility` pur + TDD 12 classes + extension `applyLevelUp` add-new-class path + extension `levelUpDraftSchema` + TDD | `src/shared/lib/rules/multiclass-eligibility.ts`, `src/shared/lib/level-up/apply-level-up.ts`, `level-up-types.ts` + tests | PR squash |
+| **2D.4a** | ✅ PR #86 → `4026654` | Schéma `addClassSubChoices` sur le level-up draft + relocate `use-class-sub-choices.ts` → `src/shared/lib/rules/class-l1-sub-choices.ts` + helpers add-class (`getAddClassL1SubChoiceKeys`, `getMissingAddClassL1SubChoiceKeys`) + 45 tests pin SRD 2024 | `src/shared/lib/rules/class-l1-sub-choices.ts` (nouveau), `level-up-types.ts`, 9 wizard imports | PR squash |
+| **2D.4b** | ✅ PR #87 → `3cb8b78` | Reducer + flow extension : `LevelUpFlowState.mode/addClassTargetId/addClassSubChoices`, actions `set-mode/set-add-class-target/patch-add-class-sub-choices`, branche add-class de `buildLevelUpDraft` (force `hpRoll=average`, omet les vides via `cleanAddClassSubChoices`), `canSubmitFlow` reçoit `classes` pour validation L1 | `src/shared/lib/level-up/level-up-flow.ts`, `level-up-choices.ts`, stubs modal | PR squash |
+| **2D.4c** | ✅ PR #88 → `25bdf8e` | UI complète : `LevelUpButton` 2 entrées (Monter / Ajouter une classe), `LevelUpModal.initialMode`, `AddClassPickerStep` (grille 12 classes grisées via `computeMulticlassEligibility`), `AddClassSubChoicesStep` (renderer pivot sur `getAddClassL1SubChoiceKeys` — RadioRow + Weapon/Expertise/Invocation/Spellbook/Pact rows), `useLevelUp` étendu (PATCHED_KEYS + classDefinitions de la classe ajoutée) | `src/features/level-up/*.tsx`, `add-class-steps.tsx` (nouveau) | PR squash |
+| **2D.5** | ✅ PR #89 (ce commit) | Matrix pins multi-class (3 tests : Fighter+Wizard slots unifiés, Paladin add Bard bloqué CHA, borne 4 classes) + e2e spec `level-up-multiclass.spec.ts` (2 tests : Fighter L3 → +Cleric L1 Protecteur succès + persistance Firestore ; Paladin CHA 12 → Bard grisé avec raison `CHA 12/13`) + 2 presets seed (`fighterL3MulticlassReady`, `paladinL1MulticlassBlocked`) + doc clôture 2D. Cleric choisi pour l'e2e (vs Wizard ou Fighter) car son Ordre divin est un single-select déjà wiré en 2D.4c — les multi-select (Wizard Spellbook, Weapon Mastery, Eldritch Invocations) restent gating en 2D.4d. **UAT navigateur** reste à exécuter par Adrien (Java/JRE requis pour émulateur). | `tests/wizard-matrix/level-up-matrix.test.ts`, `tests/e2e/level-up-multiclass.spec.ts`, `tests/e2e/seed-character.ts`, `plans/2D-MULTICLASS-AUDIT.md` | PR squash |
 
-**Estimation révisée** : 3-4 jours (le gros du chantier — refactor schéma + slots unifiés — était déjà fait au S1).
+**Estimation révisée** : 3-4 jours (le gros du chantier — refactor schéma + slots unifiés — était déjà fait au S1). **Tenu sur 1 session intensive du 2026-05-30 → 2026-05-31** (autonomous mode, 6 PR mergés en chaîne tracer-bullet).
 
 ---
 
