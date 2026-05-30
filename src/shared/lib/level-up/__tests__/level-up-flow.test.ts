@@ -23,8 +23,9 @@ import type { LevelUpStep } from '../level-up-choices';
  */
 
 describe('initialLevelUpFlowState', () => {
-  it('est vide (aucun choix posé) et stepIdx=0', () => {
+  it('est vide (aucun choix posé), mode=level-up et stepIdx=0', () => {
     expect(initialLevelUpFlowState).toEqual({
+      mode: 'level-up',
       stepIdx: 0,
       hpRoll: null,
       subclassId: null,
@@ -32,6 +33,8 @@ describe('initialLevelUpFlowState', () => {
       newSpellsKnown: [],
       newCantrips: [],
       newInvocations: [],
+      addClassTargetId: null,
+      addClassSubChoices: {},
     });
   });
 });
@@ -442,5 +445,153 @@ describe('buildLevelUpDraft', () => {
     expect(draft).not.toHaveProperty('newSpellsKnown');
     expect(draft).not.toHaveProperty('newCantrips');
     expect(draft).not.toHaveProperty('newInvocations');
+  });
+});
+
+describe('buildLevelUpDraft — add-class mode (JALON 2D.4b)', () => {
+  it('inclut addClassSubChoices au draft quand mode=add-class + sous-choix non vides', () => {
+    let s = levelUpFlowReducer(initialLevelUpFlowState, {
+      type: 'set-mode',
+      mode: 'add-class',
+    });
+    s = levelUpFlowReducer(s, { type: 'set-add-class-target', classId: 'fighter' });
+    s = levelUpFlowReducer(s, {
+      type: 'patch-add-class-sub-choices',
+      patch: { fighterFightingStyle: 'defense' },
+    });
+    s = levelUpFlowReducer(s, {
+      type: 'set-hp-roll',
+      value: { kind: 'average' },
+    });
+    const draft = buildLevelUpDraft({
+      state: s,
+      classId: 'fighter',
+      newClassLevel: 1,
+    });
+    expect(draft).toEqual({
+      classId: 'fighter',
+      newClassLevel: 1,
+      hpRoll: { kind: 'average' },
+      addClassSubChoices: { fighterFightingStyle: 'defense' },
+    });
+  });
+
+  it("n'inclut pas addClassSubChoices quand le bloc est vide (Sorcerer/Bard/Monk)", () => {
+    let s = levelUpFlowReducer(initialLevelUpFlowState, {
+      type: 'set-mode',
+      mode: 'add-class',
+    });
+    s = levelUpFlowReducer(s, { type: 'set-add-class-target', classId: 'sorcerer' });
+    s = levelUpFlowReducer(s, {
+      type: 'set-hp-roll',
+      value: { kind: 'average' },
+    });
+    const draft = buildLevelUpDraft({
+      state: s,
+      classId: 'sorcerer',
+      newClassLevel: 1,
+    });
+    expect(draft).toEqual({
+      classId: 'sorcerer',
+      newClassLevel: 1,
+      hpRoll: { kind: 'average' },
+    });
+    expect(draft).not.toHaveProperty('addClassSubChoices');
+  });
+
+  it("propage addClassSubChoices à travers plusieurs patches (Warlock pact-of-the-tome)", () => {
+    let s = levelUpFlowReducer(initialLevelUpFlowState, {
+      type: 'set-mode',
+      mode: 'add-class',
+    });
+    s = levelUpFlowReducer(s, { type: 'set-add-class-target', classId: 'warlock' });
+    s = levelUpFlowReducer(s, {
+      type: 'patch-add-class-sub-choices',
+      patch: { eldritchInvocations: ['pact-of-the-tome'] },
+    });
+    s = levelUpFlowReducer(s, {
+      type: 'patch-add-class-sub-choices',
+      patch: { pactTomeCantrips: ['guidance', 'mending', 'thaumaturgy'] },
+    });
+    s = levelUpFlowReducer(s, {
+      type: 'patch-add-class-sub-choices',
+      patch: { pactTomeRituals: ['bless', 'detect-magic'] },
+    });
+    s = levelUpFlowReducer(s, {
+      type: 'set-hp-roll',
+      value: { kind: 'average' },
+    });
+    const draft = buildLevelUpDraft({
+      state: s,
+      classId: 'warlock',
+      newClassLevel: 1,
+    });
+    expect(draft.addClassSubChoices).toEqual({
+      eldritchInvocations: ['pact-of-the-tome'],
+      pactTomeCantrips: ['guidance', 'mending', 'thaumaturgy'],
+      pactTomeRituals: ['bless', 'detect-magic'],
+    });
+  });
+
+  it("set-mode 'level-up' purge addClassSubChoices/Target (séparation des modes)", () => {
+    // Le reducer `set-mode` purge les choix de l'autre mode — vérifie cette
+    // garantie pour qu'un switch back à `level-up` ne laisse JAMAIS de
+    // sous-choix add-class fantômes (sinon `buildLevelUpDraft` produirait
+    // un draft incohérent ou bloquerait sur addClassTargetId résiduel).
+    let s = levelUpFlowReducer(initialLevelUpFlowState, {
+      type: 'set-mode',
+      mode: 'add-class',
+    });
+    s = levelUpFlowReducer(s, { type: 'set-add-class-target', classId: 'fighter' });
+    s = levelUpFlowReducer(s, {
+      type: 'patch-add-class-sub-choices',
+      patch: { fighterFightingStyle: 'archery' },
+    });
+    // Retour au mode level-up classique
+    s = levelUpFlowReducer(s, { type: 'set-mode', mode: 'level-up' });
+    expect(s.addClassTargetId).toBeNull();
+    expect(s.addClassSubChoices).toEqual({});
+    // Et le builder produit un draft level-up sans addClassSubChoices
+    s = levelUpFlowReducer(s, { type: 'set-hp-roll', value: { kind: 'average' } });
+    const draft = buildLevelUpDraft({
+      state: s,
+      classId: 'fighter',
+      newClassLevel: 4,
+    });
+    expect(draft).not.toHaveProperty('addClassSubChoices');
+  });
+
+  it('jette quand mode=add-class sans addClassTargetId', () => {
+    const s = levelUpFlowReducer(initialLevelUpFlowState, {
+      type: 'set-mode',
+      mode: 'add-class',
+    });
+    expect(() =>
+      buildLevelUpDraft({
+        state: s,
+        classId: 'fighter',
+        newClassLevel: 1,
+      }),
+    ).toThrow(/addClassTargetId|set-add-class-target/i);
+  });
+
+  it('force hpRoll=average et newClassLevel=1 en mode add-class (ignore les params caller)', () => {
+    let s = levelUpFlowReducer(initialLevelUpFlowState, {
+      type: 'set-mode',
+      mode: 'add-class',
+    });
+    s = levelUpFlowReducer(s, { type: 'set-add-class-target', classId: 'sorcerer' });
+    s = levelUpFlowReducer(s, {
+      type: 'set-hp-roll',
+      value: { kind: 'rolled', rolled: 6 }, // valeur ignorée — add-class force average
+    });
+    const draft = buildLevelUpDraft({
+      state: s,
+      classId: 'ignored-wrong-class', // ignoré : builder lit state.addClassTargetId
+      newClassLevel: 99, // ignoré : builder force 1
+    });
+    expect(draft.classId).toBe('sorcerer');
+    expect(draft.newClassLevel).toBe(1);
+    expect(draft.hpRoll).toEqual({ kind: 'average' });
   });
 });

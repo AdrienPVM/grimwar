@@ -233,6 +233,18 @@ function StepBody(props: StepBodyProps): JSX.Element {
       return <SpellsStep {...props} count={props.step.count} />;
     case 'invocations':
       return <InvocationsStep {...props} count={props.step.count} />;
+    case 'add-class-pick':
+    case 'add-class-sub-choices':
+      // JALON 2D.4b — Stubs des steps add-class. Le rendu réel arrive en 2D.4c
+      // (intégration UI complète : picker éligibilité + sub-choosers L1). La
+      // séquence n'est jamais montée par le LevelUpButton actuel — il n'expose
+      // pas encore le mode add-class — donc ce branch n'est pas reachable
+      // runtime tant que 2D.4c n'a pas câblé le bouton « Ajouter une classe ».
+      return (
+        <p className="font-serif text-body-sm italic text-text-tertiary">
+          Add-class flow — UI 2D.4c à venir.
+        </p>
+      );
   }
 }
 
@@ -257,6 +269,13 @@ function isStepFilled(step: LevelUpStep | undefined, state: LevelUpFlowState): b
       return state.newSpellsKnown.length === step.count;
     case 'invocations':
       return state.newInvocations.length === step.count;
+    case 'add-class-pick':
+      return state.addClassTargetId != null;
+    case 'add-class-sub-choices':
+      // Validation dure déléguée à `canSubmitFlow` (qui a accès à `classes`).
+      // Ici on libère la nav dès qu'une cible existe — 2D.4c câblera la
+      // garde fine via `getMissingAddClassL1SubChoiceKeys` côté Suivant.
+      return state.addClassTargetId != null;
   }
 }
 
