@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { LevelUpButton } from '@/features/level-up/level-up-button';
 import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { useContent } from '@/shared/hooks/use-content';
@@ -85,6 +86,10 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
       <Chip variant="gold" className="mt-3">
         {character.alignment}
       </Chip>
+
+      <div className="mt-4">
+        <LevelUpButton character={character} />
+      </div>
     </section>
   );
 }
