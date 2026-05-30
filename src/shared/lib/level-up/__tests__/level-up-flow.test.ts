@@ -385,11 +385,20 @@ describe('buildLevelUpDraft', () => {
       type: 'set-hp-roll',
       value: { kind: 'average' },
     });
+    // JALON 2D.3 a élargi `newClassLevel` à `min(1)` (add-class). 0 et 21
+    // restent hors-bornes — c'est ce que ce test vérifie désormais.
     expect(() =>
       buildLevelUpDraft({
         state: s,
         classId: 'fighter',
-        newClassLevel: 1,
+        newClassLevel: 0,
+      }),
+    ).toThrow();
+    expect(() =>
+      buildLevelUpDraft({
+        state: s,
+        classId: 'fighter',
+        newClassLevel: 21,
       }),
     ).toThrow();
   });
