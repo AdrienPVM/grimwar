@@ -190,6 +190,110 @@ export const SRD_ASI_LEVELS_PER_CLASS: Record<string, readonly number[]> = {
   wizard: [4, 8, 12, 16],
 };
 
+/**
+ * Prérequis SRD 2024 pour multiclasser DANS chaque classe (JALON 2D.2).
+ * Source : SRD CC 5.2.1 (PHB 2024) — table « Multiclassing Prerequisites ».
+ *
+ * Sémantique de `combinator` :
+ *   - `'and'` : tous les minima requis (Paladin : FOR 13 ET CHA 13).
+ *   - `'or'` : au moins un suffit (Guerrier : FOR 13 OU DEX 13).
+ *   - Pour un seul score, `'and'` canonique (idempotence du peuplement).
+ *
+ * Toutes les 12 classes SRD 2024 ont un prérequis ; `null` est réservé au
+ * custom-content (JALON 3).
+ */
+export interface MulticlassPrereqEntry {
+  combinator: 'and' | 'or';
+  scores: ReadonlyArray<{
+    ability: 'for' | 'dex' | 'con' | 'int' | 'sag' | 'cha';
+    minimum: number;
+  }>;
+}
+
+export const SRD_MULTICLASS_PREREQUISITE_PER_CLASS: Record<string, MulticlassPrereqEntry> = {
+  barbarian: { combinator: 'and', scores: [{ ability: 'for', minimum: 13 }] },
+  bard: { combinator: 'and', scores: [{ ability: 'cha', minimum: 13 }] },
+  cleric: { combinator: 'and', scores: [{ ability: 'sag', minimum: 13 }] },
+  druid: { combinator: 'and', scores: [{ ability: 'sag', minimum: 13 }] },
+  fighter: {
+    combinator: 'or',
+    scores: [
+      { ability: 'for', minimum: 13 },
+      { ability: 'dex', minimum: 13 },
+    ],
+  },
+  monk: {
+    combinator: 'and',
+    scores: [
+      { ability: 'dex', minimum: 13 },
+      { ability: 'sag', minimum: 13 },
+    ],
+  },
+  paladin: {
+    combinator: 'and',
+    scores: [
+      { ability: 'for', minimum: 13 },
+      { ability: 'cha', minimum: 13 },
+    ],
+  },
+  ranger: {
+    combinator: 'and',
+    scores: [
+      { ability: 'dex', minimum: 13 },
+      { ability: 'sag', minimum: 13 },
+    ],
+  },
+  rogue: { combinator: 'and', scores: [{ ability: 'dex', minimum: 13 }] },
+  sorcerer: { combinator: 'and', scores: [{ ability: 'cha', minimum: 13 }] },
+  warlock: { combinator: 'and', scores: [{ ability: 'cha', minimum: 13 }] },
+  wizard: { combinator: 'and', scores: [{ ability: 'int', minimum: 13 }] },
+};
+
+/**
+ * Proficiencies SRD 2024 reçues quand cette classe est AJOUTÉE en multiclass
+ * (JALON 2D.2). Source : SRD CC 5.2.1 — table « Multiclassing Proficiencies ».
+ *
+ * Sous-ensemble strict des proficiencies L1 — voir doc/audit 2D pour la table
+ * complète. Les classes qui ne donnent AUCUNE proficiency au multiclass
+ * (Druide, Magicien, Ensorceleur, Moine) déclarent 3 tableaux vides — jamais
+ * absentes du bundle pour préserver l'idempotence stricte du build.
+ *
+ * Noms EN canoniques alignés avec `armorProficiencies` / `weaponProficiencies`
+ * dans `classes.json` (« Light », « Medium armor », « Shields », « Martial
+ * weapons »).
+ */
+export interface MulticlassProficienciesEntry {
+  armor: readonly string[];
+  weapons: readonly string[];
+  tools: readonly string[];
+}
+
+export const SRD_MULTICLASS_PROFICIENCIES_PER_CLASS: Record<
+  string,
+  MulticlassProficienciesEntry
+> = {
+  barbarian: { armor: ['Shields'], weapons: ['Martial weapons'], tools: [] },
+  bard: { armor: ['Light'], weapons: [], tools: ['1 musical instrument'] },
+  cleric: { armor: ['Light', 'Medium armor', 'Shields'], weapons: [], tools: [] },
+  druid: { armor: [], weapons: [], tools: [] },
+  fighter: {
+    armor: ['Light', 'Medium armor', 'Shields'],
+    weapons: ['Martial weapons'],
+    tools: [],
+  },
+  monk: { armor: [], weapons: [], tools: [] },
+  paladin: { armor: ['Light', 'Medium armor', 'Shields'], weapons: [], tools: [] },
+  ranger: {
+    armor: ['Light', 'Medium armor', 'Shields'],
+    weapons: ['Martial weapons'],
+    tools: [],
+  },
+  rogue: { armor: ['Light'], weapons: [], tools: ['Thieves’ tools'] },
+  sorcerer: { armor: [], weapons: [], tools: [] },
+  warlock: { armor: ['Light'], weapons: [], tools: [] },
+  wizard: { armor: [], weapons: [], tools: [] },
+};
+
 /** Compteurs de référence pour `tests/srd-counters.test.ts`. */
 export const SRD_CLASSES_COUNTS = {
   divineOrders: CLERIC_DIVINE_ORDERS.length, // 2
@@ -203,4 +307,6 @@ export const SRD_CLASSES_COUNTS = {
     (sum, levels) => sum + levels.length,
     0,
   ), // 10×4 + 6 + 5 = 51
+  /** Total des classes avec un prérequis multiclass déclaré (JALON 2D.2). */
+  multiclassPrereqClasses: Object.keys(SRD_MULTICLASS_PREREQUISITE_PER_CLASS).length, // 12
 };

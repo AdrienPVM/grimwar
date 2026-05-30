@@ -21,8 +21,12 @@ import {
   SRD_ASI_LEVELS_PER_CLASS,
   SRD_CLASS_SKILL_CHOICES_OVERRIDE,
   SRD_CLASSES_COUNTS,
+  SRD_MULTICLASS_PREREQUISITE_PER_CLASS,
+  SRD_MULTICLASS_PROFICIENCIES_PER_CLASS,
   SRD_WEAPON_MASTERY_COUNT_PER_CLASS,
   SRD_WEAPON_MASTERY_ELIGIBILITY_PER_CLASS,
+  type MulticlassPrereqEntry,
+  type MulticlassProficienciesEntry,
 } from './data/srd-classes-l1';
 import {
   SRD_CLASS_RESOURCE_PROGRESSION,
@@ -54,6 +58,8 @@ interface ClassJsonEntry {
   features?: ClassFeature[];
   classResourceProgression?: Record<string, ResourceProgression>;
   spellProgression?: SpellProgressionTable;
+  multiclassPrerequisite?: MulticlassPrereqEntry | null;
+  multiclassProficiencies?: MulticlassProficienciesEntry;
   [k: string]: unknown;
 }
 
@@ -200,6 +206,32 @@ async function main(): Promise<void> {
     } else {
       delete out.spellProgression;
     }
+    // JALON 2D.2 — Prérequis multiclass SRD 2024. STRICT : les 12 classes SRD
+    // doivent toutes en avoir un. Une classe absente du mapping → fail dur
+    // (signe d'une nouvelle classe SRD non-couverte ou d'une régression).
+    const prereq = SRD_MULTICLASS_PREREQUISITE_PER_CLASS[cls.id];
+    if (prereq === undefined) {
+      throw new Error(
+        `[extract-srd-classes] PARSE STRICT FAIL — class id "${cls.id}" n'a pas de multiclassPrerequisite déclaré (cf. SRD_MULTICLASS_PREREQUISITE_PER_CLASS).`,
+      );
+    }
+    out.multiclassPrerequisite = {
+      combinator: prereq.combinator,
+      scores: prereq.scores.map((s) => ({ ability: s.ability, minimum: s.minimum })),
+    };
+    // JALON 2D.2 — Proficiencies multiclass SRD 2024. STRICT : toujours présent
+    // (objet vide pour les classes qui ne donnent rien — Druide/Magicien/etc.).
+    const mcProf = SRD_MULTICLASS_PROFICIENCIES_PER_CLASS[cls.id];
+    if (mcProf === undefined) {
+      throw new Error(
+        `[extract-srd-classes] PARSE STRICT FAIL — class id "${cls.id}" n'a pas de multiclassProficiencies déclaré (cf. SRD_MULTICLASS_PROFICIENCIES_PER_CLASS).`,
+      );
+    }
+    out.multiclassProficiencies = {
+      armor: [...mcProf.armor],
+      weapons: [...mcProf.weapons],
+      tools: [...mcProf.tools],
+    };
     return out;
   });
 
@@ -218,7 +250,7 @@ async function main(): Promise<void> {
 
   const totalMasteries = SRD_CLASSES_COUNTS.totalWeaponMasteries;
   console.log(
-    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s), ${asiBackfillsApplied} ASI feature(s) backfillée(s) (cible ${SRD_CLASSES_COUNTS.totalAsiEntries} entrées totales), ${resourceProgressionsApplied} progressions de ressources écrites (cible ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalResources} sur ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalClasses} classes), ${spellProgressionsApplied} progressions sorts/cantrips écrites (cible ${SRD_SPELL_PROGRESSION_COUNTS.totalClasses} classes dont ${SRD_SPELL_PROGRESSION_COUNTS.classesWithCantrips} avec cantrips).`,
+    `[extract-srd-classes] OK — Cleric +${CLERIC_DIVINE_ORDERS.length} divineOrders, Druid +${DRUID_PRIMAL_ORDERS.length} primalOrders, ${totalMasteries} total weaponMasteryCount alloués L1, ${skillOverridesApplied} skillChoices override(s) appliqué(s), ${asiBackfillsApplied} ASI feature(s) backfillée(s) (cible ${SRD_CLASSES_COUNTS.totalAsiEntries} entrées totales), ${resourceProgressionsApplied} progressions de ressources écrites (cible ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalResources} sur ${SRD_CLASS_RESOURCE_PROGRESSION_COUNTS.totalClasses} classes), ${spellProgressionsApplied} progressions sorts/cantrips écrites (cible ${SRD_SPELL_PROGRESSION_COUNTS.totalClasses} classes dont ${SRD_SPELL_PROGRESSION_COUNTS.classesWithCantrips} avec cantrips), ${SRD_CLASSES_COUNTS.multiclassPrereqClasses} multiclassPrerequisite + multiclassProficiencies écrits (JALON 2D.2).`,
   );
 }
 

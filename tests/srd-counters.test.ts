@@ -499,6 +499,125 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
       expect(rogueFinesseLight).toBe(1);
       expect(withoutEligibility).toBe(7);
     });
+
+    it('multiclassPrerequisite présent sur les 12 classes SRD 2024 (JALON 2D.2)', async () => {
+      // Cat. 3 pin : chaque classe SRD 2024 DOIT déclarer un prérequis
+      // multiclass non-null. `null` est réservé au custom-content (JALON 3).
+      // Source : SRD CC 5.2.1 (PHB 2024) table « Multiclassing Prerequisites ».
+      const classes = await loadJson<
+        (ClassEntry & {
+          multiclassPrerequisite?: {
+            combinator: 'and' | 'or';
+            scores: { ability: string; minimum: number }[];
+          } | null;
+        })[]
+      >('public/data/classes.json');
+      let withPrereq = 0;
+      for (const cls of classes) {
+        expect(cls.multiclassPrerequisite).not.toBeNull();
+        expect(cls.multiclassPrerequisite).toBeDefined();
+        if (cls.multiclassPrerequisite) {
+          expect(cls.multiclassPrerequisite.scores.length).toBeGreaterThan(0);
+          withPrereq += 1;
+        }
+      }
+      expect(withPrereq).toBe(12);
+    });
+
+    it('multiclassPrerequisite : Fighter OR (FOR 13 OU DEX 13), Paladin AND (FOR+CHA), Druid (SAG 13)', async () => {
+      // Cat. 3 pin : valeurs SRD-vérifiées une fois, figées par le test.
+      // Source : SRD CC 5.2.1 (PHB 2024) — table multiclass.
+      // Couvre les 3 sémantiques : OR multi-score, AND multi-score, simple.
+      const classes = await loadJson<
+        (ClassEntry & {
+          multiclassPrerequisite?: {
+            combinator: 'and' | 'or';
+            scores: { ability: string; minimum: number }[];
+          } | null;
+        })[]
+      >('public/data/classes.json');
+      const fighter = classes.find((c) => c.id === 'fighter');
+      expect(fighter?.multiclassPrerequisite).toEqual({
+        combinator: 'or',
+        scores: [
+          { ability: 'for', minimum: 13 },
+          { ability: 'dex', minimum: 13 },
+        ],
+      });
+      const paladin = classes.find((c) => c.id === 'paladin');
+      expect(paladin?.multiclassPrerequisite).toEqual({
+        combinator: 'and',
+        scores: [
+          { ability: 'for', minimum: 13 },
+          { ability: 'cha', minimum: 13 },
+        ],
+      });
+      const druid = classes.find((c) => c.id === 'druid');
+      expect(druid?.multiclassPrerequisite).toEqual({
+        combinator: 'and',
+        scores: [{ ability: 'sag', minimum: 13 }],
+      });
+    });
+
+    it('multiclassProficiencies présent sur les 12 classes (objets vides pour Druide/Mago/Ensorceleur/Moine)', async () => {
+      // Cat. 3 pin : 4 classes SRD 2024 ne donnent AUCUNE proficiency en
+      // multiclass — Druide, Magicien, Ensorceleur, Moine. Toutes les autres
+      // donnent au moins 1 entrée (généralement armure).
+      const classes = await loadJson<
+        (ClassEntry & {
+          multiclassProficiencies?: {
+            armor: string[];
+            weapons: string[];
+            tools: string[];
+          };
+        })[]
+      >('public/data/classes.json');
+      const empty = new Set(['druid', 'wizard', 'sorcerer', 'monk']);
+      let withEmpty = 0;
+      let withSomething = 0;
+      for (const cls of classes) {
+        expect(cls.multiclassProficiencies).toBeDefined();
+        const p = cls.multiclassProficiencies!;
+        const isEmpty =
+          p.armor.length === 0 && p.weapons.length === 0 && p.tools.length === 0;
+        if (empty.has(cls.id)) {
+          expect(isEmpty).toBe(true);
+          withEmpty += 1;
+        } else {
+          expect(isEmpty).toBe(false);
+          withSomething += 1;
+        }
+      }
+      expect(withEmpty).toBe(4);
+      expect(withSomething).toBe(8);
+    });
+
+    it('multiclassProficiencies : Fighter (armure légère/inter/boucliers + armes martiales), Rogue (armure légère + outils de voleur)', async () => {
+      // Cat. 3 pin : 2 cas SRD-vérifiés. Fighter = le subset le plus généreux
+      // (Light/Medium/Shields + Martial). Rogue = le SEUL cas avec un outil
+      // déclaré au multiclass.
+      const classes = await loadJson<
+        (ClassEntry & {
+          multiclassProficiencies?: {
+            armor: string[];
+            weapons: string[];
+            tools: string[];
+          };
+        })[]
+      >('public/data/classes.json');
+      const fighter = classes.find((c) => c.id === 'fighter');
+      expect(fighter?.multiclassProficiencies).toEqual({
+        armor: ['Light', 'Medium armor', 'Shields'],
+        weapons: ['Martial weapons'],
+        tools: [],
+      });
+      const rogue = classes.find((c) => c.id === 'rogue');
+      expect(rogue?.multiclassProficiencies).toEqual({
+        armor: ['Light'],
+        weapons: [],
+        tools: ['Thieves’ tools'],
+      });
+    });
   });
 
   describe('feats.json', () => {

@@ -495,6 +495,57 @@ export const ClassOrderOptionSchema = z.object({
 });
 export type ClassOrderOption = z.infer<typeof ClassOrderOptionSchema>;
 
+/**
+ * Prérequis SRD 2024 pour multiclasser DANS cette classe (JALON 2D.2). Le
+ * SRD 2024 n'utilise QUE des minima de scores d'aptitude — pas de prérequis
+ * de niveau, de feature ou de spellcasting. La sémantique OR (Guerrier :
+ * FOR 13 OU DEX 13) est portée par `combinator`, pas par une union de types
+ * comme `FeatPrerequisite`. Type dédié plutôt que réutilisation pour
+ * (a) éviter une extension `one-of` de `FeatPrerequisite` qui changerait
+ * `computeFeatAvailability` (scope creep) et (b) restreindre statiquement
+ * aux ability-score (le SRD n'autorise rien d'autre).
+ *
+ * `null` = pas de prérequis (custom-content classe sans prereq).
+ */
+export const MulticlassPrerequisiteSchema = z.object({
+  /**
+   * Sémantique de combinaison des `scores[]`.
+   * - `'and'` : TOUS les minima doivent être atteints (Paladin : FOR 13 ET CHA 13).
+   * - `'or'` : AU MOINS UN doit être atteint (Guerrier : FOR 13 OU DEX 13).
+   * Un seul score est trivialement vrai des deux côtés ; on garde `'and'`
+   * comme défaut canonique pour ce cas (idempotence du peuplement).
+   */
+  combinator: z.enum(['and', 'or']),
+  scores: z
+    .array(
+      z.object({
+        ability: z.enum(['for', 'dex', 'con', 'int', 'sag', 'cha']),
+        minimum: z.number().int().min(1).max(20),
+      }),
+    )
+    .min(1),
+});
+export type MulticlassPrerequisite = z.infer<typeof MulticlassPrerequisiteSchema>;
+
+/**
+ * Sous-ensemble de proficiencies reçues quand cette classe est AJOUTÉE en
+ * multiclass (JALON 2D.2). SRD 2024 spécifie une liste strictement plus
+ * courte que les proficiencies L1 d'origine. Exemples :
+ *   - Guerrier ajouté en multiclass → armure légère/intermédiaire + boucliers
+ *     + armes martiales (PAS les jets de sauvegarde, PAS les compétences au
+ *     choix).
+ *   - Druide / Magicien / Ensorceleur / Moine ajoutés → AUCUNE proficiency.
+ *
+ * Toujours présent, jamais null. Une classe sans bonus déclare 3 tableaux
+ * vides — l'extracteur force l'idempotence en mappant ces 3 clés exactement.
+ */
+export const MulticlassProficienciesSchema = z.object({
+  armor: z.array(z.string()),
+  weapons: z.array(z.string()),
+  tools: z.array(z.string()),
+});
+export type MulticlassProficiencies = z.infer<typeof MulticlassProficienciesSchema>;
+
 export const ClassSchema = z
   .object({
     id: slug,
@@ -584,6 +635,21 @@ export const ClassSchema = z
         spellsKnownOrPrepared: z.array(z.number().int().nonnegative()).length(20),
       })
       .optional(),
+    /**
+     * JALON 2D.2 — Prérequis SRD 2024 pour multiclasser DANS cette classe.
+     * `null` = pas de prérequis (custom-content). `undefined` toléré pour
+     * fixtures de test legacy ; le bundle SRD réel garantit la présence sur
+     * les 12 classes (vérifié par `tests/srd-counters.test.ts` cat. 3 pin).
+     * Optionnel pour matcher le pattern `divineOrders` / `primalOrders` —
+     * voir audit `plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED`.
+     */
+    multiclassPrerequisite: MulticlassPrerequisiteSchema.nullable().optional(),
+    /**
+     * JALON 2D.2 — Proficiencies reçues quand cette classe est AJOUTÉE en
+     * multiclass (subset SRD 2024). Classes sans bonus = 3 tableaux vides.
+     * Optionnel pour la même raison que `multiclassPrerequisite` ci-dessus.
+     */
+    multiclassProficiencies: MulticlassProficienciesSchema.optional(),
     source: sourceTag,
   })
   .superRefine((cls, ctx) => {
