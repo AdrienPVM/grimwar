@@ -85,8 +85,27 @@ vi.mock('@/shared/hooks/use-content', () => ({
     if (type === 'feats') {
       return {
         data: [
-          { id: 'fou-de-combat', name: { fr: 'Fou de combat', en: 'Berserker' }, category: 'general' },
-          { id: 'don-epique-de-force', name: { fr: 'Don épique de Force', en: 'Epic Boon of Strength' }, category: 'epic-boon' },
+          {
+            id: 'fou-de-combat',
+            name: { fr: 'Fou de combat', en: 'Berserker' },
+            category: 'general',
+            // 2C-feat-4 : prereq FOR 13 → bloqué pour un perso FOR ≤ 12.
+            prerequisites: [
+              { kind: 'character-level', minimum: 4 },
+              { kind: 'ability-score', ability: 'for', minimum: 13 },
+            ],
+          },
+          {
+            id: 'don-libre',
+            name: { fr: 'Don libre', en: 'Free Feat' },
+            category: 'general',
+            // Aucune prereq exécutable → toujours disponible (pin du chemin nominal).
+          },
+          {
+            id: 'don-epique-de-force',
+            name: { fr: 'Don épique de Force', en: 'Epic Boon of Strength' },
+            category: 'epic-boon',
+          },
         ],
         loading: false,
         error: null,
@@ -403,5 +422,99 @@ describe('LevelUpModal — Epic Boon filter à L19 (JALON 2C.3)', () => {
     const options = Array.from(featSelect.options).map((o) => o.textContent);
     expect(options.join(' ')).toMatch(/fou de combat/i);
     expect(options.join(' ')).not.toMatch(/don épique de force/i);
+  });
+});
+
+describe('LevelUpModal — gating des feats par prerequisites (JALON 2C-feat-4)', () => {
+  it('Fighter L3 → L4 avec FOR 16 : « Fou de combat » (FOR 13+) reste actif', () => {
+    const character = makeFighter(3);
+    expect(character.abilities.for).toBeGreaterThanOrEqual(13);
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /suivant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^don$/i }));
+
+    const featSelect = screen.getByRole('combobox') as HTMLSelectElement;
+    const fou = Array.from(featSelect.options).find((o) => o.value === 'fou-de-combat');
+    expect(fou).toBeDefined();
+    expect(fou?.disabled).toBe(false);
+    expect(fou?.textContent).not.toMatch(/requis/i);
+  });
+
+  it('Fighter L3 → L4 avec FOR 12 : « Fou de combat » est grisé + tooltip Force 13+', () => {
+    const character = makeFighter(3);
+    character.abilities.for = 12;
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /suivant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^don$/i }));
+
+    const featSelect = screen.getByRole('combobox') as HTMLSelectElement;
+    const fou = Array.from(featSelect.options).find((o) => o.value === 'fou-de-combat');
+    expect(fou).toBeDefined();
+    expect(fou?.disabled).toBe(true);
+    expect(fou?.title).toMatch(/prérequis non rempli/i);
+    expect(fou?.title).toMatch(/Force 13/);
+    // Le libellé visible montre aussi la raison (texte concaténé).
+    expect(fou?.textContent).toMatch(/Force 13/);
+  });
+
+  it('Fighter L3 → L4 avec FOR 12 : toggle Don auto-sélectionne le premier feat éligible', () => {
+    const character = makeFighter(3);
+    character.abilities.for = 12;
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /suivant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^don$/i }));
+
+    const featSelect = screen.getByRole('combobox') as HTMLSelectElement;
+    // « don-libre » (sans prereq) doit être sélectionné par défaut, pas « fou-de-combat ».
+    expect(featSelect.value).toBe('don-libre');
+  });
+
+  it('Fighter L3 → L4 : « Don libre » (sans prereq) reste sélectionnable même quand un autre est grisé', () => {
+    const character = makeFighter(3);
+    character.abilities.for = 8;
+    render(
+      <LevelUpModal
+        open
+        onClose={() => {}}
+        character={character}
+        classDefinition={fighterClass}
+        onConfirm={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /moyenne/i }));
+    fireEvent.click(screen.getByRole('button', { name: /suivant/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^don$/i }));
+
+    const featSelect = screen.getByRole('combobox') as HTMLSelectElement;
+    const libre = Array.from(featSelect.options).find((o) => o.value === 'don-libre');
+    expect(libre).toBeDefined();
+    expect(libre?.disabled).toBe(false);
   });
 });
