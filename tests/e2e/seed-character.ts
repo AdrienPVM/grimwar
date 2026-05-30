@@ -992,12 +992,15 @@ export const druidL9D14: SeedPreset = {
 };
 
 /**
- * Fighter L3 Champion (JALON 2D.5) — INT 13 pour satisfaire le prereq
- * multiclass Wizard (INT 13 SRD 2024). Sert le scénario e2e
- * « ajouter Wizard L1 en multiclass » : le picker laisse Wizard cliquable,
- * la modale propose le step Sous-choix L1 (Wizard spellbook).
+ * Fighter L3 Champion (JALON 2D.5) — SAG 13 pour satisfaire le prereq
+ * multiclass Cleric (SAG 13 SRD 2024). Sert le scénario e2e
+ * « ajouter Cleric L1 en multiclass » : le picker laisse Cleric cliquable,
+ * la modale propose le step Sous-choix L1 (Ordre divin = single-select
+ * wiré en 2D.4c). Wizard reste éligible (INT 13) mais son spellbook L1
+ * multi-select est gating en 2D.4d (à venir) — d'où le choix de Cleric
+ * pour exercer le flow complet en e2e dès maintenant.
  *
- * Stats : FOR 16 / DEX 12 / CON 14 / INT 13 / SAG 10 / CHA 10. CON +2 mod.
+ * Stats : FOR 16 / DEX 12 / CON 14 / INT 13 / SAG 13 / CHA 10. CON +2 mod.
  * HP L3 : 12 (L1 d10 max + CON) + 8 + 8 = 28. AC 14 (cuir clouté + DEX 1).
  */
 export const fighterL3MulticlassReady: SeedPreset = {
@@ -1017,7 +1020,7 @@ export const fighterL3MulticlassReady: SeedPreset = {
   ancestryId: 'human',
   ancestrySubChoices: {},
   backgroundId: 'soldier',
-  abilities: { for: 16, dex: 12, con: 14, int: 13, sag: 10, cha: 10 },
+  abilities: { for: 16, dex: 12, con: 14, int: 13, sag: 13, cha: 10 },
   hp: { current: 28, max: 28 },
   ac: 14,
   hitDice: [{ classId: 'fighter', current: 3, max: 3, die: 'd10' }],

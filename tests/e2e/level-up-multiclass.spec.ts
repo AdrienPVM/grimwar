@@ -14,16 +14,21 @@ import {
  *
  * Couvre deux pivots du flow 2D côté utilisateur :
  *
- *  1. **Add-class succès** — Fighter L3 (INT 13) ouvre la modale via le
- *     bouton « Ajouter une classe », pick Wizard (éligible), sélectionne
- *     les 6 sorts de grimoire L1 imposés par le SRD 2024, confirme. On
- *     vérifie côté Firestore (`readBackCharacter`) :
+ *  1. **Add-class succès** — Fighter L3 (SAG 13) ouvre la modale via le
+ *     bouton « Ajouter une classe », pick Cleric (éligible), sélectionne
+ *     l'Ordre divin « Protecteur » (single-select wiré en 2D.4c), confirme.
+ *     On vérifie côté Firestore (`readBackCharacter`) :
  *       - `totalLevel === 4`,
- *       - `classes.length === 2`, `classes[1].classId === 'wizard'`,
- *       - `classes[1].level === 1`, `wizardSpellbookL1` posé,
- *       - `spellSlots['1'].max === 2` (caster level unifié = 1).
- *     Preuve que le flow add-class (2D.4a→2D.4d) persiste correctement
+ *       - `classes.length === 2`, `classes[1].classId === 'cleric'`,
+ *       - `classes[1].level === 1`, `clericDivineOrder === 'protector'`,
+ *       - `spellSlots['1'].max === 2` (caster level unifié = 1, Cleric
+ *         full caster L1).
+ *     Preuve que le flow add-class (2D.4a→2D.4c) persiste correctement
  *     l'état multiclass et déclenche le recompute SRD des slots.
+ *     NB : le wiring multi-select (Weapon Mastery, Eldritch Invocations,
+ *     Wizard Spellbook) est gating en 2D.4d ; en attendant, on exerce le
+ *     flow complet via une classe à sous-choix L1 single-select pour
+ *     prouver le câblage end-to-end.
  *
  *  2. **Add-class blocked par prereq** — Paladin L1 avec CHA 12 voit le
  *     picker mais la rangée Bard est `aria-disabled='true'` et porte la
@@ -45,7 +50,7 @@ test.describe('Level-up multiclass — add-class flow + prereq gating', () => {
     );
   });
 
-  test('Fighter L3 (INT 13) → ajoute Wizard L1 : slots unifiés + persistance', async ({
+  test('Fighter L3 (SAG 13) → ajoute Cleric L1 Protecteur : slots unifiés + persistance', async ({
     page,
   }, testInfo) => {
     // ── Boot + seed ───────────────────────────────────────────────────
@@ -69,7 +74,7 @@ test.describe('Level-up multiclass — add-class flow + prereq gating', () => {
     ).toBeVisible();
     await addClassButton.click();
 
-    let dialog = page.getByRole('dialog');
+    const dialog = page.getByRole('dialog');
     await expect(dialog, 'Modale add-class doit s\'ouvrir au tap.').toBeVisible();
     await expect(
       dialog.getByText(/Choisis ta nouvelle classe/i),
@@ -77,37 +82,32 @@ test.describe('Level-up multiclass — add-class flow + prereq gating', () => {
     ).toBeVisible();
     await takeStepScreenshot(page, testInfo, '01-modal-add-class-picker');
 
-    // ── Pick Wizard (éligible car INT 13) ─────────────────────────────
-    const wizardOption = dialog.getByRole('radio', { name: /Magicien/i });
+    // ── Pick Cleric (éligible car SAG 13) ─────────────────────────────
+    const clericOption = dialog.getByRole('radio', { name: /Clerc/i });
     await expect(
-      wizardOption,
-      'L\'option Magicien doit être présente et cliquable.',
+      clericOption,
+      'L\'option Clerc doit être présente et cliquable.',
     ).toBeVisible();
-    await expect(wizardOption).not.toHaveAttribute('aria-disabled', 'true');
-    await wizardOption.click();
+    await expect(clericOption).not.toHaveAttribute('aria-disabled', 'true');
+    await clericOption.click();
 
-    // Étape suivante : sub-choices L1 du Magicien (grimoire 6 sorts).
+    // Étape suivante : sub-choices L1 du Clerc (Ordre divin).
     await dialog.getByRole('button', { name: /^Suivant$/i }).click();
 
-    const spellbookLegend = dialog.getByText(/Sorts du grimoire/i);
     await expect(
-      spellbookLegend,
-      'Le multi-select Spellbook L1 (6 sorts) doit apparaître pour la classe Wizard.',
+      dialog.getByText(/Ordre divin/i),
+      'Le single-select Ordre divin doit apparaître pour la classe Clerc.',
     ).toBeVisible();
-    await takeStepScreenshot(page, testInfo, '02-modal-wizard-spellbook');
+    await takeStepScreenshot(page, testInfo, '02-modal-cleric-divine-order');
 
-    // 6 premiers sorts L1 du bundle SRD wizard — l'ordre alphabétique FR
-    // remonte des slugs déterministes. On clique 6 cases pour atteindre
-    // le quota; tap sur 7e doit être disabled (aria-disabled).
-    const checkboxes = dialog.getByRole('checkbox');
-    // Sélection des 6 premières cases visibles dans le spellbook.
-    for (let i = 0; i < 6; i++) {
-      await checkboxes.nth(i).click();
-    }
+    // Pick « Protecteur » — un des 2 Ordres divins SRD 5.2.1 (Protecteur /
+    // Thaumaturge), rendu par `AddClassSubChoicesStep > RadioRowGroup`.
+    const protectorOption = dialog.getByRole('radio', { name: /Protecteur/i });
     await expect(
-      dialog.getByText(/^6 \/ 6$/),
-      'Compteur doit afficher 6 / 6 quand le quota est atteint.',
+      protectorOption,
+      'L\'option « Protecteur » doit être proposée comme Ordre divin.',
     ).toBeVisible();
+    await protectorOption.click();
 
     // ── Confirm ───────────────────────────────────────────────────────
     await dialog.getByRole('button', { name: /^Confirmer$/i }).click();
@@ -120,31 +120,38 @@ test.describe('Level-up multiclass — add-class flow + prereq gating', () => {
       .poll(
         async () => {
           const doc = await readBackCharacter(uid, charId);
-          const classes = (doc?.classes as Array<{ classId: string; level: number }>) ?? [];
+          const classes =
+            (doc?.classes as Array<{
+              classId: string;
+              level: number;
+              clericDivineOrder?: string | null;
+            }>) ?? [];
           const slots = doc?.spellSlots as Record<string, { max: number }> | undefined;
           return {
             totalLevel: doc?.totalLevel,
             classesLength: classes.length,
             secondClassId: classes[1]?.classId,
             secondClassLevel: classes[1]?.level,
+            secondClericOrder: classes[1]?.clericDivineOrder,
             slotsL1Max: slots?.['1']?.max,
           };
         },
         {
           message:
-            'Le doc Firestore doit refléter Fighter L3 + Wizard L1 multiclass après Confirmer.',
+            'Le doc Firestore doit refléter Fighter L3 + Cleric L1 Protecteur multiclass après Confirmer.',
           timeout: 5_000,
         },
       )
       .toEqual({
         totalLevel: 4,
         classesLength: 2,
-        secondClassId: 'wizard',
+        secondClassId: 'cleric',
         secondClassLevel: 1,
+        secondClericOrder: 'protector',
         slotsL1Max: 2,
       });
 
-    await takeStepScreenshot(page, testInfo, '03-sheet-multiclass-fighter-wizard');
+    await takeStepScreenshot(page, testInfo, '03-sheet-multiclass-fighter-cleric');
   });
 
   test('Paladin L1 (CHA 12) → Bard grisé dans le picker (CHA 12/13)', async ({
