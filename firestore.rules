@@ -87,6 +87,15 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
 
+      // ── Custom content packs (JALON 3B — option γ user-scoped)
+      // Un doc par pack importé, shape `{meta, entities, importedAt}` —
+      // service src/shared/lib/services/pack-storage.ts. La rule reste
+      // owner-only ; pas de partage cross-user à ce stade (3D ajoutera
+      // potentiellement un duplicate dans une campagne).
+      match /customContentPacks/{packId} {
+        allow read, write: if isOwner(userId);
+      }
+
       // ── User-level sessions cache (rare; mostly campaign-scoped)
       match /sessions/{sessionId} {
         allow read, write: if isOwner(userId);
