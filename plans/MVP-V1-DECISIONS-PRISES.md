@@ -150,3 +150,53 @@ Justification : conservative-by-default — on livre ce qui peut l'être proprem
 **Référence** : PR à venir (feat/1D-4b-sw-precache-offline-load)
 
 **Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
+### [JALON-3C] Décomposition JALON 3C en 11 sous-jalons PR-sized (2026-05-31)
+
+**Contexte** : MVP-V1-SPEC.md JALON 3C demande « UI in-app de création par catégorie (9 formulaires) ». L'audit des 9 schémas Zod V1 (`CustomContentPackEntitiesSchema`) révèle des surfaces très inégales :
+
+| Catégorie | Champs requis | Sous-objets | Complexité UI |
+|---|---|---|---|
+| `feats` | 6 (id, name, prerequisite?, summary?, description?, category?, prerequisites[]?, source) | i18n × 4 + discriminated union | Faible |
+| `invocations` | 5 (id, name, summary, prerequisiteWarlockLevel?, prerequisiteOther?, source) | i18n × 3 | Faible |
+| `subancestries` | 6 (id, ancestryId, name, description, traits[], abilityScoreIncrease[], source) | i18n × 2 + ASI repeater + traits repeater | Moyenne |
+| `backgrounds` | 9 (id, name, description, skillProficiencies[], toolProficiencies[], languages, equipment[], startingCoins?, feature{name,description}, source) | i18n × 3 + 3 multi-select + ItemRef repeater | Moyenne |
+| `subclasses` | ? (à expliciter par sous-classe SRD : Champion + Beast Master + Battle Master = features hétérogènes) | Heterogene, source de variation | Moyenne-élevée |
+| `spells` | 14 (id, name, level, school, castingTime, range, components{v,s,m,material?}, duration, concentration, ritual, description, atHigherLevels?, classes[], damage[]?, summonedCreatureIds[]?, source) | i18n × 6 + enum × 2 + bool × 3 + damage repeater | Élevée |
+| `ancestries` | 11 (id, name, size, speed, description, ASI[], traits[], languages[], source, options{}, commonSpellIds[]?, spellUsages?) | Sous-objet `options` polymorphe (dragon / tiefling / elf / gnome / giant) | Très élevée |
+| `items` | ~10 (id, name, category, weight?, description, properties[], damage?, mastery?, source) — varie par `category` | Variant par catégorie (weapon / armor / gear / tool) | Très élevée |
+| `classes` | ~25 (id, name, hitDie, primaryAbilities[], savingThrows[], skillChoices, startingEquipment, multiclassPrerequisites, multiclassProficiencies, levelTable, ASI/feat levels, spellcasting?, options[]?) | Énorme — source du wizard L1 + level-up L2-L20 | Massive |
+
+**Options envisagées** :
+
+1. **Form-kit générique dérivé de Zod** (un générateur introspecte `_def` et rend automatiquement le formulaire). Avantage : un seul moteur couvre les 9. Risque : abstraction lourde, mauvais UX pour les schémas hétérogènes (Spell ≠ Class), debug pénible, pattern non utilisé ailleurs dans le projet.
+
+2. **Formulaires hand-rolled par catégorie**, partageant des primitives `FieldString` / `FieldI18n` / `FieldNumber` / `FieldEnum` / `FieldArrayString` / `FieldRepeater`. Avantage : UX précis, debug clair, alignement avec le form-kit Tailwind du projet. Coût : ~9 formulaires distincts, mais réutilisation des primitives = ~30% de code par form après le premier.
+
+3. **Hybride** : générateur dérivé de Zod pour les 4 catégories simples (feats, invocations, subancestries, backgrounds) + formulaires hand-rolled pour les 5 complexes. Avantage : couverture rapide des simples. Risque : 2 paradigmes à maintenir, plus de surface bug que (2).
+
+**Décision prise** : **Option 2 — primitives + 9 forms hand-rolled, attaqués par ordre de complexité croissante**. Justification : (a) le form-kit existant (`shared/components/form-kit-*`) est déjà hand-rolled et bien rodé ; (b) chaque schema mérite son UX dédié (un Spell n'a pas la même ergonomie qu'une Class) ; (c) un générateur Zod-driven serait un projet en soi, hors V1 ; (d) attaquer par ordre croissant permet d'éprouver les primitives sur les 2 plus petits forms (feat + invocation) avant d'attaquer Spell/Class.
+
+**Décomposition en 11 sous-jalons PR-sized** :
+
+| Sous-jalon | Périmètre | Estimation |
+|---|---|---|
+| **3C.1** | Form-kit primitives custom-content (`FieldI18n`, `FieldEnum`, `FieldArrayString`, `FieldRepeater`) + **FeatForm** + PackEditor shell (route `/account/content/new`, list des 9 catégories vides, sélection catégorie, ajout entité, export JSON / save Firestore). e2e : créer pack avec 1 feat → save → apparaît dans la liste packs. | 1 PR |
+| **3C.2** | **InvocationForm** + intégration dans PackEditor. Réutilise primitives 3C.1. e2e : ajouter 1 invocation à un pack existant. | 1 PR |
+| **3C.3** | **SubancestryForm** (ASI repeater + traits repeater + référence `ancestryId` parmi SRD ∪ pack). e2e : créer subancestry référant une ancestry SRD. | 1 PR |
+| **3C.4** | **BackgroundForm** (multi-select skills/tools/languages + ItemRef repeater pour `equipment`). e2e : background complet. | 1 PR |
+| **3C.5** | **SubclassForm** (id, name, description, parentClassId, features[] minimales). Heterogène SRD documenté ; pour V1 on offre champs libres `features[]` (name + description + level). | 1 PR |
+| **3C.6** | **SpellForm** (level enum, school enum, components struct, damage repeater optionnel, classes multi-select). Le plus utile en pratique (joueurs ajoutent souvent des sorts custom). | 1 PR |
+| **3C.7** | **ItemForm** (catégorie discriminée : weapon / armor / gear / tool — champs conditionnels). | 1 PR |
+| **3C.8** | **AncestryForm** (size/speed/ASI/traits) + sous-éditeur `options` pour les 5 variantes SRD (dragon / tiefling / elf / gnome / giant). Sous-éditeur live tant qu'au moins une variante est utilisée. | 1 PR |
+| **3C.9** | **ClassForm** (hitDie, primary/saves, skillChoices, startingEquipment, multiclassPrerequisites, multiclassProficiencies) — sans level table L2-L20 dans le form V1 (un homebrew complet de classe est mieux fait à la main en JSON). Le form V1 cible les classes simples (id, name, fondations) + un avertissement « pour une classe complexe, éditez le JSON ». | 1 PR |
+| **3C.10** | **PackEditor edit mode** : permettre de modifier un pack déjà importé (charge depuis Firestore, formulaires pré-remplis, save écrase). | 1 PR |
+| **3C.11** | Doc utilisateur `docs/CUSTOM-CONTENT-CREATE.md` + screenshots UAT regroupés dans `uat-review/jalon-3C/`. Et e2e end-to-end : créer un pack avec 1 entité par catégorie → save → ouvrir wizard → tous les forms produisent une option utilisable. | 1 PR |
+
+**À traiter** : Adrien arbitre l'ordre et la profondeur à l'UAT final. Si une catégorie n'est jamais utilisée par lui en pratique (ex. ClassForm car les classes custom sont rares), on pourra réduire le périmètre du form en V1 — la décision finale dépend de l'usage réel observé.
+
+**Référence** : PR à venir (feat/3C-0-audit-decompose-pack-editor) — commit doc-only sur main.
+
+**Status** : à arbitrer par Adrien à l'UAT final
