@@ -376,3 +376,55 @@ Tout test de level-up futur (nouvelles classes custom, scenarios
 multi-class, etc.) étend `tests/wizard-matrix/level-up-matrix.test.ts`
 selon le pattern ci-dessus : `applyChain(start, drafts[])` puis pins
 chiffrés contre la formule SRD.
+
+---
+
+## 10. JALON 2E livré (clôture méthodes de génération de stats)
+
+JALON 2E est livré en 2 sous-PRs :
+
+- **2E.1 — PR #90** (commit `b025f4b`, mergée 2026-05-31) — méthode
+  `rolled` (4d6 keep-3 / drop lowest) + sub-toggle « L'app lance » vs « Je
+  lance avec mes dés (IRL) ». Pure helpers dans
+  `src/shared/lib/rules/abilities.ts` (`roll4d6DropLowest`,
+  `rollAbilities4d6`, `isRolled4d6Valid`) ; RNG injectable, par défaut le
+  CSPRNG `rollDieCrypto`. UI dans `abilities-step.tsx` (4ᵉ radio + reroll
+  + breakdown « [dé éliminé] kept = total »). 6 tests RTL +
+  `wizard-abilities-rolled.spec.ts` e2e.
+- **2E.2 — clôture** (cette PR) — pins matrice manquants + e2e
+  symétriques pour les 4 méthodes :
+  - Personas `method-fighter-point-buy` et
+    `method-fighter-standard-array` ajoutés à
+    `tests/wizard-matrix/runner.ts` (axe `method` complet : rolled,
+    manual, point-buy, standard-array) + pins
+    `KNOWN_SPELLS_PINS = {total:0, ancestry:0}` (Guerrier dwarf
+    non-lanceur).
+  - `tests/e2e/wizard-abilities-point-buy.spec.ts` — bascule sur
+    point-buy → indicateur « Points restants », autofill « Choisir pour
+    moi » consomme exactement 27 points, Suivant actif.
+  - `tests/e2e/wizard-abilities-standard-array.spec.ts` — méthode par
+    défaut, 6 Selects natifs, autofill remplit le tuple
+    `standardArray` du build de référence, Suivant actif.
+
+### Synthèse JALON 2E
+
+| Méthode | Validateur (`isAbilitiesValid`) | UI | Tests unit | E2e | Matrix |
+|---|---|---|---|---|---|
+| `standard-array` | sorted ≡ `STANDARD_ARRAY` sorted (15/14/13/12/10/8) | 6 Select natifs | `abilities` rules (`isValid…`) | `wizard-abilities-standard-array.spec.ts` | `method-fighter-standard-array` |
+| `point-buy` | range [8,15] + somme coût = 27 | 6 NumberInputs + indicateur points restants | `isValidPointBuy`, `pointBuyCost/Total/Remaining` | `wizard-abilities-point-buy.spec.ts` | `method-fighter-point-buy` |
+| `rolled` (app) | chaque score ∈ [3,18] | 6 valeurs figées + breakdown jet | `abilities-step-rolled.test.tsx` × 6 | `wizard-abilities-rolled.spec.ts` (variant app) | `method-fighter-rolled` |
+| `rolled` (manual) | idem rolled | 6 NumberInputs (3-18) | idem | idem (variant manuel) | (couvert par `method-fighter-rolled`) |
+| `manual` | bornes larges [3,30] | 6 NumberInputs | bornes via `isAbilitiesValid` direct | (couvert par axe class de facto) | `method-fighter-manual` |
+
+JALON 2E mécaniques + couverture matricielle est verrouillé. La sémantique
+« app vs manuel » s'applique uniquement au mode `rolled` (où il y a un dé à
+lancer) — c'est le seul mode où le toggle de source a un sens.
+
+### Reste à faire en JALON 2 (post-2E)
+
+- (rien — JALON 2 entier est complet : 2A à 2E livrés)
+
+Tout test de level-up futur (nouvelles classes custom, scenarios
+multi-class, etc.) étend `tests/wizard-matrix/level-up-matrix.test.ts`
+selon le pattern décrit en §9 : `applyChain(start, drafts[])` puis pins
+chiffrés contre la formule SRD.

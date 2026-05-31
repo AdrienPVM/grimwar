@@ -391,12 +391,21 @@ export const PERSONAS: readonly PersonaSpec[] = [
   { id: 'bg-rogue-sage', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'sage', method: 'standard-array', axis: 'background' },
   { id: 'bg-rogue-soldier', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'standard-array', axis: 'background' },
   // ── Axe méthode de génération de stats (JALON 2E) ──
-  // `applyReferenceAbilities` retourne 10/partout pour 'rolled' et 'manual' (cf.
-  // builds.ts) ; isAbilitiesValid accepte 10 dans les deux cas. Le pin valide
-  // que le pipeline build-from-wizard tolère bien les 4 méthodes — la sémantique
-  // « tirage app vs manuel » se teste côté UI (abilities-step-rolled.test.tsx).
+  // `applyReferenceAbilities` retourne 10/partout pour 'rolled' et 'manual'
+  // et le tuple `pointBuy`/`standardArray` par classe pour les deux autres
+  // (cf. builds.ts) ; isAbilitiesValid accepte 10 ou un tirage 4d6 keep-3
+  // côté rolled/manual, et impose la somme 27 (point-buy) ou la matche au
+  // tableau standard (standard-array). Le pin valide que le pipeline
+  // build-from-wizard tolère bien les 4 méthodes — la sémantique « tirage
+  // app vs manuel » se teste côté UI (abilities-step-rolled.test.tsx).
+  // Note : `axis:'class'` (base-fighter) couvre déjà standard-array de
+  // facto puisque tous les personas base utilisent ce mode ; le pin
+  // dédié ci-dessous l'isole comme persona du sous-axe « méthode » pour
+  // garder le sous-axe symétrique avec rolled/manual/point-buy.
   { id: 'method-fighter-rolled', classId: 'fighter', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'rolled', axis: 'method' },
   { id: 'method-fighter-manual', classId: 'fighter', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'manual', axis: 'method' },
+  { id: 'method-fighter-point-buy', classId: 'fighter', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'point-buy', axis: 'method' },
+  { id: 'method-fighter-standard-array', classId: 'fighter', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'standard-array', axis: 'method' },
 ];
 
 /* ──────────────────────────────────────────────────────────────────────────
