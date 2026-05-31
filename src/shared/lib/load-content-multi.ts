@@ -3,6 +3,7 @@ import {
   loadPublicContent,
   loadUserContent,
 } from './content-loader';
+import { loadUserPacksEntries } from './load-user-packs-entries';
 import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
 
 /**
@@ -36,7 +37,16 @@ export async function loadContentMulti<K extends ContentTypeKey>(
   const { campaignId, userId } = options;
 
   const publicEntries = await loadPublicContent(type);
-  const userEntries = userId ? await loadUserContent(type, userId) : [];
+  // Pour le scope user, on a DEUX sources : (a) `customContent/{type}/{id}`
+  // (entités créées une par une en UI — JALON 3C à venir, vide pour
+  // l'instant) et (b) packs importés `customContentPacks/{packId}` (3B.4).
+  // Les deux contribuent au scope user — on les concatène avant le merge.
+  const userEntries = userId
+    ? [
+        ...(await loadUserContent(type, userId)),
+        ...(await loadUserPacksEntries(type, userId)),
+      ]
+    : [];
   const campaignEntries = campaignId
     ? await loadCampaignContent(type, campaignId)
     : [];

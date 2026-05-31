@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as ContentLoader from '../content-loader';
 import { loadContentMulti } from '../load-content-multi';
+import * as PacksEntries from '../load-user-packs-entries';
 import type { Item } from '../../types/content';
 
 /**
@@ -24,6 +25,9 @@ function fakeItem(id: string, label: string): Item {
 describe('loadContentMulti', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    // Par défaut, les packs user ne contribuent rien — chaque test surcharge
+    // si besoin.
+    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([]);
   });
 
   it('SRD seul (no userId, no campaignId) : retourne loadPublicContent tel quel', async () => {
@@ -95,6 +99,20 @@ describe('loadContentMulti', () => {
     // 2 collisions : user→public puis campaign→user
     expect(warn).toHaveBeenCalledTimes(2);
     warn.mockRestore();
+  });
+
+  it('user-scope packs (3B.4) sont fusionnés avec loadUserContent dans le scope user', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée SRD'),
+    ]);
+    vi.spyOn(ContentLoader, 'loadUserContent').mockResolvedValue([]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([
+      fakeItem('pack-bow', 'arc pack'),
+    ] as never);
+
+    const result = await loadContentMulti('items', { userId: 'user-1' });
+
+    expect(result.map((i) => i.id)).toEqual(['sword', 'pack-bow']);
   });
 
   it("campaignId sans userId : charge public + campaign, pas user", async () => {
