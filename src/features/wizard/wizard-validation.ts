@@ -1,5 +1,6 @@
 import type { ClassEntity } from '@/shared/types/content';
 import {
+  isRolled4d6Valid,
   isValidPointBuy,
   POINT_BUY_MAX,
   POINT_BUY_MIN,
@@ -70,6 +71,10 @@ export function isAbilitiesValid({ draft }: ValidationContext): boolean {
     const sorted = [...all].sort((a, b) => b - a);
     const std = [...STANDARD_ARRAY].sort((a, b) => b - a);
     return sorted.length === std.length && sorted.every((v, i) => v === std[i]);
+  }
+  if (draft.method === 'rolled') {
+    // 4d6 keep-3 : chaque score in [3, 18]. App ou manuel — même garde.
+    return isRolled4d6Valid(draft.abilities);
   }
   // Manuel : on fait confiance au MJ, juste bornes basses
   return all.every((v) => v >= POINT_BUY_MIN - 5 && v <= POINT_BUY_MAX + 15);

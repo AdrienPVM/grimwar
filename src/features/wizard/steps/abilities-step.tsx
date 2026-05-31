@@ -1,4 +1,4 @@
-import { useMemo, type JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { NumberInput, RadioGroup, Select } from '@/shared/components/form';
@@ -12,11 +12,16 @@ import {
   pointBuyRemaining,
   POINT_BUY_MAX,
   POINT_BUY_MIN,
+  rollAbilities4d6,
+  ROLLED_MAX,
+  ROLLED_MIN,
   STANDARD_ARRAY,
+  type Rolled4d6Result,
 } from '@/shared/lib/rules/abilities';
 import {
   useWizardStore,
   type AbilityMethod,
+  type AbilityRollSource,
 } from '@/shared/lib/slices/wizard-slice';
 import type { AbilityCode } from '@/shared/types/character';
 
@@ -32,6 +37,27 @@ const ABILITY_LABEL: Record<AbilityCode, string> = {
   cha: 'Charisme',
 };
 
+/**
+ * Affichage du détail d'un jet 4d6 keep-3 : « 6 5 4 [2] = 15 » avec le dé
+ * éliminé entre crochets et grisé. Pure helper rendu sous le NumberInput.
+ */
+function RolledBreakdown({ result }: { result: Rolled4d6Result }): JSX.Element {
+  // On affiche les 4 faces dans l'ordre du tri ascendant pour que le dé éliminé
+  // (le plus petit) soit visuellement isolé entre crochets en tête.
+  const sorted = [...result.rawFaces].sort((a, b) => a - b);
+  const dropped = sorted[0]!;
+  const kept = sorted.slice(1);
+  return (
+    <span className="font-title text-meta tracking-[0.18em] text-text-tertiary">
+      {t('wizard.label.rolledBreakdown')} : [
+      <span aria-label="dé éliminé" className="line-through opacity-60">
+        {dropped}
+      </span>
+      ] {kept.join(' ')} = <span className="text-text-secondary">{result.total}</span>
+    </span>
+  );
+}
+
 export function AbilitiesStep(): JSX.Element {
   const draft = useWizardStore((s) => s.draft);
   const setField = useWizardStore((s) => s.setField);
@@ -45,6 +71,13 @@ export function AbilitiesStep(): JSX.Element {
   const recommendedAbility = primaryClass?.primaryAbility?.[0] ?? null;
 
   const remaining = pointBuyRemaining(draft.abilities);
+
+  // Détail des derniers jets 4d6 (mode rolled+app uniquement). UI-only : on ne
+  // persiste pas le breakdown — un refresh de page ré-affiche juste la valeur
+  // finale, ce qui est cohérent avec un perso « gravé » après création.
+  const [rollBreakdown, setRollBreakdown] = useState<Record<AbilityCode, Rolled4d6Result> | null>(
+    null,
+  );
 
   // Pour Standard Array : on présente une matrice <ability> → <valeur du tableau>.
   // L'utilisateur affecte chaque case ; on détecte les doublons par diff.
@@ -63,6 +96,21 @@ export function AbilitiesStep(): JSX.Element {
     });
   };
 
+  const handleRollAll = (): void => {
+    const result = rollAbilities4d6();
+    setRollBreakdown(result);
+    ABILITY_ORDER.forEach((code) => {
+      setAbility(code, result[code].total);
+    });
+  };
+
+  // Quand on change de méthode, on remet à zéro le breakdown : le détail des
+  // derniers jets n'a de sens que pour la méthode en cours (« rolled+app »).
+  const handleMethodChange = (next: AbilityMethod): void => {
+    if (next !== draft.method) setRollBreakdown(null);
+    setField('method', next);
+  };
+
   return (
     <section className="flex flex-col gap-6">
       <StepIntro>{t('wizard.help.abilities.intro')}</StepIntro>
@@ -71,7 +119,7 @@ export function AbilitiesStep(): JSX.Element {
         legend={t('wizard.field.method')}
         name="ability-method"
         value={draft.method}
-        onValueChange={(v) => setField('method', v as AbilityMethod)}
+        onValueChange={(v) => handleMethodChange(v as AbilityMethod)}
         layout="horizontal"
         options={[
           {
@@ -83,6 +131,11 @@ export function AbilitiesStep(): JSX.Element {
             value: 'point-buy',
             label: t('wizard.method.point-buy'),
             helper: t('wizard.help.abilities.method.point-buy'),
+          },
+          {
+            value: 'rolled',
+            label: t('wizard.method.rolled'),
+            helper: t('wizard.help.abilities.method.rolled'),
           },
           {
             value: 'manual',
@@ -107,12 +160,43 @@ export function AbilitiesStep(): JSX.Element {
         </p>
       ) : null}
 
+      {draft.method === 'rolled' ? (
+        <RadioGroup
+          legend={t('wizard.label.rollSource')}
+          name="ability-roll-source"
+          value={draft.rollSource}
+          onValueChange={(v) => setField('rollSource', v as AbilityRollSource)}
+          layout="horizontal"
+          options={[
+            {
+              value: 'app',
+              label: t('wizard.method.rolled.source.app'),
+              helper: t('wizard.help.abilities.rolled.app'),
+            },
+            {
+              value: 'manual',
+              label: t('wizard.method.rolled.source.manual'),
+              helper: t('wizard.help.abilities.rolled.manual'),
+            },
+          ]}
+        />
+      ) : null}
+
+      {draft.method === 'rolled' && draft.rollSource === 'app' ? (
+        <div>
+          <Button variant="secondary" size="md" onClick={handleRollAll}>
+            🎲 {rollBreakdown ? t('wizard.action.reroll') : t('wizard.action.rollAbilities')}
+          </Button>
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {ABILITY_ORDER.map((code) => {
           const value = draft.abilities[code];
           const mod = abilityModifier(value);
           const isRecommended = recommendedAbility === code;
           const cost = draft.method === 'point-buy' ? pointBuyCost(value) : null;
+          const breakdown = rollBreakdown?.[code] ?? null;
 
           return (
             <div
@@ -170,6 +254,33 @@ export function AbilitiesStep(): JSX.Element {
                     </span>
                   ) : null}
                 </>
+              ) : draft.method === 'rolled' ? (
+                draft.rollSource === 'app' ? (
+                  // App-rolled : valeur figée par le bouton « Lancer » ;
+                  // l'utilisateur ne peut pas la modifier ici (sinon ce n'est
+                  // plus un tirage). Reroll = relancer pour TOUTES les stats.
+                  <>
+                    <div
+                      role="status"
+                      aria-label={ABILITY_LABEL[code]}
+                      className="rounded-card-sm border border-soft bg-bg-3/40 px-3 py-2 text-center font-title text-body tabular-nums text-text"
+                    >
+                      {value}
+                    </div>
+                    {breakdown ? <RolledBreakdown result={breakdown} /> : null}
+                  </>
+                ) : (
+                  // Manuel : le joueur lance IRL et saisit les 6 totaux.
+                  <NumberInput
+                    value={value}
+                    min={ROLLED_MIN}
+                    max={ROLLED_MAX}
+                    onValueChange={(v) => setAbility(code, v)}
+                    aria-label={ABILITY_LABEL[code]}
+                    decrementLabel={t('wizard.aria.decrement')}
+                    incrementLabel={t('wizard.aria.increment')}
+                  />
+                )
               ) : (
                 <NumberInput
                   value={value}
@@ -186,16 +297,18 @@ export function AbilitiesStep(): JSX.Element {
         })}
       </div>
 
-      <div>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={handleAutoFill}
-          disabled={!primaryClass}
-        >
-          ✨ {t('wizard.action.autofill')}
-        </Button>
-      </div>
+      {draft.method !== 'rolled' ? (
+        <div>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleAutoFill}
+            disabled={!primaryClass}
+          >
+            ✨ {t('wizard.action.autofill')}
+          </Button>
+        </div>
+      ) : null}
     </section>
   );
 }
