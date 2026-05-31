@@ -132,6 +132,8 @@ const KNOWN_SPELLS_PINS: Record<string, { total: number; ancestry: number }> = {
   // méthode de stat — la méthode ne touche pas le quota de sorts.
   'method-fighter-rolled': { total: 0, ancestry: 0 },
   'method-fighter-manual': { total: 0, ancestry: 0 },
+  'method-fighter-point-buy': { total: 0, ancestry: 0 },
+  'method-fighter-standard-array': { total: 0, ancestry: 0 },
 };
 
 let bundles: MatrixBundles;
