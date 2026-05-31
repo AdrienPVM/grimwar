@@ -42,6 +42,14 @@ const MapLiveScreen = lazy(async () => {
   return { default: mod.MapLiveScreen };
 });
 
+// Route /account/content — écran d'import de packs de contenu custom
+// (JALON 3B.4, option γ user-scoped). Pas listée au menu : accessible par
+// URL directe en V1, un point d'entrée nav-shell viendra plus tard.
+const ImportScreen = lazy(async () => {
+  const mod = await import('@/features/custom-content/import-screen');
+  return { default: mod.ImportScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -53,6 +61,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />
         <Route path="/map-proto/cloud/:cid/maps/:mid" element={<MapLiveScreen />} />
+        <Route path="/account/content" element={<ImportScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

@@ -355,7 +355,42 @@ export type StringKey =
   | 'connectivity.offline.title'
   | 'connectivity.offline.body'
   | 'connectivity.syncing.title'
-  | 'connectivity.syncing.body';
+  | 'connectivity.syncing.body'
+  // Custom content — écran d'import (JALON 3B.4)
+  | 'customContent.title'
+  | 'customContent.subtitle'
+  | 'customContent.dropzone.title'
+  | 'customContent.dropzone.body'
+  | 'customContent.dropzone.cta'
+  | 'customContent.preview.title'
+  | 'customContent.preview.metaAuthor'
+  | 'customContent.preview.metaVersion'
+  | 'customContent.preview.entities'
+  | 'customContent.preview.import'
+  | 'customContent.preview.cancel'
+  | 'customContent.errors.title'
+  | 'customContent.errors.scope.root'
+  | 'customContent.errors.scope.meta'
+  | 'customContent.errors.scope.entity'
+  | 'customContent.errors.retry'
+  | 'customContent.errors.parseJson'
+  | 'customContent.list.title'
+  | 'customContent.list.empty'
+  | 'customContent.list.delete'
+  | 'customContent.list.deleteConfirm'
+  | 'customContent.toast.imported'
+  | 'customContent.toast.importedSub'
+  | 'customContent.toast.deleted'
+  | 'customContent.toast.error'
+  | 'customContent.category.spells'
+  | 'customContent.category.classes'
+  | 'customContent.category.subclasses'
+  | 'customContent.category.ancestries'
+  | 'customContent.category.subancestries'
+  | 'customContent.category.backgrounds'
+  | 'customContent.category.feats'
+  | 'customContent.category.invocations'
+  | 'customContent.category.items';
 
 type Dict = Record<StringKey, string>;
 
@@ -819,6 +854,46 @@ const STRINGS: Record<Locale, Dict> = {
     'connectivity.syncing.title': 'Synchronisation en cours…',
     'connectivity.syncing.body':
       'Tes modifications sont envoyées au serveur.',
+    // Custom content — écran d'import (JALON 3B.4)
+    'customContent.title': 'Contenu personnalisé',
+    'customContent.subtitle':
+      'Importe tes propres sorts, classes, ascendances et items — sans quitter l’app.',
+    'customContent.dropzone.title': 'Ajouter un pack',
+    'customContent.dropzone.body':
+      'Glisse un fichier JSON ici, ou clique pour le sélectionner.',
+    'customContent.dropzone.cta': 'Choisir un fichier',
+    'customContent.preview.title': 'Aperçu du pack',
+    'customContent.preview.metaAuthor': 'Auteur',
+    'customContent.preview.metaVersion': 'Version',
+    'customContent.preview.entities': 'Contenu',
+    'customContent.preview.import': 'Importer',
+    'customContent.preview.cancel': 'Annuler',
+    'customContent.errors.title': 'Pack invalide',
+    'customContent.errors.scope.root': 'Pack',
+    'customContent.errors.scope.meta': 'Métadonnées',
+    'customContent.errors.scope.entity': 'Entité',
+    'customContent.errors.retry': 'Recommencer',
+    'customContent.errors.parseJson':
+      'Le fichier n’est pas du JSON valide. Vérifie sa syntaxe.',
+    'customContent.list.title': 'Mes packs importés',
+    'customContent.list.empty':
+      'Aucun pack importé pour l’instant.',
+    'customContent.list.delete': 'Supprimer',
+    'customContent.list.deleteConfirm':
+      'Supprimer définitivement ce pack ?',
+    'customContent.toast.imported': 'Pack importé',
+    'customContent.toast.importedSub': '{count} entrée·s ajoutée·s',
+    'customContent.toast.deleted': 'Pack supprimé',
+    'customContent.toast.error': 'Erreur d’import',
+    'customContent.category.spells': 'Sorts',
+    'customContent.category.classes': 'Classes',
+    'customContent.category.subclasses': 'Sous-classes',
+    'customContent.category.ancestries': 'Ascendances',
+    'customContent.category.subancestries': 'Sous-ascendances',
+    'customContent.category.backgrounds': 'Historiques',
+    'customContent.category.feats': 'Dons',
+    'customContent.category.invocations': 'Invocations',
+    'customContent.category.items': 'Objets',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1221,6 +1296,42 @@ const STRINGS: Record<Locale, Dict> = {
       'Reading still works. Your changes will sync when you reconnect.',
     'connectivity.syncing.title': 'Syncing…',
     'connectivity.syncing.body': 'Your changes are being sent to the server.',
+    'customContent.title': 'Custom content',
+    'customContent.subtitle':
+      'Import your own spells, classes, ancestries and items — without leaving the app.',
+    'customContent.dropzone.title': 'Add a pack',
+    'customContent.dropzone.body': 'Drop a JSON file here, or click to pick one.',
+    'customContent.dropzone.cta': 'Pick a file',
+    'customContent.preview.title': 'Pack preview',
+    'customContent.preview.metaAuthor': 'Author',
+    'customContent.preview.metaVersion': 'Version',
+    'customContent.preview.entities': 'Contents',
+    'customContent.preview.import': 'Import',
+    'customContent.preview.cancel': 'Cancel',
+    'customContent.errors.title': 'Invalid pack',
+    'customContent.errors.scope.root': 'Pack',
+    'customContent.errors.scope.meta': 'Metadata',
+    'customContent.errors.scope.entity': 'Entity',
+    'customContent.errors.retry': 'Restart',
+    'customContent.errors.parseJson':
+      'The file is not valid JSON. Check its syntax.',
+    'customContent.list.title': 'My imported packs',
+    'customContent.list.empty': 'No packs imported yet.',
+    'customContent.list.delete': 'Delete',
+    'customContent.list.deleteConfirm': 'Permanently delete this pack?',
+    'customContent.toast.imported': 'Pack imported',
+    'customContent.toast.importedSub': '{count} entries added',
+    'customContent.toast.deleted': 'Pack deleted',
+    'customContent.toast.error': 'Import error',
+    'customContent.category.spells': 'Spells',
+    'customContent.category.classes': 'Classes',
+    'customContent.category.subclasses': 'Subclasses',
+    'customContent.category.ancestries': 'Ancestries',
+    'customContent.category.subancestries': 'Subancestries',
+    'customContent.category.backgrounds': 'Backgrounds',
+    'customContent.category.feats': 'Feats',
+    'customContent.category.invocations': 'Invocations',
+    'customContent.category.items': 'Items',
   },
 };
 
