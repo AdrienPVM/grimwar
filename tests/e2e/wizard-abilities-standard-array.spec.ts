@@ -39,13 +39,18 @@ test.describe('Wizard abilities — méthode standard-array (JALON 2E)', () => {
     await clickNext(page);
 
     await page.getByRole('button', { name: /^Guerrier( |$)/i }).first().click();
-    const defenseStyle = page.getByRole('radio', { name: /^Défense$/i }).first();
-    await defenseStyle.scrollIntoViewIfNeeded();
-    await defenseStyle.check({ force: true });
-    const masteries = page.locator('input[id^="wizard-fighter-mastery-"]');
+    // Sélecteurs alignés sur tests/e2e/wizard-class-gating.spec.ts.
+    const fightingStyleRadios = page.locator(
+      'input[name="classSubChoice-fighter-fighting-style"]',
+    );
+    await fightingStyleRadios.first().waitFor({ state: 'attached', timeout: 5_000 });
+    await fightingStyleRadios.first().check({ force: true });
+    // Weapon Masteries — 3 requises au L1 Guerrier.
+    const masteries = page.locator('input[id^="weapon-mastery-fighter-"]');
     await masteries.first().waitFor({ state: 'attached', timeout: 5_000 });
     await masteries.nth(0).check({ force: true });
     await masteries.nth(1).check({ force: true });
+    await masteries.nth(2).check({ force: true });
     await clickNext(page);
 
     await page.getByRole('button', { name: /^Nain( |$)/i }).first().click();
