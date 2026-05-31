@@ -7,7 +7,7 @@ import {
   assertFails,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { deleteDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 
 /**
@@ -249,6 +249,145 @@ describeIfEmulator('firestore.rules — caractères (multi-class)', () => {
     const ref = doc(db, 'users', UID, 'characters', 'char-v1-001');
     // makeMulticlassPayload() émet schemaVersion: 1 sans les sous-objets v2.
     await assertSucceeds(setDoc(ref, makeMulticlassPayload()));
+  });
+});
+
+/**
+ * JALON 3B.3 — Custom content packs user-scoped (option γ plan 13.11).
+ *
+ * Une rule unique `match /users/{userId}/customContentPacks/{packId}` qui
+ * autorise read+write au propriétaire et rien d'autre. Pas de shape-check
+ * côté rules (le validateur 3B.1 garantit la forme côté client avant write).
+ *
+ * Invariants vérifiés :
+ *   1. Le propriétaire peut écrire et lire son pack.
+ *   2. Un autre utilisateur authentifié ne peut ni lire ni écrire.
+ *   3. Un anonyme non authentifié ne peut rien.
+ *   4. delete owner-only.
+ */
+describeIfEmulator('firestore.rules — customContentPacks (JALON 3B.3)', () => {
+  beforeAll(async () => {
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: {
+        rules: readFileSync(RULES_PATH, 'utf-8'),
+      },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (env) await env.clearFirestore();
+  });
+
+  const PACK_ID = 'pack-homebrew-test';
+
+  function makePackDoc(): Record<string, unknown> {
+    return {
+      meta: {
+        id: PACK_ID,
+        name: { fr: 'Pack test', en: 'Test pack' },
+        version: '1.0.0',
+        author: 'MJ',
+        createdAt: '2026-05-31T12:00:00Z',
+      },
+      entities: {
+        spells: [],
+      },
+      importedAt: serverTimestamp(),
+    };
+  }
+
+  it('ACCEPTE write du propriétaire sur users/{uid}/customContentPacks/{pid}', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(UID).firestore();
+    const ref = doc(db, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertSucceeds(setDoc(ref, makePackDoc()));
+  });
+
+  it('ACCEPTE read du propriétaire sur son propre pack', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(
+        doc(adminDb, 'users', UID, 'customContentPacks', PACK_ID),
+        makePackDoc(),
+      );
+    });
+    const db = env.authenticatedContext(UID).firestore();
+    const ref = doc(db, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertSucceeds(getDoc(ref));
+  });
+
+  it("REFUSE qu'un autre user lise le pack", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(
+        doc(adminDb, 'users', UID, 'customContentPacks', PACK_ID),
+        makePackDoc(),
+      );
+    });
+    const otherDb = env.authenticatedContext(OTHER_UID).firestore();
+    const ref = doc(otherDb, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertFails(getDoc(ref));
+  });
+
+  it("REFUSE qu'un autre user écrive dans le path du propriétaire", async () => {
+    if (!env) throw new Error('env not initialized');
+    const otherDb = env.authenticatedContext(OTHER_UID).firestore();
+    const ref = doc(otherDb, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertFails(setDoc(ref, makePackDoc()));
+  });
+
+  it('REFUSE un accès non authentifié (lecture)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'users', UID, 'customContentPacks', PACK_ID),
+        makePackDoc(),
+      );
+    });
+    const db = env.unauthenticatedContext().firestore();
+    const ref = doc(db, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertFails(getDoc(ref));
+  });
+
+  it('REFUSE un accès non authentifié (écriture)', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.unauthenticatedContext().firestore();
+    const ref = doc(db, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertFails(setDoc(ref, makePackDoc()));
+  });
+
+  it('ACCEPTE delete du propriétaire', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'users', UID, 'customContentPacks', PACK_ID),
+        makePackDoc(),
+      );
+    });
+    const db = env.authenticatedContext(UID).firestore();
+    const ref = doc(db, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertSucceeds(deleteDoc(ref));
+  });
+
+  it("REFUSE delete d'un autre user", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'users', UID, 'customContentPacks', PACK_ID),
+        makePackDoc(),
+      );
+    });
+    const otherDb = env.authenticatedContext(OTHER_UID).firestore();
+    const ref = doc(otherDb, 'users', UID, 'customContentPacks', PACK_ID);
+    await assertFails(deleteDoc(ref));
   });
 });
 
