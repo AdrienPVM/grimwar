@@ -1,4 +1,4 @@
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, type QuerySnapshot } from 'firebase/firestore';
 
 import { getDb } from './firebase';
 import {
@@ -33,6 +33,16 @@ import { ContentTypeSchemas, type ContentEntityByKey, type ContentTypeKey } from
  * Pourquoi pas dans `pack-storage.ts` : ce module-ci fait la projection
  * type-par-type et la validation Zod ; `pack-storage` reste l'API CRUD
  * agnostique de fusion.
+ *
+ * Dédup in-flight : le wizard monte ~30 `useContent` simultanés, chacun
+ * appellerait sinon `getDocs` sur la MÊME collection
+ * `users/{uid}/customContentPacks`. Sans dédup, 30 round-trips concurrents
+ * Firestore — sur l'émulateur CI (Pixel 7 throttled) ça tombait en timeout
+ * (cf. CI run 26717411652 cancelled à 1h06 sur PR #97). On mémoïse la
+ * promesse `getDocs` par userId pendant qu'elle est en vol : tous les
+ * appels en parallèle partagent le même round-trip. Quand la promesse
+ * résout, on retire l'entrée — l'appel suivant refetche (cohérence post-
+ * import : aucun cache résiduel).
  */
 
 const PACK_CATEGORY_KEYS = new Set<string>(CUSTOM_CONTENT_PACK_CATEGORIES);
@@ -41,15 +51,29 @@ function isPackCategory(type: ContentTypeKey): type is CustomContentPackCategory
   return PACK_CATEGORY_KEYS.has(type);
 }
 
+type PackSnapshot = QuerySnapshot;
+
+const inflightSnapshots = new Map<string, Promise<PackSnapshot>>();
+
+async function fetchUserPacksSnapshot(userId: string): Promise<PackSnapshot> {
+  const existing = inflightSnapshots.get(userId);
+  if (existing) return existing;
+  const firestore = getDb();
+  const col = collection(firestore, 'users', userId, 'customContentPacks');
+  const promise = getDocs(col).finally(() => {
+    inflightSnapshots.delete(userId);
+  });
+  inflightSnapshots.set(userId, promise);
+  return promise;
+}
+
 export async function loadUserPacksEntries<K extends ContentTypeKey>(
   type: K,
   userId: string,
 ): Promise<ContentEntityByKey[K][]> {
   if (!isPackCategory(type)) return [];
 
-  const firestore = getDb();
-  const col = collection(firestore, 'users', userId, 'customContentPacks');
-  const snap = await getDocs(col);
+  const snap = await fetchUserPacksSnapshot(userId);
 
   const entries: ContentEntityByKey[K][] = [];
   const schema = ContentTypeSchemas[type];

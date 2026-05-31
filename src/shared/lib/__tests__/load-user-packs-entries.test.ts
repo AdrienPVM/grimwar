@@ -115,6 +115,41 @@ describe('loadUserPacksEntries', () => {
     expect(mockedGetDocs).not.toHaveBeenCalled();
   });
 
+  it('dédup in-flight : 30 appels parallèles → 1 seul getDocs', async () => {
+    // Ce test garde le fix CI run 26717411652 — quand le wizard monte ~30
+    // hooks `useContent` simultanés, chacun appelle `loadUserPacksEntries`
+    // pour son type. Sans dédup, on faisait 30 round-trips Firestore
+    // concurrents sur la MÊME collection — l'émulateur tombait en timeout
+    // (CI emulator cancelled à 1h06).
+    let resolveSnap: (snap: ReturnType<typeof makeSnapshot>) => void = () => undefined;
+    const pending = new Promise<ReturnType<typeof makeSnapshot>>((res) => {
+      resolveSnap = res;
+    });
+    mockedGetDocs.mockReturnValueOnce(pending as never);
+
+    // 30 appels parallèles : ne resolve pas encore — laisse `getDocs` en vol.
+    const callPromises = Array.from({ length: 30 }, () =>
+      loadUserPacksEntries('spells', 'user-1'),
+    );
+    // Tous les appels partagent la même promesse en vol.
+    expect(mockedGetDocs).toHaveBeenCalledTimes(1);
+
+    resolveSnap(makeSnapshot([]));
+    await Promise.all(callPromises);
+  });
+
+  it('appel séquentiel post-resolve : refetch (pas de cache persistant)', async () => {
+    // La dédup est in-flight, pas un cache : après que la promesse résolve,
+    // un nouvel appel doit refetch — cohérence post-import (un pack importé
+    // doit être visible immédiatement, pas après TTL).
+    mockedGetDocs.mockResolvedValue(makeSnapshot([]) as never);
+
+    await loadUserPacksEntries('spells', 'user-1');
+    await loadUserPacksEntries('spells', 'user-1');
+
+    expect(mockedGetDocs).toHaveBeenCalledTimes(2);
+  });
+
   it('pack sans la catégorie demandée : skip silencieusement', async () => {
     mockedGetDocs.mockResolvedValueOnce(
       makeSnapshot([
@@ -128,5 +163,19 @@ describe('loadUserPacksEntries', () => {
     const result = await loadUserPacksEntries('spells', 'user-1');
 
     expect(result).toEqual([]);
+  });
+
+  it('dédup in-flight — userIds différents ne se partagent PAS le getDocs', async () => {
+    // Sécurité : un appel pour user-A en vol ne doit pas servir les packs
+    // à user-B (sinon fuite cross-user). La clé de dédup est l'userId.
+    mockedGetDocs.mockResolvedValueOnce(makeSnapshot([]) as never);
+    mockedGetDocs.mockResolvedValueOnce(makeSnapshot([]) as never);
+
+    await Promise.all([
+      loadUserPacksEntries('spells', 'user-a'),
+      loadUserPacksEntries('spells', 'user-b'),
+    ]);
+
+    expect(mockedGetDocs).toHaveBeenCalledTimes(2);
   });
 });

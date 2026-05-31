@@ -1,8 +1,4 @@
-import {
-  loadCampaignContent,
-  loadPublicContent,
-  loadUserContent,
-} from './content-loader';
+import { loadPublicContent } from './content-loader';
 import { loadUserPacksEntries } from './load-user-packs-entries';
 import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
 
@@ -37,19 +33,19 @@ export async function loadContentMulti<K extends ContentTypeKey>(
   const { campaignId, userId } = options;
 
   const publicEntries = await loadPublicContent(type);
-  // Pour le scope user, on a DEUX sources : (a) `customContent/{type}/{id}`
-  // (entités créées une par une en UI — JALON 3C à venir, vide pour
-  // l'instant) et (b) packs importés `customContentPacks/{packId}` (3B.4).
-  // Les deux contribuent au scope user — on les concatène avant le merge.
-  const userEntries = userId
-    ? [
-        ...(await loadUserContent(type, userId)),
-        ...(await loadUserPacksEntries(type, userId)),
-      ]
-    : [];
-  const campaignEntries = campaignId
-    ? await loadCampaignContent(type, campaignId)
-    : [];
+  // Scope user : seule source aujourd'hui = packs importés (3B.4) lus via
+  // `loadUserPacksEntries`. Le futur store per-entity (`loadUserContent`,
+  // collection `users/{uid}/customContent/{type}`) est posé mais branché
+  // sur un path Firestore à 4 segments invalide — pas opérationnel tant
+  // que le JALON 3C (UI in-app de création par catégorie) ne le câble
+  // pas correctement. Le brancher ici prématurément ferait crasher tous
+  // les call sites `useContent` dès qu'un utilisateur est authentifié.
+  const userEntries = userId ? await loadUserPacksEntries(type, userId) : [];
+  // Scope campagne : aucune source aujourd'hui. `loadCampaignContent`
+  // souffre du même problème de path 4-segment ; le JALON 3D décidera de
+  // la stratégie d'injection campagne (pack copié dans la campagne vs
+  // référence partagée).
+  const campaignEntries: ContentEntityByKey[K][] = campaignId ? [] : [];
 
   // Index par id, en empilant dans l'ordre de priorité croissante. La
   // dernière écriture l'emporte → public d'abord, user au-dessus, campaign
