@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
@@ -160,6 +161,15 @@ export function ImportScreen(): JSX.Element {
         <p className="mx-auto mt-2 max-w-[48ch] font-serif text-body italic text-text-secondary">
           {t('customContent.subtitle')}
         </p>
+        <div className="mt-5">
+          <Link
+            to="/account/content/new"
+            className="inline-flex items-center font-meta text-meta uppercase tracking-[0.18em] text-gold-bright underline-offset-4 transition-opacity duration-150 ease-base hover:underline focus-visible:underline focus-visible:outline-none"
+            data-testid="pack-create-link"
+          >
+            {t('customContent.createLink')}
+          </Link>
+        </div>
       </header>
 
       <section className="mt-8" aria-label={t('customContent.dropzone.title')}>

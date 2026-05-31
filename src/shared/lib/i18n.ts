@@ -390,7 +390,50 @@ export type StringKey =
   | 'customContent.category.backgrounds'
   | 'customContent.category.feats'
   | 'customContent.category.invocations'
-  | 'customContent.category.items';
+  | 'customContent.category.items'
+  // Pack editor — création in-app (JALON 3C.1)
+  | 'customContent.createLink'
+  | 'customContent.editor.title'
+  | 'customContent.editor.subtitle'
+  | 'customContent.editor.meta.title'
+  | 'customContent.editor.meta.id'
+  | 'customContent.editor.meta.idHelper'
+  | 'customContent.editor.meta.nameFr'
+  | 'customContent.editor.meta.nameEn'
+  | 'customContent.editor.meta.author'
+  | 'customContent.editor.meta.version'
+  | 'customContent.editor.meta.versionHelper'
+  | 'customContent.editor.meta.descriptionFr'
+  | 'customContent.editor.meta.descriptionEn'
+  | 'customContent.editor.meta.descriptionHelper'
+  | 'customContent.editor.entities.title'
+  | 'customContent.editor.feats.add'
+  | 'customContent.editor.feats.empty'
+  | 'customContent.editor.feats.remove'
+  | 'customContent.editor.comingSoon.title'
+  | 'customContent.editor.comingSoon.body'
+  | 'customContent.editor.cancel'
+  | 'customContent.editor.save'
+  | 'customContent.editor.save.successTitle'
+  | 'customContent.editor.save.successSub'
+  | 'customContent.editor.save.errorTitle'
+  | 'customContent.editor.save.errorGeneric'
+  | 'customContent.editor.featForm.title'
+  | 'customContent.editor.featForm.id'
+  | 'customContent.editor.featForm.idHelper'
+  | 'customContent.editor.featForm.nameFr'
+  | 'customContent.editor.featForm.nameEn'
+  | 'customContent.editor.featForm.summaryFr'
+  | 'customContent.editor.featForm.summaryEn'
+  | 'customContent.editor.featForm.summaryHelper'
+  | 'customContent.editor.featForm.prerequisiteFr'
+  | 'customContent.editor.featForm.prerequisiteEn'
+  | 'customContent.editor.featForm.prerequisiteHelper'
+  | 'customContent.editor.featForm.cancel'
+  | 'customContent.editor.featForm.confirm'
+  | 'customContent.editor.featForm.error.idRequired'
+  | 'customContent.editor.featForm.error.idFormat'
+  | 'customContent.editor.featForm.error.nameFrRequired';
 
 type Dict = Record<StringKey, string>;
 
@@ -894,6 +937,65 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.category.feats': 'Dons',
     'customContent.category.invocations': 'Invocations',
     'customContent.category.items': 'Objets',
+    // Pack editor — création in-app (JALON 3C.1)
+    'customContent.createLink': 'Créer un pack sans fichier',
+    'customContent.editor.title': 'Créer un pack',
+    'customContent.editor.subtitle':
+      'Compose ton pack catégorie par catégorie. Tu pourras l’éditer plus tard.',
+    'customContent.editor.meta.title': 'Métadonnées du pack',
+    'customContent.editor.meta.id': 'Identifiant',
+    'customContent.editor.meta.idHelper':
+      'En kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.meta.nameFr': 'Nom (FR)',
+    'customContent.editor.meta.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.meta.author': 'Auteur',
+    'customContent.editor.meta.version': 'Version',
+    'customContent.editor.meta.versionHelper':
+      'Format semver MAJOR.MINOR.PATCH, par exemple 1.0.0.',
+    'customContent.editor.meta.descriptionFr': 'Description (FR, optionnelle)',
+    'customContent.editor.meta.descriptionEn': 'Description (EN, optionnelle)',
+    'customContent.editor.meta.descriptionHelper':
+      'Affichée à l’aperçu du pack après import.',
+    'customContent.editor.entities.title': 'Contenu du pack',
+    'customContent.editor.feats.add': 'Ajouter un don',
+    'customContent.editor.feats.empty':
+      'Aucun don ajouté pour l’instant.',
+    'customContent.editor.feats.remove': 'Retirer',
+    'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
+    'customContent.editor.comingSoon.body':
+      'Sorts, classes, ascendances, items et autres seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
+    'customContent.editor.cancel': 'Annuler',
+    'customContent.editor.save': 'Enregistrer le pack',
+    'customContent.editor.save.successTitle': 'Pack enregistré',
+    'customContent.editor.save.successSub':
+      '{count} entrée·s prêtes à servir.',
+    'customContent.editor.save.errorTitle': 'Pack invalide',
+    'customContent.editor.save.errorGeneric':
+      'Le pack n’est pas valide. Vérifie les champs requis.',
+    'customContent.editor.featForm.title': 'Nouveau don',
+    'customContent.editor.featForm.id': 'Identifiant du don',
+    'customContent.editor.featForm.idHelper':
+      'En kebab-case, unique dans le pack.',
+    'customContent.editor.featForm.nameFr': 'Nom (FR)',
+    'customContent.editor.featForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.featForm.summaryFr': 'Résumé (FR, optionnel)',
+    'customContent.editor.featForm.summaryEn': 'Résumé (EN, optionnel)',
+    'customContent.editor.featForm.summaryHelper':
+      'Phrase courte affichée dans la liste des dons au level-up.',
+    'customContent.editor.featForm.prerequisiteFr':
+      'Prérequis affiché (FR, optionnel)',
+    'customContent.editor.featForm.prerequisiteEn':
+      'Prérequis affiché (EN, optionnel)',
+    'customContent.editor.featForm.prerequisiteHelper':
+      'Texte d’affichage. Les prérequis exécutables seront ajoutés plus tard.',
+    'customContent.editor.featForm.cancel': 'Annuler',
+    'customContent.editor.featForm.confirm': 'Confirmer le don',
+    'customContent.editor.featForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.featForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.featForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1332,6 +1434,61 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.category.feats': 'Feats',
     'customContent.category.invocations': 'Invocations',
     'customContent.category.items': 'Items',
+    // Pack editor — in-app authoring (JALON 3C.1)
+    'customContent.createLink': 'Author a pack without a file',
+    'customContent.editor.title': 'Author a pack',
+    'customContent.editor.subtitle':
+      'Compose your pack category by category. You can edit it later.',
+    'customContent.editor.meta.title': 'Pack metadata',
+    'customContent.editor.meta.id': 'Identifier',
+    'customContent.editor.meta.idHelper':
+      'kebab-case (lowercase letters, digits, dashes).',
+    'customContent.editor.meta.nameFr': 'Name (FR)',
+    'customContent.editor.meta.nameEn': 'Name (EN, optional)',
+    'customContent.editor.meta.author': 'Author',
+    'customContent.editor.meta.version': 'Version',
+    'customContent.editor.meta.versionHelper':
+      'semver format MAJOR.MINOR.PATCH, e.g. 1.0.0.',
+    'customContent.editor.meta.descriptionFr': 'Description (FR, optional)',
+    'customContent.editor.meta.descriptionEn': 'Description (EN, optional)',
+    'customContent.editor.meta.descriptionHelper':
+      'Shown on the pack preview after import.',
+    'customContent.editor.entities.title': 'Pack contents',
+    'customContent.editor.feats.add': 'Add a feat',
+    'customContent.editor.feats.empty': 'No feats added yet.',
+    'customContent.editor.feats.remove': 'Remove',
+    'customContent.editor.comingSoon.title': 'Other categories — coming soon',
+    'customContent.editor.comingSoon.body':
+      'Spells, classes, ancestries, items and more will be authorable in-app in upcoming releases. File import remains available for these categories.',
+    'customContent.editor.cancel': 'Cancel',
+    'customContent.editor.save': 'Save pack',
+    'customContent.editor.save.successTitle': 'Pack saved',
+    'customContent.editor.save.successSub': '{count} entries ready to use.',
+    'customContent.editor.save.errorTitle': 'Invalid pack',
+    'customContent.editor.save.errorGeneric':
+      'The pack is not valid. Check the required fields.',
+    'customContent.editor.featForm.title': 'New feat',
+    'customContent.editor.featForm.id': 'Feat identifier',
+    'customContent.editor.featForm.idHelper':
+      'kebab-case, unique within the pack.',
+    'customContent.editor.featForm.nameFr': 'Name (FR)',
+    'customContent.editor.featForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.featForm.summaryFr': 'Summary (FR, optional)',
+    'customContent.editor.featForm.summaryEn': 'Summary (EN, optional)',
+    'customContent.editor.featForm.summaryHelper':
+      'Short sentence shown in the feat list at level-up.',
+    'customContent.editor.featForm.prerequisiteFr':
+      'Displayed prerequisite (FR, optional)',
+    'customContent.editor.featForm.prerequisiteEn':
+      'Displayed prerequisite (EN, optional)',
+    'customContent.editor.featForm.prerequisiteHelper':
+      'Display text. Executable prerequisites will be added later.',
+    'customContent.editor.featForm.cancel': 'Cancel',
+    'customContent.editor.featForm.confirm': 'Confirm feat',
+    'customContent.editor.featForm.error.idRequired': 'Identifier is required.',
+    'customContent.editor.featForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase letters, digits, dashes).',
+    'customContent.editor.featForm.error.nameFrRequired': 'Name (FR) is required.',
   },
 };
 
