@@ -77,7 +77,10 @@ export function applyReferenceAbilities(
   method: AbilityMethod,
 ): Record<AbilityCode, number> {
   const build = REFERENCE_BUILDS[classId];
-  if (!build || method === 'manual') {
+  // `manual` et `rolled` ne sont pas écrasables par un autofill : `manual`
+  // attend une saisie libre, `rolled` a son propre flow de tirage (cf.
+  // abilities-step.tsx). Pour les deux on retourne le baseline 10/partout.
+  if (!build || method === 'manual' || method === 'rolled') {
     return { for: 10, dex: 10, con: 10, int: 10, sag: 10, cha: 10 };
   }
   const tuple = method === 'point-buy' ? build.pointBuy : build.standardArray;

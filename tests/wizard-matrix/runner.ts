@@ -139,9 +139,10 @@ export interface PersonaSpec {
   readonly method: AbilityMethod;
   /**
    * Axe documenté que ce persona exerce — sert au rapport STOP, pas à la prod.
-   * 'class' = couverture de base, 'ancestry'/'background' = axe ciblé.
+   * 'class' = couverture de base, 'ancestry'/'background' = axe ciblé,
+   * 'method' = axe « génération de stats » (JALON 2E : 4d6 keep-3 vs manual).
    */
-  readonly axis: 'class' | 'ancestry' | 'background';
+  readonly axis: 'class' | 'ancestry' | 'background' | 'method';
 }
 
 /**
@@ -389,6 +390,13 @@ export const PERSONAS: readonly PersonaSpec[] = [
   { id: 'bg-rogue-criminal', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'criminal', method: 'standard-array', axis: 'background' },
   { id: 'bg-rogue-sage', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'sage', method: 'standard-array', axis: 'background' },
   { id: 'bg-rogue-soldier', classId: 'rogue', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'standard-array', axis: 'background' },
+  // ── Axe méthode de génération de stats (JALON 2E) ──
+  // `applyReferenceAbilities` retourne 10/partout pour 'rolled' et 'manual' (cf.
+  // builds.ts) ; isAbilitiesValid accepte 10 dans les deux cas. Le pin valide
+  // que le pipeline build-from-wizard tolère bien les 4 méthodes — la sémantique
+  // « tirage app vs manuel » se teste côté UI (abilities-step-rolled.test.tsx).
+  { id: 'method-fighter-rolled', classId: 'fighter', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'rolled', axis: 'method' },
+  { id: 'method-fighter-manual', classId: 'fighter', ancestryId: 'dwarf', backgroundId: 'soldier', method: 'manual', axis: 'method' },
 ];
 
 /* ──────────────────────────────────────────────────────────────────────────

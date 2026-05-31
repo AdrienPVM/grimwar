@@ -1,3 +1,4 @@
+import { rollDieCrypto } from '../dice/roller';
 import type { AbilityCode } from '../../types/character';
 
 /** D&D 5e modifier from raw score. */
@@ -52,3 +53,57 @@ export function isValidPointBuy(scores: Record<AbilityCode, number>): boolean {
 }
 
 export const ABILITY_ORDER: readonly AbilityCode[] = ['for', 'dex', 'con', 'int', 'sag', 'cha'];
+
+/**
+ * Méthode 4d6 keep highest 3 (« drop lowest ») — méthode de tirage classique
+ * SRD 2014/2024 (PHB p. 13 « Random Generation »). Plage théorique : 3-18.
+ *
+ * RNG injectable pour les tests : par défaut, `rollDieCrypto` (CSPRNG, cf.
+ * `dice/roller.ts`). Les specs mockent `rng` pour figer les faces.
+ */
+export const ROLLED_MIN = 3;
+export const ROLLED_MAX = 18;
+
+export interface Rolled4d6Result {
+  rawFaces: [number, number, number, number];
+  keptFaces: [number, number, number];
+  /** Somme des 3 dés gardés (3-18). */
+  total: number;
+}
+
+/** Roule 4d6, drop le plus bas, retourne le détail + la somme des 3 gardés. */
+export function roll4d6DropLowest(rng: (sides: number) => number = rollDieCrypto): Rolled4d6Result {
+  const rawFaces: [number, number, number, number] = [rng(6), rng(6), rng(6), rng(6)];
+  // Drop le plus petit (premier élément après tri ascendant).
+  const sorted = [...rawFaces].sort((a, b) => a - b);
+  const keptFaces: [number, number, number] = [sorted[1]!, sorted[2]!, sorted[3]!];
+  const total = keptFaces[0] + keptFaces[1] + keptFaces[2];
+  return { rawFaces, keptFaces, total };
+}
+
+/**
+ * Roule 6 scores (un par caractéristique, dans `ABILITY_ORDER`). Pas de
+ * réaffectation : le 1er roll va dans FOR, le 2e dans DEX, etc. — l'utilisateur
+ * doit pouvoir relancer si l'ordre ne lui convient pas.
+ */
+export function rollAbilities4d6(
+  rng: (sides: number) => number = rollDieCrypto,
+): Record<AbilityCode, Rolled4d6Result> {
+  const out: Partial<Record<AbilityCode, Rolled4d6Result>> = {};
+  for (const code of ABILITY_ORDER) {
+    out[code] = roll4d6DropLowest(rng);
+  }
+  return out as Record<AbilityCode, Rolled4d6Result>;
+}
+
+/**
+ * Vérifie qu'une distribution issue d'un tirage 4d6 keep-3 a chaque score dans
+ * la plage théorique [3, 18]. Utilisée pour `'rolled'` en validation wizard.
+ */
+export function isRolled4d6Valid(scores: Record<AbilityCode, number>): boolean {
+  for (const value of Object.values(scores)) {
+    if (!Number.isInteger(value)) return false;
+    if (value < ROLLED_MIN || value > ROLLED_MAX) return false;
+  }
+  return true;
+}

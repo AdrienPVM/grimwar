@@ -127,6 +127,11 @@ const KNOWN_SPELLS_PINS: Record<string, { total: number; ancestry: number }> = {
   'bg-rogue-criminal': { total: 0, ancestry: 0 },
   'bg-rogue-sage': { total: 0, ancestry: 0 },
   'bg-rogue-soldier': { total: 0, ancestry: 0 },
+  // ── Axe méthode de génération de stats (JALON 2E) ──
+  // Guerrier non-lanceur, ascendance Nain : 0 sort attendu, quelle que soit la
+  // méthode de stat — la méthode ne touche pas le quota de sorts.
+  'method-fighter-rolled': { total: 0, ancestry: 0 },
+  'method-fighter-manual': { total: 0, ancestry: 0 },
 };
 
 let bundles: MatrixBundles;

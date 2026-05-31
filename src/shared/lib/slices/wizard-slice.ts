@@ -28,7 +28,15 @@ import {
  * par `migrate` du middleware persist (cf. version: 2 ci-dessous).
  */
 
-export type AbilityMethod = 'standard-array' | 'point-buy' | 'manual';
+export type AbilityMethod = 'standard-array' | 'point-buy' | 'rolled' | 'manual';
+
+/**
+ * Source de tirage pour la méthode `'rolled'` (4d6 keep-3). « app » = l'app
+ * lance les dés et fige le résultat dans le draft ; « manual » = le joueur
+ * lance IRL et saisit les 6 totaux à la main. Inerte pour les 3 autres
+ * méthodes (toujours sérialisé mais ignoré).
+ */
+export type AbilityRollSource = 'app' | 'manual';
 
 /**
  * Sous-choix de classe niveau 1 SRD 5.2.1 portés par chaque entrée du tableau
@@ -123,6 +131,11 @@ export interface WizardDraft {
 
   // Étape 4 — Caractéristiques
   method: AbilityMethod;
+  /**
+   * Source de tirage utilisée quand `method === 'rolled'`. Toujours présent
+   * dans le draft (défaut `'app'`), inerte pour les autres méthodes.
+   */
+  rollSource: AbilityRollSource;
   abilities: Record<AbilityCode, number>;
 
   // Étape 5 — Historique
@@ -171,6 +184,7 @@ export const EMPTY_DRAFT: WizardDraft = {
   ancestryId: null,
   ancestrySubChoices: { ...EMPTY_ANCESTRY_SUB_CHOICES },
   method: 'standard-array',
+  rollSource: 'app',
   abilities: { ...DEFAULT_ABILITIES },
   backgroundId: null,
   personality: { trait: '', ideal: '', bond: '', flaw: '', backstory: '' },
@@ -402,13 +416,13 @@ export const useWizardStore = create<WizardStore>()(
       },
     }),
     {
-      // Clé bumpée v3→v4 (plan 13.9) — les anciens drafts v3 n'avaient pas les
-      // sous-choix de classe sur `WizardClassEntry` ni `extraLanguages` racine.
-      // Un draft v3 incomplet pourrait crasher le wizard à l'hydratation ; on
-      // préfère jeter et repartir vide (workflow de création courte → faible
-      // coût utilisateur, gros gain en robustesse).
-      name: 'grimwar-wizard-draft-v4',
-      version: 4,
+      // Clé bumpée v4→v5 (JALON 2E) — ajout de `rollSource` racine + nouveau
+      // membre `'rolled'` sur `AbilityMethod`. Un draft v4 hydraté serait
+      // sain (rollSource simplement absent) mais on préfère jeter pour rester
+      // aligné sur la politique v3→v4 (faible coût utilisateur, gros gain en
+      // robustesse face aux divergences de schéma).
+      name: 'grimwar-wizard-draft-v5',
+      version: 5,
       // Storage explicite + no-op fallback si `window.localStorage` est absent
       // (cf. zustand-storage.ts). Évite le crash dur observé sur Node 26 où
       // le `localStorage` global expérimental shadow celui de jsdom.

@@ -66,7 +66,14 @@ export type StringKey =
   | 'wizard.field.flaw'
   | 'wizard.method.standard-array'
   | 'wizard.method.point-buy'
+  | 'wizard.method.rolled'
   | 'wizard.method.manual'
+  | 'wizard.method.rolled.source.app'
+  | 'wizard.method.rolled.source.manual'
+  | 'wizard.label.rollSource'
+  | 'wizard.label.rolledBreakdown'
+  | 'wizard.action.rollAbilities'
+  | 'wizard.action.reroll'
   | 'wizard.label.pointsRemaining'
   | 'wizard.label.cantrips'
   | 'wizard.label.level1Spells'
@@ -94,7 +101,10 @@ export type StringKey =
   | 'wizard.help.abilities.intro'
   | 'wizard.help.abilities.method.standard-array'
   | 'wizard.help.abilities.method.point-buy'
+  | 'wizard.help.abilities.method.rolled'
   | 'wizard.help.abilities.method.manual'
+  | 'wizard.help.abilities.rolled.app'
+  | 'wizard.help.abilities.rolled.manual'
   | 'wizard.help.abilities.recommended'
   | 'wizard.help.background.intro'
   | 'wizard.help.background.personalityIntro'
@@ -411,7 +421,14 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.field.flaw': 'Défaut',
     'wizard.method.standard-array': 'Tableau standard',
     'wizard.method.point-buy': 'Achat de points',
+    'wizard.method.rolled': '4d6 (garde les 3 meilleurs)',
     'wizard.method.manual': 'Manuel',
+    'wizard.method.rolled.source.app': "L'app lance les dés",
+    'wizard.method.rolled.source.manual': 'Je lance avec mes dés (IRL)',
+    'wizard.label.rollSource': 'Qui lance les dés ?',
+    'wizard.label.rolledBreakdown': 'Détail du jet',
+    'wizard.action.rollAbilities': 'Lancer 4d6 pour les 6 caractéristiques',
+    'wizard.action.reroll': 'Relancer',
     'wizard.label.pointsRemaining': 'Points restants',
     'wizard.label.cantrips': 'Sorts mineurs',
     'wizard.label.level1Spells': 'Sorts de niveau 1',
@@ -442,12 +459,18 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.help.ancestry.intro':
       "L'ascendance, c'est d'où tu viens — humain, elfe, nain, etc. Elle donne quelques bonus naturels et un peu de couleur à ton personnage.",
     'wizard.help.abilities.intro':
-      "Six caractéristiques chiffrées définissent ce que tu es bon à faire. La méthode « Tableau standard » est la plus simple ; « Achat de points » donne plus de contrôle ; « Manuel » te laisse mettre ce que tu veux (à valider avec ton MJ).",
+      "Six caractéristiques chiffrées définissent ce que tu es bon à faire. La méthode « Tableau standard » est la plus simple ; « Achat de points » donne plus de contrôle ; « 4d6 (garde les 3 meilleurs) » lance les dés ; « Manuel » te laisse mettre ce que tu veux (à valider avec ton MJ).",
     'wizard.help.abilities.method.standard-array':
       'Distribue les 6 valeurs 15, 14, 13, 12, 10 et 8 dans tes caractéristiques.',
     'wizard.help.abilities.method.point-buy':
       '27 points à dépenser, chaque caractéristique entre 8 et 15. Les hautes valeurs coûtent plus cher.',
+    'wizard.help.abilities.method.rolled':
+      'Pour chaque caractéristique : lance 4d6 et garde les 3 meilleurs. Chaque score finit entre 3 et 18.',
     'wizard.help.abilities.method.manual': "Saisis librement (mode confiance MJ).",
+    'wizard.help.abilities.rolled.app':
+      "L'app lance les dés pour toi. Tu peux relancer si le résultat ne te convient pas.",
+    'wizard.help.abilities.rolled.manual':
+      "Lance tes propres dés à la table, puis saisis les 6 totaux ici (entre 3 et 18 chacun).",
     'wizard.help.abilities.recommended': 'Recommandée pour cette classe',
     'wizard.help.background.intro':
       "Qu'as-tu fait avant l'aventure ? Ton historique te donne des compétences, un peu d'équipement, et de la matière narrative.",
@@ -853,7 +876,14 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.field.flaw': 'Flaw',
     'wizard.method.standard-array': 'Standard Array',
     'wizard.method.point-buy': 'Point Buy',
+    'wizard.method.rolled': '4d6 (drop lowest)',
     'wizard.method.manual': 'Manual',
+    'wizard.method.rolled.source.app': 'App rolls the dice',
+    'wizard.method.rolled.source.manual': 'I roll my own dice (IRL)',
+    'wizard.label.rollSource': 'Who rolls?',
+    'wizard.label.rolledBreakdown': 'Roll breakdown',
+    'wizard.action.rollAbilities': 'Roll 4d6 for all 6 abilities',
+    'wizard.action.reroll': 'Reroll',
     'wizard.label.pointsRemaining': 'Points remaining',
     'wizard.label.cantrips': 'Cantrips',
     'wizard.label.level1Spells': 'Level-1 spells',
@@ -887,7 +917,13 @@ const STRINGS: Record<Locale, Dict> = {
       'Distribute the six fixed values among your abilities.',
     'wizard.help.abilities.method.point-buy':
       '27 points to spend, each ability between 8 and 15.',
+    'wizard.help.abilities.method.rolled':
+      'For each ability: roll 4d6 and keep the highest 3. Scores range 3-18.',
     'wizard.help.abilities.method.manual': 'Free entry (DM trust mode).',
+    'wizard.help.abilities.rolled.app':
+      'The app rolls for you. Reroll if you do not like the result.',
+    'wizard.help.abilities.rolled.manual':
+      'Roll your own dice at the table, then enter the six totals here (3-18 each).',
     'wizard.help.abilities.recommended': 'Recommended for this class',
     'wizard.help.background.intro':
       'What did you do before the adventure?',
