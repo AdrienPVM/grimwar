@@ -60,8 +60,11 @@ test.describe('Wizard abilities — méthode standard-array (JALON 2E)', () => {
     await expect(
       page.getByRole('radio', { name: /Tableau standard/i }),
     ).toBeChecked();
-    // 6 dropdowns Select natifs (un par ability).
-    await expect(page.locator('select')).toHaveCount(6);
+    // 6 dropdowns Select custom (un par ability). NB : le composant
+    // `<Select>` est un combobox WAI-ARIA (button + listbox), pas un
+    // `<select>` natif — cf. src/shared/components/form/select.tsx, décision
+    // Adrien 2026-05-16 (le natif refusait le styling crème/or).
+    await expect(page.locator('button[role="combobox"]')).toHaveCount(6);
     await takeStepScreenshot(page, testInfo, '01-standard-array-default');
 
     // Autofill avec le build de référence Guerrier → tuple standardArray
