@@ -10,8 +10,18 @@ import { parseCustomContentPack } from '@/shared/lib/custom-content/parse-pack';
 import { t } from '@/shared/lib/i18n';
 import { writePack } from '@/shared/lib/services/pack-storage';
 import { showToast } from '@/shared/lib/slices/toast-slice';
-import type { Feat, Invocation, Subancestry } from '@/shared/types/content';
+import type {
+  Background,
+  Feat,
+  Invocation,
+  Subancestry,
+} from '@/shared/types/content';
 
+import {
+  BackgroundForm,
+  EMPTY_BACKGROUND_DRAFT,
+  type BackgroundFormDraft,
+} from './forms/background-form';
 import { FeatForm, EMPTY_FEAT_DRAFT, type FeatFormDraft } from './forms/feat-form';
 import { FieldI18n } from './forms/fields/field-i18n';
 import { FieldString } from './forms/fields/field-string';
@@ -58,6 +68,10 @@ export function PackEditorScreen(): JSX.Element {
   const [subancestryDraft, setSubancestryDraft] =
     useState<SubancestryFormDraft>(EMPTY_SUBANCESTRY_DRAFT);
   const [isAddingSubancestry, setIsAddingSubancestry] = useState<boolean>(false);
+  const [backgroundDraft, setBackgroundDraft] = useState<BackgroundFormDraft>(
+    EMPTY_BACKGROUND_DRAFT,
+  );
+  const [isAddingBackground, setIsAddingBackground] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -115,6 +129,24 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeSubancestryForm],
   );
 
+  const openBackgroundForm = useCallback(() => {
+    setBackgroundDraft(EMPTY_BACKGROUND_DRAFT);
+    setIsAddingBackground(true);
+  }, []);
+
+  const closeBackgroundForm = useCallback(() => {
+    setIsAddingBackground(false);
+    setBackgroundDraft(EMPTY_BACKGROUND_DRAFT);
+  }, []);
+
+  const confirmBackground = useCallback(
+    (background: Background) => {
+      builder.addBackground(background);
+      closeBackgroundForm();
+    },
+    [builder, closeBackgroundForm],
+  );
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     const candidate = packFromBuilderState(builder.state);
@@ -168,6 +200,7 @@ export function PackEditorScreen(): JSX.Element {
   const featCount = builder.state.feats.length;
   const invocationCount = builder.state.invocations.length;
   const subancestryCount = builder.state.subancestries.length;
+  const backgroundCount = builder.state.backgrounds.length;
 
   return (
     <main
@@ -468,7 +501,76 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.4..3C.9). On les liste pour communiquer la
+        {/* Historiques */}
+        <div className="mt-10" data-testid="pack-editor-backgrounds">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.backgrounds')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({backgroundCount})
+              </span>
+            </h3>
+            {!isAddingBackground ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openBackgroundForm}
+                data-testid="pack-editor-add-background"
+              >
+                {t('customContent.editor.backgrounds.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {backgroundCount === 0 && !isAddingBackground ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.backgrounds.empty')}
+            </p>
+          ) : null}
+
+          {backgroundCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.backgrounds.map((bg) => (
+                <li
+                  key={bg.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-background-row"
+                  data-background-id={bg.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {bg.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {bg.id}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeBackground(bg.id)}
+                    data-testid="pack-editor-background-remove"
+                  >
+                    {t('customContent.editor.backgrounds.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingBackground ? (
+            <div className="mt-5">
+              <BackgroundForm
+                draft={backgroundDraft}
+                onChange={setBackgroundDraft}
+                onConfirm={confirmBackground}
+                onCancel={closeBackgroundForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégories à venir (3C.5..3C.9). On les liste pour communiquer la
             roadmap sans pour autant les rendre cliquables : un placeholder
             grisé suffit jusqu'à leur livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
@@ -511,7 +613,8 @@ export function PackEditorScreen(): JSX.Element {
             isSaving ||
             isAddingFeat ||
             isAddingInvocation ||
-            isAddingSubancestry
+            isAddingSubancestry ||
+            isAddingBackground
           }
           data-testid="pack-editor-save"
         >

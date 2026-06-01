@@ -416,6 +416,9 @@ export type StringKey =
   | 'customContent.editor.subancestries.add'
   | 'customContent.editor.subancestries.empty'
   | 'customContent.editor.subancestries.remove'
+  | 'customContent.editor.backgrounds.add'
+  | 'customContent.editor.backgrounds.empty'
+  | 'customContent.editor.backgrounds.remove'
   | 'customContent.editor.comingSoon.title'
   | 'customContent.editor.comingSoon.body'
   | 'customContent.editor.cancel'
@@ -497,7 +500,59 @@ export type StringKey =
   | 'customContent.editor.subancestryForm.error.descriptionFrRequired'
   | 'customContent.editor.subancestryForm.error.asiAbilityRequired'
   | 'customContent.editor.subancestryForm.error.asiDuplicate'
-  | 'customContent.editor.subancestryForm.error.traitIncomplete';
+  | 'customContent.editor.subancestryForm.error.traitIncomplete'
+  | 'customContent.editor.backgroundForm.title'
+  | 'customContent.editor.backgroundForm.id'
+  | 'customContent.editor.backgroundForm.idHelper'
+  | 'customContent.editor.backgroundForm.nameFr'
+  | 'customContent.editor.backgroundForm.nameEn'
+  | 'customContent.editor.backgroundForm.descriptionFr'
+  | 'customContent.editor.backgroundForm.descriptionEn'
+  | 'customContent.editor.backgroundForm.skillsLegend'
+  | 'customContent.editor.backgroundForm.skillsHelper'
+  | 'customContent.editor.backgroundForm.toolsLegend'
+  | 'customContent.editor.backgroundForm.toolsHelper'
+  | 'customContent.editor.backgroundForm.toolsEmpty'
+  | 'customContent.editor.backgroundForm.toolAdd'
+  | 'customContent.editor.backgroundForm.toolAddPlaceholder'
+  | 'customContent.editor.backgroundForm.toolAddButton'
+  | 'customContent.editor.backgroundForm.languages'
+  | 'customContent.editor.backgroundForm.languagesHelper'
+  | 'customContent.editor.backgroundForm.equipmentLegend'
+  | 'customContent.editor.backgroundForm.equipmentHelper'
+  | 'customContent.editor.backgroundForm.equipmentEmpty'
+  | 'customContent.editor.backgroundForm.equipmentAdd'
+  | 'customContent.editor.backgroundForm.equipmentItemId'
+  | 'customContent.editor.backgroundForm.equipmentItemIdPlaceholder'
+  | 'customContent.editor.backgroundForm.equipmentItemIdLoading'
+  | 'customContent.editor.backgroundForm.equipmentQty'
+  | 'customContent.editor.backgroundForm.coinsLegend'
+  | 'customContent.editor.backgroundForm.coinsToggle'
+  | 'customContent.editor.backgroundForm.coinsQty'
+  | 'customContent.editor.backgroundForm.coinsUnit'
+  | 'customContent.editor.backgroundForm.coinUnit.cp'
+  | 'customContent.editor.backgroundForm.coinUnit.sp'
+  | 'customContent.editor.backgroundForm.coinUnit.ep'
+  | 'customContent.editor.backgroundForm.coinUnit.gp'
+  | 'customContent.editor.backgroundForm.coinUnit.pp'
+  | 'customContent.editor.backgroundForm.featureLegend'
+  | 'customContent.editor.backgroundForm.featureHelper'
+  | 'customContent.editor.backgroundForm.featureNameFr'
+  | 'customContent.editor.backgroundForm.featureNameEn'
+  | 'customContent.editor.backgroundForm.featureDescriptionFr'
+  | 'customContent.editor.backgroundForm.featureDescriptionEn'
+  | 'customContent.editor.backgroundForm.removeRow'
+  | 'customContent.editor.backgroundForm.cancel'
+  | 'customContent.editor.backgroundForm.confirm'
+  | 'customContent.editor.backgroundForm.error.idRequired'
+  | 'customContent.editor.backgroundForm.error.idFormat'
+  | 'customContent.editor.backgroundForm.error.nameFrRequired'
+  | 'customContent.editor.backgroundForm.error.descriptionFrRequired'
+  | 'customContent.editor.backgroundForm.error.featureNameFrRequired'
+  | 'customContent.editor.backgroundForm.error.featureDescriptionFrRequired'
+  | 'customContent.editor.backgroundForm.error.equipmentItemIdRequired'
+  | 'customContent.editor.backgroundForm.error.equipmentDuplicate'
+  | 'customContent.editor.backgroundForm.error.equipmentQtyInvalid';
 
 type Dict = Record<StringKey, string>;
 
@@ -1034,6 +1089,10 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.subancestries.empty':
       'Aucune sous-ascendance ajoutée pour l’instant.',
     'customContent.editor.subancestries.remove': 'Retirer',
+    'customContent.editor.backgrounds.add': 'Ajouter un historique',
+    'customContent.editor.backgrounds.empty':
+      'Aucun historique ajouté pour l’instant.',
+    'customContent.editor.backgrounds.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
       'Sorts, classes, ascendances, items et autres seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
@@ -1166,6 +1225,88 @@ const STRINGS: Record<Locale, Dict> = {
       'Une même caractéristique ne peut pas apparaître deux fois.',
     'customContent.editor.subancestryForm.error.traitIncomplete':
       'Chaque trait demande un nom (FR) et une description (FR).',
+    'customContent.editor.backgroundForm.title': 'Nouvel historique',
+    'customContent.editor.backgroundForm.id': 'Identifiant de l’historique',
+    'customContent.editor.backgroundForm.idHelper':
+      'En kebab-case, unique dans le pack.',
+    'customContent.editor.backgroundForm.nameFr': 'Nom (FR)',
+    'customContent.editor.backgroundForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.backgroundForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.backgroundForm.descriptionEn':
+      'Description (EN, optionnelle)',
+    'customContent.editor.backgroundForm.skillsLegend':
+      'Compétences maîtrisées',
+    'customContent.editor.backgroundForm.skillsHelper':
+      'Sélectionne les compétences offertes par l’historique (cliquer pour activer / désactiver).',
+    'customContent.editor.backgroundForm.toolsLegend':
+      'Outils maîtrisés',
+    'customContent.editor.backgroundForm.toolsHelper':
+      'Identifiants d’outils (ex. thieves-tools, calligraphers-supplies). Une ligne par outil.',
+    'customContent.editor.backgroundForm.toolsEmpty':
+      'Aucun outil pour l’instant.',
+    'customContent.editor.backgroundForm.toolAdd': 'Identifiant de l’outil',
+    'customContent.editor.backgroundForm.toolAddPlaceholder':
+      'p. ex. thieves-tools',
+    'customContent.editor.backgroundForm.toolAddButton': 'Ajouter',
+    'customContent.editor.backgroundForm.languages': 'Langues bonus',
+    'customContent.editor.backgroundForm.languagesHelper':
+      'Nombre de langues supplémentaires que le PJ choisit à la création (0 si aucune).',
+    'customContent.editor.backgroundForm.equipmentLegend':
+      'Équipement de départ',
+    'customContent.editor.backgroundForm.equipmentHelper':
+      'Chaque ligne référence un item de la base (items.json) — pas de chaîne libre.',
+    'customContent.editor.backgroundForm.equipmentEmpty':
+      'Aucun équipement pour l’instant.',
+    'customContent.editor.backgroundForm.equipmentAdd':
+      'Ajouter un équipement',
+    'customContent.editor.backgroundForm.equipmentItemId': 'Item',
+    'customContent.editor.backgroundForm.equipmentItemIdPlaceholder':
+      'Choisir un item…',
+    'customContent.editor.backgroundForm.equipmentItemIdLoading':
+      'Chargement des items…',
+    'customContent.editor.backgroundForm.equipmentQty': 'Quantité',
+    'customContent.editor.backgroundForm.coinsLegend': 'Pièces de départ',
+    'customContent.editor.backgroundForm.coinsToggle':
+      'L’historique offre des pièces',
+    'customContent.editor.backgroundForm.coinsQty': 'Quantité',
+    'customContent.editor.backgroundForm.coinsUnit': 'Unité',
+    'customContent.editor.backgroundForm.coinUnit.cp': 'PC (cuivre)',
+    'customContent.editor.backgroundForm.coinUnit.sp': 'PA (argent)',
+    'customContent.editor.backgroundForm.coinUnit.ep': 'PE (électrum)',
+    'customContent.editor.backgroundForm.coinUnit.gp': 'PO (or)',
+    'customContent.editor.backgroundForm.coinUnit.pp': 'PP (platine)',
+    'customContent.editor.backgroundForm.featureLegend': 'Don / bonus offert',
+    'customContent.editor.backgroundForm.featureHelper':
+      'Capacité particulière que l’historique offre au PJ.',
+    'customContent.editor.backgroundForm.featureNameFr': 'Nom du don (FR)',
+    'customContent.editor.backgroundForm.featureNameEn':
+      'Nom du don (EN, optionnel)',
+    'customContent.editor.backgroundForm.featureDescriptionFr':
+      'Description du don (FR)',
+    'customContent.editor.backgroundForm.featureDescriptionEn':
+      'Description du don (EN, optionnelle)',
+    'customContent.editor.backgroundForm.removeRow': 'Retirer',
+    'customContent.editor.backgroundForm.cancel': 'Annuler',
+    'customContent.editor.backgroundForm.confirm':
+      'Confirmer l’historique',
+    'customContent.editor.backgroundForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.backgroundForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.backgroundForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
+    'customContent.editor.backgroundForm.error.descriptionFrRequired':
+      'La description (FR) est requise.',
+    'customContent.editor.backgroundForm.error.featureNameFrRequired':
+      'Le nom du don (FR) est requis.',
+    'customContent.editor.backgroundForm.error.featureDescriptionFrRequired':
+      'La description du don (FR) est requise.',
+    'customContent.editor.backgroundForm.error.equipmentItemIdRequired':
+      'Chaque ligne d’équipement doit choisir un item (sinon elle est ignorée).',
+    'customContent.editor.backgroundForm.error.equipmentDuplicate':
+      'Un même item ne peut pas apparaître deux fois — additionne les quantités.',
+    'customContent.editor.backgroundForm.error.equipmentQtyInvalid':
+      'La quantité doit être un entier supérieur à zéro.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1633,6 +1774,9 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.subancestries.add': 'Add a subancestry',
     'customContent.editor.subancestries.empty': 'No subancestries added yet.',
     'customContent.editor.subancestries.remove': 'Remove',
+    'customContent.editor.backgrounds.add': 'Add a background',
+    'customContent.editor.backgrounds.empty': 'No backgrounds added yet.',
+    'customContent.editor.backgrounds.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
       'Spells, classes, ancestries, items and more will be authorable in-app in upcoming releases. File import remains available for these categories.',
@@ -1755,6 +1899,81 @@ const STRINGS: Record<Locale, Dict> = {
       'The same ability cannot appear twice.',
     'customContent.editor.subancestryForm.error.traitIncomplete':
       'Each trait needs a name (FR) and a description (FR).',
+    'customContent.editor.backgroundForm.title': 'New background',
+    'customContent.editor.backgroundForm.id': 'Background identifier',
+    'customContent.editor.backgroundForm.idHelper':
+      'kebab-case, unique within the pack.',
+    'customContent.editor.backgroundForm.nameFr': 'Name (FR)',
+    'customContent.editor.backgroundForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.backgroundForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.backgroundForm.descriptionEn':
+      'Description (EN, optional)',
+    'customContent.editor.backgroundForm.skillsLegend': 'Skill proficiencies',
+    'customContent.editor.backgroundForm.skillsHelper':
+      'Pick the skills the background grants (click to toggle).',
+    'customContent.editor.backgroundForm.toolsLegend': 'Tool proficiencies',
+    'customContent.editor.backgroundForm.toolsHelper':
+      'Tool identifiers (e.g. thieves-tools, calligraphers-supplies). One per row.',
+    'customContent.editor.backgroundForm.toolsEmpty': 'No tools yet.',
+    'customContent.editor.backgroundForm.toolAdd': 'Tool identifier',
+    'customContent.editor.backgroundForm.toolAddPlaceholder':
+      'e.g. thieves-tools',
+    'customContent.editor.backgroundForm.toolAddButton': 'Add',
+    'customContent.editor.backgroundForm.languages': 'Bonus languages',
+    'customContent.editor.backgroundForm.languagesHelper':
+      'Number of bonus languages the PC picks at creation (0 if none).',
+    'customContent.editor.backgroundForm.equipmentLegend': 'Starting equipment',
+    'customContent.editor.backgroundForm.equipmentHelper':
+      'Each row references an item from the base (items.json) — no free strings.',
+    'customContent.editor.backgroundForm.equipmentEmpty': 'No equipment yet.',
+    'customContent.editor.backgroundForm.equipmentAdd': 'Add equipment',
+    'customContent.editor.backgroundForm.equipmentItemId': 'Item',
+    'customContent.editor.backgroundForm.equipmentItemIdPlaceholder':
+      'Pick an item…',
+    'customContent.editor.backgroundForm.equipmentItemIdLoading':
+      'Loading items…',
+    'customContent.editor.backgroundForm.equipmentQty': 'Quantity',
+    'customContent.editor.backgroundForm.coinsLegend': 'Starting coins',
+    'customContent.editor.backgroundForm.coinsToggle':
+      'Background grants coins',
+    'customContent.editor.backgroundForm.coinsQty': 'Quantity',
+    'customContent.editor.backgroundForm.coinsUnit': 'Unit',
+    'customContent.editor.backgroundForm.coinUnit.cp': 'cp (copper)',
+    'customContent.editor.backgroundForm.coinUnit.sp': 'sp (silver)',
+    'customContent.editor.backgroundForm.coinUnit.ep': 'ep (electrum)',
+    'customContent.editor.backgroundForm.coinUnit.gp': 'gp (gold)',
+    'customContent.editor.backgroundForm.coinUnit.pp': 'pp (platinum)',
+    'customContent.editor.backgroundForm.featureLegend': 'Granted feature',
+    'customContent.editor.backgroundForm.featureHelper':
+      'Special capability the background grants the PC.',
+    'customContent.editor.backgroundForm.featureNameFr': 'Feature name (FR)',
+    'customContent.editor.backgroundForm.featureNameEn':
+      'Feature name (EN, optional)',
+    'customContent.editor.backgroundForm.featureDescriptionFr':
+      'Feature description (FR)',
+    'customContent.editor.backgroundForm.featureDescriptionEn':
+      'Feature description (EN, optional)',
+    'customContent.editor.backgroundForm.removeRow': 'Remove',
+    'customContent.editor.backgroundForm.cancel': 'Cancel',
+    'customContent.editor.backgroundForm.confirm': 'Confirm background',
+    'customContent.editor.backgroundForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.backgroundForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase letters, digits, hyphens).',
+    'customContent.editor.backgroundForm.error.nameFrRequired':
+      'Name (FR) is required.',
+    'customContent.editor.backgroundForm.error.descriptionFrRequired':
+      'Description (FR) is required.',
+    'customContent.editor.backgroundForm.error.featureNameFrRequired':
+      'Feature name (FR) is required.',
+    'customContent.editor.backgroundForm.error.featureDescriptionFrRequired':
+      'Feature description (FR) is required.',
+    'customContent.editor.backgroundForm.error.equipmentItemIdRequired':
+      'Each equipment row must pick an item (otherwise it is ignored).',
+    'customContent.editor.backgroundForm.error.equipmentDuplicate':
+      'The same item cannot appear twice — sum the quantities instead.',
+    'customContent.editor.backgroundForm.error.equipmentQtyInvalid':
+      'Quantity must be a positive integer.',
   },
 };
 
