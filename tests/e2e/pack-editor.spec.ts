@@ -82,6 +82,57 @@ test.describe('PackEditor — JALON 3C.1', () => {
     expect(page.url()).toContain('/account/content/new');
   });
 
+  test('JALON 3C.3 — crée un pack avec 1 subancestry référant Humain SRD → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-sub-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack subancestry e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-subancestry').click();
+    await expect(page.getByTestId('subancestry-form')).toBeVisible();
+
+    await page
+      .getByTestId('subancestry-form-id')
+      .fill('human-tracer-e2e');
+
+    // Ouvre le combobox ancestryId et choisit "Humain" (SRD).
+    const ancestryWrapper = page.getByTestId('subancestry-form-ancestry-id');
+    await ancestryWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Humain' }).click();
+
+    await page
+      .getByTestId('subancestry-form-name-fr')
+      .fill('Humain tracer e2e');
+    await page
+      .getByTestId('subancestry-form-description-fr')
+      .fill('Variante de test pour le parcours subancestry custom.');
+
+    // Ajout d'une ASI (DEX +1)
+    await page.getByTestId('subancestry-form-asi-add').click();
+    const asiWrapper = page.getByTestId('subancestry-form-asi-ability-0');
+    await asiWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Dextérité' }).click();
+
+    await page.getByTestId('subancestry-form-confirm').click();
+
+    await expect(page.getByTestId('subancestry-form')).toHaveCount(0);
+    const subRow = page.locator(
+      '[data-testid="pack-editor-subancestry-row"][data-subancestry-id="human-tracer-e2e"]',
+    );
+    await expect(subRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-sub-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack subancestry e2e');
+  });
+
   test('JALON 3C.2 — crée un pack avec 1 invocation (sans feat) → save → liste packs', async ({
     page,
   }) => {

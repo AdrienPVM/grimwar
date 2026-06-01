@@ -10,7 +10,7 @@ import { parseCustomContentPack } from '@/shared/lib/custom-content/parse-pack';
 import { t } from '@/shared/lib/i18n';
 import { writePack } from '@/shared/lib/services/pack-storage';
 import { showToast } from '@/shared/lib/slices/toast-slice';
-import type { Feat, Invocation } from '@/shared/types/content';
+import type { Feat, Invocation, Subancestry } from '@/shared/types/content';
 
 import { FeatForm, EMPTY_FEAT_DRAFT, type FeatFormDraft } from './forms/feat-form';
 import { FieldI18n } from './forms/fields/field-i18n';
@@ -20,6 +20,11 @@ import {
   InvocationForm,
   type InvocationFormDraft,
 } from './forms/invocation-form';
+import {
+  EMPTY_SUBANCESTRY_DRAFT,
+  SubancestryForm,
+  type SubancestryFormDraft,
+} from './forms/subancestry-form';
 import {
   packFromBuilderState,
   usePackBuilder,
@@ -50,6 +55,9 @@ export function PackEditorScreen(): JSX.Element {
     EMPTY_INVOCATION_DRAFT,
   );
   const [isAddingInvocation, setIsAddingInvocation] = useState<boolean>(false);
+  const [subancestryDraft, setSubancestryDraft] =
+    useState<SubancestryFormDraft>(EMPTY_SUBANCESTRY_DRAFT);
+  const [isAddingSubancestry, setIsAddingSubancestry] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -87,6 +95,24 @@ export function PackEditorScreen(): JSX.Element {
       closeInvocationForm();
     },
     [builder, closeInvocationForm],
+  );
+
+  const openSubancestryForm = useCallback(() => {
+    setSubancestryDraft(EMPTY_SUBANCESTRY_DRAFT);
+    setIsAddingSubancestry(true);
+  }, []);
+
+  const closeSubancestryForm = useCallback(() => {
+    setIsAddingSubancestry(false);
+    setSubancestryDraft(EMPTY_SUBANCESTRY_DRAFT);
+  }, []);
+
+  const confirmSubancestry = useCallback(
+    (subancestry: Subancestry) => {
+      builder.addSubancestry(subancestry);
+      closeSubancestryForm();
+    },
+    [builder, closeSubancestryForm],
   );
 
   const handleSave = useCallback(async () => {
@@ -141,6 +167,7 @@ export function PackEditorScreen(): JSX.Element {
 
   const featCount = builder.state.feats.length;
   const invocationCount = builder.state.invocations.length;
+  const subancestryCount = builder.state.subancestries.length;
 
   return (
     <main
@@ -372,7 +399,76 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.3..3C.9). On les liste pour communiquer la
+        {/* Sous-ascendances */}
+        <div className="mt-10" data-testid="pack-editor-subancestries">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.subancestries')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({subancestryCount})
+              </span>
+            </h3>
+            {!isAddingSubancestry ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openSubancestryForm}
+                data-testid="pack-editor-add-subancestry"
+              >
+                {t('customContent.editor.subancestries.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {subancestryCount === 0 && !isAddingSubancestry ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.subancestries.empty')}
+            </p>
+          ) : null}
+
+          {subancestryCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.subancestries.map((sub) => (
+                <li
+                  key={sub.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-subancestry-row"
+                  data-subancestry-id={sub.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {sub.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {sub.id} · {sub.ancestryId}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeSubancestry(sub.id)}
+                    data-testid="pack-editor-subancestry-remove"
+                  >
+                    {t('customContent.editor.subancestries.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingSubancestry ? (
+            <div className="mt-5">
+              <SubancestryForm
+                draft={subancestryDraft}
+                onChange={setSubancestryDraft}
+                onConfirm={confirmSubancestry}
+                onCancel={closeSubancestryForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégories à venir (3C.4..3C.9). On les liste pour communiquer la
             roadmap sans pour autant les rendre cliquables : un placeholder
             grisé suffit jusqu'à leur livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
@@ -411,7 +507,12 @@ export function PackEditorScreen(): JSX.Element {
           variant="primary"
           size="lg"
           onClick={() => void handleSave()}
-          disabled={isSaving || isAddingFeat || isAddingInvocation}
+          disabled={
+            isSaving ||
+            isAddingFeat ||
+            isAddingInvocation ||
+            isAddingSubancestry
+          }
           data-testid="pack-editor-save"
         >
           {t('customContent.editor.save')}

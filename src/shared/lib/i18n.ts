@@ -413,6 +413,9 @@ export type StringKey =
   | 'customContent.editor.invocations.add'
   | 'customContent.editor.invocations.empty'
   | 'customContent.editor.invocations.remove'
+  | 'customContent.editor.subancestries.add'
+  | 'customContent.editor.subancestries.empty'
+  | 'customContent.editor.subancestries.remove'
   | 'customContent.editor.comingSoon.title'
   | 'customContent.editor.comingSoon.body'
   | 'customContent.editor.cancel'
@@ -457,7 +460,44 @@ export type StringKey =
   | 'customContent.editor.invocationForm.error.idFormat'
   | 'customContent.editor.invocationForm.error.nameFrRequired'
   | 'customContent.editor.invocationForm.error.summaryFrRequired'
-  | 'customContent.editor.invocationForm.error.levelRange';
+  | 'customContent.editor.invocationForm.error.levelRange'
+  | 'customContent.editor.subancestryForm.title'
+  | 'customContent.editor.subancestryForm.id'
+  | 'customContent.editor.subancestryForm.idHelper'
+  | 'customContent.editor.subancestryForm.ancestryId'
+  | 'customContent.editor.subancestryForm.ancestryIdHelper'
+  | 'customContent.editor.subancestryForm.ancestryIdPlaceholder'
+  | 'customContent.editor.subancestryForm.ancestryIdLoading'
+  | 'customContent.editor.subancestryForm.nameFr'
+  | 'customContent.editor.subancestryForm.nameEn'
+  | 'customContent.editor.subancestryForm.descriptionFr'
+  | 'customContent.editor.subancestryForm.descriptionEn'
+  | 'customContent.editor.subancestryForm.asisLegend'
+  | 'customContent.editor.subancestryForm.asisHelper'
+  | 'customContent.editor.subancestryForm.asisEmpty'
+  | 'customContent.editor.subancestryForm.asiAdd'
+  | 'customContent.editor.subancestryForm.asiAbility'
+  | 'customContent.editor.subancestryForm.asiAbilityPlaceholder'
+  | 'customContent.editor.subancestryForm.asiBonus'
+  | 'customContent.editor.subancestryForm.traitsLegend'
+  | 'customContent.editor.subancestryForm.traitsHelper'
+  | 'customContent.editor.subancestryForm.traitsEmpty'
+  | 'customContent.editor.subancestryForm.traitAdd'
+  | 'customContent.editor.subancestryForm.traitNameFr'
+  | 'customContent.editor.subancestryForm.traitNameEn'
+  | 'customContent.editor.subancestryForm.traitDescriptionFr'
+  | 'customContent.editor.subancestryForm.traitDescriptionEn'
+  | 'customContent.editor.subancestryForm.removeRow'
+  | 'customContent.editor.subancestryForm.cancel'
+  | 'customContent.editor.subancestryForm.confirm'
+  | 'customContent.editor.subancestryForm.error.idRequired'
+  | 'customContent.editor.subancestryForm.error.idFormat'
+  | 'customContent.editor.subancestryForm.error.ancestryIdRequired'
+  | 'customContent.editor.subancestryForm.error.nameFrRequired'
+  | 'customContent.editor.subancestryForm.error.descriptionFrRequired'
+  | 'customContent.editor.subancestryForm.error.asiAbilityRequired'
+  | 'customContent.editor.subancestryForm.error.asiDuplicate'
+  | 'customContent.editor.subancestryForm.error.traitIncomplete';
 
 type Dict = Record<StringKey, string>;
 
@@ -989,6 +1029,11 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.invocations.empty':
       'Aucune invocation ajoutée pour l’instant.',
     'customContent.editor.invocations.remove': 'Retirer',
+    'customContent.editor.subancestries.add':
+      'Ajouter une sous-ascendance',
+    'customContent.editor.subancestries.empty':
+      'Aucune sous-ascendance ajoutée pour l’instant.',
+    'customContent.editor.subancestries.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
       'Sorts, classes, ascendances, items et autres seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
@@ -1058,6 +1103,69 @@ const STRINGS: Record<Locale, Dict> = {
       'Le résumé (FR) est requis.',
     'customContent.editor.invocationForm.error.levelRange':
       'Le niveau doit être compris entre 1 et 20.',
+    'customContent.editor.subancestryForm.title':
+      'Nouvelle sous-ascendance',
+    'customContent.editor.subancestryForm.id':
+      'Identifiant de la sous-ascendance',
+    'customContent.editor.subancestryForm.idHelper':
+      'En kebab-case, unique dans le pack.',
+    'customContent.editor.subancestryForm.ancestryId': 'Ascendance parente',
+    'customContent.editor.subancestryForm.ancestryIdHelper':
+      'Sélectionne l’ascendance SRD (ou d’un pack déjà importé) à laquelle cette sous-ascendance se rattache.',
+    'customContent.editor.subancestryForm.ancestryIdPlaceholder':
+      'Choisir une ascendance…',
+    'customContent.editor.subancestryForm.ancestryIdLoading':
+      'Chargement des ascendances…',
+    'customContent.editor.subancestryForm.nameFr': 'Nom (FR)',
+    'customContent.editor.subancestryForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.subancestryForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.subancestryForm.descriptionEn':
+      'Description (EN, optionnelle)',
+    'customContent.editor.subancestryForm.asisLegend':
+      'Augmentations de caractéristique',
+    'customContent.editor.subancestryForm.asisHelper':
+      'Une ligne par caractéristique modifiée (par exemple FOR +2, CON +1).',
+    'customContent.editor.subancestryForm.asisEmpty':
+      'Aucune augmentation pour l’instant.',
+    'customContent.editor.subancestryForm.asiAdd':
+      'Ajouter une augmentation',
+    'customContent.editor.subancestryForm.asiAbility': 'Caractéristique',
+    'customContent.editor.subancestryForm.asiAbilityPlaceholder':
+      'Choisir…',
+    'customContent.editor.subancestryForm.asiBonus': 'Bonus',
+    'customContent.editor.subancestryForm.traitsLegend': 'Traits',
+    'customContent.editor.subancestryForm.traitsHelper':
+      'Capacités héritées par tout personnage de cette sous-ascendance.',
+    'customContent.editor.subancestryForm.traitsEmpty':
+      'Aucun trait pour l’instant.',
+    'customContent.editor.subancestryForm.traitAdd': 'Ajouter un trait',
+    'customContent.editor.subancestryForm.traitNameFr': 'Nom du trait (FR)',
+    'customContent.editor.subancestryForm.traitNameEn':
+      'Nom du trait (EN, optionnel)',
+    'customContent.editor.subancestryForm.traitDescriptionFr':
+      'Description du trait (FR)',
+    'customContent.editor.subancestryForm.traitDescriptionEn':
+      'Description du trait (EN, optionnelle)',
+    'customContent.editor.subancestryForm.removeRow': 'Retirer',
+    'customContent.editor.subancestryForm.cancel': 'Annuler',
+    'customContent.editor.subancestryForm.confirm':
+      'Confirmer la sous-ascendance',
+    'customContent.editor.subancestryForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.subancestryForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.subancestryForm.error.ancestryIdRequired':
+      'Sélectionne l’ascendance parente.',
+    'customContent.editor.subancestryForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
+    'customContent.editor.subancestryForm.error.descriptionFrRequired':
+      'La description (FR) est requise.',
+    'customContent.editor.subancestryForm.error.asiAbilityRequired':
+      'Chaque ligne doit choisir une caractéristique (sinon elle est ignorée).',
+    'customContent.editor.subancestryForm.error.asiDuplicate':
+      'Une même caractéristique ne peut pas apparaître deux fois.',
+    'customContent.editor.subancestryForm.error.traitIncomplete':
+      'Chaque trait demande un nom (FR) et une description (FR).',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1522,6 +1630,9 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.invocations.add': 'Add an invocation',
     'customContent.editor.invocations.empty': 'No invocations added yet.',
     'customContent.editor.invocations.remove': 'Remove',
+    'customContent.editor.subancestries.add': 'Add a subancestry',
+    'customContent.editor.subancestries.empty': 'No subancestries added yet.',
+    'customContent.editor.subancestries.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
       'Spells, classes, ancestries, items and more will be authorable in-app in upcoming releases. File import remains available for these categories.',
@@ -1588,6 +1699,62 @@ const STRINGS: Record<Locale, Dict> = {
       'Summary (FR) is required.',
     'customContent.editor.invocationForm.error.levelRange':
       'Level must be between 1 and 20.',
+    'customContent.editor.subancestryForm.title': 'New subancestry',
+    'customContent.editor.subancestryForm.id': 'Subancestry identifier',
+    'customContent.editor.subancestryForm.idHelper':
+      'kebab-case, unique within the pack.',
+    'customContent.editor.subancestryForm.ancestryId': 'Parent ancestry',
+    'customContent.editor.subancestryForm.ancestryIdHelper':
+      'Pick the SRD ancestry (or an ancestry from a previously imported pack) this subancestry attaches to.',
+    'customContent.editor.subancestryForm.ancestryIdPlaceholder':
+      'Choose an ancestry…',
+    'customContent.editor.subancestryForm.ancestryIdLoading':
+      'Loading ancestries…',
+    'customContent.editor.subancestryForm.nameFr': 'Name (FR)',
+    'customContent.editor.subancestryForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.subancestryForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.subancestryForm.descriptionEn':
+      'Description (EN, optional)',
+    'customContent.editor.subancestryForm.asisLegend':
+      'Ability score increases',
+    'customContent.editor.subancestryForm.asisHelper':
+      'One row per modified ability (e.g. STR +2, CON +1).',
+    'customContent.editor.subancestryForm.asisEmpty': 'No ASI yet.',
+    'customContent.editor.subancestryForm.asiAdd': 'Add an ASI',
+    'customContent.editor.subancestryForm.asiAbility': 'Ability',
+    'customContent.editor.subancestryForm.asiAbilityPlaceholder': 'Pick…',
+    'customContent.editor.subancestryForm.asiBonus': 'Bonus',
+    'customContent.editor.subancestryForm.traitsLegend': 'Traits',
+    'customContent.editor.subancestryForm.traitsHelper':
+      'Features inherited by any character of this subancestry.',
+    'customContent.editor.subancestryForm.traitsEmpty': 'No trait yet.',
+    'customContent.editor.subancestryForm.traitAdd': 'Add a trait',
+    'customContent.editor.subancestryForm.traitNameFr': 'Trait name (FR)',
+    'customContent.editor.subancestryForm.traitNameEn':
+      'Trait name (EN, optional)',
+    'customContent.editor.subancestryForm.traitDescriptionFr':
+      'Trait description (FR)',
+    'customContent.editor.subancestryForm.traitDescriptionEn':
+      'Trait description (EN, optional)',
+    'customContent.editor.subancestryForm.removeRow': 'Remove',
+    'customContent.editor.subancestryForm.cancel': 'Cancel',
+    'customContent.editor.subancestryForm.confirm': 'Confirm subancestry',
+    'customContent.editor.subancestryForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.subancestryForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase letters, digits, dashes).',
+    'customContent.editor.subancestryForm.error.ancestryIdRequired':
+      'Pick a parent ancestry.',
+    'customContent.editor.subancestryForm.error.nameFrRequired':
+      'Name (FR) is required.',
+    'customContent.editor.subancestryForm.error.descriptionFrRequired':
+      'Description (FR) is required.',
+    'customContent.editor.subancestryForm.error.asiAbilityRequired':
+      'Each row must pick an ability (otherwise it is ignored).',
+    'customContent.editor.subancestryForm.error.asiDuplicate':
+      'The same ability cannot appear twice.',
+    'customContent.editor.subancestryForm.error.traitIncomplete':
+      'Each trait needs a name (FR) and a description (FR).',
   },
 };
 

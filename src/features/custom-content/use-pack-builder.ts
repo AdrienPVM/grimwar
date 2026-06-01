@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import type { Feat, Invocation } from '@/shared/types/content';
+import type { Feat, Invocation, Subancestry } from '@/shared/types/content';
 import type { CustomContentPack } from '@/shared/types/custom-content-pack';
 
 /**
@@ -9,10 +9,10 @@ import type { CustomContentPack } from '@/shared/types/custom-content-pack';
  * objets i18n éclatés en deux strings (`*Fr` / `*En`) pour rester compatible
  * avec les inputs natifs.
  *
- * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. Les autres tableaux restent
- * vides ; les sous-jalons 3C.3..3C.9 les ajouteront. La validation Zod
- * (`parsePack`) tolère des tableaux vides tant qu'AU MOINS un tableau est non
- * vide.
+ * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. 3C.3 ajoute `subancestries`.
+ * Les autres tableaux restent vides ; les sous-jalons 3C.4..3C.9 les
+ * ajouteront. La validation Zod (`parsePack`) tolère des tableaux vides tant
+ * qu'AU MOINS un tableau est non vide.
  */
 export interface PackBuilderState {
   meta: {
@@ -26,6 +26,7 @@ export interface PackBuilderState {
   };
   feats: Feat[];
   invocations: Invocation[];
+  subancestries: Subancestry[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -40,6 +41,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
   },
   feats: [],
   invocations: [],
+  subancestries: [],
 };
 
 /**
@@ -78,6 +80,8 @@ export function packFromBuilderState(
       feats: state.feats.length > 0 ? state.feats : undefined,
       invocations:
         state.invocations.length > 0 ? state.invocations : undefined,
+      subancestries:
+        state.subancestries.length > 0 ? state.subancestries : undefined,
     },
   } as CustomContentPack;
 }
@@ -92,6 +96,8 @@ interface UsePackBuilderApi {
   removeFeat: (id: string) => void;
   addInvocation: (invocation: Invocation) => void;
   removeInvocation: (id: string) => void;
+  addSubancestry: (subancestry: Subancestry) => void;
+  removeSubancestry: (id: string) => void;
   reset: () => void;
 }
 
@@ -140,6 +146,22 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addSubancestry = useCallback((subancestry: Subancestry): void => {
+    setState((prev) => {
+      const next = prev.subancestries.filter(
+        (existing) => existing.id !== subancestry.id,
+      );
+      return { ...prev, subancestries: [...next, subancestry] };
+    });
+  }, []);
+
+  const removeSubancestry = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      subancestries: prev.subancestries.filter((sub) => sub.id !== id),
+    }));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
@@ -151,6 +173,8 @@ export function usePackBuilder(
     removeFeat,
     addInvocation,
     removeInvocation,
+    addSubancestry,
+    removeSubancestry,
     reset,
   };
 }
