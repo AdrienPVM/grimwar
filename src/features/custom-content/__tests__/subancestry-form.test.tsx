@@ -116,10 +116,11 @@ describe('draftFromSubancestry', () => {
     expect(draft.ancestryId).toBe('humain');
     expect(draft.nameEn).toBe('Human');
     expect(draft.asis).toEqual([{ ability: 'for', bonus: 2 }]);
-    expect(draft.traits[0].nameFr).toBe('Vision');
-    expect(draft.traits[0].nameEn).toBe('DV');
-    expect(draft.traits[0].descriptionFr).toBe('noir');
-    expect(draft.traits[0].descriptionEn).toBe('');
+    const trait = draft.traits[0]!;
+    expect(trait.nameFr).toBe('Vision');
+    expect(trait.nameEn).toBe('DV');
+    expect(trait.descriptionFr).toBe('noir');
+    expect(trait.descriptionEn).toBe('');
   });
 
   it("roundtrip draft → Subancestry → draft équivalent (sans champs EN)", () => {
