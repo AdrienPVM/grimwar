@@ -672,7 +672,83 @@ export type StringKey =
   | 'customContent.editor.spellForm.error.materialFrRequired'
   | 'customContent.editor.spellForm.error.atHigherLevelsFrRequired'
   | 'customContent.editor.spellForm.error.damageIncomplete'
-  | 'customContent.editor.spellForm.error.damageDuplicate';
+  | 'customContent.editor.spellForm.error.damageDuplicate'
+  | 'customContent.editor.items.add'
+  | 'customContent.editor.items.empty'
+  | 'customContent.editor.items.remove'
+  | 'customContent.editor.itemForm.title'
+  | 'customContent.editor.itemForm.id'
+  | 'customContent.editor.itemForm.idHelper'
+  | 'customContent.editor.itemForm.nameFr'
+  | 'customContent.editor.itemForm.nameEn'
+  | 'customContent.editor.itemForm.category'
+  | 'customContent.editor.itemForm.categoryPlaceholder'
+  | 'customContent.editor.itemForm.hasCost'
+  | 'customContent.editor.itemForm.hasCostHelper'
+  | 'customContent.editor.itemForm.costQty'
+  | 'customContent.editor.itemForm.costUnit'
+  | 'customContent.editor.itemForm.costUnitPlaceholder'
+  | 'customContent.editor.itemForm.weight'
+  | 'customContent.editor.itemForm.weightHelper'
+  | 'customContent.editor.itemForm.hasDescription'
+  | 'customContent.editor.itemForm.hasDescriptionHelper'
+  | 'customContent.editor.itemForm.descriptionFr'
+  | 'customContent.editor.itemForm.descriptionEn'
+  | 'customContent.editor.itemForm.descriptionHelper'
+  | 'customContent.editor.itemForm.weaponLegend'
+  | 'customContent.editor.itemForm.weaponHelper'
+  | 'customContent.editor.itemForm.hasDamage'
+  | 'customContent.editor.itemForm.hasDamageHelper'
+  | 'customContent.editor.itemForm.damageDice'
+  | 'customContent.editor.itemForm.damageDicePlaceholder'
+  | 'customContent.editor.itemForm.damageType'
+  | 'customContent.editor.itemForm.damageTypeLabelFr'
+  | 'customContent.editor.itemForm.damageTypeLabelEn'
+  | 'customContent.editor.itemForm.hasRange'
+  | 'customContent.editor.itemForm.hasRangeHelper'
+  | 'customContent.editor.itemForm.rangeNormal'
+  | 'customContent.editor.itemForm.rangeMax'
+  | 'customContent.editor.itemForm.rangeHelper'
+  | 'customContent.editor.itemForm.hasMastery'
+  | 'customContent.editor.itemForm.hasMasteryHelper'
+  | 'customContent.editor.itemForm.masteryProperty'
+  | 'customContent.editor.itemForm.masteryPlaceholder'
+  | 'customContent.editor.itemForm.propertiesLegend'
+  | 'customContent.editor.itemForm.propertiesHelper'
+  | 'customContent.editor.itemForm.propertyAdd'
+  | 'customContent.editor.itemForm.propertyPlaceholder'
+  | 'customContent.editor.itemForm.propertyEmpty'
+  | 'customContent.editor.itemForm.armorLegend'
+  | 'customContent.editor.itemForm.armorHelper'
+  | 'customContent.editor.itemForm.acBase'
+  | 'customContent.editor.itemForm.acBaseHelper'
+  | 'customContent.editor.itemForm.hasAcDexMax'
+  | 'customContent.editor.itemForm.hasAcDexMaxHelper'
+  | 'customContent.editor.itemForm.acDexMax'
+  | 'customContent.editor.itemForm.acDexMaxHelper'
+  | 'customContent.editor.itemForm.hasStrRequired'
+  | 'customContent.editor.itemForm.hasStrRequiredHelper'
+  | 'customContent.editor.itemForm.strRequired'
+  | 'customContent.editor.itemForm.stealthDisadvantage'
+  | 'customContent.editor.itemForm.stealthDisadvantageHelper'
+  | 'customContent.editor.itemForm.removeRow'
+  | 'customContent.editor.itemForm.cancel'
+  | 'customContent.editor.itemForm.confirm'
+  | 'customContent.editor.itemForm.error.idRequired'
+  | 'customContent.editor.itemForm.error.idFormat'
+  | 'customContent.editor.itemForm.error.nameFrRequired'
+  | 'customContent.editor.itemForm.error.categoryRequired'
+  | 'customContent.editor.itemForm.error.weightNegative'
+  | 'customContent.editor.itemForm.error.costQtyNegative'
+  | 'customContent.editor.itemForm.error.descriptionFrRequired'
+  | 'customContent.editor.itemForm.error.damageDiceRequired'
+  | 'customContent.editor.itemForm.error.damageTypeLabelFrRequired'
+  | 'customContent.editor.itemForm.error.rangeNormalRequired'
+  | 'customContent.editor.itemForm.error.rangeMaxLessThanNormal'
+  | 'customContent.editor.itemForm.error.acBaseRequired'
+  | 'customContent.editor.itemForm.error.strRequiredRequired'
+  | 'customContent.editor.itemForm.error.propertyDuplicate'
+  | 'customContent.editor.itemForm.error.propertyEmpty';
 
 type Dict = Record<StringKey, string>;
 
@@ -1236,7 +1312,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.spells.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
-      'Classes, ascendances et items seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
+      'Classes et ascendances seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
     'customContent.editor.cancel': 'Annuler',
     'customContent.editor.save': 'Enregistrer le pack',
     'customContent.editor.save.successTitle': 'Pack enregistré',
@@ -1605,6 +1681,127 @@ const STRINGS: Record<Locale, Dict> = {
       'Chaque ligne de dégâts demande une formule et un libellé (FR).',
     'customContent.editor.spellForm.error.damageDuplicate':
       'Un même type de dégâts ne peut pas apparaître deux fois — additionne les formules.',
+    // Items — listes dans PackEditor
+    'customContent.editor.items.add': 'Ajouter un objet',
+    'customContent.editor.items.empty': 'Aucun objet ajouté pour l’instant.',
+    'customContent.editor.items.remove': 'Retirer',
+    // ItemForm — communs
+    'customContent.editor.itemForm.title': 'Nouvel objet',
+    'customContent.editor.itemForm.id': 'Identifiant de l’objet',
+    'customContent.editor.itemForm.idHelper':
+      'En kebab-case, unique dans le pack.',
+    'customContent.editor.itemForm.nameFr': 'Nom (FR)',
+    'customContent.editor.itemForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.itemForm.category': 'Catégorie',
+    'customContent.editor.itemForm.categoryPlaceholder':
+      'Choisis une catégorie…',
+    'customContent.editor.itemForm.hasCost': 'Coût indiqué',
+    'customContent.editor.itemForm.hasCostHelper':
+      'Coche si l’objet a un prix marchand. Sinon on laisse vide (objet de quête, butin).',
+    'customContent.editor.itemForm.costQty': 'Quantité',
+    'customContent.editor.itemForm.costUnit': 'Monnaie',
+    'customContent.editor.itemForm.costUnitPlaceholder': 'Choisis la monnaie…',
+    'customContent.editor.itemForm.weight': 'Poids (en livres)',
+    'customContent.editor.itemForm.weightHelper':
+      '0 si négligeable. 1 livre ≈ 0,5 kg.',
+    'customContent.editor.itemForm.hasDescription': 'Description riche',
+    'customContent.editor.itemForm.hasDescriptionHelper':
+      'Coche pour ajouter une description longue (effet, fluff). Sinon le nom suffit.',
+    'customContent.editor.itemForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.itemForm.descriptionEn':
+      'Description (EN, optionnelle)',
+    'customContent.editor.itemForm.descriptionHelper':
+      'Phrase ou paragraphe affiché dans le détail de l’objet.',
+    // ItemForm — Arme
+    'customContent.editor.itemForm.weaponLegend': 'Arme',
+    'customContent.editor.itemForm.weaponHelper':
+      'Caractéristiques propres aux armes — dégâts, propriétés, portée, maîtrise.',
+    'customContent.editor.itemForm.hasDamage': 'Dégâts indiqués',
+    'customContent.editor.itemForm.hasDamageHelper':
+      'Coche pour préciser une formule de dégâts (la plupart des armes en ont).',
+    'customContent.editor.itemForm.damageDice': 'Dés de dégâts',
+    'customContent.editor.itemForm.damageDicePlaceholder': 'ex. 1d8',
+    'customContent.editor.itemForm.damageType': 'Type de dégâts',
+    'customContent.editor.itemForm.damageTypeLabelFr':
+      'Libellé d’affichage (FR)',
+    'customContent.editor.itemForm.damageTypeLabelEn':
+      'Libellé d’affichage (EN, optionnel)',
+    'customContent.editor.itemForm.hasRange': 'Arme à distance ou allonge',
+    'customContent.editor.itemForm.hasRangeHelper':
+      'Coche pour les armes à distance ou avec portée (arc, javelot, dague de lancer).',
+    'customContent.editor.itemForm.rangeNormal': 'Portée normale (pieds)',
+    'customContent.editor.itemForm.rangeMax': 'Portée maximale (pieds)',
+    'customContent.editor.itemForm.rangeHelper':
+      'Au-delà de la portée normale, l’attaque est faite avec désavantage.',
+    'customContent.editor.itemForm.hasMastery': 'Propriété de maîtrise',
+    'customContent.editor.itemForm.hasMasteryHelper':
+      'Coche pour assigner une propriété de Maîtrise d’arme (Cleave, Graze, Nick…).',
+    'customContent.editor.itemForm.masteryProperty': 'Propriété de maîtrise',
+    'customContent.editor.itemForm.masteryPlaceholder': 'Choisis une maîtrise…',
+    'customContent.editor.itemForm.propertiesLegend': 'Propriétés',
+    'customContent.editor.itemForm.propertiesHelper':
+      'Mots-clés libres (ex. « finesse », « heavy », « versatile »). Réutilise les conventions SRD si possible.',
+    'customContent.editor.itemForm.propertyAdd': 'Ajouter une propriété',
+    'customContent.editor.itemForm.propertyPlaceholder':
+      'ex. finesse, versatile',
+    'customContent.editor.itemForm.propertyEmpty':
+      'Aucune propriété pour l’instant.',
+    // ItemForm — Armure / Bouclier
+    'customContent.editor.itemForm.armorLegend': 'Armure',
+    'customContent.editor.itemForm.armorHelper':
+      'Caractéristiques propres aux armures et boucliers — CA de base, limite Dex, force requise, discrétion.',
+    'customContent.editor.itemForm.acBase': 'CA de base',
+    'customContent.editor.itemForm.acBaseHelper':
+      'Ex. 11 pour cuir, 16 pour cotte de mailles. Pour un bouclier, on entre +2 (le bouclier ajoute, il ne pose pas un total).',
+    'customContent.editor.itemForm.hasAcDexMax': 'Limite de Dextérité',
+    'customContent.editor.itemForm.hasAcDexMaxHelper':
+      'Coche si l’armure plafonne l’ajout de Dex. Laisser décoché pour les armures légères (Dex complète ajoutée).',
+    'customContent.editor.itemForm.acDexMax': 'Limite Dex (en bonus max)',
+    'customContent.editor.itemForm.acDexMaxHelper':
+      '0 pour armure lourde (aucun bonus de Dex), 2 pour armure intermédiaire.',
+    'customContent.editor.itemForm.hasStrRequired': 'Force requise',
+    'customContent.editor.itemForm.hasStrRequiredHelper':
+      'Coche si porter l’armure exige une Force minimale (cotte de mailles 13, harnois 15).',
+    'customContent.editor.itemForm.strRequired': 'Score de Force minimal',
+    'customContent.editor.itemForm.stealthDisadvantage':
+      'Désavantage en Discrétion',
+    'customContent.editor.itemForm.stealthDisadvantageHelper':
+      'Coche si l’armure impose un désavantage aux jets de Discrétion (Dex).',
+    // Actions
+    'customContent.editor.itemForm.removeRow': 'Retirer',
+    'customContent.editor.itemForm.cancel': 'Annuler',
+    'customContent.editor.itemForm.confirm': 'Confirmer l’objet',
+    // Erreurs
+    'customContent.editor.itemForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.itemForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.itemForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
+    'customContent.editor.itemForm.error.categoryRequired':
+      'Sélectionne une catégorie d’objet.',
+    'customContent.editor.itemForm.error.weightNegative':
+      'Le poids ne peut pas être négatif.',
+    'customContent.editor.itemForm.error.costQtyNegative':
+      'La quantité de coût ne peut pas être négative.',
+    'customContent.editor.itemForm.error.descriptionFrRequired':
+      'Décris l’objet (FR) ou décoche la description riche.',
+    'customContent.editor.itemForm.error.damageDiceRequired':
+      'Indique les dés de dégâts (ex. 1d8) ou décoche les dégâts.',
+    'customContent.editor.itemForm.error.damageTypeLabelFrRequired':
+      'Indique le libellé du type de dégâts (FR).',
+    'customContent.editor.itemForm.error.rangeNormalRequired':
+      'Indique la portée normale en pieds.',
+    'customContent.editor.itemForm.error.rangeMaxLessThanNormal':
+      'La portée maximale doit être ≥ à la portée normale.',
+    'customContent.editor.itemForm.error.acBaseRequired':
+      'La CA de base est requise pour une armure ou un bouclier.',
+    'customContent.editor.itemForm.error.strRequiredRequired':
+      'Indique le score de Force minimal ou décoche la case.',
+    'customContent.editor.itemForm.error.propertyDuplicate':
+      'Cette propriété est déjà ajoutée.',
+    'customContent.editor.itemForm.error.propertyEmpty':
+      'Saisis un mot-clé non vide.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -2096,7 +2293,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.spells.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
-      'Classes, ancestries and items will be authorable in-app in upcoming releases. File import remains available for these categories.',
+      'Classes and ancestries will be authorable in-app in upcoming releases. File import remains available for these categories.',
     'customContent.editor.cancel': 'Cancel',
     'customContent.editor.save': 'Save pack',
     'customContent.editor.save.successTitle': 'Pack saved',
@@ -2441,6 +2638,116 @@ const STRINGS: Record<Locale, Dict> = {
       'Each damage row needs a formula and a label (FR).',
     'customContent.editor.spellForm.error.damageDuplicate':
       'The same damage type cannot appear twice — merge the formulas.',
+    // Items
+    'customContent.editor.items.add': 'Add an item',
+    'customContent.editor.items.empty': 'No item added yet.',
+    'customContent.editor.items.remove': 'Remove',
+    'customContent.editor.itemForm.title': 'New item',
+    'customContent.editor.itemForm.id': 'Item identifier',
+    'customContent.editor.itemForm.idHelper':
+      'kebab-case, unique within the pack.',
+    'customContent.editor.itemForm.nameFr': 'Name (FR)',
+    'customContent.editor.itemForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.itemForm.category': 'Category',
+    'customContent.editor.itemForm.categoryPlaceholder': 'Pick a category…',
+    'customContent.editor.itemForm.hasCost': 'Cost listed',
+    'customContent.editor.itemForm.hasCostHelper':
+      'Check if the item has a market price. Otherwise leave blank.',
+    'customContent.editor.itemForm.costQty': 'Quantity',
+    'customContent.editor.itemForm.costUnit': 'Currency',
+    'customContent.editor.itemForm.costUnitPlaceholder': 'Pick a currency…',
+    'customContent.editor.itemForm.weight': 'Weight (pounds)',
+    'customContent.editor.itemForm.weightHelper':
+      '0 if negligible. 1 lb ≈ 0.5 kg.',
+    'customContent.editor.itemForm.hasDescription': 'Rich description',
+    'customContent.editor.itemForm.hasDescriptionHelper':
+      'Check to add a long description.',
+    'customContent.editor.itemForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.itemForm.descriptionEn':
+      'Description (EN, optional)',
+    'customContent.editor.itemForm.descriptionHelper':
+      'Sentence or paragraph shown in the item detail.',
+    'customContent.editor.itemForm.weaponLegend': 'Weapon',
+    'customContent.editor.itemForm.weaponHelper':
+      'Weapon-only fields — damage, properties, range, mastery.',
+    'customContent.editor.itemForm.hasDamage': 'Damage listed',
+    'customContent.editor.itemForm.hasDamageHelper':
+      'Check to set a damage formula (most weapons do).',
+    'customContent.editor.itemForm.damageDice': 'Damage dice',
+    'customContent.editor.itemForm.damageDicePlaceholder': 'e.g. 1d8',
+    'customContent.editor.itemForm.damageType': 'Damage type',
+    'customContent.editor.itemForm.damageTypeLabelFr': 'Display label (FR)',
+    'customContent.editor.itemForm.damageTypeLabelEn':
+      'Display label (EN, optional)',
+    'customContent.editor.itemForm.hasRange': 'Ranged or thrown',
+    'customContent.editor.itemForm.hasRangeHelper':
+      'Check for ranged weapons or those with a range value.',
+    'customContent.editor.itemForm.rangeNormal': 'Normal range (ft)',
+    'customContent.editor.itemForm.rangeMax': 'Max range (ft)',
+    'customContent.editor.itemForm.rangeHelper':
+      'Beyond normal range, the attack is at disadvantage.',
+    'customContent.editor.itemForm.hasMastery': 'Mastery property',
+    'customContent.editor.itemForm.hasMasteryHelper':
+      'Check to assign a Weapon Mastery property (Cleave, Graze, Nick…).',
+    'customContent.editor.itemForm.masteryProperty': 'Mastery property',
+    'customContent.editor.itemForm.masteryPlaceholder': 'Pick a mastery…',
+    'customContent.editor.itemForm.propertiesLegend': 'Properties',
+    'customContent.editor.itemForm.propertiesHelper':
+      'Free keywords (e.g. "finesse", "heavy", "versatile").',
+    'customContent.editor.itemForm.propertyAdd': 'Add a property',
+    'customContent.editor.itemForm.propertyPlaceholder': 'e.g. finesse',
+    'customContent.editor.itemForm.propertyEmpty': 'No property yet.',
+    'customContent.editor.itemForm.armorLegend': 'Armor',
+    'customContent.editor.itemForm.armorHelper':
+      'Armor and shield fields — base AC, Dex limit, Strength required, stealth.',
+    'customContent.editor.itemForm.acBase': 'Base AC',
+    'customContent.editor.itemForm.acBaseHelper':
+      'e.g. 11 for leather, 16 for chain mail. Use +2 for a shield (it adds, it does not set).',
+    'customContent.editor.itemForm.hasAcDexMax': 'Dex bonus cap',
+    'customContent.editor.itemForm.hasAcDexMaxHelper':
+      'Check if the armor caps Dex bonus to AC. Leave unchecked for light armor.',
+    'customContent.editor.itemForm.acDexMax': 'Max Dex bonus',
+    'customContent.editor.itemForm.acDexMaxHelper':
+      '0 for heavy armor (no Dex), 2 for medium armor.',
+    'customContent.editor.itemForm.hasStrRequired': 'Strength required',
+    'customContent.editor.itemForm.hasStrRequiredHelper':
+      'Check if wearing the armor requires a minimum Strength score.',
+    'customContent.editor.itemForm.strRequired': 'Minimum Strength score',
+    'customContent.editor.itemForm.stealthDisadvantage':
+      'Stealth disadvantage',
+    'customContent.editor.itemForm.stealthDisadvantageHelper':
+      'Check if the armor imposes disadvantage on Dex (Stealth) checks.',
+    'customContent.editor.itemForm.removeRow': 'Remove',
+    'customContent.editor.itemForm.cancel': 'Cancel',
+    'customContent.editor.itemForm.confirm': 'Confirm item',
+    'customContent.editor.itemForm.error.idRequired': 'Identifier is required.',
+    'customContent.editor.itemForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase, digits, hyphens).',
+    'customContent.editor.itemForm.error.nameFrRequired':
+      'Name (FR) is required.',
+    'customContent.editor.itemForm.error.categoryRequired': 'Pick a category.',
+    'customContent.editor.itemForm.error.weightNegative':
+      'Weight cannot be negative.',
+    'customContent.editor.itemForm.error.costQtyNegative':
+      'Cost quantity cannot be negative.',
+    'customContent.editor.itemForm.error.descriptionFrRequired':
+      'Describe the item (FR) or untoggle rich description.',
+    'customContent.editor.itemForm.error.damageDiceRequired':
+      'Provide the damage dice (e.g. 1d8) or untoggle damage.',
+    'customContent.editor.itemForm.error.damageTypeLabelFrRequired':
+      'Provide the damage type label (FR).',
+    'customContent.editor.itemForm.error.rangeNormalRequired':
+      'Provide normal range in feet.',
+    'customContent.editor.itemForm.error.rangeMaxLessThanNormal':
+      'Max range must be ≥ normal range.',
+    'customContent.editor.itemForm.error.acBaseRequired':
+      'Base AC is required for armor or shield.',
+    'customContent.editor.itemForm.error.strRequiredRequired':
+      'Provide the minimum Strength score or uncheck the box.',
+    'customContent.editor.itemForm.error.propertyDuplicate':
+      'This property is already listed.',
+    'customContent.editor.itemForm.error.propertyEmpty':
+      'Type a non-empty keyword.',
   },
 };
 
