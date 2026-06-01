@@ -15,6 +15,7 @@ import type {
   Feat,
   Invocation,
   Subancestry,
+  Subclass,
 } from '@/shared/types/content';
 
 import {
@@ -35,6 +36,11 @@ import {
   SubancestryForm,
   type SubancestryFormDraft,
 } from './forms/subancestry-form';
+import {
+  EMPTY_SUBCLASS_DRAFT,
+  SubclassForm,
+  type SubclassFormDraft,
+} from './forms/subclass-form';
 import {
   packFromBuilderState,
   usePackBuilder,
@@ -72,6 +78,10 @@ export function PackEditorScreen(): JSX.Element {
     EMPTY_BACKGROUND_DRAFT,
   );
   const [isAddingBackground, setIsAddingBackground] = useState<boolean>(false);
+  const [subclassDraft, setSubclassDraft] = useState<SubclassFormDraft>(
+    EMPTY_SUBCLASS_DRAFT,
+  );
+  const [isAddingSubclass, setIsAddingSubclass] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -147,6 +157,24 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeBackgroundForm],
   );
 
+  const openSubclassForm = useCallback(() => {
+    setSubclassDraft(EMPTY_SUBCLASS_DRAFT);
+    setIsAddingSubclass(true);
+  }, []);
+
+  const closeSubclassForm = useCallback(() => {
+    setIsAddingSubclass(false);
+    setSubclassDraft(EMPTY_SUBCLASS_DRAFT);
+  }, []);
+
+  const confirmSubclass = useCallback(
+    (subclass: Subclass) => {
+      builder.addSubclass(subclass);
+      closeSubclassForm();
+    },
+    [builder, closeSubclassForm],
+  );
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     const candidate = packFromBuilderState(builder.state);
@@ -201,6 +229,7 @@ export function PackEditorScreen(): JSX.Element {
   const invocationCount = builder.state.invocations.length;
   const subancestryCount = builder.state.subancestries.length;
   const backgroundCount = builder.state.backgrounds.length;
+  const subclassCount = builder.state.subclasses.length;
 
   return (
     <main
@@ -570,7 +599,76 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.5..3C.9). On les liste pour communiquer la
+        {/* Sous-classes */}
+        <div className="mt-10" data-testid="pack-editor-subclasses">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.subclasses')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({subclassCount})
+              </span>
+            </h3>
+            {!isAddingSubclass ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openSubclassForm}
+                data-testid="pack-editor-add-subclass"
+              >
+                {t('customContent.editor.subclasses.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {subclassCount === 0 && !isAddingSubclass ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.subclasses.empty')}
+            </p>
+          ) : null}
+
+          {subclassCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.subclasses.map((sc) => (
+                <li
+                  key={sc.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-subclass-row"
+                  data-subclass-id={sc.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {sc.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {sc.id} · {sc.classId}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeSubclass(sc.id)}
+                    data-testid="pack-editor-subclass-remove"
+                  >
+                    {t('customContent.editor.subclasses.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingSubclass ? (
+            <div className="mt-5">
+              <SubclassForm
+                draft={subclassDraft}
+                onChange={setSubclassDraft}
+                onConfirm={confirmSubclass}
+                onCancel={closeSubclassForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégories à venir (3C.6..3C.9). On les liste pour communiquer la
             roadmap sans pour autant les rendre cliquables : un placeholder
             grisé suffit jusqu'à leur livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
@@ -614,7 +712,8 @@ export function PackEditorScreen(): JSX.Element {
             isAddingFeat ||
             isAddingInvocation ||
             isAddingSubancestry ||
-            isAddingBackground
+            isAddingBackground ||
+            isAddingSubclass
           }
           data-testid="pack-editor-save"
         >

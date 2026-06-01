@@ -5,6 +5,7 @@ import type {
   Feat,
   Invocation,
   Subancestry,
+  Subclass,
 } from '@/shared/types/content';
 import type { CustomContentPack } from '@/shared/types/custom-content-pack';
 
@@ -15,9 +16,10 @@ import type { CustomContentPack } from '@/shared/types/custom-content-pack';
  * avec les inputs natifs.
  *
  * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. 3C.3 ajoute `subancestries`.
- * 3C.4 ajoute `backgrounds`. Les autres tableaux restent vides ; les
- * sous-jalons 3C.5..3C.9 les ajouteront. La validation Zod (`parsePack`)
- * tolère des tableaux vides tant qu'AU MOINS un tableau est non vide.
+ * 3C.4 ajoute `backgrounds`. 3C.5 ajoute `subclasses`. Les autres tableaux
+ * restent vides ; les sous-jalons 3C.6..3C.9 les ajouteront. La validation
+ * Zod (`parsePack`) tolère des tableaux vides tant qu'AU MOINS un tableau
+ * est non vide.
  */
 export interface PackBuilderState {
   meta: {
@@ -33,6 +35,7 @@ export interface PackBuilderState {
   invocations: Invocation[];
   subancestries: Subancestry[];
   backgrounds: Background[];
+  subclasses: Subclass[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -49,6 +52,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
   invocations: [],
   subancestries: [],
   backgrounds: [],
+  subclasses: [],
 };
 
 /**
@@ -91,6 +95,8 @@ export function packFromBuilderState(
         state.subancestries.length > 0 ? state.subancestries : undefined,
       backgrounds:
         state.backgrounds.length > 0 ? state.backgrounds : undefined,
+      subclasses:
+        state.subclasses.length > 0 ? state.subclasses : undefined,
     },
   } as CustomContentPack;
 }
@@ -109,6 +115,8 @@ interface UsePackBuilderApi {
   removeSubancestry: (id: string) => void;
   addBackground: (background: Background) => void;
   removeBackground: (id: string) => void;
+  addSubclass: (subclass: Subclass) => void;
+  removeSubclass: (id: string) => void;
   reset: () => void;
 }
 
@@ -189,6 +197,22 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addSubclass = useCallback((subclass: Subclass): void => {
+    setState((prev) => {
+      const next = prev.subclasses.filter(
+        (existing) => existing.id !== subclass.id,
+      );
+      return { ...prev, subclasses: [...next, subclass] };
+    });
+  }, []);
+
+  const removeSubclass = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      subclasses: prev.subclasses.filter((sc) => sc.id !== id),
+    }));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
@@ -204,6 +228,8 @@ export function usePackBuilder(
     removeSubancestry,
     addBackground,
     removeBackground,
+    addSubclass,
+    removeSubclass,
     reset,
   };
 }
