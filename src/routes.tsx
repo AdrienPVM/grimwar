@@ -50,6 +50,14 @@ const ImportScreen = lazy(async () => {
   return { default: mod.ImportScreen };
 });
 
+// Route /account/content/new — éditeur de pack custom in-app (JALON 3C.1).
+// Permet de créer un pack sans préparer de JSON externe. 3C.1 ne câble que
+// la catégorie « Dons » ; 3C.2..3C.9 ajouteront les 8 autres.
+const PackEditorScreen = lazy(async () => {
+  const mod = await import('@/features/custom-content/pack-editor-screen');
+  return { default: mod.PackEditorScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -62,6 +70,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />
         <Route path="/map-proto/cloud/:cid/maps/:mid" element={<MapLiveScreen />} />
         <Route path="/account/content" element={<ImportScreen />} />
+        <Route path="/account/content/new" element={<PackEditorScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
