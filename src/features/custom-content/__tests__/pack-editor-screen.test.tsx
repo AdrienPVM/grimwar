@@ -77,6 +77,18 @@ vi.mock('@/shared/hooks/use-content', () => ({
         error: null,
       };
     }
+    if (type === 'classes') {
+      return {
+        data: [
+          {
+            id: 'guerrier',
+            name: { fr: 'Guerrier', en: 'Fighter' },
+          },
+        ],
+        loading: false,
+        error: null,
+      };
+    }
     return { data: [], loading: false, error: null };
   },
 }));
@@ -466,6 +478,93 @@ describe("PackEditorScreen — création d'un background (JALON 3C.4)", () => {
     expect(screen.getByTestId('background-form')).toBeInTheDocument();
     expect(
       screen.queryByTestId('pack-editor-background-row'),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("PackEditorScreen — création d'une sous-classe (JALON 3C.5)", () => {
+  async function selectClass(
+    user: ReturnType<typeof userEvent.setup>,
+    label: string,
+  ): Promise<void> {
+    const wrapper = screen.getByTestId('subclass-form-class-id');
+    const trigger = within(wrapper).getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: label }));
+  }
+
+  it("saisit méta + subclass référant Guerrier SRD → save → writePack reçoit pack.entities.subclasses", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-sc');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack subclasse');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-subclass'));
+    expect(screen.getByTestId('subclass-form')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('subclass-form-id'), 'fighter-tracer');
+    await selectClass(user, 'Guerrier');
+    await user.type(
+      screen.getByTestId('subclass-form-name-fr'),
+      'Tracer du champ',
+    );
+    await user.type(
+      screen.getByTestId('subclass-form-description-fr'),
+      'Sous-classe custom de test.',
+    );
+
+    // 1 feature L3
+    await user.click(screen.getByTestId('subclass-form-feature-add'));
+    await user.type(
+      screen.getByTestId('subclass-form-feature-name-fr-0'),
+      'Coup précis',
+    );
+    await user.type(
+      screen.getByTestId('subclass-form-feature-description-fr-0'),
+      'Inflige +2 dégâts une fois par tour.',
+    );
+
+    await user.click(screen.getByTestId('subclass-form-confirm'));
+
+    expect(screen.queryByTestId('subclass-form')).not.toBeInTheDocument();
+    const scRow = screen.getByTestId('pack-editor-subclass-row');
+    expect(scRow).toHaveAttribute('data-subclass-id', 'fighter-tracer');
+    expect(scRow).toHaveTextContent('Tracer du champ');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.subclasses).toHaveLength(1);
+    const sc = calledPack.entities.subclasses[0];
+    expect(sc.id).toBe('fighter-tracer');
+    expect(sc.classId).toBe('guerrier');
+    expect(sc.name.fr).toBe('Tracer du champ');
+    expect(sc.features).toHaveLength(1);
+    expect(sc.features[0].level).toBe(3);
+    expect(sc.features[0].name.fr).toBe('Coup précis');
+    expect(sc.source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.feats).toBeUndefined();
+  });
+
+  it('refuse confirm si classId non choisi (erreur visible)', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-subclass'));
+    await user.type(screen.getByTestId('subclass-form-id'), 'sc-a');
+    await user.type(screen.getByTestId('subclass-form-name-fr'), 'SC');
+    await user.type(
+      screen.getByTestId('subclass-form-description-fr'),
+      'Test.',
+    );
+    await user.click(screen.getByTestId('subclass-form-confirm'));
+
+    expect(screen.getByTestId('subclass-form')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('pack-editor-subclass-row'),
     ).not.toBeInTheDocument();
   });
 });

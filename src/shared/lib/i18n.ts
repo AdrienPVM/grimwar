@@ -419,6 +419,9 @@ export type StringKey =
   | 'customContent.editor.backgrounds.add'
   | 'customContent.editor.backgrounds.empty'
   | 'customContent.editor.backgrounds.remove'
+  | 'customContent.editor.subclasses.add'
+  | 'customContent.editor.subclasses.empty'
+  | 'customContent.editor.subclasses.remove'
   | 'customContent.editor.comingSoon.title'
   | 'customContent.editor.comingSoon.body'
   | 'customContent.editor.cancel'
@@ -552,7 +555,37 @@ export type StringKey =
   | 'customContent.editor.backgroundForm.error.featureDescriptionFrRequired'
   | 'customContent.editor.backgroundForm.error.equipmentItemIdRequired'
   | 'customContent.editor.backgroundForm.error.equipmentDuplicate'
-  | 'customContent.editor.backgroundForm.error.equipmentQtyInvalid';
+  | 'customContent.editor.backgroundForm.error.equipmentQtyInvalid'
+  | 'customContent.editor.subclassForm.title'
+  | 'customContent.editor.subclassForm.id'
+  | 'customContent.editor.subclassForm.idHelper'
+  | 'customContent.editor.subclassForm.classId'
+  | 'customContent.editor.subclassForm.classIdHelper'
+  | 'customContent.editor.subclassForm.classIdPlaceholder'
+  | 'customContent.editor.subclassForm.classIdLoading'
+  | 'customContent.editor.subclassForm.nameFr'
+  | 'customContent.editor.subclassForm.nameEn'
+  | 'customContent.editor.subclassForm.descriptionFr'
+  | 'customContent.editor.subclassForm.descriptionEn'
+  | 'customContent.editor.subclassForm.featuresLegend'
+  | 'customContent.editor.subclassForm.featuresHelper'
+  | 'customContent.editor.subclassForm.featuresEmpty'
+  | 'customContent.editor.subclassForm.featureAdd'
+  | 'customContent.editor.subclassForm.featureLevel'
+  | 'customContent.editor.subclassForm.featureNameFr'
+  | 'customContent.editor.subclassForm.featureNameEn'
+  | 'customContent.editor.subclassForm.featureDescriptionFr'
+  | 'customContent.editor.subclassForm.featureDescriptionEn'
+  | 'customContent.editor.subclassForm.removeRow'
+  | 'customContent.editor.subclassForm.cancel'
+  | 'customContent.editor.subclassForm.confirm'
+  | 'customContent.editor.subclassForm.error.idRequired'
+  | 'customContent.editor.subclassForm.error.idFormat'
+  | 'customContent.editor.subclassForm.error.classIdRequired'
+  | 'customContent.editor.subclassForm.error.nameFrRequired'
+  | 'customContent.editor.subclassForm.error.descriptionFrRequired'
+  | 'customContent.editor.subclassForm.error.featureIncomplete'
+  | 'customContent.editor.subclassForm.error.featureDuplicate';
 
 type Dict = Record<StringKey, string>;
 
@@ -1093,6 +1126,10 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.backgrounds.empty':
       'Aucun historique ajouté pour l’instant.',
     'customContent.editor.backgrounds.remove': 'Retirer',
+    'customContent.editor.subclasses.add': 'Ajouter une sous-classe',
+    'customContent.editor.subclasses.empty':
+      'Aucune sous-classe ajoutée pour l’instant.',
+    'customContent.editor.subclasses.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
       'Sorts, classes, ascendances, items et autres seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
@@ -1307,6 +1344,53 @@ const STRINGS: Record<Locale, Dict> = {
       'Un même item ne peut pas apparaître deux fois — additionne les quantités.',
     'customContent.editor.backgroundForm.error.equipmentQtyInvalid':
       'La quantité doit être un entier supérieur à zéro.',
+    'customContent.editor.subclassForm.title': 'Nouvelle sous-classe',
+    'customContent.editor.subclassForm.id': 'Identifiant de la sous-classe',
+    'customContent.editor.subclassForm.idHelper':
+      'En kebab-case, unique dans le pack.',
+    'customContent.editor.subclassForm.classId': 'Classe parente',
+    'customContent.editor.subclassForm.classIdHelper':
+      'Sélectionne la classe SRD (ou d’un pack déjà importé) à laquelle cette sous-classe se rattache.',
+    'customContent.editor.subclassForm.classIdPlaceholder':
+      'Choisir une classe…',
+    'customContent.editor.subclassForm.classIdLoading':
+      'Chargement des classes…',
+    'customContent.editor.subclassForm.nameFr': 'Nom (FR)',
+    'customContent.editor.subclassForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.subclassForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.subclassForm.descriptionEn':
+      'Description (EN, optionnelle)',
+    'customContent.editor.subclassForm.featuresLegend': 'Aptitudes par niveau',
+    'customContent.editor.subclassForm.featuresHelper':
+      'Une entrée par aptitude obtenue. Précise le niveau (1-20), le nom et la description.',
+    'customContent.editor.subclassForm.featuresEmpty':
+      'Aucune aptitude pour l’instant.',
+    'customContent.editor.subclassForm.featureAdd': 'Ajouter une aptitude',
+    'customContent.editor.subclassForm.featureLevel': 'Niveau',
+    'customContent.editor.subclassForm.featureNameFr': 'Nom de l’aptitude (FR)',
+    'customContent.editor.subclassForm.featureNameEn':
+      'Nom de l’aptitude (EN, optionnel)',
+    'customContent.editor.subclassForm.featureDescriptionFr':
+      'Description de l’aptitude (FR)',
+    'customContent.editor.subclassForm.featureDescriptionEn':
+      'Description de l’aptitude (EN, optionnelle)',
+    'customContent.editor.subclassForm.removeRow': 'Retirer',
+    'customContent.editor.subclassForm.cancel': 'Annuler',
+    'customContent.editor.subclassForm.confirm': 'Confirmer la sous-classe',
+    'customContent.editor.subclassForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.subclassForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.subclassForm.error.classIdRequired':
+      'Sélectionne la classe parente.',
+    'customContent.editor.subclassForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
+    'customContent.editor.subclassForm.error.descriptionFrRequired':
+      'La description (FR) est requise.',
+    'customContent.editor.subclassForm.error.featureIncomplete':
+      'Chaque aptitude demande un nom (FR) et une description (FR).',
+    'customContent.editor.subclassForm.error.featureDuplicate':
+      'Une même aptitude (niveau + nom) ne peut pas apparaître deux fois.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1777,6 +1861,9 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.backgrounds.add': 'Add a background',
     'customContent.editor.backgrounds.empty': 'No backgrounds added yet.',
     'customContent.editor.backgrounds.remove': 'Remove',
+    'customContent.editor.subclasses.add': 'Add a subclass',
+    'customContent.editor.subclasses.empty': 'No subclasses added yet.',
+    'customContent.editor.subclasses.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
       'Spells, classes, ancestries, items and more will be authorable in-app in upcoming releases. File import remains available for these categories.',
@@ -1974,6 +2061,50 @@ const STRINGS: Record<Locale, Dict> = {
       'The same item cannot appear twice — sum the quantities instead.',
     'customContent.editor.backgroundForm.error.equipmentQtyInvalid':
       'Quantity must be a positive integer.',
+    'customContent.editor.subclassForm.title': 'New subclass',
+    'customContent.editor.subclassForm.id': 'Subclass identifier',
+    'customContent.editor.subclassForm.idHelper':
+      'kebab-case, unique within the pack.',
+    'customContent.editor.subclassForm.classId': 'Parent class',
+    'customContent.editor.subclassForm.classIdHelper':
+      'Pick the parent class (SRD or an already-imported pack).',
+    'customContent.editor.subclassForm.classIdPlaceholder': 'Pick a class…',
+    'customContent.editor.subclassForm.classIdLoading': 'Loading classes…',
+    'customContent.editor.subclassForm.nameFr': 'Name (FR)',
+    'customContent.editor.subclassForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.subclassForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.subclassForm.descriptionEn':
+      'Description (EN, optional)',
+    'customContent.editor.subclassForm.featuresLegend': 'Features by level',
+    'customContent.editor.subclassForm.featuresHelper':
+      'One row per feature gained. Level (1-20), name, and description.',
+    'customContent.editor.subclassForm.featuresEmpty': 'No features yet.',
+    'customContent.editor.subclassForm.featureAdd': 'Add a feature',
+    'customContent.editor.subclassForm.featureLevel': 'Level',
+    'customContent.editor.subclassForm.featureNameFr': 'Feature name (FR)',
+    'customContent.editor.subclassForm.featureNameEn':
+      'Feature name (EN, optional)',
+    'customContent.editor.subclassForm.featureDescriptionFr':
+      'Feature description (FR)',
+    'customContent.editor.subclassForm.featureDescriptionEn':
+      'Feature description (EN, optional)',
+    'customContent.editor.subclassForm.removeRow': 'Remove',
+    'customContent.editor.subclassForm.cancel': 'Cancel',
+    'customContent.editor.subclassForm.confirm': 'Confirm subclass',
+    'customContent.editor.subclassForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.subclassForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase letters, digits, hyphens).',
+    'customContent.editor.subclassForm.error.classIdRequired':
+      'Pick the parent class.',
+    'customContent.editor.subclassForm.error.nameFrRequired':
+      'Name (FR) is required.',
+    'customContent.editor.subclassForm.error.descriptionFrRequired':
+      'Description (FR) is required.',
+    'customContent.editor.subclassForm.error.featureIncomplete':
+      'Each feature needs a name (FR) and a description (FR).',
+    'customContent.editor.subclassForm.error.featureDuplicate':
+      'The same (level + name) feature cannot appear twice.',
   },
 };
 

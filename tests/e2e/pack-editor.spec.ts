@@ -166,6 +166,59 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toContainText('Pack invocations e2e');
   });
 
+  test('JALON 3C.5 — crée un pack avec 1 sous-classe référant Guerrier SRD → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-sc-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack subclasse e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-subclass').click();
+    await expect(page.getByTestId('subclass-form')).toBeVisible();
+
+    await page
+      .getByTestId('subclass-form-id')
+      .fill('fighter-tracer-e2e');
+
+    const classWrapper = page.getByTestId('subclass-form-class-id');
+    await classWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Guerrier' }).first().click();
+
+    await page
+      .getByTestId('subclass-form-name-fr')
+      .fill('Tracer du champ e2e');
+    await page
+      .getByTestId('subclass-form-description-fr')
+      .fill('Variante de test pour le parcours subclass custom.');
+
+    // 1 feature L3
+    await page.getByTestId('subclass-form-feature-add').click();
+    await page
+      .getByTestId('subclass-form-feature-name-fr-0')
+      .fill('Coup précis');
+    await page
+      .getByTestId('subclass-form-feature-description-fr-0')
+      .fill('Inflige +2 dégâts une fois par tour.');
+
+    await page.getByTestId('subclass-form-confirm').click();
+
+    await expect(page.getByTestId('subclass-form')).toHaveCount(0);
+    const scRow = page.locator(
+      '[data-testid="pack-editor-subclass-row"][data-subclass-id="fighter-tracer-e2e"]',
+    );
+    await expect(scRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-sc-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack subclasse e2e');
+  });
+
   test('JALON 3C.4 — crée un pack avec 1 background (skills + outils + équipement + don) → save → liste packs', async ({
     page,
   }) => {
