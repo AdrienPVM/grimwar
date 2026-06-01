@@ -45,9 +45,12 @@ test.describe('PackEditor — JALON 3C.1', () => {
 
     // 3. Le feat apparaît dans la liste, le form se ferme
     await expect(page.getByTestId('feat-form')).toHaveCount(0);
-    const featRow = page
-      .getByTestId('pack-editor-feat-row')
-      .filter({ has: page.locator('[data-feat-id="don-tracer-e2e"]') });
+    // `data-testid` et `data-feat-id` sont sur le MÊME élément <li> — on cible
+    // directement par compound selector (filter({has}) cherche des descendants
+    // uniquement, donc ne matche pas un attribut sur l'élément lui-même).
+    const featRow = page.locator(
+      '[data-testid="pack-editor-feat-row"][data-feat-id="don-tracer-e2e"]',
+    );
     await expect(featRow).toBeVisible();
 
     // 4. Save → writePack Firestore → redirection /account/content
