@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -44,6 +44,28 @@ vi.mock('@/shared/lib/slices/toast-slice', () => ({
 
 vi.mock('@/shared/lib/firebase', () => ({
   getDb: () => ({}),
+}));
+
+// SubancestryForm dépend de useContent('ancestries') — on stub avec un set
+// minimal (humain SRD) pour pouvoir sélectionner une parente. Pour 3C.1/3C.2
+// (FeatForm/InvocationForm) ce mock ne change rien — ils n'appellent jamais
+// useContent.
+vi.mock('@/shared/hooks/use-content', () => ({
+  useContent: (type: string) => {
+    if (type === 'ancestries') {
+      return {
+        data: [
+          {
+            id: 'humain',
+            name: { fr: 'Humain', en: 'Human' },
+          },
+        ],
+        loading: false,
+        error: null,
+      };
+    }
+    return { data: [], loading: false, error: null };
+  },
 }));
 
 import { PackEditorScreen } from '../pack-editor-screen';
@@ -244,5 +266,88 @@ describe('PackEditorScreen — création d\'une invocation (JALON 3C.2)', () => 
     const [, calledPack] = mockWritePack.mock.calls[0]!;
     // Valeur par défaut du niveau quand le toggle vient d'être activé = 2
     expect(calledPack.entities.invocations[0].prerequisiteWarlockLevel).toBe(2);
+  });
+});
+
+describe("PackEditorScreen — création d'une sous-ascendance (JALON 3C.3)", () => {
+  async function selectAncestry(
+    user: ReturnType<typeof userEvent.setup>,
+    label: string,
+  ): Promise<void> {
+    const wrapper = screen.getByTestId('subancestry-form-ancestry-id');
+    const trigger = within(wrapper).getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: label }));
+  }
+
+  it("saisit méta + subancestry référant Humain SRD → save → writePack reçoit pack.entities.subancestries", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-sub');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack sub');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-subancestry'));
+    expect(screen.getByTestId('subancestry-form')).toBeInTheDocument();
+
+    await user.type(
+      screen.getByTestId('subancestry-form-id'),
+      'human-vigilant',
+    );
+    await selectAncestry(user, 'Humain');
+    await user.type(
+      screen.getByTestId('subancestry-form-name-fr'),
+      'Humain vigilant',
+    );
+    await user.type(
+      screen.getByTestId('subancestry-form-description-fr'),
+      'Variante de Humain pour test e2e.',
+    );
+
+    // 1 ASI : FOR +2
+    await user.click(screen.getByTestId('subancestry-form-asi-add'));
+    const asiWrapper = screen.getByTestId('subancestry-form-asi-ability-0');
+    await user.click(within(asiWrapper).getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Force' }));
+
+    await user.click(screen.getByTestId('subancestry-form-confirm'));
+
+    expect(screen.queryByTestId('subancestry-form')).not.toBeInTheDocument();
+    const subRow = screen.getByTestId('pack-editor-subancestry-row');
+    expect(subRow).toHaveAttribute('data-subancestry-id', 'human-vigilant');
+    expect(subRow).toHaveTextContent('Humain vigilant');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.subancestries).toHaveLength(1);
+    const sub = calledPack.entities.subancestries[0];
+    expect(sub.id).toBe('human-vigilant');
+    expect(sub.ancestryId).toBe('humain');
+    expect(sub.name.fr).toBe('Humain vigilant');
+    expect(sub.abilityScoreIncrease).toEqual([{ ability: 'for', bonus: 1 }]);
+    expect(sub.source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.feats).toBeUndefined();
+    expect(calledPack.entities.invocations).toBeUndefined();
+  });
+
+  it("refuse confirm si ancestryId non choisie (erreur visible)", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-subancestry'));
+    await user.type(screen.getByTestId('subancestry-form-id'), 'sub-a');
+    await user.type(screen.getByTestId('subancestry-form-name-fr'), 'Sub');
+    await user.type(
+      screen.getByTestId('subancestry-form-description-fr'),
+      'Test.',
+    );
+    await user.click(screen.getByTestId('subancestry-form-confirm'));
+
+    // Le form reste ouvert tant que l'ancestry n'est pas sélectionnée
+    expect(screen.getByTestId('subancestry-form')).toBeInTheDocument();
+    expect(screen.queryByTestId('pack-editor-subancestry-row')).not.toBeInTheDocument();
   });
 });
