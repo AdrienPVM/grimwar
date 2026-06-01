@@ -20,6 +20,20 @@ export type StringKey =
   | 'school.illusion'
   | 'school.necromancy'
   | 'school.transmutation'
+  // Types de dégâts (canoniques SRD 5.2.1)
+  | 'damageType.acid'
+  | 'damageType.bludgeoning'
+  | 'damageType.cold'
+  | 'damageType.fire'
+  | 'damageType.force'
+  | 'damageType.lightning'
+  | 'damageType.necrotic'
+  | 'damageType.piercing'
+  | 'damageType.poison'
+  | 'damageType.psychic'
+  | 'damageType.radiant'
+  | 'damageType.slashing'
+  | 'damageType.thunder'
   // Capacités (abilities)
   | 'ability.for'
   | 'ability.dex'
@@ -422,6 +436,9 @@ export type StringKey =
   | 'customContent.editor.subclasses.add'
   | 'customContent.editor.subclasses.empty'
   | 'customContent.editor.subclasses.remove'
+  | 'customContent.editor.spells.add'
+  | 'customContent.editor.spells.empty'
+  | 'customContent.editor.spells.remove'
   | 'customContent.editor.comingSoon.title'
   | 'customContent.editor.comingSoon.body'
   | 'customContent.editor.cancel'
@@ -585,7 +602,77 @@ export type StringKey =
   | 'customContent.editor.subclassForm.error.nameFrRequired'
   | 'customContent.editor.subclassForm.error.descriptionFrRequired'
   | 'customContent.editor.subclassForm.error.featureIncomplete'
-  | 'customContent.editor.subclassForm.error.featureDuplicate';
+  | 'customContent.editor.subclassForm.error.featureDuplicate'
+  | 'customContent.editor.spellForm.title'
+  | 'customContent.editor.spellForm.id'
+  | 'customContent.editor.spellForm.idHelper'
+  | 'customContent.editor.spellForm.nameFr'
+  | 'customContent.editor.spellForm.nameEn'
+  | 'customContent.editor.spellForm.level'
+  | 'customContent.editor.spellForm.levelHelper'
+  | 'customContent.editor.spellForm.school'
+  | 'customContent.editor.spellForm.schoolPlaceholder'
+  | 'customContent.editor.spellForm.castingTimeFr'
+  | 'customContent.editor.spellForm.castingTimeEn'
+  | 'customContent.editor.spellForm.castingTimeHelper'
+  | 'customContent.editor.spellForm.rangeFr'
+  | 'customContent.editor.spellForm.rangeEn'
+  | 'customContent.editor.spellForm.rangeHelper'
+  | 'customContent.editor.spellForm.durationFr'
+  | 'customContent.editor.spellForm.durationEn'
+  | 'customContent.editor.spellForm.durationHelper'
+  | 'customContent.editor.spellForm.componentsLegend'
+  | 'customContent.editor.spellForm.componentsHelper'
+  | 'customContent.editor.spellForm.componentV'
+  | 'customContent.editor.spellForm.componentS'
+  | 'customContent.editor.spellForm.componentM'
+  | 'customContent.editor.spellForm.materialFr'
+  | 'customContent.editor.spellForm.materialEn'
+  | 'customContent.editor.spellForm.materialHelper'
+  | 'customContent.editor.spellForm.concentration'
+  | 'customContent.editor.spellForm.concentrationHelper'
+  | 'customContent.editor.spellForm.ritual'
+  | 'customContent.editor.spellForm.ritualHelper'
+  | 'customContent.editor.spellForm.descriptionFr'
+  | 'customContent.editor.spellForm.descriptionEn'
+  | 'customContent.editor.spellForm.descriptionHelper'
+  | 'customContent.editor.spellForm.hasAtHigherLevels'
+  | 'customContent.editor.spellForm.hasAtHigherLevelsHelper'
+  | 'customContent.editor.spellForm.atHigherLevelsFr'
+  | 'customContent.editor.spellForm.atHigherLevelsEn'
+  | 'customContent.editor.spellForm.classesLegend'
+  | 'customContent.editor.spellForm.classesHelper'
+  | 'customContent.editor.spellForm.classesLoading'
+  | 'customContent.editor.spellForm.classesEmpty'
+  | 'customContent.editor.spellForm.damageLegend'
+  | 'customContent.editor.spellForm.damageHelper'
+  | 'customContent.editor.spellForm.damageEmpty'
+  | 'customContent.editor.spellForm.damageAdd'
+  | 'customContent.editor.spellForm.damageFormula'
+  | 'customContent.editor.spellForm.damageFormulaPlaceholder'
+  | 'customContent.editor.spellForm.damageType'
+  | 'customContent.editor.spellForm.damageTypeLabelFr'
+  | 'customContent.editor.spellForm.damageTypeLabelEn'
+  | 'customContent.editor.spellForm.damageHasUpcast'
+  | 'customContent.editor.spellForm.damageHasUpcastHelper'
+  | 'customContent.editor.spellForm.damageUpcastPerLevel'
+  | 'customContent.editor.spellForm.damageUpcastPerLevelHelper'
+  | 'customContent.editor.spellForm.damageUpcastPerLevelPlaceholder'
+  | 'customContent.editor.spellForm.removeRow'
+  | 'customContent.editor.spellForm.cancel'
+  | 'customContent.editor.spellForm.confirm'
+  | 'customContent.editor.spellForm.error.idRequired'
+  | 'customContent.editor.spellForm.error.idFormat'
+  | 'customContent.editor.spellForm.error.nameFrRequired'
+  | 'customContent.editor.spellForm.error.schoolRequired'
+  | 'customContent.editor.spellForm.error.castingTimeFrRequired'
+  | 'customContent.editor.spellForm.error.rangeFrRequired'
+  | 'customContent.editor.spellForm.error.durationFrRequired'
+  | 'customContent.editor.spellForm.error.descriptionFrRequired'
+  | 'customContent.editor.spellForm.error.materialFrRequired'
+  | 'customContent.editor.spellForm.error.atHigherLevelsFrRequired'
+  | 'customContent.editor.spellForm.error.damageIncomplete'
+  | 'customContent.editor.spellForm.error.damageDuplicate';
 
 type Dict = Record<StringKey, string>;
 
@@ -604,6 +691,20 @@ const STRINGS: Record<Locale, Dict> = {
     'school.illusion': 'Illusion',
     'school.necromancy': 'Nécromancie',
     'school.transmutation': 'Transmutation',
+    // Types de dégâts (SRD 5.2.1 FR — labels canoniques sing. capitalisés)
+    'damageType.acid': 'Acide',
+    'damageType.bludgeoning': 'Contondant',
+    'damageType.cold': 'Froid',
+    'damageType.fire': 'Feu',
+    'damageType.force': 'Force',
+    'damageType.lightning': 'Foudre',
+    'damageType.necrotic': 'Nécrotique',
+    'damageType.piercing': 'Perforant',
+    'damageType.poison': 'Poison',
+    'damageType.psychic': 'Psychique',
+    'damageType.radiant': 'Radiant',
+    'damageType.slashing': 'Tranchant',
+    'damageType.thunder': 'Tonnerre',
     // Abilities
     'ability.for': 'Force',
     'ability.dex': 'Dextérité',
@@ -1130,9 +1231,12 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.subclasses.empty':
       'Aucune sous-classe ajoutée pour l’instant.',
     'customContent.editor.subclasses.remove': 'Retirer',
+    'customContent.editor.spells.add': 'Ajouter un sort',
+    'customContent.editor.spells.empty': 'Aucun sort ajouté pour l’instant.',
+    'customContent.editor.spells.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
-      'Sorts, classes, ascendances, items et autres seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
+      'Classes, ascendances et items seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
     'customContent.editor.cancel': 'Annuler',
     'customContent.editor.save': 'Enregistrer le pack',
     'customContent.editor.save.successTitle': 'Pack enregistré',
@@ -1391,6 +1495,116 @@ const STRINGS: Record<Locale, Dict> = {
       'Chaque aptitude demande un nom (FR) et une description (FR).',
     'customContent.editor.subclassForm.error.featureDuplicate':
       'Une même aptitude (niveau + nom) ne peut pas apparaître deux fois.',
+    'customContent.editor.spellForm.title': 'Nouveau sort',
+    'customContent.editor.spellForm.id': 'Identifiant du sort',
+    'customContent.editor.spellForm.idHelper':
+      'En kebab-case, unique dans le pack (ex. boule-de-feu-arcadienne).',
+    'customContent.editor.spellForm.nameFr': 'Nom (FR)',
+    'customContent.editor.spellForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.spellForm.level': 'Niveau',
+    'customContent.editor.spellForm.levelHelper':
+      '0 = sort mineur (cantrip). 1-9 pour les sorts à emplacement.',
+    'customContent.editor.spellForm.school': 'École',
+    'customContent.editor.spellForm.schoolPlaceholder': 'Choisir une école…',
+    'customContent.editor.spellForm.castingTimeFr': 'Temps d’incantation (FR)',
+    'customContent.editor.spellForm.castingTimeEn':
+      'Temps d’incantation (EN, optionnel)',
+    'customContent.editor.spellForm.castingTimeHelper':
+      'Ex. « 1 action », « 1 action bonus », « 1 minute ».',
+    'customContent.editor.spellForm.rangeFr': 'Portée (FR)',
+    'customContent.editor.spellForm.rangeEn': 'Portée (EN, optionnelle)',
+    'customContent.editor.spellForm.rangeHelper':
+      'Ex. « Personnelle », « Toucher », « 18 mètres ».',
+    'customContent.editor.spellForm.durationFr': 'Durée (FR)',
+    'customContent.editor.spellForm.durationEn': 'Durée (EN, optionnelle)',
+    'customContent.editor.spellForm.durationHelper':
+      'Ex. « Instantanée », « 1 minute », « 24 heures ».',
+    'customContent.editor.spellForm.componentsLegend': 'Composantes',
+    'customContent.editor.spellForm.componentsHelper':
+      'Active V (verbal), S (somatique) ou M (matériel). Un sort peut combiner plusieurs composantes.',
+    'customContent.editor.spellForm.componentV': 'V (verbal)',
+    'customContent.editor.spellForm.componentS': 'S (somatique)',
+    'customContent.editor.spellForm.componentM': 'M (matériel)',
+    'customContent.editor.spellForm.materialFr': 'Composante matérielle (FR)',
+    'customContent.editor.spellForm.materialEn':
+      'Composante matérielle (EN, optionnelle)',
+    'customContent.editor.spellForm.materialHelper':
+      'Ex. « une perle de 100 po » ou « une bougie ».',
+    'customContent.editor.spellForm.concentration': 'Concentration',
+    'customContent.editor.spellForm.concentrationHelper':
+      'Le sort demande de maintenir la concentration pour durer.',
+    'customContent.editor.spellForm.ritual': 'Rituel',
+    'customContent.editor.spellForm.ritualHelper':
+      'Le sort peut être lancé en 10 minutes sans consommer d’emplacement.',
+    'customContent.editor.spellForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.spellForm.descriptionEn':
+      'Description (EN, optionnelle)',
+    'customContent.editor.spellForm.descriptionHelper':
+      'Effet complet du sort tel qu’il apparaîtra sur la fiche.',
+    'customContent.editor.spellForm.hasAtHigherLevels':
+      'Effets aux niveaux supérieurs',
+    'customContent.editor.spellForm.hasAtHigherLevelsHelper':
+      'Active si le sort change quand il est lancé avec un emplacement supérieur.',
+    'customContent.editor.spellForm.atHigherLevelsFr':
+      'Aux niveaux supérieurs (FR)',
+    'customContent.editor.spellForm.atHigherLevelsEn':
+      'Aux niveaux supérieurs (EN, optionnel)',
+    'customContent.editor.spellForm.classesLegend': 'Classes',
+    'customContent.editor.spellForm.classesHelper':
+      'Quelles classes ont accès à ce sort. Une au moins est recommandée pour qu’il apparaisse au wizard.',
+    'customContent.editor.spellForm.classesLoading': 'Chargement des classes…',
+    'customContent.editor.spellForm.classesEmpty':
+      'Aucune classe disponible — vérifie que le bundle SRD est bien chargé.',
+    'customContent.editor.spellForm.damageLegend': 'Dégâts',
+    'customContent.editor.spellForm.damageHelper':
+      'Optionnel — un sort utilitaire ou de contrôle peut n’avoir aucune ligne de dégâts.',
+    'customContent.editor.spellForm.damageEmpty':
+      'Aucun dégât pour l’instant.',
+    'customContent.editor.spellForm.damageAdd': 'Ajouter une ligne de dégâts',
+    'customContent.editor.spellForm.damageFormula': 'Formule (dés)',
+    'customContent.editor.spellForm.damageFormulaPlaceholder': 'ex. 8d6',
+    'customContent.editor.spellForm.damageType': 'Type de dégâts',
+    'customContent.editor.spellForm.damageTypeLabelFr':
+      'Libellé affiché (FR)',
+    'customContent.editor.spellForm.damageTypeLabelEn':
+      'Libellé affiché (EN, optionnel)',
+    'customContent.editor.spellForm.damageHasUpcast':
+      'Effets aux niveaux supérieurs',
+    'customContent.editor.spellForm.damageHasUpcastHelper':
+      'Combien la formule augmente par emplacement au-dessus du niveau de base.',
+    'customContent.editor.spellForm.damageUpcastPerLevel':
+      'Dés ajoutés par niveau supérieur',
+    'customContent.editor.spellForm.damageUpcastPerLevelHelper':
+      'Ex. « +1d6 » par emplacement au-dessus du niveau de base.',
+    'customContent.editor.spellForm.damageUpcastPerLevelPlaceholder':
+      'ex. +1d6',
+    'customContent.editor.spellForm.removeRow': 'Retirer',
+    'customContent.editor.spellForm.cancel': 'Annuler',
+    'customContent.editor.spellForm.confirm': 'Confirmer le sort',
+    'customContent.editor.spellForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.spellForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.spellForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
+    'customContent.editor.spellForm.error.schoolRequired':
+      'Sélectionne une école de magie.',
+    'customContent.editor.spellForm.error.castingTimeFrRequired':
+      'Le temps d’incantation (FR) est requis.',
+    'customContent.editor.spellForm.error.rangeFrRequired':
+      'La portée (FR) est requise.',
+    'customContent.editor.spellForm.error.durationFrRequired':
+      'La durée (FR) est requise.',
+    'customContent.editor.spellForm.error.descriptionFrRequired':
+      'La description (FR) est requise.',
+    'customContent.editor.spellForm.error.materialFrRequired':
+      'Décris la composante matérielle (FR) quand M est activé.',
+    'customContent.editor.spellForm.error.atHigherLevelsFrRequired':
+      'Décris l’effet (FR) aux niveaux supérieurs ou désactive la case.',
+    'customContent.editor.spellForm.error.damageIncomplete':
+      'Chaque ligne de dégâts demande une formule et un libellé (FR).',
+    'customContent.editor.spellForm.error.damageDuplicate':
+      'Un même type de dégâts ne peut pas apparaître deux fois — additionne les formules.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1405,6 +1619,19 @@ const STRINGS: Record<Locale, Dict> = {
     'school.illusion': 'Illusion',
     'school.necromancy': 'Necromancy',
     'school.transmutation': 'Transmutation',
+    'damageType.acid': 'Acid',
+    'damageType.bludgeoning': 'Bludgeoning',
+    'damageType.cold': 'Cold',
+    'damageType.fire': 'Fire',
+    'damageType.force': 'Force',
+    'damageType.lightning': 'Lightning',
+    'damageType.necrotic': 'Necrotic',
+    'damageType.piercing': 'Piercing',
+    'damageType.poison': 'Poison',
+    'damageType.psychic': 'Psychic',
+    'damageType.radiant': 'Radiant',
+    'damageType.slashing': 'Slashing',
+    'damageType.thunder': 'Thunder',
     'ability.for': 'Strength',
     'ability.dex': 'Dexterity',
     'ability.con': 'Constitution',
@@ -1864,9 +2091,12 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.subclasses.add': 'Add a subclass',
     'customContent.editor.subclasses.empty': 'No subclasses added yet.',
     'customContent.editor.subclasses.remove': 'Remove',
+    'customContent.editor.spells.add': 'Add a spell',
+    'customContent.editor.spells.empty': 'No spells added yet.',
+    'customContent.editor.spells.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
-      'Spells, classes, ancestries, items and more will be authorable in-app in upcoming releases. File import remains available for these categories.',
+      'Classes, ancestries and items will be authorable in-app in upcoming releases. File import remains available for these categories.',
     'customContent.editor.cancel': 'Cancel',
     'customContent.editor.save': 'Save pack',
     'customContent.editor.save.successTitle': 'Pack saved',
@@ -2105,6 +2335,112 @@ const STRINGS: Record<Locale, Dict> = {
       'Each feature needs a name (FR) and a description (FR).',
     'customContent.editor.subclassForm.error.featureDuplicate':
       'The same (level + name) feature cannot appear twice.',
+    'customContent.editor.spellForm.title': 'New spell',
+    'customContent.editor.spellForm.id': 'Spell identifier',
+    'customContent.editor.spellForm.idHelper':
+      'Kebab-case, unique within the pack (e.g. arcanian-fireball).',
+    'customContent.editor.spellForm.nameFr': 'Name (FR)',
+    'customContent.editor.spellForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.spellForm.level': 'Level',
+    'customContent.editor.spellForm.levelHelper':
+      '0 = cantrip. 1-9 for slot-based spells.',
+    'customContent.editor.spellForm.school': 'School',
+    'customContent.editor.spellForm.schoolPlaceholder': 'Pick a school…',
+    'customContent.editor.spellForm.castingTimeFr': 'Casting time (FR)',
+    'customContent.editor.spellForm.castingTimeEn':
+      'Casting time (EN, optional)',
+    'customContent.editor.spellForm.castingTimeHelper':
+      'E.g. "1 action", "1 bonus action", "1 minute".',
+    'customContent.editor.spellForm.rangeFr': 'Range (FR)',
+    'customContent.editor.spellForm.rangeEn': 'Range (EN, optional)',
+    'customContent.editor.spellForm.rangeHelper':
+      'E.g. "Self", "Touch", "60 feet".',
+    'customContent.editor.spellForm.durationFr': 'Duration (FR)',
+    'customContent.editor.spellForm.durationEn': 'Duration (EN, optional)',
+    'customContent.editor.spellForm.durationHelper':
+      'E.g. "Instantaneous", "1 minute", "24 hours".',
+    'customContent.editor.spellForm.componentsLegend': 'Components',
+    'customContent.editor.spellForm.componentsHelper':
+      'Toggle V (verbal), S (somatic) or M (material). A spell may combine multiple.',
+    'customContent.editor.spellForm.componentV': 'V (verbal)',
+    'customContent.editor.spellForm.componentS': 'S (somatic)',
+    'customContent.editor.spellForm.componentM': 'M (material)',
+    'customContent.editor.spellForm.materialFr': 'Material component (FR)',
+    'customContent.editor.spellForm.materialEn':
+      'Material component (EN, optional)',
+    'customContent.editor.spellForm.materialHelper':
+      'E.g. "a pearl worth 100 gp" or "a candle".',
+    'customContent.editor.spellForm.concentration': 'Concentration',
+    'customContent.editor.spellForm.concentrationHelper':
+      'The spell needs concentration to last.',
+    'customContent.editor.spellForm.ritual': 'Ritual',
+    'customContent.editor.spellForm.ritualHelper':
+      'The spell can be cast as a 10-minute ritual without a slot.',
+    'customContent.editor.spellForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.spellForm.descriptionEn':
+      'Description (EN, optional)',
+    'customContent.editor.spellForm.descriptionHelper':
+      'Full spell effect as it will appear on the sheet.',
+    'customContent.editor.spellForm.hasAtHigherLevels':
+      'Effects at higher levels',
+    'customContent.editor.spellForm.hasAtHigherLevelsHelper':
+      'Toggle if the spell scales when cast with a higher slot.',
+    'customContent.editor.spellForm.atHigherLevelsFr': 'At higher levels (FR)',
+    'customContent.editor.spellForm.atHigherLevelsEn':
+      'At higher levels (EN, optional)',
+    'customContent.editor.spellForm.classesLegend': 'Classes',
+    'customContent.editor.spellForm.classesHelper':
+      'Which classes have access to this spell. At least one is recommended so it surfaces in the wizard.',
+    'customContent.editor.spellForm.classesLoading': 'Loading classes…',
+    'customContent.editor.spellForm.classesEmpty':
+      'No classes available — check that the SRD bundle loaded.',
+    'customContent.editor.spellForm.damageLegend': 'Damage',
+    'customContent.editor.spellForm.damageHelper':
+      'Optional — utility or control spells may have no damage row.',
+    'customContent.editor.spellForm.damageEmpty': 'No damage yet.',
+    'customContent.editor.spellForm.damageAdd': 'Add a damage row',
+    'customContent.editor.spellForm.damageFormula': 'Formula (dice)',
+    'customContent.editor.spellForm.damageFormulaPlaceholder': 'e.g. 8d6',
+    'customContent.editor.spellForm.damageType': 'Damage type',
+    'customContent.editor.spellForm.damageTypeLabelFr': 'Display label (FR)',
+    'customContent.editor.spellForm.damageTypeLabelEn':
+      'Display label (EN, optional)',
+    'customContent.editor.spellForm.damageHasUpcast':
+      'Effects at higher levels',
+    'customContent.editor.spellForm.damageHasUpcastHelper':
+      'How much the formula grows per slot above the base level.',
+    'customContent.editor.spellForm.damageUpcastPerLevel':
+      'Dice added per higher slot',
+    'customContent.editor.spellForm.damageUpcastPerLevelHelper':
+      'E.g. "+1d6" per slot above the base level.',
+    'customContent.editor.spellForm.damageUpcastPerLevelPlaceholder':
+      'e.g. +1d6',
+    'customContent.editor.spellForm.removeRow': 'Remove',
+    'customContent.editor.spellForm.cancel': 'Cancel',
+    'customContent.editor.spellForm.confirm': 'Confirm spell',
+    'customContent.editor.spellForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.spellForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase letters, digits, hyphens).',
+    'customContent.editor.spellForm.error.nameFrRequired':
+      'Name (FR) is required.',
+    'customContent.editor.spellForm.error.schoolRequired': 'Pick a school.',
+    'customContent.editor.spellForm.error.castingTimeFrRequired':
+      'Casting time (FR) is required.',
+    'customContent.editor.spellForm.error.rangeFrRequired':
+      'Range (FR) is required.',
+    'customContent.editor.spellForm.error.durationFrRequired':
+      'Duration (FR) is required.',
+    'customContent.editor.spellForm.error.descriptionFrRequired':
+      'Description (FR) is required.',
+    'customContent.editor.spellForm.error.materialFrRequired':
+      'Describe the material component (FR) when M is toggled on.',
+    'customContent.editor.spellForm.error.atHigherLevelsFrRequired':
+      'Describe the effect (FR) at higher levels or untoggle the checkbox.',
+    'customContent.editor.spellForm.error.damageIncomplete':
+      'Each damage row needs a formula and a label (FR).',
+    'customContent.editor.spellForm.error.damageDuplicate':
+      'The same damage type cannot appear twice — merge the formulas.',
   },
 };
 

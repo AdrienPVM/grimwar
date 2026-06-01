@@ -568,3 +568,198 @@ describe("PackEditorScreen — création d'une sous-classe (JALON 3C.5)", () => 
     ).not.toBeInTheDocument();
   });
 });
+
+describe("PackEditorScreen — création d'un sort (JALON 3C.6)", () => {
+  async function selectSchool(
+    user: ReturnType<typeof userEvent.setup>,
+    label: string,
+  ): Promise<void> {
+    const wrapper = screen.getByTestId('spell-form-school');
+    const trigger = within(wrapper).getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: label }));
+  }
+
+  it('saisit méta + sort minimal (V+S, sans dégâts) → save → writePack reçoit pack.entities.spells', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-spell');
+    await user.type(
+      screen.getByTestId('pack-meta-name-fr'),
+      'Pack sort',
+    );
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-spell'));
+    expect(screen.getByTestId('spell-form')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('spell-form-id'), 'tracer-bolt');
+    await user.type(
+      screen.getByTestId('spell-form-name-fr'),
+      'Trait du traceur',
+    );
+    // Le niveau reste à 0 (sort mineur) — pas besoin d'interagir.
+    await selectSchool(user, 'Évocation');
+    await user.type(
+      screen.getByTestId('spell-form-casting-time-fr'),
+      '1 action',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-range-fr'),
+      '36 mètres',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-duration-fr'),
+      'Instantanée',
+    );
+    // V + S
+    await user.click(screen.getByTestId('spell-form-component-v'));
+    await user.click(screen.getByTestId('spell-form-component-s'));
+    await user.type(
+      screen.getByTestId('spell-form-description-fr'),
+      'Un trait magique frappe la cible.',
+    );
+
+    await user.click(screen.getByTestId('spell-form-confirm'));
+
+    expect(screen.queryByTestId('spell-form')).not.toBeInTheDocument();
+    const spellRow = screen.getByTestId('pack-editor-spell-row');
+    expect(spellRow).toHaveAttribute('data-spell-id', 'tracer-bolt');
+    expect(spellRow).toHaveTextContent('Trait du traceur');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.spells).toHaveLength(1);
+    const sp = calledPack.entities.spells[0];
+    expect(sp.id).toBe('tracer-bolt');
+    expect(sp.name.fr).toBe('Trait du traceur');
+    expect(sp.level).toBe(0);
+    expect(sp.school).toBe('evocation');
+    expect(sp.components).toEqual({ v: true, s: true, m: false });
+    expect(sp.atHigherLevels).toBeNull();
+    expect(sp.classes).toEqual([]);
+    expect(sp).not.toHaveProperty('damage');
+    expect(sp.source).toBe('aidedd-homebrew');
+    // Pas d'autres catégories
+    expect(calledPack.entities.feats).toBeUndefined();
+  });
+
+  it('propage components.material + atHigherLevels + 1 ligne de dégâts + 1 classe', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-spell-rich');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack riche');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-spell'));
+    await user.type(screen.getByTestId('spell-form-id'), 'boule-feu');
+    await user.type(
+      screen.getByTestId('spell-form-name-fr'),
+      'Boule de feu',
+    );
+    await selectSchool(user, 'Évocation');
+    await user.type(
+      screen.getByTestId('spell-form-casting-time-fr'),
+      '1 action',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-range-fr'),
+      '45 mètres',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-duration-fr'),
+      'Instantanée',
+    );
+    // V + S + M (avec composante matérielle)
+    await user.click(screen.getByTestId('spell-form-component-v'));
+    await user.click(screen.getByTestId('spell-form-component-s'));
+    await user.click(screen.getByTestId('spell-form-component-m'));
+    await user.type(
+      screen.getByTestId('spell-form-material-fr'),
+      'une boulette de guano et de soufre',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-description-fr'),
+      'Une lueur jaillit en boule.',
+    );
+    // atHigherLevels
+    await user.click(screen.getByTestId('spell-form-has-at-higher-levels'));
+    await user.type(
+      screen.getByTestId('spell-form-at-higher-levels-fr'),
+      '+1d6 par emplacement au-dessus du 3.',
+    );
+    // 1 classe — Guerrier est dans le mock (peu importe l'orthodoxie SRD ici)
+    await user.click(screen.getByTestId('spell-form-class-guerrier'));
+    // 1 ligne de dégâts
+    await user.click(screen.getByTestId('spell-form-damage-add'));
+    await user.type(
+      screen.getByTestId('spell-form-damage-formula-0'),
+      '8d6',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-damage-type-label-fr-0'),
+      'feu',
+    );
+
+    await user.click(screen.getByTestId('spell-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    const sp = calledPack.entities.spells[0];
+    expect(sp.components).toEqual({
+      v: true,
+      s: true,
+      m: true,
+      material: { fr: 'une boulette de guano et de soufre' },
+    });
+    expect(sp.atHigherLevels).toEqual({
+      fr: '+1d6 par emplacement au-dessus du 3.',
+    });
+    expect(sp.classes).toEqual(['guerrier']);
+    expect(sp.damage).toEqual([
+      {
+        formula: '8d6',
+        type: 'fire', // défaut du SpellDamageDraft
+        typeLabel: { fr: 'feu' },
+      },
+    ]);
+  });
+
+  it("refuse confirm si school non choisie (erreur visible, pas d'ajout)", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-spell'));
+    await user.type(screen.getByTestId('spell-form-id'), 'sp-a');
+    await user.type(
+      screen.getByTestId('spell-form-name-fr'),
+      'Sort A',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-casting-time-fr'),
+      '1 action',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-range-fr'),
+      'Toucher',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-duration-fr'),
+      'Instantanée',
+    );
+    await user.type(
+      screen.getByTestId('spell-form-description-fr'),
+      'Test.',
+    );
+    // school volontairement omis
+    await user.click(screen.getByTestId('spell-form-confirm'));
+
+    expect(screen.getByTestId('spell-form')).toBeInTheDocument();
+    expect(screen.queryByTestId('pack-editor-spell-row')).not.toBeInTheDocument();
+  });
+});

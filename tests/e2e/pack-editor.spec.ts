@@ -219,6 +219,57 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toContainText('Pack subclasse e2e');
   });
 
+  test('JALON 3C.6 — crée un pack avec 1 sort (Évocation, V+S) → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-spell-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack sort e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-spell').click();
+    await expect(page.getByTestId('spell-form')).toBeVisible();
+
+    await page.getByTestId('spell-form-id').fill('tracer-bolt-e2e');
+    await page
+      .getByTestId('spell-form-name-fr')
+      .fill('Trait du traceur e2e');
+
+    // Sélectionne l'école Évocation
+    const schoolWrapper = page.getByTestId('spell-form-school');
+    await schoolWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Évocation' }).click();
+
+    await page.getByTestId('spell-form-casting-time-fr').fill('1 action');
+    await page.getByTestId('spell-form-range-fr').fill('36 mètres');
+    await page.getByTestId('spell-form-duration-fr').fill('Instantanée');
+
+    // Toggle V + S
+    await page.getByTestId('spell-form-component-v').click();
+    await page.getByTestId('spell-form-component-s').click();
+
+    await page
+      .getByTestId('spell-form-description-fr')
+      .fill('Un trait magique frappe une cible visible.');
+
+    await page.getByTestId('spell-form-confirm').click();
+
+    await expect(page.getByTestId('spell-form')).toHaveCount(0);
+    const spellRow = page.locator(
+      '[data-testid="pack-editor-spell-row"][data-spell-id="tracer-bolt-e2e"]',
+    );
+    await expect(spellRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-spell-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack sort e2e');
+  });
+
   test('JALON 3C.4 — crée un pack avec 1 background (skills + outils + équipement + don) → save → liste packs', async ({
     page,
   }) => {
