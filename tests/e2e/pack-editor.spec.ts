@@ -81,4 +81,37 @@ test.describe('PackEditor — JALON 3C.1', () => {
     ).toBeVisible();
     expect(page.url()).toContain('/account/content/new');
   });
+
+  test('JALON 3C.2 — crée un pack avec 1 invocation (sans feat) → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-inv-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack invocations e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-invocation').click();
+    await expect(page.getByTestId('invocation-form')).toBeVisible();
+    await page.getByTestId('invocation-form-id').fill('inv-tracer-e2e');
+    await page.getByTestId('invocation-form-name-fr').fill('Invocation tracer e2e');
+    await page
+      .getByTestId('invocation-form-summary-fr')
+      .fill('Effet d\'essai de l\'invocation tracer.');
+    await page.getByTestId('invocation-form-confirm').click();
+
+    await expect(page.getByTestId('invocation-form')).toHaveCount(0);
+    const invRow = page.locator(
+      '[data-testid="pack-editor-invocation-row"][data-invocation-id="inv-tracer-e2e"]',
+    );
+    await expect(invRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-inv-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack invocations e2e');
+  });
 });

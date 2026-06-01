@@ -10,11 +10,16 @@ import { parseCustomContentPack } from '@/shared/lib/custom-content/parse-pack';
 import { t } from '@/shared/lib/i18n';
 import { writePack } from '@/shared/lib/services/pack-storage';
 import { showToast } from '@/shared/lib/slices/toast-slice';
-import type { Feat } from '@/shared/types/content';
+import type { Feat, Invocation } from '@/shared/types/content';
 
 import { FeatForm, EMPTY_FEAT_DRAFT, type FeatFormDraft } from './forms/feat-form';
 import { FieldI18n } from './forms/fields/field-i18n';
 import { FieldString } from './forms/fields/field-string';
+import {
+  EMPTY_INVOCATION_DRAFT,
+  InvocationForm,
+  type InvocationFormDraft,
+} from './forms/invocation-form';
 import {
   packFromBuilderState,
   usePackBuilder,
@@ -41,6 +46,10 @@ export function PackEditorScreen(): JSX.Element {
   const builder = usePackBuilder();
   const [featDraft, setFeatDraft] = useState<FeatFormDraft>(EMPTY_FEAT_DRAFT);
   const [isAddingFeat, setIsAddingFeat] = useState<boolean>(false);
+  const [invocationDraft, setInvocationDraft] = useState<InvocationFormDraft>(
+    EMPTY_INVOCATION_DRAFT,
+  );
+  const [isAddingInvocation, setIsAddingInvocation] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -60,6 +69,24 @@ export function PackEditorScreen(): JSX.Element {
       closeFeatForm();
     },
     [builder, closeFeatForm],
+  );
+
+  const openInvocationForm = useCallback(() => {
+    setInvocationDraft(EMPTY_INVOCATION_DRAFT);
+    setIsAddingInvocation(true);
+  }, []);
+
+  const closeInvocationForm = useCallback(() => {
+    setIsAddingInvocation(false);
+    setInvocationDraft(EMPTY_INVOCATION_DRAFT);
+  }, []);
+
+  const confirmInvocation = useCallback(
+    (invocation: Invocation) => {
+      builder.addInvocation(invocation);
+      closeInvocationForm();
+    },
+    [builder, closeInvocationForm],
   );
 
   const handleSave = useCallback(async () => {
@@ -113,6 +140,7 @@ export function PackEditorScreen(): JSX.Element {
   if (!isReady) return <Splash />;
 
   const featCount = builder.state.feats.length;
+  const invocationCount = builder.state.invocations.length;
 
   return (
     <main
@@ -275,9 +303,78 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.2..3C.9). On les liste pour communiquer la
+        {/* Invocations occultistes */}
+        <div className="mt-10" data-testid="pack-editor-invocations">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.invocations')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({invocationCount})
+              </span>
+            </h3>
+            {!isAddingInvocation ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openInvocationForm}
+                data-testid="pack-editor-add-invocation"
+              >
+                {t('customContent.editor.invocations.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {invocationCount === 0 && !isAddingInvocation ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.invocations.empty')}
+            </p>
+          ) : null}
+
+          {invocationCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.invocations.map((inv) => (
+                <li
+                  key={inv.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-invocation-row"
+                  data-invocation-id={inv.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {inv.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {inv.id}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeInvocation(inv.id)}
+                    data-testid="pack-editor-invocation-remove"
+                  >
+                    {t('customContent.editor.invocations.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingInvocation ? (
+            <div className="mt-5">
+              <InvocationForm
+                draft={invocationDraft}
+                onChange={setInvocationDraft}
+                onConfirm={confirmInvocation}
+                onCancel={closeInvocationForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégories à venir (3C.3..3C.9). On les liste pour communiquer la
             roadmap sans pour autant les rendre cliquables : un placeholder
-            grisé suffit en 3C.1. */}
+            grisé suffit jusqu'à leur livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
           <p className="font-meta text-meta uppercase tracking-[0.18em] text-text-tertiary">
             {t('customContent.editor.comingSoon.title')}
@@ -314,7 +411,7 @@ export function PackEditorScreen(): JSX.Element {
           variant="primary"
           size="lg"
           onClick={() => void handleSave()}
-          disabled={isSaving || isAddingFeat}
+          disabled={isSaving || isAddingFeat || isAddingInvocation}
           data-testid="pack-editor-save"
         >
           {t('customContent.editor.save')}

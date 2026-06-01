@@ -410,6 +410,9 @@ export type StringKey =
   | 'customContent.editor.feats.add'
   | 'customContent.editor.feats.empty'
   | 'customContent.editor.feats.remove'
+  | 'customContent.editor.invocations.add'
+  | 'customContent.editor.invocations.empty'
+  | 'customContent.editor.invocations.remove'
   | 'customContent.editor.comingSoon.title'
   | 'customContent.editor.comingSoon.body'
   | 'customContent.editor.cancel'
@@ -433,7 +436,28 @@ export type StringKey =
   | 'customContent.editor.featForm.confirm'
   | 'customContent.editor.featForm.error.idRequired'
   | 'customContent.editor.featForm.error.idFormat'
-  | 'customContent.editor.featForm.error.nameFrRequired';
+  | 'customContent.editor.featForm.error.nameFrRequired'
+  | 'customContent.editor.invocationForm.title'
+  | 'customContent.editor.invocationForm.id'
+  | 'customContent.editor.invocationForm.idHelper'
+  | 'customContent.editor.invocationForm.nameFr'
+  | 'customContent.editor.invocationForm.nameEn'
+  | 'customContent.editor.invocationForm.summaryFr'
+  | 'customContent.editor.invocationForm.summaryEn'
+  | 'customContent.editor.invocationForm.summaryHelper'
+  | 'customContent.editor.invocationForm.hasLevelPrereq'
+  | 'customContent.editor.invocationForm.hasLevelPrereqHelper'
+  | 'customContent.editor.invocationForm.warlockLevel'
+  | 'customContent.editor.invocationForm.prerequisiteOtherFr'
+  | 'customContent.editor.invocationForm.prerequisiteOtherEn'
+  | 'customContent.editor.invocationForm.prerequisiteOtherHelper'
+  | 'customContent.editor.invocationForm.cancel'
+  | 'customContent.editor.invocationForm.confirm'
+  | 'customContent.editor.invocationForm.error.idRequired'
+  | 'customContent.editor.invocationForm.error.idFormat'
+  | 'customContent.editor.invocationForm.error.nameFrRequired'
+  | 'customContent.editor.invocationForm.error.summaryFrRequired'
+  | 'customContent.editor.invocationForm.error.levelRange';
 
 type Dict = Record<StringKey, string>;
 
@@ -961,6 +985,10 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.feats.empty':
       'Aucun don ajouté pour l’instant.',
     'customContent.editor.feats.remove': 'Retirer',
+    'customContent.editor.invocations.add': 'Ajouter une invocation',
+    'customContent.editor.invocations.empty':
+      'Aucune invocation ajoutée pour l’instant.',
+    'customContent.editor.invocations.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
       'Sorts, classes, ascendances, items et autres seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
@@ -996,6 +1024,40 @@ const STRINGS: Record<Locale, Dict> = {
       'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
     'customContent.editor.featForm.error.nameFrRequired':
       'Le nom (FR) est requis.',
+    'customContent.editor.invocationForm.title': 'Nouvelle invocation',
+    'customContent.editor.invocationForm.id': 'Identifiant de l’invocation',
+    'customContent.editor.invocationForm.idHelper':
+      'En kebab-case, unique dans le pack.',
+    'customContent.editor.invocationForm.nameFr': 'Nom (FR)',
+    'customContent.editor.invocationForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.invocationForm.summaryFr': 'Résumé (FR)',
+    'customContent.editor.invocationForm.summaryEn': 'Résumé (EN, optionnel)',
+    'customContent.editor.invocationForm.summaryHelper':
+      'Phrase courte affichée dans la liste des invocations.',
+    'customContent.editor.invocationForm.hasLevelPrereq':
+      'Niveau de Sorcier requis',
+    'customContent.editor.invocationForm.hasLevelPrereqHelper':
+      'Cochez pour limiter l’invocation à partir d’un certain niveau de Sorcier. Décochez pour la rendre utilisable dès le niveau 1.',
+    'customContent.editor.invocationForm.warlockLevel':
+      'Niveau de Sorcier minimum',
+    'customContent.editor.invocationForm.prerequisiteOtherFr':
+      'Autre prérequis (FR, optionnel)',
+    'customContent.editor.invocationForm.prerequisiteOtherEn':
+      'Autre prérequis (EN, optionnel)',
+    'customContent.editor.invocationForm.prerequisiteOtherHelper':
+      'Texte libre, par exemple « Pacte de la Lame ».',
+    'customContent.editor.invocationForm.cancel': 'Annuler',
+    'customContent.editor.invocationForm.confirm': 'Confirmer l’invocation',
+    'customContent.editor.invocationForm.error.idRequired':
+      'L’identifiant est requis.',
+    'customContent.editor.invocationForm.error.idFormat':
+      'L’identifiant doit être en kebab-case (lettres minuscules, chiffres, tirets).',
+    'customContent.editor.invocationForm.error.nameFrRequired':
+      'Le nom (FR) est requis.',
+    'customContent.editor.invocationForm.error.summaryFrRequired':
+      'Le résumé (FR) est requis.',
+    'customContent.editor.invocationForm.error.levelRange':
+      'Le niveau doit être compris entre 1 et 20.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -1457,6 +1519,9 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.feats.add': 'Add a feat',
     'customContent.editor.feats.empty': 'No feats added yet.',
     'customContent.editor.feats.remove': 'Remove',
+    'customContent.editor.invocations.add': 'Add an invocation',
+    'customContent.editor.invocations.empty': 'No invocations added yet.',
+    'customContent.editor.invocations.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
       'Spells, classes, ancestries, items and more will be authorable in-app in upcoming releases. File import remains available for these categories.',
@@ -1489,6 +1554,40 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.featForm.error.idFormat':
       'Identifier must be kebab-case (lowercase letters, digits, dashes).',
     'customContent.editor.featForm.error.nameFrRequired': 'Name (FR) is required.',
+    'customContent.editor.invocationForm.title': 'New invocation',
+    'customContent.editor.invocationForm.id': 'Invocation identifier',
+    'customContent.editor.invocationForm.idHelper':
+      'kebab-case, unique within the pack.',
+    'customContent.editor.invocationForm.nameFr': 'Name (FR)',
+    'customContent.editor.invocationForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.invocationForm.summaryFr': 'Summary (FR)',
+    'customContent.editor.invocationForm.summaryEn': 'Summary (EN, optional)',
+    'customContent.editor.invocationForm.summaryHelper':
+      'Short sentence shown in the invocation list.',
+    'customContent.editor.invocationForm.hasLevelPrereq':
+      'Warlock level required',
+    'customContent.editor.invocationForm.hasLevelPrereqHelper':
+      'Tick to gate the invocation behind a minimum Warlock level. Untick to make it available from level 1.',
+    'customContent.editor.invocationForm.warlockLevel':
+      'Minimum Warlock level',
+    'customContent.editor.invocationForm.prerequisiteOtherFr':
+      'Other prerequisite (FR, optional)',
+    'customContent.editor.invocationForm.prerequisiteOtherEn':
+      'Other prerequisite (EN, optional)',
+    'customContent.editor.invocationForm.prerequisiteOtherHelper':
+      'Free text, e.g. "Pact of the Blade".',
+    'customContent.editor.invocationForm.cancel': 'Cancel',
+    'customContent.editor.invocationForm.confirm': 'Confirm invocation',
+    'customContent.editor.invocationForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.invocationForm.error.idFormat':
+      'Identifier must be kebab-case (lowercase letters, digits, dashes).',
+    'customContent.editor.invocationForm.error.nameFrRequired':
+      'Name (FR) is required.',
+    'customContent.editor.invocationForm.error.summaryFrRequired':
+      'Summary (FR) is required.',
+    'customContent.editor.invocationForm.error.levelRange':
+      'Level must be between 1 and 20.',
   },
 };
 

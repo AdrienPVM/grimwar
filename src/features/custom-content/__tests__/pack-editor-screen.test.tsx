@@ -181,3 +181,68 @@ describe('PackEditorScreen — validation', () => {
     expect(screen.queryByTestId('pack-editor-feat-row')).not.toBeInTheDocument();
   });
 });
+
+describe('PackEditorScreen — création d\'une invocation (JALON 3C.2)', () => {
+  it('saisit méta + invocation → save → writePack reçoit un pack avec invocations[]', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-inv');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack invocations');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-invocation'));
+    expect(screen.getByTestId('invocation-form')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('invocation-form-id'), 'inv-tracer');
+    await user.type(screen.getByTestId('invocation-form-name-fr'), 'Invocation tracer');
+    await user.type(screen.getByTestId('invocation-form-summary-fr'), 'Effet de test');
+    await user.click(screen.getByTestId('invocation-form-confirm'));
+
+    expect(screen.queryByTestId('invocation-form')).not.toBeInTheDocument();
+    const invRow = screen.getByTestId('pack-editor-invocation-row');
+    expect(invRow).toHaveAttribute('data-invocation-id', 'inv-tracer');
+    expect(invRow).toHaveTextContent('Invocation tracer');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.invocations).toHaveLength(1);
+    expect(calledPack.entities.invocations[0].id).toBe('inv-tracer');
+    expect(calledPack.entities.invocations[0].name.fr).toBe('Invocation tracer');
+    expect(calledPack.entities.invocations[0].summary.fr).toBe('Effet de test');
+    expect(calledPack.entities.invocations[0].prerequisiteWarlockLevel).toBeNull();
+    expect(calledPack.entities.invocations[0].source).toBe('aidedd-homebrew');
+    // Pas de feats — invocations seules suffisent à passer parsePack.
+    expect(calledPack.entities.feats).toBeUndefined();
+  });
+
+  it("propage le niveau warlock quand le toggle est activé", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-inv-l5');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-invocation'));
+    await user.type(screen.getByTestId('invocation-form-id'), 'inv-l5');
+    await user.type(screen.getByTestId('invocation-form-name-fr'), 'Inv L5');
+    await user.type(screen.getByTestId('invocation-form-summary-fr'), 'Effet');
+
+    // Toggle le checkbox via le label associé (click sur l'input natif)
+    await user.click(screen.getByTestId('invocation-form-has-level-prereq'));
+    // Champ niveau apparaît
+    const levelInput = screen.getByTestId('invocation-form-warlock-level');
+    expect(levelInput).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('invocation-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    // Valeur par défaut du niveau quand le toggle vient d'être activé = 2
+    expect(calledPack.entities.invocations[0].prerequisiteWarlockLevel).toBe(2);
+  });
+});

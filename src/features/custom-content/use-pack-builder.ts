@@ -1,17 +1,18 @@
 import { useCallback, useState } from 'react';
 
-import type { Feat } from '@/shared/types/content';
+import type { Feat, Invocation } from '@/shared/types/content';
 import type { CustomContentPack } from '@/shared/types/custom-content-pack';
 
 /**
- * État local du PackEditor (JALON 3C.1) — un brouillon de pack en cours de
+ * État local du PackEditor (JALON 3C.1+) — un brouillon de pack en cours de
  * création. La forme distingue les champs scalaires (id, version, author) des
  * objets i18n éclatés en deux strings (`*Fr` / `*En`) pour rester compatible
  * avec les inputs natifs.
  *
- * 3C.1 ne wire que la catégorie `feats`. Les autres tableaux restent vides ;
- * les sous-jalons 3C.2..3C.9 les ajouteront. La validation Zod (`parsePack`)
- * tolère des tableaux vides tant qu'AU MOINS un tableau est non vide.
+ * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. Les autres tableaux restent
+ * vides ; les sous-jalons 3C.3..3C.9 les ajouteront. La validation Zod
+ * (`parsePack`) tolère des tableaux vides tant qu'AU MOINS un tableau est non
+ * vide.
  */
 export interface PackBuilderState {
   meta: {
@@ -24,6 +25,7 @@ export interface PackBuilderState {
     descriptionEn: string;
   };
   feats: Feat[];
+  invocations: Invocation[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -37,6 +39,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
     descriptionEn: '',
   },
   feats: [],
+  invocations: [],
 };
 
 /**
@@ -73,6 +76,8 @@ export function packFromBuilderState(
     meta,
     entities: {
       feats: state.feats.length > 0 ? state.feats : undefined,
+      invocations:
+        state.invocations.length > 0 ? state.invocations : undefined,
     },
   } as CustomContentPack;
 }
@@ -85,6 +90,8 @@ interface UsePackBuilderApi {
   ) => void;
   addFeat: (feat: Feat) => void;
   removeFeat: (id: string) => void;
+  addInvocation: (invocation: Invocation) => void;
+  removeInvocation: (id: string) => void;
   reset: () => void;
 }
 
@@ -117,9 +124,33 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addInvocation = useCallback((invocation: Invocation): void => {
+    setState((prev) => {
+      const next = prev.invocations.filter(
+        (existing) => existing.id !== invocation.id,
+      );
+      return { ...prev, invocations: [...next, invocation] };
+    });
+  }, []);
+
+  const removeInvocation = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      invocations: prev.invocations.filter((inv) => inv.id !== id),
+    }));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
 
-  return { state, setMetaField, addFeat, removeFeat, reset };
+  return {
+    state,
+    setMetaField,
+    addFeat,
+    removeFeat,
+    addInvocation,
+    removeInvocation,
+    reset,
+  };
 }
