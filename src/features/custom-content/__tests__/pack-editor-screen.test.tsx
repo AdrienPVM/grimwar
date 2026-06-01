@@ -47,9 +47,10 @@ vi.mock('@/shared/lib/firebase', () => ({
 }));
 
 // SubancestryForm dépend de useContent('ancestries') — on stub avec un set
-// minimal (humain SRD) pour pouvoir sélectionner une parente. Pour 3C.1/3C.2
-// (FeatForm/InvocationForm) ce mock ne change rien — ils n'appellent jamais
-// useContent.
+// minimal (humain SRD) pour pouvoir sélectionner une parente. BackgroundForm
+// dépend de useContent('items') — on stub un item minimal (corde) pour
+// pouvoir ajouter un équipement. Pour 3C.1/3C.2 (FeatForm/InvocationForm) ces
+// mocks ne changent rien — ils n'appellent jamais useContent.
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'ancestries') {
@@ -58,6 +59,18 @@ vi.mock('@/shared/hooks/use-content', () => ({
           {
             id: 'humain',
             name: { fr: 'Humain', en: 'Human' },
+          },
+        ],
+        loading: false,
+        error: null,
+      };
+    }
+    if (type === 'items') {
+      return {
+        data: [
+          {
+            id: 'rope',
+            name: { fr: 'Corde', en: 'Rope' },
           },
         ],
         loading: false,
@@ -349,5 +362,110 @@ describe("PackEditorScreen — création d'une sous-ascendance (JALON 3C.3)", ()
     // Le form reste ouvert tant que l'ancestry n'est pas sélectionnée
     expect(screen.getByTestId('subancestry-form')).toBeInTheDocument();
     expect(screen.queryByTestId('pack-editor-subancestry-row')).not.toBeInTheDocument();
+  });
+});
+
+describe("PackEditorScreen — création d'un background (JALON 3C.4)", () => {
+  async function selectItem(
+    user: ReturnType<typeof userEvent.setup>,
+    rowIndex: number,
+    label: string,
+  ): Promise<void> {
+    const wrapper = screen.getByTestId(
+      `background-form-equipment-item-${rowIndex}`,
+    );
+    const trigger = within(wrapper).getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: label }));
+  }
+
+  it("saisit méta + background complet → save → writePack reçoit pack.entities.backgrounds", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-bg');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack bg');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-background'));
+    expect(screen.getByTestId('background-form')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('background-form-id'), 'wanderer');
+    await user.type(screen.getByTestId('background-form-name-fr'), 'Vagabond');
+    await user.type(
+      screen.getByTestId('background-form-description-fr'),
+      'Voyage sans relâche.',
+    );
+
+    // Toggle deux skills (FR labels Athlétisme + Survie)
+    await user.click(screen.getByTestId('background-form-skill-athletics'));
+    await user.click(screen.getByTestId('background-form-skill-survival'));
+
+    // Ajoute un outil libre
+    await user.type(
+      screen.getByTestId('background-form-tool-input'),
+      'navigators-tools',
+    );
+    await user.click(screen.getByTestId('background-form-tool-add'));
+
+    // Ajoute 1 ligne d'équipement référant rope (seul item dans le mock)
+    await user.click(screen.getByTestId('background-form-equipment-add'));
+    await selectItem(user, 0, 'Corde');
+
+    // Active les pièces de départ → 5 PO
+    await user.click(screen.getByTestId('background-form-coins-toggle'));
+
+    // Renseigne le don
+    await user.type(
+      screen.getByTestId('background-form-feature-name-fr'),
+      'Bénédiction',
+    );
+    await user.type(
+      screen.getByTestId('background-form-feature-description-fr'),
+      'Voyage plus vite.',
+    );
+
+    await user.click(screen.getByTestId('background-form-confirm'));
+
+    expect(screen.queryByTestId('background-form')).not.toBeInTheDocument();
+    const bgRow = screen.getByTestId('pack-editor-background-row');
+    expect(bgRow).toHaveAttribute('data-background-id', 'wanderer');
+    expect(bgRow).toHaveTextContent('Vagabond');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.backgrounds).toHaveLength(1);
+    const bg = calledPack.entities.backgrounds[0];
+    expect(bg.id).toBe('wanderer');
+    expect(bg.name.fr).toBe('Vagabond');
+    expect(bg.skillProficiencies).toEqual(['Athletics', 'Survival']);
+    expect(bg.toolProficiencies).toEqual(['navigators-tools']);
+    expect(bg.equipment).toEqual([{ itemId: 'rope', qty: 1 }]);
+    expect(bg.startingCoins).toEqual({ qty: 0, unit: 'gp' });
+    expect(bg.feature.name.fr).toBe('Bénédiction');
+    expect(bg.source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.feats).toBeUndefined();
+  });
+
+  it('refuse confirm si featureNameFr manque (erreur visible)', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-background'));
+    await user.type(screen.getByTestId('background-form-id'), 'bg-x');
+    await user.type(screen.getByTestId('background-form-name-fr'), 'X');
+    await user.type(
+      screen.getByTestId('background-form-description-fr'),
+      'D',
+    );
+    // featureNameFr / featureDescriptionFr volontairement vides
+    await user.click(screen.getByTestId('background-form-confirm'));
+
+    expect(screen.getByTestId('background-form')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('pack-editor-background-row'),
+    ).not.toBeInTheDocument();
   });
 });

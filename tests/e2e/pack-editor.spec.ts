@@ -165,4 +165,63 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toBeVisible({ timeout: 10_000 });
     await expect(packRow).toContainText('Pack invocations e2e');
   });
+
+  test('JALON 3C.4 — crée un pack avec 1 background (skills + outils + équipement + don) → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-bg-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack background e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-background').click();
+    await expect(page.getByTestId('background-form')).toBeVisible();
+
+    await page.getByTestId('background-form-id').fill('wanderer-e2e');
+    await page.getByTestId('background-form-name-fr').fill('Vagabond e2e');
+    await page
+      .getByTestId('background-form-description-fr')
+      .fill('Historique custom de test.');
+
+    // Toggle deux skills
+    await page.getByTestId('background-form-skill-athletics').click();
+    await page.getByTestId('background-form-skill-survival').click();
+
+    // Ajoute un outil libre
+    await page
+      .getByTestId('background-form-tool-input')
+      .fill('navigators-tools');
+    await page.getByTestId('background-form-tool-add').click();
+
+    // Ajoute une ligne d'équipement référant un item SRD (corde — items.json)
+    await page.getByTestId('background-form-equipment-add').click();
+    const itemWrapper = page.getByTestId('background-form-equipment-item-0');
+    await itemWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Corde', exact: true }).click();
+
+    // Don du background (FR requis pour name + description)
+    await page
+      .getByTestId('background-form-feature-name-fr')
+      .fill('Bénédiction du chemin');
+    await page
+      .getByTestId('background-form-feature-description-fr')
+      .fill('Voyage plus vite que les autres.');
+
+    await page.getByTestId('background-form-confirm').click();
+
+    await expect(page.getByTestId('background-form')).toHaveCount(0);
+    const bgRow = page.locator(
+      '[data-testid="pack-editor-background-row"][data-background-id="wanderer-e2e"]',
+    );
+    await expect(bgRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-bg-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack background e2e');
+  });
 });

@@ -1,6 +1,11 @@
 import { useCallback, useState } from 'react';
 
-import type { Feat, Invocation, Subancestry } from '@/shared/types/content';
+import type {
+  Background,
+  Feat,
+  Invocation,
+  Subancestry,
+} from '@/shared/types/content';
 import type { CustomContentPack } from '@/shared/types/custom-content-pack';
 
 /**
@@ -10,9 +15,9 @@ import type { CustomContentPack } from '@/shared/types/custom-content-pack';
  * avec les inputs natifs.
  *
  * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. 3C.3 ajoute `subancestries`.
- * Les autres tableaux restent vides ; les sous-jalons 3C.4..3C.9 les
- * ajouteront. La validation Zod (`parsePack`) tolère des tableaux vides tant
- * qu'AU MOINS un tableau est non vide.
+ * 3C.4 ajoute `backgrounds`. Les autres tableaux restent vides ; les
+ * sous-jalons 3C.5..3C.9 les ajouteront. La validation Zod (`parsePack`)
+ * tolère des tableaux vides tant qu'AU MOINS un tableau est non vide.
  */
 export interface PackBuilderState {
   meta: {
@@ -27,6 +32,7 @@ export interface PackBuilderState {
   feats: Feat[];
   invocations: Invocation[];
   subancestries: Subancestry[];
+  backgrounds: Background[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -42,6 +48,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
   feats: [],
   invocations: [],
   subancestries: [],
+  backgrounds: [],
 };
 
 /**
@@ -82,6 +89,8 @@ export function packFromBuilderState(
         state.invocations.length > 0 ? state.invocations : undefined,
       subancestries:
         state.subancestries.length > 0 ? state.subancestries : undefined,
+      backgrounds:
+        state.backgrounds.length > 0 ? state.backgrounds : undefined,
     },
   } as CustomContentPack;
 }
@@ -98,6 +107,8 @@ interface UsePackBuilderApi {
   removeInvocation: (id: string) => void;
   addSubancestry: (subancestry: Subancestry) => void;
   removeSubancestry: (id: string) => void;
+  addBackground: (background: Background) => void;
+  removeBackground: (id: string) => void;
   reset: () => void;
 }
 
@@ -162,6 +173,22 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addBackground = useCallback((background: Background): void => {
+    setState((prev) => {
+      const next = prev.backgrounds.filter(
+        (existing) => existing.id !== background.id,
+      );
+      return { ...prev, backgrounds: [...next, background] };
+    });
+  }, []);
+
+  const removeBackground = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      backgrounds: prev.backgrounds.filter((bg) => bg.id !== id),
+    }));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
@@ -175,6 +202,8 @@ export function usePackBuilder(
     removeInvocation,
     addSubancestry,
     removeSubancestry,
+    addBackground,
+    removeBackground,
     reset,
   };
 }
