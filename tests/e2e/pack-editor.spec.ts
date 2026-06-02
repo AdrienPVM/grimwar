@@ -324,6 +324,70 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toContainText('Pack arme e2e');
   });
 
+  test('JALON 3C.8 — crée un pack avec 1 ascendance (taille + vitesse + ASI + dragon) → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-ancestry-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack ascendance e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-ancestry').click();
+    await expect(page.getByTestId('ancestry-form')).toBeVisible();
+
+    await page
+      .getByTestId('ancestry-form-id')
+      .fill('peuple-des-brumes-e2e');
+    await page
+      .getByTestId('ancestry-form-name-fr')
+      .fill('Peuple des brumes e2e');
+    await page
+      .getByTestId('ancestry-form-description-fr')
+      .fill('Ascendance brumeuse, ardue à atteindre.');
+
+    // Une ASI : Dextérité +2
+    await page.getByTestId('ancestry-form-asi-add').click();
+    const asiWrapper = page.getByTestId('ancestry-form-asi-ability-0');
+    await asiWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Dextérité' }).click();
+
+    // Un ancêtre draconique : Givre
+    await page.getByTestId('ancestry-form-dragon-add').click();
+    await page
+      .getByTestId('ancestry-form-dragon-id-0')
+      .fill('frost-ancestor');
+    await page
+      .getByTestId('ancestry-form-dragon-name-fr-0')
+      .fill('Ancêtre de givre');
+    const damageTypeWrapper = page.getByTestId(
+      'ancestry-form-dragon-damage-type-0',
+    );
+    await damageTypeWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Froid' }).click();
+    await page
+      .getByTestId('ancestry-form-dragon-damage-label-fr-0')
+      .fill('froid');
+
+    await page.getByTestId('ancestry-form-confirm').click();
+
+    await expect(page.getByTestId('ancestry-form')).toHaveCount(0);
+    const ancestryRow = page.locator(
+      '[data-testid="pack-editor-ancestry-row"][data-ancestry-id="peuple-des-brumes-e2e"]',
+    );
+    await expect(ancestryRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page
+      .locator('[data-pack-id="pack-ancestry-e2e"]')
+      .first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack ascendance e2e');
+  });
+
   test('JALON 3C.4 — crée un pack avec 1 background (skills + outils + équipement + don) → save → liste packs', async ({
     page,
   }) => {

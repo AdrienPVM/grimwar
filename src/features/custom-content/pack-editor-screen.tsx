@@ -11,6 +11,7 @@ import { t } from '@/shared/lib/i18n';
 import { writePack } from '@/shared/lib/services/pack-storage';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type {
+  Ancestry,
   Background,
   Feat,
   Invocation,
@@ -20,6 +21,11 @@ import type {
   Subclass,
 } from '@/shared/types/content';
 
+import {
+  AncestryForm,
+  EMPTY_ANCESTRY_DRAFT,
+  type AncestryFormDraft,
+} from './forms/ancestry-form';
 import {
   BackgroundForm,
   EMPTY_BACKGROUND_DRAFT,
@@ -100,6 +106,10 @@ export function PackEditorScreen(): JSX.Element {
   const [isAddingSpell, setIsAddingSpell] = useState<boolean>(false);
   const [itemDraft, setItemDraft] = useState<ItemFormDraft>(EMPTY_ITEM_DRAFT);
   const [isAddingItem, setIsAddingItem] = useState<boolean>(false);
+  const [ancestryDraft, setAncestryDraft] = useState<AncestryFormDraft>(
+    EMPTY_ANCESTRY_DRAFT,
+  );
+  const [isAddingAncestry, setIsAddingAncestry] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -229,6 +239,24 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeItemForm],
   );
 
+  const openAncestryForm = useCallback(() => {
+    setAncestryDraft(EMPTY_ANCESTRY_DRAFT);
+    setIsAddingAncestry(true);
+  }, []);
+
+  const closeAncestryForm = useCallback(() => {
+    setIsAddingAncestry(false);
+    setAncestryDraft(EMPTY_ANCESTRY_DRAFT);
+  }, []);
+
+  const confirmAncestry = useCallback(
+    (ancestry: Ancestry) => {
+      builder.addAncestry(ancestry);
+      closeAncestryForm();
+    },
+    [builder, closeAncestryForm],
+  );
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     const candidate = packFromBuilderState(builder.state);
@@ -286,6 +314,7 @@ export function PackEditorScreen(): JSX.Element {
   const subclassCount = builder.state.subclasses.length;
   const spellCount = builder.state.spells.length;
   const itemCount = builder.state.items.length;
+  const ancestryCount = builder.state.ancestries.length;
 
   return (
     <main
@@ -863,9 +892,78 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.8 AncestryForm, 3C.9 ClassForm). On les liste
-            pour communiquer la roadmap sans pour autant les rendre cliquables :
-            un placeholder grisé suffit jusqu'à leur livraison. */}
+        {/* Ascendances */}
+        <div className="mt-10" data-testid="pack-editor-ancestries">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.ancestries')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({ancestryCount})
+              </span>
+            </h3>
+            {!isAddingAncestry ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openAncestryForm}
+                data-testid="pack-editor-add-ancestry"
+              >
+                {t('customContent.editor.ancestries.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {ancestryCount === 0 && !isAddingAncestry ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.ancestries.empty')}
+            </p>
+          ) : null}
+
+          {ancestryCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.ancestries.map((ancestry) => (
+                <li
+                  key={ancestry.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-ancestry-row"
+                  data-ancestry-id={ancestry.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {ancestry.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {ancestry.id}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeAncestry(ancestry.id)}
+                    data-testid="pack-editor-ancestry-remove"
+                  >
+                    {t('customContent.editor.ancestries.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingAncestry ? (
+            <div className="mt-5">
+              <AncestryForm
+                draft={ancestryDraft}
+                onChange={setAncestryDraft}
+                onConfirm={confirmAncestry}
+                onCancel={closeAncestryForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégorie à venir (3C.9 ClassForm). On la liste pour communiquer la
+            roadmap sans pour autant la rendre cliquable : un placeholder grisé
+            suffit jusqu'à sa livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
           <p className="font-meta text-meta uppercase tracking-[0.18em] text-text-tertiary">
             {t('customContent.editor.comingSoon.title')}
@@ -910,7 +1008,8 @@ export function PackEditorScreen(): JSX.Element {
             isAddingBackground ||
             isAddingSubclass ||
             isAddingSpell ||
-            isAddingItem
+            isAddingItem ||
+            isAddingAncestry
           }
           data-testid="pack-editor-save"
         >

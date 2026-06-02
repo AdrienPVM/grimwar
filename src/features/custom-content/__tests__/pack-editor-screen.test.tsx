@@ -888,3 +888,126 @@ describe("PackEditorScreen — création d'un objet (JALON 3C.7)", () => {
     expect(screen.queryByTestId('pack-editor-item-row')).not.toBeInTheDocument();
   });
 });
+
+describe("PackEditorScreen — création d'une ascendance (JALON 3C.8)", () => {
+  it('saisit méta + ancestry minimale → save → writePack reçoit pack.entities.ancestries', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-ancestry');
+    await user.type(
+      screen.getByTestId('pack-meta-name-fr'),
+      'Pack ascendance',
+    );
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-ancestry'));
+    expect(screen.getByTestId('ancestry-form')).toBeInTheDocument();
+
+    await user.type(
+      screen.getByTestId('ancestry-form-id'),
+      'peuple-des-brumes',
+    );
+    await user.type(
+      screen.getByTestId('ancestry-form-name-fr'),
+      'Peuple des brumes',
+    );
+    await user.type(
+      screen.getByTestId('ancestry-form-description-fr'),
+      'Ascendance brumeuse.',
+    );
+    await user.click(screen.getByTestId('ancestry-form-confirm'));
+
+    expect(screen.queryByTestId('ancestry-form')).not.toBeInTheDocument();
+    const row = screen.getByTestId('pack-editor-ancestry-row');
+    expect(row).toHaveAttribute('data-ancestry-id', 'peuple-des-brumes');
+    expect(row).toHaveTextContent('Peuple des brumes');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.ancestries).toHaveLength(1);
+    const a = calledPack.entities.ancestries[0];
+    expect(a.id).toBe('peuple-des-brumes');
+    expect(a.name.fr).toBe('Peuple des brumes');
+    expect(a.description.fr).toBe('Ascendance brumeuse.');
+    expect(a.size).toBe('medium');
+    expect(a.speed).toBe(9);
+    expect(a.source).toBe('aidedd-homebrew');
+    expect(a.options).toEqual({});
+    expect(calledPack.entities.feats).toBeUndefined();
+  });
+
+  it("rejette un id réservé (« human ») — pas d'ajout, form reste ouvert", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-ancestry'));
+    await user.type(screen.getByTestId('ancestry-form-id'), 'human');
+    await user.type(screen.getByTestId('ancestry-form-name-fr'), 'Humain');
+    await user.type(
+      screen.getByTestId('ancestry-form-description-fr'),
+      'Tentative homebrew.',
+    );
+    await user.click(screen.getByTestId('ancestry-form-confirm'));
+
+    expect(screen.getByTestId('ancestry-form')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('pack-editor-ancestry-row'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('propage une option draconique avec id + type + label', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-dragon');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack dragon');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-ancestry'));
+    await user.type(
+      screen.getByTestId('ancestry-form-id'),
+      'drake-des-cimes',
+    );
+    await user.type(
+      screen.getByTestId('ancestry-form-name-fr'),
+      'Drake des cimes',
+    );
+    await user.type(
+      screen.getByTestId('ancestry-form-description-fr'),
+      'Ascendance draconique alpine.',
+    );
+
+    // Ajouter une option draconique
+    await user.click(screen.getByTestId('ancestry-form-dragon-add'));
+    await user.type(
+      screen.getByTestId('ancestry-form-dragon-id-0'),
+      'frost-ancestor',
+    );
+    await user.type(
+      screen.getByTestId('ancestry-form-dragon-name-fr-0'),
+      'Ancêtre de givre',
+    );
+    await user.type(
+      screen.getByTestId('ancestry-form-dragon-damage-label-fr-0'),
+      'froid',
+    );
+    // damageType = 'fire' par défaut, on garde — assertion porte sur la valeur
+
+    await user.click(screen.getByTestId('ancestry-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    const a = calledPack.entities.ancestries[0];
+    expect(a.options.dragonAncestries).toHaveLength(1);
+    expect(a.options.dragonAncestries[0]).toEqual({
+      id: 'frost-ancestor',
+      name: { fr: 'Ancêtre de givre' },
+      damageType: 'fire',
+      damageTypeLabel: { fr: 'froid' },
+    });
+  });
+});
