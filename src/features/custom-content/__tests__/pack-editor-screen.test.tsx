@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -33,8 +33,10 @@ vi.mock('@/features/auth/use-auth', () => ({
 }));
 
 const mockWritePack = vi.fn();
+const mockGetPack = vi.fn();
 vi.mock('@/shared/lib/services/pack-storage', () => ({
   writePack: (...args: unknown[]) => mockWritePack(...args),
+  getPack: (...args: unknown[]) => mockGetPack(...args),
 }));
 
 const mockShowToast = vi.fn();
@@ -104,6 +106,7 @@ beforeEach(() => {
     isAnonymous: true,
   });
   mockWritePack.mockReset().mockResolvedValue(undefined);
+  mockGetPack.mockReset().mockResolvedValue(null);
   mockShowToast.mockReset();
   mockNavigate.mockReset();
 });
@@ -116,6 +119,21 @@ function renderScreen(): void {
   render(
     <MemoryRouter initialEntries={['/account/content/new']}>
       <PackEditorScreen />
+    </MemoryRouter>,
+  );
+}
+
+function renderEditScreen(packId: string): void {
+  render(
+    <MemoryRouter
+      initialEntries={[`/account/content/edit/${packId}`]}
+    >
+      <Routes>
+        <Route
+          path="/account/content/edit/:packId"
+          element={<PackEditorScreen />}
+        />
+      </Routes>
     </MemoryRouter>,
   );
 }
@@ -1122,5 +1140,209 @@ describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
       ability: 'int',
       progression: 'full',
     });
+  });
+});
+
+describe('PackEditorScreen — édition d\'un pack existant (JALON 3C.10)', () => {
+  it("charge un pack existant via getPack et pré-remplit méta + 1 feat", async () => {
+    mockGetPack.mockResolvedValueOnce({
+      meta: {
+        id: 'pack-existant',
+        name: { fr: 'Pack existant', en: 'Existing pack' },
+        version: '1.2.3',
+        author: 'Adrien',
+        createdAt: '2026-06-02T10:00:00Z',
+        description: { fr: 'Description du pack' },
+      },
+      entities: {
+        feats: [
+          {
+            id: 'feat-existant',
+            name: { fr: 'Don existant', en: 'Existing feat' },
+            prerequisite: null,
+            summary: { fr: 'Résumé.' },
+            description: { fr: 'Description.' },
+            source: 'aidedd-homebrew',
+          },
+        ],
+      },
+    });
+    renderEditScreen('pack-existant');
+
+    // Attend la fin du chargement (Splash → contenu).
+    await waitFor(() =>
+      expect(screen.getByTestId('pack-editor-title')).toHaveTextContent(
+        /Modifier le pack/i,
+      ),
+    );
+
+    // Méta pré-remplie + ID en readOnly
+    const idInput = screen.getByTestId('pack-meta-id') as HTMLInputElement;
+    expect(idInput.value).toBe('pack-existant');
+    expect(idInput).toHaveAttribute('readonly');
+    const nameFr = screen.getByTestId('pack-meta-name-fr') as HTMLInputElement;
+    expect(nameFr.value).toBe('Pack existant');
+    const author = screen.getByTestId('pack-meta-author') as HTMLInputElement;
+    expect(author.value).toBe('Adrien');
+
+    // Feat hydraté en row
+    const row = screen.getByTestId('pack-editor-feat-row');
+    expect(row).toHaveAttribute('data-feat-id', 'feat-existant');
+    expect(row).toHaveTextContent('Don existant');
+
+    // getPack a bien été appelé avec uid + packId
+    expect(mockGetPack).toHaveBeenCalledWith(UID, 'pack-existant');
+  });
+
+  it('affiche un message dédié quand le pack est introuvable (404)', async () => {
+    mockGetPack.mockResolvedValueOnce(null);
+    renderEditScreen('pack-fantome');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pack-editor-load-error')).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText(/Pack introuvable\. Il a peut-être été supprimé\./i),
+    ).toBeInTheDocument();
+  });
+
+  it('save (overwrite) ré-écrit le pack chargé via writePack', async () => {
+    mockGetPack.mockResolvedValueOnce({
+      meta: {
+        id: 'pack-existant',
+        name: { fr: 'Pack existant' },
+        version: '1.0.0',
+        author: 'Adrien',
+        createdAt: '2026-06-02T10:00:00Z',
+      },
+      entities: {
+        feats: [
+          {
+            id: 'f1',
+            name: { fr: 'F1' },
+            prerequisite: null,
+            summary: { fr: 'S1' },
+            description: { fr: 'D1' },
+            source: 'aidedd-homebrew',
+          },
+        ],
+      },
+    });
+    renderEditScreen('pack-existant');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pack-editor-title')).toHaveTextContent(
+        /Modifier le pack/i,
+      ),
+    );
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.meta.id).toBe('pack-existant');
+    expect(calledPack.entities.feats).toHaveLength(1);
+  });
+});
+
+describe('PackEditorScreen — mode édition (JALON 3C.10)', () => {
+  const baseExistingPack = {
+    meta: {
+      id: 'pack-edit-cible',
+      name: { fr: 'Pack à modifier', en: 'Pack to edit' },
+      version: '1.0.0',
+      author: 'Adrien',
+      createdAt: '2026-06-02T10:00:00Z',
+    },
+    entities: {
+      feats: [
+        {
+          id: 'don-existant',
+          name: { fr: 'Don existant', en: 'Existing feat' },
+          source: 'aidedd-homebrew',
+        },
+      ],
+    },
+  };
+
+  it('charge un pack existant, pré-remplit méta et liste les feats', async () => {
+    mockGetPack.mockResolvedValueOnce(baseExistingPack);
+    renderEditScreen('pack-edit-cible');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pack-editor-title')).toHaveTextContent(
+        /Modifier le pack/i,
+      );
+    });
+
+    const metaIdInput = screen.getByTestId(
+      'pack-meta-id',
+    ) as HTMLInputElement;
+    expect(metaIdInput.value).toBe('pack-edit-cible');
+    expect(metaIdInput.readOnly).toBe(true);
+
+    const featRow = screen.getByTestId('pack-editor-feat-row');
+    expect(featRow).toHaveAttribute('data-feat-id', 'don-existant');
+    expect(featRow).toHaveTextContent('Don existant');
+    expect(mockGetPack).toHaveBeenCalledWith(UID, 'pack-edit-cible');
+  });
+
+  it('modifier un feat existant ouvre le form pré-rempli puis upsert sur confirm', async () => {
+    mockGetPack.mockResolvedValueOnce(baseExistingPack);
+    const user = userEvent.setup();
+    renderEditScreen('pack-edit-cible');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pack-editor-feat-row')).toBeInTheDocument(),
+    );
+
+    await user.click(screen.getByTestId('pack-editor-feat-edit'));
+    expect(screen.getByTestId('feat-form')).toBeInTheDocument();
+    const featFormId = screen.getByTestId('feat-form-id') as HTMLInputElement;
+    expect(featFormId.value).toBe('don-existant');
+
+    const featFormNameFr = screen.getByTestId(
+      'feat-form-name-fr',
+    ) as HTMLInputElement;
+    await user.clear(featFormNameFr);
+    await user.type(featFormNameFr, 'Don renommé');
+
+    await user.click(screen.getByTestId('feat-form-confirm'));
+    expect(screen.queryByTestId('feat-form')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pack-editor-feat-row')).toHaveTextContent(
+      'Don renommé',
+    );
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.feats).toHaveLength(1);
+    expect(calledPack.entities.feats[0].name.fr).toBe('Don renommé');
+    expect(calledPack.entities.feats[0].id).toBe('don-existant');
+  });
+
+  it("affiche un écran d'erreur si le pack est introuvable", async () => {
+    mockGetPack.mockResolvedValueOnce(null);
+    renderEditScreen('pack-introuvable');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pack-editor-load-error')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('pack-editor-load-error')).toHaveTextContent(
+      /Pack introuvable/i,
+    );
+  });
+
+  it("affiche un écran d'erreur si Firestore lève", async () => {
+    mockGetPack.mockRejectedValueOnce(new Error('Permission denied'));
+    renderEditScreen('pack-cible');
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pack-editor-load-error')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('pack-editor-load-error')).toHaveTextContent(
+      /Permission denied/i,
+    );
   });
 });

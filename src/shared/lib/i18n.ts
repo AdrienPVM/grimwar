@@ -934,7 +934,15 @@ export type StringKey =
   | 'customContent.editor.classForm.error.multiclassMinimumRequired'
   | 'customContent.editor.classForm.error.multiclassMinimumAbilityRequired'
   | 'customContent.editor.classForm.error.multiclassMinimumDuplicate'
-  | 'customContent.editor.classForm.error.multiclassMinimumOutOfRange';
+  | 'customContent.editor.classForm.error.multiclassMinimumOutOfRange'
+  | 'customContent.editor.editMode.title'
+  | 'customContent.editor.editMode.subtitle'
+  | 'customContent.editor.editMode.notFound'
+  | 'customContent.editor.editMode.errorTitle'
+  | 'customContent.editor.editMode.back'
+  | 'customContent.editor.meta.idHelperEdit'
+  | 'customContent.editor.entityRow.edit'
+  | 'customContent.list.edit';
 
 type Dict = Record<StringKey, string>;
 
@@ -2300,6 +2308,19 @@ const STRINGS: Record<Locale, Dict> = {
       'Une même caractéristique ne peut pas figurer deux fois dans les prérequis.',
     'customContent.editor.classForm.error.multiclassMinimumOutOfRange':
       'Le minimum doit être compris entre 1 et 20.',
+    // Edit mode (JALON 3C.10)
+    'customContent.editor.editMode.title': 'Modifier le pack',
+    'customContent.editor.editMode.subtitle':
+      'Édite le contenu d’un pack importé. Le `save` écrasera la version actuelle.',
+    'customContent.editor.editMode.notFound':
+      'Pack introuvable. Il a peut-être été supprimé.',
+    'customContent.editor.editMode.errorTitle':
+      'Impossible de charger le pack',
+    'customContent.editor.editMode.back': 'Retour à la liste',
+    'customContent.editor.meta.idHelperEdit':
+      'Identifiant verrouillé : pour le renommer, exporte puis ré-importe sous un nouvel id.',
+    'customContent.editor.entityRow.edit': 'Modifier',
+    'customContent.list.edit': 'Modifier',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -3543,6 +3564,18 @@ const STRINGS: Record<Locale, Dict> = {
       'An ability cannot appear twice in prerequisites.',
     'customContent.editor.classForm.error.multiclassMinimumOutOfRange':
       'Minimum must be between 1 and 20.',
+    // Edit mode (JALON 3C.10)
+    'customContent.editor.editMode.title': 'Edit pack',
+    'customContent.editor.editMode.subtitle':
+      'Edit an imported pack. Save will overwrite the current version.',
+    'customContent.editor.editMode.notFound':
+      'Pack not found. It may have been deleted.',
+    'customContent.editor.editMode.errorTitle': 'Failed to load pack',
+    'customContent.editor.editMode.back': 'Back to list',
+    'customContent.editor.meta.idHelperEdit':
+      'Identifier locked: to rename, export then re-import under a new id.',
+    'customContent.editor.entityRow.edit': 'Edit',
+    'customContent.list.edit': 'Edit',
   },
 };
 
