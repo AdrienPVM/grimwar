@@ -14,6 +14,7 @@ import type {
   Background,
   Feat,
   Invocation,
+  Spell,
   Subancestry,
   Subclass,
 } from '@/shared/types/content';
@@ -36,6 +37,11 @@ import {
   SubancestryForm,
   type SubancestryFormDraft,
 } from './forms/subancestry-form';
+import {
+  EMPTY_SPELL_DRAFT,
+  SpellForm,
+  type SpellFormDraft,
+} from './forms/spell-form';
 import {
   EMPTY_SUBCLASS_DRAFT,
   SubclassForm,
@@ -82,6 +88,10 @@ export function PackEditorScreen(): JSX.Element {
     EMPTY_SUBCLASS_DRAFT,
   );
   const [isAddingSubclass, setIsAddingSubclass] = useState<boolean>(false);
+  const [spellDraft, setSpellDraft] = useState<SpellFormDraft>(
+    EMPTY_SPELL_DRAFT,
+  );
+  const [isAddingSpell, setIsAddingSpell] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -175,6 +185,24 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeSubclassForm],
   );
 
+  const openSpellForm = useCallback(() => {
+    setSpellDraft(EMPTY_SPELL_DRAFT);
+    setIsAddingSpell(true);
+  }, []);
+
+  const closeSpellForm = useCallback(() => {
+    setIsAddingSpell(false);
+    setSpellDraft(EMPTY_SPELL_DRAFT);
+  }, []);
+
+  const confirmSpell = useCallback(
+    (spell: Spell) => {
+      builder.addSpell(spell);
+      closeSpellForm();
+    },
+    [builder, closeSpellForm],
+  );
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     const candidate = packFromBuilderState(builder.state);
@@ -230,6 +258,7 @@ export function PackEditorScreen(): JSX.Element {
   const subancestryCount = builder.state.subancestries.length;
   const backgroundCount = builder.state.backgrounds.length;
   const subclassCount = builder.state.subclasses.length;
+  const spellCount = builder.state.spells.length;
 
   return (
     <main
@@ -668,7 +697,77 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.6..3C.9). On les liste pour communiquer la
+        {/* Sorts */}
+        <div className="mt-10" data-testid="pack-editor-spells">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.spells')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({spellCount})
+              </span>
+            </h3>
+            {!isAddingSpell ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openSpellForm}
+                data-testid="pack-editor-add-spell"
+              >
+                {t('customContent.editor.spells.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {spellCount === 0 && !isAddingSpell ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.spells.empty')}
+            </p>
+          ) : null}
+
+          {spellCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.spells.map((spell) => (
+                <li
+                  key={spell.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-spell-row"
+                  data-spell-id={spell.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {spell.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {spell.id} · {t('spell.level.prefix')} {spell.level} ·{' '}
+                      {t(`school.${spell.school}`)}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeSpell(spell.id)}
+                    data-testid="pack-editor-spell-remove"
+                  >
+                    {t('customContent.editor.spells.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingSpell ? (
+            <div className="mt-5">
+              <SpellForm
+                draft={spellDraft}
+                onChange={setSpellDraft}
+                onConfirm={confirmSpell}
+                onCancel={closeSpellForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégories à venir (3C.7..3C.9). On les liste pour communiquer la
             roadmap sans pour autant les rendre cliquables : un placeholder
             grisé suffit jusqu'à leur livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
@@ -713,7 +812,8 @@ export function PackEditorScreen(): JSX.Element {
             isAddingInvocation ||
             isAddingSubancestry ||
             isAddingBackground ||
-            isAddingSubclass
+            isAddingSubclass ||
+            isAddingSpell
           }
           data-testid="pack-editor-save"
         >
