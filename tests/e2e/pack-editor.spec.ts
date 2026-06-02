@@ -388,6 +388,58 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toContainText('Pack ascendance e2e');
   });
 
+  test('JALON 3C.9 — crée un pack avec 1 classe (hit die + primary/saves + spellcasting) → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-class-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack classe e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-class').click();
+    await expect(page.getByTestId('class-form')).toBeVisible();
+
+    await page.getByTestId('class-form-id').fill('cendre-pacte-e2e');
+    await page
+      .getByTestId('class-form-name-fr')
+      .fill('Cendre-pacte e2e');
+    await page
+      .getByTestId('class-form-description-fr')
+      .fill('Classe maison construite pour le test e2e.');
+
+    // Hit die : d10
+    const hitDieWrapper = page.getByTestId('class-form-hit-die');
+    await hitDieWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'D10' }).click();
+
+    // Aptitudes principales : Charisme. Sauvegardes : Charisme + Sagesse.
+    await page.getByTestId('class-form-primary-cha').click();
+    await page.getByTestId('class-form-save-cha').click();
+    await page.getByTestId('class-form-save-sag').click();
+
+    // Spellcasting ON, on garde les valeurs par défaut (Int + Lanceur complet).
+    await page.getByTestId('class-form-spellcasting-toggle').check();
+
+    await page.getByTestId('class-form-confirm').click();
+
+    await expect(page.getByTestId('class-form')).toHaveCount(0);
+    const classRow = page.locator(
+      '[data-testid="pack-editor-class-row"][data-class-id="cendre-pacte-e2e"]',
+    );
+    await expect(classRow).toBeVisible();
+    await expect(classRow).toContainText('Cendre-pacte e2e');
+    await expect(classRow).toContainText('D10');
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-class-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack classe e2e');
+  });
+
   test('JALON 3C.4 — crée un pack avec 1 background (skills + outils + équipement + don) → save → liste packs', async ({
     page,
   }) => {

@@ -13,6 +13,7 @@ import { showToast } from '@/shared/lib/slices/toast-slice';
 import type {
   Ancestry,
   Background,
+  ClassEntity,
   Feat,
   Invocation,
   Item,
@@ -26,6 +27,11 @@ import {
   EMPTY_ANCESTRY_DRAFT,
   type AncestryFormDraft,
 } from './forms/ancestry-form';
+import {
+  ClassForm,
+  EMPTY_CLASS_DRAFT,
+  type ClassFormDraft,
+} from './forms/class-form';
 import {
   BackgroundForm,
   EMPTY_BACKGROUND_DRAFT,
@@ -110,6 +116,8 @@ export function PackEditorScreen(): JSX.Element {
     EMPTY_ANCESTRY_DRAFT,
   );
   const [isAddingAncestry, setIsAddingAncestry] = useState<boolean>(false);
+  const [classDraft, setClassDraft] = useState<ClassFormDraft>(EMPTY_CLASS_DRAFT);
+  const [isAddingClass, setIsAddingClass] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -257,6 +265,24 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeAncestryForm],
   );
 
+  const openClassForm = useCallback(() => {
+    setClassDraft(EMPTY_CLASS_DRAFT);
+    setIsAddingClass(true);
+  }, []);
+
+  const closeClassForm = useCallback(() => {
+    setIsAddingClass(false);
+    setClassDraft(EMPTY_CLASS_DRAFT);
+  }, []);
+
+  const confirmClass = useCallback(
+    (cls: ClassEntity) => {
+      builder.addClass(cls);
+      closeClassForm();
+    },
+    [builder, closeClassForm],
+  );
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     const candidate = packFromBuilderState(builder.state);
@@ -315,6 +341,7 @@ export function PackEditorScreen(): JSX.Element {
   const spellCount = builder.state.spells.length;
   const itemCount = builder.state.items.length;
   const ancestryCount = builder.state.ancestries.length;
+  const classCount = builder.state.classes.length;
 
   return (
     <main
@@ -961,16 +988,75 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégorie à venir (3C.9 ClassForm). On la liste pour communiquer la
-            roadmap sans pour autant la rendre cliquable : un placeholder grisé
-            suffit jusqu'à sa livraison. */}
-        <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
-          <p className="font-meta text-meta uppercase tracking-[0.18em] text-text-tertiary">
-            {t('customContent.editor.comingSoon.title')}
-          </p>
-          <p className="mt-2 font-serif text-body-sm text-text-secondary">
-            {t('customContent.editor.comingSoon.body')}
-          </p>
+        {/* Classes (JALON 3C.9) — dernière catégorie utilisateur-facing du
+            JALON 3C. À ce stade, toutes les 9 catégories du pack custom sont
+            éditables in-app. */}
+        <div className="mt-10" data-testid="pack-editor-classes">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.classes')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({classCount})
+              </span>
+            </h3>
+            {!isAddingClass ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openClassForm}
+                data-testid="pack-editor-add-class"
+              >
+                {t('customContent.editor.classes.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {classCount === 0 && !isAddingClass ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.classes.empty')}
+            </p>
+          ) : null}
+
+          {classCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.classes.map((cls) => (
+                <li
+                  key={cls.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-class-row"
+                  data-class-id={cls.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {cls.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {cls.id} · {cls.hitDie.toUpperCase()}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeClass(cls.id)}
+                    data-testid="pack-editor-class-remove"
+                  >
+                    {t('customContent.editor.classes.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingClass ? (
+            <div className="mt-5">
+              <ClassForm
+                draft={classDraft}
+                onChange={setClassDraft}
+                onConfirm={confirmClass}
+                onCancel={closeClassForm}
+              />
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -1009,7 +1095,8 @@ export function PackEditorScreen(): JSX.Element {
             isAddingSubclass ||
             isAddingSpell ||
             isAddingItem ||
-            isAddingAncestry
+            isAddingAncestry ||
+            isAddingClass
           }
           data-testid="pack-editor-save"
         >
