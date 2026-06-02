@@ -763,3 +763,128 @@ describe("PackEditorScreen — création d'un sort (JALON 3C.6)", () => {
     expect(screen.queryByTestId('pack-editor-spell-row')).not.toBeInTheDocument();
   });
 });
+
+describe("PackEditorScreen — création d'un objet (JALON 3C.7)", () => {
+  async function selectFromCombobox(
+    user: ReturnType<typeof userEvent.setup>,
+    wrapperTestId: string,
+    optionLabel: string,
+  ): Promise<void> {
+    const wrapper = screen.getByTestId(wrapperTestId);
+    const trigger = within(wrapper).getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: optionLabel }));
+  }
+
+  it('saisit méta + gear minimal → save → writePack reçoit pack.entities.items', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-item');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack objet');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-item'));
+    expect(screen.getByTestId('item-form')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('item-form-id'), 'corde-rituelle');
+    await user.type(
+      screen.getByTestId('item-form-name-fr'),
+      'Corde rituelle',
+    );
+    await selectFromCombobox(user, 'item-form-category', 'Équipement');
+    // weight=0 par défaut, OK
+    await user.click(screen.getByTestId('item-form-confirm'));
+
+    expect(screen.queryByTestId('item-form')).not.toBeInTheDocument();
+    const itemRow = screen.getByTestId('pack-editor-item-row');
+    expect(itemRow).toHaveAttribute('data-item-id', 'corde-rituelle');
+    expect(itemRow).toHaveTextContent('Corde rituelle');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.items).toHaveLength(1);
+    const it = calledPack.entities.items[0];
+    expect(it.id).toBe('corde-rituelle');
+    expect(it.name.fr).toBe('Corde rituelle');
+    expect(it.category).toBe('gear');
+    expect(it.cost).toBeNull();
+    expect(it.weight).toBe(0);
+    expect(it.description).toBeNull();
+    expect(it.source).toBe('aidedd-homebrew');
+    expect(it).not.toHaveProperty('damage');
+    expect(it).not.toHaveProperty('acBase');
+    expect(calledPack.entities.feats).toBeUndefined();
+  });
+
+  it("propage damage + range + masteryProperty + properties libres pour une arme", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-weapon');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack arme');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-item'));
+    await user.type(screen.getByTestId('item-form-id'), 'epee-ombre');
+    await user.type(
+      screen.getByTestId('item-form-name-fr'),
+      'Épée d’ombre',
+    );
+    await selectFromCombobox(user, 'item-form-category', 'Arme');
+
+    // Damage
+    await user.click(screen.getByTestId('item-form-has-damage'));
+    await user.type(screen.getByTestId('item-form-damage-dice'), '1d8');
+    await user.type(
+      screen.getByTestId('item-form-damage-type-label-fr'),
+      'tranchant',
+    );
+
+    // Range
+    await user.click(screen.getByTestId('item-form-has-range'));
+    // Les FieldNumber sont pré-remplis (20 / 60), on les laisse.
+
+    // Mastery
+    await user.click(screen.getByTestId('item-form-has-mastery'));
+    await selectFromCombobox(user, 'item-form-mastery-property', 'vex');
+
+    // Propriété libre
+    await user.type(
+      screen.getByTestId('item-form-property-input'),
+      'finesse',
+    );
+    await user.click(screen.getByTestId('item-form-property-add'));
+
+    await user.click(screen.getByTestId('item-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    const it = calledPack.entities.items[0];
+    expect(it.category).toBe('weapon');
+    expect(it.damage).toEqual({
+      dice: '1d8',
+      type: 'slashing',
+      typeLabel: { fr: 'tranchant' },
+    });
+    expect(it.range).toEqual({ normal: 20, max: 60 });
+    expect(it.masteryProperty).toBe('vex');
+    expect(it.properties).toEqual(['finesse']);
+  });
+
+  it("refuse confirm si category non choisie (erreur visible, pas d'ajout)", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-item'));
+    await user.type(screen.getByTestId('item-form-id'), 'sans-cat');
+    await user.type(screen.getByTestId('item-form-name-fr'), 'Sans catégorie');
+    await user.click(screen.getByTestId('item-form-confirm'));
+
+    expect(screen.getByTestId('item-form')).toBeInTheDocument();
+    expect(screen.queryByTestId('pack-editor-item-row')).not.toBeInTheDocument();
+  });
+});

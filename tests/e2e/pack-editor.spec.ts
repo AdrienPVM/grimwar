@@ -270,6 +270,60 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toContainText('Pack sort e2e');
   });
 
+  test('JALON 3C.7 — crée un pack avec 1 arme (damage + mastery + propriété) → save → liste packs', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    await page.getByTestId('pack-meta-id').fill('pack-item-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Pack arme e2e');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-item').click();
+    await expect(page.getByTestId('item-form')).toBeVisible();
+
+    await page.getByTestId('item-form-id').fill('epee-ombre-e2e');
+    await page.getByTestId('item-form-name-fr').fill('Épée d’ombre e2e');
+
+    const categoryWrapper = page.getByTestId('item-form-category');
+    await categoryWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'Arme' }).first().click();
+
+    // Damage 1d8 tranchant. La Checkbox primitive a son `<input>` en `sr-only`
+    // sous un label cliquable → en mobile viewport, Playwright voit le label
+    // intercepter les clics sur l'input. `force: true` bypass l'actionability
+    // check (le handler React écoute sur l'input, le clic le déclenche).
+    await page.getByTestId('item-form-has-damage').click({ force: true });
+    await page.getByTestId('item-form-damage-dice').fill('1d8');
+    await page.getByTestId('item-form-damage-type-label-fr').fill('tranchant');
+
+    // Mastery vex
+    await page.getByTestId('item-form-has-mastery').click({ force: true });
+    const masteryWrapper = page.getByTestId('item-form-mastery-property');
+    await masteryWrapper.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'vex' }).click();
+
+    // Propriété libre
+    await page.getByTestId('item-form-property-input').fill('finesse');
+    await page.getByTestId('item-form-property-add').click();
+
+    await page.getByTestId('item-form-confirm').click();
+
+    await expect(page.getByTestId('item-form')).toHaveCount(0);
+    const itemRow = page.locator(
+      '[data-testid="pack-editor-item-row"][data-item-id="epee-ombre-e2e"]',
+    );
+    await expect(itemRow).toBeVisible();
+
+    await page.getByTestId('pack-editor-save').click();
+
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+    const packRow = page.locator('[data-pack-id="pack-item-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await expect(packRow).toContainText('Pack arme e2e');
+  });
+
   test('JALON 3C.4 — crée un pack avec 1 background (skills + outils + équipement + don) → save → liste packs', async ({
     page,
   }) => {

@@ -14,6 +14,7 @@ import type {
   Background,
   Feat,
   Invocation,
+  Item,
   Spell,
   Subancestry,
   Subclass,
@@ -32,6 +33,11 @@ import {
   InvocationForm,
   type InvocationFormDraft,
 } from './forms/invocation-form';
+import {
+  EMPTY_ITEM_DRAFT,
+  ItemForm,
+  type ItemFormDraft,
+} from './forms/item-form';
 import {
   EMPTY_SUBANCESTRY_DRAFT,
   SubancestryForm,
@@ -92,6 +98,8 @@ export function PackEditorScreen(): JSX.Element {
     EMPTY_SPELL_DRAFT,
   );
   const [isAddingSpell, setIsAddingSpell] = useState<boolean>(false);
+  const [itemDraft, setItemDraft] = useState<ItemFormDraft>(EMPTY_ITEM_DRAFT);
+  const [isAddingItem, setIsAddingItem] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -203,6 +211,24 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeSpellForm],
   );
 
+  const openItemForm = useCallback(() => {
+    setItemDraft(EMPTY_ITEM_DRAFT);
+    setIsAddingItem(true);
+  }, []);
+
+  const closeItemForm = useCallback(() => {
+    setIsAddingItem(false);
+    setItemDraft(EMPTY_ITEM_DRAFT);
+  }, []);
+
+  const confirmItem = useCallback(
+    (item: Item) => {
+      builder.addItem(item);
+      closeItemForm();
+    },
+    [builder, closeItemForm],
+  );
+
   const handleSave = useCallback(async () => {
     if (!user) return;
     const candidate = packFromBuilderState(builder.state);
@@ -259,6 +285,7 @@ export function PackEditorScreen(): JSX.Element {
   const backgroundCount = builder.state.backgrounds.length;
   const subclassCount = builder.state.subclasses.length;
   const spellCount = builder.state.spells.length;
+  const itemCount = builder.state.items.length;
 
   return (
     <main
@@ -767,9 +794,78 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {/* Catégories à venir (3C.7..3C.9). On les liste pour communiquer la
-            roadmap sans pour autant les rendre cliquables : un placeholder
-            grisé suffit jusqu'à leur livraison. */}
+        {/* Objets */}
+        <div className="mt-10" data-testid="pack-editor-items">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.items')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({itemCount})
+              </span>
+            </h3>
+            {!isAddingItem ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openItemForm}
+                data-testid="pack-editor-add-item"
+              >
+                {t('customContent.editor.items.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {itemCount === 0 && !isAddingItem ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.items.empty')}
+            </p>
+          ) : null}
+
+          {itemCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.items.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-item-row"
+                  data-item-id={item.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {item.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {item.id} · {t(`item.category.${item.category}`)}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => builder.removeItem(item.id)}
+                    data-testid="pack-editor-item-remove"
+                  >
+                    {t('customContent.editor.items.remove')}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingItem ? (
+            <div className="mt-5">
+              <ItemForm
+                draft={itemDraft}
+                onChange={setItemDraft}
+                onConfirm={confirmItem}
+                onCancel={closeItemForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Catégories à venir (3C.8 AncestryForm, 3C.9 ClassForm). On les liste
+            pour communiquer la roadmap sans pour autant les rendre cliquables :
+            un placeholder grisé suffit jusqu'à leur livraison. */}
         <div className="mt-10 rounded-card border border-dashed border-white-8 px-6 py-5">
           <p className="font-meta text-meta uppercase tracking-[0.18em] text-text-tertiary">
             {t('customContent.editor.comingSoon.title')}
@@ -813,7 +909,8 @@ export function PackEditorScreen(): JSX.Element {
             isAddingSubancestry ||
             isAddingBackground ||
             isAddingSubclass ||
-            isAddingSpell
+            isAddingSpell ||
+            isAddingItem
           }
           data-testid="pack-editor-save"
         >

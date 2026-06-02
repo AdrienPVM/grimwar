@@ -4,6 +4,7 @@ import type {
   Background,
   Feat,
   Invocation,
+  Item,
   Spell,
   Subancestry,
   Subclass,
@@ -18,9 +19,9 @@ import type { CustomContentPack } from '@/shared/types/custom-content-pack';
  *
  * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. 3C.3 ajoute `subancestries`.
  * 3C.4 ajoute `backgrounds`. 3C.5 ajoute `subclasses`. 3C.6 ajoute `spells`.
- * Les autres tableaux restent vides ; les sous-jalons 3C.7..3C.9 les
- * ajouteront. La validation Zod (`parsePack`) tolère des tableaux vides tant
- * qu'AU MOINS un tableau est non vide.
+ * 3C.7 ajoute `items`. Les autres tableaux restent vides ; les sous-jalons
+ * 3C.8/3C.9 les ajouteront. La validation Zod (`parsePack`) tolère des
+ * tableaux vides tant qu'AU MOINS un tableau est non vide.
  */
 export interface PackBuilderState {
   meta: {
@@ -38,6 +39,7 @@ export interface PackBuilderState {
   backgrounds: Background[];
   subclasses: Subclass[];
   spells: Spell[];
+  items: Item[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -56,6 +58,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
   backgrounds: [],
   subclasses: [],
   spells: [],
+  items: [],
 };
 
 /**
@@ -101,6 +104,7 @@ export function packFromBuilderState(
       subclasses:
         state.subclasses.length > 0 ? state.subclasses : undefined,
       spells: state.spells.length > 0 ? state.spells : undefined,
+      items: state.items.length > 0 ? state.items : undefined,
     },
   } as CustomContentPack;
 }
@@ -123,6 +127,8 @@ interface UsePackBuilderApi {
   removeSubclass: (id: string) => void;
   addSpell: (spell: Spell) => void;
   removeSpell: (id: string) => void;
+  addItem: (item: Item) => void;
+  removeItem: (id: string) => void;
   reset: () => void;
 }
 
@@ -233,6 +239,20 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addItem = useCallback((item: Item): void => {
+    setState((prev) => {
+      const next = prev.items.filter((existing) => existing.id !== item.id);
+      return { ...prev, items: [...next, item] };
+    });
+  }, []);
+
+  const removeItem = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      items: prev.items.filter((it) => it.id !== id),
+    }));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
@@ -252,6 +272,8 @@ export function usePackBuilder(
     removeSubclass,
     addSpell,
     removeSpell,
+    addItem,
+    removeItem,
     reset,
   };
 }
