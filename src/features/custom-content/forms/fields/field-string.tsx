@@ -19,6 +19,12 @@ interface FieldStringProps {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  /**
+   * Lecture seule — l'utilisateur voit le contenu mais ne peut pas le
+   * modifier. Pratique pour bloquer l'`id` de pack en mode édition (3C.10)
+   * où changer l'id équivaut à créer un autre document Firestore.
+   */
+  readOnly?: boolean;
   /** Identifie le champ dans le DOM pour les tests e2e (data-testid). */
   testId?: string;
 }
@@ -32,6 +38,7 @@ export function FieldString({
   required,
   placeholder,
   className,
+  readOnly,
   testId,
 }: FieldStringProps): JSX.Element {
   return (
@@ -50,6 +57,7 @@ export function FieldString({
             onChange(event.target.value)
           }
           placeholder={placeholder}
+          readOnly={readOnly}
           data-testid={testId}
         />
       )}

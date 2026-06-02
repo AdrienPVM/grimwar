@@ -498,4 +498,59 @@ test.describe('PackEditor — JALON 3C.1', () => {
     await expect(packRow).toBeVisible({ timeout: 10_000 });
     await expect(packRow).toContainText('Pack background e2e');
   });
+
+  test('JALON 3C.10 — édite un pack importé : modifie le nom → save → liste mise à jour', async ({
+    page,
+  }) => {
+    await page.goto('/account/content/new');
+    await waitForAppReady(page);
+
+    // 1) Crée un pack de base avec 1 feat.
+    await page.getByTestId('pack-meta-id').fill('pack-edit-e2e');
+    await page.getByTestId('pack-meta-name-fr').fill('Nom initial');
+    await page.getByTestId('pack-meta-author').fill('Adrien e2e');
+
+    await page.getByTestId('pack-editor-add-feat').click();
+    await page
+      .getByTestId('feat-form-id')
+      .fill('feat-edit-e2e');
+    await page
+      .getByTestId('feat-form-name-fr')
+      .fill('Don initial');
+    await page
+      .getByTestId('feat-form-summary-fr')
+      .fill('Résumé du don.');
+    await page.getByTestId('feat-form-confirm').click();
+    await page.getByTestId('pack-editor-save').click();
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+
+    // 2) Clique « Modifier » sur la row du pack.
+    const packRow = page.locator('[data-pack-id="pack-edit-e2e"]').first();
+    await expect(packRow).toBeVisible({ timeout: 10_000 });
+    await packRow.locator('[data-testid="pack-edit"]').click();
+
+    // 3) Le form est pré-rempli avec les données importées + titre "Modifier"
+    await expect(page.getByTestId('pack-editor-title')).toContainText(
+      'Modifier le pack',
+    );
+    await expect(page.getByTestId('pack-meta-id')).toHaveValue('pack-edit-e2e');
+    await expect(page.getByTestId('pack-meta-id')).toHaveAttribute(
+      'readonly',
+      '',
+    );
+    await expect(page.getByTestId('pack-meta-name-fr')).toHaveValue(
+      'Nom initial',
+    );
+
+    // 4) Modifie le nom → save → retour à la liste avec le nouveau nom.
+    await page.getByTestId('pack-meta-name-fr').fill('Nom modifié');
+    await page.getByTestId('pack-editor-save').click();
+    await page.waitForURL('**/account/content', { timeout: 10_000 });
+
+    const updatedRow = page
+      .locator('[data-pack-id="pack-edit-e2e"]')
+      .first();
+    await expect(updatedRow).toBeVisible({ timeout: 10_000 });
+    await expect(updatedRow).toContainText('Nom modifié');
+  });
 });

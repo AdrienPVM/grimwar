@@ -449,15 +449,24 @@ function PackRow({ pack, isDeleting, onDelete }: PackRowProps): JSX.Element {
           {pack.meta.author} · v{pack.meta.version}
         </p>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onDelete}
-        disabled={isDeleting}
-        data-testid="pack-delete"
-      >
-        {t('customContent.list.delete')}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Link
+          to={`/account/content/edit/${pack.packId}`}
+          className="font-title text-meta uppercase tracking-[0.18em] text-gold-bright hover:text-gold-glow transition-colors ease-base duration-150"
+          data-testid="pack-edit"
+        >
+          {t('customContent.list.edit')}
+        </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onDelete}
+          disabled={isDeleting}
+          data-testid="pack-delete"
+        >
+          {t('customContent.list.delete')}
+        </Button>
+      </div>
     </li>
   );
 }

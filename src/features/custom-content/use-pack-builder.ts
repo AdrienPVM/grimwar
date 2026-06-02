@@ -142,7 +142,49 @@ interface UsePackBuilderApi {
   removeAncestry: (id: string) => void;
   addClass: (cls: ClassEntity) => void;
   removeClass: (id: string) => void;
+  /**
+   * Charge un pack existant dans le builder — utilisé par le mode édition
+   * (JALON 3C.10). Écrase entièrement l'état courant : metadata + 9
+   * catégories. Une catégorie absente de `pack.entities` devient un tableau
+   * vide.
+   */
+  loadFromPack: (pack: CustomContentPack) => void;
   reset: () => void;
+}
+
+/**
+ * Convertit un `CustomContentPack` Firestore en `PackBuilderState` éditable.
+ * Exporté pour tests + `loadFromPack` (JALON 3C.10).
+ */
+export function builderStateFromPack(
+  pack: CustomContentPack,
+): PackBuilderState {
+  return {
+    meta: {
+      id: pack.meta.id,
+      nameFr: pack.meta.name.fr,
+      nameEn: pack.meta.name.en ?? '',
+      author: pack.meta.author,
+      version: pack.meta.version,
+      descriptionFr: pack.meta.description?.fr ?? '',
+      descriptionEn: pack.meta.description?.en ?? '',
+    },
+    feats: pack.entities.feats ? [...pack.entities.feats] : [],
+    invocations: pack.entities.invocations
+      ? [...pack.entities.invocations]
+      : [],
+    subancestries: pack.entities.subancestries
+      ? [...pack.entities.subancestries]
+      : [],
+    backgrounds: pack.entities.backgrounds
+      ? [...pack.entities.backgrounds]
+      : [],
+    subclasses: pack.entities.subclasses ? [...pack.entities.subclasses] : [],
+    spells: pack.entities.spells ? [...pack.entities.spells] : [],
+    items: pack.entities.items ? [...pack.entities.items] : [],
+    ancestries: pack.entities.ancestries ? [...pack.entities.ancestries] : [],
+    classes: pack.entities.classes ? [...pack.entities.classes] : [],
+  };
 }
 
 export function usePackBuilder(
@@ -296,6 +338,10 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const loadFromPack = useCallback((pack: CustomContentPack): void => {
+    setState(builderStateFromPack(pack));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
@@ -321,6 +367,7 @@ export function usePackBuilder(
     removeAncestry,
     addClass,
     removeClass,
+    loadFromPack,
     reset,
   };
 }

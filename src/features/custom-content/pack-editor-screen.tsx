@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
@@ -25,50 +25,61 @@ import type {
 import {
   AncestryForm,
   EMPTY_ANCESTRY_DRAFT,
+  draftFromAncestry,
   type AncestryFormDraft,
 } from './forms/ancestry-form';
 import {
+  BackgroundForm,
+  EMPTY_BACKGROUND_DRAFT,
+  draftFromBackground,
+  type BackgroundFormDraft,
+} from './forms/background-form';
+import {
   ClassForm,
   EMPTY_CLASS_DRAFT,
+  draftFromClass,
   type ClassFormDraft,
 } from './forms/class-form';
 import {
-  BackgroundForm,
-  EMPTY_BACKGROUND_DRAFT,
-  type BackgroundFormDraft,
-} from './forms/background-form';
-import { FeatForm, EMPTY_FEAT_DRAFT, type FeatFormDraft } from './forms/feat-form';
+  EMPTY_FEAT_DRAFT,
+  FeatForm,
+  draftFromFeat,
+  type FeatFormDraft,
+} from './forms/feat-form';
 import { FieldI18n } from './forms/fields/field-i18n';
 import { FieldString } from './forms/fields/field-string';
 import {
   EMPTY_INVOCATION_DRAFT,
   InvocationForm,
+  draftFromInvocation,
   type InvocationFormDraft,
 } from './forms/invocation-form';
 import {
   EMPTY_ITEM_DRAFT,
   ItemForm,
+  draftFromItem,
   type ItemFormDraft,
 } from './forms/item-form';
 import {
-  EMPTY_SUBANCESTRY_DRAFT,
-  SubancestryForm,
-  type SubancestryFormDraft,
-} from './forms/subancestry-form';
-import {
   EMPTY_SPELL_DRAFT,
   SpellForm,
+  draftFromSpell,
   type SpellFormDraft,
 } from './forms/spell-form';
 import {
+  EMPTY_SUBANCESTRY_DRAFT,
+  SubancestryForm,
+  draftFromSubancestry,
+  type SubancestryFormDraft,
+} from './forms/subancestry-form';
+import {
   EMPTY_SUBCLASS_DRAFT,
   SubclassForm,
+  draftFromSubclass,
   type SubclassFormDraft,
 } from './forms/subclass-form';
-import {
-  packFromBuilderState,
-  usePackBuilder,
-} from './use-pack-builder';
+import { packFromBuilderState, usePackBuilder } from './use-pack-builder';
+import { useExistingPack } from './use-existing-pack';
 
 /**
  * PackEditor — création d'un pack de contenu custom in-app (JALON 3C.1).
@@ -88,6 +99,13 @@ import {
 export function PackEditorScreen(): JSX.Element {
   const navigate = useNavigate();
   const { user, isReady } = useAuth();
+  // JALON 3C.10 — mode édition : si `:packId` est présent dans l'URL, on
+  // charge le pack depuis Firestore et on hydrate le builder. Sinon, on
+  // démarre en création (état initial vide).
+  const { packId: editPackId } = useParams<{ packId: string }>();
+  const isEditMode = Boolean(editPackId);
+  const [isLoadingPack, setIsLoadingPack] = useState<boolean>(isEditMode);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const builder = usePackBuilder();
   const [featDraft, setFeatDraft] = useState<FeatFormDraft>(EMPTY_FEAT_DRAFT);
   const [isAddingFeat, setIsAddingFeat] = useState<boolean>(false);
@@ -120,6 +138,40 @@ export function PackEditorScreen(): JSX.Element {
   const [isAddingClass, setIsAddingClass] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // JALON 3C.10 — chargement d'un pack existant. `useExistingPack` est un
+  // one-shot `getPack` ; on hydrate ensuite le builder via `loadFromPack`.
+  // Le hook gère le loading/error ; le pack inexistant (`null` après
+  // `loading: false`) déclenche un message dédié dans le rendu.
+  const existing = useExistingPack(user?.uid ?? null, editPackId);
+  const [hasHydratedFromExisting, setHasHydratedFromExisting] =
+    useState<boolean>(false);
+  useEffect(() => {
+    if (!isEditMode) return;
+    setIsLoadingPack(existing.loading);
+    if (existing.error) {
+      setLoadError(existing.error.message);
+      return;
+    }
+    if (existing.loading) return;
+    if (!existing.pack) {
+      setLoadError(t('customContent.editor.editMode.notFound'));
+      return;
+    }
+    if (hasHydratedFromExisting) return;
+    builder.loadFromPack(existing.pack);
+    setHasHydratedFromExisting(true);
+    setLoadError(null);
+    // builder.loadFromPack est stable (useCallback) ; on l'omet pour éviter
+    // une réhydration à chaque rerender.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isEditMode,
+    existing.loading,
+    existing.error,
+    existing.pack,
+    hasHydratedFromExisting,
+  ]);
 
   const openFeatForm = useCallback(() => {
     setFeatDraft(EMPTY_FEAT_DRAFT);
@@ -332,6 +384,37 @@ export function PackEditorScreen(): JSX.Element {
   }, [navigate]);
 
   if (!isReady) return <Splash />;
+  // JALON 3C.10 — en mode édition, on attend la fin de la lecture Firestore
+  // avant de rendre le formulaire pour éviter le flash de l'état vierge.
+  if (isEditMode && isLoadingPack) return <Splash />;
+  if (isEditMode && loadError) {
+    return (
+      <main
+        className="relative z-10 mx-auto w-full max-w-[640px] px-4 py-12 sm:px-6"
+        data-screen="custom-content-pack-editor"
+      >
+        <GlassPanel
+          className="px-6 py-8 text-center"
+          data-testid="pack-editor-load-error"
+        >
+          <h1 className="font-display text-2xl font-bold uppercase tracking-[0.18em] text-gold-bright">
+            {t('customContent.editor.editMode.errorTitle')}
+          </h1>
+          <p className="mt-4 font-serif text-body text-text">{loadError}</p>
+          <div className="mt-6 flex justify-center">
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/account/content')}
+              data-testid="pack-editor-load-error-back"
+            >
+              {t('customContent.editor.editMode.back')}
+            </Button>
+          </div>
+        </GlassPanel>
+      </main>
+    );
+  }
 
   const featCount = builder.state.feats.length;
   const invocationCount = builder.state.invocations.length;
@@ -350,11 +433,18 @@ export function PackEditorScreen(): JSX.Element {
     >
       <header className="text-center">
         <Divider className="mb-4" />
-        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
-          {t('customContent.editor.title')}
+        <h1
+          className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright"
+          data-testid="pack-editor-title"
+        >
+          {isEditMode
+            ? t('customContent.editor.editMode.title')
+            : t('customContent.editor.title')}
         </h1>
         <p className="mx-auto mt-2 max-w-[48ch] font-serif text-body italic text-text-secondary">
-          {t('customContent.editor.subtitle')}
+          {isEditMode
+            ? t('customContent.editor.editMode.subtitle')
+            : t('customContent.editor.subtitle')}
         </p>
       </header>
 
@@ -374,8 +464,13 @@ export function PackEditorScreen(): JSX.Element {
               label={t('customContent.editor.meta.id')}
               value={builder.state.meta.id}
               onChange={(value) => builder.setMetaField('id', value)}
-              helper={t('customContent.editor.meta.idHelper')}
+              helper={
+                isEditMode
+                  ? t('customContent.editor.meta.idHelperEdit')
+                  : t('customContent.editor.meta.idHelper')
+              }
               required
+              readOnly={isEditMode}
               testId="pack-meta-id"
             />
             <FieldI18n
@@ -479,14 +574,27 @@ export function PackEditorScreen(): JSX.Element {
                       {feat.id}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeFeat(feat.id)}
-                    data-testid="pack-editor-feat-remove"
-                  >
-                    {t('customContent.editor.feats.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setFeatDraft(draftFromFeat(feat));
+                        setIsAddingFeat(true);
+                      }}
+                      data-testid="pack-editor-feat-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeFeat(feat.id)}
+                      data-testid="pack-editor-feat-remove"
+                    >
+                      {t('customContent.editor.feats.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -548,14 +656,27 @@ export function PackEditorScreen(): JSX.Element {
                       {inv.id}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeInvocation(inv.id)}
-                    data-testid="pack-editor-invocation-remove"
-                  >
-                    {t('customContent.editor.invocations.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setInvocationDraft(draftFromInvocation(inv));
+                        setIsAddingInvocation(true);
+                      }}
+                      data-testid="pack-editor-invocation-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeInvocation(inv.id)}
+                      data-testid="pack-editor-invocation-remove"
+                    >
+                      {t('customContent.editor.invocations.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -617,14 +738,27 @@ export function PackEditorScreen(): JSX.Element {
                       {sub.id} · {sub.ancestryId}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeSubancestry(sub.id)}
-                    data-testid="pack-editor-subancestry-remove"
-                  >
-                    {t('customContent.editor.subancestries.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSubancestryDraft(draftFromSubancestry(sub));
+                        setIsAddingSubancestry(true);
+                      }}
+                      data-testid="pack-editor-subancestry-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeSubancestry(sub.id)}
+                      data-testid="pack-editor-subancestry-remove"
+                    >
+                      {t('customContent.editor.subancestries.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -686,14 +820,27 @@ export function PackEditorScreen(): JSX.Element {
                       {bg.id}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeBackground(bg.id)}
-                    data-testid="pack-editor-background-remove"
-                  >
-                    {t('customContent.editor.backgrounds.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setBackgroundDraft(draftFromBackground(bg));
+                        setIsAddingBackground(true);
+                      }}
+                      data-testid="pack-editor-background-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeBackground(bg.id)}
+                      data-testid="pack-editor-background-remove"
+                    >
+                      {t('customContent.editor.backgrounds.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -755,14 +902,27 @@ export function PackEditorScreen(): JSX.Element {
                       {sc.id} · {sc.classId}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeSubclass(sc.id)}
-                    data-testid="pack-editor-subclass-remove"
-                  >
-                    {t('customContent.editor.subclasses.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSubclassDraft(draftFromSubclass(sc));
+                        setIsAddingSubclass(true);
+                      }}
+                      data-testid="pack-editor-subclass-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeSubclass(sc.id)}
+                      data-testid="pack-editor-subclass-remove"
+                    >
+                      {t('customContent.editor.subclasses.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -825,14 +985,27 @@ export function PackEditorScreen(): JSX.Element {
                       {t(`school.${spell.school}`)}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeSpell(spell.id)}
-                    data-testid="pack-editor-spell-remove"
-                  >
-                    {t('customContent.editor.spells.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSpellDraft(draftFromSpell(spell));
+                        setIsAddingSpell(true);
+                      }}
+                      data-testid="pack-editor-spell-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeSpell(spell.id)}
+                      data-testid="pack-editor-spell-remove"
+                    >
+                      {t('customContent.editor.spells.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -894,14 +1067,27 @@ export function PackEditorScreen(): JSX.Element {
                       {item.id} · {t(`item.category.${item.category}`)}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeItem(item.id)}
-                    data-testid="pack-editor-item-remove"
-                  >
-                    {t('customContent.editor.items.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setItemDraft(draftFromItem(item));
+                        setIsAddingItem(true);
+                      }}
+                      data-testid="pack-editor-item-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeItem(item.id)}
+                      data-testid="pack-editor-item-remove"
+                    >
+                      {t('customContent.editor.items.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -963,14 +1149,27 @@ export function PackEditorScreen(): JSX.Element {
                       {ancestry.id}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeAncestry(ancestry.id)}
-                    data-testid="pack-editor-ancestry-remove"
-                  >
-                    {t('customContent.editor.ancestries.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setAncestryDraft(draftFromAncestry(ancestry));
+                        setIsAddingAncestry(true);
+                      }}
+                      data-testid="pack-editor-ancestry-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeAncestry(ancestry.id)}
+                      data-testid="pack-editor-ancestry-remove"
+                    >
+                      {t('customContent.editor.ancestries.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -1034,14 +1233,27 @@ export function PackEditorScreen(): JSX.Element {
                       {cls.id} · {cls.hitDie.toUpperCase()}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => builder.removeClass(cls.id)}
-                    data-testid="pack-editor-class-remove"
-                  >
-                    {t('customContent.editor.classes.remove')}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setClassDraft(draftFromClass(cls));
+                        setIsAddingClass(true);
+                      }}
+                      data-testid="pack-editor-class-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeClass(cls.id)}
+                      data-testid="pack-editor-class-remove"
+                    >
+                      {t('customContent.editor.classes.remove')}
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>

@@ -71,6 +71,10 @@ export function AppRoutes(): JSX.Element {
         <Route path="/map-proto/cloud/:cid/maps/:mid" element={<MapLiveScreen />} />
         <Route path="/account/content" element={<ImportScreen />} />
         <Route path="/account/content/new" element={<PackEditorScreen />} />
+        <Route
+          path="/account/content/edit/:packId"
+          element={<PackEditorScreen />}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
