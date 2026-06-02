@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import type {
+  Ancestry,
   Background,
   Feat,
   Invocation,
@@ -19,9 +20,10 @@ import type { CustomContentPack } from '@/shared/types/custom-content-pack';
  *
  * 3C.1 wire `feats`. 3C.2 ajoute `invocations`. 3C.3 ajoute `subancestries`.
  * 3C.4 ajoute `backgrounds`. 3C.5 ajoute `subclasses`. 3C.6 ajoute `spells`.
- * 3C.7 ajoute `items`. Les autres tableaux restent vides ; les sous-jalons
- * 3C.8/3C.9 les ajouteront. La validation Zod (`parsePack`) tolère des
- * tableaux vides tant qu'AU MOINS un tableau est non vide.
+ * 3C.7 ajoute `items`. 3C.8 ajoute `ancestries`. Les autres tableaux restent
+ * vides ; le sous-jalon 3C.9 ajoutera `classes`. La validation Zod
+ * (`parsePack`) tolère des tableaux vides tant qu'AU MOINS un tableau est non
+ * vide.
  */
 export interface PackBuilderState {
   meta: {
@@ -40,6 +42,7 @@ export interface PackBuilderState {
   subclasses: Subclass[];
   spells: Spell[];
   items: Item[];
+  ancestries: Ancestry[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -59,6 +62,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
   subclasses: [],
   spells: [],
   items: [],
+  ancestries: [],
 };
 
 /**
@@ -105,6 +109,8 @@ export function packFromBuilderState(
         state.subclasses.length > 0 ? state.subclasses : undefined,
       spells: state.spells.length > 0 ? state.spells : undefined,
       items: state.items.length > 0 ? state.items : undefined,
+      ancestries:
+        state.ancestries.length > 0 ? state.ancestries : undefined,
     },
   } as CustomContentPack;
 }
@@ -129,6 +135,8 @@ interface UsePackBuilderApi {
   removeSpell: (id: string) => void;
   addItem: (item: Item) => void;
   removeItem: (id: string) => void;
+  addAncestry: (ancestry: Ancestry) => void;
+  removeAncestry: (id: string) => void;
   reset: () => void;
 }
 
@@ -253,6 +261,22 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addAncestry = useCallback((ancestry: Ancestry): void => {
+    setState((prev) => {
+      const next = prev.ancestries.filter(
+        (existing) => existing.id !== ancestry.id,
+      );
+      return { ...prev, ancestries: [...next, ancestry] };
+    });
+  }, []);
+
+  const removeAncestry = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      ancestries: prev.ancestries.filter((a) => a.id !== id),
+    }));
+  }, []);
+
   const reset = useCallback((): void => {
     setState(initial);
   }, [initial]);
@@ -274,6 +298,8 @@ export function usePackBuilder(
     removeSpell,
     addItem,
     removeItem,
+    addAncestry,
+    removeAncestry,
     reset,
   };
 }

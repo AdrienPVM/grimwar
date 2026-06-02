@@ -748,7 +748,84 @@ export type StringKey =
   | 'customContent.editor.itemForm.error.acBaseRequired'
   | 'customContent.editor.itemForm.error.strRequiredRequired'
   | 'customContent.editor.itemForm.error.propertyDuplicate'
-  | 'customContent.editor.itemForm.error.propertyEmpty';
+  | 'customContent.editor.itemForm.error.propertyEmpty'
+  | 'customContent.editor.ancestries.add'
+  | 'customContent.editor.ancestries.empty'
+  | 'customContent.editor.ancestries.remove'
+  | 'customContent.editor.ancestryForm.title'
+  | 'customContent.editor.ancestryForm.id'
+  | 'customContent.editor.ancestryForm.idHelper'
+  | 'customContent.editor.ancestryForm.nameFr'
+  | 'customContent.editor.ancestryForm.nameEn'
+  | 'customContent.editor.ancestryForm.size'
+  | 'customContent.editor.ancestryForm.speed'
+  | 'customContent.editor.ancestryForm.speedHelper'
+  | 'customContent.editor.ancestryForm.descriptionFr'
+  | 'customContent.editor.ancestryForm.descriptionEn'
+  | 'customContent.editor.ancestryForm.asisLegend'
+  | 'customContent.editor.ancestryForm.asisHelper'
+  | 'customContent.editor.ancestryForm.asisEmpty'
+  | 'customContent.editor.ancestryForm.asiAbility'
+  | 'customContent.editor.ancestryForm.asiAbilityPlaceholder'
+  | 'customContent.editor.ancestryForm.asiBonus'
+  | 'customContent.editor.ancestryForm.asiAdd'
+  | 'customContent.editor.ancestryForm.traitsLegend'
+  | 'customContent.editor.ancestryForm.traitsHelper'
+  | 'customContent.editor.ancestryForm.traitsEmpty'
+  | 'customContent.editor.ancestryForm.traitNameFr'
+  | 'customContent.editor.ancestryForm.traitNameEn'
+  | 'customContent.editor.ancestryForm.traitDescriptionFr'
+  | 'customContent.editor.ancestryForm.traitDescriptionEn'
+  | 'customContent.editor.ancestryForm.traitAdd'
+  | 'customContent.editor.ancestryForm.languagesLegend'
+  | 'customContent.editor.ancestryForm.languagesHelper'
+  | 'customContent.editor.ancestryForm.languagesEmpty'
+  | 'customContent.editor.ancestryForm.languageAdd'
+  | 'customContent.editor.ancestryForm.languageAddPlaceholder'
+  | 'customContent.editor.ancestryForm.languageAddButton'
+  | 'customContent.editor.ancestryForm.commonSpellsLegend'
+  | 'customContent.editor.ancestryForm.commonSpellsHelper'
+  | 'customContent.editor.ancestryForm.commonSpellsLoading'
+  | 'customContent.editor.ancestryForm.commonSpellsEmpty'
+  | 'customContent.editor.ancestryForm.dragonLegend'
+  | 'customContent.editor.ancestryForm.dragonHelper'
+  | 'customContent.editor.ancestryForm.dragonEmpty'
+  | 'customContent.editor.ancestryForm.dragonAdd'
+  | 'customContent.editor.ancestryForm.dragonOptionId'
+  | 'customContent.editor.ancestryForm.dragonOptionIdPlaceholder'
+  | 'customContent.editor.ancestryForm.dragonOptionNameFr'
+  | 'customContent.editor.ancestryForm.dragonOptionNameEn'
+  | 'customContent.editor.ancestryForm.dragonOptionDamageType'
+  | 'customContent.editor.ancestryForm.dragonOptionDamageLabelFr'
+  | 'customContent.editor.ancestryForm.dragonOptionDamageLabelEn'
+  | 'customContent.editor.ancestryForm.giantLegend'
+  | 'customContent.editor.ancestryForm.giantHelper'
+  | 'customContent.editor.ancestryForm.giantEmpty'
+  | 'customContent.editor.ancestryForm.giantAdd'
+  | 'customContent.editor.ancestryForm.giantOptionId'
+  | 'customContent.editor.ancestryForm.giantOptionIdPlaceholder'
+  | 'customContent.editor.ancestryForm.giantOptionNameFr'
+  | 'customContent.editor.ancestryForm.giantOptionNameEn'
+  | 'customContent.editor.ancestryForm.giantOptionEffectFr'
+  | 'customContent.editor.ancestryForm.giantOptionEffectEn'
+  | 'customContent.editor.ancestryForm.removeRow'
+  | 'customContent.editor.ancestryForm.cancel'
+  | 'customContent.editor.ancestryForm.confirm'
+  | 'customContent.editor.ancestryForm.error.idRequired'
+  | 'customContent.editor.ancestryForm.error.idFormat'
+  | 'customContent.editor.ancestryForm.error.idReserved'
+  | 'customContent.editor.ancestryForm.error.nameFrRequired'
+  | 'customContent.editor.ancestryForm.error.descriptionFrRequired'
+  | 'customContent.editor.ancestryForm.error.speedPositive'
+  | 'customContent.editor.ancestryForm.error.asiAbilityRequired'
+  | 'customContent.editor.ancestryForm.error.asiDuplicate'
+  | 'customContent.editor.ancestryForm.error.traitIncomplete'
+  | 'customContent.editor.ancestryForm.error.dragonIncomplete'
+  | 'customContent.editor.ancestryForm.error.dragonIdFormat'
+  | 'customContent.editor.ancestryForm.error.dragonDuplicate'
+  | 'customContent.editor.ancestryForm.error.giantIncomplete'
+  | 'customContent.editor.ancestryForm.error.giantIdFormat'
+  | 'customContent.editor.ancestryForm.error.giantDuplicate';
 
 type Dict = Record<StringKey, string>;
 
@@ -1312,7 +1389,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.spells.remove': 'Retirer',
     'customContent.editor.comingSoon.title': 'Autres catégories — bientôt',
     'customContent.editor.comingSoon.body':
-      'Classes et ascendances seront éditables in-app dans les prochaines mises à jour. Pour ces catégories, l’import par fichier reste disponible.',
+      'Les classes seront éditables in-app dans une prochaine mise à jour. Pour cette catégorie, l’import par fichier reste disponible.',
     'customContent.editor.cancel': 'Annuler',
     'customContent.editor.save': 'Enregistrer le pack',
     'customContent.editor.save.successTitle': 'Pack enregistré',
@@ -1802,6 +1879,129 @@ const STRINGS: Record<Locale, Dict> = {
       'Cette propriété est déjà ajoutée.',
     'customContent.editor.itemForm.error.propertyEmpty':
       'Saisis un mot-clé non vide.',
+    // Ancestry — pack editor (JALON 3C.8)
+    'customContent.editor.ancestries.add': 'Ajouter une ascendance',
+    'customContent.editor.ancestries.empty':
+      'Aucune ascendance ajoutée pour l’instant.',
+    'customContent.editor.ancestries.remove': 'Retirer',
+    'customContent.editor.ancestryForm.title': 'Nouvelle ascendance',
+    'customContent.editor.ancestryForm.id': 'Identifiant',
+    'customContent.editor.ancestryForm.idHelper':
+      'Slug en minuscules, chiffres et tirets (ex. : « peuple-des-brumes »). Évite les noms d’ascendances officielles (drakéide, elfe, gnome, gobelours, goliath, humain, tieffelin).',
+    'customContent.editor.ancestryForm.nameFr': 'Nom (FR)',
+    'customContent.editor.ancestryForm.nameEn': 'Nom (EN)',
+    'customContent.editor.ancestryForm.size': 'Taille',
+    'customContent.editor.ancestryForm.speed': 'Vitesse (cases)',
+    'customContent.editor.ancestryForm.speedHelper':
+      'Vitesse de déplacement de base, exprimée en cases de 1,5 m.',
+    'customContent.editor.ancestryForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.ancestryForm.descriptionEn': 'Description (EN)',
+    'customContent.editor.ancestryForm.asisLegend':
+      'Bonus de caractéristiques',
+    'customContent.editor.ancestryForm.asisHelper':
+      'Ajoute un ou plusieurs bonus de caractéristique (un par caractéristique au maximum).',
+    'customContent.editor.ancestryForm.asisEmpty':
+      'Aucun bonus ajouté pour l’instant.',
+    'customContent.editor.ancestryForm.asiAbility': 'Caractéristique',
+    'customContent.editor.ancestryForm.asiAbilityPlaceholder':
+      'Choisir une caractéristique',
+    'customContent.editor.ancestryForm.asiBonus': 'Bonus',
+    'customContent.editor.ancestryForm.asiAdd': 'Ajouter un bonus',
+    'customContent.editor.ancestryForm.traitsLegend':
+      'Traits raciaux',
+    'customContent.editor.ancestryForm.traitsHelper':
+      'Chaque trait porte un nom et une description. Au moins un trait est recommandé.',
+    'customContent.editor.ancestryForm.traitsEmpty':
+      'Aucun trait ajouté pour l’instant.',
+    'customContent.editor.ancestryForm.traitNameFr': 'Nom du trait (FR)',
+    'customContent.editor.ancestryForm.traitNameEn': 'Nom du trait (EN)',
+    'customContent.editor.ancestryForm.traitDescriptionFr':
+      'Description du trait (FR)',
+    'customContent.editor.ancestryForm.traitDescriptionEn':
+      'Description du trait (EN)',
+    'customContent.editor.ancestryForm.traitAdd': 'Ajouter un trait',
+    'customContent.editor.ancestryForm.languagesLegend': 'Langues',
+    'customContent.editor.ancestryForm.languagesHelper':
+      'Langues parlées dès le niveau 1. Saisis un nom de langue puis valide.',
+    'customContent.editor.ancestryForm.languagesEmpty':
+      'Aucune langue ajoutée pour l’instant.',
+    'customContent.editor.ancestryForm.languageAdd': 'Nouvelle langue',
+    'customContent.editor.ancestryForm.languageAddPlaceholder':
+      'Ex. : commun, elfique, draconique…',
+    'customContent.editor.ancestryForm.languageAddButton': 'Ajouter',
+    'customContent.editor.ancestryForm.commonSpellsLegend':
+      'Sorts d’ascendance',
+    'customContent.editor.ancestryForm.commonSpellsHelper':
+      'Sorts connus de toute l’ascendance (sélection multiple parmi les sorts disponibles).',
+    'customContent.editor.ancestryForm.commonSpellsLoading':
+      'Chargement des sorts…',
+    'customContent.editor.ancestryForm.commonSpellsEmpty':
+      'Aucun sort disponible — importe un pack contenant des sorts pour les associer.',
+    'customContent.editor.ancestryForm.dragonLegend':
+      'Ancêtres draconiques (optionnel)',
+    'customContent.editor.ancestryForm.dragonHelper':
+      'Pour les ascendances draconiques : associe un type de dégâts à un ancêtre nommé. Inutile si l’ascendance n’est pas draconique.',
+    'customContent.editor.ancestryForm.dragonEmpty':
+      'Aucun ancêtre draconique ajouté.',
+    'customContent.editor.ancestryForm.dragonAdd': 'Ajouter un ancêtre',
+    'customContent.editor.ancestryForm.dragonOptionId': 'Identifiant',
+    'customContent.editor.ancestryForm.dragonOptionIdPlaceholder':
+      'Ex. : ancetre-de-givre',
+    'customContent.editor.ancestryForm.dragonOptionNameFr': 'Nom (FR)',
+    'customContent.editor.ancestryForm.dragonOptionNameEn': 'Nom (EN)',
+    'customContent.editor.ancestryForm.dragonOptionDamageType':
+      'Type de dégâts',
+    'customContent.editor.ancestryForm.dragonOptionDamageLabelFr':
+      'Étiquette FR du type',
+    'customContent.editor.ancestryForm.dragonOptionDamageLabelEn':
+      'Étiquette EN du type',
+    'customContent.editor.ancestryForm.giantLegend':
+      'Ancêtres géants (optionnel)',
+    'customContent.editor.ancestryForm.giantHelper':
+      'Pour les ascendances géantes : associe un effet à un type d’ancêtre. Inutile si l’ascendance n’est pas une ascendance géante.',
+    'customContent.editor.ancestryForm.giantEmpty':
+      'Aucun ancêtre géant ajouté.',
+    'customContent.editor.ancestryForm.giantAdd': 'Ajouter un ancêtre',
+    'customContent.editor.ancestryForm.giantOptionId': 'Identifiant',
+    'customContent.editor.ancestryForm.giantOptionIdPlaceholder':
+      'Ex. : ancetre-de-pierre',
+    'customContent.editor.ancestryForm.giantOptionNameFr': 'Nom (FR)',
+    'customContent.editor.ancestryForm.giantOptionNameEn': 'Nom (EN)',
+    'customContent.editor.ancestryForm.giantOptionEffectFr': 'Effet (FR)',
+    'customContent.editor.ancestryForm.giantOptionEffectEn': 'Effet (EN)',
+    'customContent.editor.ancestryForm.removeRow': 'Retirer',
+    'customContent.editor.ancestryForm.cancel': 'Annuler',
+    'customContent.editor.ancestryForm.confirm': 'Ajouter l’ascendance',
+    'customContent.editor.ancestryForm.error.idRequired':
+      'L’identifiant est obligatoire.',
+    'customContent.editor.ancestryForm.error.idFormat':
+      'Slug invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.ancestryForm.error.idReserved':
+      'Cet identifiant est réservé aux ascendances officielles — utilise un slug spécifique à ta création.',
+    'customContent.editor.ancestryForm.error.nameFrRequired':
+      'Le nom FR est obligatoire.',
+    'customContent.editor.ancestryForm.error.descriptionFrRequired':
+      'La description FR est obligatoire.',
+    'customContent.editor.ancestryForm.error.speedPositive':
+      'La vitesse doit être strictement positive.',
+    'customContent.editor.ancestryForm.error.asiAbilityRequired':
+      'Chaque ligne doit cibler une caractéristique.',
+    'customContent.editor.ancestryForm.error.asiDuplicate':
+      'Une caractéristique ne peut être bonifiée qu’une seule fois.',
+    'customContent.editor.ancestryForm.error.traitIncomplete':
+      'Chaque trait doit avoir un nom FR et une description FR.',
+    'customContent.editor.ancestryForm.error.dragonIncomplete':
+      'Chaque ancêtre draconique doit avoir un identifiant, un nom FR et une étiquette FR de type de dégâts.',
+    'customContent.editor.ancestryForm.error.dragonIdFormat':
+      'Identifiant d’ancêtre draconique invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.ancestryForm.error.dragonDuplicate':
+      'Deux ancêtres draconiques portent le même identifiant.',
+    'customContent.editor.ancestryForm.error.giantIncomplete':
+      'Chaque ancêtre géant doit avoir un identifiant, un nom FR et un effet FR.',
+    'customContent.editor.ancestryForm.error.giantIdFormat':
+      'Identifiant d’ancêtre géant invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.ancestryForm.error.giantDuplicate':
+      'Deux ancêtres géants portent le même identifiant.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -2293,7 +2493,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.spells.remove': 'Remove',
     'customContent.editor.comingSoon.title': 'Other categories — coming soon',
     'customContent.editor.comingSoon.body':
-      'Classes and ancestries will be authorable in-app in upcoming releases. File import remains available for these categories.',
+      'Classes will be authorable in-app in an upcoming release. File import remains available for this category.',
     'customContent.editor.cancel': 'Cancel',
     'customContent.editor.save': 'Save pack',
     'customContent.editor.save.successTitle': 'Pack saved',
@@ -2748,6 +2948,121 @@ const STRINGS: Record<Locale, Dict> = {
       'This property is already listed.',
     'customContent.editor.itemForm.error.propertyEmpty':
       'Type a non-empty keyword.',
+    // Ancestry — pack editor (JALON 3C.8)
+    'customContent.editor.ancestries.add': 'Add an ancestry',
+    'customContent.editor.ancestries.empty': 'No ancestry added yet.',
+    'customContent.editor.ancestries.remove': 'Remove',
+    'customContent.editor.ancestryForm.title': 'New ancestry',
+    'customContent.editor.ancestryForm.id': 'Identifier',
+    'customContent.editor.ancestryForm.idHelper':
+      'Lowercase slug, digits and dashes (e.g. “mist-people”). Avoid official ancestry slugs (dragonborn, elf, gnome, goliath, human, tiefling).',
+    'customContent.editor.ancestryForm.nameFr': 'Name (FR)',
+    'customContent.editor.ancestryForm.nameEn': 'Name (EN)',
+    'customContent.editor.ancestryForm.size': 'Size',
+    'customContent.editor.ancestryForm.speed': 'Speed (squares)',
+    'customContent.editor.ancestryForm.speedHelper':
+      'Base walking speed in 5-ft / 1.5 m squares.',
+    'customContent.editor.ancestryForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.ancestryForm.descriptionEn': 'Description (EN)',
+    'customContent.editor.ancestryForm.asisLegend': 'Ability score increases',
+    'customContent.editor.ancestryForm.asisHelper':
+      'Add one or more ability bonuses (one per ability at most).',
+    'customContent.editor.ancestryForm.asisEmpty': 'No bonus added yet.',
+    'customContent.editor.ancestryForm.asiAbility': 'Ability',
+    'customContent.editor.ancestryForm.asiAbilityPlaceholder':
+      'Pick an ability',
+    'customContent.editor.ancestryForm.asiBonus': 'Bonus',
+    'customContent.editor.ancestryForm.asiAdd': 'Add bonus',
+    'customContent.editor.ancestryForm.traitsLegend': 'Racial traits',
+    'customContent.editor.ancestryForm.traitsHelper':
+      'Each trait has a name and a description. At least one trait is recommended.',
+    'customContent.editor.ancestryForm.traitsEmpty': 'No trait added yet.',
+    'customContent.editor.ancestryForm.traitNameFr': 'Trait name (FR)',
+    'customContent.editor.ancestryForm.traitNameEn': 'Trait name (EN)',
+    'customContent.editor.ancestryForm.traitDescriptionFr':
+      'Trait description (FR)',
+    'customContent.editor.ancestryForm.traitDescriptionEn':
+      'Trait description (EN)',
+    'customContent.editor.ancestryForm.traitAdd': 'Add trait',
+    'customContent.editor.ancestryForm.languagesLegend': 'Languages',
+    'customContent.editor.ancestryForm.languagesHelper':
+      'Languages spoken from level 1. Type a language name then confirm.',
+    'customContent.editor.ancestryForm.languagesEmpty': 'No language added yet.',
+    'customContent.editor.ancestryForm.languageAdd': 'New language',
+    'customContent.editor.ancestryForm.languageAddPlaceholder':
+      'e.g. common, elvish, draconic…',
+    'customContent.editor.ancestryForm.languageAddButton': 'Add',
+    'customContent.editor.ancestryForm.commonSpellsLegend':
+      'Ancestry spells',
+    'customContent.editor.ancestryForm.commonSpellsHelper':
+      'Spells known by the whole ancestry (multi-select among available spells).',
+    'customContent.editor.ancestryForm.commonSpellsLoading':
+      'Loading spells…',
+    'customContent.editor.ancestryForm.commonSpellsEmpty':
+      'No spell available — import a pack containing spells to associate some.',
+    'customContent.editor.ancestryForm.dragonLegend':
+      'Draconic ancestors (optional)',
+    'customContent.editor.ancestryForm.dragonHelper':
+      'For draconic ancestries: associate a damage type with a named ancestor. Skip if the ancestry is not draconic.',
+    'customContent.editor.ancestryForm.dragonEmpty':
+      'No draconic ancestor added.',
+    'customContent.editor.ancestryForm.dragonAdd': 'Add ancestor',
+    'customContent.editor.ancestryForm.dragonOptionId': 'Identifier',
+    'customContent.editor.ancestryForm.dragonOptionIdPlaceholder':
+      'e.g. frost-ancestor',
+    'customContent.editor.ancestryForm.dragonOptionNameFr': 'Name (FR)',
+    'customContent.editor.ancestryForm.dragonOptionNameEn': 'Name (EN)',
+    'customContent.editor.ancestryForm.dragonOptionDamageType': 'Damage type',
+    'customContent.editor.ancestryForm.dragonOptionDamageLabelFr':
+      'FR damage label',
+    'customContent.editor.ancestryForm.dragonOptionDamageLabelEn':
+      'EN damage label',
+    'customContent.editor.ancestryForm.giantLegend':
+      'Giant ancestors (optional)',
+    'customContent.editor.ancestryForm.giantHelper':
+      'For giant ancestries: associate an effect with a named ancestor type. Skip if the ancestry is not a giant ancestry.',
+    'customContent.editor.ancestryForm.giantEmpty': 'No giant ancestor added.',
+    'customContent.editor.ancestryForm.giantAdd': 'Add ancestor',
+    'customContent.editor.ancestryForm.giantOptionId': 'Identifier',
+    'customContent.editor.ancestryForm.giantOptionIdPlaceholder':
+      'e.g. stone-ancestor',
+    'customContent.editor.ancestryForm.giantOptionNameFr': 'Name (FR)',
+    'customContent.editor.ancestryForm.giantOptionNameEn': 'Name (EN)',
+    'customContent.editor.ancestryForm.giantOptionEffectFr': 'Effect (FR)',
+    'customContent.editor.ancestryForm.giantOptionEffectEn': 'Effect (EN)',
+    'customContent.editor.ancestryForm.removeRow': 'Remove',
+    'customContent.editor.ancestryForm.cancel': 'Cancel',
+    'customContent.editor.ancestryForm.confirm': 'Add ancestry',
+    'customContent.editor.ancestryForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.ancestryForm.error.idFormat':
+      'Invalid slug: lowercase, digits and dashes only.',
+    'customContent.editor.ancestryForm.error.idReserved':
+      'This identifier is reserved for official ancestries — use a slug specific to your creation.',
+    'customContent.editor.ancestryForm.error.nameFrRequired':
+      'FR name is required.',
+    'customContent.editor.ancestryForm.error.descriptionFrRequired':
+      'FR description is required.',
+    'customContent.editor.ancestryForm.error.speedPositive':
+      'Speed must be strictly positive.',
+    'customContent.editor.ancestryForm.error.asiAbilityRequired':
+      'Each row must target an ability.',
+    'customContent.editor.ancestryForm.error.asiDuplicate':
+      'An ability can only be boosted once.',
+    'customContent.editor.ancestryForm.error.traitIncomplete':
+      'Each trait needs an FR name and an FR description.',
+    'customContent.editor.ancestryForm.error.dragonIncomplete':
+      'Each draconic ancestor needs an identifier, an FR name and an FR damage label.',
+    'customContent.editor.ancestryForm.error.dragonIdFormat':
+      'Invalid draconic ancestor identifier: lowercase, digits and dashes only.',
+    'customContent.editor.ancestryForm.error.dragonDuplicate':
+      'Two draconic ancestors share the same identifier.',
+    'customContent.editor.ancestryForm.error.giantIncomplete':
+      'Each giant ancestor needs an identifier, an FR name and an FR effect.',
+    'customContent.editor.ancestryForm.error.giantIdFormat':
+      'Invalid giant ancestor identifier: lowercase, digits and dashes only.',
+    'customContent.editor.ancestryForm.error.giantDuplicate':
+      'Two giant ancestors share the same identifier.',
   },
 };
 
