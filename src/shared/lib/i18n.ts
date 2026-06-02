@@ -825,7 +825,116 @@ export type StringKey =
   | 'customContent.editor.ancestryForm.error.dragonDuplicate'
   | 'customContent.editor.ancestryForm.error.giantIncomplete'
   | 'customContent.editor.ancestryForm.error.giantIdFormat'
-  | 'customContent.editor.ancestryForm.error.giantDuplicate';
+  | 'customContent.editor.ancestryForm.error.giantDuplicate'
+  | 'customContent.editor.classes.add'
+  | 'customContent.editor.classes.empty'
+  | 'customContent.editor.classes.remove'
+  | 'customContent.editor.classForm.title'
+  | 'customContent.editor.classForm.intro'
+  | 'customContent.editor.classForm.id'
+  | 'customContent.editor.classForm.idHelper'
+  | 'customContent.editor.classForm.nameFr'
+  | 'customContent.editor.classForm.nameEn'
+  | 'customContent.editor.classForm.descriptionFr'
+  | 'customContent.editor.classForm.descriptionEn'
+  | 'customContent.editor.classForm.hitDie'
+  | 'customContent.editor.classForm.hitDieHelper'
+  | 'customContent.editor.classForm.primaryAbilityLegend'
+  | 'customContent.editor.classForm.primaryAbilityHelper'
+  | 'customContent.editor.classForm.saveProficienciesLegend'
+  | 'customContent.editor.classForm.saveProficienciesHelper'
+  | 'customContent.editor.classForm.skillChoicesLegend'
+  | 'customContent.editor.classForm.skillChoicesHelper'
+  | 'customContent.editor.classForm.skillChoiceCount'
+  | 'customContent.editor.classForm.skillChoiceFrom'
+  | 'customContent.editor.classForm.skillChoiceFromHelper'
+  | 'customContent.editor.classForm.skillChoiceFromPlaceholder'
+  | 'customContent.editor.classForm.skillChoiceFromEmpty'
+  | 'customContent.editor.classForm.armorProficiencies'
+  | 'customContent.editor.classForm.armorProficienciesHelper'
+  | 'customContent.editor.classForm.armorProficienciesPlaceholder'
+  | 'customContent.editor.classForm.armorProficienciesEmpty'
+  | 'customContent.editor.classForm.weaponProficiencies'
+  | 'customContent.editor.classForm.weaponProficienciesHelper'
+  | 'customContent.editor.classForm.weaponProficienciesPlaceholder'
+  | 'customContent.editor.classForm.weaponProficienciesEmpty'
+  | 'customContent.editor.classForm.toolProficiencies'
+  | 'customContent.editor.classForm.toolProficienciesHelper'
+  | 'customContent.editor.classForm.toolProficienciesPlaceholder'
+  | 'customContent.editor.classForm.toolProficienciesEmpty'
+  | 'customContent.editor.classForm.chipAdd'
+  | 'customContent.editor.classForm.chipInputLabel'
+  | 'customContent.editor.classForm.spellcastingLegend'
+  | 'customContent.editor.classForm.spellcastingHelper'
+  | 'customContent.editor.classForm.spellcastingToggle'
+  | 'customContent.editor.classForm.spellcastingAbility'
+  | 'customContent.editor.classForm.spellcastingProgression'
+  | 'customContent.editor.classForm.spellcastingProgression.full'
+  | 'customContent.editor.classForm.spellcastingProgression.half'
+  | 'customContent.editor.classForm.spellcastingProgression.third'
+  | 'customContent.editor.classForm.spellcastingProgression.pact'
+  | 'customContent.editor.classForm.startingEquipmentLegend'
+  | 'customContent.editor.classForm.startingEquipmentHelper'
+  | 'customContent.editor.classForm.startingItemsEmpty'
+  | 'customContent.editor.classForm.startingItemAdd'
+  | 'customContent.editor.classForm.startingItemId'
+  | 'customContent.editor.classForm.startingItemIdPlaceholder'
+  | 'customContent.editor.classForm.startingItemQty'
+  | 'customContent.editor.classForm.startingCoinsToggle'
+  | 'customContent.editor.classForm.startingCoinsQty'
+  | 'customContent.editor.classForm.startingCoinsUnit'
+  | 'customContent.editor.classForm.featuresLegend'
+  | 'customContent.editor.classForm.featuresHelper'
+  | 'customContent.editor.classForm.featuresEmpty'
+  | 'customContent.editor.classForm.featureAdd'
+  | 'customContent.editor.classForm.featureLevel'
+  | 'customContent.editor.classForm.featureNameFr'
+  | 'customContent.editor.classForm.featureNameEn'
+  | 'customContent.editor.classForm.featureDescriptionFr'
+  | 'customContent.editor.classForm.featureDescriptionEn'
+  | 'customContent.editor.classForm.multiclassLegend'
+  | 'customContent.editor.classForm.multiclassHelper'
+  | 'customContent.editor.classForm.multiclassToggle'
+  | 'customContent.editor.classForm.multiclassCombinator'
+  | 'customContent.editor.classForm.multiclassCombinatorAnd'
+  | 'customContent.editor.classForm.multiclassCombinatorOr'
+  | 'customContent.editor.classForm.multiclassMinimaEmpty'
+  | 'customContent.editor.classForm.multiclassMinAdd'
+  | 'customContent.editor.classForm.multiclassMinAbility'
+  | 'customContent.editor.classForm.multiclassMinAbilityPlaceholder'
+  | 'customContent.editor.classForm.multiclassMinValue'
+  | 'customContent.editor.classForm.multiclassArmor'
+  | 'customContent.editor.classForm.multiclassArmorHelper'
+  | 'customContent.editor.classForm.multiclassArmorPlaceholder'
+  | 'customContent.editor.classForm.multiclassArmorEmpty'
+  | 'customContent.editor.classForm.multiclassWeapons'
+  | 'customContent.editor.classForm.multiclassWeaponsHelper'
+  | 'customContent.editor.classForm.multiclassWeaponsPlaceholder'
+  | 'customContent.editor.classForm.multiclassWeaponsEmpty'
+  | 'customContent.editor.classForm.multiclassTools'
+  | 'customContent.editor.classForm.multiclassToolsHelper'
+  | 'customContent.editor.classForm.multiclassToolsPlaceholder'
+  | 'customContent.editor.classForm.multiclassToolsEmpty'
+  | 'customContent.editor.classForm.removeRow'
+  | 'customContent.editor.classForm.cancel'
+  | 'customContent.editor.classForm.confirm'
+  | 'customContent.editor.classForm.error.idRequired'
+  | 'customContent.editor.classForm.error.idFormat'
+  | 'customContent.editor.classForm.error.idReserved'
+  | 'customContent.editor.classForm.error.nameFrRequired'
+  | 'customContent.editor.classForm.error.descriptionFrRequired'
+  | 'customContent.editor.classForm.error.primaryAbilityRequired'
+  | 'customContent.editor.classForm.error.saveProficienciesRequired'
+  | 'customContent.editor.classForm.error.skillChoiceCountInvalid'
+  | 'customContent.editor.classForm.error.skillChoiceFromTooShort'
+  | 'customContent.editor.classForm.error.featureIncomplete'
+  | 'customContent.editor.classForm.error.coinsInvalid'
+  | 'customContent.editor.classForm.error.startingItemIdFormat'
+  | 'customContent.editor.classForm.error.startingItemQtyInvalid'
+  | 'customContent.editor.classForm.error.multiclassMinimumRequired'
+  | 'customContent.editor.classForm.error.multiclassMinimumAbilityRequired'
+  | 'customContent.editor.classForm.error.multiclassMinimumDuplicate'
+  | 'customContent.editor.classForm.error.multiclassMinimumOutOfRange';
 
 type Dict = Record<StringKey, string>;
 
@@ -2002,6 +2111,195 @@ const STRINGS: Record<Locale, Dict> = {
       'Identifiant d’ancêtre géant invalide : minuscules, chiffres et tirets uniquement.',
     'customContent.editor.ancestryForm.error.giantDuplicate':
       'Deux ancêtres géants portent le même identifiant.',
+    // Class — pack editor (JALON 3C.9)
+    'customContent.editor.classes.add': 'Ajouter une classe',
+    'customContent.editor.classes.empty':
+      'Aucune classe ajoutée pour l’instant.',
+    'customContent.editor.classes.remove': 'Retirer',
+    'customContent.editor.classForm.title': 'Nouvelle classe',
+    'customContent.editor.classForm.intro':
+      'Form simple pour une classe maison. Pour une classe complexe (table de niveau L2-L20, sous-choix L1 type Ordre divin, Weapon Mastery), édite le JSON directement après l’export.',
+    'customContent.editor.classForm.id': 'Identifiant',
+    'customContent.editor.classForm.idHelper':
+      'Slug en minuscules, chiffres et tirets (ex. : « cendre-pacte »). Évite les noms des 12 classes officielles (barbare, barde, clerc, druide, ensorceleur, guerrier, magicien, moine, occultiste, paladin, rôdeur, roublard).',
+    'customContent.editor.classForm.nameFr': 'Nom (FR)',
+    'customContent.editor.classForm.nameEn': 'Nom (EN)',
+    'customContent.editor.classForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.classForm.descriptionEn': 'Description (EN)',
+    'customContent.editor.classForm.hitDie': 'Dé de vie',
+    'customContent.editor.classForm.hitDieHelper':
+      'Dé lancé à chaque montée de niveau pour gagner des points de vie.',
+    'customContent.editor.classForm.primaryAbilityLegend':
+      'Caractéristique principale',
+    'customContent.editor.classForm.primaryAbilityHelper':
+      'Caractéristique(s) utilisée(s) pour les jets d’attaque et le DD des sorts de la classe. Sélectionne au moins une.',
+    'customContent.editor.classForm.saveProficienciesLegend':
+      'Jets de sauvegarde maîtrisés',
+    'customContent.editor.classForm.saveProficienciesHelper':
+      'Jets de sauvegarde dans lesquels la classe est entraînée (deux pour les classes SRD).',
+    'customContent.editor.classForm.skillChoicesLegend':
+      'Choix de compétences',
+    'customContent.editor.classForm.skillChoicesHelper':
+      'Au niveau 1, le joueur choisit `N` compétences parmi une liste fournie.',
+    'customContent.editor.classForm.skillChoiceCount': 'Nombre à choisir',
+    'customContent.editor.classForm.skillChoiceFrom': 'Compétences proposées',
+    'customContent.editor.classForm.skillChoiceFromHelper':
+      'Ajoute les compétences éligibles une par une (ex. : athlétisme, perception). La liste doit en contenir au moins autant que le nombre à choisir.',
+    'customContent.editor.classForm.skillChoiceFromPlaceholder':
+      'Ex. : athlétisme, perception, intimidation…',
+    'customContent.editor.classForm.skillChoiceFromEmpty':
+      'Aucune compétence proposée pour l’instant.',
+    'customContent.editor.classForm.armorProficiencies':
+      'Maîtrises d’armure',
+    'customContent.editor.classForm.armorProficienciesHelper':
+      'Ex. : armures légères, intermédiaires, lourdes, boucliers.',
+    'customContent.editor.classForm.armorProficienciesPlaceholder':
+      'Ex. : armures légères, boucliers…',
+    'customContent.editor.classForm.armorProficienciesEmpty':
+      'Aucune maîtrise d’armure pour l’instant.',
+    'customContent.editor.classForm.weaponProficiencies':
+      'Maîtrises d’armes',
+    'customContent.editor.classForm.weaponProficienciesHelper':
+      'Ex. : armes courantes, armes de guerre, ou liste précise d’armes.',
+    'customContent.editor.classForm.weaponProficienciesPlaceholder':
+      'Ex. : armes courantes, armes de guerre…',
+    'customContent.editor.classForm.weaponProficienciesEmpty':
+      'Aucune maîtrise d’armes pour l’instant.',
+    'customContent.editor.classForm.toolProficiencies':
+      'Maîtrises d’outils',
+    'customContent.editor.classForm.toolProficienciesHelper':
+      'Ex. : outils d’artisan, instrument de musique.',
+    'customContent.editor.classForm.toolProficienciesPlaceholder':
+      'Ex. : outils de voleur, instrument de musique…',
+    'customContent.editor.classForm.toolProficienciesEmpty':
+      'Aucune maîtrise d’outils pour l’instant.',
+    'customContent.editor.classForm.chipAdd': 'Ajouter',
+    'customContent.editor.classForm.chipInputLabel': 'Nouvelle valeur',
+    'customContent.editor.classForm.spellcastingLegend': 'Incantation',
+    'customContent.editor.classForm.spellcastingHelper':
+      'Active si la classe lance des sorts. Définit la caractéristique d’incantation et la vitesse de progression.',
+    'customContent.editor.classForm.spellcastingToggle':
+      'Cette classe lance des sorts',
+    'customContent.editor.classForm.spellcastingAbility':
+      'Caractéristique d’incantation',
+    'customContent.editor.classForm.spellcastingProgression':
+      'Vitesse de progression',
+    'customContent.editor.classForm.spellcastingProgression.full':
+      'Lanceur complet',
+    'customContent.editor.classForm.spellcastingProgression.half':
+      'Demi-lanceur',
+    'customContent.editor.classForm.spellcastingProgression.third':
+      'Tiers de lanceur',
+    'customContent.editor.classForm.spellcastingProgression.pact':
+      'Magie de pacte',
+    'customContent.editor.classForm.startingEquipmentLegend':
+      'Équipement de départ',
+    'customContent.editor.classForm.startingEquipmentHelper':
+      'Une option d’équipement V1. Réfère des `id` d’objets (du pack ou du SRD). Les pièces optionnelles s’ajoutent en bas.',
+    'customContent.editor.classForm.startingItemsEmpty':
+      'Aucun objet de départ pour l’instant.',
+    'customContent.editor.classForm.startingItemAdd': 'Ajouter un objet',
+    'customContent.editor.classForm.startingItemId': 'Identifiant d’objet',
+    'customContent.editor.classForm.startingItemIdPlaceholder':
+      'Ex. : sword-longsword, kit-explorer…',
+    'customContent.editor.classForm.startingItemQty': 'Quantité',
+    'customContent.editor.classForm.startingCoinsToggle':
+      'Ajouter des pièces de départ',
+    'customContent.editor.classForm.startingCoinsQty': 'Quantité',
+    'customContent.editor.classForm.startingCoinsUnit': 'Unité',
+    'customContent.editor.classForm.featuresLegend': 'Aptitudes de classe',
+    'customContent.editor.classForm.featuresHelper':
+      'Ajoute les aptitudes par niveau. Pour la table complète L2-L20 d’une classe homebrew, édite plutôt le JSON après export.',
+    'customContent.editor.classForm.featuresEmpty':
+      'Aucune aptitude ajoutée pour l’instant.',
+    'customContent.editor.classForm.featureAdd': 'Ajouter une aptitude',
+    'customContent.editor.classForm.featureLevel': 'Niveau',
+    'customContent.editor.classForm.featureNameFr': 'Nom de l’aptitude (FR)',
+    'customContent.editor.classForm.featureNameEn': 'Nom de l’aptitude (EN)',
+    'customContent.editor.classForm.featureDescriptionFr':
+      'Description (FR)',
+    'customContent.editor.classForm.featureDescriptionEn':
+      'Description (EN)',
+    'customContent.editor.classForm.multiclassLegend': 'Multi-classe',
+    'customContent.editor.classForm.multiclassHelper':
+      'Prérequis et maîtrises gagnées quand cette classe est ajoutée en multi-classe.',
+    'customContent.editor.classForm.multiclassToggle':
+      'Cette classe a des prérequis pour le multi-classage',
+    'customContent.editor.classForm.multiclassCombinator': 'Combinaison',
+    'customContent.editor.classForm.multiclassCombinatorAnd':
+      'Toutes les conditions (ET)',
+    'customContent.editor.classForm.multiclassCombinatorOr':
+      'Au moins une condition (OU)',
+    'customContent.editor.classForm.multiclassMinimaEmpty':
+      'Aucun minimum ajouté — coche un prérequis pour rendre la classe accessible en multi-classe.',
+    'customContent.editor.classForm.multiclassMinAdd':
+      'Ajouter un prérequis',
+    'customContent.editor.classForm.multiclassMinAbility':
+      'Caractéristique',
+    'customContent.editor.classForm.multiclassMinAbilityPlaceholder':
+      'Choisir une caractéristique',
+    'customContent.editor.classForm.multiclassMinValue': 'Minimum',
+    'customContent.editor.classForm.multiclassArmor':
+      'Armures gagnées en multi-classe',
+    'customContent.editor.classForm.multiclassArmorHelper':
+      'Maîtrises d’armures obtenues par le PJ qui prend un niveau dans cette classe en multi-classe.',
+    'customContent.editor.classForm.multiclassArmorPlaceholder':
+      'Ex. : armures légères, boucliers…',
+    'customContent.editor.classForm.multiclassArmorEmpty':
+      'Aucune armure gagnée en multi-classe.',
+    'customContent.editor.classForm.multiclassWeapons':
+      'Armes gagnées en multi-classe',
+    'customContent.editor.classForm.multiclassWeaponsHelper':
+      'Maîtrises d’armes obtenues par le PJ qui prend un niveau dans cette classe en multi-classe.',
+    'customContent.editor.classForm.multiclassWeaponsPlaceholder':
+      'Ex. : armes courantes…',
+    'customContent.editor.classForm.multiclassWeaponsEmpty':
+      'Aucune arme gagnée en multi-classe.',
+    'customContent.editor.classForm.multiclassTools':
+      'Outils gagnés en multi-classe',
+    'customContent.editor.classForm.multiclassToolsHelper':
+      'Maîtrises d’outils obtenues par le PJ qui prend un niveau dans cette classe en multi-classe.',
+    'customContent.editor.classForm.multiclassToolsPlaceholder':
+      'Ex. : outils d’artisan…',
+    'customContent.editor.classForm.multiclassToolsEmpty':
+      'Aucun outil gagné en multi-classe.',
+    'customContent.editor.classForm.removeRow': 'Retirer',
+    'customContent.editor.classForm.cancel': 'Annuler',
+    'customContent.editor.classForm.confirm': 'Ajouter la classe',
+    'customContent.editor.classForm.error.idRequired':
+      'L’identifiant est obligatoire.',
+    'customContent.editor.classForm.error.idFormat':
+      'Slug invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.classForm.error.idReserved':
+      'Cet identifiant est réservé aux 12 classes officielles — utilise un slug spécifique à ta création.',
+    'customContent.editor.classForm.error.nameFrRequired':
+      'Le nom FR est obligatoire.',
+    'customContent.editor.classForm.error.descriptionFrRequired':
+      'La description FR est obligatoire.',
+    'customContent.editor.classForm.error.primaryAbilityRequired':
+      'Choisis au moins une caractéristique principale.',
+    'customContent.editor.classForm.error.saveProficienciesRequired':
+      'Choisis au moins un jet de sauvegarde maîtrisé.',
+    'customContent.editor.classForm.error.skillChoiceCountInvalid':
+      'Le nombre de compétences à choisir doit être ≥ 0.',
+    'customContent.editor.classForm.error.skillChoiceFromTooShort':
+      'La liste de compétences proposées doit contenir au moins autant d’entrées que le nombre à choisir.',
+    'customContent.editor.classForm.error.featureIncomplete':
+      'Chaque aptitude doit avoir un niveau (1-20), un nom FR et une description FR.',
+    'customContent.editor.classForm.error.coinsInvalid':
+      'La quantité de pièces doit être un entier positif.',
+    'customContent.editor.classForm.error.startingItemIdFormat':
+      'Identifiant d’objet invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.classForm.error.startingItemQtyInvalid':
+      'La quantité doit être strictement positive.',
+    'customContent.editor.classForm.error.multiclassMinimumRequired':
+      'Ajoute au moins un minimum de caractéristique.',
+    'customContent.editor.classForm.error.multiclassMinimumAbilityRequired':
+      'Chaque prérequis doit cibler une caractéristique.',
+    'customContent.editor.classForm.error.multiclassMinimumDuplicate':
+      'Une même caractéristique ne peut pas figurer deux fois dans les prérequis.',
+    'customContent.editor.classForm.error.multiclassMinimumOutOfRange':
+      'Le minimum doit être compris entre 1 et 20.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -3063,6 +3361,188 @@ const STRINGS: Record<Locale, Dict> = {
       'Invalid giant ancestor identifier: lowercase, digits and dashes only.',
     'customContent.editor.ancestryForm.error.giantDuplicate':
       'Two giant ancestors share the same identifier.',
+    // Class — pack editor (JALON 3C.9)
+    'customContent.editor.classes.add': 'Add a class',
+    'customContent.editor.classes.empty': 'No class added yet.',
+    'customContent.editor.classes.remove': 'Remove',
+    'customContent.editor.classForm.title': 'New class',
+    'customContent.editor.classForm.intro':
+      'Simple form for a homebrew class. For a complex class (L2-L20 table, L1 sub-choices like Divine Order, Weapon Mastery), edit the JSON after export.',
+    'customContent.editor.classForm.id': 'Identifier',
+    'customContent.editor.classForm.idHelper':
+      'Lowercase slug, digits and dashes (e.g. "ash-pact"). Avoid the 12 official class slugs.',
+    'customContent.editor.classForm.nameFr': 'Name (FR)',
+    'customContent.editor.classForm.nameEn': 'Name (EN)',
+    'customContent.editor.classForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.classForm.descriptionEn': 'Description (EN)',
+    'customContent.editor.classForm.hitDie': 'Hit die',
+    'customContent.editor.classForm.hitDieHelper':
+      'Die rolled on level up to gain hit points.',
+    'customContent.editor.classForm.primaryAbilityLegend': 'Primary ability',
+    'customContent.editor.classForm.primaryAbilityHelper':
+      'Ability used for attack rolls and spell save DC. Select at least one.',
+    'customContent.editor.classForm.saveProficienciesLegend':
+      'Saving throw proficiencies',
+    'customContent.editor.classForm.saveProficienciesHelper':
+      'Saving throws this class is trained in (two for SRD classes).',
+    'customContent.editor.classForm.skillChoicesLegend': 'Skill choices',
+    'customContent.editor.classForm.skillChoicesHelper':
+      'At level 1, the player picks N skills from a list.',
+    'customContent.editor.classForm.skillChoiceCount': 'Pick count',
+    'customContent.editor.classForm.skillChoiceFrom': 'Available skills',
+    'customContent.editor.classForm.skillChoiceFromHelper':
+      'Add eligible skills one by one. The list must contain at least as many entries as the pick count.',
+    'customContent.editor.classForm.skillChoiceFromPlaceholder':
+      'E.g. athletics, perception, intimidation…',
+    'customContent.editor.classForm.skillChoiceFromEmpty':
+      'No skill listed yet.',
+    'customContent.editor.classForm.armorProficiencies':
+      'Armor proficiencies',
+    'customContent.editor.classForm.armorProficienciesHelper':
+      'E.g. light, medium, heavy armor, shields.',
+    'customContent.editor.classForm.armorProficienciesPlaceholder':
+      'E.g. light armor, shields…',
+    'customContent.editor.classForm.armorProficienciesEmpty':
+      'No armor proficiency yet.',
+    'customContent.editor.classForm.weaponProficiencies':
+      'Weapon proficiencies',
+    'customContent.editor.classForm.weaponProficienciesHelper':
+      'E.g. simple weapons, martial weapons, or a specific list.',
+    'customContent.editor.classForm.weaponProficienciesPlaceholder':
+      'E.g. simple weapons, martial weapons…',
+    'customContent.editor.classForm.weaponProficienciesEmpty':
+      'No weapon proficiency yet.',
+    'customContent.editor.classForm.toolProficiencies': 'Tool proficiencies',
+    'customContent.editor.classForm.toolProficienciesHelper':
+      'E.g. artisan tools, musical instrument.',
+    'customContent.editor.classForm.toolProficienciesPlaceholder':
+      'E.g. thieves’ tools, musical instrument…',
+    'customContent.editor.classForm.toolProficienciesEmpty':
+      'No tool proficiency yet.',
+    'customContent.editor.classForm.chipAdd': 'Add',
+    'customContent.editor.classForm.chipInputLabel': 'New value',
+    'customContent.editor.classForm.spellcastingLegend': 'Spellcasting',
+    'customContent.editor.classForm.spellcastingHelper':
+      'Enable if the class casts spells. Sets the spellcasting ability and progression speed.',
+    'customContent.editor.classForm.spellcastingToggle':
+      'This class casts spells',
+    'customContent.editor.classForm.spellcastingAbility': 'Spellcasting ability',
+    'customContent.editor.classForm.spellcastingProgression':
+      'Progression speed',
+    'customContent.editor.classForm.spellcastingProgression.full':
+      'Full caster',
+    'customContent.editor.classForm.spellcastingProgression.half':
+      'Half caster',
+    'customContent.editor.classForm.spellcastingProgression.third':
+      'Third caster',
+    'customContent.editor.classForm.spellcastingProgression.pact':
+      'Pact magic',
+    'customContent.editor.classForm.startingEquipmentLegend':
+      'Starting equipment',
+    'customContent.editor.classForm.startingEquipmentHelper':
+      'A single V1 option. References item `id`s (pack or SRD). Optional coins below.',
+    'customContent.editor.classForm.startingItemsEmpty':
+      'No starting item yet.',
+    'customContent.editor.classForm.startingItemAdd': 'Add an item',
+    'customContent.editor.classForm.startingItemId': 'Item identifier',
+    'customContent.editor.classForm.startingItemIdPlaceholder':
+      'E.g. sword-longsword, kit-explorer…',
+    'customContent.editor.classForm.startingItemQty': 'Quantity',
+    'customContent.editor.classForm.startingCoinsToggle':
+      'Add starting coins',
+    'customContent.editor.classForm.startingCoinsQty': 'Quantity',
+    'customContent.editor.classForm.startingCoinsUnit': 'Unit',
+    'customContent.editor.classForm.featuresLegend': 'Class features',
+    'customContent.editor.classForm.featuresHelper':
+      'Add features by level. For a full L2-L20 table, edit the JSON after export.',
+    'customContent.editor.classForm.featuresEmpty': 'No feature added yet.',
+    'customContent.editor.classForm.featureAdd': 'Add a feature',
+    'customContent.editor.classForm.featureLevel': 'Level',
+    'customContent.editor.classForm.featureNameFr': 'Feature name (FR)',
+    'customContent.editor.classForm.featureNameEn': 'Feature name (EN)',
+    'customContent.editor.classForm.featureDescriptionFr':
+      'Description (FR)',
+    'customContent.editor.classForm.featureDescriptionEn':
+      'Description (EN)',
+    'customContent.editor.classForm.multiclassLegend': 'Multiclassing',
+    'customContent.editor.classForm.multiclassHelper':
+      'Prerequisites and proficiencies gained when this class is added in multiclass.',
+    'customContent.editor.classForm.multiclassToggle':
+      'This class has multiclass prerequisites',
+    'customContent.editor.classForm.multiclassCombinator': 'Combination',
+    'customContent.editor.classForm.multiclassCombinatorAnd':
+      'All conditions (AND)',
+    'customContent.editor.classForm.multiclassCombinatorOr':
+      'At least one (OR)',
+    'customContent.editor.classForm.multiclassMinimaEmpty':
+      'No minimum yet — add a prerequisite to gate this class in multiclass.',
+    'customContent.editor.classForm.multiclassMinAdd':
+      'Add a prerequisite',
+    'customContent.editor.classForm.multiclassMinAbility': 'Ability',
+    'customContent.editor.classForm.multiclassMinAbilityPlaceholder':
+      'Pick an ability',
+    'customContent.editor.classForm.multiclassMinValue': 'Minimum',
+    'customContent.editor.classForm.multiclassArmor':
+      'Armor gained on multiclass',
+    'customContent.editor.classForm.multiclassArmorHelper':
+      'Armor proficiencies a character gains when taking a level in this class as multiclass.',
+    'customContent.editor.classForm.multiclassArmorPlaceholder':
+      'E.g. light armor, shields…',
+    'customContent.editor.classForm.multiclassArmorEmpty':
+      'No armor gained on multiclass.',
+    'customContent.editor.classForm.multiclassWeapons':
+      'Weapons gained on multiclass',
+    'customContent.editor.classForm.multiclassWeaponsHelper':
+      'Weapon proficiencies a character gains when taking a level in this class as multiclass.',
+    'customContent.editor.classForm.multiclassWeaponsPlaceholder':
+      'E.g. simple weapons…',
+    'customContent.editor.classForm.multiclassWeaponsEmpty':
+      'No weapon gained on multiclass.',
+    'customContent.editor.classForm.multiclassTools':
+      'Tools gained on multiclass',
+    'customContent.editor.classForm.multiclassToolsHelper':
+      'Tool proficiencies a character gains when taking a level in this class as multiclass.',
+    'customContent.editor.classForm.multiclassToolsPlaceholder':
+      'E.g. artisan tools…',
+    'customContent.editor.classForm.multiclassToolsEmpty':
+      'No tool gained on multiclass.',
+    'customContent.editor.classForm.removeRow': 'Remove',
+    'customContent.editor.classForm.cancel': 'Cancel',
+    'customContent.editor.classForm.confirm': 'Add the class',
+    'customContent.editor.classForm.error.idRequired':
+      'Identifier is required.',
+    'customContent.editor.classForm.error.idFormat':
+      'Invalid slug: lowercase, digits and dashes only.',
+    'customContent.editor.classForm.error.idReserved':
+      'This identifier is reserved by an official class — pick a slug unique to your homebrew.',
+    'customContent.editor.classForm.error.nameFrRequired':
+      'FR name is required.',
+    'customContent.editor.classForm.error.descriptionFrRequired':
+      'FR description is required.',
+    'customContent.editor.classForm.error.primaryAbilityRequired':
+      'Pick at least one primary ability.',
+    'customContent.editor.classForm.error.saveProficienciesRequired':
+      'Pick at least one saving throw proficiency.',
+    'customContent.editor.classForm.error.skillChoiceCountInvalid':
+      'Skill choice count must be ≥ 0.',
+    'customContent.editor.classForm.error.skillChoiceFromTooShort':
+      'The available skills list must contain at least the pick count.',
+    'customContent.editor.classForm.error.featureIncomplete':
+      'Each feature needs a level (1-20), an FR name and an FR description.',
+    'customContent.editor.classForm.error.coinsInvalid':
+      'Coin quantity must be a positive integer.',
+    'customContent.editor.classForm.error.startingItemIdFormat':
+      'Invalid item identifier: lowercase, digits and dashes only.',
+    'customContent.editor.classForm.error.startingItemQtyInvalid':
+      'Quantity must be strictly positive.',
+    'customContent.editor.classForm.error.multiclassMinimumRequired':
+      'Add at least one ability minimum.',
+    'customContent.editor.classForm.error.multiclassMinimumAbilityRequired':
+      'Each prerequisite must target an ability.',
+    'customContent.editor.classForm.error.multiclassMinimumDuplicate':
+      'An ability cannot appear twice in prerequisites.',
+    'customContent.editor.classForm.error.multiclassMinimumOutOfRange':
+      'Minimum must be between 1 and 20.',
   },
 };
 

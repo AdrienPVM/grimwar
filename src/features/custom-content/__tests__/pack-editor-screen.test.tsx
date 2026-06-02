@@ -1011,3 +1011,116 @@ describe("PackEditorScreen — création d'une ascendance (JALON 3C.8)", () => {
     });
   });
 });
+
+describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
+  it("saisit méta + class minimale → save → writePack reçoit pack.entities.classes", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-class');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack classe');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-class'));
+    expect(screen.getByTestId('class-form')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('class-form-id'), 'cendre-pacte');
+    await user.type(
+      screen.getByTestId('class-form-name-fr'),
+      'Cendre-pacte',
+    );
+    await user.type(
+      screen.getByTestId('class-form-description-fr'),
+      'Classe maison de cendres.',
+    );
+
+    // Au moins 1 ability principale + 1 save (chip toggle)
+    await user.click(screen.getByTestId('class-form-primary-cha'));
+    await user.click(screen.getByTestId('class-form-save-cha'));
+    await user.click(screen.getByTestId('class-form-save-sag'));
+
+    await user.click(screen.getByTestId('class-form-confirm'));
+
+    expect(screen.queryByTestId('class-form')).not.toBeInTheDocument();
+    const row = screen.getByTestId('pack-editor-class-row');
+    expect(row).toHaveAttribute('data-class-id', 'cendre-pacte');
+    expect(row).toHaveTextContent('Cendre-pacte');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.classes).toHaveLength(1);
+    const c = calledPack.entities.classes[0];
+    expect(c.id).toBe('cendre-pacte');
+    expect(c.name.fr).toBe('Cendre-pacte');
+    expect(c.hitDie).toBe('d8');
+    expect(c.primaryAbility).toEqual(['cha']);
+    expect(c.saveProficiencies).toEqual(['cha', 'sag']);
+    expect(c.spellcasting).toBeNull();
+    expect(c.source).toBe('aidedd-homebrew');
+    expect(c.weaponMasteryCount).toBe(0);
+    expect(c.multiclassPrerequisite).toBeNull();
+  });
+
+  it("rejette un id réservé (« wizard ») — pas d'ajout, form reste ouvert", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-class'));
+    await user.type(screen.getByTestId('class-form-id'), 'wizard');
+    await user.type(screen.getByTestId('class-form-name-fr'), 'Magicien');
+    await user.type(
+      screen.getByTestId('class-form-description-fr'),
+      'Tentative homebrew.',
+    );
+    await user.click(screen.getByTestId('class-form-primary-int'));
+    await user.click(screen.getByTestId('class-form-save-int'));
+    await user.click(screen.getByTestId('class-form-confirm'));
+
+    expect(screen.getByTestId('class-form')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('pack-editor-class-row'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('propage spellcasting (toggle ON) avec ability + progression dans le pack', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-caster');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack caster');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-class'));
+    await user.type(screen.getByTestId('class-form-id'), 'cendre-pacte');
+    await user.type(
+      screen.getByTestId('class-form-name-fr'),
+      'Cendre-pacte',
+    );
+    await user.type(
+      screen.getByTestId('class-form-description-fr'),
+      'Lanceur de pacte.',
+    );
+    await user.click(screen.getByTestId('class-form-primary-cha'));
+    await user.click(screen.getByTestId('class-form-save-cha'));
+    await user.click(screen.getByTestId('class-form-save-sag'));
+
+    await user.click(screen.getByTestId('class-form-spellcasting-toggle'));
+    // Les Select du form-kit sont des combobox WAI-ARIA — on garde les
+    // valeurs par défaut (int / full) pour ne pas tester la mécanique Select
+    // ici (elle est testée ailleurs). Le toggle ON suffit à valider que
+    // spellcasting n'est plus null dans le pack.
+
+    await user.click(screen.getByTestId('class-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    const c = calledPack.entities.classes[0];
+    expect(c.spellcasting).toEqual({
+      ability: 'int',
+      progression: 'full',
+    });
+  });
+});
