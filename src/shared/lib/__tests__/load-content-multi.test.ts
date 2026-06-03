@@ -88,6 +88,27 @@ describe('loadContentMulti', () => {
     expect(packs).not.toHaveBeenCalled();
   });
 
+  it('échec lecture packs user : SRD seul servi + console.error (l\'overlay ne doit pas anéantir la base)', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée'),
+      fakeItem('shield', 'bouclier'),
+    ]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockRejectedValue(
+      Object.assign(new Error('Missing or insufficient permissions.'), {
+        code: 'permission-denied',
+      }),
+    );
+
+    const result = await loadContentMulti('items', { userId: 'user-1' });
+
+    expect(result.map((i) => i.id)).toEqual(['sword', 'shield']);
+    expect(error).toHaveBeenCalledWith(
+      expect.stringContaining('permission-denied'),
+    );
+    error.mockRestore();
+  });
+
   it('userId + campaignId : packs user lus, campaign reste no-op tant que 3D pas livré', async () => {
     vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
       fakeItem('sword', 'épée'),

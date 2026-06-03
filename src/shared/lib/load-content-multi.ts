@@ -40,7 +40,17 @@ export async function loadContentMulti<K extends ContentTypeKey>(
   // que le JALON 3C (UI in-app de création par catégorie) ne le câble
   // pas correctement. Le brancher ici prématurément ferait crasher tous
   // les call sites `useContent` dès qu'un utilisateur est authentifié.
-  const userEntries = userId ? await loadUserPacksEntries(type, userId) : [];
+  //
+  // RÉSILIENCE OVERLAY (post-incident 2026-06-02) : si la lecture custom
+  // échoue (rules pas déployées, offline, permission-denied, schéma
+  // d'un pack corrompu), on log et on retourne `[]` pour ce scope —
+  // l'overlay custom ne doit JAMAIS effacer la base SRD. L'incident :
+  // commit `6933d18` (JALON 3B.3) a ajouté la rule `customContentPacks`
+  // sans la déployer ; Firestore prod rejetait toute lecture anon de
+  // `users/{uid}/customContentPacks`, l'exception remontait, et le
+  // wizard / l'inventaire affichaient classes vides et items
+  // « (introuvable) » alors que le bundle SRD était sain sur disque.
+  const userEntries = userId ? await safeLoadUserPacks(type, userId) : [];
   // Scope campagne : aucune source aujourd'hui. `loadCampaignContent`
   // souffre du même problème de path 4-segment ; le JALON 3D décidera de
   // la stratégie d'injection campagne (pack copié dans la campagne vs
@@ -68,4 +78,28 @@ export async function loadContentMulti<K extends ContentTypeKey>(
   for (const entry of campaignEntries) push(entry, 'campaign');
 
   return Array.from(byId.values()).map((v) => v.entity);
+}
+
+/**
+ * Wrapper résilient autour de `loadUserPacksEntries`. Sur échec (network,
+ * permission-denied, rule pas déployée, schéma de pack invalide…), on log
+ * une erreur lisible et on retourne `[]` — l'appelant continue avec la
+ * base SRD intacte. Le contraire (laisser l'exception remonter) anéantit
+ * tous les call sites `useContent` qui voient `data=[]` et l'UI affiche
+ * « aucune classe », « (introuvable) », etc.
+ */
+async function safeLoadUserPacks<K extends ContentTypeKey>(
+  type: K,
+  userId: string,
+): Promise<ContentEntityByKey[K][]> {
+  try {
+    return await loadUserPacksEntries(type, userId);
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    const msg = (err as { message?: string }).message ?? String(err);
+    console.error(
+      `[load-content-multi] ${type}: lecture des packs custom user a échoué (${code ?? 'unknown'}: ${msg}). Base SRD servie seule.`,
+    );
+    return [];
+  }
 }
