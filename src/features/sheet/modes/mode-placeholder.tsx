@@ -21,7 +21,7 @@ export function ModePlaceholder({ mode }: ModePlaceholderProps): JSX.Element {
       role="tabpanel"
       id={`sheet-mode-panel-${mode}`}
       aria-labelledby={`sheet-mode-tab-${mode}`}
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col items-center px-4 py-8"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col items-center px-4 py-8 lg:max-w-[640px] lg:px-0"
     >
       <p className="font-title text-[11px] font-bold uppercase tracking-[0.22em] text-gold-dim">
         {t(`sheet.mode.${mode}` as StringKey)}

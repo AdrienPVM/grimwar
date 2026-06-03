@@ -37,19 +37,33 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-essence"
       aria-labelledby="sheet-mode-tab-essence"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[680px] lg:px-0 xl:max-w-none xl:grid xl:grid-cols-2 xl:gap-4"
     >
-      <EssenceHeader character={character} readOnly={readOnly} />
-      <Hexagram character={character} readOnly={readOnly} />
-      <SavesRow
-        character={character}
-        readOnly={readOnly}
-        extraSaveBonus={extraSaveBonus}
-      />
+      {/*
+        xl : 2 colonnes. Header + Hexagram + Saves + Skills (la longue
+        liste interactive) gardent toute la largeur ; les cartes Ordre
+        divin / Primal / Invocations se rangent en grille pour profiter
+        de la largeur sans étirer leurs contenus textuels.
+      */}
+      <div className="xl:col-span-2">
+        <EssenceHeader character={character} readOnly={readOnly} />
+      </div>
+      <div className="xl:col-span-2">
+        <Hexagram character={character} readOnly={readOnly} />
+      </div>
+      <div className="xl:col-span-2">
+        <SavesRow
+          character={character}
+          readOnly={readOnly}
+          extraSaveBonus={extraSaveBonus}
+        />
+      </div>
       <DivineOrderCard character={character} />
       <PrimalOrderCard character={character} />
       <InvocationsCard character={character} />
-      <SkillsList character={character} readOnly={readOnly} />
+      <div className="xl:col-span-2">
+        <SkillsList character={character} readOnly={readOnly} />
+      </div>
     </section>
   );
 }

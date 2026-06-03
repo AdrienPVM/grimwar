@@ -199,23 +199,24 @@ body {
 }
 
 /* ===========================================================================
-   PROTOTYPE DESKTOP — Plan 13.14 v0.
-   À lg+ (1024px+), la coquille de fiche bascule en grille 2 colonnes
-   (sidebar 280px + main fluide). Pour éviter de toucher les 14+ sous-cards
-   qui portent toutes `mx-auto max-w-[420px]` (legacy mobile-first), on
-   relâche au sein du `<aside>` et de la zone main les caps de width et le
-   centrage forcé. Les sub-cards gardent leur identité visuelle mais
-   s'alignent à gauche dans leur colonne sidebar/main au lieu d'être
-   centrées avec du dead space.
+   DESKTOP SHELL — Plan 13.14 (densification v1, plan 13.14).
+   La coquille de fiche bascule en grille 2 colonnes à lg+ (cf.
+   `sheet-screen.tsx`). Les 14+ sous-cards héritées du mobile-first portent
+   toutes `mx-auto max-w-[420px]` pour leur identité mobile — on les
+   neutralise ici dans la sidebar (à lg+) pour qu'elles s'alignent et
+   remplissent la colonne 300-320px sans dead space.
 
-   À l'arbitrage v1 : décider si les cards passent en multi-col (xl: grid
-   2-col) ou si on garde l'écoulement vertical. Pour v0, c'est un layout
-   « sidebar + colonne 420px-large alignée à gauche dans le main aéré ».
+   Pour les modes (zone main), la responsabilité de la densification est
+   désormais portée par les utilities Tailwind dans chaque `*-mode.tsx`
+   (`lg:max-w-[*]` pour élargir, `xl:grid xl:grid-cols-2` pour densifier
+   combat/essence, `xl:col-span-2` sur les cards focales). Plus de
+   sur-selecteurs CSS hardcodés à `420px` — c'était précisément ce qui
+   empêchait la densification (le `> * { max-width: 420px }` global
+   re-cappait toute card à 420px quelle que soit l'intention Tailwind).
    =========================================================================== */
 @media (min-width: 1024px) {
-  /* aside (sidebar) : hero + status + tabs prennent toute la largeur 280px,
-     ne sont plus centrés horizontalement, et leur padding latéral mobile
-     (px-3/px-4) est neutralisé pour bien s'asseoir contre le bord. */
+  /* aside (sidebar) : neutralise mx-auto + max-w + padding latéraux mobile
+     des enfants pour qu'ils prennent toute la sidebar 300-320px. */
   .sheet-state .sheet-desktop-aside > * {
     max-width: none;
     margin-left: 0;
@@ -224,55 +225,11 @@ body {
     padding-right: 0;
   }
 
-  /* main area : les modes restent en cards 420px-larges mais alignées en
-     haut-gauche au lieu de centrées (mx-auto neutralisé). Si une card a
-     un fond ou un padding latéral, il reste — on ne touche que le centrage
-     et le cap. La zone respire au lieu d'être un rail centré sur 75% de vide. */
+  /* main area : les sections-modes définissent leur propre layout via
+     Tailwind. On neutralise seulement le mx-auto historique pour éviter
+     un re-centrage qui annulerait l'alignement de la grille xl:. */
   .sheet-state .sheet-desktop-main > section {
     margin-left: 0;
     margin-right: 0;
-  }
-}
-
-/* ===========================================================================
-   DESKTOP v1 — Plan MVP V1 / JALON 1A.1.
-   À xl+ (1280px+), les 4 modes contentés (combat / magie / essence / avoir)
-   basculent en 2 colonnes de cards (~420px chacune + gap). Le mode Âme
-   reste en placeholder centré (plan 20 / S2 — pas de contenu V1 jalon 1).
-
-   Implémentation : surcharge CSS-only sur les modes ciblés via leur `id`
-   panneau. Mobile et tablet < xl restent inchangés — passthrough byte-
-   identique. L'ordre DOM critique (BattleHud + HP en tête de Combat,
-   MagicCircle en tête de Magie) est préservé par grid auto-flow row dense.
-
-   Cards internes : gardent leur `max-w-[420px]` mais s'inscrivent dans des
-   colonnes de grille au lieu d'un flux vertical. Les cards très larges
-   (Hexagram, InventoryList) peuvent dépasser visuellement — à arbitrer en
-   v2 (col-span-2 manuel ou refactor card par card).
-   =========================================================================== */
-@media (min-width: 1280px) {
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-combat,
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-magie,
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-essence,
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-avoir {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 420px));
-    column-gap: 1.5rem;
-    row-gap: 0.75rem;
-    max-width: none;
-    width: 100%;
-    align-items: start;
-  }
-
-  /* Cards à l'intérieur des grilles : reset des marges latérales auto et
-     suppression du cap 420px sur le wrapper (le wrapper EST la cellule). */
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-combat > *,
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-magie > *,
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-essence > *,
-  .sheet-state .sheet-desktop-main #sheet-mode-panel-avoir > * {
-    max-width: 420px;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100%;
   }
 }

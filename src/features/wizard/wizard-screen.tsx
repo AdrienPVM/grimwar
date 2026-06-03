@@ -276,7 +276,10 @@ function ProgressBar({
               <span
                 aria-hidden="true"
                 className={cn(
-                  'block h-[3px] w-full rounded-full transition-colors duration-200 ease-base',
+                  // Épaisseur progressive : 3px mobile, 4px md (l'écran porte plus
+                  // d'air), 6px lg+ (sur viewport large la barre fine se perd dans
+                  // le manuscrit illuminé — audit responsive 13.14 défaut #3).
+                  'block h-[3px] w-full rounded-full transition-colors duration-200 ease-base md:h-1 lg:h-1.5',
                   isCurrent
                     ? 'bg-gold-bright shadow-[0_0_8px_rgba(253,233,180,0.35)]'
                     : isVisited

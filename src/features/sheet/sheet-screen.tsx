@@ -132,15 +132,17 @@ function CharacterSheet({ character }: { character: Character }): JSX.Element {
       data-readonly={readOnly ? 'true' : 'false'}
     >
       {/*
-        PROTOTYPE DESKTOP — Plan 13.14 prototype v0.
+        DESKTOP SHELL — Plan 13.14 (densification v1).
         Mobile / tablet (< lg) : passthrough — les enfants gardent leur
         `mx-auto max-w-[420px]` historique. Aucune régression visuelle.
-        lg+ : shell 2 colonnes — sidebar 280px sticky (hero + status + tabs
-        verticaux) + main area aérée (max-w-[860px], les modes restent en
-        cards 420px centrées dans la colonne large). La densification multi-col
-        des cards est différée à l'arbitrage v1.
+        lg (≥1024) : shell 2 cols — sidebar sticky 300px (hero + status
+        + ModeTabs verticaux) + main aéré ; chaque mode élargit ses cards
+        jusqu'à ~640px centrés.
+        xl (≥1280) : sidebar 320px + main 2-col grid 16px gap pour les
+        modes denses (combat / essence) ; magie / avoir restent monocol
+        élargi pour laisser respirer les listes / cercles d'incantation.
       */}
-      <div className="lg:mx-auto lg:grid lg:max-w-[1200px] lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-2">
+      <div className="lg:mx-auto lg:grid lg:max-w-[1240px] lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-2 xl:max-w-[1440px] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-10">
         <aside className="sheet-desktop-aside lg:sticky lg:top-2 lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:py-2">
           <HeroCard character={character} />
           <StatusStrip

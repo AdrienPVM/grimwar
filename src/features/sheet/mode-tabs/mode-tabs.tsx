@@ -67,7 +67,7 @@ export function ModeTabs({ active, onChange }: ModeTabsProps): JSX.Element {
     <nav
       role="tablist"
       aria-label={t('sheet.modeTabs.aria')}
-      className="mx-auto mt-6 flex w-full max-w-[420px] gap-1 px-3"
+      className="mx-auto mt-6 flex w-full max-w-[420px] gap-1 px-3 lg:mt-6 lg:flex-col lg:gap-2 lg:px-2"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -83,15 +83,22 @@ export function ModeTabs({ active, onChange }: ModeTabsProps): JSX.Element {
             id={`sheet-mode-tab-${mode}`}
             onClick={() => onChange(mode)}
             className={cn(
+              // Mobile : 5 tabs horizontaux, icône au-dessus du label, bordure
+              // dorée bas pour l'actif.
               'flex flex-1 flex-col items-center justify-end gap-1 py-3',
               'border-b-2 transition-colors duration-150',
+              // Desktop (lg+) : tab vertical pleine largeur — icône + label
+              // sur une rangée, bordure gauche dorée, fond doré subtil sur
+              // l'actif pour signaler la sélection sans dépendre d'une
+              // border-bottom (illisible verticalement).
+              'lg:flex-row lg:items-center lg:justify-start lg:gap-3 lg:rounded-card-sm lg:px-3 lg:py-2.5 lg:border-b-0 lg:border-l-2',
               isActive
-                ? 'border-gold text-gold-bright drop-shadow-[0_0_8px_var(--gold-glow)]'
-                : 'border-transparent text-text-tertiary hover:text-text-secondary',
+                ? 'border-gold text-gold-bright drop-shadow-[0_0_8px_var(--gold-glow)] lg:bg-gold/10'
+                : 'border-transparent text-text-tertiary hover:text-text-secondary lg:hover:bg-white/[0.03] lg:hover:border-white-8',
             )}
           >
-            <Icon name={ICON_BY_MODE[mode]} className="h-6 w-6" />
-            <span className="font-title text-[10px] font-bold uppercase tracking-[0.18em]">
+            <Icon name={ICON_BY_MODE[mode]} className="h-6 w-6 lg:h-5 lg:w-5" />
+            <span className="font-title text-[10px] font-bold uppercase tracking-[0.18em] lg:text-[11px]">
               {t(`sheet.mode.${mode}`)}
             </span>
           </button>

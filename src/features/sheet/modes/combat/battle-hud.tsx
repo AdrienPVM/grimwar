@@ -67,7 +67,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
   return (
     <section
       aria-label="Tableau de bord de combat"
-      className="mx-auto mt-3 grid w-full max-w-[420px] grid-cols-[1fr_auto] items-center gap-3 rounded-card border border-white-8 bg-glass px-5 py-4 backdrop-blur-2xl"
+      className="mx-auto mt-3 grid w-full max-w-[420px] grid-cols-[1fr_auto] items-center gap-3 rounded-card border border-white-8 bg-glass px-5 py-4 backdrop-blur-2xl lg:mt-0 lg:max-w-none"
     >
       <div className="flex flex-wrap items-center gap-2">
         {(Object.keys(ECON_LABELS) as EconKind[]).map((kind) => {

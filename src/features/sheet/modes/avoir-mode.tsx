@@ -40,7 +40,7 @@ export function AvoirMode({ character }: AvoirModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-avoir"
       aria-labelledby="sheet-mode-tab-avoir"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
     >
       <WeightBar
         weightTotal={derived.weightTotal}

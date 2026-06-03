@@ -106,7 +106,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
         role="tabpanel"
         id="sheet-mode-panel-magie"
         aria-labelledby="sheet-mode-tab-magie"
-        className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4"
+        className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
       >
         <p className="rounded-card border border-soft bg-glass px-6 py-8 text-center font-serif italic text-text-tertiary">
           Cette aventurière ne connaît aucun art arcanique. Aucune classe lanceuse de sorts.
@@ -120,7 +120,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-magie"
       aria-labelledby="sheet-mode-tab-magie"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
     >
       {castingClasses.length > 0 ? (
         <>

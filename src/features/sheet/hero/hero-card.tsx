@@ -54,7 +54,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
   return (
     <section
       aria-labelledby="hero-name"
-      className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-4 pt-8"
+      className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-4 pt-8 lg:pt-3"
     >
       <HeroEmblem
         hp={character.hp.current}
