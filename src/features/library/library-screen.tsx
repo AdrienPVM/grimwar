@@ -99,10 +99,23 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
         ))}
       </section>
 
-      <div className="mt-10 flex justify-center">
+      <div className="mt-10 flex flex-col items-center gap-4">
         <Button variant="primary" size="lg" onClick={() => navigate('/create')}>
           {t('library.cta.create')}
         </Button>
+        {/*
+          Raccourci vers la vue MJ — discret, sous le CTA principal. Tant que
+          campaigns (S2) n'est pas livré, c'est le seul point d'entrée
+          accessible à la souris. Style minimal pour ne pas voler la vedette
+          au CTA Créer.
+        */}
+        <button
+          type="button"
+          onClick={() => navigate('/dm')}
+          className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors hover:text-gold-bright"
+        >
+          {t('dm.title')} →
+        </button>
       </div>
     </main>
   );

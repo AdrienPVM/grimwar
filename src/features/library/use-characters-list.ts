@@ -9,6 +9,10 @@ import {
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
+import {
+  needsV1ToV2Upgrade,
+  upgradeCharacterV1ToV2,
+} from '@/features/sheet/upgrade-character-v1-to-v2';
 import { getDb } from '@/shared/lib/firebase';
 import { CharacterSchema, type Character } from '@/shared/types/character';
 
@@ -56,7 +60,17 @@ export function useCharactersList(): UseCharactersListResult {
         const valid: Character[] = [];
         snap.forEach((docSnap) => {
           const raw = docSnap.data();
-          const parsed = CharacterSchema.safeParse({ ...raw, id: docSnap.id });
+          // Cohérence avec `useCharacter` (sheet) : upgrade v1 → v2 avant
+          // le parse Zod. Sans ça, les fiches v1 historiques (avant
+          // ancestrySubChoices) sont silencieusement filtrées de la liste
+          // alors qu'elles s'ouvrent normalement sur leur fiche dédiée.
+          const upgraded = needsV1ToV2Upgrade(raw)
+            ? upgradeCharacterV1ToV2(raw)
+            : raw;
+          const parsed = CharacterSchema.safeParse({
+            ...(upgraded as object),
+            id: docSnap.id,
+          });
           if (!parsed.success) {
             const first = parsed.error.errors[0];
             console.warn(

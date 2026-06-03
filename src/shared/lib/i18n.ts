@@ -363,6 +363,35 @@ export type StringKey =
   | 'library.card.level'
   | 'library.card.aliveLabel'
   | 'library.card.deadLabel'
+  // DM dashboard — vue MJ (S1 MVP, recâblé sur campaigns/memberships en S2 plan 14)
+  | 'dm.title'
+  | 'dm.subtitle'
+  | 'dm.empty.title'
+  | 'dm.empty.body'
+  | 'dm.party.title'
+  | 'dm.party.ariaList'
+  | 'dm.party.openSheet'
+  | 'dm.party.hpLabel'
+  | 'dm.party.acLabel'
+  | 'dm.party.initLabel'
+  | 'dm.party.conditionsAria'
+  | 'dm.notes.title'
+  | 'dm.notes.placeholder'
+  | 'dm.notes.localOnly'
+  | 'dm.notes.charsAria'
+  | 'dm.secretRoll.title'
+  | 'dm.secretRoll.subtitle'
+  | 'dm.secretRoll.modLabel'
+  | 'dm.secretRoll.button'
+  | 'dm.secretRoll.normal'
+  | 'dm.secretRoll.advantage'
+  | 'dm.secretRoll.disadvantage'
+  | 'dm.secretRoll.advantageAria'
+  | 'dm.secretRoll.resultLabel'
+  | 'dm.secretRoll.detail'
+  | 'dm.secretRoll.nat20'
+  | 'dm.secretRoll.nat1'
+  | 'dm.secretRoll.historyAria'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1408,6 +1437,38 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.level': 'Niveau',
     'library.card.aliveLabel': 'En vie',
     'library.card.deadLabel': 'Mort.e',
+    // DM dashboard — vue MJ (S1 MVP route /dm)
+    'dm.title': 'Tableau du meneur',
+    'dm.subtitle': "Vue d'ensemble de la compagnie",
+    'dm.empty.title': 'Aucun héros à animer',
+    'dm.empty.body':
+      "Crée ou invite des personnages pour mener leur épopée. Le tableau s'illumine dès qu'un compagnon rejoint l'aventure.",
+    'dm.party.title': 'Compagnonnage',
+    'dm.party.ariaList': 'Liste des compagnons',
+    'dm.party.openSheet': 'Ouvrir la fiche de',
+    'dm.party.hpLabel': 'PV',
+    'dm.party.acLabel': 'CA',
+    'dm.party.initLabel': 'Init.',
+    'dm.party.conditionsAria': 'États actifs',
+    'dm.notes.title': 'Notes de séance',
+    'dm.notes.placeholder':
+      "Esquisse intrigues, secrets, fragments à révéler à la table…",
+    'dm.notes.localOnly':
+      "Conservé localement sur cet appareil. La synchronisation entre tes séances arrive avec le carnet de campagne.",
+    'dm.notes.charsAria': 'Caractères saisis',
+    'dm.secretRoll.title': 'Jet secret',
+    'dm.secretRoll.subtitle': 'd20 + mod, hors regards',
+    'dm.secretRoll.modLabel': 'Modificateur',
+    'dm.secretRoll.button': 'Lancer en secret',
+    'dm.secretRoll.normal': 'Normal',
+    'dm.secretRoll.advantage': 'Avantage',
+    'dm.secretRoll.disadvantage': 'Désavantage',
+    'dm.secretRoll.advantageAria': 'Mode du jet',
+    'dm.secretRoll.resultLabel': 'Total',
+    'dm.secretRoll.detail': 'Détail',
+    'dm.secretRoll.nat20': 'Réussite critique',
+    'dm.secretRoll.nat1': 'Échec critique',
+    'dm.secretRoll.historyAria': 'Derniers jets secrets',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -2730,6 +2791,37 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.level': 'Level',
     'library.card.aliveLabel': 'Alive',
     'library.card.deadLabel': 'Dead',
+    'dm.title': 'DM table',
+    'dm.subtitle': 'Party overview',
+    'dm.empty.title': 'No heroes to lead',
+    'dm.empty.body':
+      "Create or invite characters to lead their tale. The table lights up as soon as a companion joins the adventure.",
+    'dm.party.title': 'Party',
+    'dm.party.ariaList': 'Party members',
+    'dm.party.openSheet': 'Open the sheet of',
+    'dm.party.hpLabel': 'HP',
+    'dm.party.acLabel': 'AC',
+    'dm.party.initLabel': 'Init',
+    'dm.party.conditionsAria': 'Active conditions',
+    'dm.notes.title': 'Session notes',
+    'dm.notes.placeholder':
+      'Sketch plots, secrets, fragments to reveal at the table…',
+    'dm.notes.localOnly':
+      'Stored locally on this device. Sync across sessions arrives with the campaign journal.',
+    'dm.notes.charsAria': 'Characters typed',
+    'dm.secretRoll.title': 'Secret roll',
+    'dm.secretRoll.subtitle': 'd20 + mod, out of sight',
+    'dm.secretRoll.modLabel': 'Modifier',
+    'dm.secretRoll.button': 'Roll in secret',
+    'dm.secretRoll.normal': 'Normal',
+    'dm.secretRoll.advantage': 'Advantage',
+    'dm.secretRoll.disadvantage': 'Disadvantage',
+    'dm.secretRoll.advantageAria': 'Roll mode',
+    'dm.secretRoll.resultLabel': 'Total',
+    'dm.secretRoll.detail': 'Detail',
+    'dm.secretRoll.nat20': 'Natural 20',
+    'dm.secretRoll.nat1': 'Natural 1',
+    'dm.secretRoll.historyAria': 'Recent secret rolls',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':
