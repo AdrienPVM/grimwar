@@ -278,59 +278,70 @@ Private user homebrew + DMG extracts. `type` ∈ `spells | monsters | items | ma
 }
 ```
 
-### `campaigns/{campaignId}`
+### `campaigns/{campaignId}` (V1 schema — JALON 4.0.1)
+
+Source de vérité Zod : `src/shared/types/campaign.ts > CampaignSchema`.
+Divergences délibérées vs la première rédaction de ce doc (S2 brouillon)
+sont tracées dans `plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
+`gmIds[]` (array, anticipe co-MJ 4C) au lieu de `dmUserId`, settings
+simplifiés (drop de `permissionMode`/`allowHomebrew`/`startingLevel`/`enableSpectators`),
+`inviteToken` (lien URL) déféré à 4.0.5.
 
 ```ts
 {
   id: string,
-  dmUserId: string,
-  name: string,
-  description: string,                     // FR
-  inviteCode: string,                      // 6-char, e.g. 'KTL4M2', unique
-  inviteToken: string,                     // longer random token for URL invites
+  name: string,                            // max 80 chars
+  description: string,                     // FR, max 2000 chars
+  gmIds: string[],                         // 1..8 UIDs; contient toujours createdBy
+  createdBy: string,                       // UID créateur (immuable)
+  inviteCode: string,                      // 6-char [A-Z2-9] − [01IO], e.g. 'KTL4M2'
   settings: {
-    permissionMode: 'dm-full',             // locked for now; 'configurable' later
-    allowHomebrew: boolean,
-    language: 'fr' | 'en',
-    startingLevel: number,                 // for new joins
-    enableSpectators: boolean,
-    enableEventLog: true,                  // always true, but field reserved
+    language: 'fr' | 'en',                 // default 'fr'
+    diceMode: 'digital' | 'physical',      // default 'digital'
     variants: {
-      featAtLevel1: boolean,               // default false — wizard adds a feat-pick step at level 1 if true
-      flanking: boolean,                   // default false — combat HUD auto-detects flanking on map (S4)
-      slowHealing: boolean,                // default false — long rest restores hit-dice spent, not full HP
-      grittyRealism: boolean,              // default false — short rest = 8h, long rest = 7d (labels + timers change)
+      featAtLevel1: boolean,               // default false — wizard ajoute feat-pick step L1
+      flanking: boolean,                   // default false — combat HUD auto-détecte flanking sur la map (S4)
+      slowHealing: boolean,                // default false — long rest restaure hit-dice, pas full HP
+      grittyRealism: boolean,              // default false — short = 8h, long = 7j
     },
-    diceMode: 'digital' | 'physical',      // default 'digital' — defaut de table du MJ (effectif S2 via plan 14)
   },
   status: 'active' | 'paused' | 'archived',
-  schemaVersion: number,
+  schemaVersion: 1,
   createdAt: Timestamp,
   updatedAt: Timestamp,
 }
 ```
 
-### `campaigns/{campaignId}/memberships/{userId}`
+**Champs déférés post-V1** (ré-introduits quand un consommateur réel apparaît) :
+- `settings.permissionMode` — locked « dm-full » V1, plus de mode V1.5+
+- `settings.allowHomebrew` — remplacé par le système custom-content (JALON 3)
+- `settings.startingLevel` — hors-scope V1 (le wizard pose le perso à L1)
+- `settings.enableSpectators` — pas de rôle spectator en V1
+- `inviteToken` (lien URL invite) — 4.0.5 (UI invite par lien)
 
-One doc per user in the campaign.
+### `campaigns/{campaignId}/members/{userId}` (V1 schema — JALON 4.0.1)
+
+Un doc par utilisateur dans la campagne. Doc ID = `userId` (lookup direct
+`/members/{auth.uid}` côté rules sans index).
+
+Source de vérité Zod : `src/shared/types/campaign.ts > MembershipSchema`.
+Subcollection nommée `members` (et non `memberships`) — voir
+`[JALON-4.0]` dans les décisions V1.
 
 ```ts
 {
   userId: string,
-  role: 'dm' | 'player' | 'spectator',
-  characterId: string | null,              // for players: the PJ they brought
-  characterOwnerId: string | null,         // userId who owns that PJ (= userId, since portable + player-owned)
-  status: 'active' | 'invited' | 'left',
+  role: 'gm' | 'member',
+  characterId: string | null,              // PJ du membre, null pour le MJ ou si pas encore choisi
   joinedAt: Timestamp,
-  // Per-campaign stats
-  stats: {
-    sessionsAttended: number,
-    rollsInCampaign: number,
-    critsInCampaign: number,
-    deathsInCampaign: number,
-  },
+  schemaVersion: 1,
 }
 ```
+
+**Champs déférés post-V1** :
+- `characterOwnerId` — redondant tant que les fiches restent player-owned (1 PJ ⇒ 1 owner = userId)
+- `status: 'active'|'invited'|'left'` — V1 utilise présence/absence du doc (kick = delete)
+- `stats.*` (sessionsAttended, rollsInCampaign, critsInCampaign, deathsInCampaign) — la collection events portera ces métriques quand JALON 22 (event-log) livrera
 
 ### `campaigns/{campaignId}/sessions/{sessionId}`
 
@@ -527,21 +538,26 @@ Public, no-auth-required snapshot of a campaign's aggregated stats. Computed by 
 
 To resolve `inviteCode` → campaign without exposing campaigns globally, we use a top-level lookup collection:
 
-### `inviteCodes/{code}`
+### `inviteCodes/{code}` (V1 schema — JALON 4.0.1)
+
+Source de vérité Zod : `src/shared/types/campaign.ts > InviteCodeLookupSchema`.
 
 ```ts
 {
-  code: string,                            // primary key
+  code: string,                            // 6-char [A-Z2-9] − [01IO] (primary key)
   campaignId: string,
-  createdBy: string,                       // DM userId
-  expiresAt: Timestamp | null,
-  uses: number,
-  maxUses: number | null,
+  createdBy: string,                       // UID du MJ créateur
   createdAt: Timestamp,
 }
 ```
 
-Anyone authenticated can read by code (to join). Only the DM can create/delete.
+**Lecture** : tout utilisateur authentifié peut lire par code (chemin de jonction).
+**Écriture** : seul un GM de la campagne référencée peut créer/supprimer (rules
+4.0.2). Un seul code actif par campagne — rotation manuelle (deferred V1.5+).
+
+**Champs déférés post-V1** :
+- `expiresAt` — pas d'expiration auto V1, MJ rotate manuellement si suspicion de fuite
+- `uses` / `maxUses` — pas de cap d'usage V1, le code reste valide tant que le MJ ne le rotate pas
 
 ## Public content JSON (bundled in `public/data/`)
 
