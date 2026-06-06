@@ -267,3 +267,43 @@ Justification : (a) le code livré (PartyCard, SecretRollButton, QuickNotes) est
 **Référence** : commit `09d1308` (direct main, pas de PR — exécution en mode autonomie demandée par Adrien).
 
 **Status** : à arbitrer par Adrien à l'UAT final (le proto reste accessible jusqu'au refactor 4A)
+
+---
+
+### [JALON-4.0] Schéma Campaign + Membership V1 — divergences vs DATA-MODEL.md brouillon (2026-06-06)
+
+**Contexte** : JALON 4.0 livre la fondation Campaign + memberships (pré-requis non identifié dans MVP-V1-SPEC.md, ajouté en début de JALON 4). La spec d'Adrien pour 4.0 simplifie le schéma initial de `docs/DATA-MODEL.md` (rédigé en brouillon S2 avant le re-séquencement V1). Plusieurs divergences délibérées doivent être tracées avant que les sous-jalons 4.0.2 → 4.0.6 ne se posent dessus.
+
+**Décisions de schéma prises en 4.0.1** (commit du PR `feat/4-0-1-campaign-schema`) :
+
+1. **`gmIds: string[]` (array, min 1, max 8) au lieu de `dmUserId: string` (singleton)** — Anticipe 4C (co-MJ multiples) sans migration de doc. Un MJ unique = `gmIds.length === 1`. Justifié par la spec explicite d'Adrien dans le message du 06/06 : « 4C : gmIds[] supporte plusieurs UIDs ». Implique refactor des `firestore.rules` lignes 21, 169, 176 + de `services/campaigns.ts > ensureCampaignExists` lors de 4.0.2 / 4.0.3.
+
+2. **Sous-collection `members/{uid}` au lieu de `memberships/{uid}`** — Nom plus court, plus aligné avec le rôle 2-valeurs (`gm`|`member`). Justifié par la spec Adrien : `campaigns/{cid}/members/{uid}`. Implique refactor des rules ligne 26, 180, 244, 294 lors de 4.0.2.
+
+3. **Rôles `'gm' | 'member'` au lieu de `'dm' | 'player' | 'spectator'`** — Le rôle `spectator` n'a aucun consommateur V1 (pas de cas d'usage Twitch/observation table). Renommé `dm` → `gm` pour homogénéité avec `gmIds`. Si le besoin spectateur réapparait (V1.5+), on étend l'enum.
+
+4. **Settings simplifiés** — On garde `language`, `diceMode`, `variants` (3 réglages qui ont un consommateur V1 réel). On drop `permissionMode` (toujours `dm-full`, donc inutile en V1), `allowHomebrew` (remplacé par le système custom-content JALON 3), `startingLevel` (hors-scope V1 — le wizard pose le perso à L1), `enableSpectators` (suit la décision #3).
+
+5. **`inviteToken` (long token URL) déféré à 4.0.5** — En 4.0 on livre uniquement `inviteCode` (6-char). L'invite par lien partageable arrivera quand l'UI invite/join sera câblée (4.0.5).
+
+6. **Constantes de génération du code d'invitation** — Alphabet sans `0/1/I/O` pour éviter les confusions visuelles à la dictée IRL (le code se partage à voix haute autour d'une table). 6 caractères = ~30 bits d'entropie, suffisant pour une campagne privée (rotation manuelle suffit).
+
+7. **Champs `characterOwnerId` + `status` + `stats.*` du membership initial drop** — `characterOwnerId` redondant tant que les fiches restent player-owned (PJ ⇒ owner = userId). `status: 'active'|'invited'|'left'` remplacé par présence/absence du doc (kick = delete). `stats.*` (per-campaign metrics) arriveront via la collection events (JALON 22), pas via du dénormalisé fragile.
+
+**Options envisagées** :
+1. Suivre DATA-MODEL.md à la lettre (`dmUserId` singleton, 3 rôles, settings complets). Avantage : pas de re-rédaction de doc. Inconvénient : viole la spec d'Adrien 4.0 explicite + crée une dette migration au moment de 4C (renommer le champ + propager les rules + migrer les docs existants).
+2. **Suivre la spec d'Adrien à la lettre (gmIds[], 2 rôles, settings simplifiés)**. Avantage : alignement avec l'intention V1 + zéro migration future pour 4C. Inconvénient : re-rédiger la section campaigns de DATA-MODEL.md.
+3. Schéma hybride (gmIds[] mais 3 rôles, etc.). Inconvénient : moitié-cohérent, pire des deux mondes.
+
+**Décision prise** : **Option 2** — la spec d'Adrien 4.0 est l'autorité V1, DATA-MODEL.md est mis à jour pour refléter le schéma V1 + tracer les champs déférés post-V1 dans des sections explicites.
+
+**Conséquences pour les sous-jalons suivants** :
+- **4.0.2 (Firestore Rules)** : refactor `dmUserId == request.auth.uid` → `request.auth.uid in resource.data.gmIds`. Renommer `/memberships/` → `/members/`. Tests rules-unit.
+- **4.0.3 (campaignService.ts)** : refactor `ensureCampaignExists` pour écrire `gmIds: [uid]` au lieu de `dmUserId: uid`. Ajouter `createCampaign`, `listMyCampaigns`, `joinByCode`, `leaveCampaign`, `promoteToGm`.
+- **4.0.4 → 4.0.6** : UI consomme la nouvelle forme directement, pas de cas legacy à gérer (pas de docs en prod sous l'ancien schéma — seul `ensureCampaignExists` du proto map-proto pourrait avoir créé un doc local, à migrer one-shot ou ignorer).
+
+**Migration** : `schemaVersion: 1` posé d'office sur tous les docs créés à partir de 4.0.3. Aucune migration `v0 → v1` nécessaire — aucun doc V1 conforme n'existe encore en prod (seuls les stubs `ensureCampaignExists` du chantier D map-proto ont posé des docs ; à nettoyer manuellement ou via une migration 4.0.3 si découverte de docs résiduels).
+
+**Référence** : PR `feat/4-0-1-campaign-schema` — Zod schema + tests (35 cas) + alignement DATA-MODEL.md. Les rules + service + UI suivent dans 4.0.2 → 4.0.6.
+
+**Status** : à arbitrer par Adrien à l'UAT final V1
