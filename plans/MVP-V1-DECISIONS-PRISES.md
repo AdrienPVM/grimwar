@@ -200,3 +200,70 @@ Justification : conservative-by-default — on livre ce qui peut l'être proprem
 **Référence** : PR à venir (feat/3C-0-audit-decompose-pack-editor) — commit doc-only sur main.
 
 **Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
+### [JALON-1A étendu] Sheet desktop densification post-1A (rétroactif, 2026-06-04)
+
+**Contexte** : JALON 1A.1 avait posé la coquille sidebar + main du desktop sheet, mais l'audit responsive réel (4 viewports × 5 modes en captures `uat-review/`) révélait à 1024 et 1440px des cards cantonnées à ~440px largeur centrées, ~60% du viewport occupé par l'aurora background. Cause racine identifiée pendant l'audit : un `> * { max-width: 420px }` hardcodé dans `globals.css` lors de JALON 1A.1 cappait silencieusement TOUTES les cards et neutralisait les utilities Tailwind annoncées. Le polish desktop n'a pas été planifié comme un sous-jalon V1 distinct — il a été exécuté en autonomie le 2026-06-04 (commit `afeca89`) à la demande explicite d'Adrien (« UI/UX déplorable en desktop, à améliorer »).
+
+**Options envisagées rétroactivement** :
+1. Rebadger comme « JALON 1A.3 » nouveau sous-jalon V1. Risque : pollue la numérotation 1A officielle après clôture.
+2. Officialiser comme « extension 1A — polish post-clôture » sans nouveau sous-jalon numéroté. Trace la décision sans réécrire la séquence.
+3. Reverter le commit et le re-livrer formellement dans un sprint polish V1.5. Coût élevé pour zéro gain (le code est sain, testé, déployable).
+
+**Décision prise** : Option 2 — officialisé comme **« 1A étendu — Sheet desktop densification post-1A »**, intégré rétroactivement à la clôture du JALON 1A. Le code reste sur `main` (commit `afeca89`). Aucune renumérotation V1.
+
+Justification : (a) le commit corrige une dette structurelle (cap 420px hardcodé) qui aurait été un blocage UAT final ; (b) l'extension est cohérente avec l'intention 1A (sheet desktop complet) — ce n'est pas un nouveau pilier, c'est la finition de la coquille déjà posée ; (c) tests verts (triple gate + e2e responsive structural), pas de régression mobile/tablet, l'extension est qualitativement saine.
+
+**Changements livrés (récapitulatif factuel)** :
+- `sheet-screen.tsx` : container `lg:max-w-[1240px]` → `xl:max-w-[1440px]`, sidebar 300→320px à xl, gap 8→10.
+- `combat-mode.tsx` + `essence-mode.tsx` : `xl:grid xl:grid-cols-2`, focales en `xl:col-span-2`, petits panneaux en grille.
+- `magie-mode.tsx` + `avoir-mode.tsx` : `lg:max-w-[720px]` monocol (listes longues respirent).
+- `status-strip.tsx` : 2×2 à lg+ au lieu de 1×4 écrasé.
+- `mode-tabs.tsx` : vertical pleine-largeur lg+ avec border-left dorée.
+- `globals.css` : suppression du cap 420px (cause racine).
+- `wizard-screen.tsx` : barre de progression `h-[3px] md:h-1 lg:h-1.5`.
+- `tests/e2e/sheet-responsive-layout.spec.ts` : 166 lignes, assertions DOM bbox 4 viewports.
+- UAT : 20 captures `uat-review/sheet-desktop/` (gitignored).
+
+**Référence** : commit `afeca89` (direct main, pas de PR — exécution en mode autonomie demandée par Adrien).
+
+**Status** : à arbitrer par Adrien à l'UAT final
+
+---
+
+### [JALON-4A prototype pré-V1] Vue MJ `/dm` MVP exécutée hors-séquence (rétroactif, 2026-06-04)
+
+**Contexte** : MVP-V1-SPEC.md JALON 4 « Mode MJ complet » présuppose l'existence d'un data layer campagnes + memberships (cf. décision [JALON-1C] du 29/05 qui avait acté de DIFFÉRER 1C jusqu'à ce que ce data layer existe). Le 2026-06-04, en autonomie complète sur demande d'Adrien (« vue admin/MJ doit avancer, jamais vue par l'utilisateur »), un MVP `/dm` a été livré (commit `09d1308`) opérant sur les fiches du même `uid` que l'utilisateur connecté, sans memberships réels. Le code anticipe JALON 4 sans en lever les pré-requis V1.
+
+**Options envisagées rétroactivement** :
+1. Reverter le commit. Coût : perte de ~960 lignes de code testées (party-card, secret-roll, quick-notes, i18n MJ) qui seront re-livrées presque à l'identique au JALON 4A propre.
+2. Rebadger comme **« Prototype 4A pré-V1 »** — code conservé sur `main`, mais explicitement étiqueté comme proto à refactorer une fois les memberships livrés (JALON 4.0 préalable). Le `/dm` actuel reste accessible mais opère sur mock-uid jusqu'à ce que le refactor le branche sur les vrais membres de campagne.
+3. Promouvoir le commit en livrable V1 final 4A. Refusé : (a) viole la décision 1C du 29/05 ; (b) opère sur mock-uid, ne couvre pas le cas réel multi-joueurs ; (c) anticipe avant les pré-requis (campagnes + memberships absents).
+
+**Décision prise** : Option 2 — **« Prototype 4A pré-V1 — opère sur fiches mock du même `uid`, pas sur cohorte réelle. À valider/refactorer après livraison des memberships dans JALON 4 propre. »** Le code n'est PAS reverté. Il est explicitement marqué prototype dans cette décision et sera refactoré lors de JALON 4A propre.
+
+Justification : (a) le code livré (PartyCard, SecretRollButton, QuickNotes) est qualitativement sain et sera réutilisé tel quel ou presque ; (b) reverter pour re-livrer presque à l'identique = pur gaspillage ; (c) le proto sert d'amorce UI/UX que le refactor 4A consommera, après que JALON 4.0 (Campaign + memberships) ait posé les data structures réelles ; (d) le `/dm` reste non listé dans le nav-shell (lien discret en pied de bibliothèque) — exposition minimale jusqu'au refactor.
+
+**Composants livrés (à refactorer en 4A)** :
+- `src/features/dm-view/dm-dashboard-screen.tsx` (111 lignes) — orchestrateur 2-col, à câbler sur cohorte réelle.
+- `src/features/dm-view/party-card.tsx` (181 lignes) — emblème HP / classes-niveau / barre PV ratio / CA + Init / conditions chips. **Réutilisable tel quel** une fois branché sur vrais membres.
+- `src/features/dm-view/secret-roll-button.tsx` (174 lignes) — d20+mod, avantage/désavantage, historique court. Câblage event-log `visibility:'dm'` arrive plan 22 ; pour V1 reste inline local.
+- `src/features/dm-view/quick-notes.tsx` (80 lignes) — scratchpad markdown localStorage. Bascule vers `session.notes` Firestore quand plan 23 livre.
+- `routes.tsx` : route `/dm` enregistrée.
+- `library-screen.tsx` : lien discret « Tableau du meneur → » en pied (à supprimer ou repositionner quand la vraie nav arrive).
+- `i18n.ts` : 92 lignes de clés `dm.*` (réutilisables tel quel).
+- Tests : 207 lignes unit + 76 lignes e2e UAT.
+
+**Bonus connexe à noter** : `useCharactersList` aligné sur `useCharacter` pour l'upgrade `v1 → v2` avant parse Zod. Sans ça, les fiches v1 historiques étaient silencieusement filtrées de la bibliothèque tout en s'ouvrant normalement par ID. C'est un fix indépendant de la vue MJ — il aurait dû être un commit séparé, à noter pour discipline future.
+
+**Prochaine étape V1 (séquence remise sur les rails)** :
+1. **JALON 4.0** — Campaign entity + memberships data layer (Firestore + Zod + service + UI « Mes campagnes » + Rules).
+2. **JALON 4A** — Refactorer `/dm` pour brancher PartyCard sur les vrais membres de campagne (non plus mock-uid). Ajouter édition complète des fiches joueurs par MJ.
+3. **JALON 4B** — Création items custom in-app + distribution depuis vue MJ.
+4. **JALON 4C** — Co-MJ multiples, permissions Firestore étendues.
+
+**Référence** : commit `09d1308` (direct main, pas de PR — exécution en mode autonomie demandée par Adrien).
+
+**Status** : à arbitrer par Adrien à l'UAT final (le proto reste accessible jusqu'au refactor 4A)
