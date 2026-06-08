@@ -58,9 +58,10 @@ const PackEditorScreen = lazy(async () => {
   return { default: mod.PackEditorScreen };
 });
 
-// Route /dm — vue MJ MVP S1. Pas listée au menu, accessible par URL en
-// attendant S2 plan 14 (campaigns/memberships) qui ajoutera un selector de
-// campagne et un raccourci nav-shell.
+// Route /dm — vue MJ prototype 4A pré-V1 (cf. MVP-V1-DECISIONS-PRISES.md,
+// entrée 2026-06-06). Opère sur fiches mock du même uid. Pas listée au menu,
+// accessible par URL en attendant le JALON 4 propre (campagnes + members)
+// qui livrera un selector de campagne et un raccourci nav-shell.
 const DmDashboardScreen = lazy(async () => {
   const mod = await import('@/features/dm-view/dm-dashboard-screen');
   return { default: mod.DmDashboardScreen };

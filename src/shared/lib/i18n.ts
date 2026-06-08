@@ -363,7 +363,7 @@ export type StringKey =
   | 'library.card.level'
   | 'library.card.aliveLabel'
   | 'library.card.deadLabel'
-  // DM dashboard — vue MJ (S1 MVP, recâblé sur campaigns/memberships en S2 plan 14)
+  // DM dashboard — vue MJ prototype 4A pré-V1 (recâblé sur vraies campagnes + members lors du JALON 4A)
   | 'dm.title'
   | 'dm.subtitle'
   | 'dm.empty.title'

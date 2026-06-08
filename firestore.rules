@@ -15,19 +15,28 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // JALON 4.0.2 : `dmUserId` (singleton) remplacé par `gmIds: string[]`
+    // (préparation co-MJ multiples — cf. décision JALON-4.0). L'helper accepte
+    // tout signed-in dont l'UID figure dans la liste des MJ. `gmIds.size() >= 1`
+    // est garanti par la rule de create + la rule d'update (qui empêche de
+    // tomber à 0).
     function isDMOf(campaignId) {
       return isSignedIn()
         && exists(/databases/$(database)/documents/campaigns/$(campaignId))
-        && get(/databases/$(database)/documents/campaigns/$(campaignId)).data.dmUserId == request.auth.uid;
+        && request.auth.uid in get(/databases/$(database)/documents/campaigns/$(campaignId)).data.gmIds;
     }
 
+    // JALON 4.0.2 : sous-collection `memberships/` renommée `members/` (cf.
+    // décision JALON-4.0 — alignement avec le schéma Zod CampaignSchema). Un
+    // MJ N'A PAS forcément de doc dans `members/` — la membership MJ est
+    // sous-entendue par `gmIds[]` sur le doc parent.
     function isMemberOf(campaignId) {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/campaigns/$(campaignId)/memberships/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/campaigns/$(campaignId)/members/$(request.auth.uid));
     }
 
     function memberRole(campaignId) {
-      return get(/databases/$(database)/documents/campaigns/$(campaignId)/memberships/$(request.auth.uid)).data.role;
+      return get(/databases/$(database)/documents/campaigns/$(campaignId)/members/$(request.auth.uid)).data.role;
     }
 
     // DM of any campaign that the character has joined?
@@ -161,40 +170,61 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════
 
     match /campaigns/{campaignId} {
-      // Read: any signed-in member
+      // Read: any signed-in MJ or member
       allow read: if isSignedIn() && (isDMOf(campaignId) || isMemberOf(campaignId));
 
-      // Create: any signed-in user (they become DM)
+      // Create: any signed-in user (they become MJ — must appear in gmIds).
+      // JALON 4.0.2 — l'invariant `auth.uid in gmIds` remplace `dmUserId ==
+      // auth.uid`. La taille de gmIds à la création est laissée libre côté
+      // rules (Zod côté client impose min 1 / max 8).
       allow create: if isSignedIn()
-        && request.resource.data.dmUserId == request.auth.uid
+        && request.resource.data.gmIds is list
+        && request.auth.uid in request.resource.data.gmIds
+        && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.status == 'active'
         && request.resource.data.schemaVersion is int;
 
-      // Update / delete: DM only
+      // Update: tout MJ existant peut écrire. Garde-fou : on n'autorise pas à
+      // vider gmIds (toujours ≥ 1 MJ), ni à changer createdBy. La promotion en
+      // co-MJ (arrayUnion sur gmIds) est donc autorisée tant que l'invariant
+      // ≥ 1 MJ tient — c'est le pré-requis du sous-jalon 4C.
       allow update: if isDMOf(campaignId)
-        // Prevent transferring DM away (post-v1 feature)
-        && request.resource.data.dmUserId == resource.data.dmUserId;
+        && request.resource.data.gmIds is list
+        && request.resource.data.gmIds.size() >= 1
+        && request.resource.data.createdBy == resource.data.createdBy;
       allow delete: if isDMOf(campaignId);
 
-      // ── Memberships ───────────────────────────────────────────
-      match /memberships/{userId} {
-        // Read: members of campaign can see the roster
+      // ── Members ───────────────────────────────────────────────
+      // JALON 4.0.2 : ex-`memberships/`. Doc ID = userId, payload aligné sur
+      // `MembershipSchema` (Zod). Rôles `gm`|`member` (le spectateur a été
+      // droppé en 4.0 — cf. décision JALON-4.0).
+      match /members/{userId} {
+        // Read: tout signed-in MJ ou membre de la campagne peut voir le roster.
         allow read: if isMemberOf(campaignId) || isDMOf(campaignId);
 
-        // Create: the user themselves (via invite acceptance), or DM directly adding
+        // Create:
+        //  - l'utilisateur lui-même (acceptation d'invite par code),
+        //  - OU un MJ existant qui ajoute quelqu'un.
+        // Contrainte : userId du payload doit correspondre au userId du doc ID
+        // (anti-spoof). Rôle dans ['gm','member'].
         allow create: if (isOwner(userId) || isDMOf(campaignId))
           && request.resource.data.userId == userId
-          && request.resource.data.role in ['dm', 'player', 'spectator']
-          && request.resource.data.status == 'active';
+          && request.resource.data.role in ['gm', 'member']
+          && request.resource.data.schemaVersion is int;
 
-        // Update: the user (e.g. to leave, status: 'left') or DM (any field)
+        // Update:
+        //  - MJ peut tout modifier (changer le rôle d'un membre, lier un
+        //    characterId, etc.),
+        //  - le user lui-même peut update son propre doc SAUF son rôle
+        //    (anti self-promotion). Le characterId reste modifiable par le
+        //    propriétaire (link/unlink de sa fiche).
         allow update: if isDMOf(campaignId)
           || (isOwner(userId)
-              && request.resource.data.role == resource.data.role          // can't self-promote
+              && request.resource.data.role == resource.data.role
               && request.resource.data.userId == resource.data.userId);
 
-        // Delete: DM only
-        allow delete: if isDMOf(campaignId);
+        // Delete: MJ only (kick) OU self (leave).
+        allow delete: if isDMOf(campaignId) || isOwner(userId);
       }
 
       // ── Sessions ──────────────────────────────────────────────
@@ -289,9 +319,10 @@ service cloud.firestore {
     }
 
     function getMyCharacterIds(campaignId) {
-      // The membership doc has `characterId` (single character per campaign).
-      // Returns a single-element list or empty if no character.
-      return [get(/databases/$(database)/documents/campaigns/$(campaignId)/memberships/$(request.auth.uid)).data.characterId];
+      // JALON 4.0.2 : sous-collection renommée `members/`. Le doc member a
+      // `characterId` (single character per campaign).
+      // Returns a single-element list (or `[null]` si pas de fiche liée).
+      return [get(/databases/$(database)/documents/campaigns/$(campaignId)/members/$(request.auth.uid)).data.characterId];
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -299,18 +330,27 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════
 
     match /inviteCodes/{code} {
-      // Read: any signed-in user (to look up by code when accepting an invite)
+      // Read: any signed-in user (lookup by code when accepting an invite).
       allow read: if isSignedIn();
 
-      // Create / delete: only the DM of the referenced campaign
-      // (must be done via Cloud Function `createInviteCode` for race-free uniqueness)
+      // Create:
+      //  - le code doit correspondre au doc ID (anti-spoof : on n'écrit pas un
+      //    code différent du chemin sur lequel on le pose),
+      //  - le createdBy doit être l'utilisateur courant,
+      //  - l'utilisateur doit être MJ de la campagne référencée.
+      // En 4.0.2 le code est créé par le service en même temps que la campagne,
+      // race-free côté client par batched-write. Une future Cloud Function
+      // pourra renforcer l'unicité globale en V1.5+.
       allow create: if isSignedIn()
+        && request.resource.data.code == code
         && request.resource.data.createdBy == request.auth.uid
         && isDMOf(request.resource.data.campaignId);
 
-      // Update: only the DM (to revoke / change maxUses)
+      // Update: MJ de la campagne référencée uniquement (rotation manuelle
+      // hors-scope V1, mais la rule la prépare).
       allow update: if isDMOf(resource.data.campaignId);
 
+      // Delete: MJ de la campagne référencée (révocation manuelle, ex. fuite).
       allow delete: if isDMOf(resource.data.campaignId);
     }
 

@@ -58,14 +58,23 @@ describe('ensureCampaignExists', () => {
     expect(created).toBe(true);
     expect(mockSetDoc).toHaveBeenCalledTimes(1);
     const [, payload] = mockSetDoc.mock.calls[0]!;
+    // JALON 4.0.2 — gmIds[] + createdBy au lieu de dmUserId.
     expect(payload).toMatchObject({
       name: CID,
-      dmUserId: UID,
+      gmIds: [UID],
+      createdBy: UID,
       status: 'active',
       schemaVersion: 1,
       createdAt: 'MOCK_SERVER_TS',
       updatedAt: 'MOCK_SERVER_TS',
     });
+  });
+
+  it('does NOT carry the legacy dmUserId field (anti-regression)', async () => {
+    mockGetDoc.mockResolvedValue({ exists: () => false });
+    await ensureCampaignExists(CID, UID);
+    const [, payload] = mockSetDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).not.toHaveProperty('dmUserId');
   });
 
   it('writes to campaigns/{cid} path', async () => {

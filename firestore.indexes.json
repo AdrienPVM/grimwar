@@ -4,7 +4,7 @@
       "collectionGroup": "campaigns",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "dmUserId", "order": "ASCENDING" },
+        { "fieldPath": "gmIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "updatedAt", "order": "DESCENDING" }
       ]
     },
@@ -17,11 +17,11 @@
       ]
     },
     {
-      "collectionGroup": "memberships",
+      "collectionGroup": "members",
       "queryScope": "COLLECTION_GROUP",
       "fields": [
         { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "status", "order": "ASCENDING" }
+        { "fieldPath": "joinedAt", "order": "DESCENDING" }
       ]
     },
     {

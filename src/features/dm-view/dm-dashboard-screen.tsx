@@ -15,11 +15,12 @@ import { SecretRollButton } from './secret-roll-button';
 /**
  * Vue MJ — Tableau de bord du meneur.
  *
- * V1 S1 : pas encore de modèle Campagne (S2). En attendant, le dashboard
- * affiche TOUS les personnages du user connecté comme s'ils étaient « la
- * compagnie ». Quand S2 livrera `campaigns/`/`memberships/`, ce screen sera
- * recâblé sur les memberships actifs ; la coquille (layout / cartes party /
- * scratchpad / secret-roll) reste valide.
+ * V1 S1 : pas encore de vraies campagnes branchées. En attendant, le
+ * dashboard affiche TOUS les personnages du user connecté comme s'ils
+ * étaient « la compagnie ». Quand le JALON 4A livrera l'édition des
+ * fiches sur cohorte réelle (sous-collection `members/`), ce screen sera
+ * recâblé ; la coquille (layout / cartes party / scratchpad / secret-roll)
+ * reste valide.
  *
  * Pas listée au menu — accessible par URL directe `/dm` en V1. Un raccourci
  * NavShell viendra avec la livraison campaigns (S2 plan 14).

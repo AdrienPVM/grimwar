@@ -409,12 +409,17 @@ const MEMBER_UID = 'player-bob';
 const OUTSIDER_UID = 'outsider-charlie';
 
 function makeCampaignDoc(dmUid: string): Record<string, unknown> {
+  // JALON 4.0.2 — `dmUserId` (singleton) → `gmIds: string[]`, et la rule de
+  // create exige aussi `createdBy`. Pour les rules existantes (maps/tokens),
+  // un seul UID dans gmIds suffit à exercer le chemin DM.
   return {
     name: 'Campagne test',
-    dmUserId: dmUid,
+    gmIds: [dmUid],
+    createdBy: dmUid,
     status: 'active',
     schemaVersion: 1,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
   };
 }
 
@@ -482,14 +487,18 @@ describeIfEmulator('firestore.rules — maps + tokens (CHANTIER D nuit 3)', () =
       await env.withSecurityRulesDisabled(async (context) => {
         const adminDb = context.firestore();
         await setDoc(doc(adminDb, 'campaigns', CAMPAIGN_ID), makeCampaignDoc(DM_UID));
-        // Le DM est aussi un membre (pour passer isMemberOf le cas échéant).
+        // JALON 4.0.2 — sous-collection `memberships/` → `members/`. Le MJ N'A
+        // PLUS de doc member (sa membership MJ est sous-entendue par gmIds[]).
+        // Seul le joueur a un doc member.
         await setDoc(
-          doc(adminDb, 'campaigns', CAMPAIGN_ID, 'memberships', DM_UID),
-          { userId: DM_UID, role: 'dm', status: 'active' },
-        );
-        await setDoc(
-          doc(adminDb, 'campaigns', CAMPAIGN_ID, 'memberships', MEMBER_UID),
-          { userId: MEMBER_UID, role: 'player', status: 'active' },
+          doc(adminDb, 'campaigns', CAMPAIGN_ID, 'members', MEMBER_UID),
+          {
+            userId: MEMBER_UID,
+            role: 'member',
+            characterId: null,
+            joinedAt: serverTimestamp(),
+            schemaVersion: 1,
+          },
         );
       });
     }
@@ -587,5 +596,415 @@ describeIfEmulator('firestore.rules — maps + tokens (CHANTIER D nuit 3)', () =
     await assertSucceeds(
       getDoc(doc(db, 'campaigns', DM_ONLY_CAMPAIGN, 'maps', MAP_ID)),
     );
+  });
+});
+
+/**
+ * JALON 4.0.2 — Invariants Firestore Rules pour le nouveau schéma campagne :
+ *   - `gmIds: string[]` (et plus `dmUserId` singleton),
+ *   - sous-collection `members/` (et plus `memberships/`),
+ *   - rôles `gm|member`,
+ *   - `inviteCodes/{code}` doit matcher le path,
+ *   - et anti-spoof : createdBy doit être l'utilisateur courant.
+ *
+ * Source de vérité côté types : `src/shared/types/campaign.ts` (4.0.1).
+ */
+const CAMPAIGN_4_0_2_ID = 'camp-4-0-2';
+const ALT_CAMPAIGN_4_0_2_ID = 'camp-4-0-2-alt';
+
+function makeCampaignDocV4(creatorUid: string, gmIds?: string[]): Record<string, unknown> {
+  return {
+    name: 'Campagne 4.0.2',
+    description: '',
+    gmIds: gmIds ?? [creatorUid],
+    createdBy: creatorUid,
+    inviteCode: 'ABCD23',
+    settings: {
+      language: 'fr',
+      diceMode: 'digital',
+      variants: {
+        featAtLevel1: false,
+        flanking: false,
+        slowHealing: false,
+        grittyRealism: false,
+      },
+    },
+    status: 'active',
+    schemaVersion: 1,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+}
+
+function makeMemberDocV4(userUid: string, role: 'gm' | 'member'): Record<string, unknown> {
+  return {
+    userId: userUid,
+    role,
+    characterId: null,
+    joinedAt: serverTimestamp(),
+    schemaVersion: 1,
+  };
+}
+
+describeIfEmulator('firestore.rules — campaigns + members (JALON 4.0.2)', () => {
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (env) await env.clearFirestore();
+  });
+
+  // ── CREATE campaign ───────────────────────────────────────────
+  it('ACCEPTE create campagne quand auth.uid ∈ gmIds && createdBy == auth.uid', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID), makeCampaignDocV4(DM_UID)),
+    );
+  });
+
+  it("REFUSE create si l'auth.uid n'apparaît PAS dans gmIds (anti-spoof)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID, ['someone-else']),
+      ),
+    );
+  });
+
+  it('REFUSE create si createdBy ≠ auth.uid (anti-spoof)', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    const payload = makeCampaignDocV4(DM_UID);
+    payload.createdBy = 'someone-else';
+    await assertFails(setDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID), payload));
+  });
+
+  it('REFUSE create non-authentifié', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.unauthenticatedContext().firestore();
+    await assertFails(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID), makeCampaignDocV4(DM_UID)),
+    );
+  });
+
+  // ── UPDATE campaign ───────────────────────────────────────────
+  it("ACCEPTE update par un MJ (ajout d'un co-MJ via arrayUnion-like)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID, [DM_UID, 'co-gm-uid']),
+      ),
+    );
+  });
+
+  it('REFUSE update qui vide gmIds (invariant ≥ 1 MJ)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID, []),
+      ),
+    );
+  });
+
+  it('REFUSE update par un non-MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(OUTSIDER_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      ),
+    );
+  });
+
+  it('REFUSE update qui change createdBy', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    const payload = makeCampaignDocV4(DM_UID);
+    payload.createdBy = 'someone-else';
+    await assertFails(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID), payload),
+    );
+  });
+
+  // ── members/ subcollection ────────────────────────────────────
+  it('ACCEPTE self-create d\'un membre via invite (userId == auth.uid, role member)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'member'),
+      ),
+    );
+  });
+
+  it("REFUSE create d'un membre si userId du payload ≠ doc ID (anti-spoof)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4('someone-else', 'member'),
+      ),
+    );
+  });
+
+  it('REFUSE create avec role inconnu (ex. legacy "player")', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    const payload = makeMemberDocV4(MEMBER_UID, 'member');
+    payload.role = 'player';
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        payload,
+      ),
+    );
+  });
+
+  it("REFUSE qu'un membre self-promote son role (member → gm)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'member'),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'gm'),
+      ),
+    );
+  });
+
+  it('ACCEPTE qu\'un MJ promeut un membre (member → gm)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'member'),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'gm'),
+      ),
+    );
+  });
+
+  it('ACCEPTE self-delete (leave) par un membre sur son propre doc', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'member'),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertSucceeds(
+      deleteDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID)),
+    );
+  });
+
+  // ── inviteCodes ───────────────────────────────────────────────
+  it("ACCEPTE create d'un inviteCode par le MJ avec code == doc ID", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'inviteCodes', 'XYZ234'), {
+        code: 'XYZ234',
+        campaignId: CAMPAIGN_4_0_2_ID,
+        createdBy: DM_UID,
+        createdAt: serverTimestamp(),
+      }),
+    );
+  });
+
+  it("REFUSE create d'un inviteCode dont le payload code ≠ doc ID (anti-spoof)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'inviteCodes', 'XYZ234'), {
+        code: 'OTHER1', // ne correspond pas au path
+        campaignId: CAMPAIGN_4_0_2_ID,
+        createdBy: DM_UID,
+        createdAt: serverTimestamp(),
+      }),
+    );
+  });
+
+  it("REFUSE create d'un inviteCode par un non-MJ de la campagne référencée", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertFails(
+      setDoc(doc(db, 'inviteCodes', 'XYZ234'), {
+        code: 'XYZ234',
+        campaignId: CAMPAIGN_4_0_2_ID,
+        createdBy: MEMBER_UID,
+        createdAt: serverTimestamp(),
+      }),
+    );
+  });
+
+  it('ACCEPTE read inviteCode par tout signed-in (lookup post-saisie du code)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(
+        doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+      await setDoc(doc(adminDb, 'inviteCodes', 'XYZ234'), {
+        code: 'XYZ234',
+        campaignId: CAMPAIGN_4_0_2_ID,
+        createdBy: DM_UID,
+        createdAt: serverTimestamp(),
+      });
+    });
+    const db = env.authenticatedContext(OUTSIDER_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'inviteCodes', 'XYZ234')));
+  });
+
+  it('REFUSE read inviteCode non-authentifié', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'inviteCodes', 'XYZ234'), {
+        code: 'XYZ234',
+        campaignId: CAMPAIGN_4_0_2_ID,
+        createdBy: DM_UID,
+        createdAt: serverTimestamp(),
+      });
+    });
+    const db = env.unauthenticatedContext().firestore();
+    await assertFails(getDoc(doc(db, 'inviteCodes', 'XYZ234')));
+  });
+
+  // ── Read campaign / members ──────────────────────────────────
+  it("ACCEPTE read campaign par un MJ (via gmIds)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID)));
+  });
+
+  it("REFUSE read campaign par un étranger (ni MJ ni member)", async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', ALT_CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(OUTSIDER_UID).firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', ALT_CAMPAIGN_4_0_2_ID)));
   });
 });
