@@ -67,6 +67,14 @@ const DmDashboardScreen = lazy(async () => {
   return { default: mod.DmDashboardScreen };
 });
 
+// Route /campaigns — premier écran utilisateur du JALON 4 S2 (sous-jalon
+// 4.0.4, 2026-06-10). Liste « Mes campagnes » + boutons Créer / Rejoindre
+// par code / Quitter. Le détail campagne et le join screen arrivent en 4.0.5.
+const CampaignsListScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/campaigns-list-screen');
+  return { default: mod.CampaignsListScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -85,6 +93,7 @@ export function AppRoutes(): JSX.Element {
           element={<PackEditorScreen />}
         />
         <Route path="/dm" element={<DmDashboardScreen />} />
+        <Route path="/campaigns" element={<CampaignsListScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

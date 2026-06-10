@@ -170,8 +170,21 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════
 
     match /campaigns/{campaignId} {
-      // Read: any signed-in MJ or member
-      allow read: if isSignedIn() && (isDMOf(campaignId) || isMemberOf(campaignId));
+      // Read: any signed-in MJ or member.
+      // JALON 4.0.4 fix : on lit directement `resource.data.gmIds` plutôt que
+      // de passer par l'helper `isDMOf(campaignId)` qui faisait `get()` sur le
+      // doc en cours d'évaluation. Firestore Rules ne supportent pas `get()`
+      // sur le doc lui-même dans une opération `list`/query (Firestore le
+      // traite comme une lookup et renvoie une "Null value error" parce que la
+      // requête n'a pas encore résolu de doc-cible). `resource.data` exposant
+      // directement les champs du doc, on évite le round-trip et le rule
+      // s'applique uniformément aux get/list/collectionGroup. La branche
+      // member garde son `exists()` sur la sous-collection (path différent du
+      // doc en cours), qui passe pour les 3 opérations.
+      allow read: if isSignedIn() && (
+        request.auth.uid in resource.data.gmIds
+        || exists(/databases/$(database)/documents/campaigns/$(campaignId)/members/$(request.auth.uid))
+      );
 
       // Create: any signed-in user (they become MJ — must appear in gmIds).
       // JALON 4.0.2 — l'invariant `auth.uid in gmIds` remplace `dmUserId ==
@@ -337,14 +350,23 @@ service cloud.firestore {
       //  - le code doit correspondre au doc ID (anti-spoof : on n'écrit pas un
       //    code différent du chemin sur lequel on le pose),
       //  - le createdBy doit être l'utilisateur courant,
-      //  - l'utilisateur doit être MJ de la campagne référencée.
-      // En 4.0.2 le code est créé par le service en même temps que la campagne,
-      // race-free côté client par batched-write. Une future Cloud Function
-      // pourra renforcer l'unicité globale en V1.5+.
+      //  - l'utilisateur doit être MJ de la campagne référencée — soit dans
+      //    l'état pré-batch (`isDMOf`), soit dans l'état post-batch via
+      //    `getAfter()` (cas où le doc campaign est créé dans le MÊME batch,
+      //    chemin nominal de `createCampaign` 4.0.3).
+      // JALON 4.0.4 fix : avant ce fix, `createCampaign` cassait parce que
+      // l'inviteCode était évalué AVANT que le campaign ne soit visible, donc
+      // `isDMOf(campaignId)` retournait false (le doc n'existe pas pre-batch).
+      // `getAfter()` lit l'état après le batch et révèle le campaign qui sera
+      // committé dans la même opération atomique → la rule passe.
       allow create: if isSignedIn()
         && request.resource.data.code == code
         && request.resource.data.createdBy == request.auth.uid
-        && isDMOf(request.resource.data.campaignId);
+        && (
+          isDMOf(request.resource.data.campaignId)
+          || request.auth.uid in
+             getAfter(/databases/$(database)/documents/campaigns/$(request.resource.data.campaignId)).data.gmIds
+        );
 
       // Update: MJ de la campagne référencée uniquement (rotation manuelle
       // hors-scope V1, mais la rule la prépare).
@@ -375,6 +397,26 @@ service cloud.firestore {
     match /publicStatsSlugs/{slug} {
       allow read: if true;
       allow write: if false;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // CollectionGroup queries — JALON 4.0.4
+    // ═══════════════════════════════════════════════════════════
+    //
+    // Firestore Rules : une rule nichée `match /campaigns/{cid}/members/{uid}`
+    // ne s'applique PAS aux requêtes `collectionGroup('members')`. Pour que
+    // `listMyCampaigns` puisse exécuter Q2 (`collectionGroup('members') where
+    // userId == auth.uid`), il faut une rule top-level qui matche les docs
+    // `members` quel que soit le préfixe de chemin.
+    //
+    // L'autorisation est volontairement étroite : seul le user lui-même peut
+    // lister SES propres docs members via collectionGroup — pas le DM qui
+    // tente de lister tous les members de toutes les campagnes. La lecture
+    // ciblée d'un member précis reste régie par la rule path-bound L201+
+    // (`match /campaigns/{cid}/members/{uid}`) qui autorise les co-membres.
+    match /{path=**}/members/{userId} {
+      allow read: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
     }
 
     // ═══════════════════════════════════════════════════════════
