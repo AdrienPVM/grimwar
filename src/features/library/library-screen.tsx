@@ -104,18 +104,26 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
           {t('library.cta.create')}
         </Button>
         {/*
-          Raccourci vers la vue MJ — discret, sous le CTA principal. Tant que
-          campaigns (S2) n'est pas livré, c'est le seul point d'entrée
-          accessible à la souris. Style minimal pour ne pas voler la vedette
-          au CTA Créer.
+          Raccourcis discrets vers Campagnes (S2 plan 4.0.4) + vue MJ. Style
+          minimal pour ne pas voler la vedette au CTA Créer ; un vrai nav-shell
+          arrivera quand la séquence 4.0.x sera terminée.
         */}
-        <button
-          type="button"
-          onClick={() => navigate('/dm')}
-          className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors hover:text-gold-bright"
-        >
-          {t('dm.title')} →
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <button
+            type="button"
+            onClick={() => navigate('/campaigns')}
+            className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
+          >
+            {t('campaigns.title')} →
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/dm')}
+            className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
+          >
+            {t('dm.title')} →
+          </button>
+        </div>
       </div>
     </main>
   );

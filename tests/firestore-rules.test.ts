@@ -7,7 +7,20 @@ import {
   assertFails,
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  collection,
+  collectionGroup,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+  writeBatch,
+} from 'firebase/firestore';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 
 /**
@@ -1006,5 +1019,158 @@ describeIfEmulator('firestore.rules — campaigns + members (JALON 4.0.2)', () =
     });
     const db = env.authenticatedContext(OUTSIDER_UID).firestore();
     await assertFails(getDoc(doc(db, 'campaigns', ALT_CAMPAIGN_4_0_2_ID)));
+  });
+
+  // ── listMyCampaigns queries (JALON 4.0.4) ──────────────────
+  //
+  // Régression : avant 4.0.4, le rule de read sur `campaigns` utilisait
+  // `isDMOf(campaignId)` qui faisait un `get()` sur le doc en cours
+  // d'évaluation. Firestore Rules ne supportent pas ce pattern en `list`
+  // → "Null value error" → toute query `where gmIds array-contains uid`
+  // échouait en runtime (cf. PR 4.0.4 — bug détecté en UAT spec).
+  //
+  // Régression : avant 4.0.4, aucune rule top-level ne couvrait les
+  // collectionGroup queries sur `members`. La rule path-bound L201+ ne
+  // s'applique PAS aux collectionGroup → la query Q2 de listMyCampaigns
+  // tombait dans le default-deny. La rule top-level `match
+  // /{path=**}/members/{userId}` autorise UNIQUEMENT le self-read par
+  // collectionGroup (resource.data.userId == auth.uid).
+
+  it('ACCEPTE query campaigns where gmIds array-contains auth.uid (Q1 listMyCampaigns)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(db, 'campaigns'),
+          where('gmIds', 'array-contains', DM_UID),
+          orderBy('updatedAt', 'desc'),
+        ),
+      ),
+    );
+  });
+
+  it("REFUSE query campaigns where gmIds array-contains <autre-uid> (anti-leak)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(OUTSIDER_UID).firestore();
+    // Le query restrictif rejette la rule (anti-leak via gmIds construit
+    // avec un autre uid que le sien). resource.data.gmIds ne contient pas
+    // l'auth.uid → rule fails → query refusée.
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, 'campaigns'),
+          where('gmIds', 'array-contains', DM_UID),
+          orderBy('updatedAt', 'desc'),
+        ),
+      ),
+    );
+  });
+
+  it('ACCEPTE collectionGroup query members where userId == auth.uid (Q2 listMyCampaigns)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      // Seed une campagne + un member doc pour ce user.
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4('owner-uid'),
+      );
+      await setDoc(
+        doc(
+          context.firestore(),
+          'campaigns',
+          CAMPAIGN_4_0_2_ID,
+          'members',
+          MEMBER_UID,
+        ),
+        {
+          userId: MEMBER_UID,
+          role: 'member',
+          characterId: null,
+          joinedAt: serverTimestamp(),
+          schemaVersion: 1,
+        },
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(
+          collectionGroup(db, 'members'),
+          where('userId', '==', MEMBER_UID),
+          orderBy('joinedAt', 'desc'),
+        ),
+      ),
+    );
+  });
+
+  it("REFUSE collectionGroup query members where userId == <autre-uid> (anti-leak)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(OUTSIDER_UID).firestore();
+    await assertFails(
+      getDocs(
+        query(
+          collectionGroup(db, 'members'),
+          where('userId', '==', MEMBER_UID),
+          orderBy('joinedAt', 'desc'),
+        ),
+      ),
+    );
+  });
+
+  it('ACCEPTE create campaign + inviteCode dans le MÊME batch (createCampaign 4.0.3)', async () => {
+    // Régression JALON 4.0.4 : avant le fix `getAfter`, l'inviteCode était
+    // refusé parce que `isDMOf` lisait l'état pré-batch (le campaign
+    // n'existait pas encore) → createCampaign crashait toujours. La rule
+    // post-fix accepte la branche `getAfter`.
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    const batch = writeBatch(db);
+    const campaignRef = doc(db, 'campaigns', CAMPAIGN_4_0_2_ID);
+    batch.set(campaignRef, makeCampaignDocV4(DM_UID));
+    batch.set(doc(db, 'inviteCodes', 'BATCH1'), {
+      code: 'BATCH1',
+      campaignId: CAMPAIGN_4_0_2_ID,
+      createdBy: DM_UID,
+      createdAt: serverTimestamp(),
+    });
+    await assertSucceeds(batch.commit());
+  });
+
+  it('ACCEPTE get campaign par un membre (path /campaigns/{cid} via Q2 follow-up)', async () => {
+    // Q2 de listMyCampaigns appelle getDoc(campaignRef) pour chaque doc
+    // member retourné. Le user n'étant pas dans gmIds, on dépend de la
+    // branche `exists(members/{auth.uid})` du nouveau rule read.
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4('owner-uid'),
+      );
+      await setDoc(
+        doc(
+          context.firestore(),
+          'campaigns',
+          CAMPAIGN_4_0_2_ID,
+          'members',
+          MEMBER_UID,
+        ),
+        {
+          userId: MEMBER_UID,
+          role: 'member',
+          characterId: null,
+          joinedAt: serverTimestamp(),
+          schemaVersion: 1,
+        },
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID)));
   });
 });

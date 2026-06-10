@@ -392,6 +392,54 @@ export type StringKey =
   | 'dm.secretRoll.nat20'
   | 'dm.secretRoll.nat1'
   | 'dm.secretRoll.historyAria'
+  // Campaigns — liste « Mes campagnes » + create/leave (JALON 4.0.4)
+  | 'campaigns.title'
+  | 'campaigns.subtitle'
+  | 'campaigns.list.aria'
+  | 'campaigns.empty.title'
+  | 'campaigns.empty.body'
+  | 'campaigns.error.title'
+  | 'campaigns.error.body'
+  | 'campaigns.error.retry'
+  | 'campaigns.cta.create'
+  | 'campaigns.cta.join'
+  | 'campaigns.cta.joinSoon'
+  | 'campaigns.card.openSoon'
+  | 'campaigns.card.open'
+  | 'campaigns.card.leave'
+  | 'campaigns.card.roleGm'
+  | 'campaigns.card.roleMember'
+  | 'campaigns.card.membersLabel'
+  | 'campaigns.card.inviteCodeLabel'
+  | 'campaigns.card.dateLabel'
+  | 'campaigns.create.title'
+  | 'campaigns.create.intro'
+  | 'campaigns.create.name.label'
+  | 'campaigns.create.name.helper'
+  | 'campaigns.create.name.placeholder'
+  | 'campaigns.create.description.label'
+  | 'campaigns.create.description.helper'
+  | 'campaigns.create.description.placeholder'
+  | 'campaigns.create.cancel'
+  | 'campaigns.create.submit'
+  | 'campaigns.create.submitting'
+  | 'campaigns.create.close'
+  | 'campaigns.create.error.nameRequired'
+  | 'campaigns.create.error.nameTooLong'
+  | 'campaigns.create.error.notSignedIn'
+  | 'campaigns.create.error.inviteCollision'
+  | 'campaigns.create.error.generic'
+  | 'campaigns.leave.title'
+  | 'campaigns.leave.confirmPrefix'
+  | 'campaigns.leave.confirmSuffix'
+  | 'campaigns.leave.dataNotice'
+  | 'campaigns.leave.cancel'
+  | 'campaigns.leave.confirm'
+  | 'campaigns.leave.submitting'
+  | 'campaigns.leave.close'
+  | 'campaigns.leave.error.lastGm'
+  | 'campaigns.leave.error.notFound'
+  | 'campaigns.leave.error.generic'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1469,6 +1517,67 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.secretRoll.nat20': 'Réussite critique',
     'dm.secretRoll.nat1': 'Échec critique',
     'dm.secretRoll.historyAria': 'Derniers jets secrets',
+    // Campaigns — liste « Mes campagnes » + create/leave (JALON 4.0.4)
+    'campaigns.title': 'Mes campagnes',
+    'campaigns.subtitle': 'Les tables où ton héros prend vie',
+    'campaigns.list.aria': 'Liste des campagnes',
+    'campaigns.empty.title': 'Aucune campagne pour l’instant',
+    'campaigns.empty.body':
+      "Crée ta première campagne pour réunir une compagnie, ou rejoins-en une par code d'invitation.",
+    'campaigns.error.title': 'Lecture impossible',
+    'campaigns.error.body':
+      'Impossible de récupérer tes campagnes. Vérifie ta connexion et réessaye.',
+    'campaigns.error.retry': 'Réessayer',
+    'campaigns.cta.create': 'Créer une campagne',
+    'campaigns.cta.join': 'Rejoindre par code',
+    'campaigns.cta.joinSoon': 'Bientôt disponible',
+    'campaigns.card.openSoon': 'Ouverture bientôt',
+    'campaigns.card.open': 'Ouvrir',
+    'campaigns.card.leave': 'Quitter',
+    'campaigns.card.roleGm': 'Meneur',
+    'campaigns.card.roleMember': 'Joueur',
+    'campaigns.card.membersLabel': 'Meneurs',
+    'campaigns.card.inviteCodeLabel': 'Code',
+    'campaigns.card.dateLabel': 'Mise à jour',
+    'campaigns.create.title': 'Nouvelle campagne',
+    'campaigns.create.intro':
+      "Donne-lui un nom évocateur — c'est sous cette bannière que la compagnie se réunira.",
+    'campaigns.create.name.label': 'Nom de la campagne',
+    'campaigns.create.name.helper': '80 caractères au plus',
+    'campaigns.create.name.placeholder': "L'Ombre de Caer Dûn",
+    'campaigns.create.description.label': 'Description',
+    'campaigns.create.description.helper':
+      'Optionnelle — un pitch court pour situer la table.',
+    'campaigns.create.description.placeholder':
+      "Une campagne urbaine dans la cité brumeuse de Caer Dûn…",
+    'campaigns.create.cancel': 'Annuler',
+    'campaigns.create.submit': 'Créer',
+    'campaigns.create.submitting': 'Création en cours…',
+    'campaigns.create.close': 'Fermer la création de campagne',
+    'campaigns.create.error.nameRequired': 'Le nom est obligatoire.',
+    'campaigns.create.error.nameTooLong':
+      'Le nom doit faire 80 caractères au plus.',
+    'campaigns.create.error.notSignedIn':
+      'Tu dois être connecté pour créer une campagne.',
+    'campaigns.create.error.inviteCollision':
+      "Impossible de générer un code d'invitation unique. Réessaye dans un instant.",
+    'campaigns.create.error.generic':
+      "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'campaigns.leave.title': 'Quitter la campagne',
+    'campaigns.leave.confirmPrefix': 'Quitter',
+    'campaigns.leave.confirmSuffix': '?',
+    'campaigns.leave.dataNotice':
+      'Ton personnage lié reste sain et sauf dans ta bibliothèque.',
+    'campaigns.leave.cancel': 'Rester',
+    'campaigns.leave.confirm': 'Quitter',
+    'campaigns.leave.submitting': 'Sortie en cours…',
+    'campaigns.leave.close': 'Fermer la confirmation',
+    'campaigns.leave.error.lastGm':
+      "Tu es le dernier meneur de cette campagne. Promeus un autre joueur en co-meneur avant de la quitter.",
+    'campaigns.leave.error.notFound':
+      "Cette campagne n'existe plus côté serveur.",
+    'campaigns.leave.error.generic':
+      "La sortie n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -2822,6 +2931,62 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.secretRoll.nat20': 'Natural 20',
     'dm.secretRoll.nat1': 'Natural 1',
     'dm.secretRoll.historyAria': 'Recent secret rolls',
+    'campaigns.title': 'My campaigns',
+    'campaigns.subtitle': 'The tables where your hero comes to life',
+    'campaigns.list.aria': 'Campaign list',
+    'campaigns.empty.title': 'No campaigns yet',
+    'campaigns.empty.body':
+      'Create your first campaign to gather a party, or join one with an invite code.',
+    'campaigns.error.title': 'Cannot load',
+    'campaigns.error.body':
+      'Cannot fetch your campaigns. Check your connection and try again.',
+    'campaigns.error.retry': 'Try again',
+    'campaigns.cta.create': 'Create a campaign',
+    'campaigns.cta.join': 'Join by code',
+    'campaigns.cta.joinSoon': 'Coming soon',
+    'campaigns.card.openSoon': 'Opening soon',
+    'campaigns.card.open': 'Open',
+    'campaigns.card.leave': 'Leave',
+    'campaigns.card.roleGm': 'GM',
+    'campaigns.card.roleMember': 'Player',
+    'campaigns.card.membersLabel': 'GMs',
+    'campaigns.card.inviteCodeLabel': 'Code',
+    'campaigns.card.dateLabel': 'Updated',
+    'campaigns.create.title': 'New campaign',
+    'campaigns.create.intro':
+      'Give it an evocative name — this is the banner the party will gather under.',
+    'campaigns.create.name.label': 'Campaign name',
+    'campaigns.create.name.helper': '80 characters max',
+    'campaigns.create.name.placeholder': 'The Shadow over Caer Dûn',
+    'campaigns.create.description.label': 'Description',
+    'campaigns.create.description.helper': 'Optional — a short pitch for the table.',
+    'campaigns.create.description.placeholder':
+      'An urban campaign in the misty city of Caer Dûn…',
+    'campaigns.create.cancel': 'Cancel',
+    'campaigns.create.submit': 'Create',
+    'campaigns.create.submitting': 'Creating…',
+    'campaigns.create.close': 'Close campaign creation',
+    'campaigns.create.error.nameRequired': 'A name is required.',
+    'campaigns.create.error.nameTooLong': 'Name must be 80 characters or fewer.',
+    'campaigns.create.error.notSignedIn': 'You must be signed in to create a campaign.',
+    'campaigns.create.error.inviteCollision':
+      'Could not generate a unique invite code. Please try again.',
+    'campaigns.create.error.generic':
+      'Creation failed. Check your connection and try again.',
+    'campaigns.leave.title': 'Leave campaign',
+    'campaigns.leave.confirmPrefix': 'Leave',
+    'campaigns.leave.confirmSuffix': '?',
+    'campaigns.leave.dataNotice':
+      'Your linked character stays safe in your library.',
+    'campaigns.leave.cancel': 'Stay',
+    'campaigns.leave.confirm': 'Leave',
+    'campaigns.leave.submitting': 'Leaving…',
+    'campaigns.leave.close': 'Close confirmation',
+    'campaigns.leave.error.lastGm':
+      'You are the last GM. Promote another player to co-GM before leaving.',
+    'campaigns.leave.error.notFound': 'This campaign no longer exists.',
+    'campaigns.leave.error.generic':
+      'Leaving failed. Check your connection and try again.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

@@ -307,3 +307,46 @@ Justification : (a) le code livré (PartyCard, SecretRollButton, QuickNotes) est
 **Référence** : PR `feat/4-0-1-campaign-schema` — Zod schema + tests (35 cas) + alignement DATA-MODEL.md. Les rules + service + UI suivent dans 4.0.2 → 4.0.6.
 
 **Status** : à arbitrer par Adrien à l'UAT final V1
+
+---
+
+### [JALON-4.0.4] Hotfix Firestore Rules 4.0.2 : list / collectionGroup / batched-create (2026-06-10)
+
+**Contexte** : 4.0.4 livre la première UI consommatrice du data layer 4.0.1-4.0.3 (route `/campaigns`). L'UAT navigateur révèle que `listMyCampaigns` (4.0.3) tombe systématiquement en `permission-denied` sur la branche live des rules 4.0.2. Diagnostic à l'émulateur :
+
+1. **Bug 1 — `get()` dans la rule read de `campaigns`** : `isDMOf(campaignId)` fait `get(/databases/.../campaigns/$(campaignId)).data.gmIds`. Firestore Rules ne supportent PAS `get()` sur le doc en cours d'évaluation pour une opération `list` (la doc-cible n'est pas encore résolue → "Null value error"). Conséquence : la query Q1 `where('gmIds', 'array-contains', uid)` était rejetée AVANT d'évaluer le moindre résultat.
+
+2. **Bug 2 — pas de rule top-level pour collectionGroup `members`** : la rule path-bound `match /campaigns/{cid}/members/{uid}` ne s'applique PAS aux collectionGroup queries. La query Q2 `collectionGroup('members') where userId == uid` tombait directement dans le `match /{document=**} { allow read, write: if false; }` final.
+
+3. **Bug 3 — `isDMOf(campaignId)` dans la rule create d'`inviteCodes`** : `createCampaign` 4.0.3 écrit campaign + inviteCode dans un **MÊME `writeBatch`**. Au moment où la rule de l'inviteCode s'évalue, le campaign-doc n'existe pas encore (état pré-batch). `isDMOf` retourne false → batch entier rejeté → `createCampaign` n'a JAMAIS fonctionné en prod, même pour le cas nominal. Le test rules-unit 4.0.2 sur inviteCodes (`ACCEPTE create d'un inviteCode par le MJ`) seedait le campaign-doc via `withSecurityRulesDisabled` AVANT d'invoquer le create, ce qui masquait le bug — il ne reproduisait pas le flow batch réel.
+
+**Options envisagées** :
+
+1. Différer 4.0.4 et ouvrir un sous-jalon 4.0.2b pour le hotfix rules. Risque : sépare des changements intimes (rules + consumer en même PR) en 2 PRs avec une dépendance forte, sans bénéfice opérationnel (le hotfix N'A AUCUN consommateur en prod tant que 4.0.4 n'est pas mergé).
+
+2. **Inclure le hotfix dans la PR 4.0.4 elle-même** (`firestore.rules` + nouveaux rules-unit tests + tests de garde dans `tests/firestore-rules.test.ts`), documenter explicitement dans cette entrée. C'est l'esprit de la discipline "rules avant consumer" : le hotfix + le consumer arrivent dans la même PR pour qu'il n'y ait pas de fenêtre de désynchronisation.
+
+3. Reverter 4.0.4 et faire un audit complet du périmètre rules 4.0.2 par balayage des 3 patterns (get-in-list, collectionGroup, batched-create) avant tout consumer UI. Surcoût élevé pour un périmètre où le seul autre consommateur (4.0.3 service) écrit déjà via batch — la même classe de bug pourrait re-frapper.
+
+**Décision prise** : Option 2 — hotfix inclus dans la PR 4.0.4 avec 6 rules-unit tests dédiés qui exposent les 3 bugs en mode rouge-puis-vert :
+- `ACCEPTE query campaigns where gmIds array-contains auth.uid (Q1 listMyCampaigns)` — Bug 1 covered.
+- `REFUSE query campaigns where gmIds array-contains <autre-uid>` — anti-leak garanti.
+- `ACCEPTE collectionGroup query members where userId == auth.uid` — Bug 2 covered.
+- `REFUSE collectionGroup query members where userId == <autre-uid>` — anti-leak garanti.
+- `ACCEPTE get campaign par un membre (path Q2 follow-up)` — branche `exists()` validée.
+- `ACCEPTE create campaign + inviteCode dans le MÊME batch` — Bug 3 covered via `getAfter()`.
+
+**Modifications rules livrées** :
+- Rule read campaigns L174 : `isDMOf(campaignId)` → `request.auth.uid in resource.data.gmIds` (data direct au lieu de get-self).
+- Nouvelle rule top-level `match /{path=**}/members/{userId} { allow read: if isSignedIn() && resource.data.userId == request.auth.uid; }` — auto-restreinte au self-read.
+- Rule create inviteCodes L357 : `isDMOf(campaignId)` étendu avec branche `|| request.auth.uid in getAfter(/databases/.../campaigns/$(campaignId)).data.gmIds` pour le cas batched-create.
+
+**Conséquences pour les sous-jalons suivants** :
+- 4.0.5 (UI invite/join) : consomme `joinByCode` 4.0.3. Le flow d'écriture `members/{uid}` est déjà cohérent avec le rule path-bound L201 (self-create autorisé). Aucun changement de rule attendu.
+- 4.0.6 (e2e roundtrip) : la spec e2e finale exerce le full create → invite → join, qui valide en bout-à-bout les 3 fixes ci-dessus côté runtime.
+
+**Discipline « deploy rules avant consumer »** : déployer côté prod (`pnpm firebase:deploy:rules`) reste la responsabilité d'Adrien — comme 4.0.2 et 4.0.3, le code applicatif 4.0.4 ne s'active qu'avec la nav `/campaigns` discrète (non publiée au menu principal). Pas de risque de crash silencieux pour un user existant V1 tant que le deploy prod n'a pas été déclenché.
+
+**Référence** : PR feat/4-0-4-campaigns-list-ui — hotfix rules + 6 rules-unit tests + UI complète + 7 captures UAT desktop/mobile/tablet/lg.
+
+**Status** : à arbitrer par Adrien à l'UAT final V1
