@@ -19,7 +19,8 @@ import { useMapsList } from './use-maps-list';
  * mise sur un cid stable dans l'URL (deeplink, bookmark) et `ensureCampaignExists`
  * crée la campagne stub au premier accès si le user signé-in n'est pas
  * encore DM dessus. Les rules `campaigns/{cid}` autorisent `create` pour
- * tout user signed-in qui pose `dmUserId == auth.uid` (firestore.rules:159-162).
+ * tout signed-in qui pose `auth.uid in gmIds && createdBy == auth.uid`
+ * (firestore.rules — match /campaigns/{campaignId} create).
  *
  * Périmètre PROTOTYPE :
  *   - Liste de cartes via `useMapsList(cid)`.

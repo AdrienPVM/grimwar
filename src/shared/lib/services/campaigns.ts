@@ -5,17 +5,17 @@
  * `ensureCampaignExists` qui pose un doc campaign stub quand l'utilisateur
  * arrive sur `/map-proto/cloud/:cid` avec un cid qui n'existe pas encore.
  *
- * Pourquoi ici plutôt que dans un module S2 complet : la feature campaigns
- * n'est pas livrée (cf. `src/features/` qui ne contient pas `campaigns/`).
- * D.3 est explicitement un tracer-bullet UI MJ qui s'appuie sur Firestore
- * réel tout en restant indépendant de l'arborescence S2 à venir. Le module
- * s'étoffera proprement en S2 (selector, liste, memberships) ; pour
- * l'instant on garde une surface API minimale et nommée pour rendre la
- * frontière S1/S2 lisible.
+ * JALON 4.0.2 — adaptation minimale au nouveau schéma campaign (gmIds[] +
+ * createdBy + sous-collection `members/`). Le module ne génère pas encore
+ * d'inviteCode ni de settings (champs facultatifs côté rules, exigés côté
+ * Zod V1 — leur génération est du périmètre 4.0.3 / 4.0.4 qui livre un
+ * vrai `createCampaign`). Le proto map continue de fonctionner avec ce
+ * payload minimal parce que les rules ne durcissent que la forme structurelle
+ * (`gmIds is list`, `createdBy == auth.uid`, `status == 'active'`).
  *
- * Rules : `campaigns/{cid}` accepte `create` pour tout utilisateur
- * signed-in qui pose `dmUserId == request.auth.uid`, c'est exactement ce
- * que fait `setDoc` ici. Voir `firestore.rules:154-162`.
+ * Rules : `campaigns/{cid}` accepte `create` pour tout signed-in qui pose
+ * `auth.uid in gmIds && createdBy == auth.uid && status == 'active'`. Voir
+ * `firestore.rules` (helpers `isDMOf` + match `/campaigns/{cid}` create).
  */
 import {
   doc,
@@ -71,11 +71,17 @@ export async function ensureCampaignExists(
   }
   // Création de campagne = écriture user-initiated bloquante hors-ligne
   // (JALON 1D.3) — la bannière OfflineBanner doit refléter l'attente d'ack.
+  // JALON 4.0.2 — `gmIds: [uid]` + `createdBy: uid` remplacent `dmUserId: uid`.
+  // Pas de doc `members/{uid}` créé : la membership MJ est sous-entendue par
+  // gmIds[] (cf. helper `isDMOf` dans firestore.rules). description/inviteCode/
+  // settings sont facultatifs côté rules ; ils seront ajoutés par le vrai
+  // `createCampaign` du sous-jalon 4.0.3.
   await trackPendingWrite(
     firestore,
     setDoc(ref, {
       name: campaignId,
-      dmUserId: uid,
+      gmIds: [uid],
+      createdBy: uid,
       status: 'active',
       schemaVersion: 1,
       createdAt: serverTimestamp(),

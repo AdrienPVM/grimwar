@@ -8,9 +8,10 @@ interface PermissionContextValue {
   canEdit: boolean;
   /**
    * True si le viewer est MJ d'une campagne où vit ce PJ. En S1 toujours
-   * false — la DM authority arrive en plan 16 (memberships + Cloud Function).
-   * Forward-compat : les composants qui dépendent de ce flag (bouton
-   * "Ressusciter", actions DM) sont déjà câblés via `usePermissionContext()`.
+   * false — la DM authority arrive en JALON 4A (vraies campagnes + members
+   * + édition fiche côté MJ). Forward-compat : les composants qui dépendent
+   * de ce flag (bouton "Ressusciter", actions DM) sont déjà câblés via
+   * `usePermissionContext()`.
    */
   isDM: boolean;
 }
