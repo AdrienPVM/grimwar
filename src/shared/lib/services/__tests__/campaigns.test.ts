@@ -161,10 +161,12 @@ import {
   createCampaign,
   ensureCampaignExists,
   generateInviteCode,
+  getCampaign,
   joinByCode,
   kickMember,
   leaveCampaign,
   linkCharacterToMembership,
+  listCampaignMembers,
   listMyCampaigns,
   promoteToGm,
   updateCampaign,
@@ -420,6 +422,75 @@ describe('listMyCampaigns', () => {
 
     const result = await listMyCampaigns(UID);
     expect(result.map((c) => c.id)).toEqual(['newer', 'older']);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// getCampaign + listCampaignMembers (JALON 4.0.5)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('getCampaign', () => {
+  it('renvoie le payload typé si le doc existe', async () => {
+    const camp = {
+      id: CID,
+      name: 'Caer Dûn',
+      gmIds: [UID],
+      inviteCode: 'ABC234',
+    };
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => camp,
+    });
+    const result = await getCampaign(CID);
+    expect(result).toEqual(camp);
+  });
+
+  it('throw CampaignServiceError(campaign-not-found) si le doc est absent', async () => {
+    mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+    await expect(getCampaign(CID)).rejects.toMatchObject({
+      name: 'CampaignServiceError',
+      kind: 'campaign-not-found',
+    });
+  });
+});
+
+describe('listCampaignMembers', () => {
+  it('mappe tous les docs de la sous-collection en Membership[]', async () => {
+    mockGetDocs.mockResolvedValueOnce({
+      docs: [
+        {
+          data: () => ({
+            userId: 'p1',
+            role: 'member',
+            characterId: null,
+            schemaVersion: 1,
+          }),
+        },
+        {
+          data: () => ({
+            userId: 'p2',
+            role: 'member',
+            characterId: 'char-x',
+            schemaVersion: 1,
+          }),
+        },
+      ],
+    });
+    const result = await listCampaignMembers(CID);
+    expect(result).toHaveLength(2);
+    expect(result[0]?.userId).toBe('p1');
+    expect(result[1]?.characterId).toBe('char-x');
+    // Et le chemin doit cibler la sous-collection — on inspecte le mock.
+    const collectionCall = mockCollection.mock.calls.at(-1);
+    expect(collectionCall?.[1]).toBe('campaigns');
+    expect(collectionCall?.[2]).toBe(CID);
+    expect(collectionCall?.[3]).toBe('members');
+  });
+
+  it("renvoie tableau vide si la sous-collection est vide", async () => {
+    mockGetDocs.mockResolvedValueOnce({ docs: [] });
+    const result = await listCampaignMembers(CID);
+    expect(result).toEqual([]);
   });
 });
 

@@ -48,6 +48,7 @@ import {
   type Campaign,
   type CampaignSettings,
   type CampaignVariants,
+  type Membership,
 } from '@/shared/types/campaign';
 
 /**
@@ -312,6 +313,54 @@ export async function listMyCampaigns(uid: string): Promise<Campaign[]> {
     const bTs = (b.updatedAt as { seconds?: number } | undefined)?.seconds ?? 0;
     return bTs - aTs;
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Public API — getCampaign / listCampaignMembers (JALON 4.0.5)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Lit le doc `campaigns/{cid}` et renvoie le payload typé. Lève
+ * `CampaignServiceError('campaign-not-found')` si le doc n'existe pas — la
+ * rule `campaigns/{cid}/read` filtre déjà les non-membres en `permission-
+ * denied`, qui propage tel quel (le hook de l'écran 4.0.5 affichera une vue
+ * « accès interdit »).
+ *
+ * Utilisé par `useCampaign(cid)` pour l'écran de détail (route
+ * `/campaigns/:cid`) — l'écran peut être ouvert par lien direct, donc on ne
+ * peut pas supposer que le campaign est déjà en cache mémoire.
+ */
+export async function getCampaign(campaignId: string): Promise<Campaign> {
+  const firestore = getDb();
+  const snap = await getDoc(doc(firestore, 'campaigns', campaignId));
+  if (!snap.exists()) {
+    throw new CampaignServiceError(
+      'campaign-not-found',
+      `Campaign ${campaignId} not found`,
+    );
+  }
+  return snap.data() as Campaign;
+}
+
+/**
+ * Liste tous les membres (joueurs) d'une campagne — c.-à-d. les docs
+ * `campaigns/{cid}/members/{uid}`. Les MJ ne sont PAS retournés ici (leur
+ * appartenance est portée par `campaigns/{cid}.gmIds`) — l'écran 4.0.5
+ * dérive la liste des MJ depuis `Campaign.gmIds` et la fusionne avec ce
+ * retour pour afficher le roster complet.
+ *
+ * Rule consommée : `match /campaigns/{cid}/members/{uid}` allow read si
+ * `isMemberOf(campaignId) || isDMOf(campaignId)`. Un non-membre tape donc en
+ * permission-denied — propage tel quel.
+ */
+export async function listCampaignMembers(
+  campaignId: string,
+): Promise<Membership[]> {
+  const firestore = getDb();
+  const snap = await getDocs(
+    collection(firestore, 'campaigns', campaignId, 'members'),
+  );
+  return snap.docs.map((d) => d.data() as Membership);
 }
 
 // ─────────────────────────────────────────────────────────────────────

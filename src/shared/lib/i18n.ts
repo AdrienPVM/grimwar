@@ -440,6 +440,49 @@ export type StringKey =
   | 'campaigns.leave.error.lastGm'
   | 'campaigns.leave.error.notFound'
   | 'campaigns.leave.error.generic'
+  // Campaign detail + join + promote (JALON 4.0.5)
+  | 'campaigns.detail.back'
+  | 'campaigns.detail.leaveCta'
+  | 'campaigns.detail.invite.aria'
+  | 'campaigns.detail.invite.title'
+  | 'campaigns.detail.invite.codeLabel'
+  | 'campaigns.detail.invite.codeAria'
+  | 'campaigns.detail.invite.copy'
+  | 'campaigns.detail.invite.copied'
+  | 'campaigns.detail.invite.help'
+  | 'campaigns.detail.roster.aria'
+  | 'campaigns.detail.roster.title'
+  | 'campaigns.detail.roster.youSuffix'
+  | 'campaigns.detail.roster.promote'
+  | 'campaigns.detail.error.title'
+  | 'campaigns.detail.error.body'
+  | 'campaigns.detail.error.retry'
+  | 'campaigns.detail.error.notFoundTitle'
+  | 'campaigns.detail.error.notFoundBody'
+  | 'campaigns.join.title'
+  | 'campaigns.join.intro'
+  | 'campaigns.join.code.label'
+  | 'campaigns.join.code.helper'
+  | 'campaigns.join.code.placeholder'
+  | 'campaigns.join.cancel'
+  | 'campaigns.join.submit'
+  | 'campaigns.join.submitting'
+  | 'campaigns.join.error.lengthInvalid'
+  | 'campaigns.join.error.formatInvalid'
+  | 'campaigns.join.error.codeNotFound'
+  | 'campaigns.join.error.campaignNotFound'
+  | 'campaigns.join.error.notSignedIn'
+  | 'campaigns.join.error.generic'
+  | 'campaigns.promote.title'
+  | 'campaigns.promote.confirmPrefix'
+  | 'campaigns.promote.confirmSuffix'
+  | 'campaigns.promote.notice'
+  | 'campaigns.promote.cancel'
+  | 'campaigns.promote.confirm'
+  | 'campaigns.promote.submitting'
+  | 'campaigns.promote.close'
+  | 'campaigns.promote.error.notFound'
+  | 'campaigns.promote.error.generic'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1578,6 +1621,62 @@ const STRINGS: Record<Locale, Dict> = {
       "Cette campagne n'existe plus côté serveur.",
     'campaigns.leave.error.generic':
       "La sortie n'a pas abouti. Vérifie ta connexion et réessaye.",
+    // Campaign detail + join + promote (JALON 4.0.5)
+    'campaigns.detail.back': 'Mes campagnes',
+    'campaigns.detail.leaveCta': 'Quitter la campagne',
+    'campaigns.detail.invite.aria': "Code d'invitation",
+    'campaigns.detail.invite.title': 'Inviter à la table',
+    'campaigns.detail.invite.codeLabel': "Code d'invitation",
+    'campaigns.detail.invite.codeAria': "Code d'invitation à dicter ou copier",
+    'campaigns.detail.invite.copy': 'Copier le code',
+    'campaigns.detail.invite.copied': 'Copié !',
+    'campaigns.detail.invite.help':
+      'Toute personne possédant ce code peut rejoindre cette campagne. Partage-le uniquement avec les joueurs invités.',
+    'campaigns.detail.roster.aria': 'Membres de la campagne',
+    'campaigns.detail.roster.title': 'La compagnie',
+    'campaigns.detail.roster.youSuffix': '(toi)',
+    'campaigns.detail.roster.promote': 'Promouvoir meneur',
+    'campaigns.detail.error.title': 'Lecture impossible',
+    'campaigns.detail.error.body':
+      'Impossible de charger cette campagne. Vérifie ta connexion et réessaye.',
+    'campaigns.detail.error.retry': 'Réessayer',
+    'campaigns.detail.error.notFoundTitle': 'Campagne introuvable',
+    'campaigns.detail.error.notFoundBody':
+      "Cette campagne n'existe plus ou tu n'y as pas accès.",
+    'campaigns.join.title': 'Rejoindre une campagne',
+    'campaigns.join.intro':
+      "Demande son code d'invitation au meneur, puis saisis-le ici.",
+    'campaigns.join.code.label': "Code d'invitation",
+    'campaigns.join.code.helper': '6 caractères — lettres et chiffres, sans I ni O.',
+    'campaigns.join.code.placeholder': 'ABC234',
+    'campaigns.join.cancel': 'Annuler',
+    'campaigns.join.submit': 'Rejoindre',
+    'campaigns.join.submitting': 'Connexion en cours…',
+    'campaigns.join.error.lengthInvalid':
+      "Le code doit faire exactement 6 caractères.",
+    'campaigns.join.error.formatInvalid':
+      "Le code utilise des lettres et chiffres (sans 0, 1, I ni O).",
+    'campaigns.join.error.codeNotFound':
+      "Aucune campagne ne correspond à ce code. Vérifie la saisie auprès du meneur.",
+    'campaigns.join.error.campaignNotFound':
+      "Cette campagne n'existe plus côté serveur. Demande un nouveau code au meneur.",
+    'campaigns.join.error.notSignedIn':
+      'Tu dois être connecté pour rejoindre une campagne.',
+    'campaigns.join.error.generic':
+      "L'invitation n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'campaigns.promote.title': 'Promouvoir meneur',
+    'campaigns.promote.confirmPrefix': 'Donner les droits de meneur à',
+    'campaigns.promote.confirmSuffix': '?',
+    'campaigns.promote.notice':
+      'Un co-meneur peut modifier la campagne, inviter et inscrire des membres. Le rôle est irréversible côté joueur — seul un meneur peut révoquer un autre meneur.',
+    'campaigns.promote.cancel': 'Annuler',
+    'campaigns.promote.confirm': 'Promouvoir',
+    'campaigns.promote.submitting': 'Promotion en cours…',
+    'campaigns.promote.close': 'Fermer la confirmation',
+    'campaigns.promote.error.notFound':
+      "Cette campagne n'existe plus côté serveur.",
+    'campaigns.promote.error.generic':
+      "La promotion n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -2987,6 +3086,60 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.leave.error.notFound': 'This campaign no longer exists.',
     'campaigns.leave.error.generic':
       'Leaving failed. Check your connection and try again.',
+    'campaigns.detail.back': 'My campaigns',
+    'campaigns.detail.leaveCta': 'Leave campaign',
+    'campaigns.detail.invite.aria': 'Invite code',
+    'campaigns.detail.invite.title': 'Invite to the table',
+    'campaigns.detail.invite.codeLabel': 'Invite code',
+    'campaigns.detail.invite.codeAria': 'Invite code to read aloud or copy',
+    'campaigns.detail.invite.copy': 'Copy code',
+    'campaigns.detail.invite.copied': 'Copied!',
+    'campaigns.detail.invite.help':
+      'Anyone with this code can join the campaign. Share it only with invited players.',
+    'campaigns.detail.roster.aria': 'Campaign members',
+    'campaigns.detail.roster.title': 'The party',
+    'campaigns.detail.roster.youSuffix': '(you)',
+    'campaigns.detail.roster.promote': 'Promote to GM',
+    'campaigns.detail.error.title': 'Cannot load',
+    'campaigns.detail.error.body':
+      'Cannot fetch this campaign. Check your connection and try again.',
+    'campaigns.detail.error.retry': 'Try again',
+    'campaigns.detail.error.notFoundTitle': 'Campaign not found',
+    'campaigns.detail.error.notFoundBody':
+      'This campaign no longer exists or you no longer have access.',
+    'campaigns.join.title': 'Join a campaign',
+    'campaigns.join.intro': 'Ask the GM for the invite code and enter it here.',
+    'campaigns.join.code.label': 'Invite code',
+    'campaigns.join.code.helper':
+      '6 characters — letters and digits, no I or O.',
+    'campaigns.join.code.placeholder': 'ABC234',
+    'campaigns.join.cancel': 'Cancel',
+    'campaigns.join.submit': 'Join',
+    'campaigns.join.submitting': 'Joining…',
+    'campaigns.join.error.lengthInvalid':
+      'The code must be exactly 6 characters.',
+    'campaigns.join.error.formatInvalid':
+      'The code uses letters and digits (no 0, 1, I, or O).',
+    'campaigns.join.error.codeNotFound':
+      'No campaign matches this code. Double-check with the GM.',
+    'campaigns.join.error.campaignNotFound':
+      'This campaign no longer exists. Ask the GM for a new code.',
+    'campaigns.join.error.notSignedIn':
+      'You must be signed in to join a campaign.',
+    'campaigns.join.error.generic':
+      'Joining failed. Check your connection and try again.',
+    'campaigns.promote.title': 'Promote to GM',
+    'campaigns.promote.confirmPrefix': 'Grant GM rights to',
+    'campaigns.promote.confirmSuffix': '?',
+    'campaigns.promote.notice':
+      'A co-GM can edit the campaign, invite and admit members. The role is irreversible from the player side — only a GM can demote another GM.',
+    'campaigns.promote.cancel': 'Cancel',
+    'campaigns.promote.confirm': 'Promote',
+    'campaigns.promote.submitting': 'Promoting…',
+    'campaigns.promote.close': 'Close confirmation',
+    'campaigns.promote.error.notFound': 'This campaign no longer exists.',
+    'campaigns.promote.error.generic':
+      'Promotion failed. Check your connection and try again.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

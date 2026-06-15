@@ -1,4 +1,5 @@
 import { useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
 import { Divider } from '@/shared/components/divider';
@@ -28,6 +29,7 @@ import { useMyCampaigns } from './use-my-campaigns';
  * la liste — voir choix one-shot vs onSnapshot documenté dans le hook.
  */
 export function CampaignsListScreen(): JSX.Element {
+  const navigate = useNavigate();
   const { campaigns, isLoading, error, refresh } = useMyCampaigns();
   const [createOpen, setCreateOpen] = useState<boolean>(false);
   const [leaveTarget, setLeaveTarget] = useState<Campaign | null>(null);
@@ -75,8 +77,7 @@ export function CampaignsListScreen(): JSX.Element {
               <Button
                 variant="secondary"
                 size="md"
-                disabled
-                title={t('campaigns.cta.joinSoon')}
+                onClick={() => navigate('/campaigns/join')}
               >
                 {t('campaigns.cta.join')}
               </Button>
