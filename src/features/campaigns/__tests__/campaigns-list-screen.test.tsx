@@ -113,13 +113,14 @@ function renderScreen(): ReturnType<typeof render> {
 // ─────────────────────────────────────────────────────────────────────
 
 describe('<CampaignsListScreen> — empty state', () => {
-  it("rend le glass panel d'empty state avec CTA Créer + Rejoindre disabled", () => {
+  it("rend le glass panel d'empty state avec CTA Créer + Rejoindre", () => {
     stateHolder.campaigns = [];
     renderScreen();
     expect(screen.getByText(/Aucune campagne/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Créer une campagne/i })).toBeInTheDocument();
+    // 4.0.5 : Rejoindre par code n'est plus disabled, il navigue vers /campaigns/join.
     const join = screen.getByRole('button', { name: /Rejoindre par code/i });
-    expect(join).toBeDisabled();
+    expect(join).toBeEnabled();
   });
 
   it("clic sur 'Créer une campagne' ouvre la modale", () => {
@@ -152,12 +153,12 @@ describe('<CampaignsListScreen> — liste avec items', () => {
     expect(screen.getAllByText(/Joueur/i).length).toBeGreaterThan(0);
   });
 
-  it("le bouton 'Ouvrir' est disabled (4.0.5)", () => {
+  it("le bouton 'Ouvrir' est désormais actif et navigue vers le détail (4.0.5)", () => {
     stateHolder.campaigns = [mkCampaign({ id: 'c-1' })];
     renderScreen();
     const opens = screen.getAllByRole('button', { name: /Ouvrir/i });
     expect(opens.length).toBeGreaterThan(0);
-    expect(opens[0]).toBeDisabled();
+    expect(opens[0]).toBeEnabled();
   });
 
   it("clic sur 'Quitter' ouvre la modale de confirmation avec le nom de la campagne", () => {

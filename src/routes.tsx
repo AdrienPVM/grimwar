@@ -75,6 +75,20 @@ const CampaignsListScreen = lazy(async () => {
   return { default: mod.CampaignsListScreen };
 });
 
+// Route /campaigns/:cid — détail d'une campagne (JALON 4.0.5).
+// Vue roster, code d'invitation (MJ), bouton Quitter, promotion en MJ.
+const CampaignDetailScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/campaign-detail-screen');
+  return { default: mod.CampaignDetailScreen };
+});
+
+// Route /campaigns/join — saisie d'un code d'invitation pour rejoindre une
+// campagne existante (JALON 4.0.5). En succès → redirect /campaigns/:cid.
+const JoinByCodeScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/join-by-code-screen');
+  return { default: mod.JoinByCodeScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -94,6 +108,8 @@ export function AppRoutes(): JSX.Element {
         />
         <Route path="/dm" element={<DmDashboardScreen />} />
         <Route path="/campaigns" element={<CampaignsListScreen />} />
+        <Route path="/campaigns/join" element={<JoinByCodeScreen />} />
+        <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

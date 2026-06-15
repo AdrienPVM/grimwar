@@ -1,4 +1,5 @@
 import { useMemo, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
@@ -25,6 +26,7 @@ interface CampaignCardProps {
  */
 export function CampaignCard({ campaign, onLeaveClick }: CampaignCardProps): JSX.Element {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isGm = user ? campaign.gmIds.includes(user.uid) : false;
 
   const updatedAtLabel = useMemo(() => formatTimestamp(campaign.updatedAt), [campaign.updatedAt]);
@@ -90,9 +92,8 @@ export function CampaignCard({ campaign, onLeaveClick }: CampaignCardProps): JSX
           type="button"
           variant="secondary"
           size="sm"
-          disabled
-          title={t('campaigns.card.openSoon')}
-          aria-label={`${t('campaigns.card.open')} — ${t('campaigns.card.openSoon')}`}
+          onClick={() => navigate(`/campaigns/${campaign.id}`)}
+          aria-label={`${t('campaigns.card.open')} — ${campaign.name}`}
         >
           {t('campaigns.card.open')}
         </Button>
