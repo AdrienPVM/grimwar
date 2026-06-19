@@ -220,7 +220,17 @@ service cloud.firestore {
         //  - OU un MJ existant qui ajoute quelqu'un.
         // Contrainte : userId du payload doit correspondre au userId du doc ID
         // (anti-spoof). Rôle dans ['gm','member'].
+        // JALON 4.0.6 : `exists(/campaigns/{cid})` empêche qu'un code orphelin
+        // (campagne supprimée mais doc inviteCodes encore présent — race rare)
+        // permette d'écrire dans une sous-collection fantôme. Sans ce check,
+        // Firestore accepterait le write puisqu'une sous-collection n'exige
+        // pas l'existence du parent. La rule de read côté `campaigns/{cid}`
+        // refuserait ensuite la navigation post-join, laissant un doc member
+        // orphelin imprononçable. La pré-condition est consommée par
+        // `joinByCode` (4.0.3 → 4.0.6) qui traduit permission-denied en
+        // `CampaignServiceError('campaign-not-found')`.
         allow create: if (isOwner(userId) || isDMOf(campaignId))
+          && exists(/databases/$(database)/documents/campaigns/$(campaignId))
           && request.resource.data.userId == userId
           && request.resource.data.role in ['gm', 'member']
           && request.resource.data.schemaVersion is int;

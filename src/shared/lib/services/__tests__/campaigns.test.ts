@@ -1,3 +1,4 @@
+import { FirebaseError } from 'firebase/app';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -499,24 +500,20 @@ describe('listCampaignMembers', () => {
 // ─────────────────────────────────────────────────────────────────────
 
 describe('joinByCode', () => {
-  it('lookup inviteCodes/{code} puis pose members/{uid}', async () => {
-    mockGetDoc
-      .mockResolvedValueOnce({
-        exists: () => true,
-        data: () => ({ campaignId: 'camp-X' }),
-      })
-      .mockResolvedValueOnce({
-        exists: () => true,
-        data: () => ({
-          id: 'camp-X',
-          gmIds: ['other'],
-          name: 'X',
-        }),
-      });
+  it('lookup inviteCodes/{code} puis pose members/{uid} sans pré-read campaign', async () => {
+    // JALON 4.0.6 : on NE pré-read PLUS `campaigns/{cid}` (le joueur qui rejoint
+    // n'est ni MJ ni member et la rule de read le refuse). Seul le lookup
+    // inviteCodes (autorisé pour tout signed-in) précède le write member.
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ campaignId: 'camp-X' }),
+    });
 
     const result = await joinByCode('ABC234', UID);
 
     expect(result.campaignId).toBe('camp-X');
+    // Une SEULE lecture (inviteCodes/{code}) — plus de read sur campaigns/{cid}.
+    expect(mockGetDoc).toHaveBeenCalledTimes(1);
     expect(mockSetDoc).toHaveBeenCalledTimes(1);
     const [ref, payload] = mockSetDoc.mock.calls[0]! as [
       { path: string },
@@ -532,22 +529,6 @@ describe('joinByCode', () => {
     });
   });
 
-  it('no-op write si le user est déjà MJ', async () => {
-    mockGetDoc
-      .mockResolvedValueOnce({
-        exists: () => true,
-        data: () => ({ campaignId: 'camp-X' }),
-      })
-      .mockResolvedValueOnce({
-        exists: () => true,
-        data: () => ({ id: 'camp-X', gmIds: [UID] }),
-      });
-
-    const result = await joinByCode('ABC234', UID);
-    expect(result.campaignId).toBe('camp-X');
-    expect(mockSetDoc).not.toHaveBeenCalled();
-  });
-
   it('throw invite-code-not-found si lookup absent', async () => {
     mockGetDoc.mockResolvedValueOnce({ exists: () => false });
     await expect(joinByCode('ZZZZZZ', UID)).rejects.toMatchObject({
@@ -556,16 +537,37 @@ describe('joinByCode', () => {
     expect(mockSetDoc).not.toHaveBeenCalled();
   });
 
-  it('throw campaign-not-found si le doc campagne est absent malgré le code', async () => {
-    mockGetDoc
-      .mockResolvedValueOnce({
-        exists: () => true,
-        data: () => ({ campaignId: 'orphan' }),
-      })
-      .mockResolvedValueOnce({ exists: () => false });
+  it('translate permission-denied du members.create en campaign-not-found (code orphelin)', async () => {
+    // JALON 4.0.6 : la rule `members.create` exige désormais
+    // `exists(/campaigns/{cid})`. Un code orphelin (campaign supprimée) déclenche
+    // donc permission-denied au write ; le service le traduit en kind métier
+    // pour que l'UI affiche le message dédié.
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ campaignId: 'orphan' }),
+    });
+    const denied = new FirebaseError(
+      'permission-denied',
+      'Missing or insufficient permissions.',
+    );
+    mockSetDoc.mockReset().mockRejectedValue(denied);
 
     await expect(joinByCode('ABC234', UID)).rejects.toMatchObject({
       kind: 'campaign-not-found',
+    });
+  });
+
+  it('propage les FirebaseError non-permission-denied (réseau, indisponible)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ campaignId: 'camp-X' }),
+    });
+    const offline = new FirebaseError('unavailable', 'Network unavailable');
+    mockSetDoc.mockReset().mockRejectedValue(offline);
+
+    // On laisse remonter — le screen branche le fallback générique sur le catch.
+    await expect(joinByCode('ABC234', UID)).rejects.toMatchObject({
+      code: 'unavailable',
     });
   });
 });
