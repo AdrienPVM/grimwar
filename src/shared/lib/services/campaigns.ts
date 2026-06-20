@@ -369,7 +369,6 @@ export async function listCampaignMembers(
 
 export interface JoinByCodeResult {
   campaignId: string;
-  campaign: Campaign;
 }
 
 /**
@@ -377,12 +376,24 @@ export interface JoinByCodeResult {
  *
  * Flow :
  *   1. Lookup `inviteCodes/{code}` → obtient le campaignId.
- *   2. Read `campaigns/{campaignId}` (vérifie l'existence — peut avoir été
- *      supprimée entre-temps malgré le code orphelin).
- *   3. Write `campaigns/{campaignId}/members/{uid}` avec role 'member'.
+ *   2. Write `campaigns/{campaignId}/members/{uid}` avec role 'member'. Si la
+ *      campagne n'existe plus (orphan), la rule de création (qui exige
+ *      `exists(campaigns/{cid})`) renvoie permission-denied — on traduit en
+ *      `campaign-not-found`.
  *
- * Idempotence : si le user est déjà membre, la rule update auto-passe (uid ==
- * userId, role inchangé). Donc rejoindre 2 fois = no-op côté service.
+ * Pourquoi pas de pré-read de `campaigns/{cid}` (JALON 4.0.6) :
+ *   - Le joueur qui rejoint n'est ENCORE ni MJ ni member ; la rule de read sur
+ *     `campaigns/{cid}` refuse donc l'accès, ce qui bloquait le flux nominal
+ *     d'acceptation d'invite. On laisse les rules valider que la campagne
+ *     existe au moment du write — l'`exists(parent)` ajouté côté firestore.rules
+ *     transforme un code orphelin en permission-denied propre.
+ *
+ * Edge case : si le user est déjà MJ (gmIds), `setDoc` crée tout de même un doc
+ * `members/{uid}` avec role 'member'. La rule `members.create` l'accepte
+ * (`isOwner(userId)`) et `buildRoster` dédoublonne en privilégiant gmIds → l'UI
+ * reste cohérente. Sans pré-read on ne peut pas court-circuiter cet edge ; le
+ * coût est un write redondant rare (MJ qui saisit son propre code), pas un bug
+ * UI.
  *
  * Cas d'erreur :
  *   - Code inconnu → `CampaignServiceError('invite-code-not-found')`.
@@ -406,34 +417,32 @@ export async function joinByCode(
   }
   const { campaignId } = codeSnap.data() as { campaignId: string };
 
-  const campaignSnap = await getDoc(doc(firestore, 'campaigns', campaignId));
-  if (!campaignSnap.exists()) {
-    throw new CampaignServiceError(
-      'campaign-not-found',
-      `Campaign ${campaignId} referenced by code ${code} no longer exists`,
-    );
-  }
-  const campaign = campaignSnap.data() as Campaign;
-
-  // Si déjà MJ : ne pas créer de doc member redondant (la membership MJ est
-  // sous-entendue par gmIds). Acceptable de retourner le campaign tel quel.
-  if (campaign.gmIds.includes(uid)) {
-    return { campaignId, campaign };
-  }
-
   const memberRef = doc(firestore, 'campaigns', campaignId, 'members', uid);
-  await trackPendingWrite(
-    firestore,
-    setDoc(memberRef, {
-      userId: uid,
-      role: 'member',
-      characterId: null,
-      joinedAt: serverTimestamp(),
-      schemaVersion: 1,
-    }),
-  );
+  try {
+    await trackPendingWrite(
+      firestore,
+      setDoc(memberRef, {
+        userId: uid,
+        role: 'member',
+        characterId: null,
+        joinedAt: serverTimestamp(),
+        schemaVersion: 1,
+      }),
+    );
+  } catch (err: unknown) {
+    // L'unique cause attendue de permission-denied à ce point est l'absence du
+    // doc parent `campaigns/{cid}` (code orphelin). Toutes les autres
+    // pré-conditions de la rule sont remplies côté service.
+    if (err instanceof FirebaseError && err.code === 'permission-denied') {
+      throw new CampaignServiceError(
+        'campaign-not-found',
+        `Campaign ${campaignId} referenced by code ${code} no longer exists`,
+      );
+    }
+    throw err;
+  }
 
-  return { campaignId, campaign };
+  return { campaignId };
 }
 
 // ─────────────────────────────────────────────────────────────────────

@@ -886,6 +886,23 @@ describeIfEmulator('firestore.rules — campaigns + members (JALON 4.0.2)', () =
     );
   });
 
+  it("REFUSE self-create d'un member dans une campagne inexistante (JALON 4.0.6 — code orphelin)", async () => {
+    // La rule `members.create` exige `exists(/campaigns/{cid})`. Un code
+    // orphelin (campagne supprimée mais doc inviteCodes encore là) ne doit
+    // PAS permettre d'écrire un member dans une sous-collection fantôme.
+    // Le service `joinByCode` traduit ce permission-denied en
+    // `CampaignServiceError('campaign-not-found')`.
+    if (!env) throw new Error('env not initialized');
+    // Pas de seed : la campagne CAMPAIGN_4_0_2_ID n'existe PAS.
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID),
+        makeMemberDocV4(MEMBER_UID, 'member'),
+      ),
+    );
+  });
+
   it('ACCEPTE self-delete (leave) par un membre sur son propre doc', async () => {
     if (!env) throw new Error('env not initialized');
     await env.withSecurityRulesDisabled(async (context) => {
