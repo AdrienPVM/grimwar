@@ -454,6 +454,14 @@ export type StringKey =
   | 'campaigns.detail.roster.title'
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
+  | 'campaigns.detail.myCharacter.aria'
+  | 'campaigns.detail.myCharacter.title'
+  | 'campaigns.detail.myCharacter.none'
+  | 'campaigns.detail.myCharacter.loading'
+  | 'campaigns.detail.myCharacter.unknown'
+  | 'campaigns.detail.myCharacter.levelPrefix'
+  | 'campaigns.detail.myCharacter.link'
+  | 'campaigns.detail.myCharacter.change'
   | 'campaigns.detail.error.title'
   | 'campaigns.detail.error.body'
   | 'campaigns.detail.error.retry'
@@ -483,6 +491,19 @@ export type StringKey =
   | 'campaigns.promote.close'
   | 'campaigns.promote.error.notFound'
   | 'campaigns.promote.error.generic'
+  | 'campaigns.linkCharacter.title'
+  | 'campaigns.linkCharacter.intro'
+  | 'campaigns.linkCharacter.loading'
+  | 'campaigns.linkCharacter.empty'
+  | 'campaigns.linkCharacter.listAria'
+  | 'campaigns.linkCharacter.noneOption'
+  | 'campaigns.linkCharacter.levelPrefix'
+  | 'campaigns.linkCharacter.currentSuffix'
+  | 'campaigns.linkCharacter.cancel'
+  | 'campaigns.linkCharacter.confirm'
+  | 'campaigns.linkCharacter.submitting'
+  | 'campaigns.linkCharacter.close'
+  | 'campaigns.linkCharacter.error.generic'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1636,6 +1657,15 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.title': 'La compagnie',
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
+    'campaigns.detail.myCharacter.aria': 'Mon personnage dans cette campagne',
+    'campaigns.detail.myCharacter.title': 'Mon personnage',
+    'campaigns.detail.myCharacter.none': 'Aucun personnage lié pour le moment.',
+    'campaigns.detail.myCharacter.loading': 'Chargement du personnage…',
+    'campaigns.detail.myCharacter.unknown':
+      'Personnage lié introuvable (supprimé ou non chargé).',
+    'campaigns.detail.myCharacter.levelPrefix': 'Niveau',
+    'campaigns.detail.myCharacter.link': 'Lier un personnage',
+    'campaigns.detail.myCharacter.change': 'Changer',
     'campaigns.detail.error.title': 'Lecture impossible',
     'campaigns.detail.error.body':
       'Impossible de charger cette campagne. Vérifie ta connexion et réessaye.',
@@ -1677,6 +1707,22 @@ const STRINGS: Record<Locale, Dict> = {
       "Cette campagne n'existe plus côté serveur.",
     'campaigns.promote.error.generic':
       "La promotion n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'campaigns.linkCharacter.title': 'Lier un personnage',
+    'campaigns.linkCharacter.intro':
+      'Choisis le personnage que tu incarnes dans cette campagne. Le meneur pourra consulter sa fiche.',
+    'campaigns.linkCharacter.loading': 'Chargement de tes personnages…',
+    'campaigns.linkCharacter.empty':
+      "Tu n'as encore aucun personnage. Crée-en un depuis ta bibliothèque, puis reviens le lier.",
+    'campaigns.linkCharacter.listAria': 'Choix du personnage à lier',
+    'campaigns.linkCharacter.noneOption': 'Aucun personnage',
+    'campaigns.linkCharacter.levelPrefix': 'Niveau',
+    'campaigns.linkCharacter.currentSuffix': 'actuel',
+    'campaigns.linkCharacter.cancel': 'Annuler',
+    'campaigns.linkCharacter.confirm': 'Lier',
+    'campaigns.linkCharacter.submitting': 'Liaison en cours…',
+    'campaigns.linkCharacter.close': 'Fermer la fenêtre de liaison',
+    'campaigns.linkCharacter.error.generic':
+      "La liaison n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3100,6 +3146,15 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.title': 'The party',
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
+    'campaigns.detail.myCharacter.aria': 'My character in this campaign',
+    'campaigns.detail.myCharacter.title': 'My character',
+    'campaigns.detail.myCharacter.none': 'No character linked yet.',
+    'campaigns.detail.myCharacter.loading': 'Loading character…',
+    'campaigns.detail.myCharacter.unknown':
+      'Linked character not found (deleted or not loaded).',
+    'campaigns.detail.myCharacter.levelPrefix': 'Level',
+    'campaigns.detail.myCharacter.link': 'Link a character',
+    'campaigns.detail.myCharacter.change': 'Change',
     'campaigns.detail.error.title': 'Cannot load',
     'campaigns.detail.error.body':
       'Cannot fetch this campaign. Check your connection and try again.',
@@ -3140,6 +3195,22 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.promote.error.notFound': 'This campaign no longer exists.',
     'campaigns.promote.error.generic':
       'Promotion failed. Check your connection and try again.',
+    'campaigns.linkCharacter.title': 'Link a character',
+    'campaigns.linkCharacter.intro':
+      'Pick the character you play in this campaign. The GM will be able to view its sheet.',
+    'campaigns.linkCharacter.loading': 'Loading your characters…',
+    'campaigns.linkCharacter.empty':
+      "You don't have any character yet. Create one from your library, then come back to link it.",
+    'campaigns.linkCharacter.listAria': 'Character to link',
+    'campaigns.linkCharacter.noneOption': 'No character',
+    'campaigns.linkCharacter.levelPrefix': 'Level',
+    'campaigns.linkCharacter.currentSuffix': 'current',
+    'campaigns.linkCharacter.cancel': 'Cancel',
+    'campaigns.linkCharacter.confirm': 'Link',
+    'campaigns.linkCharacter.submitting': 'Linking…',
+    'campaigns.linkCharacter.close': 'Close link dialog',
+    'campaigns.linkCharacter.error.generic':
+      'Linking failed. Check your connection and try again.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

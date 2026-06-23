@@ -43,6 +43,7 @@ vi.mock('react-router-dom', async () => {
 
 const leaveCampaignMock = vi.fn();
 const promoteToGmMock = vi.fn();
+const linkCharacterMock = vi.fn();
 vi.mock('@/shared/lib/services/campaigns', () => {
   class FakeError extends Error {
     readonly kind: string;
@@ -55,9 +56,21 @@ vi.mock('@/shared/lib/services/campaigns', () => {
   return {
     leaveCampaign: (cid: string, uid: string) => leaveCampaignMock(cid, uid),
     promoteToGm: (cid: string, target: string) => promoteToGmMock(cid, target),
+    linkCharacterToMembership: (cid: string, uid: string, charId: string | null) =>
+      linkCharacterMock(cid, uid, charId),
     CampaignServiceError: FakeError,
   };
 });
+
+// La section « Mon personnage » (MyCharacterLink) abonne useCharactersList ;
+// on le stube pour qu'il ne touche pas Firestore dans le test d'écran.
+const charactersHolder: {
+  characters: { id: string; name: string; totalLevel: number }[];
+  isLoading: boolean;
+} = { characters: [], isLoading: false };
+vi.mock('@/features/library/use-characters-list', () => ({
+  useCharactersList: () => ({ ...charactersHolder, error: null }),
+}));
 
 vi.mock('@/shared/lib/firebase', () => ({
   getDb: () => ({}),
@@ -116,6 +129,9 @@ afterEach(() => {
   navigateMock.mockReset();
   leaveCampaignMock.mockReset();
   promoteToGmMock.mockReset();
+  linkCharacterMock.mockReset();
+  charactersHolder.characters = [];
+  charactersHolder.isLoading = false;
 });
 
 function renderScreen(cid = 'c-1'): ReturnType<typeof render> {
@@ -283,5 +299,46 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     const backButtons = screen.getAllByRole('button', { name: /Mes campagnes/i });
     fireEvent.click(backButtons[0]!);
     expect(navigateMock).toHaveBeenCalledWith('/campaigns');
+  });
+
+  it('affiche la section « Mon personnage » avec le CTA Lier quand aucune fiche liée', () => {
+    authHolder.user = { uid: 'uid-2' };
+    stateHolder.campaign = mkCampaign({ gmIds: ['uid-1'] });
+    stateHolder.members = [mkMember({ userId: 'uid-2', characterId: null })];
+    renderScreen();
+
+    expect(screen.getByText(/Mon personnage/i)).toBeInTheDocument();
+    expect(screen.getByText(/Aucun personnage lié/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Lier un personnage/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('affiche le nom de la fiche liée + CTA Changer quand une fiche est liée', () => {
+    authHolder.user = { uid: 'uid-2' };
+    charactersHolder.characters = [
+      { id: 'char-9', name: 'Lyra du Crépuscule', totalLevel: 4 },
+    ];
+    stateHolder.campaign = mkCampaign({ gmIds: ['uid-1'] });
+    stateHolder.members = [
+      mkMember({ userId: 'uid-2', characterId: 'char-9' }),
+    ];
+    renderScreen();
+
+    expect(screen.getByText('Lyra du Crépuscule')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Changer/i }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe('<CampaignDetailScreen> — section Mon personnage masquée pour le MJ pur', () => {
+  it("ne rend PAS la section pour un MJ sans doc member", () => {
+    authHolder.user = { uid: 'uid-1' };
+    stateHolder.campaign = mkCampaign({ gmIds: ['uid-1'] });
+    stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];
+    renderScreen();
+
+    expect(screen.queryByText(/Mon personnage/i)).not.toBeInTheDocument();
   });
 });

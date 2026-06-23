@@ -203,7 +203,9 @@ The player owns and edits this. **DMs of joined campaigns can also write** (enfo
                                            // de la lecture MJ (rule A2 `gmCanReadLinkedCharacter`,
                                            // JALON 4A.1) : indique quelle campagne interroger pour
                                            // savoir si le requester est MJ + si la fiche y est liée.
-                                           // Estampillé par `linkCharacterToMembership` au link.
+                                           // Estampillé par `linkCharacterToMembership` au link, via
+                                           // le picker « Mon personnage » de l'écran détail campagne
+                                           // (JALON 4A.2 — premier consommateur UI du service).
                                            // N'autorise jamais à lui seul — l'accès réel reste le
                                            // triplet live (gmIds ∋ requester) ∧ (members/{owner}
                                            // existe) ∧ (members.characterId == cette fiche).

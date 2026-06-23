@@ -12,6 +12,7 @@ import type { Campaign, Membership } from '@/shared/types/campaign';
 
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
+import { MyCharacterLink } from './my-character-link';
 import { PromoteToGmModal } from './promote-to-gm-modal';
 import { useCampaign } from './use-campaign';
 
@@ -42,8 +43,11 @@ interface PromoteTarget {
  *  - Pas de bouton « Kick » V1 — le service expose `kickMember` (4.0.3) mais
  *    aucun consommateur UI n'est mappé. Réservé à 4.0.6+ avec un flux de
  *    confirmation dédié (le kick est destructif et asymétrique de la promotion).
- *  - Pas de gestion du `characterId` linké : le picker « lier un personnage »
- *    arrive avec le flux Wizard-in-campaign (4C).
+ *  - Section « Mon personnage » (JALON 4A.2) : visible pour le joueur (user qui
+ *    possède un doc `members/{uid}`). Il y lie/délie sa fiche via le picker
+ *    `MyCharacterLink` → `linkCharacterToMembership` (write owner-only). C'est la
+ *    donnée que la rule de lecture MJ (A2, 4A.1) suit pour autoriser le meneur. Un
+ *    second point d'entrée (wizard-in-campaign) pourra s'ajouter en 4C.
  *
  * Erreurs :
  *  - `kind === 'campaign-not-found'` → écran dédié (campagne supprimée ou ID
@@ -71,6 +75,14 @@ export function CampaignDetailScreen(): JSX.Element {
     if (!campaign) return [];
     return buildRoster(campaign, members, user?.uid ?? null);
   }, [campaign, members, user]);
+
+  // Membership du joueur courant — présente uniquement s'il a rejoint en tant
+  // que joueur (doc `members/{uid}`). Un MJ pur (gmIds seul) n'en a pas et ne
+  // lie pas de fiche : il LIT celles des joueurs (rule A2, 4A.1).
+  const myMembership = useMemo<Membership | null>(() => {
+    if (!user) return null;
+    return members.find((m) => m.userId === user.uid) ?? null;
+  }, [members, user]);
 
   if (isLoading) return <Splash />;
 
@@ -157,6 +169,15 @@ export function CampaignDetailScreen(): JSX.Element {
             </h2>
             <InviteCodeReveal code={campaign.inviteCode} className="mt-4" />
           </section>
+        ) : null}
+
+        {myMembership ? (
+          <MyCharacterLink
+            campaignId={campaign.id}
+            uid={myMembership.userId}
+            currentCharacterId={myMembership.characterId}
+            onChanged={refresh}
+          />
         ) : null}
 
         <section className="mt-10" aria-label={t('campaigns.detail.roster.aria')}>
