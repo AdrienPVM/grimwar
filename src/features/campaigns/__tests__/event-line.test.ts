@@ -4,6 +4,8 @@ import type { GameEvent } from '@/shared/types/event';
 
 import {
   eventCreatedAtToDate,
+  eventDetailRows,
+  formatEventDateTime,
   formatEventTime,
   summarizeEvent,
 } from '../event-line';
@@ -113,6 +115,114 @@ describe('summarizeEvent — identité du libellé + détail (FR)', () => {
       kindLabel: 'Points de vie',
       detail: null,
     });
+  });
+});
+
+describe('eventDetailRows — détail FR-étiqueté du payload (identité, pas slug)', () => {
+  function rowMap(rows: { label: string; value: string }[]): Record<string, string> {
+    return Object.fromEntries(rows.map((r) => [r.label, r.value]));
+  }
+
+  it('roll : intitulé, dés conservés, modificateur signé, total, crit', () => {
+    const rows = eventDetailRows(
+      ev('roll', {
+        label: 'Épée longue',
+        keptFaces: [18],
+        modifier: 5,
+        total: 23,
+        crit: true,
+      }),
+    );
+    const m = rowMap(rows);
+    expect(m['Intitulé']).toBe('Épée longue');
+    expect(m['Dés']).toBe('18');
+    expect(m['Modificateur']).toBe('+5');
+    expect(m['Total']).toBe('23');
+    expect(m['Réussite critique']).toBe('Oui');
+    // Le fumble absent ne produit aucune ligne.
+    expect(m['Échec critique']).toBeUndefined();
+  });
+
+  it('roll : modificateur nul et négatif', () => {
+    expect(rowMap(eventDetailRows(ev('roll', { modifier: 0 })))['Modificateur']).toBeUndefined();
+    expect(rowMap(eventDetailRows(ev('roll', { modifier: -2 })))['Modificateur']).toBe('-2');
+  });
+
+  it('hp-change : avant / après / variation signée / cause traduite', () => {
+    const m = rowMap(
+      eventDetailRows(ev('hp-change', { before: 28, after: 7, delta: -21, reason: 'damage' })),
+    );
+    expect(m['Avant']).toBe('28');
+    expect(m['Après']).toBe('7');
+    expect(m['Variation']).toBe('-21');
+    expect(m['Cause']).toBe('Dégâts');
+  });
+
+  it('hp-change : variation calculée si delta absent + cause soin', () => {
+    const m = rowMap(eventDetailRows(ev('hp-change', { before: 10, after: 18, reason: 'heal' })));
+    expect(m['Variation']).toBe('+8');
+    expect(m['Cause']).toBe('Soin');
+  });
+
+  it('spell-cast : niveau + emplacement + composantes (lettres présentes)', () => {
+    const m = rowMap(
+      eventDetailRows(
+        ev('spell-cast', {
+          spellId: 'fireball',
+          level: 3,
+          slotConsumed: 3,
+          components: { v: true, s: true, m: false },
+        }),
+      ),
+    );
+    expect(m['Niveau']).toBe('Niveau 3');
+    expect(m['Emplacement']).toBe('Niveau 3');
+    expect(m['Composantes']).toBe('V · S');
+    // Garde-fou : le slug du sort ne fuit JAMAIS dans le détail.
+    expect(rows(m)).not.toContain('fireball');
+  });
+
+  it('spell-cast d’un sort mineur : niveau « Sort mineur », pas d’emplacement', () => {
+    const m = rowMap(
+      eventDetailRows(ev('spell-cast', { spellId: 'light', level: 0, slotConsumed: null })),
+    );
+    expect(m['Niveau']).toBe('Sort mineur');
+    expect(m['Emplacement']).toBeUndefined();
+  });
+
+  it('item-acquired : quantité (jamais le slug itemRef ni le contentScope)', () => {
+    const r = eventDetailRows(
+      ev('item-acquired', { itemRef: 'longsword', contentScope: 'srd', qty: 2 }),
+    );
+    const m = rowMap(r);
+    expect(m['Quantité']).toBe('2');
+    expect(rows(m)).not.toContain('longsword');
+    expect(rows(m)).not.toContain('srd');
+  });
+
+  it('condition-add : aucune ligne (slug conditionId non affiché)', () => {
+    expect(eventDetailRows(ev('condition-add', { conditionId: 'poisoned' }))).toEqual([]);
+  });
+
+  it('kind non mappé → aucune ligne', () => {
+    expect(eventDetailRows(ev('level-up', { newLevel: 5 }))).toEqual([]);
+  });
+
+  // helper local — concatène toutes les valeurs pour les assertions « ne contient pas ».
+  function rows(m: Record<string, string>): string {
+    return Object.values(m).join(' ');
+  }
+});
+
+describe('formatEventDateTime — date + heure complètes', () => {
+  it('rend jour + heure pour une Date locale', () => {
+    const out = formatEventDateTime(new Date(2026, 5, 23, 14, 5));
+    expect(out).toContain('2026');
+    expect(out).toContain('14:05');
+  });
+
+  it('rend "" quand le timestamp n’est pas encore résolu', () => {
+    expect(formatEventDateTime(null)).toBe('');
   });
 });
 

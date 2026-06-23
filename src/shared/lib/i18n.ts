@@ -506,6 +506,35 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.kind.itemRemoved'
   | 'campaigns.detail.eventFeed.kind.secretRoll'
   | 'campaigns.detail.eventFeed.kind.generic'
+  | 'campaigns.detail.eventFeed.openDetail'
+  | 'campaigns.detail.eventFeed.filter.aria'
+  | 'campaigns.detail.eventFeed.filter.all'
+  | 'campaigns.detail.eventFeed.filter.emptyForPlayer'
+  | 'campaigns.detail.eventFeed.detail.close'
+  | 'campaigns.detail.eventFeed.detail.actor'
+  | 'campaigns.detail.eventFeed.detail.target'
+  | 'campaigns.detail.eventFeed.detail.dmActor'
+  | 'campaigns.detail.eventFeed.detail.systemActor'
+  | 'campaigns.detail.eventFeed.detail.unknownCharacter'
+  | 'campaigns.detail.eventFeed.detail.noDetail'
+  | 'campaigns.detail.eventFeed.field.label'
+  | 'campaigns.detail.eventFeed.field.total'
+  | 'campaigns.detail.eventFeed.field.modifier'
+  | 'campaigns.detail.eventFeed.field.dice'
+  | 'campaigns.detail.eventFeed.field.before'
+  | 'campaigns.detail.eventFeed.field.after'
+  | 'campaigns.detail.eventFeed.field.delta'
+  | 'campaigns.detail.eventFeed.field.reason'
+  | 'campaigns.detail.eventFeed.field.level'
+  | 'campaigns.detail.eventFeed.field.slot'
+  | 'campaigns.detail.eventFeed.field.count'
+  | 'campaigns.detail.eventFeed.field.quantity'
+  | 'campaigns.detail.eventFeed.field.components'
+  | 'campaigns.detail.eventFeed.field.crit'
+  | 'campaigns.detail.eventFeed.field.fumble'
+  | 'campaigns.detail.eventFeed.reason.damage'
+  | 'campaigns.detail.eventFeed.reason.heal'
+  | 'campaigns.detail.eventFeed.value.yes'
   | 'campaigns.join.title'
   | 'campaigns.join.intro'
   | 'campaigns.join.code.label'
@@ -1755,6 +1784,36 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.itemRemoved': 'Objet retiré',
     'campaigns.detail.eventFeed.kind.secretRoll': 'Jet secret du meneur',
     'campaigns.detail.eventFeed.kind.generic': 'Événement de jeu',
+    'campaigns.detail.eventFeed.openDetail': 'Voir le détail de l’événement',
+    'campaigns.detail.eventFeed.filter.aria': 'Filtrer l’activité par joueur',
+    'campaigns.detail.eventFeed.filter.all': 'Tous',
+    'campaigns.detail.eventFeed.filter.emptyForPlayer':
+      'Aucune activité pour ce joueur pour l’instant.',
+    'campaigns.detail.eventFeed.detail.close': 'Fermer le détail',
+    'campaigns.detail.eventFeed.detail.actor': 'Acteur',
+    'campaigns.detail.eventFeed.detail.target': 'Cible',
+    'campaigns.detail.eventFeed.detail.dmActor': 'Meneur',
+    'campaigns.detail.eventFeed.detail.systemActor': 'Système',
+    'campaigns.detail.eventFeed.detail.unknownCharacter': 'Personnage',
+    'campaigns.detail.eventFeed.detail.noDetail': 'Aucun détail supplémentaire.',
+    'campaigns.detail.eventFeed.field.label': 'Intitulé',
+    'campaigns.detail.eventFeed.field.total': 'Total',
+    'campaigns.detail.eventFeed.field.modifier': 'Modificateur',
+    'campaigns.detail.eventFeed.field.dice': 'Dés',
+    'campaigns.detail.eventFeed.field.before': 'Avant',
+    'campaigns.detail.eventFeed.field.after': 'Après',
+    'campaigns.detail.eventFeed.field.delta': 'Variation',
+    'campaigns.detail.eventFeed.field.reason': 'Cause',
+    'campaigns.detail.eventFeed.field.level': 'Niveau',
+    'campaigns.detail.eventFeed.field.slot': 'Emplacement',
+    'campaigns.detail.eventFeed.field.count': 'Nombre',
+    'campaigns.detail.eventFeed.field.quantity': 'Quantité',
+    'campaigns.detail.eventFeed.field.components': 'Composantes',
+    'campaigns.detail.eventFeed.field.crit': 'Réussite critique',
+    'campaigns.detail.eventFeed.field.fumble': 'Échec critique',
+    'campaigns.detail.eventFeed.reason.damage': 'Dégâts',
+    'campaigns.detail.eventFeed.reason.heal': 'Soin',
+    'campaigns.detail.eventFeed.value.yes': 'Oui',
     'campaigns.join.title': 'Rejoindre une campagne',
     'campaigns.join.intro':
       "Demande son code d'invitation au meneur, puis saisis-le ici.",
@@ -3286,6 +3345,36 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.itemRemoved': 'Item removed',
     'campaigns.detail.eventFeed.kind.secretRoll': 'GM secret roll',
     'campaigns.detail.eventFeed.kind.generic': 'Game event',
+    'campaigns.detail.eventFeed.openDetail': 'View event details',
+    'campaigns.detail.eventFeed.filter.aria': 'Filter activity by player',
+    'campaigns.detail.eventFeed.filter.all': 'All',
+    'campaigns.detail.eventFeed.filter.emptyForPlayer':
+      'No activity for this player yet.',
+    'campaigns.detail.eventFeed.detail.close': 'Close details',
+    'campaigns.detail.eventFeed.detail.actor': 'Actor',
+    'campaigns.detail.eventFeed.detail.target': 'Target',
+    'campaigns.detail.eventFeed.detail.dmActor': 'GM',
+    'campaigns.detail.eventFeed.detail.systemActor': 'System',
+    'campaigns.detail.eventFeed.detail.unknownCharacter': 'Character',
+    'campaigns.detail.eventFeed.detail.noDetail': 'No additional details.',
+    'campaigns.detail.eventFeed.field.label': 'Label',
+    'campaigns.detail.eventFeed.field.total': 'Total',
+    'campaigns.detail.eventFeed.field.modifier': 'Modifier',
+    'campaigns.detail.eventFeed.field.dice': 'Dice',
+    'campaigns.detail.eventFeed.field.before': 'Before',
+    'campaigns.detail.eventFeed.field.after': 'After',
+    'campaigns.detail.eventFeed.field.delta': 'Change',
+    'campaigns.detail.eventFeed.field.reason': 'Cause',
+    'campaigns.detail.eventFeed.field.level': 'Level',
+    'campaigns.detail.eventFeed.field.slot': 'Slot',
+    'campaigns.detail.eventFeed.field.count': 'Count',
+    'campaigns.detail.eventFeed.field.quantity': 'Quantity',
+    'campaigns.detail.eventFeed.field.components': 'Components',
+    'campaigns.detail.eventFeed.field.crit': 'Critical hit',
+    'campaigns.detail.eventFeed.field.fumble': 'Critical miss',
+    'campaigns.detail.eventFeed.reason.damage': 'Damage',
+    'campaigns.detail.eventFeed.reason.heal': 'Healing',
+    'campaigns.detail.eventFeed.value.yes': 'Yes',
     'campaigns.join.title': 'Join a campaign',
     'campaigns.join.intro': 'Ask the GM for the invite code and enter it here.',
     'campaigns.join.code.label': 'Invite code',

@@ -124,6 +124,128 @@ export function summarizeEvent(
   }
 }
 
+/** Une ligne de détail FR-étiquetée pour la modale d'événement (JALON 22.4). */
+export interface EventDetailRow {
+  /** Libellé FR de la donnée (jamais une clé machine de payload). */
+  label: string;
+  /** Valeur déjà lisible (nombre, signe, énumération traduite). */
+  value: string;
+}
+
+/** Entier signé pour les variations (`+3`, `-7`). */
+function signed(n: number): string {
+  return n >= 0 ? `+${n}` : String(n);
+}
+
+/** Tableau de nombres finis non vide, ou `null` (faces de dés brutes/conservées). */
+function asNumberArray(value: unknown): number[] | null {
+  if (!Array.isArray(value)) return null;
+  const nums = value.filter(
+    (v): v is number => typeof v === 'number' && Number.isFinite(v),
+  );
+  return nums.length > 0 ? nums : null;
+}
+
+/** Composantes de sort `{v,s,m}` → « V · S · M » (lettres présentes), ou `null`. */
+function formatComponents(value: unknown): string | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const c = value as Record<string, unknown>;
+  const parts: string[] = [];
+  if (c.v === true) parts.push('V');
+  if (c.s === true) parts.push('S');
+  if (c.m === true) parts.push('M');
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+/**
+ * Détail STRUCTURÉ d'un événement pour la modale « voir le détail » (plan 21
+ * step 4) — une expansion FR-étiquetée de `summarizeEvent`. Mêmes principes :
+ * on rend les valeurs déjà lisibles du payload (nombres, signes, énumérations
+ * traduites) et on NE résout AUCUN slug de contenu (spellId, conditionId,
+ * itemRef ne transitent pas — leur nom FR appartient au compilateur plan 25).
+ *
+ * Un kind sans détail exploitable (états, objets sans quantité) renvoie `[]` :
+ * la modale affiche alors juste l'enveloppe (type, heure, acteur).
+ */
+export function eventDetailRows(
+  event: Pick<GameEvent, 'kind' | 'payload'>,
+): EventDetailRow[] {
+  const p = event.payload;
+  const rows: EventDetailRow[] = [];
+  const push = (label: string, value: string | null): void => {
+    if (value !== null && value !== '') rows.push({ label, value });
+  };
+  const f = (k: string): string =>
+    t(`campaigns.detail.eventFeed.field.${k}` as Parameters<typeof t>[0]);
+
+  switch (event.kind) {
+    case 'roll':
+    case 'dm-secret-roll': {
+      push(f('label'), asString(p.label));
+      const kept = asNumberArray(p.keptFaces);
+      push(f('dice'), kept !== null ? kept.join(' · ') : null);
+      const mod = asNumber(p.modifier);
+      push(f('modifier'), mod !== null && mod !== 0 ? signed(mod) : null);
+      const total = asNumber(p.total);
+      push(f('total'), total !== null ? String(total) : null);
+      if (p.crit === true) push(f('crit'), t('campaigns.detail.eventFeed.value.yes'));
+      if (p.fumble === true)
+        push(f('fumble'), t('campaigns.detail.eventFeed.value.yes'));
+      break;
+    }
+    case 'hp-change': {
+      const before = asNumber(p.before);
+      const after = asNumber(p.after);
+      push(f('before'), before !== null ? String(before) : null);
+      push(f('after'), after !== null ? String(after) : null);
+      const delta = asNumber(p.delta);
+      const effectiveDelta =
+        delta !== null ? delta : before !== null && after !== null ? after - before : null;
+      push(f('delta'), effectiveDelta !== null ? signed(effectiveDelta) : null);
+      const reason = asString(p.reason);
+      push(
+        f('reason'),
+        reason === 'damage'
+          ? t('campaigns.detail.eventFeed.reason.damage')
+          : reason === 'heal'
+            ? t('campaigns.detail.eventFeed.reason.heal')
+            : null,
+      );
+      break;
+    }
+    case 'temp-hp': {
+      const before = asNumber(p.before);
+      const after = asNumber(p.after);
+      push(f('before'), before !== null ? String(before) : null);
+      push(f('after'), after !== null ? String(after) : null);
+      break;
+    }
+    case 'spell-cast': {
+      push(f('level'), levelDetail(asNumber(p.level)));
+      const slot = asNumber(p.slotConsumed);
+      push(f('slot'), slot !== null ? levelDetail(slot) : null);
+      push(f('components'), formatComponents(p.components));
+      break;
+    }
+    case 'slot-consumed':
+    case 'slot-restored': {
+      push(f('slot'), levelDetail(asNumber(p.slotLevel)));
+      const count = asNumber(p.count);
+      push(f('count'), count !== null ? String(count) : null);
+      break;
+    }
+    case 'item-acquired':
+    case 'item-removed': {
+      const qty = asNumber(p.qty);
+      push(f('quantity'), qty !== null ? String(qty) : null);
+      break;
+    }
+    default:
+      break;
+  }
+  return rows;
+}
+
 /**
  * Narrow un `createdAt` Firestore (typé `unknown` au schéma) en `Date`.
  * Accepte un `Timestamp` (`.toDate()`), une `Date`, ou un nombre de ms.
@@ -158,4 +280,19 @@ const TIME_FORMAT = new Intl.DateTimeFormat('fr-FR', {
 export function formatEventTime(createdAt: unknown): string {
   const date = eventCreatedAtToDate(createdAt);
   return date === null ? '' : TIME_FORMAT.format(date);
+}
+
+const DATETIME_FORMAT = new Intl.DateTimeFormat('fr-FR', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+});
+
+/**
+ * Date + heure complètes (« 23 juin 2026, 14:05 ») pour la modale de détail —
+ * la ligne du feed ne montre que l'heure, le détail montre le jour. `''` si le
+ * timestamp n'est pas encore résolu (serverTimestamp local null).
+ */
+export function formatEventDateTime(createdAt: unknown): string {
+  const date = eventCreatedAtToDate(createdAt);
+  return date === null ? '' : DATETIME_FORMAT.format(date);
 }

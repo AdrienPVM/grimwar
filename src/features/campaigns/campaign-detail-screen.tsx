@@ -220,6 +220,7 @@ export function CampaignDetailScreen(): JSX.Element {
             viewerUid={user.uid}
             isDM={isGm}
             myCharacterIds={myCharacterIds}
+            members={members}
           />
         ) : null}
 
