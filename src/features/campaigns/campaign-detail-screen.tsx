@@ -10,6 +10,7 @@ import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
+import { CampaignEventFeed } from './campaign-event-feed';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
@@ -83,6 +84,13 @@ export function CampaignDetailScreen(): JSX.Element {
     if (!user) return null;
     return members.find((m) => m.userId === user.uid) ?? null;
   }, [members, user]);
+
+  // Personnages que le spectateur possède dans cette campagne — pour le filtrage
+  // `self` du feed d'événements. Un MJ pur n'a pas de membership → liste vide.
+  const myCharacterIds = useMemo<string[]>(
+    () => (myMembership?.characterId ? [myMembership.characterId] : []),
+    [myMembership],
+  );
 
   if (isLoading) return <Splash />;
 
@@ -200,6 +208,15 @@ export function CampaignDetailScreen(): JSX.Element {
             ))}
           </ul>
         </section>
+
+        {isGm && user ? (
+          <CampaignEventFeed
+            campaignId={campaign.id}
+            viewerUid={user.uid}
+            isDM={isGm}
+            myCharacterIds={myCharacterIds}
+          />
+        ) : null}
 
         <div className="mt-10 flex justify-center">
           <Button

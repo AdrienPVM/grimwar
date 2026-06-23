@@ -429,3 +429,31 @@ Justification : (a) le code livré (PartyCard, SecretRollButton, QuickNotes) est
 **Périmètre non couvert (volontaire)** : (a) **édition MJ** (omni-edit) — Cloud Function ultérieure ; (b) lecture **co-joueur** (un joueur voit la fiche d'un autre) — non prévu V1 (cf. MVP-V1-SPEC.md L38 « Joueur voit uniquement sa propre fiche ») ; (c) **nettoyage de `homeCampaignId` au délink** — toujours déféré (inerte, cf. 4A.1) ; (d) entrée nav directe par URL non gardée au-delà des guards d'écran — acceptable car la rule A2 reste l'arbitre dur côté Firestore.
 
 **Status** : typecheck/lint clean ; fast 2158 ✓ (+10). e2e DM-read à valider contre l'émulateur (Java présent localement). À arbitrer à l'UAT final V1.
+
+### [JALON-22.3] Lecteur du flux d'événements — feed d'activité MJ dans `campaign-detail`, pas dans la coquille `/dm` proto (2026-06-23)
+
+**Contexte** : 22.1/22.2 ont livré l'ÉCRITURE du journal (`campaigns/{cid}/events`) mais AUCUN lecteur — les events étaient invisibles. Le gap gravé en 22.1 (et dans `docs/EVENT-LOG.md`) : la rule de read `events` exigeait `isMemberOf`, or un MJ pur n'a pas de doc `members/` (membership sous-entendue par `gmIds[]`) → un MJ ne pouvait pas lire le flux de sa campagne. Le « plan 21 » (dashboard MJ) était désigné comme porteur du lecteur. 22.3 livre ce premier lecteur.
+
+**Décision de placement — feed dans `campaign-detail-screen`, PAS dans `/dm`** :
+- Le « plan 21 » décrit une route dédiée `/campaign/:id/dm` avec 6 panneaux (roster, events, sessions, encounters, notes, secret-roll). C'est une grosse feature multi-commit.
+- La coquille `/dm` existante est le **prototype 4A pré-V1** (cf. décision du 2026-06-04) : elle opère sur les fiches mock du même `uid`, PAS sur une vraie cohorte de campagne. Y brancher un vrai feed de campagne exigerait d'abord de recâbler `/dm` sur une campagne réelle = scope creep.
+- Le **vrai surface MJ d'une campagne réelle** est `campaign-detail-screen` — c'est là que 4A.3 a posé le roster + « Voir la fiche ». Le feed d'activité y vit naturellement, MJ-only (comme le bloc invite).
+
+**Options envisagées** :
+1. Livrer le `/campaign/:id/dm` complet du plan 21 (6 panneaux) d'un bloc. Rejeté : énorme, viole la discipline de découpe en sous-jalons (4.0, 22), et présuppose sessions (23) + encounters (24) non livrés.
+2. **Livrer UNIQUEMENT le lecteur d'événements (sous-jalon 22.3), dans `campaign-detail`, MJ-only.** Le plus haut levier : retire le gap 22.1 + step 10 de plan 22, rend tout le travail 22.x visible, focalisé et gated.
+3. Brancher le feed dans la coquille `/dm` proto. Rejeté : `/dm` n'est pas branché sur une vraie campagne (mock-uid), refactor préalable hors-scope.
+
+**Décision prise** : **Option 2.** Feed `CampaignEventFeed` + hook `useCampaignEvents` (temps réel `onSnapshot`) dans `campaign-detail-screen`, visible MJ-only. Le `/campaign/:id/dm` complet (party HP live, sessions, encounters) reste un jalon ultérieur quand ses pré-requis (23/24) atterriront — la décision « DM dashboard complet » n'est pas annulée, elle est décomposée.
+
+**Sécurité — rule + query (decision tactique tracée)** : la rule de read `events` est élargie de `isMemberOf` à `isMemberOf || isDMOf` (le filtrage par visibilité reste per-doc). Comme la rule filtre PAR DOC, une query non contrainte serait rejetée par Firestore (même classe de bug que 4.0.4 Bug 1/2) → le hook contraint la query à la visibilité « provably-read » du rôle (`where visibility in ['all','dm']` pour le MJ, `== 'all'` pour un membre). Index composite `(visibility ASC, createdAt DESC)` ajouté. `canViewEvent` (plan 22 step 10) reste appliqué côté client comme affinage d'affichage. La visibilité `self` reste privée au joueur — l'élargissement n'ouvre QUE `all` + `dm` au MJ (test rules-unit `REFUSE read 'self' d'un joueur par le MJ`).
+
+**Rendu — léger, pas le compilateur** : `event-line.ts` mappe `kind` + payload → un libellé i18n + un détail (valeurs déjà lisibles : le `label` du jet, des nombres, un niveau). Il NE résout PAS de slug de contenu (spellId/itemRef/conditionId) — la prose narrative groupée par session est le **compilateur de journal (plan 25)**. Terminologie FR officielle réutilisée (« État » = condition, « Emplacement », « Sort mineur » = cantrip, « PV »).
+
+**Deploy** : ⚠️ **CHANGEMENT DE STATUT du deploy A2/events** — 22.3 ajoute un consommateur LIVE de la rule `events` élargie + de l'index composite. `pnpm test:rules && pnpm firebase:deploy:rules && pnpm firebase:deploy:indexes` requis (action Adrien, credential Firebase) AVANT que ce code n'atterrisse en hosting prod (sinon le MJ obtient `permission-denied` / `failed-precondition` à l'ouverture du détail). En dev/e2e, rules + indexes sont dans l'émulateur → tout vérifiable sans deploy. Cf. `plans/DEBT.md > D5`.
+
+**Périmètre non couvert (volontaire)** : (a) feed JOUEUR (un membre voit le flux public `all`) — le hook le supporte déjà (`where == 'all'`) mais non monté en V1 (feed = outil MJ) ; (b) détail au tap d'un événement + filtre par joueur (plan 21 steps 4) — différés ; (c) le `/campaign/:id/dm` complet (party HP live, sessions, encounters, quick-notes Firestore, secret-roll loggé) — jalon ultérieur ; (d) résolution des noms de sort/objet dans le feed — compilateur plan 25.
+
+**Référence** : commit `feat(events): JALON 22.3` à venir, **direct sur main** (cohérent avec les commits 4A/22) — aucun path protégé touché (`firestore.rules` + `firestore.indexes.json` ne sont PAS dans la liste `public/data/**` / `scripts/data/srd-*.ts` / `.github/workflows/**` de `scripts/ci/protected-paths.sh`), donc le hook `pre-push` n'intervient pas.
+
+**Status** : typecheck/lint clean ; fast 2242 ✓ ; matrix 182 ✓ ; rules 76 ✓ (+6) ; e2e ciblés 4/4 ✓ (dont 22.3 feed live). Deploy rules+indexes en attente d'Adrien. À arbitrer à l'UAT final V1.

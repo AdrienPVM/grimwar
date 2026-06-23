@@ -480,6 +480,26 @@ export type StringKey =
   | 'campaigns.memberSheet.noCharacter.body'
   | 'campaigns.memberSheet.error.title'
   | 'campaigns.memberSheet.error.body'
+  // Feed d'activité MJ — JALON 22.3
+  | 'campaigns.detail.eventFeed.aria'
+  | 'campaigns.detail.eventFeed.title'
+  | 'campaigns.detail.eventFeed.empty'
+  | 'campaigns.detail.eventFeed.loading'
+  | 'campaigns.detail.eventFeed.error'
+  | 'campaigns.detail.eventFeed.dmOnlyHint'
+  | 'campaigns.detail.eventFeed.levelPrefix'
+  | 'campaigns.detail.eventFeed.kind.roll'
+  | 'campaigns.detail.eventFeed.kind.hpChange'
+  | 'campaigns.detail.eventFeed.kind.tempHp'
+  | 'campaigns.detail.eventFeed.kind.conditionAdd'
+  | 'campaigns.detail.eventFeed.kind.conditionRemove'
+  | 'campaigns.detail.eventFeed.kind.spellCast'
+  | 'campaigns.detail.eventFeed.kind.slotConsumed'
+  | 'campaigns.detail.eventFeed.kind.slotRestored'
+  | 'campaigns.detail.eventFeed.kind.itemAcquired'
+  | 'campaigns.detail.eventFeed.kind.itemRemoved'
+  | 'campaigns.detail.eventFeed.kind.secretRoll'
+  | 'campaigns.detail.eventFeed.kind.generic'
   | 'campaigns.join.title'
   | 'campaigns.join.intro'
   | 'campaigns.join.code.label'
@@ -1703,6 +1723,26 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.memberSheet.error.title': 'Fiche inaccessible',
     'campaigns.memberSheet.error.body':
       'Impossible de charger cette fiche. Le joueur l’a peut-être déliée, ou tu n’es plus meneur de sa campagne.',
+    'campaigns.detail.eventFeed.aria': 'Journal de bord de la campagne',
+    'campaigns.detail.eventFeed.title': 'Activité récente',
+    'campaigns.detail.eventFeed.empty': 'Aucune activité enregistrée pour l’instant.',
+    'campaigns.detail.eventFeed.loading': 'Chargement de l’activité…',
+    'campaigns.detail.eventFeed.error':
+      'Impossible de charger l’activité de la campagne.',
+    'campaigns.detail.eventFeed.dmOnlyHint': 'Visible par le meneur uniquement.',
+    'campaigns.detail.eventFeed.levelPrefix': 'Niveau ',
+    'campaigns.detail.eventFeed.kind.roll': 'Jet de dés',
+    'campaigns.detail.eventFeed.kind.hpChange': 'Points de vie',
+    'campaigns.detail.eventFeed.kind.tempHp': 'PV temporaires',
+    'campaigns.detail.eventFeed.kind.conditionAdd': 'État ajouté',
+    'campaigns.detail.eventFeed.kind.conditionRemove': 'État retiré',
+    'campaigns.detail.eventFeed.kind.spellCast': 'Sort lancé',
+    'campaigns.detail.eventFeed.kind.slotConsumed': 'Emplacement consommé',
+    'campaigns.detail.eventFeed.kind.slotRestored': 'Emplacement récupéré',
+    'campaigns.detail.eventFeed.kind.itemAcquired': 'Objet obtenu',
+    'campaigns.detail.eventFeed.kind.itemRemoved': 'Objet retiré',
+    'campaigns.detail.eventFeed.kind.secretRoll': 'Jet secret du meneur',
+    'campaigns.detail.eventFeed.kind.generic': 'Événement de jeu',
     'campaigns.join.title': 'Rejoindre une campagne',
     'campaigns.join.intro':
       "Demande son code d'invitation au meneur, puis saisis-le ici.",
@@ -3209,6 +3249,25 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.memberSheet.error.title': 'Sheet unavailable',
     'campaigns.memberSheet.error.body':
       'Cannot load this sheet. The player may have unlinked it, or you are no longer a GM of their campaign.',
+    'campaigns.detail.eventFeed.aria': 'Campaign activity log',
+    'campaigns.detail.eventFeed.title': 'Recent activity',
+    'campaigns.detail.eventFeed.empty': 'No activity recorded yet.',
+    'campaigns.detail.eventFeed.loading': 'Loading activity…',
+    'campaigns.detail.eventFeed.error': 'Unable to load campaign activity.',
+    'campaigns.detail.eventFeed.dmOnlyHint': 'Visible to the GM only.',
+    'campaigns.detail.eventFeed.levelPrefix': 'Level ',
+    'campaigns.detail.eventFeed.kind.roll': 'Dice roll',
+    'campaigns.detail.eventFeed.kind.hpChange': 'Hit points',
+    'campaigns.detail.eventFeed.kind.tempHp': 'Temporary HP',
+    'campaigns.detail.eventFeed.kind.conditionAdd': 'Condition added',
+    'campaigns.detail.eventFeed.kind.conditionRemove': 'Condition removed',
+    'campaigns.detail.eventFeed.kind.spellCast': 'Spell cast',
+    'campaigns.detail.eventFeed.kind.slotConsumed': 'Slot spent',
+    'campaigns.detail.eventFeed.kind.slotRestored': 'Slot restored',
+    'campaigns.detail.eventFeed.kind.itemAcquired': 'Item acquired',
+    'campaigns.detail.eventFeed.kind.itemRemoved': 'Item removed',
+    'campaigns.detail.eventFeed.kind.secretRoll': 'GM secret roll',
+    'campaigns.detail.eventFeed.kind.generic': 'Game event',
     'campaigns.join.title': 'Join a campaign',
     'campaigns.join.intro': 'Ask the GM for the invite code and enter it here.',
     'campaigns.join.code.label': 'Invite code',

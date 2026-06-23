@@ -76,6 +76,19 @@ vi.mock('@/shared/lib/firebase', () => ({
   getDb: () => ({}),
 }));
 
+// Le feed d'activité (JALON 22.3) abonne `useCampaignEvents` (onSnapshot
+// Firestore) ; on le stube pour le test d'écran — la couverture de la query/du
+// rendu vit dans use-campaign-events.test.tsx + campaign-event-feed.test.tsx.
+const eventsHolder: {
+  events: { id: string; kind: string; visibility: string; payload: Record<string, unknown>; actorUserId: string; actorCharacterId: string | null; targetCharacterId: string | null; createdAt: unknown }[];
+  isLoading: boolean;
+  error: Error | null;
+} = { events: [], isLoading: false, error: null };
+vi.mock('../use-campaign-events', () => ({
+  CAMPAIGN_EVENTS_LIMIT: 20,
+  useCampaignEvents: () => eventsHolder,
+}));
+
 import { CampaignDetailScreen, buildRoster } from '../campaign-detail-screen';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -132,6 +145,9 @@ afterEach(() => {
   linkCharacterMock.mockReset();
   charactersHolder.characters = [];
   charactersHolder.isLoading = false;
+  eventsHolder.events = [];
+  eventsHolder.isLoading = false;
+  eventsHolder.error = null;
 });
 
 function renderScreen(cid = 'c-1'): ReturnType<typeof render> {
@@ -259,6 +275,31 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
   });
 
+  it('affiche le feed d’activité (JALON 22.3) avec un événement rendu', () => {
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];
+    eventsHolder.events = [
+      {
+        id: 'ev-1',
+        kind: 'roll',
+        visibility: 'all',
+        payload: { label: 'Épée longue', total: 18 },
+        actorUserId: 'uid-2',
+        actorCharacterId: 'char-2',
+        targetCharacterId: null,
+        createdAt: null,
+      },
+    ];
+    renderScreen();
+
+    expect(
+      screen.getByRole('region', { name: /Journal de bord de la campagne/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Activité récente')).toBeInTheDocument();
+    expect(screen.getByText('Jet de dés')).toBeInTheDocument();
+    expect(screen.getByText('Épée longue · 18')).toBeInTheDocument();
+  });
+
   it("affiche « Voir la fiche » pour un joueur avec fiche liée et navigue au clic (4A.3)", () => {
     stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
     stateHolder.members = [
@@ -332,6 +373,11 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     ).not.toBeInTheDocument();
     // Mais le bouton Quitter reste visible.
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
+    // Le feed d'activité est un outil MJ — masqué côté joueur (JALON 22.3).
+    expect(
+      screen.queryByRole('region', { name: /Journal de bord de la campagne/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Activité récente')).not.toBeInTheDocument();
   });
 
   it('clic retour navigue vers /campaigns', () => {

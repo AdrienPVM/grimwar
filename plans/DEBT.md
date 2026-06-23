@@ -135,6 +135,7 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   | `handouts` (composites) | Plan 27 — Handouts |
   | `npcs` (composites) | Plan 28 — NPCs |
   Aucune query S1 (plans 01-13.6) ne dépend d'un index composite — `users/{uid}/characters/` utilise un seul orderBy `updatedAt desc` qui est auto-créé par Firestore. Donc aucun deploy d'indexes n'est requis tant que les plans S2+ ne sont pas livrés.
+  - **JALON 22.3 (2026-06-23) — premier consommateur d'un index `events`.** Le feed d'activité MJ interroge `campaigns/{cid}/events` avec `where visibility in ['all','dm'] orderBy createdAt desc` → nouvel index composite `(visibility ASC, createdAt DESC)` ajouté à `firestore.indexes.json`. **Deploy DÛ avant prod** : `pnpm firebase:deploy:indexes` (l'émulateur auto-crée les indexes, donc e2e/rules verts sans deploy ; la prod refusera la query en `failed-precondition` sans l'index). À grouper avec le **deploy des rules A2 + events** (cf. 4A.3 — la rule de read `events` élargie `isMemberOf || isDMOf` est dans le même `firestore.rules` que A2). Action Adrien : `pnpm test:rules && pnpm firebase:deploy:rules && pnpm firebase:deploy:indexes` avant que ce code n'atterrisse en hosting prod.
 - **Surface impactée** :
   - `CLAUDE.md` — section « Required at every commit » et nouveau bloc « Firebase deploy discipline » qui pointent ici.
   - `tests/firestore-rules.test.ts` — nouveau, charge `firestore.rules` dans l'émulateur via `@firebase/rules-unit-testing`.

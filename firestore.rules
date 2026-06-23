@@ -247,10 +247,15 @@ service cloud.firestore {
 
       // ── Events ────────────────────────────────────────────────
       match /events/{eventId} {
-        // Read: members can read events visible to them
-        // (visibility filter applied client-side; rules allow members to read all,
-        // we trust client to filter. Tightening this requires more denormalization.)
-        allow read: if isMemberOf(campaignId)
+        // Read : un MEMBRE (doc members/) OU un MJ (gmIds[], sans doc members/)
+        // peut lire un événement qui lui est visible. Le prédicat de base était
+        // `isMemberOf` seul (JALON 22.1) — un MJ pur n'a PAS de doc members/, donc
+        // ne pouvait pas lire son propre flux. JALON 22.3 élargit à
+        // `isMemberOf || isDMOf` (gap explicitement porté au lecteur MJ par 22.1 :
+        // cf. docs/EVENT-LOG.md). Le filtrage par visibilité reste per-doc ; un
+        // lecteur ne « provably-read » que le sous-ensemble qu'une query contrainte
+        // restreint (feed MJ : `where visibility in ['all','dm']`).
+        allow read: if (isMemberOf(campaignId) || isDMOf(campaignId))
           && (resource.data.visibility == 'all'
               || (resource.data.visibility == 'dm' && isDMOf(campaignId))
               || (resource.data.visibility == 'self'

@@ -31,5 +31,9 @@ Sprint 2 complete.
 - [ ] Quick notes persist
 - [ ] Secret roll logs DM-only event
 
+## Statut (séquencement JALON V1)
+- **Step 4 (recent events feed) — LIVRÉ via JALON 22.3**, mais dans `campaign-detail-screen` (la vraie surface MJ d'une campagne réelle, cf. 4A.3), PAS dans la route `/campaign/:id/dm` décrite ici. Le `/dm` actuel est le **prototype 4A pré-V1** (opère sur mock-uid, cf. MVP-V1-DECISIONS-PRISES.md du 2026-06-04). Le feed d'activité MJ temps-réel (`CampaignEventFeed` + `useCampaignEvents`, rule `events` élargie `isMemberOf || isDMOf`, query contrainte par visibilité, filtre `canViewEvent`) est livré là. Détail au tap + filtre par joueur (reste de step 4) différés.
+- **Steps 1-3, 5-11 (route dédiée, party HP live, sessions, encounters, quick-notes Firestore, secret-roll loggé, carousels mobile) — restent à livrer** quand leurs pré-requis atterrissent (sessions = plan 23, encounters = plan 24). Le `/campaign/:id/dm` complet est un jalon ultérieur ; 22.3 a livré le sous-ensemble « lecteur d'événements » à plus haut levier.
+
 ## Notes for next plan
-- Plan 22 implements the full event-logger — until then, "recent events" feed reads existing events (mostly empty).
+- Plan 22 implements the full event-logger — LIVRÉ (22.1/22.2 écriture, 22.3 lecteur). Le feed d'activité MJ est en ligne dans `campaign-detail-screen`.

@@ -1362,3 +1362,39 @@ export async function readCampaignEvents(
     .get();
   return snap.docs.map((d) => d.data() as Record<string, unknown>);
 }
+
+/**
+ * Pose un événement dans `campaigns/{cid}/events` via l'Admin SDK (bypass rules)
+ * — utilisé par la spec du lecteur MJ (JALON 22.3) pour injecter un événement et
+ * vérifier que le feed MJ le rend EN DIRECT (onSnapshot) contre les vraies rules.
+ * `createdAt` posé en `serverTimestamp()` (la rule de create l'exige côté client,
+ * et le feed ordonne dessus).
+ */
+export async function seedCampaignEvent(
+  campaignId: string,
+  event: {
+    kind: string;
+    actorUserId: string;
+    actorCharacterId?: string | null;
+    targetCharacterId?: string | null;
+    payload: Record<string, unknown>;
+    visibility: 'all' | 'dm' | 'self';
+  },
+): Promise<void> {
+  const { db } = getAdmin();
+  await db
+    .collection('campaigns')
+    .doc(campaignId)
+    .collection('events')
+    .add({
+      kind: event.kind,
+      actorUserId: event.actorUserId,
+      actorCharacterId: event.actorCharacterId ?? null,
+      targetCharacterId: event.targetCharacterId ?? null,
+      sessionId: null,
+      encounterId: null,
+      payload: event.payload,
+      visibility: event.visibility,
+      createdAt: FieldValue.serverTimestamp(),
+    });
+}

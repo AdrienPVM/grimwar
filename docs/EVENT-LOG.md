@@ -128,13 +128,19 @@ devient nécessaire, il suffit de changer **qui** appelle `setActiveCampaign`.
 
 See `docs/PERMISSIONS.md#event-visibility-model`. Filtering happens at query time (Firestore rules + client-side `canViewEvent` for UX).
 
-> **Gap connu (porté au plan 21 — dashboard MJ).** La rule de READ `events`
-> exige `isMemberOf(campaignId)`. Or un MJ n'a **pas** de doc `members/` (sa
-> membership est sous-entendue par `gmIds[]`) → en l'état, **un MJ ne peut pas
-> lire le flux d'événements de sa campagne**. Le foundation 22.1 ne fait
-> qu'**écrire** des events côté joueur ; le lecteur MJ (plan 21) devra élargir la
-> rule de read à `isMemberOf || isDMOf`. Couvert par un test rouge documenté dans
-> `tests/firestore-rules.test.ts` (bloc events).
+> **Gap RÉSOLU (JALON 22.3 — lecteur du flux).** La rule de READ `events`
+> exigeait `isMemberOf(campaignId)`. Or un MJ n'a **pas** de doc `members/` (sa
+> membership est sous-entendue par `gmIds[]`) → un MJ ne pouvait pas lire le flux
+> de sa campagne. 22.3 a élargi le prédicat de base à `isMemberOf || isDMOf` ; le
+> filtrage par visibilité reste per-doc. Le premier lecteur — le feed d'activité
+> MJ dans `campaign-detail-screen` (`CampaignEventFeed` + `useCampaignEvents`) —
+> s'abonne en temps réel (`onSnapshot`) via une **query contrainte**
+> (`where visibility in ['all','dm']` pour le MJ) : la rule filtre par doc, donc
+> une query non contrainte serait rejetée (même classe que 4.0.4). Index composite
+> `(visibility ASC, createdAt DESC)` ajouté à `firestore.indexes.json`. Filtrage
+> fin d'affichage via `canViewEvent` (plan 22 step 10). Couvert : rules-unit (MJ
+> lit `all`/`dm` ✓, query contrainte ✓, query non contrainte ✗) + e2e
+> `campaigns-dm-event-feed.spec.ts` (feed live contre les vraies rules).
 
 ## Append-only
 

@@ -14,6 +14,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
   serverTimestamp,
@@ -1333,13 +1334,12 @@ describeIfEmulator('firestore.rules — campaigns + members (JALON 4.0.2)', () =
  *   - lecture filtrée par visibilité (`all` / `self` / `dm`) pour un membre,
  *   - DELETE : MJ uniquement (purge).
  *
- * GAP CONNU (porté au plan 21 — dashboard MJ) : la rule de READ exige
- * `isMemberOf(campaignId)`, or un MJ n'a PAS de doc `members/` (sa membership
- * est sous-entendue par `gmIds[]`). Donc en l'état un MJ ne peut PAS lire le
- * flux d'événements de sa campagne. Le foundation 22.1 ne fait qu'ÉCRIRE des
- * events (côté joueur) ; le lecteur MJ (plan 21) devra élargir la rule de read
- * à `isMemberOf || isDMOf`. On ne teste donc pas ici de lecture MJ « heureuse »
- * pour ne pas figer un comportement incomplet.
+ * GAP RÉSOLU (JALON 22.3) : la rule de READ exigeait `isMemberOf(campaignId)`,
+ * or un MJ n'a PAS de doc `members/` (sa membership est sous-entendue par
+ * `gmIds[]`) → un MJ ne pouvait PAS lire le flux de sa campagne. 22.3 élargit
+ * le prédicat de base à `isMemberOf || isDMOf` (le filtrage par visibilité
+ * reste per-doc). Les tests « lecture MJ heureuse » + la QUERY contrainte du
+ * feed MJ (`where visibility in ['all','dm']`) sont désormais couverts ci-dessous.
  */
 const EV_CID = 'camp-events';
 const EV_PLAYER = 'ev-player-alice';
@@ -1503,6 +1503,78 @@ describeIfEmulator('firestore.rules — events (plan 22 / JALON 22.1)', () => {
     await seedEvent({ visibility: 'dm' }, 'evt-dm');
     const db = env.authenticatedContext(EV_PLAYER2).firestore();
     await assertFails(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-dm')));
+  });
+
+  // ── Lecture MJ du flux (JALON 22.3 — prédicat `isMemberOf || isDMOf`) ──
+  // Le MJ n'a PAS de doc `members/` → il lit via la branche `isDMOf`. Rouge
+  // avant 22.3 (le prédicat de base était `isMemberOf` seul).
+  it('ACCEPTE read d\'un event "all" par le MJ (sans doc members/)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'all' }, 'evt-gm-all');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-gm-all')));
+  });
+
+  it('ACCEPTE read d\'un event "dm" par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'dm' }, 'evt-gm-dm');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-gm-dm')));
+  });
+
+  it('REFUSE read d\'un event "self" d\'un joueur par le MJ (MJ ≠ acteur)', async () => {
+    // La visibilité `self` reste privée au joueur : élargir la lecture au MJ
+    // n'ouvre QUE `all` + `dm`. Un `self` dont le MJ n'est ni acteur ni
+    // propriétaire du perso reste deny.
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'self' }, 'evt-gm-self');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-gm-self')));
+  });
+
+  it('REFUSE read d\'un event "all" par un non-membre / non-MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'all' }, 'evt-out-all');
+    const db = env.authenticatedContext('outsider-zzz').firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-out-all')));
+  });
+
+  // ── QUERY du feed MJ — forme RÉELLE consommée par useCampaignEvents ────
+  // Une query NON contrainte échoue (la rule peut deny un `self` d'un autre
+  // joueur → Firestore rejette la query entière). Le feed MJ doit donc
+  // contraindre à `visibility in ['all','dm']`, sous-ensemble que le MJ
+  // « provably-read ». Cette paire de tests fige l'invariant (même classe de
+  // bug que 4.0.4 : getDoc vert ≠ query verte).
+  it('ACCEPTE la query feed MJ contrainte (visibility in [all,dm], orderBy createdAt)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'all' }, 'evt-q-all');
+    await seedEvent({ visibility: 'dm' }, 'evt-q-dm');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(db, 'campaigns', EV_CID, 'events'),
+          where('visibility', 'in', ['all', 'dm']),
+          orderBy('createdAt', 'desc'),
+          limit(20),
+        ),
+      ),
+    );
+  });
+
+  it('REFUSE la query NON contrainte du flux par le MJ (justifie la contrainte)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'all' }, 'evt-q2-all');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertFails(
+      getDocs(
+        query(
+          collection(db, 'campaigns', EV_CID, 'events'),
+          orderBy('createdAt', 'desc'),
+          limit(20),
+        ),
+      ),
+    );
   });
 
   // ── DELETE ────────────────────────────────────────────────────
