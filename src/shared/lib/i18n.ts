@@ -455,6 +455,12 @@ export type StringKey =
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
   | 'campaigns.detail.roster.viewSheet'
+  | 'campaigns.detail.party.aria'
+  | 'campaigns.detail.party.title'
+  | 'campaigns.detail.party.empty'
+  | 'campaigns.detail.party.cardLoading'
+  | 'campaigns.detail.party.cardError'
+  | 'campaigns.detail.party.cardUnavailable'
   | 'campaigns.detail.myCharacter.aria'
   | 'campaigns.detail.myCharacter.title'
   | 'campaigns.detail.myCharacter.none'
@@ -1691,6 +1697,12 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
     'campaigns.detail.roster.viewSheet': 'Voir la fiche',
+    'campaigns.detail.party.aria': 'État de combat de la compagnie en temps réel',
+    'campaigns.detail.party.title': 'État de la compagnie',
+    'campaigns.detail.party.empty': 'Aucun joueur n’a encore lié de personnage.',
+    'campaigns.detail.party.cardLoading': 'Chargement…',
+    'campaigns.detail.party.cardError': 'Fiche indisponible',
+    'campaigns.detail.party.cardUnavailable': 'Personnage introuvable',
     'campaigns.detail.myCharacter.aria': 'Mon personnage dans cette campagne',
     'campaigns.detail.myCharacter.title': 'Mon personnage',
     'campaigns.detail.myCharacter.none': 'Aucun personnage lié pour le moment.',
@@ -3217,6 +3229,12 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
     'campaigns.detail.roster.viewSheet': 'View sheet',
+    'campaigns.detail.party.aria': 'Live party combat status',
+    'campaigns.detail.party.title': 'Party status',
+    'campaigns.detail.party.empty': 'No player has linked a character yet.',
+    'campaigns.detail.party.cardLoading': 'Loading…',
+    'campaigns.detail.party.cardError': 'Sheet unavailable',
+    'campaigns.detail.party.cardUnavailable': 'Character not found',
     'campaigns.detail.myCharacter.aria': 'My character in this campaign',
     'campaigns.detail.myCharacter.title': 'My character',
     'campaigns.detail.myCharacter.none': 'No character linked yet.',

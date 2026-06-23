@@ -1285,6 +1285,44 @@ export async function seedCharacter(
 }
 
 /**
+ * Pose un personnage complet sous un UID ARBITRAIRE (pas l'UID de la page) via
+ * l'Admin SDK — utilisé par la spec du panneau compagnie MJ (JALON 4A.4) pour
+ * fabriquer la fiche d'un « joueur » que le MJ (la page) lit en cross-owner (rule
+ * A2). Le `playerUid` n'a pas besoin d'être un UID authentifié : c'est un segment
+ * de chemin Firestore, et la rule A2 autorise sur `gmIds` + `members/{uid}.characterId`,
+ * pas sur une session active. Retourne le `charId` généré.
+ */
+export async function seedCharacterForUid(
+  uid: string,
+  preset: SeedPreset,
+): Promise<string> {
+  const charId = generateCharId(preset.name);
+  const { db } = getAdmin();
+  const doc = buildCharacterDoc(preset, charId, uid);
+  await db.collection('users').doc(uid).collection('characters').doc(charId).set(doc);
+  return charId;
+}
+
+/**
+ * Patch (merge) un doc character seedé via l'Admin SDK — utilisé pour simuler le
+ * joueur qui modifie sa fiche (ex : prend des dégâts) et vérifier que le MJ voit
+ * la maj EN DIRECT dans le panneau compagnie (`onSnapshot`, plan 21 step 11).
+ */
+export async function patchSeededCharacter(
+  uid: string,
+  charId: string,
+  patch: Record<string, unknown>,
+): Promise<void> {
+  const { db } = getAdmin();
+  await db
+    .collection('users')
+    .doc(uid)
+    .collection('characters')
+    .doc(charId)
+    .set(patch, { merge: true });
+}
+
+/**
  * Relit le doc character via l'Admin SDK (bypass des rules) — utilisé par les
  * specs qui doivent vérifier une ré-écriture serveur (ex : migration des IDs
  * de sort one-shot, plan 13.10). Lit `users/{uid}/characters/{charId}`.

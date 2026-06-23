@@ -2,6 +2,7 @@ import { useMemo, type JSX } from 'react';
 
 import { t } from '@/shared/lib/i18n';
 import { canViewEvent } from '@/shared/lib/permissions';
+import type { GameEvent } from '@/shared/types/event';
 
 import { formatEventTime, summarizeEvent } from './event-line';
 import { useCampaignEvents } from './use-campaign-events';
@@ -81,11 +82,7 @@ export function CampaignEventFeed({
   );
 }
 
-function EventRow({
-  event,
-}: {
-  event: Parameters<typeof summarizeEvent>[0] & { id: string; createdAt: unknown };
-}): JSX.Element {
+function EventRow({ event }: { event: GameEvent }): JSX.Element {
   const { kindLabel, detail } = summarizeEvent(event);
   const time = formatEventTime(event.createdAt);
   return (

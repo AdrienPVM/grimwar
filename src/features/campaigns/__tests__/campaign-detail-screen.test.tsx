@@ -89,6 +89,14 @@ vi.mock('../use-campaign-events', () => ({
   useCampaignEvents: () => eventsHolder,
 }));
 
+// Le panneau compagnie (JALON 4A.4) abonne `useCharacter` (onSnapshot) par
+// carte de joueur lié ; on le stube pour le test d'écran — sa couverture
+// (rendu live, CA dérivée, navigation cross-owner) vit dans
+// campaign-party-panel.test.tsx.
+vi.mock('../campaign-party-panel', () => ({
+  CampaignPartyPanel: () => null,
+}));
+
 import { CampaignDetailScreen, buildRoster } from '../campaign-detail-screen';
 
 // ─────────────────────────────────────────────────────────────────────

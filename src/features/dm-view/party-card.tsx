@@ -11,20 +11,38 @@ import type { Character } from '@/shared/types/character';
 
 interface PartyCardProps {
   character: Character;
+  /**
+   * Action d'ouverture de la fiche. Par défaut (proto `/dm` sur fiches du user
+   * courant) on route vers `/character/:id`. Le panneau compagnie d'une vraie
+   * campagne (JALON 4A.4) l'injecte pour router vers la lecture cross-owner
+   * `/campaigns/:cid/members/:uid/sheet` — la fiche d'un AUTRE joueur ne vit
+   * pas sous `/character/:id` du MJ.
+   */
+  onOpen?: () => void;
+  /**
+   * CA réellement affichée (armure équipée + Defense + magic items), déjà
+   * combinée par `computeDisplayedAc` au niveau du consommateur. Sans override,
+   * fallback sur `character.ac` (valeur désarmée du wizard) — correct seulement
+   * pour un PJ sans armure. Le panneau compagnie passe la CA dérivée pour que
+   * le MJ voie la VRAIE CA, pas la valeur de base.
+   */
+  displayedAc?: number;
 }
 
 /**
  * Carte de la « party » vue MJ — plus dense que `library/CharacterCard` :
  * affiche en un coup d'œil l'état combat (PV barre + chiffres, CA, INIT,
  * niveau, conditions actives) pour permettre au meneur de jauger le groupe
- * sans ouvrir chaque fiche. Tap → ouvre la fiche en mode DM.
+ * sans ouvrir chaque fiche. Tap → ouvre la fiche (cf. `onOpen`).
  *
  * Lecture seule en S1 — pas d'inline-edit ici (le DM clique sur la card et
  * édite dans la fiche). L'édition inline arrivera plus tard si l'UAT le
  * réclame.
  */
-export function PartyCard({ character }: PartyCardProps): JSX.Element {
+export function PartyCard({ character, onOpen, displayedAc }: PartyCardProps): JSX.Element {
   const navigate = useNavigate();
+  // Ouverture de la fiche — injectable pour le panneau compagnie cross-owner.
+  const open = onOpen ?? ((): void => navigate(`/character/${character.id}`));
   const { data: classes } = useContent('classes');
   const { data: ancestries } = useContent('ancestries');
   const { data: conditions } = useContent('conditions');
@@ -85,11 +103,11 @@ export function PartyCard({ character }: PartyCardProps): JSX.Element {
       role="button"
       tabIndex={0}
       aria-label={`${t('dm.party.openSheet')} ${character.name}`}
-      onClick={() => navigate(`/character/${character.id}`)}
+      onClick={open}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          navigate(`/character/${character.id}`);
+          open();
         }
       }}
       className={cn(
@@ -147,7 +165,7 @@ export function PartyCard({ character }: PartyCardProps): JSX.Element {
             />
           </div>
         </div>
-        <PartyStat label={t('dm.party.acLabel')} value={`${character.ac}`} />
+        <PartyStat label={t('dm.party.acLabel')} value={`${displayedAc ?? character.ac}`} />
         <PartyStat label={t('dm.party.initLabel')} value={`${initSign}${character.initiative}`} />
       </div>
 

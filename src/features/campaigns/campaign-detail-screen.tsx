@@ -11,6 +11,7 @@ import { t } from '@/shared/lib/i18n';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
 import { CampaignEventFeed } from './campaign-event-feed';
+import { CampaignPartyPanel } from './campaign-party-panel';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
@@ -208,6 +209,10 @@ export function CampaignDetailScreen(): JSX.Element {
             ))}
           </ul>
         </section>
+
+        {isGm ? (
+          <CampaignPartyPanel campaignId={campaign.id} members={members} />
+        ) : null}
 
         {isGm && user ? (
           <CampaignEventFeed
