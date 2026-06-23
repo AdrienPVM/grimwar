@@ -1302,3 +1302,63 @@ export async function readBackCharacter(
     .get();
   return snap.exists ? (snap.data() as Record<string, unknown>) : undefined;
 }
+
+/**
+ * Seed (Admin SDK, bypass rules) le contexte minimal pour qu'un joueur
+ * journalise des événements (plan 22) : une campagne, le doc `members/` du
+ * joueur avec la fiche liée, et l'estampille `homeCampaignId` sur la fiche.
+ *
+ * Reproduit l'état post-link (JALON 4A) sans rejouer l'UI de join + picker
+ * (déjà couverte par campaigns-roundtrip / campaigns-dm-read-sheet) : la spec
+ * 22 cible uniquement la chaîne fiche → campagne active → event-logger.
+ */
+export async function seedCampaignMembership(opts: {
+  campaignId: string;
+  gmUid: string;
+  playerUid: string;
+  charId: string;
+}): Promise<void> {
+  const { campaignId, gmUid, playerUid, charId } = opts;
+  const { db } = getAdmin();
+  await db.collection('campaigns').doc(campaignId).set({
+    id: campaignId,
+    name: 'Camp e2e events',
+    gmIds: [gmUid],
+    createdBy: gmUid,
+    status: 'active',
+    schemaVersion: 1,
+  });
+  await db
+    .collection('campaigns')
+    .doc(campaignId)
+    .collection('members')
+    .doc(playerUid)
+    .set({
+      userId: playerUid,
+      role: 'member',
+      characterId: charId,
+      joinedAt: FieldValue.serverTimestamp(),
+      schemaVersion: 1,
+    });
+  // `homeCampaignId` est le pointeur que l'écran de fiche lit pour fixer la
+  // campagne active — donc la cible de journalisation des jets.
+  await db
+    .collection('users')
+    .doc(playerUid)
+    .collection('characters')
+    .doc(charId)
+    .set({ homeCampaignId: campaignId }, { merge: true });
+}
+
+/** Relit campaigns/{cid}/events via Admin SDK (bypass rules) pour assertion. */
+export async function readCampaignEvents(
+  campaignId: string,
+): Promise<Array<Record<string, unknown>>> {
+  const { db } = getAdmin();
+  const snap = await db
+    .collection('campaigns')
+    .doc(campaignId)
+    .collection('events')
+    .get();
+  return snap.docs.map((d) => d.data() as Record<string, unknown>);
+}

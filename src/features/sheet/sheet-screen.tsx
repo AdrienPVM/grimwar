@@ -8,12 +8,18 @@ import { t } from '@/shared/lib/i18n';
 import { CharacterSheet } from './character-sheet';
 import { PermissionProvider, usePermissions } from './permissions-context';
 import { useCharacter } from './use-character';
+import { useSyncActiveCampaign } from './use-sync-active-campaign';
 
 /** Écran principal de fiche : route /character/:id. */
 export function SheetScreen(): JSX.Element {
   const { id: characterId } = useParams<{ id: string }>();
   const { character, isLoading, error } = useCharacter(characterId);
   const permission = usePermissions(character);
+
+  // Contexte de jeu : la campagne d'attache de la fiche devient la campagne
+  // active → le pivot de dés journalise les jets dedans (no-op si non liée).
+  // Appel avant tout `return` anticipé pour garder l'ordre des hooks stable.
+  useSyncActiveCampaign(character?.homeCampaignId ?? null);
 
   if (isLoading) return <Splash />;
 

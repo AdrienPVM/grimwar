@@ -1,6 +1,6 @@
 import { buildD20Ast, rollAst, applyKeep } from '@/shared/lib/dice/roller';
 import type { Advantage, DiceAst, RollKind, RollResult } from '@/shared/lib/dice/types';
-import { logRollIfCampaign } from '@/shared/lib/event-logger-stub';
+import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
@@ -21,7 +21,8 @@ import { persistRollHistory } from './persist-history';
  *   2. Inspiration → force `advantage` et consomme la flag.
  *   3. Construit l'AST d20 (1d20, 2d20kh1 ou 2d20kl1) et roule via `rollAst`.
  *   4. Émet le toast (`roll` / `crit` / `fumble`) — sauf si `silent: true`.
- *   5. Appelle `logRollIfCampaign` (stub no-op en S1, plan 22 le câblera).
+ *   5. Appelle `logRollIfCampaign` (réel depuis plan 22 — écrit un événement
+ *      `roll` dans la campagne active, no-op si fiche non liée).
  *   6. Persiste dans Dexie `diceHistory`.
  *
  * Mode physique (plan 12.5) :

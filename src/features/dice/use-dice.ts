@@ -8,7 +8,7 @@ import type {
   RollKind,
   RollResult,
 } from '@/shared/lib/dice/types';
-import { logRollIfCampaign } from '@/shared/lib/event-logger-stub';
+import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {

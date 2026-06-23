@@ -1321,3 +1321,202 @@ describeIfEmulator('firestore.rules — campaigns + members (JALON 4.0.2)', () =
     await assertSucceeds(getDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID)));
   });
 });
+
+/**
+ * Plan 22 (JALON 22.1) — Journal d'événements `campaigns/{cid}/events/{eid}`.
+ *
+ * Les rules `events` existaient (firestore.rules L248-270) mais n'avaient AUCUN
+ * test (constat scout 22.1). Ce bloc les couvre :
+ *   - CREATE : membre uniquement, `actorUserId == auth.uid` (anti-spoof),
+ *     `createdAt == request.time` (⇒ `serverTimestamp()` obligatoire),
+ *   - immutabilité : `update` toujours refusé,
+ *   - lecture filtrée par visibilité (`all` / `self` / `dm`) pour un membre,
+ *   - DELETE : MJ uniquement (purge).
+ *
+ * GAP CONNU (porté au plan 21 — dashboard MJ) : la rule de READ exige
+ * `isMemberOf(campaignId)`, or un MJ n'a PAS de doc `members/` (sa membership
+ * est sous-entendue par `gmIds[]`). Donc en l'état un MJ ne peut PAS lire le
+ * flux d'événements de sa campagne. Le foundation 22.1 ne fait qu'ÉCRIRE des
+ * events (côté joueur) ; le lecteur MJ (plan 21) devra élargir la rule de read
+ * à `isMemberOf || isDMOf`. On ne teste donc pas ici de lecture MJ « heureuse »
+ * pour ne pas figer un comportement incomplet.
+ */
+const EV_CID = 'camp-events';
+const EV_PLAYER = 'ev-player-alice';
+const EV_PLAYER2 = 'ev-player-carol';
+const EV_GM = 'ev-gm-bob';
+const EV_PJ = 'ev-char-alice';
+const EV_PJ2 = 'ev-char-carol';
+
+function makeEventDoc(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    kind: 'roll',
+    actorUserId: EV_PLAYER,
+    actorCharacterId: EV_PJ,
+    targetCharacterId: null,
+    sessionId: null,
+    encounterId: null,
+    payload: { label: 'Épée longue', total: 18 },
+    visibility: 'all',
+    createdAt: serverTimestamp(),
+    ...over,
+  };
+}
+
+describeIfEmulator('firestore.rules — events (plan 22 / JALON 22.1)', () => {
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.clearFirestore();
+    // Seed : campagne (gmIds = bob) + 2 joueurs membres (alice, carol). Le MJ
+    // n'a PAS de doc member (membership MJ sous-entendue par gmIds).
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', EV_CID), {
+        id: EV_CID,
+        name: 'Events camp',
+        gmIds: [EV_GM],
+        createdBy: EV_GM,
+        status: 'active',
+        schemaVersion: 1,
+      });
+      await setDoc(doc(adminDb, 'campaigns', EV_CID, 'members', EV_PLAYER), {
+        userId: EV_PLAYER,
+        role: 'member',
+        characterId: EV_PJ,
+        schemaVersion: 1,
+      });
+      await setDoc(doc(adminDb, 'campaigns', EV_CID, 'members', EV_PLAYER2), {
+        userId: EV_PLAYER2,
+        role: 'member',
+        characterId: EV_PJ2,
+        schemaVersion: 1,
+      });
+    });
+  });
+
+  function seedEvent(over: Record<string, unknown> = {}, eid = 'evt-seed'): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    return env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'campaigns', EV_CID, 'events', eid), makeEventDoc(over));
+    });
+  }
+
+  // ── CREATE ────────────────────────────────────────────────────
+  it('ACCEPTE create par un membre (actorUserId == auth.uid, createdAt == request.time)', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(EV_PLAYER).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-1'), makeEventDoc()),
+    );
+  });
+
+  it("REFUSE create si actorUserId ≠ auth.uid (anti-spoof)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(EV_PLAYER).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', EV_CID, 'events', 'evt-2'),
+        makeEventDoc({ actorUserId: EV_PLAYER2 }),
+      ),
+    );
+  });
+
+  it('REFUSE create par un non-membre', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext('outsider-zzz').firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', EV_CID, 'events', 'evt-3'),
+        makeEventDoc({ actorUserId: 'outsider-zzz' }),
+      ),
+    );
+  });
+
+  it("REFUSE create avec un createdAt client (≠ request.time)", async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(EV_PLAYER).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', EV_CID, 'events', 'evt-4'),
+        makeEventDoc({ createdAt: new Date(0) }),
+      ),
+    );
+  });
+
+  // ── Immutabilité ──────────────────────────────────────────────
+  it('REFUSE update (events immuables — allow update: false)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({}, 'evt-immut');
+    const db = env.authenticatedContext(EV_PLAYER).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', EV_CID, 'events', 'evt-immut'),
+        makeEventDoc({ payload: { label: 'falsifié', total: 99 } }),
+      ),
+    );
+  });
+
+  // ── Lecture filtrée par visibilité (acteur = membre) ──────────
+  it('ACCEPTE read d\'un event visibility "all" par un autre membre', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'all' }, 'evt-all');
+    const db = env.authenticatedContext(EV_PLAYER2).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-all')));
+  });
+
+  it('ACCEPTE read d\'un event "self" par le propriétaire du perso acteur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'self' }, 'evt-self');
+    const db = env.authenticatedContext(EV_PLAYER).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-self')));
+  });
+
+  it('REFUSE read d\'un event "self" d\'un autre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'self' }, 'evt-self2');
+    const db = env.authenticatedContext(EV_PLAYER2).firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-self2')));
+  });
+
+  it('REFUSE read d\'un event "dm" par un membre non-MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({ visibility: 'dm' }, 'evt-dm');
+    const db = env.authenticatedContext(EV_PLAYER2).firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-dm')));
+  });
+
+  // ── DELETE ────────────────────────────────────────────────────
+  it('ACCEPTE delete par le MJ (purge)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({}, 'evt-del');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-del')));
+  });
+
+  it('REFUSE delete par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEvent({}, 'evt-del2');
+    const db = env.authenticatedContext(EV_PLAYER).firestore();
+    await assertFails(deleteDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-del2')));
+  });
+});

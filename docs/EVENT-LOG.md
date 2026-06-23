@@ -100,9 +100,41 @@ type Event = {
 }
 ```
 
+## Campagne active (qui est la cible d'écriture) — décision 22.1 (2026-06-23)
+
+Le logger doit savoir **dans quelle campagne** écrire, mais les call sites de jeu
+(pivot de dés, patch de fiche) ne portent que le `characterId`. La « campagne
+active » est tenue par un store Zustand (`useActiveCampaignStore`), lu de façon
+**synchrone** par `event-logger.ts` (`getState()`).
+
+Qui renseigne le store : l'écran de fiche du **propriétaire** (`SheetScreen` via
+`useSyncActiveCampaign`), à partir de **`character.homeCampaignId`** — le pointeur
+de routage posé au lien fiche↔membre (JALON 4A). Pas de mode « session » dédié :
+une fiche liée joue *dans* sa campagne d'attache. Fiche non liée
+(`homeCampaignId == null`) ⇒ store à `null` ⇒ **logger no-op silencieux** (c'est
+le comportement S1 du stub historique, désormais réel). La lecture MJ (lecture
+seule, JALON 4A.3) ne renseigne **pas** le store — le MJ ne joue pas à la place
+du joueur.
+
+`activeSessionId` reste `null` jusqu'au plan 23 (sessions) : les événements
+hors-session portent `sessionId: null` et n'apparaissent dans aucun journal de
+session compilé (le compilateur plan 25 groupe par `sessionId`). On journalise
+tout dans la campagne ; la session découpe la narration plus tard.
+
+Réversible : aucun changement de schéma ni de rule. Si un vrai mode « session »
+devient nécessaire, il suffit de changer **qui** appelle `setActiveCampaign`.
+
 ## Visibility model
 
 See `docs/PERMISSIONS.md#event-visibility-model`. Filtering happens at query time (Firestore rules + client-side `canViewEvent` for UX).
+
+> **Gap connu (porté au plan 21 — dashboard MJ).** La rule de READ `events`
+> exige `isMemberOf(campaignId)`. Or un MJ n'a **pas** de doc `members/` (sa
+> membership est sous-entendue par `gmIds[]`) → en l'état, **un MJ ne peut pas
+> lire le flux d'événements de sa campagne**. Le foundation 22.1 ne fait
+> qu'**écrire** des events côté joueur ; le lecteur MJ (plan 21) devra élargir la
+> rule de read à `isMemberOf || isDMOf`. Couvert par un test rouge documenté dans
+> `tests/firestore-rules.test.ts` (bloc events).
 
 ## Append-only
 
