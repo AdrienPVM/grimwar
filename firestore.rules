@@ -240,8 +240,14 @@ service cloud.firestore {
       }
 
       // ── Sessions ──────────────────────────────────────────────
+      // Read : un MEMBRE (doc members/) OU un MJ (gmIds[], sans doc members/).
+      // Le prédicat de base était `isMemberOf` seul — or un MJ pur n'a PAS de
+      // doc members/ (sa membership est sous-entendue par gmIds[]), donc ne
+      // pouvait pas lire SA PROPRE liste de sessions. JALON 23.1 élargit à
+      // `isMemberOf || isDMOf` — élargissement identique au précédent events
+      // (22.3) et maps (CHANTIER D).
       match /sessions/{sessionId} {
-        allow read: if isMemberOf(campaignId);
+        allow read: if isMemberOf(campaignId) || isDMOf(campaignId);
         allow create, update, delete: if isDMOf(campaignId);
       }
 

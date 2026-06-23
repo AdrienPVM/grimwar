@@ -1592,3 +1592,196 @@ describeIfEmulator('firestore.rules — events (plan 22 / JALON 22.1)', () => {
     await assertFails(deleteDoc(doc(db, 'campaigns', EV_CID, 'events', 'evt-del2')));
   });
 });
+
+/**
+ * Plan 23 (JALON 23.1) — Sessions `campaigns/{cid}/sessions/{sid}`.
+ *
+ * Les rules `sessions` existaient (firestore.rules) mais n'avaient AUCUN test, et
+ * la lecture était `isMemberOf(campaignId)` seul. GAP RÉSOLU (23.1, même classe
+ * que events 22.3) : un MJ pur n'a PAS de doc `members/` → il ne pouvait pas
+ * lire SA PROPRE liste de sessions. 23.1 élargit le prédicat à
+ * `isMemberOf || isDMOf`. Ce bloc couvre :
+ *   - READ : membre OK, MJ (sans doc members/) OK, non-membre refusé,
+ *   - la QUERY de liste (`orderBy number`) par le MJ et par un membre,
+ *   - CREATE/UPDATE/DELETE : MJ uniquement (joueur refusé).
+ */
+const SES_CID = 'camp-sessions';
+const SES_GM = 'ses-gm-bob';
+const SES_PLAYER = 'ses-player-alice';
+const SES_OUTSIDER = 'ses-outsider-zzz';
+
+function makeSessionDoc(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'ses-seed',
+    number: 1,
+    title: 'Séance 1',
+    plannedDate: null,
+    startedAt: null,
+    endedAt: null,
+    status: 'planned',
+    attendance: [],
+    notes: '',
+    journalCompiled: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    ...over,
+  };
+}
+
+describeIfEmulator('firestore.rules — sessions (plan 23 / JALON 23.1)', () => {
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.clearFirestore();
+    // Seed : campagne (gmIds = bob) + 1 joueur membre (alice). Le MJ n'a PAS de
+    // doc member (membership MJ sous-entendue par gmIds).
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', SES_CID), {
+        id: SES_CID,
+        name: 'Sessions camp',
+        gmIds: [SES_GM],
+        createdBy: SES_GM,
+        status: 'active',
+        schemaVersion: 1,
+      });
+      await setDoc(doc(adminDb, 'campaigns', SES_CID, 'members', SES_PLAYER), {
+        userId: SES_PLAYER,
+        role: 'member',
+        characterId: null,
+        schemaVersion: 1,
+      });
+    });
+  });
+
+  function seedSession(over: Record<string, unknown> = {}, sid = 'ses-seed'): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    return env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'campaigns', SES_CID, 'sessions', sid), makeSessionDoc(over));
+    });
+  }
+
+  // ── READ ──────────────────────────────────────────────────────
+  it('ACCEPTE read par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-r1');
+    const db = env.authenticatedContext(SES_PLAYER).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-r1')));
+  });
+
+  // GAP 23.1 — rouge avant l'élargissement `|| isDMOf`. Le MJ n'a pas de doc
+  // members/ → lecture refusée par le prédicat `isMemberOf` seul d'origine.
+  it('ACCEPTE read par le MJ (sans doc members/)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-r2');
+    const db = env.authenticatedContext(SES_GM).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-r2')));
+  });
+
+  it('REFUSE read par un non-membre / non-MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-r3');
+    const db = env.authenticatedContext(SES_OUTSIDER).firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-r3')));
+  });
+
+  // ── QUERY de liste (forme réelle consommée par listSessions) ──
+  it('ACCEPTE la query liste (orderBy number desc) par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({ number: 1 }, 'ses-q1');
+    await seedSession({ number: 2 }, 'ses-q2');
+    const db = env.authenticatedContext(SES_GM).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(collection(db, 'campaigns', SES_CID, 'sessions'), orderBy('number', 'desc')),
+      ),
+    );
+  });
+
+  it('ACCEPTE la query liste par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({ number: 1 }, 'ses-q3');
+    const db = env.authenticatedContext(SES_PLAYER).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(collection(db, 'campaigns', SES_CID, 'sessions'), orderBy('number', 'desc')),
+      ),
+    );
+  });
+
+  // ── CREATE ────────────────────────────────────────────────────
+  it('ACCEPTE create par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(SES_GM).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-c1'), makeSessionDoc({ id: 'ses-c1' })),
+    );
+  });
+
+  it('REFUSE create par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(SES_PLAYER).firestore();
+    await assertFails(
+      setDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-c2'), makeSessionDoc({ id: 'ses-c2' })),
+    );
+  });
+
+  // ── UPDATE ────────────────────────────────────────────────────
+  it('ACCEPTE update par le MJ (notes / statut)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-u1');
+    const db = env.authenticatedContext(SES_GM).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', SES_CID, 'sessions', 'ses-u1'),
+        makeSessionDoc({ notes: 'Compte-rendu', status: 'active' }),
+      ),
+    );
+  });
+
+  it('REFUSE update par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-u2');
+    const db = env.authenticatedContext(SES_PLAYER).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', SES_CID, 'sessions', 'ses-u2'),
+        makeSessionDoc({ notes: 'falsifié' }),
+      ),
+    );
+  });
+
+  // ── DELETE ────────────────────────────────────────────────────
+  it('ACCEPTE delete par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-d1');
+    const db = env.authenticatedContext(SES_GM).firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-d1')));
+  });
+
+  it('REFUSE delete par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedSession({}, 'ses-d2');
+    const db = env.authenticatedContext(SES_PLAYER).firestore();
+    await assertFails(deleteDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-d2')));
+  });
+});
