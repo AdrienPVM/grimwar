@@ -24,7 +24,7 @@ interface ConditionsRowProps {
  */
 export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.Element {
   const { data: conditions } = useContent('conditions');
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const [pickerOpen, setPickerOpen] = useState<boolean>(false);
   const [query, setQuery] = useState<string>('');
 

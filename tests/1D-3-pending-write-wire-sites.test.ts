@@ -91,6 +91,12 @@ describe('JALON 1D.3 — `trackPendingWrite` câblé sur les 3 sites d\'écritur
       /__tests__\//,
       /\.test\.tsx?$/,
       /shared\/lib\/track-pending-write\.ts$/,
+      // event-logger : journalisation best-effort d'arrière-plan (events +
+      // compteurs de stats lifetime, plan 22). Volontairement PAS couplée à
+      // l'indicateur de synchro — un échec d'écriture d'événement/stats n'est
+      // pas une écriture user-initiated à suivre (cf. le commentaire de tête
+      // de event-logger.ts). Acté plan 22.2.
+      /shared\/lib\/event-logger\.ts$/,
     ];
 
     // Strip block + ligne comments AVANT de scanner. Sinon un simple

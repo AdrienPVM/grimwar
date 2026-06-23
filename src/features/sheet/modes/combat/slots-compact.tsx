@@ -22,7 +22,7 @@ interface SlotsCompactProps {
  * la carte du tout — le mode Combat décide via `Object.keys(spellSlots).length`.
  */
 export function SlotsCompact({ character, readOnly }: SlotsCompactProps): JSX.Element {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const slots = character.spellSlots;
   const levels = Object.keys(slots)
     .map((lvl) => Number.parseInt(lvl, 10))

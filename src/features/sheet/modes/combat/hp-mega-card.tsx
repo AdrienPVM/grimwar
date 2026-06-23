@@ -24,7 +24,7 @@ interface HpMegaCardProps {
  * couplant les deux composants).
  */
 export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Element {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const [padIntent, setPadIntent] = useState<'damage' | 'heal' | null>(null);
 
   const hp = character.hp;

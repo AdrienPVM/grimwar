@@ -39,7 +39,7 @@ const INNER_R = 44;
  * (HP mega-card a la même mécanique tap=action, long-press=alternative).
  */
 export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Element {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const { data: classCatalog } = useContent('classes');
   const levels = useMemo(
     () => unlockedSlotLevels(character, classCatalog),

@@ -661,6 +661,20 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 - **Risque** : faible — pas de bug runtime, le code mergé via squash est correct. Mais le rouge CI est un faux signal qui fragilise la discipline « aucune gate sautée ». Sans correction, chaque PR squash-mergée future touchant les paths protégés laissera un rouge dans l'historique CI.
 - **Note D24** : Le run `26588578222` (post-PR #46) montre le guard rouge sur `69caf78`. Le **run suivant sur main** (post-commit doc-only de cette entrée D26) repassera vert (le delta ne touche que `plans/DEBT.md`, non-protégé). Le rouge sur `69caf78` reste dans l'historique mais n'est PAS un bug applicatif.
 
+## D27 — Campagne active transitoirement nulle pendant la migration v1→v2 d'une fiche (auto-log de jet/diff peut no-op)
+
+- **Owner** : non assigné — candidat à un durcissement de `useSyncActiveCampaign` (plan 22.x ou follow-up dédié).
+- **Statut** : **OUVERTE 2026-06-23** — découverte en livrant le JALON 22.2 (auto-log du diff de fiche).
+- **Description** : `useSyncActiveCampaign(character?.homeCampaignId ?? null)` (`src/features/sheet/use-sync-active-campaign.ts`) fixe la campagne active dans `useActiveCampaignStore` via un `useEffect` dont le cleanup appelle `clearActiveCampaign()`. Quand une fiche **schemaVersion 1** est chargée, `useCharacter` la migre en v2 et **réécrit le doc** (`setDoc` plein, fire-and-forget). Cette réécriture déclenche une cascade d'`onSnapshot` / re-render qui, combinée au double-invoke des effets en StrictMode (dev), laisse une **fenêtre où `activeCampaignId` est transitoirement nul**. Si une action de gameplay (jet, ou patch de fiche déclenchant le diff 22.2) tombe dans cette fenêtre, `writeEvent` no-op silencieusement → l'événement n'est PAS journalisé alors que la mutation de fiche, elle, est persistée.
+- **Preuve** : diagnostics e2e (instrumentation temporaire de `writeEvent`) — sur les runs en échec, `before.hp=28 / patch.hp=27` (diff correct) MAIS `activeCampaignId=null` au moment de l'écriture ; sur les runs verts, `activeCampaignId=evt2-camp-…`. La spec `campaigns-event-log.spec.ts` (22.1 ET 22.2) flakait ~1/8 avec un preset v1 (`fighterL3`), 0/16 avec un preset v2 (`fighterL1MasteryDefense`, pas de migration).
+- **Mitigation en place** : les deux tests de `campaigns-event-log.spec.ts` utilisent désormais un preset **déjà v2** → un seul snapshot stable, pas de cascade de migration, campagne active déterministe. C'est un contournement de test, PAS un fix de fond.
+- **Portée prod** : faible mais réelle. Un vrai joueur tape « dégât »/lance un jet plusieurs secondes après l'ouverture de la fiche (bien après la fenêtre de migration), donc le cas est quasi-théorique en usage normal. Mais toute re-synchro du doc fiche en cours de session (édition MJ à venir plan 26, future migration de schéma) peut rouvrir la fenêtre. À durcir avant que l'auto-log soit critique (journal compilé plan 25).
+- **Options de résolution** :
+  - (a) Découpler la pose de la campagne active de l'effet à cleanup-clear : ne `clearActiveCampaign()` qu'au **démontage réel** de `SheetScreen` (route quittée), pas à chaque changement de `homeCampaignId` transitoire. P. ex. garder la dernière campagne non-nulle tant que la fiche reste montée.
+  - (b) Dériver `activeCampaignId` directement de `character.homeCampaignId` à la lecture (sélecteur), sans store impératif à cleanup.
+  - (c) Rendre la migration v1→v2 non-perturbante (écrire sans re-trigger d'un render qui repasse `homeCampaignId` par null).
+- **Risque** : faible runtime aujourd'hui ; le vrai coût est la fragilité des tests d'auto-log et un trou de couverture potentiel quand le doc fiche re-sync sous une action concurrente.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).

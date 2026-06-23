@@ -23,7 +23,7 @@ interface EssenceHeaderProps {
  * `rollWithFlags` — pas de réplication ici.
  */
 export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.Element {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
 
   async function toggleInspiration(): Promise<void> {
     if (readOnly) return;

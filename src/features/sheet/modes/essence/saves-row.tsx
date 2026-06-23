@@ -44,7 +44,7 @@ export function SavesRow({
   extraSaveBonus = 0,
 }: SavesRowProps): JSX.Element {
   const [menuFor, setMenuFor] = useState<AbilityCode | null>(null);
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
 
   async function performSave(ability: AbilityCode, advantage: Advantage): Promise<void> {

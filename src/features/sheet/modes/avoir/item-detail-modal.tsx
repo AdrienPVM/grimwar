@@ -44,7 +44,7 @@ export function ItemDetailModal({
   readOnly,
   onClose,
 }: ItemDetailModalProps): JSX.Element {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const [busy, setBusy] = useState<boolean>(false);
   const [confirmRemove, setConfirmRemove] = useState<boolean>(false);
 

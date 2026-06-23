@@ -5,6 +5,7 @@ import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
+import { logSpellCast } from '@/shared/lib/event-logger';
 import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
@@ -93,7 +94,7 @@ export function SpellDetailModal({
     availableSlots[0] ?? minSlotLevel,
   );
 
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const dice = useDice();
   const [busy, setBusy] = useState<boolean>(false);
 
@@ -150,7 +151,20 @@ export function SpellDetailModal({
         };
       }
 
-      if (Object.keys(patch).length > 0) await updateCharacter(patch);
+      // `log: 'manual'` (plan 22.2) : la conso de slot est portée par
+      // l'événement `spell-cast` ci-dessous (champ `slotConsumed`) — l'auto-diff
+      // de `useUpdateCharacter` produirait sinon un `slot-consumed` redondant.
+      if (Object.keys(patch).length > 0) await updateCharacter(patch, { log: 'manual' });
+
+      // Journalise le lancement (no-op silencieux hors campagne active). Best-
+      // effort : le logging ne doit jamais bloquer le cast.
+      void logSpellCast({
+        characterId: character.id,
+        spellId: spell.id,
+        level: isCantrip ? 0 : chosenLevel,
+        slotConsumed: isCantrip ? null : chosenLevel,
+        components: { v: spell.components.v, s: spell.components.s, m: spell.components.m },
+      });
 
       // 3. Jet d'attaque (d20) via rollWithFlags si le sort a une attaque.
       // L'attaque est typiquement signalée par "jet d'attaque" dans le texte FR.

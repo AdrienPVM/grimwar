@@ -34,7 +34,7 @@ export function AddItemModal({
   onClose,
   onUserItemCreated,
 }: AddItemModalProps): JSX.Element {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const { data: items } = useContent('items');
   const { data: magicItems } = useContent('magic-items');
 

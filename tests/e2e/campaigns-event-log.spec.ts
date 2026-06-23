@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import {
-  fighterL3,
+  fighterL1MasteryDefense,
   readCampaignEvents,
   seedCampaignMembership,
   seedCharacter,
@@ -37,8 +37,13 @@ test.describe('JALON 22.1 — auto-log des jets sur fiche liée', () => {
     await waitForAppReady(page);
 
     // Fiche seedée en mode digital (le jet doit partir sans modale de saisie
-    // physique). On récupère l'uid anonyme + l'id de fiche.
-    const { uid, charId } = await seedCharacter(page, fighterL3, { diceMode: 'digital' });
+    // physique). On récupère l'uid anonyme + l'id de fiche. Preset déjà en
+    // schemaVersion 2 : pas de migration v1 → v2 au chargement, donc pas de
+    // cascade de re-render qui pourrait laisser la campagne active transitoirement
+    // nulle (flake observé en 22.2 — cf. plans/DEBT.md > D27).
+    const { uid, charId } = await seedCharacter(page, fighterL1MasteryDefense, {
+      diceMode: 'digital',
+    });
 
     // Contexte de jeu : campagne + membership + lien fiche (Admin SDK).
     const cid = `evt-camp-${uid}`;
@@ -55,9 +60,9 @@ test.describe('JALON 22.1 — auto-log des jets sur fiche liée', () => {
     // Ouvre la fiche → useSyncActiveCampaign fixe la campagne active.
     await page.goto(`/character/${charId}`);
     await waitForAppReady(page);
-    await expect(page.getByText(new RegExp(fighterL3.name, 'i')).first()).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(
+      page.getByText(new RegExp(fighterL1MasteryDefense.name, 'i')).first(),
+    ).toBeVisible({ timeout: 15_000 });
 
     // Mode Essence → lance un jet de sauvegarde (digital → part immédiatement).
     await page.locator('#sheet-mode-tab-essence').click();
@@ -82,5 +87,70 @@ test.describe('JALON 22.1 — auto-log des jets sur fiche liée', () => {
     const payload = roll?.payload as Record<string, unknown> | undefined;
     expect(payload?.mode).toBe('digital');
     expect(typeof payload?.total).toBe('number');
+  });
+});
+
+/**
+ * Plan 22.2 — auto-log du DIFF de fiche. Un dégât appliqué depuis la carte PV
+ * du mode Combat patche `hp.current` → `useUpdateCharacter` diffe et écrit un
+ * événement `hp-change` (best-effort, no-op hors campagne). On le vérifie de
+ * bout en bout contre les vraies rules de l'émulateur, faute de lecteur UI.
+ *
+ * Preset en schemaVersion 2 (`fighterL1MasteryDefense`) à dessein : un preset
+ * v1 déclenche la migration v1 → v2 (setDoc plein fire-and-forget) au
+ * chargement, dont la cascade de re-render rejoue l'effet `useSyncActiveCampaign`
+ * et laisse une fenêtre où la campagne active est transitoirement nulle (flake
+ * observé : le diff de dégât écrit alors no-op). Un preset déjà v2 = un seul
+ * snapshot stable ⇒ campagne active fixée de façon déterministe.
+ */
+test.describe('JALON 22.2 — auto-log du diff de fiche (PV) sur fiche liée', () => {
+  test('un dégât sur une fiche liée écrit un événement hp-change', async ({ page }) => {
+    const reachable = await isEmulatorReachable();
+    test.skip(!reachable, 'Émulateur Firestore non joignable — 22.2 skippé.');
+
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { uid, charId } = await seedCharacter(page, fighterL1MasteryDefense, {
+      diceMode: 'digital',
+    });
+
+    const cid = `evt2-camp-${uid}`;
+    await seedCampaignMembership({
+      campaignId: cid,
+      gmUid: `gm-${uid}`,
+      playerUid: uid,
+      charId,
+    });
+
+    expect(await readCampaignEvents(cid)).toHaveLength(0);
+
+    await page.goto(`/character/${charId}`);
+    await waitForAppReady(page);
+    await expect(
+      page.getByText(new RegExp(fighterL1MasteryDefense.name, 'i')).first(),
+    ).toBeVisible({ timeout: 15_000 });
+
+    // Mode Combat → la carte PV. Un tap court sur « − » applique −1 dégât.
+    await page.locator('#sheet-mode-tab-combat').click();
+    const minusBtn = page.getByRole('button', { name: /Subir 1 dégât/i });
+    await expect(minusBtn).toBeVisible();
+    await minusBtn.click();
+
+    await expect
+      .poll(
+        async () => (await readCampaignEvents(cid)).filter((e) => e.kind === 'hp-change').length,
+        { timeout: 15_000, message: 'aucun événement hp-change écrit' },
+      )
+      .toBeGreaterThanOrEqual(1);
+
+    const hpChange = (await readCampaignEvents(cid)).find((e) => e.kind === 'hp-change');
+    expect(hpChange?.actorUserId).toBe(uid);
+    expect(hpChange?.actorCharacterId).toBe(charId);
+    expect(hpChange?.visibility).toBe('all');
+    const payload = hpChange?.payload as Record<string, unknown> | undefined;
+    expect(payload?.reason).toBe('damage');
+    expect(payload?.delta).toBe(-1);
+    expect(payload?.after).toBe((payload?.before as number) - 1);
   });
 });

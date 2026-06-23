@@ -46,7 +46,7 @@ const HEX_POINTS: readonly PointLayout[] = [
  */
 export function Hexagram({ character, readOnly }: HexagramProps): JSX.Element {
   const [menuFor, setMenuFor] = useState<AbilityCode | null>(null);
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
 
   const pb = proficiencyBonus(totalLevel(character.classes));
 

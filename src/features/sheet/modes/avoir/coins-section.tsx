@@ -41,7 +41,7 @@ const COIN_DISPLAY: readonly { key: CoinKey; label: string }[] = [
  * gros butin reste réaliste.
  */
 export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.Element {
-  const { updateCharacter, isUpdating } = useUpdateCharacter(character.id);
+  const { updateCharacter, isUpdating } = useUpdateCharacter(character);
   const [editing, setEditing] = useState<CoinKey | null>(null);
 
   const totalGp = COIN_DISPLAY.reduce(

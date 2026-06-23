@@ -24,7 +24,7 @@ interface DeathSavesModalProps {
  *  4. toast le résultat
  */
 export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Element | null {
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const { isDM } = usePermissionContext();
   const dice = useDice();
 

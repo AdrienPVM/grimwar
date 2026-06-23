@@ -53,7 +53,7 @@ const PATCHED_KEYS = [
 
 export function useLevelUp(character: Character): UseLevelUpResult {
   const { data: classes } = useContent('classes');
-  const { updateCharacter, isUpdating, error } = useUpdateCharacter(character.id);
+  const { updateCharacter, isUpdating, error } = useUpdateCharacter(character);
 
   const applyAndPersist = useCallback(
     async (draft: LevelUpDraft): Promise<void> => {
@@ -74,7 +74,11 @@ export function useLevelUp(character: Character): UseLevelUpResult {
       for (const key of PATCHED_KEYS) {
         (patch as Record<string, unknown>)[key] = updated[key];
       }
-      await updateCharacter(patch);
+      // `log: 'manual'` (plan 22.2) : une montée de niveau patche hp / slots /
+      // ressources en masse — l'auto-diff produirait un flot de slot-restored /
+      // hp-change parasites. L'événement `level-up` dédié sera journalisé par le
+      // wizard de montée de niveau au plan 18 (cf. plan 22 step 5, différé).
+      await updateCharacter(patch, { log: 'manual' });
     },
     [character, classes, updateCharacter],
   );

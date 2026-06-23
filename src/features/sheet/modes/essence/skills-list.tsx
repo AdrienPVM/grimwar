@@ -29,7 +29,7 @@ interface SkillsListProps {
  */
 export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Element {
   const [query, setQuery] = useState<string>('');
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
 
   const filtered = useMemo(() => {
@@ -57,6 +57,8 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
       character,
       baseMod: mod,
       label: localize(skill.name),
+      // skillId (slug machine) → stats.skillUses[skillId] côté event-logger (22.2).
+      skillId,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },

@@ -55,7 +55,7 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
   const forMod = abilityModifier(character.abilities.for);
   const dexMod = abilityModifier(character.abilities.dex);
   const dice = useDice();
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
   const knownMasteries = useMemo(
     () => getKnownWeaponMasteries(character),
     [character],

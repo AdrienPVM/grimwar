@@ -30,7 +30,7 @@ const ECON_LABELS: Record<EconKind, string> = {
 export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element {
   const [used, setUsed] = useState<Set<EconKind>>(new Set());
   const dice = useDice();
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
 
   function toggle(kind: EconKind): void {
     if (readOnly) return;

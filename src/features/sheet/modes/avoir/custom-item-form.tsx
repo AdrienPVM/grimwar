@@ -65,7 +65,7 @@ export function CustomItemForm({
   onCreated,
 }: CustomItemFormProps): JSX.Element {
   const { user } = useAuth();
-  const { updateCharacter } = useUpdateCharacter(character.id);
+  const { updateCharacter } = useUpdateCharacter(character);
 
   const [name, setName] = useState<string>('');
   const [category, setCategory] = useState<ItemCategory>('gear');

@@ -50,6 +50,12 @@ export interface RollWithFlagsArgs {
   /** Si `true`, n'émet PAS le toast par défaut. Utilisé par `rollAttackDamage`
    * qui émet un toast combiné « Att X → Dgt Y ». */
   silent?: boolean;
+  /**
+   * Slug de compétence (plan 22.2) — renseigné par les jets de compétence
+   * (`skills-list`) pour alimenter `stats.skillUses[skillId]` côté event-logger.
+   * Reporté tel quel sur le `RollResult`.
+   */
+  skillId?: string;
 }
 
 export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult | null> {
@@ -61,6 +67,7 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     advantage = 'normal',
     consumeInspiration,
     silent = false,
+    skillId,
   } = args;
 
   const exhaustionPenalty = 2 * character.exhaustion;
@@ -70,12 +77,13 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
   const mode = resolveMode();
 
   if (mode === 'digital') {
-    const result = rollAst(ast, {
+    const base = rollAst(ast, {
       kind,
       label,
       characterId: character.id ?? '',
       advantage: effectiveAdvantage,
     });
+    const result: RollResult = skillId ? { ...base, skillId } : base;
     if (character.inspiration && consumeInspiration) {
       await consumeInspiration();
     }
@@ -102,6 +110,7 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     label,
     characterId: character.id ?? '',
     advantage: effectiveAdvantage,
+    skillId,
   });
   if (character.inspiration && consumeInspiration) {
     await consumeInspiration();
@@ -126,12 +135,14 @@ interface BuildPhysicalArgs {
   label: string;
   characterId: string;
   advantage: Advantage;
+  /** Slug de compétence (plan 22.2) — reporté sur le `RollResult` si présent. */
+  skillId?: string;
 }
 
 /** Construit `RollResult` à partir des faces saisies. Exporté pour les tests
  * et `rollDamageWithMode` qui partage la même logique mode physique. */
 export function buildPhysicalResult(args: BuildPhysicalArgs): RollResult {
-  const { ast, rawFaces, kind, label, characterId, advantage } = args;
+  const { ast, rawFaces, kind, label, characterId, advantage, skillId } = args;
 
   // Distribue les `rawFaces` saisies à chaque terme dans l'ordre.
   let cursor = 0;
@@ -165,6 +176,7 @@ export function buildPhysicalResult(args: BuildPhysicalArgs): RollResult {
     fumble,
     advantage,
     characterId,
+    ...(skillId ? { skillId } : {}),
     timestamp: Date.now(),
   };
 }

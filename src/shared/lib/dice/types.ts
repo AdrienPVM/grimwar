@@ -71,5 +71,13 @@ export interface RollResult {
   advantage: Advantage;
   /** Identifiant du personnage qui a lancé. Empty string si N/A. */
   characterId: string;
+  /**
+   * Slug de compétence (plan 22.2) — renseigné UNIQUEMENT par les jets de
+   * compétence (`skills-list`), pour que l'event-logger incrémente
+   * `stats.skillUses[skillId]`. Optionnel : absent sur attaque / sauvegarde /
+   * dégâts / init. C'est un identifiant machine (slug), jamais affiché — pas
+   * concerné par l'i18n. Non persisté dans l'historique Dexie.
+   */
+  skillId?: string;
   timestamp: number;
 }
