@@ -39,31 +39,6 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/campaigns/$(campaignId)/members/$(request.auth.uid)).data.role;
     }
 
-    // DM of any campaign that the character has joined?
-    // The character doc has `presentInCampaigns: string[]`.
-    // We iterate via .hasAny (allowed in rules).
-    function isDMOfAnyCampaignFor(character) {
-      return character.presentInCampaigns is list
-        && character.presentInCampaigns.size() > 0
-        && character.presentInCampaigns.hasAny(getDMCampaignsForRequester());
-    }
-
-    // The set of campaigns the requesting user is DM of cannot be cheaply enumerated.
-    // We rely on a different predicate: the character's owning user can write freely;
-    // the DM check is done by reading EACH campaign in presentInCampaigns and seeing
-    // if dmUserId matches. Use `someCampaignHasMeAsDM`.
-    function someCampaignHasMeAsDM(character) {
-      // Caller responsibility: presentInCampaigns must be ≤ 10 (Firestore array limit
-      // for membership-style queries). For S2+ we add a Cloud Function for >10 campaigns.
-      // For now, validate via iteration is not directly possible in rules;
-      // we instead require the WRITER to pass a campaignId in a special way:
-      // by writing through a Cloud Function for DM-authority edits.
-      //
-      // For S1 (no campaigns yet): only owners can write. Returns false.
-      // For S2+: a Cloud Function checks DM authority and writes via Admin SDK.
-      return false;
-    }
-
     // ═══════════════════════════════════════════════════════════
     // /users/{userId}
     // ═══════════════════════════════════════════════════════════
@@ -78,9 +53,10 @@ service cloud.firestore {
 
       // ── Characters ─────────────────────────────────────────────
       match /characters/{characterId} {
-        // Read: owner OR co-member in a campaign where the character is also a member
+        // Read: le propriétaire, OU le MJ de la campagne d'attache de la fiche
+        // (autorisation « live » A2 — cf. gmCanReadLinkedCharacter).
         allow read: if isOwner(userId)
-          || requestUserSharesACampaignWith(userId, characterId);
+          || gmCanReadLinkedCharacter(userId, characterId);
 
         // Write: owner only via direct client write.
         // DM-authority edits go through a Cloud Function (Admin SDK) post-S2.
@@ -111,21 +87,34 @@ service cloud.firestore {
       }
     }
 
-    function requestUserSharesACampaignWith(characterOwnerId, characterId) {
-      // To check this cheaply, we use a denormalized field on the character:
-      // character.presentInCampaigns: string[]
-      // and we check that the request.auth.uid has a membership in any of those campaigns.
-      // Without rule iteration, we approximate: the character doc must include the
-      // requesting user's membership at the time of read.
-      //
-      // For simplicity in v1, this allows any authenticated user to read characters
-      // referenced in their own memberships path. The client passes the campaignId
-      // explicitly via a query, and rules can verify it via the path. Practical
-      // implementation: we'll use a Cloud Function for cross-character reads
-      // post-S2 to avoid rules complexity here.
-      //
-      // For S1 (no campaigns): only owner reads. Returns false.
-      return false;
+    // JALON 4A.1 — Lecture MJ d'une fiche de joueur (Voie A2, rule « live »).
+    //
+    // Le MJ d'une campagne peut lire la fiche d'un de ses membres SSI cette fiche
+    // est ACTUELLEMENT liée à la membership du joueur dans la campagne d'attache
+    // (`homeCampaignId`) du personnage. Vérification 100 % « live » — aucune
+    // estampille figée : l'accès se révoque tout seul dès qu'une condition tombe
+    // (MJ retiré de `gmIds`, membre kické/parti → doc `members/` absent, fiche
+    // déliée → `members.characterId` ≠ cette fiche).
+    //
+    // `homeCampaignId` (déjà au schéma — cf. docs/DATA-MODEL.md) est le SEUL
+    // pointeur : il indique QUELLE campagne interroger. Il ne peut jamais
+    // sur-exposer — le contrôle d'accès réel est le triplet :
+    //   (1) requester ∈ campaigns/{home}.gmIds
+    //   (2) campaigns/{home}/members/{owner} existe (le joueur est encore membre)
+    //   (3) members/{owner}.characterId == cette fiche (elle y est encore liée)
+    // Un pointeur périmé fait au pire échouer l'un de ces trois checks → deny.
+    //
+    // Coût : 0 get pour le propriétaire (court-circuit `isOwner` côté appelant).
+    // Pour un MJ : 2 exists + 2 get (campagne + member doc) — bien sous le
+    // plafond Firestore de 10 accès/évaluation.
+    function gmCanReadLinkedCharacter(characterOwnerId, characterId) {
+      return isSignedIn()
+        && 'homeCampaignId' in resource.data
+        && resource.data.homeCampaignId is string
+        && exists(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId))
+        && request.auth.uid in get(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId)).data.gmIds
+        && exists(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId)/members/$(characterOwnerId))
+        && get(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId)/members/$(characterOwnerId)).data.characterId == characterId;
     }
 
     function characterShapeOK(data) {

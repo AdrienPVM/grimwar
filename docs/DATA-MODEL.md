@@ -199,7 +199,14 @@ The player owns and edits this. **DMs of joined campaigns can also write** (enfo
 
   // Campaign membership tracking
   presentInCampaigns: string[],            // campaignIds the player has joined this PJ into
-  homeCampaignId: string | null,           // currently focused
+  homeCampaignId: string | null,           // campagne d'attache de la fiche. POINTEUR DE ROUTAGE
+                                           // de la lecture MJ (rule A2 `gmCanReadLinkedCharacter`,
+                                           // JALON 4A.1) : indique quelle campagne interroger pour
+                                           // savoir si le requester est MJ + si la fiche y est liée.
+                                           // Estampillé par `linkCharacterToMembership` au link.
+                                           // N'autorise jamais à lui seul — l'accès réel reste le
+                                           // triplet live (gmIds ∋ requester) ∧ (members/{owner}
+                                           // existe) ∧ (members.characterId == cette fiche).
 
   // Stats (campaign-aggregated; per-campaign stats live on the membership)
   stats: {
@@ -693,7 +700,7 @@ See `firestore.rules` and `docs/PERMISSIONS.md` for the full rules. Summary:
 - `campaigns/{id}/memberships/**` — DM full write; members read only their own + DM's; outside no access
 - `campaigns/{id}/events/**` — DM read all; members read their own (visibility filter); append-only via Cloud Function or rules
 - `campaigns/{id}/customContent/**` — DM full write; members read
-- `users/{uid}/characters/{cid}` — owner full write; DMs of campaigns the character is joined into can write (see PERMISSIONS.md for the exact predicate)
+- `users/{uid}/characters/{cid}` — owner full read+write. **Lecture MJ (JALON 4A.1, Voie A2)** : le MJ de la campagne d'attache (`homeCampaignId`) de la fiche peut la **lire** SSI la vérification « live » `gmCanReadLinkedCharacter` passe — requester ∈ `gmIds` de la campagne, le doc `members/{owner}` existe encore, et `members.characterId` pointe encore sur cette fiche. Aucune estampille figée : kick/leave/délink révoque l'accès automatiquement. L'**écriture MJ** (DM omni-edit, autorité pleine sur la fiche) reste différée à un jalon dédié (cf. PERMISSIONS.md).
 - `inviteCodes/{code}` — authenticated users can read by code; only DMs can create/delete their codes
 
 ## Migration strategy

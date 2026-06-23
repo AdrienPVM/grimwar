@@ -350,3 +350,34 @@ Justification : (a) le code livré (PartyCard, SecretRollButton, QuickNotes) est
 **Référence** : PR feat/4-0-4-campaigns-list-ui — hotfix rules + 6 rules-unit tests + UI complète + 7 captures UAT desktop/mobile/tablet/lg.
 
 **Status** : à arbitrer par Adrien à l'UAT final V1
+
+---
+
+### [JALON-4A.1] Lecture MJ d'une fiche de joueur — Voie A2 (rule « live » sur `homeCampaignId`) plutôt que A1 (denorm estampillé) (2026-06-23)
+
+**Contexte** : 4A.1 implémente le tout premier accès cross-user de l'app — le MJ qui lit la fiche d'un de ses joueurs. C'est la frontière la plus sensible du modèle (qui peut lire le perso d'un autre user) ; le rulebook la réserve explicitement à Adrien. Jusqu'ici la rule `users/{uid}/characters/{cid}.read` était `isOwner || requestUserSharesACampaignWith(...)` où le helper était un **stub `return false`** (owner-only). Le data layer campagnes/memberships (JALON 4.0) étant livré, on câble enfin l'autorisation MJ.
+
+**Le fork apparu à l'implémentation réelle** : la voie initialement esquissée (A1) estampillait un tableau `accessibleByGmIds[]` sur la fiche. En la câblant, deux faits ont surgi :
+1. **A1 a une fuite kick/promote/gm-leave** : l'estampille est posée par un *owner-write* (le joueur tamponne sa propre fiche). Mais re-tamponner après un kick/une promotion exige d'écrire la fiche d'un AUTRE user — impossible avant l'écriture cross-user MJ (jalon ultérieur). Un ex-MJ garderait l'accès lecture jusqu'à ce sous-jalon. **Affaiblissement de sécurité → non tranché seul, soumis à Adrien.**
+2. **A2 est strictement plus simple ET sans fuite**, en réutilisant `homeCampaignId` (déjà au schéma, jusqu'ici inutilisé) : zéro nouveau champ, zéro code de resync.
+
+**Options soumises à Adrien (toutes deux « Voie A » : rules pures, offline-safe, zéro Cloud Function)** :
+1. **A1 — denorm `accessibleByGmIds[]`** : lecture = `uid in resource.data.accessibleByGmIds` (estampille figée). Nouveau champ + sync link/unlink/kick/promote. Fuite kick/promote/gm-leave fermée seulement par l'écriture cross-user d'un jalon ultérieur. Permet multi-campagne par perso (tableau).
+2. **A2 — rule « live » sur `homeCampaignId`** : lecture = le MJ lit la fiche SSI le triplet *live* `(requester ∈ campaigns/{home}.gmIds)` ∧ `(members/{owner} existe)` ∧ `(members.characterId == cette fiche)`. Zéro changement de schéma. **Aucune fuite** — l'accès se révoque tout seul quand le doc `members/` disparaît (kick/leave) ou que `gmIds` change. Seul compromis : **un perso = une campagne d'attache à la fois**.
+
+**Décision prise (validée par Adrien — « ok let's go ») : Option A2.** Plus sûre (zéro fuite, jamais), plus simple (pas de schéma, pas de sync de denorm), découple proprement 4A.1 de l'écriture cross-user. La rule exprime exactement l'autorisation approuvée (« le MJ d'une campagne lit la fiche liée d'un de ses membres ») avec une vérification *vivante* au lieu d'une estampille périssable. Le compromis « un perso = une campagne active » colle à V1 (première campagne en présentiel, un PJ une table) et le champ `homeCampaignId` existe déjà pour ça. Si le multi-campagne devient un besoin, on réintroduira un denorm tableau à ce moment.
+
+**Pourquoi A2 ne peut jamais sur-exposer** : `homeCampaignId` n'est qu'un POINTEUR de routage (quelle campagne interroger), jamais une autorisation. Un pointeur périmé fait au pire échouer l'un des trois checks live → deny. Le propriétaire court-circuite à 0 get (`isOwner`) ; un MJ paie 2 exists + 2 get (campagne + member doc) — bien sous le plafond Firestore de 10.
+
+**Livré dans ce commit** :
+- `firestore.rules` : helper `gmCanReadLinkedCharacter(characterOwnerId, characterId)` (rule A2) ; call-site `users/{uid}/characters/{cid}.read` = `isOwner || gmCanReadLinkedCharacter`. **Suppression des 3 helpers morts** `isDMOfAnyCampaignFor` / `getDMCampaignsForRequester` (référence pendante jamais définie) / `someCampaignHasMeAsDM` (legacy stub `return false`).
+- `services/campaigns.ts > linkCharacterToMembership` : au LINK (characterId non-null), `writeBatch` atomique qui pose `members.characterId` **+** estampille `homeCampaignId = campaignId` sur la fiche (les 2 docs sont owner-writable). Au DÉLINK (null), single update `members.characterId = null` — la rule A2 refuse alors l'accès en live ; `homeCampaignId` non nettoyé (inerte, sans consommateur applicatif V1, clear déféré).
+- `tests/firestore-rules.test.ts` : 8 tests A2 rouge→vert (MJ lit la fiche liée ✓ ; propriétaire ✓ ; non-MJ ✗ ; fiche déliée ✗ ; autre fiche liée ✗ ; membre parti ✗ ; ex-MJ retiré de gmIds ✗ ; `homeCampaignId` null ✗). Rouge constaté contre le stub (`false for 'get' @ L82`) avant implémentation.
+- `services/__tests__/campaigns.test.ts` : test du batch link (2 ops) + test délink (single update).
+- `docs/DATA-MODEL.md` : rôle de `homeCampaignId` + section sécurité de la fiche mis à jour.
+
+**Périmètre non couvert (volontaire)** : (a) l'**écriture** MJ sur la fiche (DM omni-edit) reste différée à un jalon dédié — 4A.1 est lecture seule ; (b) la lecture **co-joueur** (un PJ voit la fiche d'un autre PJ) n'est pas ouverte — A2 est MJ-only, conforme à l'autorisation approuvée ; (c) la sync de `presentInCampaigns` (tableau multi-campagne) reste non maintenue, hors-scope A2.
+
+**Discipline « deploy rules avant consumer »** : ⚠️ **deploy NON exécuté** — `firebase login:list` = « No authorized accounts ». Le deploy (`pnpm firebase:deploy:rules`) requiert la credential interactive d'Adrien. **Fait atténuant majeur** : pour TOUTES les données prod actuelles, la rule A2 est **comportementalement identique au stub** (chaque fiche live a `homeCampaignId: null` → `gmCanReadLinkedCharacter` renvoie false → owner-only, comme avant). La rule n'ouvre un accès qu'une fois l'UI de link livrée (le picker « lier un personnage » n'existe pas encore — cf. `campaign-detail-screen.tsx`). **Le deploy doit précéder la future UI de link/lecture MJ, pas ce commit.** Action requise d'Adrien : `pnpm test:rules` puis `pnpm firebase:deploy:rules` avant le jalon qui câble le picker.
+
+**Status** : code + tests verts (rules-unit 59 ✓, fast 2133 ✓, matrix 182 ✓, typecheck/lint clean). Deploy rules en attente d'Adrien. À arbitrer à l'UAT final V1.

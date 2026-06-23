@@ -48,6 +48,11 @@ A user `u` can WRITE a character `c` (owned by `ownerId`) if:
 
 This is the **DM full authority** model: any DM of any campaign the character has joined can edit the character.
 
+> **État d'implémentation (JALON 4A.1, 2026-06-23)** — le prédicat ci-dessus est la cible. Ce qui est **réellement câblé** dans `firestore.rules` à ce stade :
+> - **READ MJ** : implémenté en **Voie A2** (`gmCanReadLinkedCharacter`). Au lieu d'« any campaign where c is a member », la rule suit le pointeur unique `homeCampaignId` de la fiche et vérifie en *live* `(u ∈ gmIds)` ∧ `(members/{owner} existe)` ∧ `(members.characterId == c)`. Conséquence : **un perso = une campagne d'attache à la fois** (compromis V1 acté — cf. `plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4A.1]`).
+> - **READ co-membre** (« co-member read-only ») : **pas encore ouvert** — A2 est MJ-only.
+> - **WRITE MJ** (DM omni-edit) : **pas encore câblé** — la fiche reste owner-write only. L'autorité d'écriture MJ + les restrictions field-level (`personality.*`, `name`, `homeCampaignId` owner-locked) arrivent à un jalon dédié.
+
 ### Special fields
 
 Some fields are sensitive even to the DM authority model:

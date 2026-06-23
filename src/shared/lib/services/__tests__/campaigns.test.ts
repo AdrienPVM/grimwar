@@ -775,22 +775,41 @@ describe('updateCampaign', () => {
 // ─────────────────────────────────────────────────────────────────────
 
 describe('linkCharacterToMembership', () => {
-  it('updates members/{uid}.characterId', async () => {
+  it('batch atomique : members.characterId + fiche.homeCampaignId (link)', async () => {
+    // JALON 4A.1 — le link estampille AUSSI homeCampaignId sur la fiche (le
+    // pointeur de routage suivi par la rule de lecture MJ A2). Les 2 docs sont
+    // owner-writable → writeBatch atomique + offline-safe.
     await linkCharacterToMembership(CID, UID, 'char-42');
+
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+    expect(lastBatch).not.toBeNull();
+    expect(lastBatch!.ops).toHaveLength(2);
+    expect(lastBatch!.commit).toHaveBeenCalledTimes(1);
+
+    const memberOp = lastBatch!.ops[0]!;
+    expect(memberOp.type).toBe('update');
+    expect(memberOp.ref.path).toBe(`campaigns/${CID}/members/${UID}`);
+    expect(memberOp.payload).toEqual({ characterId: 'char-42' });
+
+    const charOp = lastBatch!.ops[1]!;
+    expect(charOp.type).toBe('update');
+    expect(charOp.ref.path).toBe(`users/${UID}/characters/char-42`);
+    expect(charOp.payload).toEqual({
+      homeCampaignId: CID,
+      updatedAt: 'MOCK_SERVER_TS',
+      updatedBy: UID,
+    });
+  });
+
+  it('délink (characterId null) : single update members, sans toucher la fiche', async () => {
+    await linkCharacterToMembership(CID, UID, null);
+    // Pas de batch (aucune fiche à estampiller), single updateDoc sur le member.
+    expect(lastBatch).toBeNull();
     const [ref, payload] = mockUpdateDoc.mock.calls[0]! as [
       { path: string },
       Record<string, unknown>,
     ];
     expect(ref.path).toBe(`campaigns/${CID}/members/${UID}`);
-    expect(payload).toEqual({ characterId: 'char-42' });
-  });
-
-  it('accepts null pour délier la fiche', async () => {
-    await linkCharacterToMembership(CID, UID, null);
-    const [, payload] = mockUpdateDoc.mock.calls[0]! as [
-      unknown,
-      Record<string, unknown>,
-    ];
     expect(payload).toEqual({ characterId: null });
   });
 });

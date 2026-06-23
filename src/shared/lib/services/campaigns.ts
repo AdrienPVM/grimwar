@@ -670,12 +670,29 @@ export async function updateCampaign(
 }
 
 /**
- * Lie une fiche personnage à la membership de l'utilisateur courant. Écrit
- * directement le `characterId` dans le doc `members/{uid}` sans toucher au
- * rôle (la rule update autorise self-update sur tous champs sauf role).
+ * Lie (ou délie) une fiche personnage à la membership de l'utilisateur courant.
+ * Écrit le `characterId` dans le doc `members/{uid}` sans toucher au rôle (la
+ * rule update autorise le self-update sur tous champs sauf role).
  *
- * Appelé par l'UI campaign-detail (4.0.5) quand le user sélectionne une
- * fiche dans le picker « lier un personnage ».
+ * JALON 4A.1 — au LINK (characterId non-null), on estampille AUSSI
+ * `homeCampaignId = campaignId` sur la fiche. C'est le pointeur de routage que
+ * la lecture MJ (rule `gmCanReadLinkedCharacter`, Voie A2) suit pour savoir
+ * quelle campagne interroger. L'autorité « live » reste `members.characterId` :
+ * c'est lui (et l'existence du doc members + `gmIds`) qui ouvre ou ferme
+ * réellement l'accès — `homeCampaignId` ne fait que désigner la campagne.
+ *
+ * Les deux docs (`members/{uid}` et `users/{uid}/characters/{cid}`) sont
+ * owner-writable → un `writeBatch` les regroupe atomiquement et reste
+ * offline-safe (aucun pré-read sur le chemin de link).
+ *
+ * Au DÉLINK (characterId null), on remet seulement `members.characterId` à null :
+ * la rule A2 refuse alors l'accès MJ en live (characterId ≠ fiche). On ne nettoie
+ * pas `homeCampaignId` ici — un pointeur périmé ne peut pas sur-exposer (la rule
+ * vérifie toujours le triplet gmIds/members/characterId en live), le champ n'a
+ * aucun consommateur applicatif en V1, et le clear exigerait un read de l'ancien
+ * characterId. Déféré tant qu'un écran ne lit pas le champ.
+ *
+ * Appelé par l'UI campaign-detail (picker « lier un personnage », à venir).
  */
 export async function linkCharacterToMembership(
   campaignId: string,
@@ -684,10 +701,24 @@ export async function linkCharacterToMembership(
 ): Promise<void> {
   const firestore = getDb();
   const memberRef = doc(firestore, 'campaigns', campaignId, 'members', uid);
-  await trackPendingWrite(
-    firestore,
-    updateDoc(memberRef, { characterId }),
-  );
+
+  if (characterId === null) {
+    await trackPendingWrite(
+      firestore,
+      updateDoc(memberRef, { characterId: null }),
+    );
+    return;
+  }
+
+  const characterRef = doc(firestore, 'users', uid, 'characters', characterId);
+  const batch = writeBatch(firestore);
+  batch.update(memberRef, { characterId });
+  batch.update(characterRef, {
+    homeCampaignId: campaignId,
+    updatedAt: serverTimestamp(),
+    updatedBy: uid,
+  });
+  await trackPendingWrite(firestore, batch.commit());
 }
 
 /**

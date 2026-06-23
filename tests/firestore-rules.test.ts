@@ -266,6 +266,136 @@ describeIfEmulator('firestore.rules — caractères (multi-class)', () => {
 });
 
 /**
+ * JALON 4A.1 — Lecture MJ d'une fiche de joueur (Voie A2, rule « live »).
+ *
+ * Autorisation approuvée par Adrien : le MJ d'une campagne peut lire la fiche
+ * d'un de ses membres SSI cette fiche est ACTUELLEMENT liée à la membership du
+ * joueur dans la campagne d'attache (`homeCampaignId`) du personnage.
+ *
+ * La vérification est 100 % « live » (aucune estampille figée d'accès) — donc
+ * l'accès se révoque tout seul dès que l'une des conditions tombe :
+ *   - le MJ n'est plus dans `campaigns/{home}.gmIds` ;
+ *   - le joueur a quitté / a été kické (doc `members/{owner}` supprimé) ;
+ *   - la fiche est déliée (`members/{owner}.characterId` ≠ cette fiche).
+ *
+ * `homeCampaignId` n'est qu'un POINTEUR de routage (quelle campagne interroger),
+ * jamais une autorisation en soi : un pointeur périmé fait au pire échouer un
+ * des trois checks → deny. Aucun chemin de sur-exposition.
+ *
+ * Ces tests doivent être ROUGES contre le stub `requestUserSharesACampaignWith`
+ * (qui renvoyait `false`) et VERTS une fois la rule A2 implémentée.
+ */
+const OWNER_UID = UID; // alice = propriétaire de la fiche (le joueur)
+const GM_UID = OTHER_UID; // bob = MJ de la campagne d'attache
+const STRANGER_UID = 'mallory'; // signed-in sans lien avec la campagne
+const HOME_CID = 'camp-home';
+const PJ_ID = 'char-pj-001';
+
+describeIfEmulator('firestore.rules — lecture MJ d\'une fiche liée (JALON 4A.1, A2)', () => {
+  beforeAll(async () => {
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (env) await env.clearFirestore();
+  });
+
+  // Seed admin (rules désactivées) : campagne + member + fiche, avec overrides.
+  async function seed(opts: {
+    gmIds?: string[];
+    memberCharacterId?: string | null;
+    memberExists?: boolean;
+    homeCampaignId?: string | null;
+  }): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    const {
+      gmIds = [GM_UID],
+      memberCharacterId = PJ_ID,
+      memberExists = true,
+      homeCampaignId = HOME_CID,
+    } = opts;
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', HOME_CID), {
+        id: HOME_CID,
+        name: 'Home',
+        gmIds,
+        createdBy: GM_UID,
+        status: 'active',
+        schemaVersion: 1,
+      });
+      if (memberExists) {
+        await setDoc(doc(adminDb, 'campaigns', HOME_CID, 'members', OWNER_UID), {
+          userId: OWNER_UID,
+          role: 'member',
+          characterId: memberCharacterId,
+          schemaVersion: 1,
+        });
+      }
+      await setDoc(doc(adminDb, 'users', OWNER_UID, 'characters', PJ_ID), {
+        ...makeMulticlassPayloadV2(),
+        homeCampaignId,
+        updatedBy: OWNER_UID,
+      });
+    });
+  }
+
+  function readPj(uid: string) {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(uid).firestore();
+    return getDoc(doc(db, 'users', OWNER_UID, 'characters', PJ_ID));
+  }
+
+  it('ACCEPTE que le MJ lise la fiche liée d\'un de ses membres', async () => {
+    await seed({});
+    await assertSucceeds(readPj(GM_UID));
+  });
+
+  it('ACCEPTE toujours le propriétaire de la fiche (régression)', async () => {
+    await seed({});
+    await assertSucceeds(readPj(OWNER_UID));
+  });
+
+  it('REFUSE un signed-in qui n\'est MJ d\'aucune campagne du joueur', async () => {
+    await seed({});
+    await assertFails(readPj(STRANGER_UID));
+  });
+
+  it('REFUSE le MJ si la fiche est DÉLIÉE (members.characterId = null)', async () => {
+    await seed({ memberCharacterId: null });
+    await assertFails(readPj(GM_UID));
+  });
+
+  it('REFUSE le MJ si une AUTRE fiche est liée (characterId ≠ cette fiche)', async () => {
+    await seed({ memberCharacterId: 'char-autre' });
+    await assertFails(readPj(GM_UID));
+  });
+
+  it('REFUSE le MJ si le joueur a quitté / été kické (doc members absent)', async () => {
+    await seed({ memberExists: false });
+    await assertFails(readPj(GM_UID));
+  });
+
+  it('REFUSE un ex-MJ retiré de gmIds', async () => {
+    await seed({ gmIds: ['someone-else'] });
+    await assertFails(readPj(GM_UID));
+  });
+
+  it('REFUSE le MJ si la fiche n\'est rattachée à aucune campagne (homeCampaignId = null)', async () => {
+    await seed({ homeCampaignId: null });
+    await assertFails(readPj(GM_UID));
+  });
+});
+
+/**
  * JALON 3B.3 — Custom content packs user-scoped (option γ plan 13.11).
  *
  * Une rule unique `match /users/{userId}/customContentPacks/{packId}` qui
