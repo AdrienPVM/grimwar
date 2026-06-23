@@ -189,6 +189,18 @@ describe('buildRoster', () => {
     const roster = buildRoster(camp, [], null);
     expect(roster[0]?.label).toBe('aBcDeFgH…');
   });
+
+  it("propage characterId du membre, null pour les entrées MJ", () => {
+    const camp = mkCampaign({ gmIds: ['uid-gm'] });
+    const members = [
+      mkMember({ userId: 'uid-p1', characterId: 'char-7' }),
+      mkMember({ userId: 'uid-p2', characterId: null }),
+    ];
+    const roster = buildRoster(camp, members, null);
+    expect(roster.find((r) => r.uid === 'uid-gm')?.characterId).toBeNull();
+    expect(roster.find((r) => r.uid === 'uid-p1')?.characterId).toBe('char-7');
+    expect(roster.find((r) => r.uid === 'uid-p2')?.characterId).toBeNull();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────
@@ -247,6 +259,32 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
   });
 
+  it("affiche « Voir la fiche » pour un joueur avec fiche liée et navigue au clic (4A.3)", () => {
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [
+      mkMember({ userId: 'uid-2', role: 'member', characterId: 'char-9' }),
+    ];
+    renderScreen();
+
+    const viewBtn = screen.getByRole('button', { name: /Voir la fiche/i });
+    fireEvent.click(viewBtn);
+    expect(navigateMock).toHaveBeenCalledWith(
+      '/campaigns/c-1/members/uid-2/sheet',
+    );
+  });
+
+  it("masque « Voir la fiche » pour un joueur SANS fiche liée", () => {
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [
+      mkMember({ userId: 'uid-2', role: 'member', characterId: null }),
+    ];
+    renderScreen();
+
+    expect(
+      screen.queryByRole('button', { name: /Voir la fiche/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it("clic Promouvoir → ouvre la modale + clic Promouvoir confirme → appelle promoteToGm + refresh", async () => {
     stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
     stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];
@@ -278,13 +316,20 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     });
     stateHolder.members = [
       mkMember({ userId: 'uid-2', role: 'member' }),
-      mkMember({ userId: 'uid-3', role: 'member' }),
+      // uid-3 a une fiche liée : si l'affordance MJ fuitait côté joueur, ce
+      // membre la déclencherait — le test resterait donc rouge sur la régression.
+      mkMember({ userId: 'uid-3', role: 'member', characterId: 'char-3' }),
     ];
     renderScreen();
 
     expect(screen.queryByText(/Inviter à la table/i)).not.toBeInTheDocument();
     expect(screen.queryByText('ABC234')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Promouvoir meneur/i })).not.toBeInTheDocument();
+    // Un joueur ne voit JAMAIS l'affordance de lecture MJ, même si un autre
+    // membre a une fiche liée (la lecture cross-owner est réservée au MJ).
+    expect(
+      screen.queryByRole('button', { name: /Voir la fiche/i }),
+    ).not.toBeInTheDocument();
     // Mais le bouton Quitter reste visible.
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
   });

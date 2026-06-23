@@ -18,23 +18,38 @@ interface UseCharacterResult {
 }
 
 /**
- * S'abonne en temps réel à `users/{uid}/characters/{id}` via onSnapshot.
+ * S'abonne en temps réel à `users/{ownerUid}/characters/{id}` via onSnapshot.
  * - `character: null` + `isLoading: false` ⇒ document inexistant.
  * - Toute erreur de parsing Zod est remontée en `error` (et pas avalée), pour
  *   surfacer un schéma corrompu plutôt que d'afficher une fiche vide silencieuse.
  *
- * En S1 l'ownership = chemin Firestore (sous /users/{uid}/) : on lit toujours
- * dans le sous-arbre du user courant. La lecture cross-owner (DM) arrive en S2
- * (plan 16) via Cloud Function.
+ * `ownerUid` (optionnel) cible le sous-arbre `/users/{ownerUid}/` à lire :
+ *  - absent ⇒ on lit la fiche du user courant (cas propriétaire, le défaut).
+ *  - fourni et ≠ user courant ⇒ lecture cross-owner MJ (JALON 4A.3). Autorisée
+ *    par la rule « live » `gmCanReadLinkedCharacter` (4A.1) tant que la fiche est
+ *    liée à la membership du joueur dans sa campagne d'attache. Dans ce mode on
+ *    n'écrit JAMAIS de migration en retour (le MJ ne possède pas le doc — la rule
+ *    de write l'interdit) : l'upgrade v1→v2 / la migration de sorts restent en
+ *    mémoire pour l'affichage, et c'est le propriétaire qui les persistera à sa
+ *    prochaine ouverture.
  */
-export function useCharacter(characterId: string | undefined): UseCharacterResult {
+export function useCharacter(
+  characterId: string | undefined,
+  ownerUid?: string,
+): UseCharacterResult {
   const { user } = useAuth();
   const [character, setCharacter] = useState<Character | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
+  // Propriétaire effectif du sous-arbre lu. Sans `ownerUid` explicite c'est le
+  // user courant ; la lecture cross-owner reste opt-in pour ne pas changer le
+  // comportement de l'écran de fiche existant.
+  const effectiveOwnerUid = ownerUid ?? user?.uid;
+  const isOwnerRead = effectiveOwnerUid === user?.uid;
+
   useEffect(() => {
-    if (!user || !characterId) {
+    if (!user || !characterId || !effectiveOwnerUid) {
       setCharacter(null);
       setIsLoading(false);
       setError(null);
@@ -42,7 +57,7 @@ export function useCharacter(characterId: string | undefined): UseCharacterResul
     }
     setIsLoading(true);
     setError(null);
-    const ref = doc(getDb(), 'users', user.uid, 'characters', characterId);
+    const ref = doc(getDb(), 'users', effectiveOwnerUid, 'characters', characterId);
     const unsubscribe = onSnapshot(
       ref,
       (snap) => {
@@ -100,7 +115,7 @@ export function useCharacter(characterId: string | undefined): UseCharacterResul
             );
           }
 
-          if (needsUpgrade || spellsChanged) {
+          if ((needsUpgrade || spellsChanged) && isOwnerRead) {
             // Persiste l'upgrade (v2 + migration sorts) en Firestore —
             // fire-and-forget, on log l'échec sans bloquer l'affichage (la
             // version migrée est déjà en mémoire). One-shot idempotent.
@@ -136,7 +151,7 @@ export function useCharacter(characterId: string | undefined): UseCharacterResul
       },
     );
     return unsubscribe;
-  }, [user, characterId]);
+  }, [user, characterId, effectiveOwnerUid, isOwnerRead]);
 
   return { character, isLoading, error };
 }

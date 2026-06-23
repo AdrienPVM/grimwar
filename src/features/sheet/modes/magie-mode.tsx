@@ -5,7 +5,7 @@ import { localize } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
-import { isSheetReadOnly } from './combat/hp-combat';
+import { useSheetReadOnly } from '../permissions-context';
 import { AncestrySpellsCard } from './magie/ancestry-spells-card';
 import {
   buildAncestrySourceLabelMap,
@@ -33,8 +33,9 @@ interface MagieModeProps {
  * roll de dégâts heuristique). Pas de jet d'attaque automatique — passage par
  * le radial (plan 11) ou bouton "Jet d'att." de la modale via rollWithFlags.
  *
- * Read-only (status === 'dead') désactive toutes les interactions (cercle,
- * lancement) via la prop `readOnly` propagée à chaque sous-composant.
+ * Read-only (status === 'dead' OU lecture MJ `!canEdit`) désactive toutes les
+ * interactions (cercle, lancement) via la prop `readOnly` propagée à chaque
+ * sous-composant.
  *
  * Plan 13.8b — `AncestrySpellsCard` et `SpellList` partagent désormais
  * `setActiveSpell` : tout sort affiché (lignage OU classe) est consultable
@@ -42,7 +43,7 @@ interface MagieModeProps {
  * sorts d'ascendance sont connus.
  */
 export function MagieMode({ character }: MagieModeProps): JSX.Element {
-  const readOnly = isSheetReadOnly(character);
+  const readOnly = useSheetReadOnly(character);
   const { data: classCatalog } = useContent('classes');
   const { data: spells } = useContent('spells');
   const { data: ancestries } = useContent('ancestries');

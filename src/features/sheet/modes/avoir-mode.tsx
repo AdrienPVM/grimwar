@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { Character } from '@/shared/types/character';
 
-import { isSheetReadOnly } from './combat/hp-combat';
+import { useSheetReadOnly } from '../permissions-context';
 import { AddItemModal } from './avoir/add-item-modal';
 import { CoinsSection } from './avoir/coins-section';
 import { InventoryList } from './avoir/inventory-list';
@@ -25,11 +25,11 @@ interface AvoirModeProps {
  * inconnu, vérifiable via la modale AddItemModal qui n'a pas de champ texte
  * libre pour l'ajout.
  *
- * Read-only quand `status === 'dead'` : édition désactivée partout (coins,
- * équipement, attune, qty, ajout, création maison).
+ * Read-only quand `status === 'dead'` OU lecture MJ (`!canEdit`, JALON 4A.3) :
+ * édition désactivée partout (coins, équipement, attune, qty, ajout, création).
  */
 export function AvoirMode({ character }: AvoirModeProps): JSX.Element {
-  const readOnly = isSheetReadOnly(character);
+  const readOnly = useSheetReadOnly(character);
   const derived = useInventoryDerived(character);
 
   const [activeRow, setActiveRow] = useState<ResolvedInventoryRow | null>(null);

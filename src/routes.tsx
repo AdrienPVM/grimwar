@@ -89,6 +89,14 @@ const JoinByCodeScreen = lazy(async () => {
   return { default: mod.JoinByCodeScreen };
 });
 
+// Route /campaigns/:cid/members/:memberUid/sheet — lecture MJ (lecture seule)
+// de la fiche d'un joueur lié (JALON 4A.3). Premier consommateur UI de la rule
+// de lecture cross-owner A2 (4A.1) + du lien posé par le picker (4A.2).
+const CampaignMemberSheetScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/campaign-member-sheet-screen');
+  return { default: mod.CampaignMemberSheetScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -109,6 +117,10 @@ export function AppRoutes(): JSX.Element {
         <Route path="/dm" element={<DmDashboardScreen />} />
         <Route path="/campaigns" element={<CampaignsListScreen />} />
         <Route path="/campaigns/join" element={<JoinByCodeScreen />} />
+        <Route
+          path="/campaigns/:cid/members/:memberUid/sheet"
+          element={<CampaignMemberSheetScreen />}
+        />
         <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

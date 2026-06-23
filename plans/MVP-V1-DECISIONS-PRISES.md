@@ -402,3 +402,30 @@ Justification : (a) le code livré (PartyCard, SecretRollButton, QuickNotes) est
 **Deploy rules** : ⚠️ inchangé depuis 4A.1 — le link est owner-write (rules existantes), donc 4A.2 **ne requiert aucun deploy**. Le deploy A2 reste dû avant la future UI de lecture MJ (cf. 4A.1).
 
 **Status** : typecheck/lint clean ; fast 2148 ✓ (+15) ; e2e campagnes (link + roundtrip + detail) verts contre l'émulateur. À arbitrer à l'UAT final V1.
+
+### [JALON-4A.3] Lecture MJ d'une fiche de joueur — côté UI (premier consommateur de la rule A2) (2026-06-23)
+
+**Contexte** : 4A.1 a livré la rule de lecture cross-owner `gmCanReadLinkedCharacter` (Voie A2, « live » sur `homeCampaignId`) ; 4A.2 a livré le picker qui produit la donnée de lien (`members/{uid}.characterId` + `homeCampaignId` sur la fiche). Aucune UI ne **lisait** encore une fiche de joueur — la rule A2 restait sans consommateur côté app. 4A.3 câble ce consommateur : le MJ ouvre, **en lecture seule**, la fiche d'un de ses joueurs depuis le roster du détail campagne.
+
+**Décision de portée — lecture seule UNIQUEMENT** : 4A.3 ne livre QUE la **consultation**. L'édition MJ (omni-edit « full authority » du decision log) reste un jalon ultérieur : les rules réservent le `write` des fiches au propriétaire (`allow update: if isOwner(userId)`), la DM-authority en écriture passera par une **Cloud Function** (Admin SDK) post-S2, pas par un client write cross-user. 4A.3 respecte cette frontière — `PermissionProvider value={{ canEdit: false, isDM: true }}`.
+
+**Décisions tactiques (autonomie d'exécution — documentées ici)** :
+- **Route dédiée** `/campaigns/:cid/members/:memberUid/sheet` plutôt que surcharger `/character/:id` d'une sémantique cross-owner. Blast radius minimal : l'écran propriétaire (`SheetScreen`) reste inchangé ; la lecture cross-owner est un chemin isolé.
+- **`useCharacter(characterId, ownerUid?)`** — paramètre `ownerUid` optionnel (défaut = user courant, donc rétro-compatible). En lecture cross-owner, l'écriture de migration (upgrade v1→v2 / remap de sorts) est **désactivée** (`isOwnerRead === false`) : le MJ ne possède pas le doc, la rule de write l'interdit — la migration reste en mémoire pour l'affichage, le propriétaire la persistera à sa prochaine ouverture.
+- **Corps de fiche extrait** dans `character-sheet.tsx` (réutilisé par les 2 écrans) avec un flag `showRollHistory`. La lecture MJ passe `false` : la sous-collection de jets vit sous le sous-arbre du joueur (`users/{owner}/…`), **hors périmètre de la rule A2** — afficher le FAB déclencherait un `permission-denied`.
+- **Affordance roster** « Voir la fiche » : visible MJ uniquement, conditionnée à `entry.characterId !== null` (rien à lire sans fiche liée). Un joueur ne la voit jamais (la lecture cross-owner est réservée au MJ).
+- **Défense en profondeur côté écran** (la rule Firestore reste l'arbitre) : guards viewer-est-MJ / membre-présent / fiche-liée avant même la souscription, + états terminaux dédiés (réservé / introuvable / aucune fiche / inaccessible).
+
+**Deploy rules** : ⚠️ **CHANGEMENT DE STATUT** — 4A.3 transforme le deploy A2 de « inerte/différé » (4A.1, 4A.2) en **pré-requis dur**. Une affordance « Voir la fiche » est désormais en ligne : si le code applicatif part en prod sans que `firestore.rules` (A2) soit déployé, le MJ obtient `permission-denied` à l'ouverture. Le deploy reste l'action d'Adrien (credential Firebase). Discipline (cf. CLAUDE.md) : `pnpm test:rules && pnpm firebase:deploy:rules` **avant** que ce code ne soit servi en prod (hosting). En dev/e2e, la rule est chargée dans l'émulateur → tout est vérifiable sans le deploy prod.
+
+**Livré** :
+- `use-character.ts` : signature `(characterId, ownerUid?)` + garde de write owner-only.
+- `character-sheet.tsx` (nouveau) : corps de fiche partagé + flag `showRollHistory` ; `sheet-screen.tsx` refactoré pour le consommer.
+- `campaign-member-sheet-screen.tsx` (nouveau) + route ; `PermissionProvider` force la lecture seule.
+- `campaign-detail-screen.tsx` : `RosterEntry.characterId` + affordance « Voir la fiche » (MJ, fiche liée).
+- i18n FR+EN : `campaigns.detail.roster.viewSheet` + namespace `campaigns.memberSheet.*`.
+- Tests : `campaign-member-sheet-screen.test.tsx` (7 — guards loading/non-MJ/membre-absent/non-lié/erreur + contrat lecture seule `{canEdit:false,isDM:true}` + `showRollHistory:false` + ownerUid ciblé + retour) ; `campaign-detail-screen.test.tsx` étendu (+3 — affordance visible MJ+lié, masquée si non-lié, jamais côté joueur ; `buildRoster` propage `characterId`). e2e `campaigns-dm-read-sheet.spec.ts` : parcours 2 contextes complet (seed → join → link → lecture MJ cross-owner) contre les vraies rules.
+
+**Périmètre non couvert (volontaire)** : (a) **édition MJ** (omni-edit) — Cloud Function ultérieure ; (b) lecture **co-joueur** (un joueur voit la fiche d'un autre) — non prévu V1 (cf. MVP-V1-SPEC.md L38 « Joueur voit uniquement sa propre fiche ») ; (c) **nettoyage de `homeCampaignId` au délink** — toujours déféré (inerte, cf. 4A.1) ; (d) entrée nav directe par URL non gardée au-delà des guards d'écran — acceptable car la rule A2 reste l'arbitre dur côté Firestore.
+
+**Status** : typecheck/lint clean ; fast 2158 ✓ (+10). e2e DM-read à valider contre l'émulateur (Java présent localement). À arbitrer à l'UAT final V1.

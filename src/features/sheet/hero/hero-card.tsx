@@ -7,6 +7,7 @@ import { useContent } from '@/shared/hooks/use-content';
 import { localize } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
+import { usePermissionContext } from '../permissions-context';
 import { HeroEmblem } from './hero-emblem';
 
 interface HeroCardProps {
@@ -25,6 +26,10 @@ interface HeroCardProps {
 export function HeroCard({ character }: HeroCardProps): JSX.Element {
   const { data: ancestries } = useContent('ancestries');
   const { data: classes } = useContent('classes');
+  // Le passage de niveau / l'ajout de classe écrivent la fiche → réservés au
+  // propriétaire. En lecture MJ (`!canEdit`, JALON 4A.3) le bouton disparaît :
+  // le meneur consulte, il ne fait pas monter le joueur de niveau.
+  const { canEdit } = usePermissionContext();
 
   const ancestryName = useMemo(() => {
     const ancestry = ancestries.find((a) => a.id === character.ancestryId);
@@ -87,9 +92,11 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
         {character.alignment}
       </Chip>
 
-      <div className="mt-4">
-        <LevelUpButton character={character} />
-      </div>
+      {canEdit ? (
+        <div className="mt-4">
+          <LevelUpButton character={character} />
+        </div>
+      ) : null}
     </section>
   );
 }

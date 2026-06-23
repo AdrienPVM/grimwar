@@ -1,8 +1,8 @@
 import { computeDisplayedSaveBonus } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
 
+import { useSheetReadOnly } from '../permissions-context';
 import { useInventoryDerived } from './avoir/use-inventory-derived';
-import { isSheetReadOnly } from './combat/hp-combat';
 import { DivineOrderCard } from './essence/divine-order-card';
 import { EssenceHeader } from './essence/essence-header';
 import { Hexagram } from './essence/hexagram';
@@ -18,14 +18,14 @@ interface EssenceModeProps {
 /**
  * Mode Essence : hexagramme des 6 aptitudes + sauvegardes + compétences. Tap =
  * jet d20 ; long-press = menu avantage/désav. (hexagramme + sauvegardes). Le
- * mode partage le rideau read-only de Combat (`status === 'dead'` → toutes les
- * interactions sont désactivées).
+ * mode partage le rideau read-only de Combat (`status === 'dead'` OU lecture MJ
+ * `!canEdit` → toutes les interactions sont désactivées).
  *
  * Inspiration et épuisement vivent dans `EssenceHeader` ; la pénalité d'exhaust
  * et l'avantage d'inspiration sont appliqués par `rollWithFlags` à chaque jet.
  */
 export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
-  const readOnly = isSheetReadOnly(character);
+  const readOnly = useSheetReadOnly(character);
   // JALON 1B.2 — bonus de sauvegarde issus des magic items équipés (Cloak /
   // Ring of Protection). Le hook est ré-évalué ici plutôt que de propager
   // depuis sheet-screen pour ne pas faire enfler les props ; useInventoryDerived

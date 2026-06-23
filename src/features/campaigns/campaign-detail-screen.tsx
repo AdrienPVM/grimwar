@@ -193,6 +193,9 @@ export function CampaignDetailScreen(): JSX.Element {
                 onPromote={() =>
                   setPromoteTarget({ uid: entry.uid, label: entry.label })
                 }
+                onViewSheet={() =>
+                  navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
+                }
               />
             ))}
           </ul>
@@ -240,6 +243,12 @@ interface RosterEntry {
   role: 'gm' | 'member';
   /** L'entrée correspond à l'utilisateur connecté. */
   isSelf: boolean;
+  /**
+   * Fiche liée du joueur (`members/{uid}.characterId`), ou `null`. Sert au MJ à
+   * ouvrir la fiche en lecture seule (4A.3). Les entrées MJ (issues de `gmIds`)
+   * n'ont jamais de fiche liée par cette UI → toujours `null`.
+   */
+  characterId: string | null;
 }
 
 /**
@@ -266,6 +275,7 @@ export function buildRoster(
       label: formatUid(uid),
       role: 'gm',
       isSelf: myUid !== null && uid === myUid,
+      characterId: null,
     });
   }
   for (const m of members) {
@@ -276,6 +286,7 @@ export function buildRoster(
       label: formatUid(m.userId),
       role: m.role,
       isSelf: myUid !== null && m.userId === myUid,
+      characterId: m.characterId,
     });
   }
   return result;
@@ -287,7 +298,7 @@ export function buildRoster(
  * c'est un identifiant technique. Tronqué à 8 chars (assez pour distinguer
  * 99 % des paires d'UIDs Firebase).
  */
-function formatUid(uid: string): string {
+export function formatUid(uid: string): string {
   if (uid.length <= 10) return uid;
   return `${uid.slice(0, 8)}…`;
 }
@@ -296,10 +307,20 @@ interface RosterRowProps {
   entry: RosterEntry;
   viewerIsGm: boolean;
   onPromote: () => void;
+  onViewSheet: () => void;
 }
 
-function RosterRow({ entry, viewerIsGm, onPromote }: RosterRowProps): JSX.Element {
+function RosterRow({
+  entry,
+  viewerIsGm,
+  onPromote,
+  onViewSheet,
+}: RosterRowProps): JSX.Element {
   const canPromote = viewerIsGm && entry.role === 'member';
+  // Le MJ peut consulter (lecture seule, 4A.3) la fiche d'un joueur uniquement si
+  // celui-ci en a lié une. Sans fiche liée, pas d'affordance (rien à lire).
+  const canViewSheet =
+    viewerIsGm && entry.role === 'member' && entry.characterId !== null;
   return (
     <li className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -318,6 +339,11 @@ function RosterRow({ entry, viewerIsGm, onPromote }: RosterRowProps): JSX.Elemen
         ) : (
           <Chip variant="magic">{t('campaigns.card.roleMember')}</Chip>
         )}
+        {canViewSheet ? (
+          <Button type="button" variant="ghost" size="sm" onClick={onViewSheet}>
+            {t('campaigns.detail.roster.viewSheet')}
+          </Button>
+        ) : null}
         {canPromote ? (
           <Button type="button" variant="secondary" size="sm" onClick={onPromote}>
             {t('campaigns.detail.roster.promote')}

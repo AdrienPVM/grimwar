@@ -8,9 +8,9 @@ import { DeathSavesModal } from './combat/death-saves-modal';
 import { FightingStyleCard } from './combat/fighting-style-card';
 import { GiantAncestryCard } from './combat/giant-ancestry-card';
 import { HpMegaCard } from './combat/hp-mega-card';
-import { isSheetReadOnly } from './combat/hp-combat';
 import { PartyStrip } from './combat/party-strip';
 import { SlotsCompact } from './combat/slots-compact';
+import { useSheetReadOnly } from '../permissions-context';
 
 interface CombatModeProps {
   character: Character;
@@ -21,13 +21,13 @@ interface CombatModeProps {
  * (si spellcaster) + attaques + compagnons. La modale Death Saves s'auto-monte
  * dès `hp.current === 0` ou `status === 'dead'`.
  *
- * Read-only : déclenché sur `status === 'dead'`. Les contrôles sont désactivés
+ * Read-only : déclenché sur `status === 'dead'` OU lecture MJ (`!canEdit`, JALON
+ * 4A.3 — le meneur consulte sans pouvoir écrire). Les contrôles sont désactivés
  * via `disabled` côté props ET via la règle CSS `[data-readonly="true"]` sur
- * <main>, double rideau pour empêcher les patches Firestore tant que le PJ
- * n'est pas ressuscité.
+ * <main>, double rideau pour empêcher les patches Firestore.
  */
 export function CombatMode({ character }: CombatModeProps): JSX.Element {
-  const readOnly = isSheetReadOnly(character);
+  const readOnly = useSheetReadOnly(character);
   const hasSpellSlots = Object.keys(character.spellSlots).length > 0;
   return (
     <section

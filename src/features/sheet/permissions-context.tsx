@@ -3,6 +3,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import type { Character } from '@/shared/types/character';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { isSheetReadOnly } from './modes/combat/hp-combat';
 
 interface PermissionContextValue {
   canEdit: boolean;
@@ -43,4 +44,22 @@ export function PermissionProvider({
 /** Lecture du contexte côté composants enfants (modes, boutons d'édition). */
 export function usePermissionContext(): PermissionContextValue {
   return useContext(PermissionContext);
+}
+
+/**
+ * Lecture seule effective d'un mode de fiche. Une fiche est en lecture seule si :
+ *  - le personnage est mort (`isSheetReadOnly` — règle 5e : 3 échecs de sauvegarde
+ *    contre la mort → fiche figée), OU
+ *  - le viewer n'a pas le droit d'éditer (`!canEdit`), cas de la **lecture MJ**
+ *    (JALON 4A.3) : le meneur consulte la fiche d'un joueur sans pouvoir l'écrire
+ *    (la rule Firestore réserve le write au propriétaire ; la DM-authority en
+ *    écriture passera par une Cloud Function ultérieure).
+ *
+ * Chaque mode (`combat`/`essence`/`magie`/`avoir`) consomme ce hook et propage le
+ * booléen `readOnly` à ses cartes interactives (HP ±, attaques, conditions, slots…).
+ * Pour le propriétaire `canEdit` vaut `true` → comportement S1 inchangé.
+ */
+export function useSheetReadOnly(character: Character): boolean {
+  const { canEdit } = usePermissionContext();
+  return isSheetReadOnly(character) || !canEdit;
 }

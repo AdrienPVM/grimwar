@@ -454,6 +454,7 @@ export type StringKey =
   | 'campaigns.detail.roster.title'
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
+  | 'campaigns.detail.roster.viewSheet'
   | 'campaigns.detail.myCharacter.aria'
   | 'campaigns.detail.myCharacter.title'
   | 'campaigns.detail.myCharacter.none'
@@ -467,6 +468,18 @@ export type StringKey =
   | 'campaigns.detail.error.retry'
   | 'campaigns.detail.error.notFoundTitle'
   | 'campaigns.detail.error.notFoundBody'
+  // Lecture MJ d'une fiche de joueur — JALON 4A.3
+  | 'campaigns.memberSheet.back'
+  | 'campaigns.memberSheet.readOnlyBadge'
+  | 'campaigns.memberSheet.viewingPrefix'
+  | 'campaigns.memberSheet.forbidden.title'
+  | 'campaigns.memberSheet.forbidden.body'
+  | 'campaigns.memberSheet.memberNotFound.title'
+  | 'campaigns.memberSheet.memberNotFound.body'
+  | 'campaigns.memberSheet.noCharacter.title'
+  | 'campaigns.memberSheet.noCharacter.body'
+  | 'campaigns.memberSheet.error.title'
+  | 'campaigns.memberSheet.error.body'
   | 'campaigns.join.title'
   | 'campaigns.join.intro'
   | 'campaigns.join.code.label'
@@ -1657,6 +1670,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.title': 'La compagnie',
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
+    'campaigns.detail.roster.viewSheet': 'Voir la fiche',
     'campaigns.detail.myCharacter.aria': 'Mon personnage dans cette campagne',
     'campaigns.detail.myCharacter.title': 'Mon personnage',
     'campaigns.detail.myCharacter.none': 'Aucun personnage lié pour le moment.',
@@ -1673,6 +1687,22 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.error.notFoundTitle': 'Campagne introuvable',
     'campaigns.detail.error.notFoundBody':
       "Cette campagne n'existe plus ou tu n'y as pas accès.",
+    // Lecture MJ d'une fiche de joueur — JALON 4A.3
+    'campaigns.memberSheet.back': 'Retour à la campagne',
+    'campaigns.memberSheet.readOnlyBadge': 'Lecture seule',
+    'campaigns.memberSheet.viewingPrefix': 'Fiche de',
+    'campaigns.memberSheet.forbidden.title': 'Accès réservé au meneur',
+    'campaigns.memberSheet.forbidden.body':
+      'Seul un meneur de cette campagne peut consulter la fiche d’un joueur.',
+    'campaigns.memberSheet.memberNotFound.title': 'Membre introuvable',
+    'campaigns.memberSheet.memberNotFound.body':
+      'Ce joueur ne fait pas (ou plus) partie de cette campagne.',
+    'campaigns.memberSheet.noCharacter.title': 'Aucune fiche liée',
+    'campaigns.memberSheet.noCharacter.body':
+      'Ce joueur n’a pas encore lié de personnage à la campagne.',
+    'campaigns.memberSheet.error.title': 'Fiche inaccessible',
+    'campaigns.memberSheet.error.body':
+      'Impossible de charger cette fiche. Le joueur l’a peut-être déliée, ou tu n’es plus meneur de sa campagne.',
     'campaigns.join.title': 'Rejoindre une campagne',
     'campaigns.join.intro':
       "Demande son code d'invitation au meneur, puis saisis-le ici.",
@@ -3146,6 +3176,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.title': 'The party',
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
+    'campaigns.detail.roster.viewSheet': 'View sheet',
     'campaigns.detail.myCharacter.aria': 'My character in this campaign',
     'campaigns.detail.myCharacter.title': 'My character',
     'campaigns.detail.myCharacter.none': 'No character linked yet.',
@@ -3162,6 +3193,22 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.error.notFoundTitle': 'Campaign not found',
     'campaigns.detail.error.notFoundBody':
       'This campaign no longer exists or you no longer have access.',
+    // GM reading a player's sheet — JALON 4A.3
+    'campaigns.memberSheet.back': 'Back to campaign',
+    'campaigns.memberSheet.readOnlyBadge': 'Read-only',
+    'campaigns.memberSheet.viewingPrefix': 'Sheet of',
+    'campaigns.memberSheet.forbidden.title': 'GM access only',
+    'campaigns.memberSheet.forbidden.body':
+      "Only a GM of this campaign can view a player's sheet.",
+    'campaigns.memberSheet.memberNotFound.title': 'Member not found',
+    'campaigns.memberSheet.memberNotFound.body':
+      'This player is not (or no longer) part of this campaign.',
+    'campaigns.memberSheet.noCharacter.title': 'No linked sheet',
+    'campaigns.memberSheet.noCharacter.body':
+      'This player has not linked a character to the campaign yet.',
+    'campaigns.memberSheet.error.title': 'Sheet unavailable',
+    'campaigns.memberSheet.error.body':
+      'Cannot load this sheet. The player may have unlinked it, or you are no longer a GM of their campaign.',
     'campaigns.join.title': 'Join a campaign',
     'campaigns.join.intro': 'Ask the GM for the invite code and enter it here.',
     'campaigns.join.code.label': 'Invite code',
