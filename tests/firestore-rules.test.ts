@@ -1805,3 +1805,201 @@ describeIfEmulator('firestore.rules — sessions (plan 23 / JALON 23.1)', () => 
     await assertFails(deleteDoc(doc(db, 'campaigns', SES_CID, 'sessions', 'ses-d2')));
   });
 });
+
+/**
+ * Plan 24 (JALON 24.1) — Encounters `campaigns/{cid}/encounters/{eid}`.
+ *
+ * Le bloc `encounters` existait (firestore.rules) avec une lecture `isMemberOf`
+ * seul. MÊME GAP que sessions 23.1 / events 22.3 : un MJ pur n'a pas de doc
+ * `members/` → il ne pouvait pas lire SES PROPRES rencontres. 24.1 élargit à
+ * `isMemberOf || isDMOf`. Ce bloc couvre :
+ *   - READ : membre OK, MJ (sans doc members/) OK (rouge avant 24.1), non-membre refusé,
+ *   - la QUERY de liste (`orderBy createdAt`) par le MJ et par un membre,
+ *   - CREATE/UPDATE/DELETE : MJ uniquement (joueur refusé).
+ */
+const ENC_CID = 'camp-encounters';
+const ENC_GM = 'enc-gm-bob';
+const ENC_PLAYER = 'enc-player-alice';
+const ENC_OUTSIDER = 'enc-outsider-zzz';
+
+function makeEncounterDoc(over: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'enc-seed',
+    name: 'Rencontre 1',
+    sessionId: null,
+    status: 'planned',
+    round: 0,
+    turnIndex: 0,
+    participants: [],
+    mapId: null,
+    fogState: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    startedAt: null,
+    endedAt: null,
+    ...over,
+  };
+}
+
+describeIfEmulator('firestore.rules — encounters (plan 24 / JALON 24.1)', () => {
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.clearFirestore();
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', ENC_CID), {
+        id: ENC_CID,
+        name: 'Encounters camp',
+        gmIds: [ENC_GM],
+        createdBy: ENC_GM,
+        status: 'active',
+        schemaVersion: 1,
+      });
+      await setDoc(doc(adminDb, 'campaigns', ENC_CID, 'members', ENC_PLAYER), {
+        userId: ENC_PLAYER,
+        role: 'member',
+        characterId: null,
+        schemaVersion: 1,
+      });
+    });
+  });
+
+  function seedEncounter(over: Record<string, unknown> = {}, eid = 'enc-seed'): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    return env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', ENC_CID, 'encounters', eid),
+        makeEncounterDoc(over),
+      );
+    });
+  }
+
+  // ── READ ──────────────────────────────────────────────────────
+  it('ACCEPTE read par un membre joueur (party view, step 8)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-r1');
+    const db = env.authenticatedContext(ENC_PLAYER).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-r1')));
+  });
+
+  // GAP 24.1 — rouge avant l'élargissement `|| isDMOf`. Le MJ pur n'a pas de
+  // doc members/ → lecture refusée par le prédicat `isMemberOf` seul d'origine.
+  it('ACCEPTE read par le MJ (sans doc members/)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-r2');
+    const db = env.authenticatedContext(ENC_GM).firestore();
+    await assertSucceeds(getDoc(doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-r2')));
+  });
+
+  it('REFUSE read par un non-membre / non-MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-r3');
+    const db = env.authenticatedContext(ENC_OUTSIDER).firestore();
+    await assertFails(getDoc(doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-r3')));
+  });
+
+  // ── QUERY de liste (forme réelle consommée par listEncounters) ──
+  it('ACCEPTE la query liste (orderBy createdAt desc) par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-q1');
+    await seedEncounter({}, 'enc-q2');
+    const db = env.authenticatedContext(ENC_GM).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(collection(db, 'campaigns', ENC_CID, 'encounters'), orderBy('createdAt', 'desc')),
+      ),
+    );
+  });
+
+  it('ACCEPTE la query liste par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-q3');
+    const db = env.authenticatedContext(ENC_PLAYER).firestore();
+    await assertSucceeds(
+      getDocs(
+        query(collection(db, 'campaigns', ENC_CID, 'encounters'), orderBy('createdAt', 'desc')),
+      ),
+    );
+  });
+
+  // ── CREATE / UPDATE / DELETE : MJ-only ────────────────────────
+  it('ACCEPTE create par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(ENC_GM).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-c1'),
+        makeEncounterDoc({ id: 'enc-c1' }),
+      ),
+    );
+  });
+
+  it('REFUSE create par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(ENC_PLAYER).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-c2'),
+        makeEncounterDoc({ id: 'enc-c2' }),
+      ),
+    );
+  });
+
+  it('ACCEPTE update par le MJ (statut / PV participant)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-u1');
+    const db = env.authenticatedContext(ENC_GM).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-u1'),
+        makeEncounterDoc({ status: 'active', round: 1 }),
+      ),
+    );
+  });
+
+  it('REFUSE update par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-u2');
+    const db = env.authenticatedContext(ENC_PLAYER).firestore();
+    await assertFails(
+      setDoc(
+        doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-u2'),
+        makeEncounterDoc({ status: 'active' }),
+      ),
+    );
+  });
+
+  it('ACCEPTE delete par le MJ', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-d1');
+    const db = env.authenticatedContext(ENC_GM).firestore();
+    await assertSucceeds(deleteDoc(doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-d1')));
+  });
+
+  it('REFUSE delete par un membre joueur', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedEncounter({}, 'enc-d2');
+    const db = env.authenticatedContext(ENC_PLAYER).firestore();
+    await assertFails(deleteDoc(doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-d2')));
+  });
+});

@@ -17,20 +17,32 @@
  * hors-session portent `sessionId: null` et n'apparaissent dans aucun journal
  * de session compilé (plan 25 groupe par `sessionId`) — comportement voulu : on
  * journalise tout dans la campagne, la session découpe la narration plus tard.
+ *
+ * `activeEncounterId` (plan 24) suit la rencontre de combat en cours : posé par
+ * l'écran de rencontre MJ au `startEncounter`, libéré à la clôture. Les events
+ * de jeu produits pendant un combat (jets, dégâts) sont alors tagués
+ * `encounterId` → le journal (plan 25) peut découper les sections « Combat ».
+ * `setActiveEncounter` est volontairement distinct de `setActiveCampaign` : on
+ * peut changer de rencontre sans toucher au pointeur de campagne/session.
  */
 import { create } from 'zustand';
 
 type ActiveCampaignState = {
   activeCampaignId: string | null;
   activeSessionId: string | null;
+  activeEncounterId: string | null;
   setActiveCampaign: (campaignId: string | null, sessionId?: string | null) => void;
+  setActiveEncounter: (encounterId: string | null) => void;
   clearActiveCampaign: () => void;
 };
 
 export const useActiveCampaignStore = create<ActiveCampaignState>((set) => ({
   activeCampaignId: null,
   activeSessionId: null,
+  activeEncounterId: null,
   setActiveCampaign: (campaignId, sessionId = null) =>
     set({ activeCampaignId: campaignId, activeSessionId: sessionId }),
-  clearActiveCampaign: () => set({ activeCampaignId: null, activeSessionId: null }),
+  setActiveEncounter: (encounterId) => set({ activeEncounterId: encounterId }),
+  clearActiveCampaign: () =>
+    set({ activeCampaignId: null, activeSessionId: null, activeEncounterId: null }),
 }));

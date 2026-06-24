@@ -293,8 +293,14 @@ service cloud.firestore {
       }
 
       // ── Encounters ────────────────────────────────────────────
+      // Read élargi `isMemberOf` → `isMemberOf || isDMOf` (JALON 24.1) : un MJ
+      // PUR n'a PAS de doc members/ (createCampaign ne lui en pose pas), donc
+      // `isMemberOf` seul l'empêchait de lire SES PROPRES rencontres. Même gap/
+      // précédent que sessions (23.1) et events (22.3). Les joueurs lisent les
+      // rencontres (party view, step 8) ; le filtrage de visibilité PV reste
+      // porté par les events `monster-hp-change` (visibilité 'dm').
       match /encounters/{encounterId} {
-        allow read: if isMemberOf(campaignId);
+        allow read: if isMemberOf(campaignId) || isDMOf(campaignId);
         allow create, update, delete: if isDMOf(campaignId);
       }
 

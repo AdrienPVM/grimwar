@@ -35,11 +35,15 @@ vi.mock('@/shared/lib/firebase', () => ({
 
 import {
   logCharacterDiff,
+  logEncounterEnd,
+  logEncounterStart,
+  logMonsterHpChange,
   logRoll,
   logRollIfCampaign,
   logSessionEnd,
   logSessionStart,
   logSpellCast,
+  logTurnStart,
 } from '../event-logger';
 import type { Character } from '@/shared/types/character';
 import { useActiveCampaignStore } from '../slices/active-campaign-slice';
@@ -299,6 +303,62 @@ describe('event-logger — logSessionStart / logSessionEnd (plan 23.4)', () => {
     useActiveCampaignStore.getState().clearActiveCampaign();
     await logSessionStart('sess-1', { sessionNumber: 1, title: 'X' });
     expect(addDocMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('event-logger — rencontres (plan 24)', () => {
+  beforeEach(() => {
+    useActiveCampaignStore.getState().setActiveCampaign('camp-1', 'sess-1');
+    useAuthStore.getState().setUser(AUTH_USER);
+  });
+
+  it('logEncounterStart écrit kind encounter-start, visibilité all, encounterId explicite, acteur null', async () => {
+    await logEncounterStart('enc-1', { name: 'Embuscade', participantCount: 4 });
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('encounter-start');
+    expect(written.visibility).toBe('all');
+    expect(written.actorCharacterId).toBeNull();
+    expect(written.encounterId).toBe('enc-1');
+    expect(written.payload).toMatchObject({ name: 'Embuscade', participantCount: 4 });
+  });
+
+  it('logEncounterEnd porte l’issue dans le payload', async () => {
+    await logEncounterEnd('enc-1', { name: 'Embuscade', outcome: 'victory' });
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('encounter-end');
+    expect(written.encounterId).toBe('enc-1');
+    expect(written.payload).toMatchObject({ name: 'Embuscade', outcome: 'victory' });
+  });
+
+  it('logTurnStart porte le participant actif et le round', async () => {
+    await logTurnStart('enc-1', { participantId: 'm1', participantName: 'Gobelin', round: 2 });
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('turn-start');
+    expect(written.visibility).toBe('all');
+    expect(written.payload).toMatchObject({
+      participantId: 'm1',
+      participantName: 'Gobelin',
+      round: 2,
+    });
+  });
+
+  it('logMonsterHpChange est visibilité dm et calcule delta', async () => {
+    await logMonsterHpChange('enc-1', {
+      monsterInstanceId: 'm1',
+      monsterName: 'Gobelin',
+      before: 7,
+      after: 0,
+    });
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('monster-hp-change');
+    expect(written.visibility).toBe('dm');
+    expect(written.payload).toMatchObject({
+      monsterInstanceId: 'm1',
+      monsterName: 'Gobelin',
+      before: 7,
+      after: 0,
+      delta: -7,
+    });
   });
 });
 

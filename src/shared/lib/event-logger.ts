@@ -33,7 +33,8 @@ import type { NewGameEvent } from '@/shared/types/event';
  * pas l'indicateur de synchro à de la journalisation d'arrière-plan.
  */
 async function writeEvent(input: NewGameEvent): Promise<boolean> {
-  const { activeCampaignId, activeSessionId } = useActiveCampaignStore.getState();
+  const { activeCampaignId, activeSessionId, activeEncounterId } =
+    useActiveCampaignStore.getState();
   if (!activeCampaignId) return false; // pas de campagne active → no-op
   const uid = useAuthStore.getState().user?.uid;
   if (!uid) return false; // pas d'utilisateur → écriture impossible (rule actorUserId)
@@ -46,7 +47,7 @@ async function writeEvent(input: NewGameEvent): Promise<boolean> {
       actorCharacterId: input.actorCharacterId,
       targetCharacterId: input.targetCharacterId ?? null,
       sessionId: input.sessionId ?? activeSessionId,
-      encounterId: input.encounterId ?? null,
+      encounterId: input.encounterId ?? activeEncounterId,
       payload: input.payload,
       visibility: input.visibility,
       createdAt: serverTimestamp(),
@@ -220,6 +221,99 @@ export async function logSessionEnd(
     sessionId,
     visibility: 'all',
     payload: { sessionNumber: meta.sessionNumber, title: meta.title },
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Rencontres de combat (plan 24)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Journalise le démarrage d'une rencontre (kind `encounter-start`, visibilité
+ * `all`). Action MJ ⇒ `actorCharacterId: null`. On passe `encounterId`
+ * explicitement (le pointeur Zustand peut ne pas avoir propagé). Le payload
+ * porte le nom + le nombre de participants pour le feed/journal (plan 25).
+ */
+export async function logEncounterStart(
+  encounterId: string,
+  meta: { name: string; participantCount: number },
+): Promise<void> {
+  await writeEvent({
+    kind: 'encounter-start',
+    actorCharacterId: null,
+    encounterId,
+    visibility: 'all',
+    payload: { name: meta.name, participantCount: meta.participantCount },
+  });
+}
+
+/**
+ * Journalise la clôture d'une rencontre (kind `encounter-end`, visibilité
+ * `all`, step 9). `outcome` ∈ victory/defeat/fled. À appeler AVANT de libérer le
+ * pointeur de rencontre active, pour que l'event soit bien tagué `encounterId`.
+ */
+export async function logEncounterEnd(
+  encounterId: string,
+  meta: { name: string; outcome: 'victory' | 'defeat' | 'fled' },
+): Promise<void> {
+  await writeEvent({
+    kind: 'encounter-end',
+    actorCharacterId: null,
+    encounterId,
+    visibility: 'all',
+    payload: { name: meta.name, outcome: meta.outcome },
+  });
+}
+
+/**
+ * Journalise le début du tour d'un participant (kind `turn-start`, visibilité
+ * `all`, step 6). `participantId` = `instanceId` du participant actif. `round`
+ * porté pour la lisibilité du feed.
+ */
+export async function logTurnStart(
+  encounterId: string,
+  meta: { participantId: string; participantName: string; round: number },
+): Promise<void> {
+  await writeEvent({
+    kind: 'turn-start',
+    actorCharacterId: null,
+    encounterId,
+    visibility: 'all',
+    payload: {
+      participantId: meta.participantId,
+      participantName: meta.participantName,
+      round: meta.round,
+    },
+  });
+}
+
+/**
+ * Journalise un changement de PV de monstre par le MJ (kind `monster-hp-change`,
+ * step 7). Visibilité `dm` par défaut (table EVENT-LOG.md) — le MJ ne révèle pas
+ * forcément les PV exacts des monstres aux joueurs. `before`/`after`/`delta`
+ * portés pour la reconstruction du journal.
+ */
+export async function logMonsterHpChange(
+  encounterId: string,
+  meta: {
+    monsterInstanceId: string;
+    monsterName: string;
+    before: number;
+    after: number;
+  },
+): Promise<void> {
+  await writeEvent({
+    kind: 'monster-hp-change',
+    actorCharacterId: null,
+    encounterId,
+    visibility: 'dm',
+    payload: {
+      monsterInstanceId: meta.monsterInstanceId,
+      monsterName: meta.monsterName,
+      before: meta.before,
+      after: meta.after,
+      delta: meta.after - meta.before,
+    },
   });
 }
 
