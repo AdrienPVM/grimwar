@@ -1,9 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Campaign, Membership } from '@/shared/types/campaign';
 import type { Encounter, EncounterParticipant } from '@/shared/types/encounter';
+import type { GameEvent } from '@/shared/types/event';
 
 // ─────────────────────────────────────────────────────────────────────
 // Mocks
@@ -27,6 +28,13 @@ const encounterHolder: {
   error: Error | null;
 } = { encounter: null, isLoading: false, error: null };
 vi.mock('../use-encounter', () => ({ useEncounter: () => encounterHolder }));
+
+// Feed d'événements — alimente le hand-off des dégâts physiques (step 7b).
+const eventsHolder: { events: GameEvent[] } = { events: [] };
+vi.mock('../use-campaign-events', () => ({
+  useCampaignEvents: () => ({ events: eventsHolder.events, isLoading: false, error: null }),
+  CAMPAIGN_EVENTS_LIMIT: 20,
+}));
 
 // d20 fixe → jets déterministes (init = 10 + mod).
 vi.mock('@/shared/lib/dice/roller', () => ({ rollDieCrypto: () => 10 }));
@@ -163,6 +171,22 @@ function mkEncounter(overrides: Partial<Encounter> = {}): Encounter {
   };
 }
 
+function mkRollEvent(overrides: Partial<GameEvent> = {}): GameEvent {
+  return {
+    id: 'ev-roll',
+    kind: 'roll',
+    actorUserId: 'uid-player',
+    actorCharacterId: 'char-a',
+    targetCharacterId: null,
+    sessionId: null,
+    encounterId: 'e-1',
+    visibility: 'all',
+    createdAt: null,
+    payload: { label: 'Épée longue', rollKind: 'damage', mode: 'physical', total: 6 },
+    ...overrides,
+  };
+}
+
 afterEach(() => {
   authHolder.user = { uid: 'uid-gm' };
   campaignHolder.campaign = null;
@@ -172,6 +196,7 @@ afterEach(() => {
   encounterHolder.encounter = null;
   encounterHolder.isLoading = false;
   encounterHolder.error = null;
+  eventsHolder.events = [];
   resolveModsMock.mockClear();
   startEncounterMock.mockReset();
   advanceTurnMock.mockReset();
@@ -315,11 +340,13 @@ describe('<EncounterScreen> — état active (MJ)', () => {
     });
     renderScreen();
     expect(screen.getByText(/Round\s*3/)).toBeInTheDocument();
-    // Le participant actif (index 1 = Gobelin 1) porte aria-current.
-    const active = screen.getByText('Gobelin 1').closest('li');
+    // Le participant actif (index 1 = Gobelin 1) porte aria-current. On scope la
+    // strip d'ordre d'initiative (le nom apparaît aussi dans la vue de groupe).
+    const turnList = screen.getByRole('list', { name: /Ordre d’initiative/ });
+    const active = within(turnList).getByText('Gobelin 1').closest('li');
     expect(active).toHaveAttribute('aria-current', 'true');
     // Init affichée (ordre établi).
-    expect(screen.getByText(/Init\.\s*18/)).toBeInTheDocument();
+    expect(within(turnList).getByText(/Init\.\s*18/)).toBeInTheDocument();
   });
 });
 
@@ -402,8 +429,102 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
       ],
     });
     renderScreen();
-    // Le libellé localisé de l'état apparaît (chip sur la carte).
-    expect(screen.getByText('Empoisonné')).toBeInTheDocument();
+    // Le libellé localisé de l'état apparaît (chip sur la carte de la strip ET
+    // dans la vue de groupe — d'où getAllByText).
+    expect(screen.getAllByText('Empoisonné').length).toBeGreaterThan(0);
+  });
+});
+
+describe('<EncounterScreen> — hand-off dégâts physiques (step 7b)', () => {
+  it('le MJ voit le panneau de hand-off d’un jet physique récent, acteur résolu', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    eventsHolder.events = [mkRollEvent()];
+    renderScreen();
+    expect(screen.getByText('Dégâts à appliquer')).toBeInTheDocument();
+    // Acteur résolu via la fiche liée (characterId char-a → participant Lyralei).
+    const panel = screen.getByRole('region', { name: 'Dégâts physiques à appliquer' });
+    expect(within(panel).getByText('Lyralei')).toBeInTheDocument();
+    expect(within(panel).getByText('6 dégâts')).toBeInTheDocument();
+  });
+
+  it('« Appliquer à… » → cible Gobelin → applyParticipantHpDelta(−total) + logMonsterHpChange + retrait', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    eventsHolder.events = [mkRollEvent()];
+    applyParticipantHpDeltaMock.mockResolvedValueOnce({ before: 7, after: 1 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Appliquer à…' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Gobelin 1' }));
+    await waitFor(() =>
+      expect(applyParticipantHpDeltaMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob', -6),
+    );
+    expect(logMonsterHpChangeMock).toHaveBeenCalledWith('e-1', {
+      monsterInstanceId: 'inst-gob',
+      monsterName: 'Gobelin 1',
+      before: 7,
+      after: 1,
+    });
+    // L'event quitte le panneau après application (dismiss local).
+    await waitFor(() =>
+      expect(screen.queryByText('Dégâts à appliquer')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('« Ignorer » retire l’event sans rien appliquer', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    eventsHolder.events = [mkRollEvent()];
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /Ignorer/ }));
+    expect(applyParticipantHpDeltaMock).not.toHaveBeenCalled();
+    expect(screen.queryByText('Dégâts à appliquer')).not.toBeInTheDocument();
+  });
+
+  it('un joueur ne voit JAMAIS le panneau de hand-off', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    eventsHolder.events = [mkRollEvent()];
+    renderScreen();
+    expect(screen.queryByText('Dégâts à appliquer')).not.toBeInTheDocument();
+  });
+
+  it('pas de panneau hors combat (status planned)', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'planned' });
+    eventsHolder.events = [mkRollEvent()];
+    renderScreen();
+    expect(screen.queryByText('Dégâts à appliquer')).not.toBeInTheDocument();
+  });
+});
+
+describe('<EncounterScreen> — vue de groupe (step 8)', () => {
+  it('rend la vue de groupe pour un joueur, groupée PJ / adversaires avec PV exacts', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({
+      status: 'active',
+      round: 1,
+      turnIndex: 0,
+      participants: [
+        mkParticipant({ currentHp: 14, maxHp: 20 }),
+        mkParticipant({
+          type: 'monster',
+          characterId: null,
+          instanceId: 'inst-gob',
+          name: 'Gobelin 1',
+          currentHp: 3,
+          maxHp: 7,
+        }),
+      ],
+    });
+    renderScreen();
+    const party = screen.getByRole('region', { name: 'État de santé des participants' });
+    expect(within(party).getByText('Votre groupe')).toBeInTheDocument();
+    expect(within(party).getByText('Adversaires')).toBeInTheDocument();
+    // PV exacts (cat. 4 « calculs / valeurs chiffrées »).
+    expect(within(party).getByText('14/20')).toBeInTheDocument();
+    expect(within(party).getByText('3/7')).toBeInTheDocument();
   });
 });
 
@@ -412,8 +533,9 @@ describe('<EncounterScreen> — joueur (non MJ)', () => {
     campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
     encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
     renderScreen();
-    expect(screen.getByText('Lyralei')).toBeInTheDocument();
-    expect(screen.getByText('Gobelin 1')).toBeInTheDocument();
+    // Noms présents (strip + vue de groupe → getAllByText).
+    expect(screen.getAllByText('Lyralei').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Fin du tour' })).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Lancer l’initiative' }),

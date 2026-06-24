@@ -726,6 +726,22 @@ export type StringKey =
   | 'encounters.control.noConditions'
   | 'encounters.control.addCondition'
   | 'encounters.control.closeAria'
+  | 'encounters.handoff.title'
+  | 'encounters.handoff.help'
+  | 'encounters.handoff.aria'
+  | 'encounters.handoff.attackPrefix'
+  | 'encounters.handoff.damageSuffix'
+  | 'encounters.handoff.attackInfo'
+  | 'encounters.handoff.apply'
+  | 'encounters.handoff.chooseTarget'
+  | 'encounters.handoff.noTargets'
+  | 'encounters.handoff.dismiss'
+  | 'encounters.handoff.unknownActor'
+  | 'encounters.party.title'
+  | 'encounters.party.aria'
+  | 'encounters.party.allies'
+  | 'encounters.party.enemies'
+  | 'encounters.party.empty'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -2198,6 +2214,26 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noConditions': 'Aucun état actif.',
     'encounters.control.addCondition': 'Appliquer un état',
     'encounters.control.closeAria': 'Fermer le contrôle',
+    // Encounters — hand-off des dégâts physiques (JALON 24.4, step 7b). Le MJ
+    // applique les jets physiques récents des joueurs sur une cible qu'il choisit.
+    'encounters.handoff.title': 'Dégâts à appliquer',
+    'encounters.handoff.help':
+      'Jets physiques récents des joueurs. Choisis une cible pour appliquer les dégâts.',
+    'encounters.handoff.aria': 'Dégâts physiques à appliquer',
+    'encounters.handoff.attackPrefix': 'Att',
+    'encounters.handoff.damageSuffix': 'dégâts',
+    'encounters.handoff.attackInfo': 'Jet d’attaque — compare à la CA de la cible.',
+    'encounters.handoff.apply': 'Appliquer à…',
+    'encounters.handoff.chooseTarget': 'Cible',
+    'encounters.handoff.noTargets': 'Aucune cible disponible.',
+    'encounters.handoff.dismiss': 'Ignorer',
+    'encounters.handoff.unknownActor': 'Joueur',
+    // Encounters — vue de groupe joueur (JALON 24.4, step 8). Lisible par tous.
+    'encounters.party.title': 'État du groupe',
+    'encounters.party.aria': 'État de santé des participants',
+    'encounters.party.allies': 'Votre groupe',
+    'encounters.party.enemies': 'Adversaires',
+    'encounters.party.empty': 'Aucun participant.',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3932,6 +3968,23 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noConditions': 'No active conditions.',
     'encounters.control.addCondition': 'Apply a condition',
     'encounters.control.closeAria': 'Close control panel',
+    'encounters.handoff.title': 'Damage to apply',
+    'encounters.handoff.help':
+      'Recent physical rolls from players. Pick a target to apply the damage.',
+    'encounters.handoff.aria': 'Physical damage to apply',
+    'encounters.handoff.attackPrefix': 'Atk',
+    'encounters.handoff.damageSuffix': 'damage',
+    'encounters.handoff.attackInfo': 'Attack roll — compare to the target’s AC.',
+    'encounters.handoff.apply': 'Apply to…',
+    'encounters.handoff.chooseTarget': 'Target',
+    'encounters.handoff.noTargets': 'No target available.',
+    'encounters.handoff.dismiss': 'Dismiss',
+    'encounters.handoff.unknownActor': 'Player',
+    'encounters.party.title': 'Party status',
+    'encounters.party.aria': 'Participants’ health status',
+    'encounters.party.allies': 'Your party',
+    'encounters.party.enemies': 'Enemies',
+    'encounters.party.empty': 'No participants.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

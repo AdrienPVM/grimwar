@@ -35,10 +35,14 @@ import {
   type EncounterStatus,
 } from '@/shared/types/encounter';
 
+import { deriveHandoffRows, HANDOFF_TTL_MS } from './encounter-handoff';
+import { EncounterHandoffPanel, type HandoffTarget } from './encounter-handoff-panel';
 import { hpBarColor, hpRatio } from './encounter-hp';
+import { EncounterPartyView } from './encounter-party-view';
 import { ParticipantControlModal } from './participant-control-modal';
 import { resolveInitiativeModifiers } from './resolve-initiative-modifiers';
 import { useCampaign } from './use-campaign';
+import { useCampaignEvents } from './use-campaign-events';
 import { useEncounter } from './use-encounter';
 import type { LinkedMember } from './use-encounter-party-draft';
 
@@ -82,12 +86,21 @@ const OUTCOME_LABEL: Record<EncounterOutcome, StringKey> = {
  * états (persistés sur le doc partagé, sans event dédié). Les états actifs
  * s'affichent en chips sur la carte. Le PJ se gère sur sa fiche, pas ici.
  *
- * Hors scope 24.4-step7 (→ 24.4 suites) : hand-off dégâts physiques (step 7b),
- * masquage des PV monstres aux joueurs (step 8 — nécessite un champ `hpVisible`
- * = changement de schéma, décision Adrien). Le re-roll côté JOUEUR (qui écrirait
- * sa propre init sur le doc) est bloqué par la rule d'écriture `isDMOf` — il
- * nécessiterait un élargissement de rule (décision Adrien) ; en V1 single-MJ le
- * meneur lance/relance pour toute la table.
+ * Hand-off des dégâts physiques (step 7b, JALON 24.4) : un panneau MJ-only liste
+ * les jets physiques récents des joueurs (events `roll` mode physique, lus via le
+ * feed existant + filtrés côté client — aucun index/rule en plus). Le MJ choisit
+ * la cible (monstre / PNJ) sur qui appliquer le total ; le joueur ne cible jamais.
+ *
+ * Vue de groupe (step 8, JALON 24.4) : `EncounterPartyView` montre la santé de
+ * tous les participants (groupée PJ / adversaires), lisible par TOUS. Les joueurs
+ * voient les PV des monstres en live (ils lisent déjà `currentHp` via la rule) ;
+ * les masquer nécessiterait un champ `hpVisible` = changement de schéma (décision
+ * Adrien), reporté.
+ *
+ * Reste reporté : le re-roll côté JOUEUR (qui écrirait sa propre init sur le doc)
+ * est bloqué par la rule d'écriture `isDMOf` — il nécessiterait un élargissement
+ * de rule (décision Adrien) ; en V1 single-MJ le meneur lance/relance pour toute
+ * la table.
  */
 export function EncounterScreen(): JSX.Element {
   const navigate = useNavigate();
@@ -102,6 +115,10 @@ export function EncounterScreen(): JSX.Element {
   const [rerollingId, setRerollingId] = useState<string | null>(null);
   // instanceId du participant dont la modale de contrôle MJ est ouverte (24.4).
   const [controlTargetId, setControlTargetId] = useState<string | null>(null);
+  // eventId des jets physiques déjà appliqués / ignorés par le MJ (step 7b).
+  const [dismissedHandoffIds, setDismissedHandoffIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
 
   const { data: conditionDefs } = useContent('conditions');
 
@@ -119,6 +136,12 @@ export function EncounterScreen(): JSX.Element {
     if (!campaign || !user) return false;
     return campaign.gmIds.includes(user.uid);
   }, [campaign, user]);
+
+  // Hand-off des dégâts physiques (step 7b) — MJ-only. On réutilise le feed
+  // d'événements existant (visibilité `all`/`dm` côté MJ) et on filtre côté
+  // client les jets physiques récents : aucun nouvel index ni rule. `undefined`
+  // côté joueur ⇒ pas d'abonnement (le panneau est MJ-only de toute façon).
+  const { events: recentEvents } = useCampaignEvents(isGm ? cid : undefined, { isDM: isGm });
 
   // Roster lié — sert à résoudre le modificateur d'init des joueurs (characterId
   // → ownerUid → fiche). Mirror du calcul de `EncountersListScreen`.
@@ -306,6 +329,28 @@ export function EncounterScreen(): JSX.Element {
     }
   }
 
+  // ─── Hand-off dégâts physiques (step 7b) — le MJ applique un jet physique
+  // récent d'un joueur sur la cible qu'il choisit (jamais le joueur). Réutilise
+  // le chemin `handleApplyHp` (monster-hp-change), puis retire l'event du panneau.
+  async function handleApplyHandoff(
+    eventId: string,
+    total: number,
+    targetInstanceId: string,
+  ): Promise<void> {
+    const target = encounter?.participants.find((p) => p.instanceId === targetInstanceId);
+    if (!target) return;
+    await handleApplyHp(target, -total);
+    dismissHandoff(eventId);
+  }
+
+  function dismissHandoff(eventId: string): void {
+    setDismissedHandoffIds((prev) => {
+      const next = new Set(prev);
+      next.add(eventId);
+      return next;
+    });
+  }
+
   if (campaignLoading || encounterLoading) return <Splash />;
 
   if (encounterError || !encounter || !cid || !eid) {
@@ -345,6 +390,22 @@ export function EncounterScreen(): JSX.Element {
     controlTargetId !== null
       ? (encounter.participants.find((p) => p.instanceId === controlTargetId) ?? null)
       : null;
+
+  // Hand-off (step 7b) — jets physiques récents à appliquer, MJ-only et combat en
+  // cours uniquement. Les cibles sont les non-joueurs (un PJ se gère sur sa fiche).
+  const handoffRows =
+    isGm && isActive
+      ? deriveHandoffRows(
+          recentEvents,
+          encounter.participants,
+          dismissedHandoffIds,
+          Date.now(),
+          HANDOFF_TTL_MS,
+        )
+      : [];
+  const handoffTargets: HandoffTarget[] = encounter.participants
+    .filter((p) => p.type !== 'player')
+    .map((p) => ({ instanceId: p.instanceId, name: p.name }));
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8">
@@ -462,6 +523,18 @@ export function EncounterScreen(): JSX.Element {
         ) : null}
       </header>
 
+      {handoffRows.length > 0 ? (
+        <EncounterHandoffPanel
+          rows={handoffRows}
+          targets={handoffTargets}
+          pending={actionPending}
+          onApply={(eventId, total, targetInstanceId) =>
+            void handleApplyHandoff(eventId, total, targetInstanceId)
+          }
+          onDismiss={dismissHandoff}
+        />
+      ) : null}
+
       <section className="mt-8">
         <h2 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
           {t('encounters.turnOrder.title')}
@@ -495,6 +568,11 @@ export function EncounterScreen(): JSX.Element {
           ))}
         </ul>
       </section>
+
+      <EncounterPartyView
+        participants={encounter.participants}
+        resolveConditionLabel={conditionLabel}
+      />
 
       {isGm && controlTarget ? (
         <ParticipantControlModal

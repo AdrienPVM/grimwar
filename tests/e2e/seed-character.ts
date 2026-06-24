@@ -1388,6 +1388,72 @@ export async function seedCampaignMembership(opts: {
     .set({ homeCampaignId: campaignId }, { merge: true });
 }
 
+/**
+ * Pose une rencontre complète dans `campaigns/{cid}/encounters` via l'Admin SDK
+ * (bypass rules) — utilisé par la spec UAT du hand-off / party view (JALON 24.4
+ * steps 7b/8) pour fabriquer en une fois un état de combat riche (un PJ allié +
+ * plusieurs monstres avec des PV variés) sans rejouer la modale de création.
+ * Légitime au même titre que `seedCharacter` (on simule un état existant).
+ */
+export interface SeedEncounterParticipant {
+  type: 'player' | 'monster' | 'npc';
+  characterId?: string | null;
+  instanceId: string;
+  name: string;
+  initiative?: number;
+  currentHp: number;
+  maxHp: number;
+  conditions?: string[];
+}
+
+export interface SeedEncounterInput {
+  name: string;
+  status?: 'planned' | 'active' | 'completed';
+  round?: number;
+  turnIndex?: number;
+  participants: SeedEncounterParticipant[];
+}
+
+export async function seedEncounter(
+  campaignId: string,
+  input: SeedEncounterInput,
+): Promise<{ encounterId: string }> {
+  const { db } = getAdmin();
+  const ref = db.collection('campaigns').doc(campaignId).collection('encounters').doc();
+  const encounterId = ref.id;
+  const status = input.status ?? 'active';
+  const participants = input.participants.map((p) => ({
+    type: p.type,
+    characterId: p.characterId ?? null,
+    monsterContentId: null,
+    instanceId: p.instanceId,
+    name: p.name,
+    initiative: p.initiative ?? 0,
+    currentHp: p.currentHp,
+    maxHp: p.maxHp,
+    tempHp: 0,
+    conditions: p.conditions ?? [],
+    position: null,
+    notes: '',
+  }));
+  await ref.set({
+    id: encounterId,
+    name: input.name,
+    sessionId: null,
+    status,
+    round: input.round ?? (status === 'active' ? 1 : 0),
+    turnIndex: input.turnIndex ?? 0,
+    participants,
+    mapId: null,
+    fogState: null,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+    startedAt: status === 'active' ? FieldValue.serverTimestamp() : null,
+    endedAt: null,
+  });
+  return { encounterId };
+}
+
 /** Relit campaigns/{cid}/events via Admin SDK (bypass rules) pour assertion. */
 export async function readCampaignEvents(
   campaignId: string,
