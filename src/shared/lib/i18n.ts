@@ -742,6 +742,44 @@ export type StringKey =
   | 'encounters.party.allies'
   | 'encounters.party.enemies'
   | 'encounters.party.empty'
+  // Journal — compilateur d'événements → narration FR (plan 25.1). Les clés
+  // `journal.tpl.*` portent des placeholders `{xxx}` substitués par `fillTemplate`.
+  | 'journal.section.exploration'
+  | 'journal.section.combat'
+  | 'journal.section.combatOutcome.victory'
+  | 'journal.section.combatOutcome.defeat'
+  | 'journal.section.combatOutcome.fled'
+  | 'journal.empty'
+  | 'journal.actor.dm'
+  | 'journal.actor.someone'
+  | 'journal.tpl.sessionStart'
+  | 'journal.tpl.sessionEnd'
+  | 'journal.tpl.turnStart'
+  | 'journal.tpl.rollAttackCrit'
+  | 'journal.tpl.rollAttackFumble'
+  | 'journal.tpl.rollAttack'
+  | 'journal.tpl.rollDamage'
+  | 'journal.tpl.rollSave'
+  | 'journal.tpl.rollCheck'
+  | 'journal.tpl.rollDeathSave'
+  | 'journal.tpl.rollGeneric'
+  | 'journal.tpl.spellCast'
+  | 'journal.tpl.spellCantrip'
+  | 'journal.tpl.hpDamage'
+  | 'journal.tpl.hpHeal'
+  | 'journal.tpl.tempHp'
+  | 'journal.tpl.conditionAdd'
+  | 'journal.tpl.conditionRemove'
+  | 'journal.tpl.slotConsumedOne'
+  | 'journal.tpl.slotConsumedMany'
+  | 'journal.tpl.slotRestoredOne'
+  | 'journal.tpl.slotRestoredMany'
+  | 'journal.tpl.itemAcquiredOne'
+  | 'journal.tpl.itemAcquiredMany'
+  | 'journal.tpl.itemRemovedOne'
+  | 'journal.tpl.itemRemovedMany'
+  | 'journal.tpl.monsterHpChangeDamage'
+  | 'journal.tpl.monsterHpChangeHeal'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -2234,6 +2272,50 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.party.allies': 'Votre groupe',
     'encounters.party.enemies': 'Adversaires',
     'encounters.party.empty': 'Aucun participant.',
+    // Journal — narration auto (plan 25.1). Placeholders `{xxx}` substitués par
+    // `fillTemplate`. Terminologie officielle FR : « coup critique »/« échec
+    // critique », « sort mineur » (= cantrip), « emplacement » (spell slot),
+    // « Round », « Victoire/Défaite/Fuite ».
+    'journal.section.exploration': 'Exploration',
+    'journal.section.combat': 'Combat — {name}',
+    'journal.section.combatOutcome.victory': 'Issue : victoire.',
+    'journal.section.combatOutcome.defeat': 'Issue : défaite.',
+    'journal.section.combatOutcome.fled': 'Issue : fuite.',
+    'journal.empty': '_Aucun événement enregistré pour cette séance._',
+    'journal.actor.dm': 'Le meneur',
+    'journal.actor.someone': 'Quelqu’un',
+    'journal.tpl.sessionStart': 'La séance {number} — « {title} » — commence.',
+    'journal.tpl.sessionEnd': 'La séance {number} — « {title} » — se termine.',
+    'journal.tpl.turnStart': 'Au tour de **{name}** (round {round}).',
+    'journal.tpl.rollAttackCrit':
+      '{actor} attaque et obtient un **coup critique** ({label}, total {total}) !',
+    'journal.tpl.rollAttackFumble':
+      '{actor} attaque et subit un **échec critique** ({label}, total {total}).',
+    'journal.tpl.rollAttack': '{actor} attaque ({label}) — total {total}.',
+    'journal.tpl.rollDamage': '{actor} inflige {total} dégâts ({label}).',
+    'journal.tpl.rollSave': '{actor} tente une sauvegarde ({label}) — total {total}.',
+    'journal.tpl.rollCheck': '{actor} tente un test ({label}) — total {total}.',
+    'journal.tpl.rollDeathSave':
+      '{actor} fait une sauvegarde contre la mort ({label}) — total {total}.',
+    'journal.tpl.rollGeneric': '{actor} effectue un jet ({label}) — total {total}.',
+    'journal.tpl.spellCast':
+      '{actor} lance **{spell}** (niveau {level}, emplacement de niveau {slot} consommé).',
+    'journal.tpl.spellCantrip': '{actor} lance le sort mineur **{spell}**.',
+    'journal.tpl.hpDamage': '{actor} subit {amount} dégâts — PV : {before} → {after}.',
+    'journal.tpl.hpHeal': '{actor} récupère {amount} PV — PV : {before} → {after}.',
+    'journal.tpl.tempHp': '{actor} gagne {amount} PV temporaires.',
+    'journal.tpl.conditionAdd': '{actor} est désormais **{condition}**.',
+    'journal.tpl.conditionRemove': '{actor} n’est plus **{condition}**.',
+    'journal.tpl.slotConsumedOne': '{actor} consomme un emplacement de niveau {level}.',
+    'journal.tpl.slotConsumedMany': '{actor} consomme {count} emplacements de niveau {level}.',
+    'journal.tpl.slotRestoredOne': '{actor} récupère un emplacement de niveau {level}.',
+    'journal.tpl.slotRestoredMany': '{actor} récupère {count} emplacements de niveau {level}.',
+    'journal.tpl.itemAcquiredOne': '{actor} récupère **{item}**.',
+    'journal.tpl.itemAcquiredMany': '{actor} récupère **{item}** (×{qty}).',
+    'journal.tpl.itemRemovedOne': '{actor} se sépare de **{item}**.',
+    'journal.tpl.itemRemovedMany': '{actor} se sépare de **{item}** (×{qty}).',
+    'journal.tpl.monsterHpChangeDamage': '**{name}** subit {amount} dégâts — PV : {before} → {after}.',
+    'journal.tpl.monsterHpChangeHeal': '**{name}** récupère {amount} PV — PV : {before} → {after}.',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3985,6 +4067,48 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.party.allies': 'Your party',
     'encounters.party.enemies': 'Enemies',
     'encounters.party.empty': 'No participants.',
+    // Journal — auto narrative (plan 25.1). Placeholders `{xxx}` filled by
+    // `fillTemplate`. EN is a working baseline; the S5 i18n pass refines it.
+    'journal.section.exploration': 'Exploration',
+    'journal.section.combat': 'Combat — {name}',
+    'journal.section.combatOutcome.victory': 'Outcome: victory.',
+    'journal.section.combatOutcome.defeat': 'Outcome: defeat.',
+    'journal.section.combatOutcome.fled': 'Outcome: fled.',
+    'journal.empty': '_No events recorded for this session._',
+    'journal.actor.dm': 'The DM',
+    'journal.actor.someone': 'Someone',
+    'journal.tpl.sessionStart': 'Session {number} — “{title}” — begins.',
+    'journal.tpl.sessionEnd': 'Session {number} — “{title}” — ends.',
+    'journal.tpl.turnStart': '**{name}**’s turn (round {round}).',
+    'journal.tpl.rollAttackCrit':
+      '{actor} attacks and scores a **critical hit** ({label}, total {total})!',
+    'journal.tpl.rollAttackFumble':
+      '{actor} attacks and suffers a **critical miss** ({label}, total {total}).',
+    'journal.tpl.rollAttack': '{actor} attacks ({label}) — total {total}.',
+    'journal.tpl.rollDamage': '{actor} deals {total} damage ({label}).',
+    'journal.tpl.rollSave': '{actor} attempts a saving throw ({label}) — total {total}.',
+    'journal.tpl.rollCheck': '{actor} attempts a check ({label}) — total {total}.',
+    'journal.tpl.rollDeathSave':
+      '{actor} makes a death saving throw ({label}) — total {total}.',
+    'journal.tpl.rollGeneric': '{actor} makes a roll ({label}) — total {total}.',
+    'journal.tpl.spellCast':
+      '{actor} casts **{spell}** (level {level}, a level {slot} slot is consumed).',
+    'journal.tpl.spellCantrip': '{actor} casts the cantrip **{spell}**.',
+    'journal.tpl.hpDamage': '{actor} takes {amount} damage — HP: {before} → {after}.',
+    'journal.tpl.hpHeal': '{actor} recovers {amount} HP — HP: {before} → {after}.',
+    'journal.tpl.tempHp': '{actor} gains {amount} temporary HP.',
+    'journal.tpl.conditionAdd': '{actor} is now **{condition}**.',
+    'journal.tpl.conditionRemove': '{actor} is no longer **{condition}**.',
+    'journal.tpl.slotConsumedOne': '{actor} consumes a level {level} slot.',
+    'journal.tpl.slotConsumedMany': '{actor} consumes {count} level {level} slots.',
+    'journal.tpl.slotRestoredOne': '{actor} recovers a level {level} slot.',
+    'journal.tpl.slotRestoredMany': '{actor} recovers {count} level {level} slots.',
+    'journal.tpl.itemAcquiredOne': '{actor} acquires **{item}**.',
+    'journal.tpl.itemAcquiredMany': '{actor} acquires **{item}** (×{qty}).',
+    'journal.tpl.itemRemovedOne': '{actor} parts with **{item}**.',
+    'journal.tpl.itemRemovedMany': '{actor} parts with **{item}** (×{qty}).',
+    'journal.tpl.monsterHpChangeDamage': '**{name}** takes {amount} damage — HP: {before} → {after}.',
+    'journal.tpl.monsterHpChangeHeal': '**{name}** recovers {amount} HP — HP: {before} → {after}.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

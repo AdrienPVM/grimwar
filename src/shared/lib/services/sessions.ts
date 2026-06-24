@@ -34,6 +34,7 @@ import {
 
 import { getDb } from '@/shared/lib/firebase';
 import { trackPendingWrite } from '@/shared/lib/track-pending-write';
+import { EventSchema, type GameEvent } from '@/shared/types/event';
 import type { Session } from '@/shared/types/session';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -63,6 +64,10 @@ function sessionRef(campaignId: string, sessionId: string) {
 
 function sessionsCol(campaignId: string) {
   return collection(getDb(), 'campaigns', campaignId, 'sessions');
+}
+
+function eventsCol(campaignId: string) {
+  return collection(getDb(), 'campaigns', campaignId, 'events');
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -172,6 +177,53 @@ export async function getActiveSession(campaignId: string): Promise<Session | nu
     query(sessionsCol(campaignId), where('status', '==', 'active'), limit(1)),
   );
   return snap.empty ? null : (snap.docs[0]!.data() as Session);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Lecture des événements d'une séance (pour le compilateur de journal, plan 25)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Lit, ordonnés `createdAt ASC`, tous les événements d'une séance que le
+ * compilateur de journal (plan 25) doit voir : visibilité `all` + `dm`.
+ *
+ * Query CONTRAINTE par visibilité (`where visibility in ['all','dm']`) — comme
+ * le feed MJ (22.3) : la rule de read `events` filtre par doc, donc une query
+ * non contrainte qui pourrait toucher un event `self` d'autrui serait rejetée
+ * (failed-precondition). Le journal est la narration MJ : les events `self`
+ * (privés à un joueur) en sont volontairement exclus.
+ *
+ * Index composite `(sessionId ASC, visibility ASC, createdAt ASC)` requis
+ * (`firestore.indexes.json`). Réservé au MJ (la rule `visibility == 'dm'` exige
+ * `isDMOf`) — un membre non-MJ recevrait permission-denied sur le `in ['all','dm']`.
+ *
+ * Les events Firestore invalides (parse Zod KO) sont ignorés avec un warn, comme
+ * dans `useCampaignEvents` — un doc legacy ne casse pas la compilation.
+ */
+export async function listSessionEvents(
+  campaignId: string,
+  sessionId: string,
+): Promise<GameEvent[]> {
+  const snap = await getDocs(
+    query(
+      eventsCol(campaignId),
+      where('sessionId', '==', sessionId),
+      where('visibility', 'in', ['all', 'dm']),
+      orderBy('createdAt', 'asc'),
+    ),
+  );
+  const events: GameEvent[] = [];
+  for (const d of snap.docs) {
+    const result = EventSchema.safeParse({ ...d.data(), id: d.id });
+    if (result.success) {
+      events.push(result.data);
+    } else {
+      console.warn(
+        `[journal] event Firestore invalide ignoré (${d.id}): ${result.error.errors[0]?.message ?? 'parse error'}`,
+      );
+    }
+  }
+  return events;
 }
 
 // ─────────────────────────────────────────────────────────────────────
