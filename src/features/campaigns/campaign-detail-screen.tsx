@@ -137,7 +137,7 @@ export function CampaignDetailScreen(): JSX.Element {
   return (
     <>
       <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="flex">
+        <nav className="flex items-center justify-between">
           <Button
             type="button"
             variant="ghost"
@@ -147,6 +147,16 @@ export function CampaignDetailScreen(): JSX.Element {
           >
             ← {t('campaigns.detail.back')}
           </Button>
+          {isGm ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
+            >
+              {t('campaigns.detail.sessionsCta')}
+            </Button>
+          ) : null}
         </nav>
 
         <header className="mt-4 text-center">

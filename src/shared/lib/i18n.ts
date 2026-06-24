@@ -474,6 +474,8 @@ export type StringKey =
   | 'campaigns.detail.error.retry'
   | 'campaigns.detail.error.notFoundTitle'
   | 'campaigns.detail.error.notFoundBody'
+  // Entrée MJ vers le gestionnaire de séances (JALON 23.2)
+  | 'campaigns.detail.sessionsCta'
   // Lecture MJ d'une fiche de joueur — JALON 4A.3
   | 'campaigns.memberSheet.back'
   | 'campaigns.memberSheet.readOnlyBadge'
@@ -572,6 +574,35 @@ export type StringKey =
   | 'campaigns.linkCharacter.submitting'
   | 'campaigns.linkCharacter.close'
   | 'campaigns.linkCharacter.error.generic'
+  // Gestionnaire de séances (sessions) — JALON 23.2 (liste + planification)
+  | 'sessions.back'
+  | 'sessions.title'
+  | 'sessions.list.aria'
+  | 'sessions.cta.plan'
+  | 'sessions.empty.gm'
+  | 'sessions.empty.member'
+  | 'sessions.row.numberPrefix'
+  | 'sessions.status.planned'
+  | 'sessions.status.active'
+  | 'sessions.status.completed'
+  | 'sessions.status.cancelled'
+  | 'sessions.error.title'
+  | 'sessions.error.body'
+  | 'sessions.error.retry'
+  | 'sessions.create.title'
+  | 'sessions.create.intro'
+  | 'sessions.create.titleField.label'
+  | 'sessions.create.titleField.helper'
+  | 'sessions.create.titleField.placeholder'
+  | 'sessions.create.date.label'
+  | 'sessions.create.date.helper'
+  | 'sessions.create.cancel'
+  | 'sessions.create.submit'
+  | 'sessions.create.submitting'
+  | 'sessions.create.close'
+  | 'sessions.create.error.titleRequired'
+  | 'sessions.create.error.titleTooLong'
+  | 'sessions.create.error.generic'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1864,6 +1895,41 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.linkCharacter.close': 'Fermer la fenêtre de liaison',
     'campaigns.linkCharacter.error.generic':
       "La liaison n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'campaigns.detail.sessionsCta': 'Séances',
+    // Séances — JALON 23.2
+    'sessions.back': 'Retour à la campagne',
+    'sessions.title': 'Séances',
+    'sessions.list.aria': 'Liste des séances de la campagne',
+    'sessions.cta.plan': 'Planifier une séance',
+    'sessions.empty.gm':
+      'Aucune séance pour le moment. Planifie la première pour commencer à tenir le fil de la campagne.',
+    'sessions.empty.member':
+      "Aucune séance n'a encore été planifiée par le meneur.",
+    'sessions.row.numberPrefix': 'Séance ',
+    'sessions.status.planned': 'Planifiée',
+    'sessions.status.active': 'En cours',
+    'sessions.status.completed': 'Terminée',
+    'sessions.status.cancelled': 'Annulée',
+    'sessions.error.title': 'Lecture impossible',
+    'sessions.error.body':
+      "Les séances de cette campagne n'ont pas pu être chargées. Vérifie ta connexion et réessaye.",
+    'sessions.error.retry': 'Réessayer',
+    'sessions.create.title': 'Nouvelle séance',
+    'sessions.create.intro':
+      'Donne un titre à la séance. Le numéro est attribué automatiquement.',
+    'sessions.create.titleField.label': 'Titre de la séance',
+    'sessions.create.titleField.helper': 'Ex. « L’embuscade de la passe ».',
+    'sessions.create.titleField.placeholder': 'Titre de la séance',
+    'sessions.create.date.label': 'Date prévue',
+    'sessions.create.date.helper': 'Optionnel — laisse vide si la date n’est pas fixée.',
+    'sessions.create.cancel': 'Annuler',
+    'sessions.create.submit': 'Planifier',
+    'sessions.create.submitting': 'Création en cours…',
+    'sessions.create.close': 'Fermer la fenêtre de planification',
+    'sessions.create.error.titleRequired': 'Le titre est obligatoire.',
+    'sessions.create.error.titleTooLong': 'Le titre est trop long (120 caractères max).',
+    'sessions.create.error.generic':
+      "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3424,6 +3490,38 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.linkCharacter.close': 'Close link dialog',
     'campaigns.linkCharacter.error.generic':
       'Linking failed. Check your connection and try again.',
+    'campaigns.detail.sessionsCta': 'Sessions',
+    // Sessions — JALON 23.2
+    'sessions.back': 'Back to campaign',
+    'sessions.title': 'Sessions',
+    'sessions.list.aria': 'List of campaign sessions',
+    'sessions.cta.plan': 'Plan a session',
+    'sessions.empty.gm':
+      'No sessions yet. Plan the first one to start tracking the campaign timeline.',
+    'sessions.empty.member': 'The DM has not planned any session yet.',
+    'sessions.row.numberPrefix': 'Session ',
+    'sessions.status.planned': 'Planned',
+    'sessions.status.active': 'Active',
+    'sessions.status.completed': 'Completed',
+    'sessions.status.cancelled': 'Cancelled',
+    'sessions.error.title': 'Unable to load',
+    'sessions.error.body':
+      "This campaign's sessions could not be loaded. Check your connection and try again.",
+    'sessions.error.retry': 'Retry',
+    'sessions.create.title': 'New session',
+    'sessions.create.intro': 'Give the session a title. The number is assigned automatically.',
+    'sessions.create.titleField.label': 'Session title',
+    'sessions.create.titleField.helper': 'E.g. “Ambush at the pass”.',
+    'sessions.create.titleField.placeholder': 'Session title',
+    'sessions.create.date.label': 'Planned date',
+    'sessions.create.date.helper': 'Optional — leave empty if the date is not set.',
+    'sessions.create.cancel': 'Cancel',
+    'sessions.create.submit': 'Plan',
+    'sessions.create.submitting': 'Creating…',
+    'sessions.create.close': 'Close planning dialog',
+    'sessions.create.error.titleRequired': 'The title is required.',
+    'sessions.create.error.titleTooLong': 'The title is too long (120 characters max).',
+    'sessions.create.error.generic': 'Creation failed. Check your connection and try again.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

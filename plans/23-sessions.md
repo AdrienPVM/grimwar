@@ -10,9 +10,9 @@ Read `docs/DATA-MODEL.md` (sessions schema), `docs/EVENT-LOG.md` (session events
 Plans 14, 22.
 
 ## Steps
-- [ ] 1. Route `/campaign/:id/sessions` → `<SessionsList />`: chronological list, DM-only "Planifier une session" button.
-- [ ] 2. `<SessionCreateModal />`: title, planned date, optional description.
-- [ ] 3. Auto-number sessions: query max `number`, +1.
+- [x] 1. Route `/campaigns/:cid/sessions` → `<SessionsListScreen />`: liste triée, bouton MJ-only « Planifier une séance ». (23.2 — route alignée sur le préfixe `/campaigns/:cid` de la feature, PAS `/campaign/:id` du texte du plan.)
+- [x] 2. `<SessionCreateModal />`: titre + date prévue. « Description optionnelle » NON modélisée (pas de champ au schéma — décision 23.1, repliable sur les notes 23.3). (23.2)
+- [x] 3. Auto-number sessions: query max `number`, +1. (livré en 23.1 dans `createSession`, consommé tel quel par la modale.)
 - [ ] 4. Route `/campaign/:id/session/:sid` → `<SessionScreen />` with tabs: Notes / Attendance / Events / Journal (journal compiler in plan 25).
 - [ ] 5. **Notes tab** — Markdown editor + preview (DM only). Auto-saves every 5s. Stored in `sessions/{sid}.notes`.
 - [ ] 6. **Attendance tab** — check/uncheck members. Stored in `sessions/{sid}.attendance: string[]`.
@@ -49,10 +49,26 @@ Fondation sans UI, entièrement testée. Couvre le socle des steps 3/5/6/8/9/10 
 - Pas d'event `session-start`/`session-end` ni de câblage `activeSessionId` Zustand dans le service — c'est du wiring UI (23.4). L'event-logger auto-tag déjà `sessionId` depuis `activeSessionId` (`event-logger.ts:48`, prêt depuis 22.1).
 - « description optionnelle » du step 2 NON modélisée comme champ (le schéma documenté n'en a pas) — repliable sur `notes` côté UI 23.2 sans changement de service.
 
+### JALON 23.2 — Liste + planification (steps 1-3 UI) ✅ livré
+Premier consommateur UI du data layer 23.1. Triple gate verte (typecheck + 2621 tests dont +15 nouveaux + lint).
+
+- **`src/features/campaigns/use-sessions.ts`** — hook one-shot + refresh manuel (mirror `useMyCampaigns` / `useCampaign`), wrap fin sur `listSessions`. Pas d'`onSnapshot` (volume bas, mutations user-initiated) — le live ne concerne que `activeSessionId` (23.4).
+- **`src/features/campaigns/session-create-modal.tsx`** — modale « Planifier une séance » : titre (obligatoire, max 120 = `SessionSchema.title`) + date prévue optionnelle (`<input type="date">` → `Date` locale `T00:00:00`, vide ⇒ `null`). Toutes les erreurs create tombent sur le message générique (aucun `kind` levé sur ce chemin). Pattern aligné sur `CreateCampaignModal`.
+- **`src/features/campaigns/sessions-list-screen.tsx`** — route `/campaigns/:cid/sessions`. Liste lisible par tout membre, CTA « Planifier » MJ-only (`gmIds.includes(uid)` via `useCampaign`). Empty states distincts MJ/joueur. Lignes = cartes statiques (numéro + titre + chip statut + date courte FR) — l'ouverture du détail `/sessions/:sid` arrive en 23.3. Chip statut : planned=default, active=gold, completed=heal, cancelled=damage.
+- **`src/routes.tsx`** — route `/campaigns/:cid/sessions` (avant `/campaigns/:cid` pour ne pas masquer le segment). Lazy, comme les autres écrans campaigns.
+- **`src/features/campaigns/campaign-detail-screen.tsx`** — bouton MJ-only « Séances » dans la nav du détail (point d'entrée vers la liste).
+- **i18n** — bloc `sessions.*` (FR + EN) + `campaigns.detail.sessionsCta`.
+- **Tests** — `__tests__/use-sessions.test.tsx` (5, contrat du hook) + `__tests__/sessions-list-screen.test.tsx` (10, dont identité EXACTE des libellés de statut, gating MJ du CTA, flow create). UAT e2e : `tests/e2e/sessions-list-uat.spec.ts` (captures `uat-review/jalon-23/23.2/`).
+
+**Décisions tactiques 23.2 :**
+- Route `/campaigns/:cid/sessions` (cohérence avec le préfixe existant de la feature) au lieu du `/campaign/:id` littéral du plan — jamais réalisé, plus ancien.
+- « Description optionnelle » (step 2) non modélisée : pas de champ au schéma documenté (décision 23.1). Repliable sur les notes Markdown de la séance (23.3).
+- Liste visible aux membres (rule `isMemberOf || isDMOf` le permet), seul le create est MJ-only — fidèle au texte du step 1 (« DM-only "Planifier" button »).
+- ⚠️ **Rule `|| isDMOf` toujours NON déployée** (cf. 23.1) : la liste de séances côté MJ pur crashera en prod tant que `pnpm firebase:deploy:rules` n'a pas tourné. Inerte localement (émulateur OK).
+
 ### Reste à livrer
-- **23.2** — route `/campaign/:id/sessions`, `<SessionsList>`, `<SessionCreateModal>` (steps 1-3 UI).
 - **23.3** — `<SessionScreen>` + onglets Notes (auto-save 5s) / Présence / Events (steps 4-7).
-- **23.4** — boutons Start/End + event-logging + câblage `activeSessionId` + onglet Events scopé (steps 8-11). Specs e2e (step 12).
+- **23.4** — boutons Start/End + event-logging + câblage `activeSessionId` + onglet Events scopé (steps 8-11). Specs e2e parcours complet (step 12).
 
 ## Notes for next plan
 - Plan 25 reads sessions + events to compile journal.
