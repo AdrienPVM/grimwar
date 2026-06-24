@@ -148,14 +148,24 @@ export function CampaignDetailScreen(): JSX.Element {
             ← {t('campaigns.detail.back')}
           </Button>
           {isGm ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
-            >
-              {t('campaigns.detail.sessionsCta')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
+              >
+                {t('campaigns.detail.sessionsCta')}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
+              >
+                {t('campaigns.detail.encountersCta')}
+              </Button>
+            </div>
           ) : null}
         </nav>
 

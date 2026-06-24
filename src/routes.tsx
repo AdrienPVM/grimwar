@@ -112,6 +112,14 @@ const SessionScreen = lazy(async () => {
   return { default: mod.SessionScreen };
 });
 
+// Route /campaigns/:cid/encounters — liste des rencontres de combat (JALON 24.2,
+// steps 1-3). Liste lisible par tout membre, bouton « Créer » MJ-only. Le tracker
+// de combat (`/campaigns/:cid/encounters/:eid`, EncounterScreen) arrive en 24.3.
+const EncountersListScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/encounters-list-screen');
+  return { default: mod.EncountersListScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -138,6 +146,10 @@ export function AppRoutes(): JSX.Element {
         />
         <Route path="/campaigns/:cid/sessions/:sid" element={<SessionScreen />} />
         <Route path="/campaigns/:cid/sessions" element={<SessionsListScreen />} />
+        <Route
+          path="/campaigns/:cid/encounters"
+          element={<EncountersListScreen />}
+        />
         <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

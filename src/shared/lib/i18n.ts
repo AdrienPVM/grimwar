@@ -476,6 +476,7 @@ export type StringKey =
   | 'campaigns.detail.error.notFoundBody'
   // Entrée MJ vers le gestionnaire de séances (JALON 23.2)
   | 'campaigns.detail.sessionsCta'
+  | 'campaigns.detail.encountersCta'
   // Lecture MJ d'une fiche de joueur — JALON 4A.3
   | 'campaigns.memberSheet.back'
   | 'campaigns.memberSheet.readOnlyBadge'
@@ -639,6 +640,51 @@ export type StringKey =
   | 'sessions.action.ending'
   | 'sessions.action.error.anotherActive'
   | 'sessions.action.error.generic'
+  // Rencontres de combat — JALON 24.2 (liste + création)
+  | 'encounters.back'
+  | 'encounters.title'
+  | 'encounters.list.aria'
+  | 'encounters.cta.create'
+  | 'encounters.empty.gm'
+  | 'encounters.empty.member'
+  | 'encounters.row.participantsSuffix'
+  | 'encounters.row.participantsSuffixOne'
+  | 'encounters.status.planned'
+  | 'encounters.status.active'
+  | 'encounters.status.completed'
+  | 'encounters.status.aborted'
+  | 'encounters.error.title'
+  | 'encounters.error.body'
+  | 'encounters.error.retry'
+  | 'encounters.create.title'
+  | 'encounters.create.intro'
+  | 'encounters.create.close'
+  | 'encounters.create.cancel'
+  | 'encounters.create.submit'
+  | 'encounters.create.submitting'
+  | 'encounters.create.nameField.label'
+  | 'encounters.create.nameField.helper'
+  | 'encounters.create.nameField.placeholder'
+  | 'encounters.create.party.title'
+  | 'encounters.create.party.empty'
+  | 'encounters.create.party.loading'
+  | 'encounters.create.party.error'
+  | 'encounters.create.party.hpLabel'
+  | 'encounters.create.monsters.title'
+  | 'encounters.create.monsters.intro'
+  | 'encounters.create.monsters.nameLabel'
+  | 'encounters.create.monsters.namePlaceholder'
+  | 'encounters.create.monsters.hpLabel'
+  | 'encounters.create.monsters.hpPlaceholder'
+  | 'encounters.create.monsters.qtyLabel'
+  | 'encounters.create.monsters.addRow'
+  | 'encounters.create.monsters.removeRow'
+  | 'encounters.create.error.nameRequired'
+  | 'encounters.create.error.nameTooLong'
+  | 'encounters.create.error.noParticipants'
+  | 'encounters.create.error.monsterName'
+  | 'encounters.create.error.monsterHp'
+  | 'encounters.create.error.generic'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1934,6 +1980,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.linkCharacter.error.generic':
       "La liaison n'a pas abouti. Vérifie ta connexion et réessaye.",
     'campaigns.detail.sessionsCta': 'Séances',
+    'campaigns.detail.encountersCta': 'Rencontres',
     // Séances — JALON 23.2
     'sessions.back': 'Retour à la campagne',
     'sessions.title': 'Séances',
@@ -2009,6 +2056,60 @@ const STRINGS: Record<Locale, Dict> = {
       'Une autre séance est déjà en cours. Clos-la avant d’en démarrer une nouvelle.',
     'sessions.action.error.generic':
       "L'action n'a pas abouti. Vérifie ta connexion et réessaye.",
+    // Rencontres de combat — JALON 24.2
+    'encounters.back': 'Retour à la campagne',
+    'encounters.title': 'Rencontres',
+    'encounters.list.aria': 'Liste des rencontres de la campagne',
+    'encounters.cta.create': 'Créer une rencontre',
+    'encounters.empty.gm':
+      'Aucune rencontre pour le moment. Crée-en une pour préparer le prochain combat.',
+    'encounters.empty.member':
+      'Aucune rencontre pour le moment. Le meneur en créera une au prochain combat.',
+    'encounters.row.participantsSuffix': 'participants',
+    'encounters.row.participantsSuffixOne': 'participant',
+    'encounters.status.planned': 'Préparée',
+    'encounters.status.active': 'En cours',
+    'encounters.status.completed': 'Terminée',
+    'encounters.status.aborted': 'Abandonnée',
+    'encounters.error.title': 'Lecture impossible',
+    'encounters.error.body':
+      "Les rencontres n'ont pas pu être chargées. Vérifie ta connexion et réessaye.",
+    'encounters.error.retry': 'Réessayer',
+    'encounters.create.title': 'Nouvelle rencontre',
+    'encounters.create.intro':
+      'Les personnages de la table sont ajoutés automatiquement. Ajoute les monstres à affronter.',
+    'encounters.create.close': 'Fermer la fenêtre de création',
+    'encounters.create.cancel': 'Annuler',
+    'encounters.create.submit': 'Créer',
+    'encounters.create.submitting': 'Création en cours…',
+    'encounters.create.nameField.label': 'Nom de la rencontre',
+    'encounters.create.nameField.helper': 'Ex. « L’embuscade des gobelins ».',
+    'encounters.create.nameField.placeholder': 'Nom de la rencontre',
+    'encounters.create.party.title': 'Personnages de la table',
+    'encounters.create.party.empty':
+      'Aucun personnage lié à la table. Les joueurs doivent lier leur fiche pour être ajoutés.',
+    'encounters.create.party.loading': 'Chargement des personnages…',
+    'encounters.create.party.error':
+      "Certaines fiches n'ont pas pu être lues et ne seront pas ajoutées.",
+    'encounters.create.party.hpLabel': 'PV',
+    'encounters.create.monsters.title': 'Monstres',
+    'encounters.create.monsters.intro':
+      'Saisie manuelle (nom + PV). Le bestiaire complet arrivera plus tard.',
+    'encounters.create.monsters.nameLabel': 'Nom',
+    'encounters.create.monsters.namePlaceholder': 'Ex. « Gobelin »',
+    'encounters.create.monsters.hpLabel': 'PV',
+    'encounters.create.monsters.hpPlaceholder': 'PV',
+    'encounters.create.monsters.qtyLabel': 'Nombre',
+    'encounters.create.monsters.addRow': 'Ajouter un monstre',
+    'encounters.create.monsters.removeRow': 'Retirer ce monstre',
+    'encounters.create.error.nameRequired': 'Le nom est obligatoire.',
+    'encounters.create.error.nameTooLong': 'Le nom est trop long (120 caractères max).',
+    'encounters.create.error.noParticipants':
+      'Ajoute au moins un personnage ou un monstre à la rencontre.',
+    'encounters.create.error.monsterName': 'Chaque monstre doit avoir un nom.',
+    'encounters.create.error.monsterHp': 'Les PV de chaque monstre doivent être supérieurs à 0.',
+    'encounters.create.error.generic':
+      "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3572,6 +3673,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.linkCharacter.error.generic':
       'Linking failed. Check your connection and try again.',
     'campaigns.detail.sessionsCta': 'Sessions',
+    'campaigns.detail.encountersCta': 'Encounters',
     // Sessions — JALON 23.2
     'sessions.back': 'Back to campaign',
     'sessions.title': 'Sessions',
@@ -3642,6 +3744,60 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.action.error.anotherActive':
       'Another session is already active. End it before starting a new one.',
     'sessions.action.error.generic': 'The action failed. Check your connection and try again.',
+    // Combat encounters — JALON 24.2
+    'encounters.back': 'Back to campaign',
+    'encounters.title': 'Encounters',
+    'encounters.list.aria': 'List of campaign encounters',
+    'encounters.cta.create': 'Create an encounter',
+    'encounters.empty.gm':
+      'No encounters yet. Create one to prepare the next fight.',
+    'encounters.empty.member':
+      'No encounters yet. The DM will create one for the next fight.',
+    'encounters.row.participantsSuffix': 'participants',
+    'encounters.row.participantsSuffixOne': 'participant',
+    'encounters.status.planned': 'Planned',
+    'encounters.status.active': 'Active',
+    'encounters.status.completed': 'Completed',
+    'encounters.status.aborted': 'Aborted',
+    'encounters.error.title': 'Unable to load',
+    'encounters.error.body':
+      'Encounters could not be loaded. Check your connection and try again.',
+    'encounters.error.retry': 'Retry',
+    'encounters.create.title': 'New encounter',
+    'encounters.create.intro':
+      'Table characters are added automatically. Add the monsters to fight.',
+    'encounters.create.close': 'Close the creation window',
+    'encounters.create.cancel': 'Cancel',
+    'encounters.create.submit': 'Create',
+    'encounters.create.submitting': 'Creating…',
+    'encounters.create.nameField.label': 'Encounter name',
+    'encounters.create.nameField.helper': 'E.g. “The goblin ambush”.',
+    'encounters.create.nameField.placeholder': 'Encounter name',
+    'encounters.create.party.title': 'Table characters',
+    'encounters.create.party.empty':
+      'No characters linked to the table. Players must link their sheet to be added.',
+    'encounters.create.party.loading': 'Loading characters…',
+    'encounters.create.party.error':
+      'Some sheets could not be read and will not be added.',
+    'encounters.create.party.hpLabel': 'HP',
+    'encounters.create.monsters.title': 'Monsters',
+    'encounters.create.monsters.intro':
+      'Manual entry (name + HP). The full bestiary will come later.',
+    'encounters.create.monsters.nameLabel': 'Name',
+    'encounters.create.monsters.namePlaceholder': 'E.g. “Goblin”',
+    'encounters.create.monsters.hpLabel': 'HP',
+    'encounters.create.monsters.hpPlaceholder': 'HP',
+    'encounters.create.monsters.qtyLabel': 'Quantity',
+    'encounters.create.monsters.addRow': 'Add a monster',
+    'encounters.create.monsters.removeRow': 'Remove this monster',
+    'encounters.create.error.nameRequired': 'The name is required.',
+    'encounters.create.error.nameTooLong': 'The name is too long (120 characters max).',
+    'encounters.create.error.noParticipants':
+      'Add at least one character or monster to the encounter.',
+    'encounters.create.error.monsterName': 'Every monster must have a name.',
+    'encounters.create.error.monsterHp': 'Every monster must have HP greater than 0.',
+    'encounters.create.error.generic':
+      'Creation failed. Check your connection and try again.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':
