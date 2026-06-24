@@ -685,6 +685,37 @@ export type StringKey =
   | 'encounters.create.error.monsterName'
   | 'encounters.create.error.monsterHp'
   | 'encounters.create.error.generic'
+  // Encounters — écran de combat (JALON 24.3)
+  | 'encounters.detail.back'
+  | 'encounters.detail.round'
+  | 'encounters.detail.error.title'
+  | 'encounters.detail.error.body'
+  | 'encounters.detail.error.notFoundTitle'
+  | 'encounters.detail.error.notFoundBody'
+  | 'encounters.detail.error.retry'
+  | 'encounters.action.rollInit'
+  | 'encounters.action.rollingInit'
+  | 'encounters.action.reroll'
+  | 'encounters.action.start'
+  | 'encounters.action.starting'
+  | 'encounters.action.endTurn'
+  | 'encounters.action.end'
+  | 'encounters.action.ending'
+  | 'encounters.action.cancelEnd'
+  | 'encounters.action.error.anotherActive'
+  | 'encounters.action.error.noParticipants'
+  | 'encounters.action.error.generic'
+  | 'encounters.outcome.prompt'
+  | 'encounters.outcome.victory'
+  | 'encounters.outcome.defeat'
+  | 'encounters.outcome.fled'
+  | 'encounters.turnOrder.title'
+  | 'encounters.turnOrder.aria'
+  | 'encounters.turnOrder.empty'
+  | 'encounters.turnOrder.currentTurn'
+  | 'encounters.participant.initLabel'
+  | 'encounters.participant.hpLabel'
+  | 'encounters.participant.typeMonster'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -2110,6 +2141,42 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.create.error.monsterHp': 'Les PV de chaque monstre doivent être supérieurs à 0.',
     'encounters.create.error.generic':
       "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
+    // Encounters — écran de combat (JALON 24.3)
+    'encounters.detail.back': 'Retour aux rencontres',
+    'encounters.detail.round': 'Round',
+    'encounters.detail.error.title': 'Lecture impossible',
+    'encounters.detail.error.body':
+      'La rencontre n’a pas pu être chargée. Vérifie ta connexion et réessaye.',
+    'encounters.detail.error.notFoundTitle': 'Rencontre introuvable',
+    'encounters.detail.error.notFoundBody':
+      'Cette rencontre n’existe plus ou son identifiant est invalide.',
+    'encounters.detail.error.retry': 'Réessayer',
+    'encounters.action.rollInit': 'Lancer l’initiative',
+    'encounters.action.rollingInit': 'Lancement…',
+    'encounters.action.reroll': 'Relancer',
+    'encounters.action.start': 'Démarrer le combat',
+    'encounters.action.starting': 'Démarrage…',
+    'encounters.action.endTurn': 'Fin du tour',
+    'encounters.action.end': 'Clôturer le combat',
+    'encounters.action.ending': 'Clôture…',
+    'encounters.action.cancelEnd': 'Annuler',
+    'encounters.action.error.anotherActive':
+      'Une autre rencontre est déjà en cours. Clôture-la avant d’en démarrer une nouvelle.',
+    'encounters.action.error.noParticipants':
+      'Ajoute au moins un participant avant de démarrer le combat.',
+    'encounters.action.error.generic':
+      'L’action n’a pas abouti. Vérifie ta connexion et réessaye.',
+    'encounters.outcome.prompt': 'Issue du combat',
+    'encounters.outcome.victory': 'Victoire',
+    'encounters.outcome.defeat': 'Défaite',
+    'encounters.outcome.fled': 'Fuite',
+    'encounters.turnOrder.title': 'Ordre d’initiative',
+    'encounters.turnOrder.aria': 'Ordre d’initiative des participants',
+    'encounters.turnOrder.empty': 'Lance l’initiative pour établir l’ordre des tours.',
+    'encounters.turnOrder.currentTurn': 'Tour en cours',
+    'encounters.participant.initLabel': 'Init.',
+    'encounters.participant.hpLabel': 'PV',
+    'encounters.participant.typeMonster': 'Monstre',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3798,6 +3865,42 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.create.error.monsterHp': 'Every monster must have HP greater than 0.',
     'encounters.create.error.generic':
       'Creation failed. Check your connection and try again.',
+    // Encounters — combat screen (JALON 24.3)
+    'encounters.detail.back': 'Back to encounters',
+    'encounters.detail.round': 'Round',
+    'encounters.detail.error.title': 'Unable to load',
+    'encounters.detail.error.body':
+      'The encounter could not be loaded. Check your connection and try again.',
+    'encounters.detail.error.notFoundTitle': 'Encounter not found',
+    'encounters.detail.error.notFoundBody':
+      'This encounter no longer exists or its identifier is invalid.',
+    'encounters.detail.error.retry': 'Retry',
+    'encounters.action.rollInit': 'Roll initiative',
+    'encounters.action.rollingInit': 'Rolling…',
+    'encounters.action.reroll': 'Re-roll',
+    'encounters.action.start': 'Start combat',
+    'encounters.action.starting': 'Starting…',
+    'encounters.action.endTurn': 'End turn',
+    'encounters.action.end': 'End combat',
+    'encounters.action.ending': 'Ending…',
+    'encounters.action.cancelEnd': 'Cancel',
+    'encounters.action.error.anotherActive':
+      'Another encounter is already active. End it before starting a new one.',
+    'encounters.action.error.noParticipants':
+      'Add at least one participant before starting combat.',
+    'encounters.action.error.generic':
+      'The action failed. Check your connection and try again.',
+    'encounters.outcome.prompt': 'Combat outcome',
+    'encounters.outcome.victory': 'Victory',
+    'encounters.outcome.defeat': 'Defeat',
+    'encounters.outcome.fled': 'Fled',
+    'encounters.turnOrder.title': 'Initiative order',
+    'encounters.turnOrder.aria': 'Participants initiative order',
+    'encounters.turnOrder.empty': 'Roll initiative to set the turn order.',
+    'encounters.turnOrder.currentTurn': 'Current turn',
+    'encounters.participant.initLabel': 'Init.',
+    'encounters.participant.hpLabel': 'HP',
+    'encounters.participant.typeMonster': 'Monster',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

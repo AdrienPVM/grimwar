@@ -152,6 +152,10 @@ function renderScreen(): ReturnType<typeof render> {
     <MemoryRouter initialEntries={['/campaigns/c-1/encounters']}>
       <Routes>
         <Route path="/campaigns/:cid/encounters" element={<EncountersListScreen />} />
+        <Route
+          path="/campaigns/:cid/encounters/:eid"
+          element={<div>TRACKER {/* EncounterScreen stub */}</div>}
+        />
       </Routes>
     </MemoryRouter>,
   );
@@ -206,6 +210,16 @@ describe('<EncountersListScreen> — liste avec items', () => {
     expect(screen.getByText('3 participants')).toBeInTheDocument();
     expect(screen.getByText('1 participant')).toBeInTheDocument();
     expect(screen.queryByText('1 participants')).not.toBeInTheDocument();
+  });
+
+  it('un clic sur une ligne navigue vers le tracker de combat (24.3)', () => {
+    campaignHolder.campaign = mkCampaign();
+    encountersHolder.encounters = [
+      mkEncounter({ id: 'e-7', name: 'Le pont effondré', participants: [{ instanceId: 'a' } as never] }),
+    ];
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /Le pont effondré/i }));
+    expect(screen.getByText(/TRACKER/)).toBeInTheDocument();
   });
 
   it('affiche le libellé de statut EXACT pour chaque statut (identité)', () => {

@@ -7,6 +7,7 @@ import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
+import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import type { Encounter, EncounterStatus } from '@/shared/types/encounter';
 
@@ -136,7 +137,11 @@ export function EncountersListScreen(): JSX.Element {
           <>
             <ul aria-label={t('encounters.list.aria')} className="mt-8 flex flex-col gap-3">
               {encounters.map((encounter) => (
-                <EncounterRow key={encounter.id} encounter={encounter} />
+                <EncounterRow
+                  key={encounter.id}
+                  encounter={encounter}
+                  onOpen={() => navigate(`/campaigns/${cid}/encounters/${encounter.id}`)}
+                />
               ))}
             </ul>
             {createCta ? <div className="mt-10 flex justify-center">{createCta}</div> : null}
@@ -167,29 +172,41 @@ const STATUS_CHIP: Record<
 
 interface EncounterRowProps {
   encounter: Encounter;
+  onOpen: () => void;
 }
 
 /**
- * Carte d'affichage d'une rencontre — statique en 24.2 (pas de navigation : le
- * tracker `EncounterScreen` arrive en 24.3). Montre nom + nb de participants +
- * statut.
+ * Ligne cliquable d'une rencontre — navigue vers le tracker de combat
+ * `EncounterScreen` (24.3). Montre nom + nb de participants + statut. Mirror de
+ * `SessionRow`.
  */
-function EncounterRow({ encounter }: EncounterRowProps): JSX.Element {
+function EncounterRow({ encounter, onOpen }: EncounterRowProps): JSX.Element {
   const status = STATUS_CHIP[encounter.status];
   return (
-    <li className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
-      <span className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="truncate font-serif text-body text-text">{encounter.name}</span>
-      </span>
-      <span className="flex shrink-0 items-center gap-3">
-        <span className="hidden font-serif text-body-sm text-text-secondary sm:inline">
-          {encounter.participants.length}{' '}
-          {encounter.participants.length <= 1
-            ? t('encounters.row.participantsSuffixOne')
-            : t('encounters.row.participantsSuffix')}
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className={cn(
+          'flex w-full items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 text-left',
+          'transition-colors duration-150 ease-base',
+          'hover:border-glow hover:bg-white/[0.03]',
+          'focus-visible:border-gold-bright focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold-bright/40',
+        )}
+      >
+        <span className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="truncate font-serif text-body text-text">{encounter.name}</span>
         </span>
-        <Chip variant={status.variant}>{t(status.labelKey)}</Chip>
-      </span>
+        <span className="flex shrink-0 items-center gap-3">
+          <span className="hidden font-serif text-body-sm text-text-secondary sm:inline">
+            {encounter.participants.length}{' '}
+            {encounter.participants.length <= 1
+              ? t('encounters.row.participantsSuffixOne')
+              : t('encounters.row.participantsSuffix')}
+          </span>
+          <Chip variant={status.variant}>{t(status.labelKey)}</Chip>
+        </span>
+      </button>
     </li>
   );
 }
