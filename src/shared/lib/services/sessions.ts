@@ -306,6 +306,27 @@ export async function updateSessionNotes(
 }
 
 /**
+ * Persiste le journal compilé (plan 25.2) dans `sessions/{sid}.journalCompiled`.
+ * Appelé après `compileJournal` (à la clôture de séance ou via « Re-compiler »).
+ * Les événements restent la source de vérité — `journalCompiled` est un snapshot
+ * narratif (éventuellement édité à la main en 25.3). Rule `update : isDMOf`.
+ */
+export async function updateSessionJournal(
+  campaignId: string,
+  sessionId: string,
+  journalCompiled: string,
+): Promise<void> {
+  const firestore = getDb();
+  await trackPendingWrite(
+    firestore,
+    updateDoc(sessionRef(campaignId, sessionId), {
+      journalCompiled,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/**
  * Remplace la liste de présence (UIDs des membres présents). L'onglet Présence
  * (23.3) coche/décoche puis pousse la liste complète.
  */

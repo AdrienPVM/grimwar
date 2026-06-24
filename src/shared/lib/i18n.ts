@@ -633,6 +633,15 @@ export type StringKey =
   | 'sessions.attendance.status.error'
   | 'sessions.events.placeholder'
   | 'sessions.journal.placeholder'
+  // Journal compilé — onglet séance (plan 25.2)
+  | 'sessions.journal.emptyTitle'
+  | 'sessions.journal.emptyBody'
+  | 'sessions.journal.emptyBodyDm'
+  | 'sessions.journal.compile'
+  | 'sessions.journal.recompile'
+  | 'sessions.journal.compiling'
+  | 'sessions.journal.compileError'
+  | 'sessions.journal.compiledHint'
   // Démarrage / clôture de séance — JALON 23.4
   | 'sessions.action.start'
   | 'sessions.action.end'
@@ -2143,6 +2152,18 @@ const STRINGS: Record<Locale, Dict> = {
       "Les événements de cette séance s'afficheront ici une fois la séance démarrée.",
     'sessions.journal.placeholder':
       'Le journal compilé de la séance apparaîtra ici à sa clôture.',
+    'sessions.journal.emptyTitle': 'Aucun journal compilé',
+    'sessions.journal.emptyBody':
+      'Le journal narratif de cette séance sera compilé à partir des événements à sa clôture.',
+    'sessions.journal.emptyBodyDm':
+      'Le journal se compile automatiquement à la clôture de la séance. Vous pouvez aussi le compiler maintenant à partir des événements déjà enregistrés.',
+    'sessions.journal.compile': 'Compiler le journal',
+    'sessions.journal.recompile': 'Re-compiler depuis les événements',
+    'sessions.journal.compiling': 'Compilation…',
+    'sessions.journal.compileError':
+      'La compilation du journal a échoué. Vérifiez votre connexion et réessayez.',
+    'sessions.journal.compiledHint':
+      'Compilé à partir des événements. Les événements restent la source de vérité.',
     'sessions.action.start': 'Démarrer la séance',
     'sessions.action.end': 'Clore la séance',
     'sessions.action.starting': 'Démarrage…',
@@ -3943,6 +3964,18 @@ const STRINGS: Record<Locale, Dict> = {
       'Events from this session will appear here once the session has started.',
     'sessions.journal.placeholder':
       'The compiled session journal will appear here when the session ends.',
+    'sessions.journal.emptyTitle': 'No compiled journal',
+    'sessions.journal.emptyBody':
+      'The narrative journal for this session will be compiled from events when it ends.',
+    'sessions.journal.emptyBodyDm':
+      'The journal compiles automatically when the session ends. You can also compile it now from the events already recorded.',
+    'sessions.journal.compile': 'Compile journal',
+    'sessions.journal.recompile': 'Recompile from events',
+    'sessions.journal.compiling': 'Compiling…',
+    'sessions.journal.compileError':
+      'Journal compilation failed. Check your connection and try again.',
+    'sessions.journal.compiledHint':
+      'Compiled from events. Events remain the source of truth.',
     'sessions.action.start': 'Start session',
     'sessions.action.end': 'End session',
     'sessions.action.starting': 'Starting…',

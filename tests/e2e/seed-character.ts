@@ -1481,6 +1481,9 @@ export async function seedCampaignEvent(
     actorUserId: string;
     actorCharacterId?: string | null;
     targetCharacterId?: string | null;
+    /** Rattache l'event à une séance (plan 25 — compilateur de journal). */
+    sessionId?: string | null;
+    encounterId?: string | null;
     payload: Record<string, unknown>;
     visibility: 'all' | 'dm' | 'self';
   },
@@ -1495,10 +1498,46 @@ export async function seedCampaignEvent(
       actorUserId: event.actorUserId,
       actorCharacterId: event.actorCharacterId ?? null,
       targetCharacterId: event.targetCharacterId ?? null,
-      sessionId: null,
-      encounterId: null,
+      sessionId: event.sessionId ?? null,
+      encounterId: event.encounterId ?? null,
       payload: event.payload,
       visibility: event.visibility,
       createdAt: FieldValue.serverTimestamp(),
     });
+}
+
+/**
+ * Pose une séance `campaigns/{cid}/sessions/{sid}` via l'Admin SDK (bypass
+ * rules) — utilisé par l'UAT du compilateur de journal (plan 25.2). Statut par
+ * défaut `active` pour que le MJ puisse compiler / clôturer depuis l'écran.
+ * Renvoie l'id généré (à passer comme `sessionId` aux events seedés).
+ */
+export async function seedSession(
+  campaignId: string,
+  input: {
+    number: number;
+    title: string;
+    status?: 'planned' | 'active' | 'completed' | 'cancelled';
+    journalCompiled?: string | null;
+  },
+): Promise<{ sessionId: string }> {
+  const { db } = getAdmin();
+  const ref = db.collection('campaigns').doc(campaignId).collection('sessions').doc();
+  const sessionId = ref.id;
+  const status = input.status ?? 'active';
+  await ref.set({
+    id: sessionId,
+    number: input.number,
+    title: input.title,
+    plannedDate: null,
+    startedAt: status === 'active' || status === 'completed' ? FieldValue.serverTimestamp() : null,
+    endedAt: status === 'completed' ? FieldValue.serverTimestamp() : null,
+    status,
+    attendance: [],
+    notes: '',
+    journalCompiled: input.journalCompiled ?? null,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+  return { sessionId };
 }

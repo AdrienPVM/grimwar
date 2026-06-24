@@ -18,9 +18,14 @@ import {
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 import type { SessionStatus } from '@/shared/types/session';
 
+import { compileSessionJournal } from '@/features/journal/compile-session-journal';
+import { SessionJournalTab } from '@/features/journal/session-journal-tab';
+import { useContent } from '@/shared/hooks/use-content';
+
 import { buildRoster } from './campaign-detail-screen';
 import { SessionAttendanceTab } from './session-attendance-tab';
 import { SessionNotesTab } from './session-notes-tab';
+import type { LinkedMember } from './use-encounter-party-draft';
 import { useCampaign } from './use-campaign';
 import { useSession } from './use-session';
 
@@ -74,6 +79,12 @@ export function SessionScreen(): JSX.Element {
   const [actionError, setActionError] = useState<string | null>(null);
   const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
 
+  // Contenu chargé au niveau écran (caché Dexie) : sert au journal (libellés de
+  // sorts / objets / états) à la clôture ET dans l'onglet Journal.
+  const { data: spells } = useContent('spells');
+  const { data: magicItems } = useContent('magic-items');
+  const { data: conditions } = useContent('conditions');
+
   const isGm = useMemo<boolean>(() => {
     if (!campaign || !user) return false;
     return campaign.gmIds.includes(user.uid);
@@ -82,6 +93,16 @@ export function SessionScreen(): JSX.Element {
   const roster = useMemo(
     () => (campaign ? buildRoster(campaign, members, user?.uid ?? null) : []),
     [campaign, members, user],
+  );
+
+  // Membres ayant lié une fiche (characterId → userId) — pour résoudre les noms
+  // de personnages dans le journal (cross-owner, plan 25.2).
+  const linkedMembers = useMemo<LinkedMember[]>(
+    () =>
+      roster
+        .filter((r): r is typeof r & { characterId: string } => r.characterId !== null)
+        .map((r) => ({ userId: r.uid, characterId: r.characterId })),
+    [roster],
   );
 
   const backToSessions = (): void =>
@@ -122,6 +143,23 @@ export function SessionScreen(): JSX.Element {
       setActiveCampaign(cid, sid);
       await endSession(cid, sid);
       await logSessionEnd(sid, { sessionNumber: session.number, title: session.title });
+      // Compilation auto du journal (plan 25.2, step 4) — APRÈS l'event
+      // `session-end` pour qu'il figure dans la narration. Best-effort : un échec
+      // de compilation ne doit PAS faire échouer la clôture (le MJ pourra
+      // re-compiler depuis l'onglet Journal). On ne libère le pointeur de session
+      // qu'ensuite, pour que la compilation lise bien les events tagués `sessionId`.
+      try {
+        await compileSessionJournal({
+          campaignId: cid,
+          sessionId: sid,
+          linkedMembers,
+          spells: spells ?? [],
+          items: magicItems ?? [],
+          conditions: conditions ?? [],
+        });
+      } catch (err) {
+        console.warn('[journal] compilation auto à la clôture échouée', err);
+      }
       setActiveCampaign(cid, null);
       refresh();
     } catch {
@@ -293,7 +331,18 @@ export function SessionScreen(): JSX.Element {
         ) : null}
 
         {tab === 'journal' ? (
-          <TabPlaceholder body={t('sessions.journal.placeholder')} />
+          <SessionJournalTab
+            key={session.id}
+            campaignId={cid}
+            sessionId={sid}
+            journalCompiled={session.journalCompiled}
+            canEdit={isGm}
+            linkedMembers={linkedMembers}
+            spells={spells ?? []}
+            items={magicItems ?? []}
+            conditions={conditions ?? []}
+            onCompiled={refresh}
+          />
         ) : null}
       </section>
     </main>
