@@ -642,6 +642,17 @@ export type StringKey =
   | 'sessions.journal.compiling'
   | 'sessions.journal.compileError'
   | 'sessions.journal.compiledHint'
+  // Journal — édition manuelle + confirmation re-compilation (plan 25.3)
+  | 'sessions.journal.edit'
+  | 'sessions.journal.editLabel'
+  | 'sessions.journal.save'
+  | 'sessions.journal.saving'
+  | 'sessions.journal.cancel'
+  | 'sessions.journal.saveError'
+  | 'sessions.journal.editedHint'
+  | 'sessions.journal.recompileConfirmTitle'
+  | 'sessions.journal.recompileConfirmBody'
+  | 'sessions.journal.recompileConfirm'
   // Démarrage / clôture de séance — JALON 23.4
   | 'sessions.action.start'
   | 'sessions.action.end'
@@ -2164,6 +2175,19 @@ const STRINGS: Record<Locale, Dict> = {
       'La compilation du journal a échoué. Vérifiez votre connexion et réessayez.',
     'sessions.journal.compiledHint':
       'Compilé à partir des événements. Les événements restent la source de vérité.',
+    'sessions.journal.edit': 'Éditer',
+    'sessions.journal.editLabel': 'Journal (Markdown)',
+    'sessions.journal.save': 'Enregistrer',
+    'sessions.journal.saving': 'Enregistrement…',
+    'sessions.journal.cancel': 'Annuler',
+    'sessions.journal.saveError':
+      "L'enregistrement du journal a échoué. Vérifiez votre connexion et réessayez.",
+    'sessions.journal.editedHint':
+      "Version éditée à la main. « Re-compiler depuis les événements » écrasera cette édition.",
+    'sessions.journal.recompileConfirmTitle': 'Re-compiler le journal ?',
+    'sessions.journal.recompileConfirmBody':
+      'Cela réécrit le journal à partir des événements et écrase toute édition manuelle. Les événements restent la source de vérité.',
+    'sessions.journal.recompileConfirm': 'Re-compiler et écraser',
     'sessions.action.start': 'Démarrer la séance',
     'sessions.action.end': 'Clore la séance',
     'sessions.action.starting': 'Démarrage…',
@@ -3976,6 +4000,19 @@ const STRINGS: Record<Locale, Dict> = {
       'Journal compilation failed. Check your connection and try again.',
     'sessions.journal.compiledHint':
       'Compiled from events. Events remain the source of truth.',
+    'sessions.journal.edit': 'Edit',
+    'sessions.journal.editLabel': 'Journal (Markdown)',
+    'sessions.journal.save': 'Save',
+    'sessions.journal.saving': 'Saving…',
+    'sessions.journal.cancel': 'Cancel',
+    'sessions.journal.saveError':
+      'Saving the journal failed. Check your connection and try again.',
+    'sessions.journal.editedHint':
+      '“Recompile from events” will overwrite this manual edit.',
+    'sessions.journal.recompileConfirmTitle': 'Recompile journal?',
+    'sessions.journal.recompileConfirmBody':
+      'This rewrites the journal from events and overwrites any manual edit. Events remain the source of truth.',
+    'sessions.journal.recompileConfirm': 'Recompile and overwrite',
     'sessions.action.start': 'Start session',
     'sessions.action.end': 'End session',
     'sessions.action.starting': 'Starting…',

@@ -1,10 +1,11 @@
-import { useState, type JSX } from 'react';
+import { useId, useState, type JSX } from 'react';
 
 import type { LinkedMember } from '@/features/campaigns/use-encounter-party-draft';
 import { Button } from '@/shared/components/button';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import type { I18nString } from '@/shared/lib/i18n';
 import { t } from '@/shared/lib/i18n';
+import { updateSessionJournal } from '@/shared/lib/services/sessions';
 
 import { compileSessionJournal } from './compile-session-journal';
 import { JournalMarkdown } from './journal-markdown';
@@ -52,13 +53,19 @@ export function SessionJournalTab({
   conditions,
   onCompiled,
 }: SessionJournalTabProps): JSX.Element {
-  // Optimistic : on affiche le résultat de la dernière compilation locale sans
-  // attendre le refresh du doc parent (puis `onCompiled` re-synchronise).
+  // Optimistic : on affiche le résultat de la dernière compilation/édition locale
+  // sans attendre le refresh du doc parent (puis `onCompiled` re-synchronise).
   const [localMarkdown, setLocalMarkdown] = useState<string | null>(null);
   const [pending, setPending] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  // Édition manuelle (plan 25.3, step 6) : `draft` non-null = mode édition.
+  const [draft, setDraft] = useState<string | null>(null);
+  // Confirmation de re-compilation (step 7) : écrase l'édition manuelle.
+  const [confirmingRecompile, setConfirmingRecompile] = useState<boolean>(false);
+  const editorId = useId();
 
   const markdown = localMarkdown ?? journalCompiled;
+  const isEditing = draft !== null;
 
   async function handleCompile(): Promise<void> {
     if (pending) return;
@@ -74,9 +81,28 @@ export function SessionJournalTab({
         conditions,
       });
       setLocalMarkdown(result);
+      setConfirmingRecompile(false);
       onCompiled();
     } catch {
       setError(t('sessions.journal.compileError'));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  // Enregistre l'édition manuelle (step 6). L'édition devient le snapshot
+  // « final » ; les events restent la source de vérité (re-compilable).
+  async function handleSaveEdit(): Promise<void> {
+    if (pending || draft === null) return;
+    setPending(true);
+    setError(null);
+    try {
+      await updateSessionJournal(campaignId, sessionId, draft);
+      setLocalMarkdown(draft);
+      setDraft(null);
+      onCompiled();
+    } catch {
+      setError(t('sessions.journal.saveError'));
     } finally {
       setPending(false);
     }
@@ -107,6 +133,49 @@ export function SessionJournalTab({
     );
   }
 
+  // ── Mode édition manuelle (MJ) ─────────────────────────────────────────────
+  if (isEditing) {
+    return (
+      <div className="flex flex-col gap-4">
+        <label
+          htmlFor={editorId}
+          className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary"
+        >
+          {t('sessions.journal.editLabel')}
+        </label>
+        <textarea
+          id={editorId}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          rows={16}
+          className="w-full resize-y rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 font-serif text-body text-text outline-none transition-colors duration-150 ease-base focus:border-gold"
+        />
+        <div className="flex items-center justify-end gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setDraft(null);
+              setError(null);
+            }}
+            disabled={pending}
+          >
+            {t('sessions.journal.cancel')}
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleSaveEdit} disabled={pending}>
+            {pending ? t('sessions.journal.saving') : t('sessions.journal.save')}
+          </Button>
+        </div>
+        {error ? (
+          <p role="alert" className="text-right font-serif text-body-sm text-crimson">
+            {error}
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  // ── Lecture (+ contrôles MJ) ───────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-5">
       <GlassPanel className="px-5 py-6 sm:px-6">
@@ -119,9 +188,44 @@ export function SessionJournalTab({
 
       {canEdit ? (
         <div className="flex flex-col items-center gap-3">
-          <Button variant="secondary" size="sm" onClick={handleCompile} disabled={pending}>
-            {pending ? t('sessions.journal.compiling') : t('sessions.journal.recompile')}
-          </Button>
+          {confirmingRecompile ? (
+            <GlassPanel className="w-full max-w-[460px] px-5 py-4 text-center">
+              <p className="font-title text-meta uppercase tracking-[0.16em] text-crimson">
+                {t('sessions.journal.recompileConfirmTitle')}
+              </p>
+              <p className="mx-auto mt-2 max-w-[40ch] font-serif text-body-sm text-text-secondary">
+                {t('sessions.journal.recompileConfirmBody')}
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmingRecompile(false)}
+                  disabled={pending}
+                >
+                  {t('sessions.journal.cancel')}
+                </Button>
+                <Button variant="secondary" size="sm" onClick={handleCompile} disabled={pending}>
+                  {pending
+                    ? t('sessions.journal.compiling')
+                    : t('sessions.journal.recompileConfirm')}
+                </Button>
+              </div>
+            </GlassPanel>
+          ) : (
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button variant="ghost" size="sm" onClick={() => setDraft(markdown)}>
+                {t('sessions.journal.edit')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setConfirmingRecompile(true)}
+              >
+                {t('sessions.journal.recompile')}
+              </Button>
+            </div>
+          )}
           {error ? (
             <p role="alert" className="font-serif text-body-sm text-crimson">
               {error}

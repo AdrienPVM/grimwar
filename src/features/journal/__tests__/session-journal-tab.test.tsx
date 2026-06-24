@@ -15,6 +15,12 @@ vi.mock('../compile-session-journal', () => ({
   compileSessionJournal: (args: unknown) => compileMock(args),
 }));
 
+const updateJournalMock = vi.fn();
+vi.mock('@/shared/lib/services/sessions', () => ({
+  updateSessionJournal: (cid: string, sid: string, md: string) =>
+    updateJournalMock(cid, sid, md),
+}));
+
 const baseProps = {
   campaignId: 'camp1',
   sessionId: 'sess1',
@@ -27,6 +33,8 @@ const baseProps = {
 
 beforeEach(() => {
   compileMock.mockReset();
+  updateJournalMock.mockReset();
+  updateJournalMock.mockResolvedValue(undefined);
   baseProps.onCompiled = vi.fn();
 });
 
@@ -74,7 +82,7 @@ describe('SessionJournalTab — compilation MJ', () => {
 });
 
 describe('SessionJournalTab — journal existant', () => {
-  it('rend le Markdown persisté + bouton « Re-compiler » pour le MJ', () => {
+  it('rend le Markdown persisté + boutons « Éditer » et « Re-compiler » pour le MJ', () => {
     render(
       <SessionJournalTab
         {...baseProps}
@@ -84,12 +92,13 @@ describe('SessionJournalTab — journal existant', () => {
     );
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Combat — Embuscade');
     expect(screen.getByText('Gobelin 1').tagName).toBe('STRONG');
+    expect(screen.getByRole('button', { name: 'Éditer' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Re-compiler depuis les événements' }),
     ).toBeInTheDocument();
   });
 
-  it('joueur : rend le Markdown mais AUCUN bouton de compilation', () => {
+  it('joueur : rend le Markdown mais AUCUN bouton (ni éditer ni compiler)', () => {
     render(
       <SessionJournalTab
         {...baseProps}
@@ -99,5 +108,83 @@ describe('SessionJournalTab — journal existant', () => {
     );
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+});
+
+describe('SessionJournalTab — édition manuelle (step 6)', () => {
+  it('« Éditer » → textarea pré-remplie du Markdown courant', async () => {
+    const user = userEvent.setup();
+    render(
+      <SessionJournalTab {...baseProps} journalCompiled={'## Exploration\n\n- Ligne A.'} canEdit />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Éditer' }));
+    const textarea = screen.getByRole('textbox');
+    expect(textarea).toHaveValue('## Exploration\n\n- Ligne A.');
+  });
+
+  it('édition + « Enregistrer » → updateSessionJournal + rendu du texte édité', async () => {
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={'## Exploration\n\n- A.'} canEdit />);
+    await user.click(screen.getByRole('button', { name: 'Éditer' }));
+    const textarea = screen.getByRole('textbox');
+    await user.clear(textarea);
+    await user.type(textarea, '## Exploration\n\n- Texte édité à la main.');
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() => {
+      expect(updateJournalMock).toHaveBeenCalledWith(
+        'camp1',
+        'sess1',
+        '## Exploration\n\n- Texte édité à la main.',
+      );
+    });
+    expect(await screen.findByText('Texte édité à la main.')).toBeInTheDocument();
+    expect(baseProps.onCompiled).toHaveBeenCalledOnce();
+  });
+
+  it('« Annuler » sort de l’édition sans écrire', async () => {
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={'## Exploration\n\n- A.'} canEdit />);
+    await user.click(screen.getByRole('button', { name: 'Éditer' }));
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(updateJournalMock).not.toHaveBeenCalled();
+  });
+
+  it('échec d’enregistrement → message d’erreur', async () => {
+    updateJournalMock.mockRejectedValue(new Error('boom'));
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={'## A\n\n- x'} canEdit />);
+    await user.click(screen.getByRole('button', { name: 'Éditer' }));
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/enregistrement du journal a échoué/i);
+  });
+});
+
+describe('SessionJournalTab — confirmation de re-compilation (step 7)', () => {
+  it('« Re-compiler » demande confirmation AVANT de compiler', async () => {
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={'## A\n\n- x'} canEdit />);
+    await user.click(screen.getByRole('button', { name: 'Re-compiler depuis les événements' }));
+    // L'orchestrateur n'est PAS encore appelé : on est sur l'écran de confirmation.
+    expect(compileMock).not.toHaveBeenCalled();
+    expect(screen.getByText('Re-compiler le journal ?')).toBeInTheDocument();
+  });
+
+  it('confirmation → compile + écrase ; « Annuler » abandonne', async () => {
+    compileMock.mockResolvedValue('## Exploration\n\n- Re-compilé.');
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={'## A\n\n- Édité.'} canEdit />);
+
+    // Annuler d'abord : pas d'appel.
+    await user.click(screen.getByRole('button', { name: 'Re-compiler depuis les événements' }));
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    expect(compileMock).not.toHaveBeenCalled();
+
+    // Re-ouvrir puis confirmer : compile.
+    await user.click(screen.getByRole('button', { name: 'Re-compiler depuis les événements' }));
+    await user.click(screen.getByRole('button', { name: 'Re-compiler et écraser' }));
+    await waitFor(() => expect(compileMock).toHaveBeenCalledOnce());
+    expect(await screen.findByText('Re-compilé.')).toBeInTheDocument();
   });
 });

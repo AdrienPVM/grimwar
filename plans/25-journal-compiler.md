@@ -15,8 +15,8 @@ Plans 22-24.
 - [x] 3. `src/features/journal/compiler.ts` — `compileJournal(events, ctx): string` PUR. Segmente le flux ordonné `createdAt ASC` par `encounterId` (combat = « ## Combat — {nom} » depuis l'`encounter-start`, pied d'issue depuis l'`encounter-end` ; hors-combat = « ## Exploration »). Segments dans l'ORDRE CHRONOLOGIQUE de leur 1ᵉʳ event (alternance exploration/combat fidèle). Sortie Markdown H2 + puces. Repli `journal.empty` si rien à raconter (vide ou tous segments muets). **La query Firestore est sortie du compilateur** → `listSessionEvents` (service, voir ci-dessous) pour garder le compilateur pur.
 - [x] 4. Triggered automatically on `session-end` event (Cloud Function listener or client-side at end-session UX). **Livré 25.2, CLIENT-SIDE** : `SessionScreen.handleEnd` appelle `compileSessionJournal` APRÈS `logSessionEnd` (pour que l'event de clôture figure dans la narration), AVANT de libérer le pointeur de session. Best-effort — un échec de compilation ne fait PAS échouer la clôture (le MJ re-compile depuis l'onglet). Pas de Cloud Function (pas d'infra Functions en place ; le client MJ a les droits `update : isDMOf`).
 - [x] 5. Stored in `sessions/{sid}.journalCompiled`. **Livré 25.2** : `updateSessionJournal` (service) persiste la chaîne compilée. Champ déjà au schéma `Session` (nullable) — zéro changement de schéma.
-- [ ] 6. **Manual edit UI**: in the Journal tab, "Editer" toggle → Markdown editor. Saves to `journalCompiled`. → **25.3**
-- [ ] 7. "Re-compiler depuis les events" button (DM only). → **25.3**
+- [x] 6. **Manual edit UI**: in the Journal tab, "Editer" toggle → Markdown editor. Saves to `journalCompiled`. **Livré 25.3** : bouton « Éditer » (MJ) → `textarea` Markdown pré-remplie + « Enregistrer » (→ `updateSessionJournal`) / « Annuler ». L'édition devient le snapshot final ; les events restent source de vérité (re-compilable). État optimiste + `onCompiled`.
+- [x] 7. "Re-compiler depuis les events" button (DM only) — rewrites `journalCompiled` from scratch (discards manual edits with confirmation). **Livré 25.3** : « Re-compiler depuis les événements » → écran de confirmation INLINE (pas de `confirm()` natif) « Re-compiler le journal ? » avertissant de l'écrasement de l'édition manuelle, boutons « Annuler » / « Re-compiler et écraser ». L'orchestrateur n'est appelé qu'après confirmation.
 - [ ] 8. **Aggregate view** at `/campaign/:id/journal`. → **25.4**
 
 ### Tests
@@ -75,7 +75,21 @@ Branche le compilateur 25.1 sur l'écran de séance : compilation auto à la cl�
 - **Résolution de noms cross-owner réutilise le pattern 24.3** — ids distincts seulement, lectures isolées, repli « Quelqu'un ». Pas de displayName partagé en V1 (constat roster) → certains noms restent non résolus, c'est assumé et truthful.
 - **Contenu chargé au niveau écran** (pas dans le tab) — single owner, passé en props au tab ET utilisé par `handleEnd`.
 
+### JALON 25.3 — Édition manuelle + re-compilation confirmée ✅ livré
+Couvre les steps 6 (édition) et 7 (re-compile + confirmation). Aucun changement de schéma / rule / index.
+
+- **`src/features/journal/session-journal-tab.tsx`** — mode édition (`draft` non-null) : `textarea` Markdown pré-remplie du journal courant + « Enregistrer » (`updateSessionJournal`, réemploi 25.2) / « Annuler ». Re-compilation derrière une confirmation INLINE (`confirmingRecompile`) avertissant de l'écrasement — l'orchestrateur n'est appelé qu'après « Re-compiler et écraser ». État optimiste local, gating `pending`, messages d'erreur dédiés (compile / save). Joueur : toujours lecture seule.
+- **i18n** — bloc `sessions.journal.{edit,editLabel,save,saving,cancel,saveError,editedHint,recompileConfirm*}` (FR + EN). Réemploi terminologique (« Éditer », « Enregistrer », « Annuler ») — zéro nouveau terme D&D.
+- **Tests** — `session-journal-tab.test.tsx` étendu (6 → 12) : éditer pré-remplit, enregistrer → `updateSessionJournal` + rendu édité + `onCompiled`, annuler sans écrire, erreur de save ; re-compile demande confirmation AVANT compile, confirmation → compile + écrase, annuler abandonne. **+6 fast (2504 → 2510).** Triple gate verte.
+- **UAT e2e** — `tests/e2e/journal-edit-uat.spec.ts` (émulateur) : seed séance avec `journalCompiled` → onglet Journal → éditer (textarea pré-remplie) → enregistrer → prose éditée rendue → « Re-compiler » → écran de confirmation. Galerie `uat-review/jalon-25/25.3/` (01 édition ouverte, 02 enregistrée, 03 confirmation).
+
+**Décisions tactiques 25.3 :**
+- **Confirmation INLINE** (pas de `window.confirm`) — cohérent avec le reste de l'app (sélecteur d'issue de combat inline, etc.), testable, stylable.
+- **`textarea` brut** pour l'édition Markdown — pas d'éditeur riche (cohérent avec les notes de séance 23.3). Le MJ édite le Markdown source ; le rendu se voit en sortant de l'édition.
+- **L'édition écrit `journalCompiled` directement** — c'est le snapshot « passe d'auteur » ; les events restent source de vérité (re-compile écrase).
+
 ## Notes for next plan
+- **JALON 25.3 ✅ livré** = édition manuelle (textarea Markdown) + re-compilation confirmée. Reste plan 25 : **25.4** = vue agrégée `/campaigns/:cid/journal` (toutes les séances terminées, chronologique, expandable) + export `.md` (step 8).
 - **JALON 25.1 ✅ livré** : compilateur + templates PURS + `listSessionEvents`. Le compilateur ne lit rien — il reçoit `(events, JournalContext)`. L'écran 25.2 fournit les events (`listSessionEvents`) + les resolvers (roster pour les noms, `useContent` pour sorts/objets/états).
 - **⚠️ Index `(sessionId, visibility, createdAt)` NON déployé** — ajouté à `firestore.indexes.json`, requis par `listSessionEvents`. **TOUJOURS À DÉPLOYER** (`pnpm firebase:deploy:indexes`) AVANT que l'écran ne consomme la query en prod (sinon failed-precondition). L'émulateur l'auto-crée (e2e OK). S'ajoute aux rules/indexes déjà en attente (plans 23/24) — à déployer en batch.
 - **Décision Markdown render TRANCHÉE en 25.2 = option (a)** : renderer maison `JournalMarkdown`, zéro dépendance externe. Pas de react-markdown. Le rendu riche (tables/liens) reste un arbitrage Adrien futur SI demandé.
