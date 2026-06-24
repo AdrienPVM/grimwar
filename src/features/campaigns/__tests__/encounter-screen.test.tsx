@@ -47,6 +47,8 @@ const startEncounterMock = vi.fn();
 const advanceTurnMock = vi.fn();
 const endEncounterMock = vi.fn();
 const setParticipantsMock = vi.fn();
+const applyParticipantHpDeltaMock = vi.fn();
+const setParticipantConditionMock = vi.fn();
 vi.mock('@/shared/lib/services/encounters', async (importActual) => {
   const actual = await importActual<typeof import('@/shared/lib/services/encounters')>();
   return {
@@ -55,16 +57,32 @@ vi.mock('@/shared/lib/services/encounters', async (importActual) => {
     advanceTurn: (...a: unknown[]) => advanceTurnMock(...a),
     endEncounter: (...a: unknown[]) => endEncounterMock(...a),
     setParticipants: (...a: unknown[]) => setParticipantsMock(...a),
+    applyParticipantHpDelta: (...a: unknown[]) => applyParticipantHpDeltaMock(...a),
+    setParticipantCondition: (...a: unknown[]) => setParticipantConditionMock(...a),
   };
 });
 
 const logEncounterStartMock = vi.fn();
 const logTurnStartMock = vi.fn();
 const logEncounterEndMock = vi.fn();
+const logMonsterHpChangeMock = vi.fn();
 vi.mock('@/shared/lib/event-logger', () => ({
   logEncounterStart: (...a: unknown[]) => logEncounterStartMock(...a),
   logTurnStart: (...a: unknown[]) => logTurnStartMock(...a),
   logEncounterEnd: (...a: unknown[]) => logEncounterEndMock(...a),
+  logMonsterHpChange: (...a: unknown[]) => logMonsterHpChangeMock(...a),
+}));
+
+// Catalogue d'états minimal pour le contrôle MJ (libellés localisés).
+vi.mock('@/shared/hooks/use-content', () => ({
+  useContent: () => ({
+    data: [
+      { id: 'prone', name: { fr: 'À terre', en: 'Prone' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
+      { id: 'poisoned', name: { fr: 'Empoisonné', en: 'Poisoned' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
+    ],
+    loading: false,
+    error: null,
+  }),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
@@ -159,9 +177,12 @@ afterEach(() => {
   advanceTurnMock.mockReset();
   endEncounterMock.mockReset();
   setParticipantsMock.mockReset();
+  applyParticipantHpDeltaMock.mockReset();
+  setParticipantConditionMock.mockReset();
   logEncounterStartMock.mockReset();
   logTurnStartMock.mockReset();
   logEncounterEndMock.mockReset();
+  logMonsterHpChangeMock.mockReset();
   useActiveCampaignStore.getState().clearActiveCampaign();
 });
 
@@ -302,6 +323,90 @@ describe('<EncounterScreen> — état active (MJ)', () => {
   });
 });
 
+describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
+  it('le MJ voit « PV / États » sur la carte monstre, PAS sur la carte joueur', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    // Un seul bouton de contrôle (le monstre), pas deux.
+    expect(
+      screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /PV \/ États — Lyralei/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('ouvre la modale, applique −5 → applyParticipantHpDelta + logMonsterHpChange + pointeur', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    applyParticipantHpDeltaMock.mockResolvedValueOnce({ before: 7, after: 2 });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    // La modale s'ouvre avec le nom du monstre.
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '−5' }));
+    await waitFor(() =>
+      expect(applyParticipantHpDeltaMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob', -5),
+    );
+    expect(logMonsterHpChangeMock).toHaveBeenCalledWith('e-1', {
+      monsterInstanceId: 'inst-gob',
+      monsterName: 'Gobelin 1',
+      before: 7,
+      after: 2,
+    });
+    // Pointeur de rencontre posé pour le tag de l'event.
+    expect(useActiveCampaignStore.getState().activeEncounterId).toBe('e-1');
+  });
+
+  it('ne journalise PAS si les PV n’ont pas changé (delta absorbé)', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    applyParticipantHpDeltaMock.mockResolvedValueOnce({ before: 7, after: 7 });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: '+5' }));
+    await waitFor(() => expect(applyParticipantHpDeltaMock).toHaveBeenCalledTimes(1));
+    expect(logMonsterHpChangeMock).not.toHaveBeenCalled();
+  });
+
+  it('bascule un état → setParticipantCondition(add)', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    setParticipantConditionMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'À terre' }));
+    await waitFor(() =>
+      expect(setParticipantConditionMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob', 'prone', 'add'),
+    );
+  });
+
+  it('affiche les états actifs en chips sur la carte', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({
+      status: 'active',
+      round: 1,
+      turnIndex: 0,
+      participants: [
+        mkParticipant(),
+        mkParticipant({
+          type: 'monster',
+          characterId: null,
+          instanceId: 'inst-gob',
+          name: 'Gobelin 1',
+          currentHp: 7,
+          maxHp: 7,
+          conditions: ['poisoned'],
+        }),
+      ],
+    });
+    renderScreen();
+    // Le libellé localisé de l'état apparaît (chip sur la carte).
+    expect(screen.getByText('Empoisonné')).toBeInTheDocument();
+  });
+});
+
 describe('<EncounterScreen> — joueur (non MJ)', () => {
   it('voit l’ordre des tours mais AUCUN contrôle', () => {
     campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
@@ -313,6 +418,8 @@ describe('<EncounterScreen> — joueur (non MJ)', () => {
     expect(
       screen.queryByRole('button', { name: 'Lancer l’initiative' }),
     ).not.toBeInTheDocument();
+    // Aucun contrôle MJ des PV monstres pour un joueur.
+    expect(screen.queryByRole('button', { name: /PV \/ États/ })).not.toBeInTheDocument();
   });
 });
 

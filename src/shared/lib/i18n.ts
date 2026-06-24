@@ -716,6 +716,16 @@ export type StringKey =
   | 'encounters.participant.initLabel'
   | 'encounters.participant.hpLabel'
   | 'encounters.participant.typeMonster'
+  | 'encounters.control.open'
+  | 'encounters.control.hpTitle'
+  | 'encounters.control.amount'
+  | 'encounters.control.damage'
+  | 'encounters.control.heal'
+  | 'encounters.control.applying'
+  | 'encounters.control.conditionsTitle'
+  | 'encounters.control.noConditions'
+  | 'encounters.control.addCondition'
+  | 'encounters.control.closeAria'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -2177,6 +2187,17 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.participant.initLabel': 'Init.',
     'encounters.participant.hpLabel': 'PV',
     'encounters.participant.typeMonster': 'Monstre',
+    // Encounters — contrôle MJ des PV / états (JALON 24.4, step 7)
+    'encounters.control.open': 'PV / États',
+    'encounters.control.hpTitle': 'Points de vie',
+    'encounters.control.amount': 'Montant',
+    'encounters.control.damage': 'Dégâts',
+    'encounters.control.heal': 'Soin',
+    'encounters.control.applying': 'Application…',
+    'encounters.control.conditionsTitle': 'États',
+    'encounters.control.noConditions': 'Aucun état actif.',
+    'encounters.control.addCondition': 'Appliquer un état',
+    'encounters.control.closeAria': 'Fermer le contrôle',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3901,6 +3922,16 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.participant.initLabel': 'Init.',
     'encounters.participant.hpLabel': 'HP',
     'encounters.participant.typeMonster': 'Monster',
+    'encounters.control.open': 'HP / Conditions',
+    'encounters.control.hpTitle': 'Hit points',
+    'encounters.control.amount': 'Amount',
+    'encounters.control.damage': 'Damage',
+    'encounters.control.heal': 'Heal',
+    'encounters.control.applying': 'Applying…',
+    'encounters.control.conditionsTitle': 'Conditions',
+    'encounters.control.noConditions': 'No active conditions.',
+    'encounters.control.addCondition': 'Apply a condition',
+    'encounters.control.closeAria': 'Close control panel',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

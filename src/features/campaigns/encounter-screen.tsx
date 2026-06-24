@@ -7,19 +7,23 @@ import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
+import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import {
   logEncounterEnd,
   logEncounterStart,
+  logMonsterHpChange,
   logTurnStart,
 } from '@/shared/lib/event-logger';
-import { t, type StringKey } from '@/shared/lib/i18n';
+import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import {
   advanceTurn,
   applyInitiative,
+  applyParticipantHpDelta,
   endEncounter,
   EncounterServiceError,
   rollInitiativeFor,
+  setParticipantCondition,
   setParticipants,
   startEncounter,
 } from '@/shared/lib/services/encounters';
@@ -31,6 +35,8 @@ import {
   type EncounterStatus,
 } from '@/shared/types/encounter';
 
+import { hpBarColor, hpRatio } from './encounter-hp';
+import { ParticipantControlModal } from './participant-control-modal';
 import { resolveInitiativeModifiers } from './resolve-initiative-modifiers';
 import { useCampaign } from './use-campaign';
 import { useEncounter } from './use-encounter';
@@ -52,10 +58,6 @@ const OUTCOME_LABEL: Record<EncounterOutcome, StringKey> = {
   fled: 'encounters.outcome.fled',
 };
 
-// Seuils de couleur de la barre de PV (ratio courant/max).
-const HP_BAR_HEALTHY = 0.5;
-const HP_BAR_WOUNDED = 0.25;
-
 /**
  * Route `/campaigns/:cid/encounters/:eid` — écran de combat (tracker partagé,
  * JALON 24.3). S'abonne EN TEMPS RÉEL à la rencontre (`useEncounter`, step 10) :
@@ -74,11 +76,18 @@ const HP_BAR_WOUNDED = 0.25;
  * clôture. Le pointeur `activeEncounterId` (+ la campagne active, requise par
  * l'event-logger) est posé avant chaque écriture d'event, libéré à la clôture.
  *
- * Hors scope 24.3 (→ 24.4) : contrôle des PV monstres (step 7), hand-off dégâts
- * physiques (step 7b), masquage des PV monstres aux joueurs (step 8). Le
- * re-roll côté JOUEUR (qui écrirait sa propre init sur le doc) est bloqué par la
- * rule d'écriture `isDMOf` — il nécessiterait un élargissement de rule (décision
- * Adrien) ; en V1 single-MJ le meneur lance/relance pour toute la table.
+ * Contrôle MJ des PV / états (step 7, JALON 24.4) : chaque carte de monstre / PNJ
+ * porte un bouton « PV / États » (MJ-only) ouvrant `ParticipantControlModal` —
+ * dégâts/soin (journalisés `monster-hp-change`, visibilité `dm`) + bascule des
+ * états (persistés sur le doc partagé, sans event dédié). Les états actifs
+ * s'affichent en chips sur la carte. Le PJ se gère sur sa fiche, pas ici.
+ *
+ * Hors scope 24.4-step7 (→ 24.4 suites) : hand-off dégâts physiques (step 7b),
+ * masquage des PV monstres aux joueurs (step 8 — nécessite un champ `hpVisible`
+ * = changement de schéma, décision Adrien). Le re-roll côté JOUEUR (qui écrirait
+ * sa propre init sur le doc) est bloqué par la rule d'écriture `isDMOf` — il
+ * nécessiterait un élargissement de rule (décision Adrien) ; en V1 single-MJ le
+ * meneur lance/relance pour toute la table.
  */
 export function EncounterScreen(): JSX.Element {
   const navigate = useNavigate();
@@ -91,9 +100,20 @@ export function EncounterScreen(): JSX.Element {
   const [actionError, setActionError] = useState<string | null>(null);
   const [endMode, setEndMode] = useState<boolean>(false);
   const [rerollingId, setRerollingId] = useState<string | null>(null);
+  // instanceId du participant dont la modale de contrôle MJ est ouverte (24.4).
+  const [controlTargetId, setControlTargetId] = useState<string | null>(null);
+
+  const { data: conditionDefs } = useContent('conditions');
 
   const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
   const setActiveEncounter = useActiveCampaignStore((s) => s.setActiveEncounter);
+
+  // Résout le libellé localisé d'un slug d'état (repli : slug capitalisé tant
+  // que le bundle `conditions` n'est pas chargé).
+  const conditionLabel = useMemo(() => {
+    const byId = new Map(conditionDefs.map((c) => [c.id, localize(c.name)]));
+    return (id: string): string => byId.get(id) ?? capitalizeSlug(id);
+  }, [conditionDefs]);
 
   const isGm = useMemo<boolean>(() => {
     if (!campaign || !user) return false;
@@ -236,6 +256,56 @@ export function EncounterScreen(): JSX.Element {
     }
   }
 
+  // ─── Contrôle MJ des PV monstres (step 7) — applique un delta puis journalise
+  // `monster-hp-change` (visibilité `dm`) UNIQUEMENT si les PV ont changé (au
+  // plancher 0 / plafond maxHp, un delta peut être absorbé sans changement).
+  // Réservé aux participants non-joueurs (la rule `isDMOf` est la défense ultime).
+  async function handleApplyHp(participant: EncounterParticipant, delta: number): Promise<void> {
+    if (!cid || !eid || actionPending || delta === 0) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      const { before, after } = await applyParticipantHpDelta(
+        cid,
+        eid,
+        participant.instanceId,
+        delta,
+      );
+      if (before !== after) {
+        ensurePointers(cid, eid);
+        await logMonsterHpChange(eid, {
+          monsterInstanceId: participant.instanceId,
+          monsterName: participant.name,
+          before,
+          after,
+        });
+      }
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Contrôle MJ des états (step 7) — persiste sur le doc partagé (live), pas
+  // d'event (aucun kind `monster-condition-change` ; cf. service).
+  async function handleToggleCondition(
+    participant: EncounterParticipant,
+    condition: string,
+    action: 'add' | 'remove',
+  ): Promise<void> {
+    if (!cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await setParticipantCondition(cid, eid, participant.instanceId, condition, action);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   if (campaignLoading || encounterLoading) return <Splash />;
 
   if (encounterError || !encounter || !cid || !eid) {
@@ -267,6 +337,14 @@ export function EncounterScreen(): JSX.Element {
   const hasRolled = encounter.participants.some((p) => p.initiative !== 0);
   const canRoll = isGm && encounter.status === 'planned';
   const isActive = encounter.status === 'active';
+
+  // Participant ciblé par la modale de contrôle, dérivé EN LIVE du doc : les PV /
+  // états affichés se rafraîchissent via `onSnapshot` après chaque application.
+  // Si le participant a disparu (clôture, retrait), la cible retombe à null.
+  const controlTarget =
+    controlTargetId !== null
+      ? (encounter.participants.find((p) => p.instanceId === controlTargetId) ?? null)
+      : null;
 
   return (
     <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8">
@@ -408,12 +486,36 @@ export function EncounterScreen(): JSX.Element {
               canReroll={canRoll}
               rerolling={rerollingId === participant.instanceId}
               onReroll={() => handleReroll(participant)}
+              // Contrôle MJ (step 7) : monstres / PNJ uniquement, MJ uniquement.
+              // Le PJ se gère sur sa propre fiche.
+              canControl={isGm && participant.type !== 'player'}
+              onControl={() => setControlTargetId(participant.instanceId)}
+              resolveConditionLabel={conditionLabel}
             />
           ))}
         </ul>
       </section>
+
+      {isGm && controlTarget ? (
+        <ParticipantControlModal
+          participant={controlTarget}
+          conditions={conditionDefs}
+          pending={actionPending}
+          onApplyHp={(delta) => void handleApplyHp(controlTarget, delta)}
+          onToggleCondition={(condition, action) =>
+            void handleToggleCondition(controlTarget, condition, action)
+          }
+          onClose={() => setControlTargetId(null)}
+        />
+      ) : null}
     </main>
   );
+}
+
+/** Slug → libellé de repli capitalisé (« blinded » → « Blinded »). */
+function capitalizeSlug(slug: string): string {
+  if (!slug) return slug;
+  return slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
 }
 
 function mapActionError(err: unknown): string {
@@ -435,6 +537,10 @@ interface ParticipantCardProps {
   canReroll: boolean;
   rerolling: boolean;
   onReroll: () => void;
+  /** Le MJ peut ouvrir la modale de contrôle (monstres / PNJ uniquement). */
+  canControl: boolean;
+  onControl: () => void;
+  resolveConditionLabel: (id: string) => string;
 }
 
 function ParticipantCard({
@@ -444,11 +550,13 @@ function ParticipantCard({
   canReroll,
   rerolling,
   onReroll,
+  canControl,
+  onControl,
+  resolveConditionLabel,
 }: ParticipantCardProps): JSX.Element {
-  const ratio = participant.maxHp > 0 ? participant.currentHp / participant.maxHp : 0;
+  const ratio = hpRatio(participant.currentHp, participant.maxHp);
   const hpPercent = Math.round(ratio * 100);
-  const barColor =
-    ratio > HP_BAR_HEALTHY ? 'bg-teal' : ratio > HP_BAR_WOUNDED ? 'bg-gold' : 'bg-crimson';
+  const barColor = hpBarColor(ratio);
 
   return (
     <li
@@ -498,6 +606,22 @@ function ParticipantCard({
         </div>
       </div>
 
+      {participant.conditions.length > 0 ? (
+        <ul
+          aria-label={t('encounters.control.conditionsTitle')}
+          className="flex flex-wrap gap-1"
+        >
+          {participant.conditions.map((id) => (
+            <li
+              key={id}
+              className="rounded-pill border border-crimson/40 bg-crimson/[0.08] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.1em] text-crimson"
+            >
+              {resolveConditionLabel(id)}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       {canReroll ? (
         <Button
           variant="ghost"
@@ -507,6 +631,17 @@ function ParticipantCard({
           aria-label={`${t('encounters.action.reroll')} — ${participant.name}`}
         >
           {t('encounters.action.reroll')}
+        </Button>
+      ) : null}
+
+      {canControl ? (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onControl}
+          aria-label={`${t('encounters.control.open')} — ${participant.name}`}
+        >
+          {t('encounters.control.open')}
         </Button>
       ) : null}
     </li>

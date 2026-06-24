@@ -103,6 +103,7 @@ import {
   advanceTurn,
   applyHpDelta,
   applyInitiative,
+  applyParticipantHpDelta,
   createEncounter,
   endEncounter,
   EncounterServiceError,
@@ -111,6 +112,7 @@ import {
   listEncounters,
   nextTurn,
   rollInitiativeFor,
+  setParticipantCondition,
   setParticipants,
   startEncounter,
   toggleCondition,
@@ -481,6 +483,68 @@ describe('toggleCondition', () => {
     const ps = [makeParticipant({ instanceId: 'm1', conditions: ['a-terre'] })];
     expect(toggleCondition(ps, 'm1', 'a-terre', 'remove')[0]!.conditions).toEqual([]);
     expect(toggleCondition(ps, 'm1', 'absent', 'remove')[0]!.conditions).toEqual(['a-terre']);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// applyParticipantHpDelta / setParticipantCondition (wrappers I/O, JALON 24.4)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('applyParticipantHpDelta', () => {
+  it('lit l’état, applique le delta (clamp), patch et renvoie before/after', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        participants: [
+          makeParticipant({ instanceId: 'm1', currentHp: 7, maxHp: 7 }),
+          makeParticipant({ instanceId: 'm2', currentHp: 12, maxHp: 12 }),
+        ],
+      }),
+    });
+    const result = await applyParticipantHpDelta(CID, EID, 'm1', -5);
+    expect(result).toEqual({ before: 7, after: 2 });
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps[0]!.currentHp).toBe(2);
+    // L'autre participant n'est pas touché.
+    expect(ps[1]!.currentHp).toBe(12);
+  });
+
+  it('clampe les dégâts à 0 (before/after reflètent le plancher)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: EID, participants: [makeParticipant({ instanceId: 'm1', currentHp: 3, maxHp: 7 })] }),
+    });
+    const result = await applyParticipantHpDelta(CID, EID, 'm1', -10);
+    expect(result).toEqual({ before: 3, after: 0 });
+  });
+});
+
+describe('setParticipantCondition', () => {
+  it('lit l’état, ajoute la condition et patch la liste', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: EID, participants: [makeParticipant({ instanceId: 'm1', conditions: [] })] }),
+    });
+    await setParticipantCondition(CID, EID, 'm1', 'prone', 'add');
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps[0]!.conditions).toEqual(['prone']);
+  });
+
+  it('retire une condition présente', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        participants: [makeParticipant({ instanceId: 'm1', conditions: ['prone', 'poisoned'] })],
+      }),
+    });
+    await setParticipantCondition(CID, EID, 'm1', 'prone', 'remove');
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps[0]!.conditions).toEqual(['poisoned']);
   });
 });
 

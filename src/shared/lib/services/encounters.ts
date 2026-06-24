@@ -431,3 +431,47 @@ export function toggleCondition(
     return p;
   });
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// Contrôle MJ des PV / états — wrappers I/O (step 7, JALON 24.4)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Applique un delta de PV à un participant et persiste (dégâts négatifs, soins
+ * positifs — step 7). Lit l'état courant (source de vérité serveur), compose le
+ * calcul pur `applyHpDelta` (clamp 0..maxHp), pose le résultat, renvoie
+ * before/after pour le payload `monster-hp-change` côté UI. Read-then-write
+ * non transactionnel, aligné sur `advanceTurn` : les appels sont séquentialisés
+ * par l'UI (`actionPending`), suffisant en V1 single-MJ. L'event
+ * `monster-hp-change` (visibilité `dm`) reste posé par l'UI (24.x).
+ */
+export async function applyParticipantHpDelta(
+  campaignId: string,
+  encounterId: string,
+  instanceId: string,
+  delta: number,
+): Promise<{ before: number; after: number }> {
+  const current = await getEncounter(campaignId, encounterId);
+  const { participants, before, after } = applyHpDelta(current.participants, instanceId, delta);
+  await setParticipants(campaignId, encounterId, participants);
+  return { before, after };
+}
+
+/**
+ * Pose/retire un état sur un participant et persiste (step 7). Lit l'état
+ * courant, compose le calcul pur `toggleCondition` (idempotent), pose le
+ * résultat. Pas d'event journalisé : aucun kind `monster-condition-change`
+ * n'existe (EVENT-LOG.md) — l'état vit sur le doc partagé en temps réel. Un
+ * event dédié relèverait d'un changement de schéma d'événement (décision Adrien).
+ */
+export async function setParticipantCondition(
+  campaignId: string,
+  encounterId: string,
+  instanceId: string,
+  condition: string,
+  action: 'add' | 'remove',
+): Promise<void> {
+  const current = await getEncounter(campaignId, encounterId);
+  const participants = toggleCondition(current.participants, instanceId, condition, action);
+  await setParticipants(campaignId, encounterId, participants);
+}
