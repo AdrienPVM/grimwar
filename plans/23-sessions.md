@@ -17,21 +17,21 @@ Plans 14, 22.
 - [x] 5. **Notes tab** — éditeur Markdown-as-text (MJ-only) + auto-save debounced 5 s → `sessions/{sid}.notes`. (23.3) ⚠️ Le RENDU Markdown enrichi (preview gras/titres/listes) est DIFFÉRÉ : il requiert une dépendance externe (react-markdown), décision Adrien (règle d'autonomie). Le texte est stocké tel quel, la vue lecture préserve les sauts de ligne.
 - [x] 6. **Attendance tab** — cases cochables par membre (MJ-only), push de la liste complète → `sessions/{sid}.attendance: string[]`. (23.3)
 - [ ] 7. **Events tab** — events scoped to this session (`events` where `sessionId == sid`), grouped by encounter / chronological. (placeholder posé en 23.3, lecture câblée en 23.4)
-- [ ] 8. **Start session** button (when status='planned'): sets `status='active'`, `startedAt=now`, logs `session-start` event. Active session sticky in DM dashboard top bar.
-- [ ] 9. **End session** button (when status='active'): sets `status='completed'`, `endedAt=now`, logs `session-end` event. Triggers journal compilation (plan 25).
-- [ ] 10. Only one session can be `'active'` at a time per campaign.
-- [ ] 11. Active session ID flows through Zustand `useActiveSession()` → all events logged during the session get `sessionId` auto-populated by event-logger.
+- [x] 8. **Start session** button (when status='planned'): `status='active'`, `startedAt=now`, logue `session-start`. (23.4) — la version « sticky in DM dashboard top bar » (rappel persistant hors écran séance) reste un raffinement DM-dashboard ultérieur.
+- [x] 9. **End session** button (when status='active'): `status='completed'`, `endedAt=now`, logue `session-end`. (23.4) — compilation journal = plan 25.
+- [x] 10. Only one session can be `'active'` at a time per campaign. (garde-fou service 23.1 `another-session-active`, surfacé en UI 23.4 avec message dédié.)
+- [~] 11. Active session ID flows through Zustand → events tagués `sessionId`. **MJ-side livré** (23.4 : `setActiveCampaign(cid, sid)` au start, les events MJ + `session-start`/`session-end` portent `sessionId`). **Propagation cross-client DÉFÉRÉE** — pour que les events d'un JOUEUR soient tagués, son appareil doit connaître la séance active ; en jeu hors-ligne (« téléphone dans une grotte ») la propagation temps-réel Firestore ne fonctionne pas → décision d'architecture à trancher avec Adrien (one-shot au montage de fiche vs onSnapshot vs join manuel). Voir « Décision Adrien en attente ».
 
 ### Tests
-- [ ] 12. e2e: DM creates session, starts, players join, end session, journal placeholder visible.
-- [ ] 13. `pnpm typecheck && pnpm test && pnpm lint`
-- [ ] 14. Commit: `feat(sessions): manager + active session + events scoped (plan 23)`
+- [~] 12. e2e: DM crée séance, démarre, clôt, events journalisés + rendus au feed, placeholder journal visible — **livré en single-MJ** (`tests/e2e/session-lifecycle-uat.spec.ts` + les 3 specs UAT 23.2/23.3/23.4). La branche « players join » (multi-user) est déférée (nécessite un second compte e2e, comme la promotion MJ de `campaigns-detail-uat`).
+- [x] 13. `pnpm typecheck && pnpm test && pnpm lint` — vert à chaque sous-jalon (23.2 → 23.4).
+- [x] 14. Commits conventionnels par sous-jalon (23.2 `e60b80a`, 23.3 `8dfaf3f`, 23.4 ci-après).
 
 ## Definition of Done
-- [ ] Session creation, start, end flows work
-- [ ] One active session at a time
-- [ ] Events auto-tagged with sessionId
-- [ ] Notes auto-save
+- [x] Session creation, start, end flows work
+- [x] One active session at a time
+- [~] Events auto-tagged with sessionId — MJ-side OK ; propagation cross-client joueur déférée (décision Adrien)
+- [x] Notes auto-save
 
 ## Sous-jalons
 
@@ -84,10 +84,26 @@ Shell SessionScreen 4 onglets + 2 onglets fonctionnels. Triple gate verte (typec
 - Auto-save interprété en **debounce 5 s** (après la dernière frappe) plutôt qu'intervalle fixe : moins d'écritures, pas de write par seconde en frappe continue. Flush au démontage garantit zéro perte.
 - Onglet Events = placeholder en 23.3 ; sa lecture (`where sessionId == sid`) est groupée avec le wiring `activeSessionId` en 23.4 (les events ne sont tagués `sessionId` que pendant la séance active).
 
-### Reste à livrer
-- **23.4** — boutons Start/End + event-logging (`session-start`/`session-end`) + câblage `activeSessionId` (Zustand) + onglet Events scopé (steps 8-11). Specs e2e parcours complet (step 12).
-- **Décision Adrien en attente** — dépendance de rendu Markdown (react-markdown ou équivalent) pour la preview de l'onglet Notes. Sans elle, les notes restent en texte brut (fonctionnel, stockage intact).
+### JALON 23.4 — Start/End + event-logging + pointeur MJ (steps 8-11 partiel) ✅ livré
+Cycle de vie de la séance côté MJ, vérifié bout-en-bout contre l'émulateur. Triple gate verte (typecheck + 2648 tests dont +9 nouveaux + lint) + `pnpm test:rules` 88/88.
+
+- **`event-logger.ts`** — `logSessionStart` / `logSessionEnd` (kind dédié, `actorCharacterId: null`, visibilité `all`, `sessionId` explicite, payload `{ sessionNumber, title }`).
+- **`session-screen.tsx`** — boutons MJ-only **Démarrer** (planned) / **Clore** (active). Start : `startSession` → `setActiveCampaign(cid, sid)` (pointeur posé APRÈS succès) → `logSessionStart` → `refresh` ; garde-fou `another-session-active` surfacé (message dédié, pointeur non posé). End : (re)pose le pointeur (robuste au reload) → `endSession` → `logSessionEnd` → libère le pointeur de session → `refresh`.
+- **`event-line.ts`** — `summarizeEvent` rend `session-start`/`session-end` (« Séance démarrée/terminée » + titre en détail) au lieu du libellé générique.
+- **`firestore.rules`** — **events CREATE élargi `isMemberOf` → `isMemberOf || isDMOf`** (bug trouvé en UAT lifecycle : un MJ pur ne pouvait PAS journaliser ses propres events → `session-start` silencieusement refusé). Même gap/précédent que la lecture 22.3. ⚠️ **Non déployé.**
+- **i18n** — `sessions.action.*` (start/end/pending/erreurs) + `eventFeed.kind.sessionStart`/`sessionEnd` (FR + EN).
+- **Tests** — event-logger (+3 : start/end payload + no-op hors campagne) ; session-screen (+4 : démarrer pose pointeur+logge, clore libère, garde-fou message, gating MJ) ; event-line (+2 : identité libellés session) ; `firestore-rules` (+1 rouge-avant-vert : MJ pur crée un `session-start`). UAT e2e : `tests/e2e/session-lifecycle-uat.spec.ts` (create→start→clore + events rendus au feed, vérifié contre les vraies rules) → `uat-review/jalon-23/23.4/`.
+
+**Décisions tactiques 23.4 :**
+- Rule events CREATE élargie à `|| isDMOf` : strictement dans le périmètre des steps 8-9 (le MJ DOIT pouvoir logguer) et fidèle au commentaire existant de la rule (« DM can log anything ») qui n'avait jamais été implémenté. Couvert par un test rules rouge-avant-vert.
+- Pointeur de campagne active posé APRÈS la transition `startSession` réussie (sur échec `another-session-active`, aucun pointeur posé) ; (re)posé au démarrage de `handleEnd` pour rester robuste à un reload mid-séance.
+
+### Reste à livrer (décisions Adrien requises)
+1. **Propagation cross-client de `activeSessionId` (step 11 complet) + onglet Events scopé (step 7).** Pour que les events d'un JOUEUR soient tagués `sessionId`, son appareil doit connaître la séance active. En jeu hors-ligne (contrainte « téléphone dans une grotte », cf. CLAUDE.md), la propagation temps-réel Firestore ne marche pas. **Options** : (a) one-shot `getActiveSession` au montage de la fiche du joueur (simple, rate les démarrages en cours de session ouverte) ; (b) `onSnapshot` sur la séance active par client (live mais ne marche pas hors-ligne) ; (c) « rejoindre la séance » manuel côté joueur. L'onglet Events scopé en dépend (et d'un index composite `(sessionId, visibility, createdAt)` à déclarer). **À trancher avec Adrien avant de livrer.**
+2. **Rendu Markdown de l'onglet Notes** — dépendance externe (react-markdown ou équiv.). Sans elle, les notes restent en texte brut (fonctionnel, stockage Markdown intact).
+3. **e2e multi-user (« players join », step 12)** — nécessite un second compte e2e (même blocage que la promotion MJ de `campaigns-detail-uat`).
 
 ## Notes for next plan
-- Plan 25 reads sessions + events to compile journal.
-- 23.1 a livré le data layer complet (type + service + rule). 23.2+ n'ont qu'à câbler l'UI sur `sessions.ts` — pas de nouveau schéma, pas de nouvelle rule (le `|| isDMOf` est déjà posé). **Rappel : déployer `firestore.rules` avant la livraison 23.2** (la liste de sessions côté MJ crashe en prod sinon).
+- Plan 25 reads sessions + events to compile journal. Le compilateur se branchera dans `endSession` / `logSessionEnd` (le hook est déjà en place ; `journalCompiled` reste `null` jusque-là).
+- **⚠️ DEUX changements `firestore.rules` NON déployés à déployer avant prod** (`pnpm firebase:deploy:rules`, après `pnpm test:rules`) : (1) sessions read `|| isDMOf` (23.1) ; (2) events CREATE `|| isDMOf` (23.4). Sans le (2), le MJ ne peut pas démarrer/clore une séance en prod (events refusés). Les deux sont couverts par `tests/firestore-rules.test.ts` (88/88 émulateur).
+- 23.4 livre le cycle MJ. Le tagging `sessionId` des events JOUEURS (step 11 complet) + l'onglet Events scopé restent en attente d'une décision d'archi (cf. « Reste à livrer »).

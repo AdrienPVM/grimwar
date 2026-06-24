@@ -180,6 +180,50 @@ export async function logCharacterDiff(
 }
 
 /**
+ * Journalise le démarrage d'une séance (plan 23.4, kind `session-start`,
+ * visibilité `all`). Pré-requis d'appel : la campagne active DOIT être posée
+ * (`setActiveCampaign(cid, sid)`) AVANT cet appel — sinon `writeEvent` no-op.
+ * On passe `sessionId` explicitement pour que l'event porte la séance qu'il
+ * démarre même si le pointeur Zustand n'a pas encore propagé.
+ *
+ * `actorCharacterId: null` — c'est une action MJ, pas un personnage. Le payload
+ * porte `sessionNumber` + `title` pour que le feed (event-line) affiche un
+ * libellé lisible sans relire le doc séance. `attendance`/`summary` (cf.
+ * EVENT-LOG.md) sont laissés au compilateur de journal (plan 25).
+ */
+export async function logSessionStart(
+  sessionId: string,
+  meta: { sessionNumber: number; title: string },
+): Promise<void> {
+  await writeEvent({
+    kind: 'session-start',
+    actorCharacterId: null,
+    sessionId,
+    visibility: 'all',
+    payload: { sessionNumber: meta.sessionNumber, title: meta.title },
+  });
+}
+
+/**
+ * Journalise la clôture d'une séance (plan 23.4, kind `session-end`, visibilité
+ * `all`). À appeler AVANT de nettoyer le pointeur de session active, pour que
+ * l'event soit bien tagué `sessionId`. La compilation du journal (plan 25) se
+ * branchera ici.
+ */
+export async function logSessionEnd(
+  sessionId: string,
+  meta: { sessionNumber: number; title: string },
+): Promise<void> {
+  await writeEvent({
+    kind: 'session-end',
+    actorCharacterId: null,
+    sessionId,
+    visibility: 'all',
+    payload: { sessionNumber: meta.sessionNumber, title: meta.title },
+  });
+}
+
+/**
  * Back-compat : le pivot de dés (plan 12 / 12.5) appelle ce nom depuis quatre
  * call sites. C'était un stub no-op ; il délègue maintenant au vrai `logRoll`.
  */

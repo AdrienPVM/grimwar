@@ -1452,6 +1452,26 @@ describeIfEmulator('firestore.rules — events (plan 22 / JALON 22.1)', () => {
     );
   });
 
+  // GAP 23.4 (rouge-avant-vert) : un MJ PUR (gmIds, sans doc members/) doit
+  // pouvoir journaliser SES events — c'est le chemin session-start/session-end.
+  // `isMemberOf` seul le bloquait ; élargi à `isMemberOf || isDMOf`.
+  it('ACCEPTE create par un MJ pur (session-start, sans doc members/)', async () => {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(EV_GM).firestore();
+    await assertSucceeds(
+      setDoc(
+        doc(db, 'campaigns', EV_CID, 'events', 'evt-gm-start'),
+        makeEventDoc({
+          kind: 'session-start',
+          actorUserId: EV_GM,
+          actorCharacterId: null,
+          sessionId: 'sess-1',
+          payload: { sessionNumber: 1, title: 'Ouverture' },
+        }),
+      ),
+    );
+  });
+
   it("REFUSE create avec un createdAt client (≠ request.time)", async () => {
     if (!env) throw new Error('env not initialized');
     const db = env.authenticatedContext(EV_PLAYER).firestore();

@@ -29,14 +29,48 @@ vi.mock('../use-session', () => ({ useSession: () => sessionHolder }));
 
 const updateNotesMock = vi.fn().mockResolvedValue(undefined);
 const setAttendanceMock = vi.fn().mockResolvedValue(undefined);
-vi.mock('@/shared/lib/services/sessions', () => ({
-  updateSessionNotes: (...args: unknown[]) => updateNotesMock(...args),
-  setSessionAttendance: (...args: unknown[]) => setAttendanceMock(...args),
+const startSessionMock = vi.fn().mockResolvedValue(undefined);
+const endSessionMock = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/shared/lib/services/sessions', () => {
+  class FakeSessionError extends Error {
+    readonly kind: string;
+    constructor(kind: string, message: string) {
+      super(message);
+      this.name = 'SessionServiceError';
+      this.kind = kind;
+    }
+  }
+  return {
+    updateSessionNotes: (...args: unknown[]) => updateNotesMock(...args),
+    setSessionAttendance: (...args: unknown[]) => setAttendanceMock(...args),
+    startSession: (...args: unknown[]) => startSessionMock(...args),
+    endSession: (...args: unknown[]) => endSessionMock(...args),
+    SessionServiceError: FakeSessionError,
+  };
+});
+
+const logStartMock = vi.fn().mockResolvedValue(undefined);
+const logEndMock = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/shared/lib/event-logger', () => ({
+  logSessionStart: (...args: unknown[]) => logStartMock(...args),
+  logSessionEnd: (...args: unknown[]) => logEndMock(...args),
+}));
+
+const setActiveCampaignMock = vi.fn();
+vi.mock('@/shared/lib/slices/active-campaign-slice', () => ({
+  useActiveCampaignStore: (selector: (s: unknown) => unknown) =>
+    selector({
+      activeCampaignId: null,
+      activeSessionId: null,
+      setActiveCampaign: setActiveCampaignMock,
+      clearActiveCampaign: vi.fn(),
+    }),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
 
 import { SessionScreen } from '../session-screen';
+import { SessionServiceError as FakeSessionError } from '@/shared/lib/services/sessions';
 
 function mkCampaign(overrides: Partial<Campaign> = {}): Campaign {
   return {
@@ -99,6 +133,11 @@ afterEach(() => {
   sessionHolder.refresh = vi.fn();
   updateNotesMock.mockClear();
   setAttendanceMock.mockClear();
+  startSessionMock.mockClear().mockResolvedValue(undefined);
+  endSessionMock.mockClear().mockResolvedValue(undefined);
+  logStartMock.mockClear();
+  logEndMock.mockClear();
+  setActiveCampaignMock.mockClear();
 });
 
 function renderScreen(): ReturnType<typeof render> {
@@ -179,6 +218,50 @@ describe('<SessionScreen> — lecture seule (membre non-MJ)', () => {
     for (const box of screen.getAllByRole('checkbox')) {
       expect(box).toBeDisabled();
     }
+  });
+});
+
+describe('<SessionScreen> — démarrage / clôture (MJ)', () => {
+  it('séance planifiée → bouton « Démarrer » ; clic démarre + pose pointeur + logge', async () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['gm-uid'] });
+    sessionHolder.session = mkSession({ status: 'planned', number: 3, title: 'L’embuscade' });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer la séance' }));
+    await waitFor(() => expect(startSessionMock).toHaveBeenCalledWith('c-1', 's-1'));
+    expect(setActiveCampaignMock).toHaveBeenCalledWith('c-1', 's-1');
+    expect(logStartMock).toHaveBeenCalledWith('s-1', { sessionNumber: 3, title: 'L’embuscade' });
+    expect(sessionHolder.refresh).toHaveBeenCalled();
+  });
+
+  it('séance active → bouton « Clore » ; clic clôt + logge + libère le pointeur', async () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['gm-uid'] });
+    sessionHolder.session = mkSession({ status: 'active', number: 3, title: 'L’embuscade' });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Clore la séance' }));
+    await waitFor(() => expect(endSessionMock).toHaveBeenCalledWith('c-1', 's-1'));
+    expect(logEndMock).toHaveBeenCalledWith('s-1', { sessionNumber: 3, title: 'L’embuscade' });
+    expect(setActiveCampaignMock).toHaveBeenCalledWith('c-1', null);
+  });
+
+  it('garde-fou « une autre séance active » → message dédié, pas de pointeur posé', async () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['gm-uid'] });
+    sessionHolder.session = mkSession({ status: 'planned' });
+    startSessionMock.mockRejectedValueOnce(new FakeSessionError('another-session-active', 'x'));
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Démarrer la séance' }));
+    await waitFor(() => {
+      expect(screen.getByText(/Une autre séance est déjà en cours/i)).toBeInTheDocument();
+    });
+    expect(setActiveCampaignMock).not.toHaveBeenCalled();
+    expect(logStartMock).not.toHaveBeenCalled();
+  });
+
+  it('membre non-MJ → aucun bouton démarrer/clore', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['other-gm'] });
+    sessionHolder.session = mkSession({ status: 'planned' });
+    renderScreen();
+    expect(screen.queryByRole('button', { name: /Démarrer la séance/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Clore la séance/i })).not.toBeInTheDocument();
   });
 });
 

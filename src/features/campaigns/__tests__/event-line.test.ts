@@ -98,6 +98,20 @@ describe('summarizeEvent — identité du libellé + détail (FR)', () => {
     });
   });
 
+  it('session-start → libellé FR + titre de séance en détail (plan 23.4)', () => {
+    expect(summarizeEvent(ev('session-start', { sessionNumber: 3, title: 'L’embuscade' }))).toEqual({
+      kindLabel: 'Séance démarrée',
+      detail: 'L’embuscade',
+    });
+  });
+
+  it('session-end → libellé FR + titre de séance en détail (plan 23.4)', () => {
+    expect(summarizeEvent(ev('session-end', { sessionNumber: 3, title: 'L’embuscade' }))).toEqual({
+      kindLabel: 'Séance terminée',
+      detail: 'L’embuscade',
+    });
+  });
+
   it('kind non mappé → libellé générique (jamais l’identifiant machine brut)', () => {
     const parts = summarizeEvent(ev('level-up', { newLevel: 5 }));
     expect(parts.kindLabel).toBe('Événement de jeu');

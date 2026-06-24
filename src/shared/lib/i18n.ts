@@ -507,6 +507,8 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.kind.itemAcquired'
   | 'campaigns.detail.eventFeed.kind.itemRemoved'
   | 'campaigns.detail.eventFeed.kind.secretRoll'
+  | 'campaigns.detail.eventFeed.kind.sessionStart'
+  | 'campaigns.detail.eventFeed.kind.sessionEnd'
   | 'campaigns.detail.eventFeed.kind.generic'
   | 'campaigns.detail.eventFeed.openDetail'
   | 'campaigns.detail.eventFeed.filter.aria'
@@ -630,6 +632,13 @@ export type StringKey =
   | 'sessions.attendance.status.error'
   | 'sessions.events.placeholder'
   | 'sessions.journal.placeholder'
+  // Démarrage / clôture de séance — JALON 23.4
+  | 'sessions.action.start'
+  | 'sessions.action.end'
+  | 'sessions.action.starting'
+  | 'sessions.action.ending'
+  | 'sessions.action.error.anotherActive'
+  | 'sessions.action.error.generic'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1841,6 +1850,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.itemAcquired': 'Objet obtenu',
     'campaigns.detail.eventFeed.kind.itemRemoved': 'Objet retiré',
     'campaigns.detail.eventFeed.kind.secretRoll': 'Jet secret du meneur',
+    'campaigns.detail.eventFeed.kind.sessionStart': 'Séance démarrée',
+    'campaigns.detail.eventFeed.kind.sessionEnd': 'Séance terminée',
     'campaigns.detail.eventFeed.kind.generic': 'Événement de jeu',
     'campaigns.detail.eventFeed.openDetail': 'Voir le détail de l’événement',
     'campaigns.detail.eventFeed.filter.aria': 'Filtrer l’activité par joueur',
@@ -1990,6 +2001,14 @@ const STRINGS: Record<Locale, Dict> = {
       "Les événements de cette séance s'afficheront ici une fois la séance démarrée.",
     'sessions.journal.placeholder':
       'Le journal compilé de la séance apparaîtra ici à sa clôture.',
+    'sessions.action.start': 'Démarrer la séance',
+    'sessions.action.end': 'Clore la séance',
+    'sessions.action.starting': 'Démarrage…',
+    'sessions.action.ending': 'Clôture…',
+    'sessions.action.error.anotherActive':
+      'Une autre séance est déjà en cours. Clos-la avant d’en démarrer une nouvelle.',
+    'sessions.action.error.generic':
+      "L'action n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3470,6 +3489,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.itemAcquired': 'Item acquired',
     'campaigns.detail.eventFeed.kind.itemRemoved': 'Item removed',
     'campaigns.detail.eventFeed.kind.secretRoll': 'GM secret roll',
+    'campaigns.detail.eventFeed.kind.sessionStart': 'Session started',
+    'campaigns.detail.eventFeed.kind.sessionEnd': 'Session ended',
     'campaigns.detail.eventFeed.kind.generic': 'Game event',
     'campaigns.detail.eventFeed.openDetail': 'View event details',
     'campaigns.detail.eventFeed.filter.aria': 'Filter activity by player',
@@ -3614,6 +3635,13 @@ const STRINGS: Record<Locale, Dict> = {
       'Events from this session will appear here once the session has started.',
     'sessions.journal.placeholder':
       'The compiled session journal will appear here when the session ends.',
+    'sessions.action.start': 'Start session',
+    'sessions.action.end': 'End session',
+    'sessions.action.starting': 'Starting…',
+    'sessions.action.ending': 'Ending…',
+    'sessions.action.error.anotherActive':
+      'Another session is already active. End it before starting a new one.',
+    'sessions.action.error.generic': 'The action failed. Check your connection and try again.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

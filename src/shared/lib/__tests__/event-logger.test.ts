@@ -33,7 +33,14 @@ vi.mock('@/shared/lib/firebase', () => ({
   getDb: () => ({ __type: 'mock-db' }),
 }));
 
-import { logCharacterDiff, logRoll, logRollIfCampaign, logSpellCast } from '../event-logger';
+import {
+  logCharacterDiff,
+  logRoll,
+  logRollIfCampaign,
+  logSessionEnd,
+  logSessionStart,
+  logSpellCast,
+} from '../event-logger';
 import type { Character } from '@/shared/types/character';
 import { useActiveCampaignStore } from '../slices/active-campaign-slice';
 import { useAuthStore } from '../slices/auth-slice';
@@ -261,6 +268,37 @@ describe('event-logger — logSpellCast (plan 22.2)', () => {
     });
     const written = addDocMock.mock.calls[0]![1] as { payload: Record<string, unknown> };
     expect(written.payload.slotConsumed).toBeNull();
+  });
+});
+
+describe('event-logger — logSessionStart / logSessionEnd (plan 23.4)', () => {
+  beforeEach(() => {
+    useActiveCampaignStore.getState().setActiveCampaign('camp-1', 'sess-1');
+    useAuthStore.getState().setUser(AUTH_USER);
+  });
+
+  it('logSessionStart écrit kind session-start, visibilité all, sessionId explicite, acteur null', async () => {
+    await logSessionStart('sess-1', { sessionNumber: 3, title: 'L’embuscade' });
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('session-start');
+    expect(written.visibility).toBe('all');
+    expect(written.actorCharacterId).toBeNull();
+    expect(written.sessionId).toBe('sess-1');
+    expect(written.payload).toMatchObject({ sessionNumber: 3, title: 'L’embuscade' });
+  });
+
+  it('logSessionEnd écrit kind session-end avec le bon payload', async () => {
+    await logSessionEnd('sess-1', { sessionNumber: 3, title: 'L’embuscade' });
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('session-end');
+    expect(written.sessionId).toBe('sess-1');
+    expect(written.payload).toMatchObject({ sessionNumber: 3, title: 'L’embuscade' });
+  });
+
+  it('no-op sans campagne active (pointeur non posé)', async () => {
+    useActiveCampaignStore.getState().clearActiveCampaign();
+    await logSessionStart('sess-1', { sessionNumber: 1, title: 'X' });
+    expect(addDocMock).not.toHaveBeenCalled();
   });
 });
 

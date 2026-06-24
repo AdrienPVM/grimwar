@@ -116,6 +116,16 @@ export function summarizeEvent(
         detail: total !== null ? String(total) : null,
       };
     }
+    case 'session-start':
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.sessionStart'),
+        detail: asString(p.title),
+      };
+    case 'session-end':
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.sessionEnd'),
+        detail: asString(p.title),
+      };
     default:
       return {
         kindLabel: t('campaigns.detail.eventFeed.kind.generic'),

@@ -8,7 +8,14 @@ import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
 import { cn } from '@/shared/lib/cn';
+import { logSessionEnd, logSessionStart } from '@/shared/lib/event-logger';
 import { t, type StringKey } from '@/shared/lib/i18n';
+import {
+  endSession,
+  SessionServiceError,
+  startSession,
+} from '@/shared/lib/services/sessions';
+import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 import type { SessionStatus } from '@/shared/types/session';
 
 import { buildRoster } from './campaign-detail-screen';
@@ -63,6 +70,9 @@ export function SessionScreen(): JSX.Element {
   } = useSession(cid, sid);
 
   const [tab, setTab] = useState<SessionTab>('notes');
+  const [actionPending, setActionPending] = useState<boolean>(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
 
   const isGm = useMemo<boolean>(() => {
     if (!campaign || !user) return false;
@@ -76,6 +86,50 @@ export function SessionScreen(): JSX.Element {
 
   const backToSessions = (): void =>
     navigate(cid ? `/campaigns/${cid}/sessions` : '/campaigns');
+
+  // Démarre la séance (planned → active). Le pointeur de campagne active est posé
+  // APRÈS la transition réussie pour que `logSessionStart` écrive dans la bonne
+  // campagne (et que les events de jeu de CE client soient tagués `sessionId`).
+  // Garde-fou « une seule active » : porté par le service (`another-session-active`).
+  async function handleStart(): Promise<void> {
+    if (!session || !cid || !sid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await startSession(cid, sid);
+      setActiveCampaign(cid, sid);
+      await logSessionStart(sid, { sessionNumber: session.number, title: session.title });
+      refresh();
+    } catch (err) {
+      setActionError(
+        err instanceof SessionServiceError && err.kind === 'another-session-active'
+          ? t('sessions.action.error.anotherActive')
+          : t('sessions.action.error.generic'),
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // Clôt la séance (active → completed). On (re)pose le pointeur avant de logguer
+  // pour être robuste à un reload en cours de séance (Zustand repart à null), puis
+  // on nettoie le pointeur de session (la campagne reste active).
+  async function handleEnd(): Promise<void> {
+    if (!session || !cid || !sid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      setActiveCampaign(cid, sid);
+      await endSession(cid, sid);
+      await logSessionEnd(sid, { sessionNumber: session.number, title: session.title });
+      setActiveCampaign(cid, null);
+      refresh();
+    } catch {
+      setActionError(t('sessions.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
 
   if (campaignLoading || sessionLoading) return <Splash />;
 
@@ -140,6 +194,38 @@ export function SessionScreen(): JSX.Element {
         <div className="mt-3 flex justify-center">
           <Chip variant={statusChip.variant}>{t(statusChip.labelKey)}</Chip>
         </div>
+
+        {isGm && (session.status === 'planned' || session.status === 'active') ? (
+          <div className="mt-5 flex flex-col items-center gap-3">
+            {session.status === 'planned' ? (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleStart}
+                disabled={actionPending}
+              >
+                {actionPending ? t('sessions.action.starting') : t('sessions.action.start')}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleEnd}
+                disabled={actionPending}
+              >
+                {actionPending ? t('sessions.action.ending') : t('sessions.action.end')}
+              </Button>
+            )}
+            {actionError ? (
+              <p
+                role="alert"
+                className="rounded-card-sm border border-crimson/40 bg-crimson/[0.08] px-3 py-2 font-serif text-body-sm text-crimson"
+              >
+                {actionError}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </header>
 
       <nav

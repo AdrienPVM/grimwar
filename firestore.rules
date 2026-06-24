@@ -269,8 +269,14 @@ service cloud.firestore {
                       || resource.data.actorCharacterId in getMyCharacterIds(campaignId)
                       || resource.data.targetCharacterId in getMyCharacterIds(campaignId))));
 
-        // Create: any member can log their own events; DM can log anything
-        allow create: if isMemberOf(campaignId)
+        // Create: any member can log their own events; DM can log anything.
+        // `|| isDMOf` ajouté JALON 23.4 : un MJ PUR n'a pas de doc members/
+        // (createCampaign ne lui en pose pas) → `isMemberOf` seul le bloquait,
+        // donc il ne pouvait PAS journaliser ses propres events (session-start/
+        // session-end). Même gap que la lecture, élargie en 22.3. L'invariant
+        // `actorUserId == request.auth.uid` reste la garantie « on ne logue que
+        // sous sa propre identité ».
+        allow create: if (isMemberOf(campaignId) || isDMOf(campaignId))
           && request.resource.data.actorUserId == request.auth.uid
           && request.resource.data.kind is string
           && request.resource.data.createdAt == request.time;
