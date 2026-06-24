@@ -17,7 +17,7 @@ Plans 22-24.
 - [x] 5. Stored in `sessions/{sid}.journalCompiled`. **Livré 25.2** : `updateSessionJournal` (service) persiste la chaîne compilée. Champ déjà au schéma `Session` (nullable) — zéro changement de schéma.
 - [x] 6. **Manual edit UI**: in the Journal tab, "Editer" toggle → Markdown editor. Saves to `journalCompiled`. **Livré 25.3** : bouton « Éditer » (MJ) → `textarea` Markdown pré-remplie + « Enregistrer » (→ `updateSessionJournal`) / « Annuler ». L'édition devient le snapshot final ; les events restent source de vérité (re-compilable). État optimiste + `onCompiled`.
 - [x] 7. "Re-compiler depuis les events" button (DM only) — rewrites `journalCompiled` from scratch (discards manual edits with confirmation). **Livré 25.3** : « Re-compiler depuis les événements » → écran de confirmation INLINE (pas de `confirm()` natif) « Re-compiler le journal ? » avertissant de l'écrasement de l'édition manuelle, boutons « Annuler » / « Re-compiler et écraser ». L'orchestrateur n'est appelé qu'après confirmation.
-- [ ] 8. **Aggregate view** at `/campaign/:id/journal`. → **25.4**
+- [x] 8. **Aggregate view** at `/campaign/:id/journal` — list of all completed sessions with their journal entries, expandable, chronological. "Exporter" button → downloads as `.md` file. **Livré 25.4** : route `/campaigns/:cid/journal` (`<CampaignJournalScreen>`, convention `/campaigns/:cid/...`) — séances `completed` triées par numéro CROISSANT (chronologique), cartes dépliables (`aria-expanded`) rendant `journalCompiled` via `JournalMarkdown` (note « non compilé » si absent). « Exporter (.md) » → `buildJournalExport` (pur) concatène les récits sous le titre de campagne + `journalExportFilename` (slug) → download Blob. Lisible par TOUT membre (bouton « Journal » du détail campagne, hors gate `isGm`).
 
 ### Tests
 - [x] 9. Unit: each template handles its event correctly. **Livré 25.1** : `templates.test.ts` (22) — VÉRITÉ DU CONTENU (identité exacte de chaque ligne, pas présence) : crit/fumble/normal, dégâts, sort à emplacement vs sort mineur, hp dégâts/soin, états résolus en libellé FR, slot singulier/pluriel, item ×1/×N, turn-start, monster-hp-change, session-start/end, encounter-start/end muets (null), kind non templaté → null, repli acteur « Quelqu'un ».
@@ -25,14 +25,14 @@ Plans 22-24.
 - [x] 11. e2e: run a quick mock session with 5 events, end session, verify journal renders. **Livré 25.2** : `tests/e2e/journal-compiler-uat.spec.ts` seede (Admin SDK) une séance active + 6 events tagués `sessionId` (session-start, encounter-start/turn-start/monster-hp-change/encounter-end, session-end) → onglet Journal → « Compiler » → assertions IDENTITÉ : H2 « Combat — Les gobelins de la crypte », « Issue : victoire. », 2 phases Exploration (start/end bracketent le combat), lignes de séance exactes. Passe par les VRAIES rules (read events all/dm MJ + update session isDMOf). Helpers `seedSession` + `seedCampaignEvent` étendu (`sessionId`/`encounterId`). Galerie `uat-review/jalon-25/25.2/` (01 vide, 02 compilé). Non-régression : 3 specs session e2e vertes.
 
 ### Final
-- [ ] 12. `pnpm typecheck && pnpm test && pnpm lint`
-- [ ] 13. Commit: `feat(journal): auto-compiler from events (plan 25)`
+- [x] 12. `pnpm typecheck && pnpm test && pnpm lint` — typecheck clean, **2521 fast verts**, lint clean. i18n guard vert. e2e journal 3/3 + non-régression campaigns-detail/sessions verts.
+- [x] 13. Commit: `feat(journal): auto-compiler from events (plan 25)` — livré en sous-commits 25.1→25.4.
 
 ## Definition of Done
-- [ ] Journal compiles from events
-- [ ] DM can edit and re-compile
-- [ ] Aggregate view + export works
-- [ ] Templates in FR for all S2-S3 event kinds
+- [x] Journal compiles from events — compilateur pur (25.1) + compilation client à la clôture + bouton MJ (25.2). e2e seed→compile→narration vert.
+- [x] DM can edit and re-compile — édition manuelle textarea + re-compilation confirmée (25.3). e2e vert.
+- [x] Aggregate view + export works — `/campaigns/:cid/journal` chronologique dépliable + export `.md` (25.4). e2e download `.md` vert.
+- [x] Templates in FR for all S2-S3 event kinds — les 16 kinds RÉELLEMENT journalisés (audit logger/diff) ont un template FR (25.1) ; registre `Partial` → les kinds non encore journalisés (level-up, death, xp-gain…) produisent `null` sans crash, à templater quand leur logger arrivera. **Caveat assumé** : « tous les kinds S2-S3 » = tous les kinds ÉCRITS aujourd'hui ; les kinds déclarés mais sans logger sont prêts à recevoir leur template.
 
 ## Sous-jalons
 
@@ -88,8 +88,28 @@ Couvre les steps 6 (édition) et 7 (re-compile + confirmation). Aucun changement
 - **`textarea` brut** pour l'édition Markdown — pas d'éditeur riche (cohérent avec les notes de séance 23.3). Le MJ édite le Markdown source ; le rendu se voit en sortant de l'édition.
 - **L'édition écrit `journalCompiled` directement** — c'est le snapshot « passe d'auteur » ; les events restent source de vérité (re-compile écrase).
 
+### JALON 25.4 — Vue agrégée du journal de campagne + export ✅ livré
+Dernier sous-jalon de 25. Couvre le step 8. Aucun changement de schéma / rule / index (lit `listSessions`, déjà en place).
+
+- **`src/features/journal/build-journal-export.ts`** — `buildJournalExport(campaignName, sessions, labels)` PUR : concatène les `journalCompiled` sous un H1 campagne + H2 « Séance N — Titre » (note italique si non compilé). `journalExportFilename(name)` : slug NFD (retire diacritiques + ponctuation) + suffixe `-journal.md`, repli `journal`.
+- **`src/features/journal/campaign-journal-screen.tsx`** — route `/campaigns/:cid/journal`. Séances `completed` triées par numéro CROISSANT (récit chronologique ; `useSessions` trie décroissant, on inverse). Cartes dépliables (`aria-expanded`, un seul ouvert à la fois) rendant `JournalMarkdown` (note « non compilé » si vide). « Exporter (.md) » → Blob + ancre `download` + `revokeObjectURL`. Empty state si 0 terminée. Erreur + retry. **Lisible par tout membre** (mémoire de campagne).
+- **`src/routes.tsx`** — route déclarée AVANT `/campaigns/:cid` (spécificité).
+- **`src/features/campaigns/campaign-detail-screen.tsx`** — bouton « Journal » ajouté à la nav, **hors gate `isGm`** (membres + MJ) ; « Séances »/« Rencontres » restent MJ-only.
+- **i18n** — `journal.aggregate.*` (~11 clés) + `campaigns.detail.journalCta` (FR + EN). Réemploi terminologique (« Journal », « Séance », « Exporter ») — zéro nouveau terme D&D.
+- **Tests** — `build-journal-export.test.ts` (5 : vide, concat ordonné, non-compilé, slug accents/ponctuation, repli), `campaign-journal-screen.test.tsx` (6 : empty, filtre completed + ordre croissant, dépliage rend le journal, non-compilé, export déclenche Blob download, erreur+retry). **+11 fast (2510 → 2521).** Triple gate verte.
+- **UAT e2e** — `tests/e2e/journal-aggregate-uat.spec.ts` (émulateur) : seed 2 séances terminées + journaux → bouton « Journal » du détail → liste chronologique → déplier « La crypte oubliée » (récit + issue) → export → Playwright capture le `download`, nom `la-couronne-brisee-journal.md`. Galerie `uat-review/jalon-25/25.4/` (01 liste + export, 02 séance dépliée). Non-régression : campaigns-detail + sessions e2e verts.
+
+**Décisions tactiques 25.4 :**
+- **Export client-side Blob** (pas de Cloud Function / endpoint) — `buildJournalExport` pur + `URL.createObjectURL` + ancre `download`. Zéro infra.
+- **Journal accessible à tout membre** (bouton hors `isGm`) — c'est la mémoire partagée de la table, pas un écran de gestion. La rule de read sessions (`isMemberOf || isDMOf`) l'autorise déjà.
+- **Tri chronologique croissant** (≠ liste séances décroissante) — le journal se LIT du début à la fin de la campagne.
+- **`JournalMarkdown` réutilisé** (25.2) pour le rendu des entrées dépliées — un seul renderer pour l'onglet séance ET l'agrégat.
+
 ## Notes for next plan
-- **JALON 25.3 ✅ livré** = édition manuelle (textarea Markdown) + re-compilation confirmée. Reste plan 25 : **25.4** = vue agrégée `/campaigns/:cid/journal` (toutes les séances terminées, chronologique, expandable) + export `.md` (step 8).
+- **PLAN 25 ✅ TERMINÉ** (25.1 compilateur+templates, 25.2 compile+onglet, 25.3 édition+re-compile, 25.4 agrégat+export). DoD cochée.
+- **⚠️ Index `(sessionId, visibility, createdAt)` NON déployé** — requis par `listSessionEvents` (25.1). `pnpm firebase:deploy:indexes` AVANT prod. L'agrégat 25.4 n'ajoute PAS d'index (lit `listSessions`, single-field). Batch deploy avec rules/indexes 23/24 en attente.
+- **Templates limités aux 16 kinds journalisés** — un futur logger (level-up plan 18, death, xp-gain, note, treasure-drop, dm-edit…) doit ajouter sa clé `journal.tpl.*` + son template + son test. Registre `Partial` = absence sûre (null) en attendant.
+- **JALON 25.3 ✅ livré** = édition manuelle (textarea Markdown) + re-compilation confirmée.
 - **JALON 25.1 ✅ livré** : compilateur + templates PURS + `listSessionEvents`. Le compilateur ne lit rien — il reçoit `(events, JournalContext)`. L'écran 25.2 fournit les events (`listSessionEvents`) + les resolvers (roster pour les noms, `useContent` pour sorts/objets/états).
 - **⚠️ Index `(sessionId, visibility, createdAt)` NON déployé** — ajouté à `firestore.indexes.json`, requis par `listSessionEvents`. **TOUJOURS À DÉPLOYER** (`pnpm firebase:deploy:indexes`) AVANT que l'écran ne consomme la query en prod (sinon failed-precondition). L'émulateur l'auto-crée (e2e OK). S'ajoute aux rules/indexes déjà en attente (plans 23/24) — à déployer en batch.
 - **Décision Markdown render TRANCHÉE en 25.2 = option (a)** : renderer maison `JournalMarkdown`, zéro dépendance externe. Pas de react-markdown. Le rendu riche (tables/liens) reste un arbitrage Adrien futur SI demandé.

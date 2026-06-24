@@ -147,26 +147,37 @@ export function CampaignDetailScreen(): JSX.Element {
           >
             ← {t('campaigns.detail.back')}
           </Button>
-          {isGm ? (
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
-              >
-                {t('campaigns.detail.sessionsCta')}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
-              >
-                {t('campaigns.detail.encountersCta')}
-              </Button>
-            </div>
-          ) : null}
+          <div className="flex items-center gap-2">
+            {/* Journal de campagne — lisible par tout membre (mémoire partagée). */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
+            >
+              {t('campaigns.detail.journalCta')}
+            </Button>
+            {isGm ? (
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
+                >
+                  {t('campaigns.detail.sessionsCta')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
+                >
+                  {t('campaigns.detail.encountersCta')}
+                </Button>
+              </>
+            ) : null}
+          </div>
         </nav>
 
         <header className="mt-4 text-center">

@@ -126,6 +126,13 @@ const EncounterScreen = lazy(async () => {
   return { default: mod.EncounterScreen };
 });
 
+// Route /campaigns/:cid/journal — vue agrégée du journal de campagne (JALON
+// 25.4) : séances terminées chronologiques, dépliables, export .md. Tout membre.
+const CampaignJournalScreen = lazy(async () => {
+  const mod = await import('@/features/journal/campaign-journal-screen');
+  return { default: mod.CampaignJournalScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -160,6 +167,7 @@ export function AppRoutes(): JSX.Element {
           path="/campaigns/:cid/encounters"
           element={<EncountersListScreen />}
         />
+        <Route path="/campaigns/:cid/journal" element={<CampaignJournalScreen />} />
         <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

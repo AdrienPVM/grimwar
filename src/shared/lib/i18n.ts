@@ -477,6 +477,7 @@ export type StringKey =
   // Entrée MJ vers le gestionnaire de séances (JALON 23.2)
   | 'campaigns.detail.sessionsCta'
   | 'campaigns.detail.encountersCta'
+  | 'campaigns.detail.journalCta'
   // Lecture MJ d'une fiche de joueur — JALON 4A.3
   | 'campaigns.memberSheet.back'
   | 'campaigns.memberSheet.readOnlyBadge'
@@ -800,6 +801,18 @@ export type StringKey =
   | 'journal.tpl.itemRemovedMany'
   | 'journal.tpl.monsterHpChangeDamage'
   | 'journal.tpl.monsterHpChangeHeal'
+  // Journal — vue agrégée campagne (plan 25.4)
+  | 'journal.aggregate.title'
+  | 'journal.aggregate.subtitle'
+  | 'journal.aggregate.back'
+  | 'journal.aggregate.export'
+  | 'journal.aggregate.empty'
+  | 'journal.aggregate.sessionNumberPrefix'
+  | 'journal.aggregate.notCompiled'
+  | 'journal.aggregate.expand'
+  | 'journal.aggregate.collapse'
+  | 'journal.aggregate.error'
+  | 'journal.aggregate.retry'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -2096,6 +2109,7 @@ const STRINGS: Record<Locale, Dict> = {
       "La liaison n'a pas abouti. Vérifie ta connexion et réessaye.",
     'campaigns.detail.sessionsCta': 'Séances',
     'campaigns.detail.encountersCta': 'Rencontres',
+    'campaigns.detail.journalCta': 'Journal',
     // Séances — JALON 23.2
     'sessions.back': 'Retour à la campagne',
     'sessions.title': 'Séances',
@@ -2361,6 +2375,19 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.tpl.itemRemovedMany': '{actor} se sépare de **{item}** (×{qty}).',
     'journal.tpl.monsterHpChangeDamage': '**{name}** subit {amount} dégâts — PV : {before} → {after}.',
     'journal.tpl.monsterHpChangeHeal': '**{name}** récupère {amount} PV — PV : {before} → {after}.',
+    // Journal — vue agrégée campagne (plan 25.4)
+    'journal.aggregate.title': 'Journal de campagne',
+    'journal.aggregate.subtitle': 'Le récit compilé de vos séances, dans l’ordre.',
+    'journal.aggregate.back': 'Retour à la campagne',
+    'journal.aggregate.export': 'Exporter (.md)',
+    'journal.aggregate.empty':
+      'Aucune séance terminée pour l’instant. Le journal de campagne se remplira à mesure que vous clôturez des séances.',
+    'journal.aggregate.sessionNumberPrefix': 'Séance ',
+    'journal.aggregate.notCompiled': 'Journal non encore compilé pour cette séance.',
+    'journal.aggregate.expand': 'Déplier',
+    'journal.aggregate.collapse': 'Replier',
+    'journal.aggregate.error': 'Le chargement du journal a échoué.',
+    'journal.aggregate.retry': 'Réessayer',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3925,6 +3952,7 @@ const STRINGS: Record<Locale, Dict> = {
       'Linking failed. Check your connection and try again.',
     'campaigns.detail.sessionsCta': 'Sessions',
     'campaigns.detail.encountersCta': 'Encounters',
+    'campaigns.detail.journalCta': 'Journal',
     // Sessions — JALON 23.2
     'sessions.back': 'Back to campaign',
     'sessions.title': 'Sessions',
@@ -4179,6 +4207,19 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.tpl.itemRemovedMany': '{actor} parts with **{item}** (×{qty}).',
     'journal.tpl.monsterHpChangeDamage': '**{name}** takes {amount} damage — HP: {before} → {after}.',
     'journal.tpl.monsterHpChangeHeal': '**{name}** recovers {amount} HP — HP: {before} → {after}.',
+    // Journal — campaign-wide aggregate (plan 25.4)
+    'journal.aggregate.title': 'Campaign journal',
+    'journal.aggregate.subtitle': 'The compiled tale of your sessions, in order.',
+    'journal.aggregate.back': 'Back to campaign',
+    'journal.aggregate.export': 'Export (.md)',
+    'journal.aggregate.empty':
+      'No completed sessions yet. The campaign journal fills in as you end sessions.',
+    'journal.aggregate.sessionNumberPrefix': 'Session ',
+    'journal.aggregate.notCompiled': 'Journal not compiled yet for this session.',
+    'journal.aggregate.expand': 'Expand',
+    'journal.aggregate.collapse': 'Collapse',
+    'journal.aggregate.error': 'Loading the journal failed.',
+    'journal.aggregate.retry': 'Retry',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':
