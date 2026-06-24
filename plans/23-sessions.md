@@ -13,10 +13,10 @@ Plans 14, 22.
 - [x] 1. Route `/campaigns/:cid/sessions` → `<SessionsListScreen />`: liste triée, bouton MJ-only « Planifier une séance ». (23.2 — route alignée sur le préfixe `/campaigns/:cid` de la feature, PAS `/campaign/:id` du texte du plan.)
 - [x] 2. `<SessionCreateModal />`: titre + date prévue. « Description optionnelle » NON modélisée (pas de champ au schéma — décision 23.1, repliable sur les notes 23.3). (23.2)
 - [x] 3. Auto-number sessions: query max `number`, +1. (livré en 23.1 dans `createSession`, consommé tel quel par la modale.)
-- [ ] 4. Route `/campaign/:id/session/:sid` → `<SessionScreen />` with tabs: Notes / Attendance / Events / Journal (journal compiler in plan 25).
-- [ ] 5. **Notes tab** — Markdown editor + preview (DM only). Auto-saves every 5s. Stored in `sessions/{sid}.notes`.
-- [ ] 6. **Attendance tab** — check/uncheck members. Stored in `sessions/{sid}.attendance: string[]`.
-- [ ] 7. **Events tab** — events scoped to this session (`events` where `sessionId == sid`), grouped by encounter / chronological.
+- [x] 4. Route `/campaigns/:cid/sessions/:sid` → `<SessionScreen />` with tabs: Notes / Présence / Événements / Journal. (23.3 — Events + Journal sont des placeholders, câblés en 23.4 / plan 25.)
+- [x] 5. **Notes tab** — éditeur Markdown-as-text (MJ-only) + auto-save debounced 5 s → `sessions/{sid}.notes`. (23.3) ⚠️ Le RENDU Markdown enrichi (preview gras/titres/listes) est DIFFÉRÉ : il requiert une dépendance externe (react-markdown), décision Adrien (règle d'autonomie). Le texte est stocké tel quel, la vue lecture préserve les sauts de ligne.
+- [x] 6. **Attendance tab** — cases cochables par membre (MJ-only), push de la liste complète → `sessions/{sid}.attendance: string[]`. (23.3)
+- [ ] 7. **Events tab** — events scoped to this session (`events` where `sessionId == sid`), grouped by encounter / chronological. (placeholder posé en 23.3, lecture câblée en 23.4)
 - [ ] 8. **Start session** button (when status='planned'): sets `status='active'`, `startedAt=now`, logs `session-start` event. Active session sticky in DM dashboard top bar.
 - [ ] 9. **End session** button (when status='active'): sets `status='completed'`, `endedAt=now`, logs `session-end` event. Triggers journal compilation (plan 25).
 - [ ] 10. Only one session can be `'active'` at a time per campaign.
@@ -66,9 +66,27 @@ Premier consommateur UI du data layer 23.1. Triple gate verte (typecheck + 2621 
 - Liste visible aux membres (rule `isMemberOf || isDMOf` le permet), seul le create est MJ-only — fidèle au texte du step 1 (« DM-only "Planifier" button »).
 - ⚠️ **Rule `|| isDMOf` toujours NON déployée** (cf. 23.1) : la liste de séances côté MJ pur crashera en prod tant que `pnpm firebase:deploy:rules` n'a pas tourné. Inerte localement (émulateur OK).
 
+### JALON 23.3 — Écran séance + Notes + Présence (steps 4-6) ✅ livré
+Shell SessionScreen 4 onglets + 2 onglets fonctionnels. Triple gate verte (typecheck + 2639 tests dont +18 nouveaux + lint).
+
+- **`src/features/campaigns/use-session.ts`** — hook one-shot + refresh (mirror `useCampaign`) sur `getSession`. Expose `SessionServiceError('session-not-found')` dans `error`.
+- **`src/features/campaigns/session-notes-tab.tsx`** — MJ : `<textarea>` + auto-save **debounced 5 s** (`updateSessionNotes`), indicateur Modifié/Enregistrement…/Enregistré/Échec, **flush au démontage** si modifs en attente (refs anti-stale-closure). Membre : lecture seule, `whitespace-pre-wrap`. **Markdown RENDU différé** (dépendance externe = décision Adrien) — stockage Markdown-as-text, zéro perte de données.
+- **`src/features/campaigns/session-attendance-tab.tsx`** — MJ : `Checkbox` par entrée du roster (réutilise `buildRoster`), toggle → push liste complète (`setSessionAttendance`) avec rollback optimiste sur erreur. Membre : cases désactivées reflétant l'état.
+- **`src/features/campaigns/session-screen.tsx`** — route `/campaigns/:cid/sessions/:sid`, en-tête (n° + titre + chip statut), tablist 4 onglets, `canEdit = isGm`. Events + Journal = `TabPlaceholder`. `key={session.id}` sur les onglets pour ré-init propre au changement de séance.
+- **`sessions-list-screen.tsx`** — lignes désormais cliquables (`<button>`) → navigation vers le détail (wiring différé de 23.2).
+- **`campaign-detail-screen.tsx`** — export de `RosterEntry` (consommé par l'onglet Présence).
+- **`routes.tsx`** — route `/campaigns/:cid/sessions/:sid` (avant `/sessions`).
+- **i18n** — bloc `sessions.detail.*` / `sessions.tab.*` / `sessions.notes.*` / `sessions.attendance.*` / placeholders (FR + EN).
+- **Tests** — `use-session` (4) + `session-notes-tab` (7, dont debounce 5 s, frappe continue ne sauve que la dernière valeur, flush au démontage, lecture seule) + `session-screen` (7, dont identité du chip statut, gating MJ, toggle présence, lecture seule membre). UAT e2e : `tests/e2e/session-screen-uat.spec.ts` (captures `uat-review/jalon-23/23.3/`).
+
+**Décisions tactiques 23.3 :**
+- « Markdown editor + preview » (step 5) : la PARTIE editor + auto-save + stockage Markdown est livrée ; la PARTIE preview (rendu enrichi) est différée faute de dépendance markdown — règle d'autonomie « new external dependency » → décision Adrien. Vue lecture intermédiaire = texte brut avec sauts de ligne préservés.
+- Auto-save interprété en **debounce 5 s** (après la dernière frappe) plutôt qu'intervalle fixe : moins d'écritures, pas de write par seconde en frappe continue. Flush au démontage garantit zéro perte.
+- Onglet Events = placeholder en 23.3 ; sa lecture (`where sessionId == sid`) est groupée avec le wiring `activeSessionId` en 23.4 (les events ne sont tagués `sessionId` que pendant la séance active).
+
 ### Reste à livrer
-- **23.3** — `<SessionScreen>` + onglets Notes (auto-save 5s) / Présence / Events (steps 4-7).
-- **23.4** — boutons Start/End + event-logging + câblage `activeSessionId` + onglet Events scopé (steps 8-11). Specs e2e parcours complet (step 12).
+- **23.4** — boutons Start/End + event-logging (`session-start`/`session-end`) + câblage `activeSessionId` (Zustand) + onglet Events scopé (steps 8-11). Specs e2e parcours complet (step 12).
+- **Décision Adrien en attente** — dépendance de rendu Markdown (react-markdown ou équivalent) pour la preview de l'onglet Notes. Sans elle, les notes restent en texte brut (fonctionnel, stockage intact).
 
 ## Notes for next plan
 - Plan 25 reads sessions + events to compile journal.

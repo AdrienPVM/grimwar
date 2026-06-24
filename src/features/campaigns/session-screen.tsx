@@ -1,0 +1,225 @@
+import { useMemo, useState, type JSX } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { useAuth } from '@/features/auth/use-auth';
+import { Button } from '@/shared/components/button';
+import { Chip } from '@/shared/components/chip';
+import { Divider } from '@/shared/components/divider';
+import { GlassPanel } from '@/shared/components/glass-panel';
+import { Splash } from '@/shared/components/splash';
+import { cn } from '@/shared/lib/cn';
+import { t, type StringKey } from '@/shared/lib/i18n';
+import type { SessionStatus } from '@/shared/types/session';
+
+import { buildRoster } from './campaign-detail-screen';
+import { SessionAttendanceTab } from './session-attendance-tab';
+import { SessionNotesTab } from './session-notes-tab';
+import { useCampaign } from './use-campaign';
+import { useSession } from './use-session';
+
+const SESSION_TABS = ['notes', 'attendance', 'events', 'journal'] as const;
+type SessionTab = (typeof SESSION_TABS)[number];
+
+const TAB_LABEL: Record<SessionTab, StringKey> = {
+  notes: 'sessions.tab.notes',
+  attendance: 'sessions.tab.attendance',
+  events: 'sessions.tab.events',
+  journal: 'sessions.tab.journal',
+};
+
+const STATUS_CHIP: Record<
+  SessionStatus,
+  { variant: 'default' | 'gold' | 'heal' | 'damage'; labelKey: StringKey }
+> = {
+  planned: { variant: 'default', labelKey: 'sessions.status.planned' },
+  active: { variant: 'gold', labelKey: 'sessions.status.active' },
+  completed: { variant: 'heal', labelKey: 'sessions.status.completed' },
+  cancelled: { variant: 'damage', labelKey: 'sessions.status.cancelled' },
+};
+
+/**
+ * Route `/campaigns/:cid/sessions/:sid` — écran d'une séance (step 4 du plan 23,
+ * livraison 23.3). Shell à 4 onglets : Notes / Présence / Events / Journal.
+ *
+ * Livré en 23.3 : Notes (auto-save 5 s, MJ-only édition) + Présence (toggles
+ * MJ-only). Events + Journal sont des placeholders — l'onglet Events sera câblé
+ * en 23.4 (lecture `where sessionId == sid` + wiring `activeSessionId`), le
+ * Journal en plan 25 (compilateur).
+ *
+ * Permissions : la séance est lisible par tout membre (rule 23.1). L'ÉDITION
+ * (notes, présence) est MJ-only — `canEdit = isGm`. La défense ultime reste la
+ * rule Firestore (`create/update/delete : isDMOf`), `canEdit` n'est que l'UX.
+ */
+export function SessionScreen(): JSX.Element {
+  const navigate = useNavigate();
+  const { cid, sid } = useParams<{ cid: string; sid: string }>();
+  const { user } = useAuth();
+  const { campaign, members, isLoading: campaignLoading } = useCampaign(cid);
+  const {
+    session,
+    isLoading: sessionLoading,
+    error: sessionError,
+    refresh,
+  } = useSession(cid, sid);
+
+  const [tab, setTab] = useState<SessionTab>('notes');
+
+  const isGm = useMemo<boolean>(() => {
+    if (!campaign || !user) return false;
+    return campaign.gmIds.includes(user.uid);
+  }, [campaign, user]);
+
+  const roster = useMemo(
+    () => (campaign ? buildRoster(campaign, members, user?.uid ?? null) : []),
+    [campaign, members, user],
+  );
+
+  const backToSessions = (): void =>
+    navigate(cid ? `/campaigns/${cid}/sessions` : '/campaigns');
+
+  if (campaignLoading || sessionLoading) return <Splash />;
+
+  if (sessionError || !session || !cid || !sid) {
+    const isNotFound =
+      sessionError?.name === 'SessionServiceError' &&
+      'kind' in sessionError &&
+      (sessionError as { kind: string }).kind === 'session-not-found';
+    return (
+      <main className="relative z-10 mx-auto flex min-h-[60vh] max-w-[460px] flex-col items-center justify-center px-6 py-12">
+        <GlassPanel className="w-full px-6 py-8 text-center">
+          <h1 className="font-title text-body uppercase tracking-[0.18em] text-crimson">
+            {isNotFound
+              ? t('sessions.detail.error.notFoundTitle')
+              : t('sessions.detail.error.title')}
+          </h1>
+          <p className="mt-3 font-serif text-body-sm text-text-secondary">
+            {isNotFound
+              ? t('sessions.detail.error.notFoundBody')
+              : t('sessions.detail.error.body')}
+          </p>
+          <div className="mt-6 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:justify-center">
+            <Button variant="ghost" size="sm" onClick={backToSessions}>
+              {t('sessions.detail.back')}
+            </Button>
+            {!isNotFound ? (
+              <Button variant="secondary" size="sm" onClick={refresh}>
+                {t('sessions.error.retry')}
+              </Button>
+            ) : null}
+          </div>
+        </GlassPanel>
+      </main>
+    );
+  }
+
+  const statusChip = STATUS_CHIP[session.status];
+
+  return (
+    <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8">
+      <nav className="flex">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={backToSessions}
+          aria-label={t('sessions.detail.back')}
+        >
+          ← {t('sessions.detail.back')}
+        </Button>
+      </nav>
+
+      <header className="mt-4 text-center">
+        <Divider className="mb-4" />
+        <p className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+          {t('sessions.row.numberPrefix')}
+          {session.number}
+        </p>
+        <h1 className="mt-1 font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
+          {session.title}
+        </h1>
+        <div className="mt-3 flex justify-center">
+          <Chip variant={statusChip.variant}>{t(statusChip.labelKey)}</Chip>
+        </div>
+      </header>
+
+      <nav
+        role="tablist"
+        aria-label={t('sessions.tabs.aria')}
+        className="mx-auto mt-8 flex w-full max-w-[520px] gap-1"
+      >
+        {SESSION_TABS.map((key) => {
+          const isActive = key === tab;
+          return (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`session-panel-${key}`}
+              id={`session-tab-${key}`}
+              onClick={() => setTab(key)}
+              className={cn(
+                'flex flex-1 items-center justify-center py-3',
+                'border-b-2 transition-colors duration-150',
+                'font-title text-[11px] font-bold uppercase tracking-[0.16em]',
+                isActive
+                  ? 'border-gold text-gold-bright drop-shadow-[0_0_8px_var(--gold-glow)]'
+                  : 'border-transparent text-text-tertiary hover:text-text-secondary',
+              )}
+            >
+              {t(TAB_LABEL[key])}
+            </button>
+          );
+        })}
+      </nav>
+
+      <section
+        id={`session-panel-${tab}`}
+        role="tabpanel"
+        aria-labelledby={`session-tab-${tab}`}
+        className="mt-6"
+      >
+        {tab === 'notes' ? (
+          <SessionNotesTab
+            // Remonte le composant quand la séance change pour ré-initialiser
+            // l'éditeur sur les notes du nouveau doc (et flusher l'ancien).
+            key={session.id}
+            campaignId={cid}
+            sessionId={sid}
+            initialNotes={session.notes}
+            canEdit={isGm}
+          />
+        ) : null}
+
+        {tab === 'attendance' ? (
+          <SessionAttendanceTab
+            key={session.id}
+            campaignId={cid}
+            sessionId={sid}
+            roster={roster}
+            initialAttendance={session.attendance}
+            canEdit={isGm}
+          />
+        ) : null}
+
+        {tab === 'events' ? (
+          <TabPlaceholder body={t('sessions.events.placeholder')} />
+        ) : null}
+
+        {tab === 'journal' ? (
+          <TabPlaceholder body={t('sessions.journal.placeholder')} />
+        ) : null}
+      </section>
+    </main>
+  );
+}
+
+function TabPlaceholder({ body }: { body: string }): JSX.Element {
+  return (
+    <GlassPanel className="px-6 py-10 text-center">
+      <p className="mx-auto max-w-[44ch] font-serif text-body italic text-text-secondary">
+        {body}
+      </p>
+    </GlassPanel>
+  );
+}

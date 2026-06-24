@@ -270,7 +270,7 @@ export function CampaignDetailScreen(): JSX.Element {
   );
 }
 
-interface RosterEntry {
+export interface RosterEntry {
   uid: string;
   label: string;
   role: 'gm' | 'member';

@@ -603,6 +603,33 @@ export type StringKey =
   | 'sessions.create.error.titleRequired'
   | 'sessions.create.error.titleTooLong'
   | 'sessions.create.error.generic'
+  // Écran séance (SessionScreen + onglets) — JALON 23.3
+  | 'sessions.detail.back'
+  | 'sessions.detail.error.title'
+  | 'sessions.detail.error.body'
+  | 'sessions.detail.error.notFoundTitle'
+  | 'sessions.detail.error.notFoundBody'
+  | 'sessions.tabs.aria'
+  | 'sessions.tab.notes'
+  | 'sessions.tab.attendance'
+  | 'sessions.tab.events'
+  | 'sessions.tab.journal'
+  | 'sessions.notes.label'
+  | 'sessions.notes.placeholder'
+  | 'sessions.notes.editorAria'
+  | 'sessions.notes.hint'
+  | 'sessions.notes.empty'
+  | 'sessions.notes.status.pending'
+  | 'sessions.notes.status.saving'
+  | 'sessions.notes.status.saved'
+  | 'sessions.notes.status.error'
+  | 'sessions.attendance.title'
+  | 'sessions.attendance.empty'
+  | 'sessions.attendance.status.saving'
+  | 'sessions.attendance.status.saved'
+  | 'sessions.attendance.status.error'
+  | 'sessions.events.placeholder'
+  | 'sessions.journal.placeholder'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
   // Connectivité (jalon 1D — mode offline)
@@ -1930,6 +1957,39 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.create.error.titleTooLong': 'Le titre est trop long (120 caractères max).',
     'sessions.create.error.generic':
       "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
+    // Écran séance — JALON 23.3
+    'sessions.detail.back': 'Retour aux séances',
+    'sessions.detail.error.title': 'Lecture impossible',
+    'sessions.detail.error.body':
+      "Cette séance n'a pas pu être chargée. Vérifie ta connexion et réessaye.",
+    'sessions.detail.error.notFoundTitle': 'Séance introuvable',
+    'sessions.detail.error.notFoundBody':
+      "Cette séance n'existe plus ou son lien est invalide.",
+    'sessions.tabs.aria': 'Onglets de la séance',
+    'sessions.tab.notes': 'Notes',
+    'sessions.tab.attendance': 'Présence',
+    'sessions.tab.events': 'Événements',
+    'sessions.tab.journal': 'Journal',
+    'sessions.notes.label': 'Notes de séance',
+    'sessions.notes.placeholder':
+      'Note ici le déroulé de la séance, les décisions de la table, les pistes à suivre…',
+    'sessions.notes.editorAria': 'Éditeur de notes de la séance',
+    'sessions.notes.hint':
+      'Enregistrement automatique. Le texte est conservé tel quel (Markdown) ; la mise en forme enrichie arrivera plus tard.',
+    'sessions.notes.empty': 'Aucune note pour cette séance.',
+    'sessions.notes.status.pending': 'Modifié',
+    'sessions.notes.status.saving': 'Enregistrement…',
+    'sessions.notes.status.saved': 'Enregistré',
+    'sessions.notes.status.error': "Échec de l'enregistrement",
+    'sessions.attendance.title': 'Présence à la séance',
+    'sessions.attendance.empty': 'Aucun membre à la table pour le moment.',
+    'sessions.attendance.status.saving': 'Enregistrement…',
+    'sessions.attendance.status.saved': 'Enregistré',
+    'sessions.attendance.status.error': "Échec de l'enregistrement",
+    'sessions.events.placeholder':
+      "Les événements de cette séance s'afficheront ici une fois la séance démarrée.",
+    'sessions.journal.placeholder':
+      'Le journal compilé de la séance apparaîtra ici à sa clôture.',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
@@ -3522,6 +3582,38 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.create.error.titleRequired': 'The title is required.',
     'sessions.create.error.titleTooLong': 'The title is too long (120 characters max).',
     'sessions.create.error.generic': 'Creation failed. Check your connection and try again.',
+    // Session screen — JALON 23.3
+    'sessions.detail.back': 'Back to sessions',
+    'sessions.detail.error.title': 'Unable to load',
+    'sessions.detail.error.body':
+      'This session could not be loaded. Check your connection and try again.',
+    'sessions.detail.error.notFoundTitle': 'Session not found',
+    'sessions.detail.error.notFoundBody': 'This session no longer exists or its link is invalid.',
+    'sessions.tabs.aria': 'Session tabs',
+    'sessions.tab.notes': 'Notes',
+    'sessions.tab.attendance': 'Attendance',
+    'sessions.tab.events': 'Events',
+    'sessions.tab.journal': 'Journal',
+    'sessions.notes.label': 'Session notes',
+    'sessions.notes.placeholder':
+      'Jot down what happened, the table’s decisions, leads to follow up…',
+    'sessions.notes.editorAria': 'Session notes editor',
+    'sessions.notes.hint':
+      'Auto-saved. Text is stored as-is (Markdown); rich formatting will come later.',
+    'sessions.notes.empty': 'No notes for this session.',
+    'sessions.notes.status.pending': 'Edited',
+    'sessions.notes.status.saving': 'Saving…',
+    'sessions.notes.status.saved': 'Saved',
+    'sessions.notes.status.error': 'Save failed',
+    'sessions.attendance.title': 'Session attendance',
+    'sessions.attendance.empty': 'No members at the table yet.',
+    'sessions.attendance.status.saving': 'Saving…',
+    'sessions.attendance.status.saved': 'Saved',
+    'sessions.attendance.status.error': 'Save failed',
+    'sessions.events.placeholder':
+      'Events from this session will appear here once the session has started.',
+    'sessions.journal.placeholder':
+      'The compiled session journal will appear here when the session ends.',
     'avoir.customItem.placeholder': 'My personal treasure',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':

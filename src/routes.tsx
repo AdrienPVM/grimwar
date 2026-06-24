@@ -99,10 +99,17 @@ const CampaignMemberSheetScreen = lazy(async () => {
 
 // Route /campaigns/:cid/sessions — liste des séances d'une campagne (JALON
 // 23.2, steps 1-3). Liste lisible par tout membre, bouton « Planifier » MJ-only.
-// Le détail d'une séance (`/sessions/:sid`) arrive en 23.3.
 const SessionsListScreen = lazy(async () => {
   const mod = await import('@/features/campaigns/sessions-list-screen');
   return { default: mod.SessionsListScreen };
+});
+
+// Route /campaigns/:cid/sessions/:sid — écran d'une séance (JALON 23.3, step 4).
+// Onglets Notes (auto-save) / Présence (MJ) ; Events + Journal placeholders
+// (câblés en 23.4 / plan 25).
+const SessionScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/session-screen');
+  return { default: mod.SessionScreen };
 });
 
 export function AppRoutes(): JSX.Element {
@@ -129,6 +136,7 @@ export function AppRoutes(): JSX.Element {
           path="/campaigns/:cid/members/:memberUid/sheet"
           element={<CampaignMemberSheetScreen />}
         />
+        <Route path="/campaigns/:cid/sessions/:sid" element={<SessionScreen />} />
         <Route path="/campaigns/:cid/sessions" element={<SessionsListScreen />} />
         <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -7,6 +7,7 @@ import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
+import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import type { Session, SessionStatus } from '@/shared/types/session';
 
@@ -131,7 +132,11 @@ export function SessionsListScreen(): JSX.Element {
               className="mt-8 flex flex-col gap-3"
             >
               {sessions.map((session) => (
-                <SessionRow key={session.id} session={session} />
+                <SessionRow
+                  key={session.id}
+                  session={session}
+                  onOpen={() => navigate(`/campaigns/${cid}/sessions/${session.id}`)}
+                />
               ))}
             </ul>
             {planCta ? <div className="mt-10 flex justify-center">{planCta}</div> : null}
@@ -161,28 +166,40 @@ const STATUS_CHIP: Record<
 
 interface SessionRowProps {
   session: Session;
+  onOpen: () => void;
 }
 
-function SessionRow({ session }: SessionRowProps): JSX.Element {
+function SessionRow({ session, onOpen }: SessionRowProps): JSX.Element {
   const status = STATUS_CHIP[session.status];
   const dateLabel = formatPlannedDate(session.plannedDate);
   return (
-    <li className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="shrink-0 font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          {t('sessions.row.numberPrefix')}
-          {session.number}
-        </span>
-        <span className="truncate font-serif text-body text-text">{session.title}</span>
-      </div>
-      <div className="flex shrink-0 items-center gap-3">
-        {dateLabel ? (
-          <span className="hidden font-serif text-body-sm text-text-secondary sm:inline">
-            {dateLabel}
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        className={cn(
+          'flex w-full items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 text-left',
+          'transition-colors duration-150 ease-base',
+          'hover:border-glow hover:bg-white/[0.03]',
+          'focus-visible:border-gold-bright focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold-bright/40',
+        )}
+      >
+        <span className="flex min-w-0 flex-1 items-center gap-3">
+          <span className="shrink-0 font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            {t('sessions.row.numberPrefix')}
+            {session.number}
           </span>
-        ) : null}
-        <Chip variant={status.variant}>{t(status.labelKey)}</Chip>
-      </div>
+          <span className="truncate font-serif text-body text-text">{session.title}</span>
+        </span>
+        <span className="flex shrink-0 items-center gap-3">
+          {dateLabel ? (
+            <span className="hidden font-serif text-body-sm text-text-secondary sm:inline">
+              {dateLabel}
+            </span>
+          ) : null}
+          <Chip variant={status.variant}>{t(status.labelKey)}</Chip>
+        </span>
+      </button>
     </li>
   );
 }
