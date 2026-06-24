@@ -24,15 +24,15 @@ Plans 22-23 complete.
 - [ ] 11. Optional: encounter linked to a map (plan 27-30) — position field per participant. For S3, position is null.
 
 ### Tests
-- [ ] 12. e2e: DM creates 3-goblin encounter, rolls init, runs 2 rounds, kills all goblins, ends with victory.
-- [ ] 13. `pnpm typecheck && pnpm test && pnpm lint`
-- [ ] 14. Commit: `feat(encounters): combat tracker (plan 24)`
+- [x] 12. e2e: DM creates 3-goblin encounter, rolls init, runs 2 rounds, kills all goblins, ends with victory. **Livré 24.5** : `tests/e2e/encounter-full-combat-uat.spec.ts` exécute le scénario d'acceptation LITTÉRAL bout en bout en une seule session (3 gobelins → init → 2 rounds RÉELS via 3 « Fin du tour » jusqu'au wrap Round 2 → kill ALL 3 gobelins via le contrôle MJ −10 PV → clôture Victoire). Passe par les VRAIES rules Firestore (create encounter + write PV + events MJ-only). Galerie `uat-review/jalon-24/24-full/` (01 préparée, 02 init, 03 Round 1, 04 Round 2, 05 tous morts 0/7, 06 victoire/Terminée). Les specs sœurs (lifecycle/monster-control/handoff-party) couvraient les briques ; celle-ci verrouille le parcours consolidé. **5/5 specs encounter e2e vertes** (non-régression).
+- [x] 13. `pnpm typecheck && pnpm test && pnpm lint` — typecheck clean, **2450 fast tests verts**, lint clean. e2e encounter 5/5 verts contre l'émulateur.
+- [x] 14. Commit: `feat(encounters): combat tracker (plan 24)` — livré en sous-commits 24.1→24.5 (le step 12 + clôture DoD = ce commit).
 
 ## Definition of Done
-- [ ] Create / start / run / end encounter works
-- [ ] Players see live turn order and HP changes
-- [ ] DM controls monsters
-- [ ] All events logged correctly
+- [x] Create / start / run / end encounter works — créer (24.2) / lancer init + démarrer (24.3) / fin de tour + 2 rounds (24.3, e2e step 12) / clôturer + issue (24.3). Vérifié e2e bout en bout.
+- [x] Players see live turn order and HP changes — `useEncounter` `onSnapshot` (24.3) : strip d'ordre temps-réel + `EncounterPartyView` PV groupés live (24.4 step 8), partagés MJ↔joueurs sans refresh.
+- [x] DM controls monsters — `ParticipantControlModal` PV/états (24.4 step 7) + hand-off dégâts physiques (24.4 step 7b). MJ-only.
+- [x] All events logged correctly — `encounter-start`/`turn-start`/`monster-hp-change`/`encounter-end` câblés (loggers 24.1, branchés 24.3+24.4), passent par les vraies rules de l'émulateur dans les e2e.
 
 ## Sous-jalons
 
@@ -124,6 +124,14 @@ Second sous-commit de 24.4. Aucun changement de schéma / rule / index : step 7b
 - **Cible du hand-off = non-joueurs** : appliquer sur un PJ écrirait sa fiche en cross-owner (`hp-change`) — même frontière que step 7. Reporté avec le reste du contrôle PJ.
 - **Party view = dual-lens, pas un doublon** : la strip montre l'ORDRE de combat + le tour actif ; la party view montre la SANTÉ groupée, visible même en préparation. Coexistence courante en VTT. Léger recouvrement de l'info PV assumé — Adrien arbitre en UAT.
 - **PV monstres visibles aux joueurs** : déjà lus via la rule de lecture du doc. Les masquer = champ `hpVisible` = changement de schéma → décision Adrien (reportée).
+
+### JALON 24.5 — e2e complet (step 12) + clôture DoD ✅ livré
+Dernier sous-commit de 24. Aucun code applicatif neuf : un seul spec e2e consolidé qui exécute le scénario d'acceptation littéral du step 12 bout en bout, + cochage de la Definition of Done.
+
+- **`tests/e2e/encounter-full-combat-uat.spec.ts`** — créer une rencontre 3 gobelins (7 PV) → lancer l'initiative → démarrer → faire DEUX rounds réels (3 « Fin du tour » → wrap Round 2, assertion `Round 2` visible) → tuer les 3 gobelins via le contrôle MJ (helper `killGoblin` : −10 PV → 0/7, fermer) → assertion des 3 cartes à 0/7 → clôturer sur « Victoire » → assertion statut « Terminée » + disparition de « Fin du tour ». Passe par les VRAIES rules Firestore de l'émulateur (create encounter + write PV + events MJ-only). Galerie `uat-review/jalon-24/24-full/` (01 préparée, 02 init, 03 Round 1, 04 Round 2, 05 tous morts, 06 victoire).
+- **Non-régression** — 5/5 specs encounter e2e vertes ensemble (`encounter` filter : full-combat + lifecycle + monster-control + handoff-party + list). Triple gate : typecheck clean, **2450 fast** verts, lint clean.
+
+**Décision tactique 24.5 :** un spec consolidé DISTINCT plutôt que d'étendre `encounter-lifecycle-uat` — le step 12 demande explicitement « 2 rounds + kill all + victory » en un seul parcours, que ni le lifecycle (pas de kill, 1 fin de tour) ni le monster-control (kill 1, pas de 2 rounds ni de clôture) ne couvraient bout en bout. Le spec dédié = preuve d'acceptation lisible + galerie UAT propre pour la signature finale du plan.
 
 ### Reste à livrer (UI + décisions Adrien requises)
 
