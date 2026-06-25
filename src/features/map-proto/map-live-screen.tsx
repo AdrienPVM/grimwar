@@ -27,6 +27,15 @@ import type {
 import { createCirclePolygon } from './fog-state';
 import { snapToGridCell } from './grid-snap';
 import { MapScene } from './map-scene';
+import {
+  addAnchor,
+  EMPTY_RULER,
+  formatFeet,
+  pxPerFoot,
+  rulerLengthFeet,
+  setCursor,
+  type Ruler,
+} from './ruler-state';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
 
@@ -96,6 +105,11 @@ export function MapLiveScreen(): JSX.Element {
   // Aimantage à la grille — préférence d'affichage LOCALE (pas persistée :
   // c'est un confort de manipulation côté MJ, pas une donnée de la carte).
   const [snapEnabled, setSnapEnabled] = useState(true);
+  // Mesure de distance — outil MJ éphémère, jamais persisté (comme l'aimant).
+  // En mode mesure, les jetons deviennent non-interactifs et un clic sur le
+  // fond pose les ancres ; le curseur dessine le segment vivant.
+  const [measureMode, setMeasureMode] = useState(false);
+  const [ruler, setRuler] = useState<Ruler>(EMPTY_RULER);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{
     pointerX: number;
@@ -127,6 +141,9 @@ export function MapLiveScreen(): JSX.Element {
 
   const handlePointerDown = useCallback(
     (e: ReactPointerEvent<SVGGElement>, token: MapToken): void => {
+      // En mode mesure, les jetons ne se déplacent pas : on laisse le clic
+      // remonter au fond SVG pour poser une ancre de règle.
+      if (measureMode) return;
       e.stopPropagation();
       (e.target as Element).setPointerCapture(e.pointerId);
       const pos = positionOf(token);
@@ -139,8 +156,37 @@ export function MapLiveScreen(): JSX.Element {
       };
       setDraggingTokenId(token.id);
     },
-    [positionOf, screenToSvg],
+    [measureMode, positionOf, screenToSvg],
   );
+
+  // ── Mesure de distance (outil MJ éphémère) ─────────────────────────────
+  const handleToggleMeasure = useCallback((): void => {
+    setMeasureMode((on) => {
+      // À la sortie du mode, on purge la règle pour ne pas la laisser traîner.
+      if (on) setRuler(EMPTY_RULER);
+      return !on;
+    });
+  }, []);
+
+  const handleMeasurePointerDown = useCallback(
+    (e: ReactPointerEvent<SVGSVGElement>): void => {
+      const p = screenToSvg(e.clientX, e.clientY);
+      setRuler((r) => addAnchor(r, p));
+    },
+    [screenToSvg],
+  );
+
+  const handleMeasurePointerMove = useCallback(
+    (e: ReactPointerEvent<SVGSVGElement>): void => {
+      const p = screenToSvg(e.clientX, e.clientY);
+      setRuler((r) => setCursor(r, p));
+    },
+    [screenToSvg],
+  );
+
+  const handleClearMeasure = useCallback((): void => {
+    setRuler(EMPTY_RULER);
+  }, []);
 
   const handlePointerMove = useCallback(
     (e: ReactPointerEvent<SVGGElement>): void => {
@@ -442,6 +488,15 @@ export function MapLiveScreen(): JSX.Element {
     );
   }
 
+  // Échelle réelle de CETTE carte (px par pied) — dérivée de gridSize/feetPerSquare,
+  // jamais le défaut 50 px/case. Alimente la longueur affichée de la règle.
+  const feetScale = pxPerFoot(map.gridSize, map.feetPerSquare);
+  const rulerFeet = rulerLengthFeet(ruler, feetScale);
+  const rulerPoints = ruler.cursor
+    ? [...ruler.anchors, ruler.cursor]
+    : [...ruler.anchors];
+  const rulerLabelAt = ruler.cursor ?? ruler.anchors[ruler.anchors.length - 1] ?? null;
+
   return (
     <main className="mx-auto w-full max-w-[1200px] p-4 sm:p-6">
       <header className="mb-4 border-b border-gold-dim/30 pb-3">
@@ -666,6 +721,43 @@ export function MapLiveScreen(): JSX.Element {
             Vue présentation ▸
           </button>
         </div>
+        {/* Mesure de distance — outil MJ éphémère (clics sur le fond = ancres). */}
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+            Mesure
+          </span>
+          <button
+            type="button"
+            data-testid="map-live-toggle-measure"
+            onClick={handleToggleMeasure}
+            aria-pressed={measureMode}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold/15"
+          >
+            Mesure : {measureMode ? 'ON' : 'OFF'}
+          </button>
+          {measureMode && (
+            <>
+              <span
+                data-testid="map-live-ruler-total"
+                className="rounded-pill border border-gold-dim/30 bg-gold/5 px-3 py-1 font-mono text-[11px] text-gold-bright"
+              >
+                Distance : {formatFeet(rulerFeet)}
+              </span>
+              <button
+                type="button"
+                data-testid="map-live-clear-measure"
+                onClick={handleClearMeasure}
+                disabled={ruler.anchors.length === 0}
+                className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+              >
+                Effacer mesure
+              </button>
+              <span className="font-serif text-[11px] text-text-tertiary">
+                Cliquez sur la carte pour poser les points.
+              </span>
+            </>
+          )}
+        </div>
       </header>
 
       <div
@@ -677,7 +769,10 @@ export function MapLiveScreen(): JSX.Element {
           viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full touch-none select-none"
+          style={measureMode ? { cursor: 'crosshair' } : undefined}
           data-testid="map-live-svg"
+          onPointerDown={measureMode ? handleMeasurePointerDown : undefined}
+          onPointerMove={measureMode ? handleMeasurePointerMove : undefined}
         >
           {/* Décor partagé : image, grille, murs (debug MJ), fog (voile
               atténué côté MJ pour qu'il voie au travers) + LOS, lumières. Les
@@ -697,6 +792,9 @@ export function MapLiveScreen(): JSX.Element {
               <g
                 key={token.id}
                 data-testid={`map-live-token-${token.id}`}
+                // En mode mesure, les jetons laissent passer les clics au fond
+                // SVG (poser une ancre par-dessus un jeton reste possible).
+                pointerEvents={measureMode ? 'none' : undefined}
                 style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                 onPointerDown={(e) => handlePointerDown(e, token)}
                 onPointerMove={handlePointerMove}
@@ -731,6 +829,49 @@ export function MapLiveScreen(): JSX.Element {
               </g>
             );
           })}
+
+          {/* Règle de mesure — overlay décoratif (clics gérés par le fond SVG).
+              Tracé doré pointillé + pastilles aux ancres + étiquette en pieds. */}
+          {measureMode && rulerPoints.length >= 2 && (
+            <g data-testid="map-live-ruler" pointerEvents="none">
+              <polyline
+                points={rulerPoints.map((p) => `${p.x},${p.y}`).join(' ')}
+                fill="none"
+                stroke="rgba(220,184,108,0.9)"
+                strokeWidth={2}
+                strokeDasharray="8 6"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              {ruler.anchors.map((p, i) => (
+                <circle
+                  key={`anchor-${i}`}
+                  cx={p.x}
+                  cy={p.y}
+                  r={4}
+                  fill="rgba(220,184,108,0.95)"
+                  stroke="#1a1208"
+                  strokeWidth={1}
+                />
+              ))}
+              {rulerLabelAt && (
+                <text
+                  data-testid="map-live-ruler-label"
+                  x={rulerLabelAt.x + 12}
+                  y={rulerLabelAt.y - 12}
+                  fontFamily="monospace"
+                  fontWeight="bold"
+                  fontSize={18}
+                  fill="#e8c87d"
+                  stroke="#0a0a0a"
+                  strokeWidth={4}
+                  paintOrder="stroke"
+                >
+                  {formatFeet(rulerFeet)}
+                </text>
+              )}
+            </g>
+          )}
         </svg>
       </div>
     </main>

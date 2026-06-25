@@ -520,4 +520,88 @@ describe('MapLiveScreen', () => {
       expect(screen.getByTestId('map-live-write-error').textContent).toContain('rules-denied');
     });
   });
+
+  // ── Mesure de distance (outil MJ) ──────────────────────────────────────
+
+  it('mesure OFF par défaut, sans contrôles de règle visibles', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.getByTestId('map-live-toggle-measure').textContent).toContain('OFF');
+    expect(screen.queryByTestId('map-live-ruler-total')).toBeNull();
+    expect(screen.queryByTestId('map-live-clear-measure')).toBeNull();
+  });
+
+  it('active le mode mesure et révèle le total + le bouton effacer', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    expect(screen.getByTestId('map-live-toggle-measure').textContent).toContain('ON');
+    // Total à 0 ft tant qu'aucune ancre, bouton effacer désactivé.
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 ft');
+    const clearBtn = screen.getByTestId('map-live-clear-measure') as HTMLButtonElement;
+    expect(clearBtn.disabled).toBe(true);
+  });
+
+  it("mesure la distance à l'échelle RÉELLE de la carte (70 px/case → 14 px/ft)", () => {
+    // Carte par défaut : gridSize 70, feetPerSquare 5 → 14 px/ft. Un segment
+    // de 140 px doit afficher 10 ft (et NON 14 ft que donnerait le défaut codé
+    // en dur de 10 px/ft). C'est l'invariant « identité du contenu », pas présence.
+    useMapState.map = mkMap({ gridSize: 70, feetPerSquare: 5 });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    const svg = screen.getByTestId('map-live-svg');
+    // 1ʳᵉ ancre en (0,0), curseur en (140,0) → segment vivant de 140 px.
+    firePointer(svg, 'pointerdown', 0, 0);
+    firePointer(svg, 'pointermove', 140, 0);
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('10 ft');
+    expect(screen.getByTestId('map-live-ruler-label').textContent).toBe('10 ft');
+  });
+
+  it('additionne plusieurs segments (chaîne de clics)', () => {
+    useMapState.map = mkMap({ gridSize: 70, feetPerSquare: 5 });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    const svg = screen.getByTestId('map-live-svg');
+    // (0,0) → (140,0) ancré (10 ft) puis curseur vers (280,0) (+10 ft) = 20 ft.
+    firePointer(svg, 'pointerdown', 0, 0);
+    firePointer(svg, 'pointerdown', 140, 0);
+    firePointer(svg, 'pointermove', 280, 0);
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('20 ft');
+  });
+
+  it('« Effacer mesure » réinitialise la règle', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    const svg = screen.getByTestId('map-live-svg');
+    firePointer(svg, 'pointerdown', 0, 0);
+    firePointer(svg, 'pointermove', 140, 0);
+    expect(screen.getByTestId('map-live-ruler-label')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('map-live-clear-measure'));
+    expect(screen.queryByTestId('map-live-ruler-label')).toBeNull();
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 ft');
+  });
+
+  it('quitter le mode mesure purge la règle', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    const svg = screen.getByTestId('map-live-svg');
+    firePointer(svg, 'pointerdown', 0, 0);
+    firePointer(svg, 'pointermove', 140, 0);
+    expect(screen.getByTestId('map-live-ruler-label')).toBeTruthy();
+    // OFF puis de nouveau ON → la règle doit être repartie de zéro.
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    expect(screen.queryByTestId('map-live-ruler-label')).toBeNull();
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 ft');
+  });
+
+  it("ne déplace PAS un jeton pendant la mesure (updateToken non appelé)", async () => {
+    useMapState.tokens = [mkToken({ id: 't1', position: { x: 200, y: 200 } })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointermove', 260, 240);
+    firePointer(tokenG, 'pointerup', 260, 240);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockUpdateToken).not.toHaveBeenCalled();
+  });
 });

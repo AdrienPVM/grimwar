@@ -192,6 +192,44 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
       timeout: 5000,
     });
 
+    // 9c. Mesure de distance. Le mode mesure transforme les clics sur le fond
+    // SVG en ancres de règle ; le total en pieds s'affiche dans la barre. On
+    // pose une première ancre, on déplace le curseur, et le total doit passer
+    // d'« 0 ft » à une distance > 0 — preuve bout-en-bout que la règle dérive
+    // l'échelle réelle de la carte (gridSize/feetPerSquare), pas un défaut.
+    await page.getByTestId('map-live-toggle-measure').click();
+    await expect(page.getByTestId('map-live-toggle-measure')).toContainText('ON');
+    await expect(page.getByTestId('map-live-ruler-total')).toContainText('0 ft');
+
+    const svg = page.getByTestId('map-live-svg');
+    await svg.scrollIntoViewIfNeeded();
+    const sBox = await svg.boundingBox();
+    expect(sBox).not.toBeNull();
+    if (!sBox) return;
+    // Première ancre au tiers gauche, curseur déplacé vers la droite.
+    const p1x = sBox.x + sBox.width * 0.3;
+    const p1y = sBox.y + sBox.height * 0.5;
+    const p2x = sBox.x + sBox.width * 0.6;
+    const p2y = sBox.y + sBox.height * 0.5;
+    await page.mouse.move(p1x, p1y);
+    await page.mouse.down();
+    await page.mouse.up();
+    await page.mouse.move(p2x, p2y, { steps: 8 });
+
+    // Total non nul (une distance entière en pieds). Le label sur la carte est
+    // rendu aussi.
+    await expect(page.getByTestId('map-live-ruler-total')).toContainText(/\b[1-9]\d* ft\b/, {
+      timeout: 5000,
+    });
+    await expect(page.getByTestId('map-live-ruler-label')).toBeVisible();
+
+    await takeStepScreenshot(page, testInfo, 'measure-ruler');
+
+    // Quitter le mode mesure purge la règle (le total disparaît de la barre).
+    await page.getByTestId('map-live-toggle-measure').click();
+    await expect(page.getByTestId('map-live-toggle-measure')).toContainText('OFF');
+    await expect(page.getByTestId('map-live-ruler-total')).toHaveCount(0);
+
     // 10-12. Effacer fog / lumières / AoE.
     await page.getByTestId('map-live-clear-fog').click();
     await expect(page.getByTestId('map-live-fog-count')).toContainText('(0)', {

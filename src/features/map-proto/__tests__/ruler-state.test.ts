@@ -7,6 +7,7 @@ import {
   EMPTY_RULER,
   formatFeet,
   PX_PER_FOOT,
+  pxPerFoot,
   rulerLengthFeet,
   setCursor,
 } from '../ruler-state';
@@ -51,6 +52,31 @@ describe('ruler-state — rulerLengthFeet', () => {
 
   it('respecte PX_PER_FOOT (10 px / ft)', () => {
     expect(PX_PER_FOOT).toBe(10);
+  });
+
+  it("utilise l'échelle de carte fournie, pas le défaut 50 px/case", () => {
+    // Carte par défaut : gridSize 70, feetPerSquare 5 → 14 px/ft.
+    // 140 px de segment = 10 ft (et NON 14 ft comme le donnerait le défaut 10).
+    const scale = pxPerFoot(70, 5);
+    expect(scale).toBe(14);
+    const ruler = setCursor(addAnchor(EMPTY_RULER, { x: 0, y: 0 }), { x: 140, y: 0 });
+    expect(rulerLengthFeet(ruler, scale)).toBe(10);
+    // Garde-fou anti-régression : le défaut codé en dur donnerait une mesure fausse.
+    expect(rulerLengthFeet(ruler)).toBe(14);
+  });
+});
+
+describe('ruler-state — pxPerFoot', () => {
+  it('dérive px/pied de gridSize ÷ feetPerSquare', () => {
+    expect(pxPerFoot(70, 5)).toBe(14);
+    expect(pxPerFoot(50, 5)).toBe(10);
+    expect(pxPerFoot(100, 10)).toBe(10);
+  });
+
+  it('retombe sur PX_PER_FOOT pour une carte dégénérée (0 ou négatif)', () => {
+    expect(pxPerFoot(0, 5)).toBe(PX_PER_FOOT);
+    expect(pxPerFoot(70, 0)).toBe(PX_PER_FOOT);
+    expect(pxPerFoot(-70, 5)).toBe(PX_PER_FOOT);
   });
 });
 
