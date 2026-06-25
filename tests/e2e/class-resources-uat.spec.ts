@@ -67,12 +67,21 @@ test.describe('UAT — Réserves de classe (mode Combat)', () => {
     await expect(rageRow.getByText('2 / 3')).toBeVisible();
     await captureFull(page, '02-barbare-rage-depensee.png');
 
-    // ── Repos long : confirmation deux temps → Rage revient à 3 / 3 ─────────
+    // ── Épuisement : +2 niveaux → pénalité chiffrée + jauge ────────────────
+    await panel.getByRole('button', { name: 'Augmenter l’épuisement' }).click();
+    await panel.getByRole('button', { name: 'Augmenter l’épuisement' }).click();
+    await expect(panel.getByText(/Niveau 2 ·/)).toBeVisible();
+    await captureFull(page, '03-epuisement-niveau-2.png');
+
+    // ── Repos long : confirmation deux temps → Rage revient à 3 / 3,
+    //    épuisement −1 (passe à 1) ──────────────────────────────────────────
     await panel.getByRole('button', { name: 'Repos long' }).click();
-    await captureFull(page, '03-repos-long-confirmation.png');
+    await captureFull(page, '04-repos-long-confirmation.png');
     await panel.getByRole('button', { name: 'Confirmer le repos long ?' }).click();
     await expect(rageRow.getByText('3 / 3')).toBeVisible();
-    await captureFull(page, '04-repos-long-applique.png');
+    // Épuisement décrémenté par le repos long : 2 → 1.
+    await expect(panel.getByText(/Niveau 1 ·/)).toBeVisible();
+    await captureFull(page, '05-repos-long-applique.png');
   });
 
   test('Guerrier L3 → Réserves : Second souffle + Fougue (repos court)', async ({ page }) => {

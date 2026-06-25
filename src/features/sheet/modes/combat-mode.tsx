@@ -5,6 +5,7 @@ import { BattleHud } from './combat/battle-hud';
 import { BreathWeaponCard } from './combat/breath-weapon-card';
 import { ClassResourcesCard } from './combat/class-resources-card';
 import { ConditionsRow } from './combat/conditions-row';
+import { ExhaustionCard } from './combat/exhaustion-card';
 import { DeathSavesModal } from './combat/death-saves-modal';
 import { FightingStyleCard } from './combat/fighting-style-card';
 import { GiantAncestryCard } from './combat/giant-ancestry-card';
@@ -51,6 +52,7 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
         <HpMegaCard character={character} readOnly={readOnly} />
       </div>
       <ConditionsRow character={character} readOnly={readOnly} />
+      <ExhaustionCard character={character} readOnly={readOnly} />
       <ClassResourcesCard character={character} readOnly={readOnly} />
       <HitDiceCard character={character} readOnly={readOnly} />
       <LongRestButton character={character} readOnly={readOnly} />

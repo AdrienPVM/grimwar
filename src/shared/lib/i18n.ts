@@ -319,6 +319,13 @@ export type StringKey =
   | 'sheet.combat.resources.wildShape'
   | 'sheet.combat.resources.sorceryPoints'
   | 'sheet.combat.resources.focusPoints'
+  | 'sheet.combat.exhaustion.title'
+  | 'sheet.combat.exhaustion.none'
+  | 'sheet.combat.exhaustion.level'
+  | 'sheet.combat.exhaustion.penalty'
+  | 'sheet.combat.exhaustion.death'
+  | 'sheet.combat.exhaustion.decrease'
+  | 'sheet.combat.exhaustion.increase'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -2028,6 +2035,13 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.resources.wildShape': 'Forme sauvage',
     'sheet.combat.resources.sorceryPoints': 'Points de sorcellerie',
     'sheet.combat.resources.focusPoints': 'Points de focalisation',
+    'sheet.combat.exhaustion.title': 'Épuisement',
+    'sheet.combat.exhaustion.none': 'Aucun épuisement',
+    'sheet.combat.exhaustion.level': 'Niveau {n}',
+    'sheet.combat.exhaustion.penalty': 'Tests d20 −{d20} · Vitesse −{speed} m',
+    'sheet.combat.exhaustion.death': 'Niveau 6 : mort.',
+    'sheet.combat.exhaustion.decrease': 'Diminuer l’épuisement',
+    'sheet.combat.exhaustion.increase': 'Augmenter l’épuisement',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -4175,6 +4189,13 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.resources.wildShape': 'Wild Shape',
     'sheet.combat.resources.sorceryPoints': 'Sorcery Points',
     'sheet.combat.resources.focusPoints': 'Focus Points',
+    'sheet.combat.exhaustion.title': 'Exhaustion',
+    'sheet.combat.exhaustion.none': 'No exhaustion',
+    'sheet.combat.exhaustion.level': 'Level {n}',
+    'sheet.combat.exhaustion.penalty': 'D20 Tests −{d20} · Speed −{speed} ft',
+    'sheet.combat.exhaustion.death': 'Level 6: death.',
+    'sheet.combat.exhaustion.decrease': 'Decrease exhaustion',
+    'sheet.combat.exhaustion.increase': 'Increase exhaustion',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',
