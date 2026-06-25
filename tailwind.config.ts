@@ -69,6 +69,11 @@ const config: Config = {
         display: ['clamp(20px, 5vw, 32px)', { lineHeight: '1.1' }],
         'body-lg': ['18px', { lineHeight: '1.5' }],
         body: ['15px', { lineHeight: '1.55' }],
+        // Petit corps de texte (secondaire, aides, métadonnées de carte). 13px =
+        // taille de facto historique (`text-[13px]`, 95 occurrences) ; la classe
+        // `text-body-sm` était utilisée ~190× mais n'existait pas dans l'échelle —
+        // elle héritait silencieusement de la taille parente (~15px). Acté 2026-06-25.
+        'body-sm': ['13px', { lineHeight: '1.5' }],
         meta: ['10px', { lineHeight: '1.2', letterSpacing: '0.16em' }],
         micro: ['8px', { lineHeight: '1.2', letterSpacing: '0.22em' }],
       },

@@ -53,7 +53,7 @@ export function NavShell(): JSX.Element {
             className={cn(
               'inline-flex items-center gap-2 rounded-pill border border-white-8 bg-white/[0.04]',
               'px-3 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-gold-bright',
-              'transition-all hover:border-soft hover:bg-gold-bright/10 active:scale-[0.96]',
+              'transition-all duration-200 ease-base hover:border-soft hover:bg-gold-bright/10 active:scale-[0.96]',
             )}
           >
             <span aria-hidden="true" className="text-base leading-none">
@@ -65,7 +65,7 @@ export function NavShell(): JSX.Element {
           <Link
             to="/"
             aria-label={t('nav.brand.aria')}
-            className="flex items-center gap-3 font-display text-[17px] font-bold uppercase tracking-[0.24em] text-gold-bright transition-colors hover:text-gold-lite"
+            className="flex items-center gap-3 font-display text-[17px] font-bold uppercase tracking-[0.24em] text-gold-bright transition-colors duration-200 ease-base hover:text-gold-lite"
           >
             <span aria-hidden="true" className="text-[22px] drop-shadow-[0_0_8px_var(--gold-glow)]">
               ⚔
@@ -98,7 +98,7 @@ export function NavShell(): JSX.Element {
           'bg-gradient-to-br from-gold-bright to-gold-dim text-ink',
           'font-display text-sm font-bold',
           'shadow-[0_4px_14px_rgba(220,184,108,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]',
-          'transition-transform hover:scale-105 active:scale-95',
+          'transition-transform duration-200 ease-base hover:scale-105 active:scale-95',
         )}
         style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }}
       >
