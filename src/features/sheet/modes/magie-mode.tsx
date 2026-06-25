@@ -8,6 +8,7 @@ import type { Spell } from '@/shared/types/content';
 
 import { useSheetReadOnly } from '../permissions-context';
 import { AncestrySpellsCard } from './magie/ancestry-spells-card';
+import { resolveAncestrySpellUsage } from './magie/ancestry-spell-usage';
 import {
   buildAncestrySourceLabelMap,
   resolveAncestrySpellEntries,
@@ -59,16 +60,23 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
     [castingClasses],
   );
 
+  // Ascendance résolue du perso + ses entrées de sorts (label + niveau de
+  // déblocage). Source de vérité partagée carte / liste / modale.
+  const ancestry = useMemo(
+    () => ancestries.find((a) => a.id === character.ancestryId) ?? null,
+    [ancestries, character.ancestryId],
+  );
+  const ancestryEntries = useMemo(
+    () => (ancestry ? resolveAncestrySpellEntries(character, ancestry, spells) : []),
+    [character, ancestry, spells],
+  );
+
   // Label de source PAR SORT (plan 13.14b) — remplace l'ancien label global
-  // par-ascendance qui mislabelait thaumaturgie en « Héritage X ». Source de
-  // vérité = le résolveur canonique partagé avec la carte.
-  const ancestrySourceLabels = useMemo(() => {
-    const ancestry = ancestries.find((a) => a.id === character.ancestryId);
-    if (!ancestry) return new Map<string, string>();
-    return buildAncestrySourceLabelMap(
-      resolveAncestrySpellEntries(character, ancestry, spells),
-    );
-  }, [character, ancestries, spells]);
+  // par-ascendance qui mislabelait thaumaturgie en « Héritage X ».
+  const ancestrySourceLabels = useMemo(
+    () => buildAncestrySourceLabelMap(ancestryEntries),
+    [ancestryEntries],
+  );
 
   // D13e-followup-grant-display — sorts grantés par l'invocation `pact-of-the-
   // tome` (3 cantrips + 2 rituels L1) persistés dans `classes[i].pactTomeCantrips`
@@ -88,12 +96,18 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
   const hasAncestrySpells = (character.knownSpells.ancestry ?? []).length > 0;
   const hasPactTomeSpells = pactTomeSourceLabels.size > 0;
 
-  // Source d'ascendance pour la modale détail — label propre au sort actif.
+  // Source d'ascendance pour la modale détail — label + spec d'usage (D12b) +
+  // niveau de déblocage propres au sort actif. `usage` null pour un cantrip.
   const activeSpellAncestrySource = useMemo(() => {
-    if (!activeSpell) return null;
-    const label = ancestrySourceLabels.get(activeSpell.id);
-    return label ? { label } : null;
-  }, [activeSpell, ancestrySourceLabels]);
+    if (!activeSpell || !ancestry) return null;
+    const entry = ancestryEntries.find((e) => e.spell.id === activeSpell.id);
+    if (!entry) return null;
+    return {
+      label: entry.sourceLabel,
+      usage: resolveAncestrySpellUsage(ancestry, activeSpell.id, character.totalLevel),
+      unlockedAt: entry.unlockedAt,
+    };
+  }, [activeSpell, ancestry, ancestryEntries, character.totalLevel]);
 
   // Source Pacte du grimoire pour la modale détail — label propre au sort
   // actif. `null` si le sort ne vient pas du Pacte.

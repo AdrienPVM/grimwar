@@ -318,6 +318,35 @@ export const tieflingL1Infernal: SeedPreset = {
 };
 
 /**
+ * D12b — Tieffelin Infernal Roublard niv. 5 (non-caster). Au niveau 5 les deux
+ * sorts d'héritage à recharge sont DÉBLOQUÉS (Représailles infernales unlock L3,
+ * Ténèbres unlock L5). Sert la spec `ancestry-leveled-cast.spec.ts` : ouvrir
+ * Représailles infernales (L1, `long-rest`) → bouton « Lancer » ACTIF (1/1) → le
+ * cast décrémente le compteur `featureUsage` sans consommer d'emplacement.
+ */
+export const tieflingL5Infernal: SeedPreset = {
+  name: 'Maelstrom Skye',
+  classes: [{ classId: 'rogue', subclassId: null, level: 5 }],
+  primaryClassId: 'rogue',
+  ancestryId: 'tiefling',
+  ancestrySubChoices: {
+    tieflingLegacy: 'infernal',
+    ancestryCastingAbility: 'cha',
+    ancestrySize: 'medium',
+  },
+  backgroundId: 'criminal',
+  abilities: { for: 10, dex: 16, con: 12, int: 12, sag: 10, cha: 14 },
+  hp: { current: 33, max: 33 },
+  ac: 14,
+  hitDice: [{ classId: 'rogue', current: 5, max: 5, die: 'd8' }],
+  saves: { dex: true, int: true },
+  knownSpells: {
+    ancestry: ['trait-de-feu', 'represailles-infernales', 'tenebres'],
+  },
+  spellcastingAbility: { ancestry: 'cha' },
+};
+
+/**
  * Elfe Drow niv. 1 Roublard (plan 13.8b commit 3). Non-caster pour assurer
  * la cohérence matricielle avec les 2 autres ascendances (Gnome / Tieffelin
  * sont Roublard) et permettre l'assertion « Lancer désactivé » côté modale.

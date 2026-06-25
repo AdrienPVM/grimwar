@@ -495,7 +495,11 @@ export type StringKey =
   // D18) — distinct du label « Héritage X » des sous-choix. Tieffelin : trait
   // « Présence d'outre-monde » → thaumaturgie, commun aux 3 héritages.
   | 'sheet.magie.ancestry.tieflingCommonSource'
-  | 'sheet.magie.cantNotImplementedAncestry'
+  // D12b — sorts d'ascendance à recharge (Tieffelin / Elfe L3-L5, Gnome forêts).
+  | 'sheet.magie.ancestryUsesLabel'
+  | 'sheet.magie.ancestryPerLongRest'
+  | 'sheet.magie.ancestryNoUsesLeft'
+  | 'sheet.magie.ancestryLockedUntilLevel'
   // Source des sorts grantés par l'invocation Pacte du grimoire (D13e-followup-
   // grant-display) — 3 sorts mineurs + 2 sorts L1 rituels au choix de n'importe
   // quelle classe, persistés dans `classes[warlock].pactTomeCantrips`/`.pactTomeRituals`.
@@ -2358,8 +2362,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.gnomeTitle': 'Sorts de lignage gnome',
     'sheet.magie.ancestry.genericTitle': "Sorts d'ascendance",
     'sheet.magie.ancestry.tieflingCommonSource': "Présence d’outre-monde",
-    'sheet.magie.cantNotImplementedAncestry':
-      "Lancement des sorts d'ascendance pas encore implémenté.",
+    'sheet.magie.ancestryUsesLabel': 'Usages',
+    'sheet.magie.ancestryPerLongRest': 'par repos long',
+    'sheet.magie.ancestryNoUsesLeft': 'Plus aucun usage avant un repos long.',
+    'sheet.magie.ancestryLockedUntilLevel': 'Disponible au niveau',
     // D13e-followup-grant-display — nom de l'invocation `pact-of-the-tome`
     // (SRD FR : « Pacte du grimoire » — invocations.json > pact-of-the-tome.name.fr).
     'sheet.magie.pactTome.sourceLabel': 'Pacte du grimoire',
@@ -4652,8 +4658,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.ancestry.gnomeTitle': 'Gnomish lineage spells',
     'sheet.magie.ancestry.genericTitle': 'Ancestry spells',
     'sheet.magie.ancestry.tieflingCommonSource': 'Otherworldly Presence',
-    'sheet.magie.cantNotImplementedAncestry':
-      'Casting ancestry spells is not yet implemented.',
+    'sheet.magie.ancestryUsesLabel': 'Uses',
+    'sheet.magie.ancestryPerLongRest': 'per long rest',
+    'sheet.magie.ancestryNoUsesLeft': 'No uses left until a long rest.',
+    'sheet.magie.ancestryLockedUntilLevel': 'Available at level',
     'sheet.magie.pactTome.sourceLabel': 'Pact of the Tome',
     'sheet.magie.prep.titleFor': 'Preparation · {class}',
     'sheet.magie.prep.count': '{n} / {cap} prepared',

@@ -132,6 +132,27 @@ describe('applyLongRest — standard (aucune variante)', () => {
     });
   });
 
+  it('réinitialise tous les compteurs featureUsage au max (D12b — sorts d\'ascendance)', () => {
+    // Tieffelin Infernal L5 : Représailles infernales (L3) consommé, Ténèbres
+    // (L5) consommé → un repos long restaure les deux compteurs à 1/1.
+    const c = build({
+      featureUsage: {
+        'ancestry-spell:represailles-infernales': { current: 0, max: 1, restoresOn: 'long' },
+        'ancestry-spell:tenebres': { current: 0, max: 1, restoresOn: 'long' },
+      },
+    });
+    const r = applyLongRest(c, []);
+    expect(r.patch.featureUsage).toEqual({
+      'ancestry-spell:represailles-infernales': { current: 1, max: 1, restoresOn: 'long' },
+      'ancestry-spell:tenebres': { current: 1, max: 1, restoresOn: 'long' },
+    });
+  });
+
+  it('featureUsage vide → patch featureUsage vide (no-op)', () => {
+    const r = applyLongRest(build(), []);
+    expect(r.patch.featureUsage).toEqual({});
+  });
+
   it('retire 1 niveau d\'épuisement (règle 2024)', () => {
     const r = applyLongRest(build({ exhaustion: 2 }), []);
     expect(r.patch.exhaustion).toBe(1);

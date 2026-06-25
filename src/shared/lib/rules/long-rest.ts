@@ -34,7 +34,12 @@ export interface LongRestResult {
   patch: Partial<
     Pick<
       Character,
-      'hp' | 'hitDice' | 'classResources' | 'spellSlots' | 'exhaustion'
+      | 'hp'
+      | 'hitDice'
+      | 'classResources'
+      | 'spellSlots'
+      | 'exhaustion'
+      | 'featureUsage'
     >
   >;
   /** Résumé pour le toast / journal. */
@@ -130,8 +135,18 @@ export function applyLongRest(
   const exhaustionRemoved = character.exhaustion > 0 ? 1 : 0;
   const exhaustion = character.exhaustion - exhaustionRemoved;
 
+  // ── Usages de capacités (featureUsage) : tous au max ─────────────────────
+  // Un repos long restaure tout ce qu'un repos court restaure, plus les usages
+  // « par repos long » — donc on réinitialise CHAQUE compteur, quelle que soit
+  // sa période. Couvre les sorts d'ascendance à recharge (D12b : Tieffelin /
+  // Elfe L3-L5, Gnome des forêts). No-op si le record est vide.
+  const featureUsage: Character['featureUsage'] = {};
+  for (const [key, usage] of Object.entries(character.featureUsage)) {
+    featureUsage[key] = { ...usage, current: usage.max };
+  }
+
   return {
-    patch: { hp, hitDice, classResources, spellSlots, exhaustion },
+    patch: { hp, hitDice, classResources, spellSlots, exhaustion, featureUsage },
     summary: {
       hpHealed,
       hitDiceRegained: regained,

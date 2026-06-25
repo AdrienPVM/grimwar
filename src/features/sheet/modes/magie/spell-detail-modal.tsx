@@ -15,6 +15,10 @@ import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
 import { useUpdateCharacter } from '../../use-update-character';
+import {
+  remainingAncestrySpellUses,
+  type AncestrySpellUsageSpec,
+} from './ancestry-spell-usage';
 import { SpellDamageCard } from './spell-damage-card';
 import { consumeSlot, type SpellcastingClassEntry } from './spell-slots';
 import { SummonedCreatureStatBlockCard } from './summoned-creature-stat-block-card';
@@ -27,11 +31,17 @@ interface SpellDetailModalProps {
   /**
    * Source d'ascendance du sort (plan 13.8b). Si non-null, un chip distinct
    * est affiché dans l'en-tête. Si `spellcastingClasses` est vide ET
-   * `ancestrySource` est posé, le bouton « Lancer » est désactivé avec un
-   * hint « pas encore implémenté » — la mécanique de slots / 1×/jour pour
-   * ces sorts viendra avec D12.
+   * `ancestrySource` est posé, le sort est lancé via la source d'ascendance :
+   *   - cantrip (niveau 0) → à volonté, aucun compteur ;
+   *   - sort de niveau ≥ 1 → consomme un usage `featureUsage` (D12b), pas
+   *     d'emplacement de classe. `usage` porte la spec de quota (null pour un
+   *     cantrip), `unlockedAt` le niveau de perso requis (RAW : L3 / L5).
    */
-  ancestrySource: { label: string } | null;
+  ancestrySource: {
+    label: string;
+    usage: AncestrySpellUsageSpec | null;
+    unlockedAt: number;
+  } | null;
   /**
    * Source Pacte du grimoire (D13e-followup-grant-display). Si non-null, un
    * chip distinct est affiché dans l'en-tête. Per SRD FR 5.2.1 ces sorts
@@ -75,15 +85,29 @@ export function SpellDetailModal({
   // Sort d'ascendance pure (aucune classe lanceuse pour ce sort).
   const ancestryOnly = spellcastingClasses.length === 0 && ancestrySource !== null;
   // Un cantrip d'ascendance (Prestidigitation, Thaumaturgie…) est à VOLONTÉ :
-  // aucun emplacement, aucun compteur d'usage → on peut le lancer directement
-  // (rolls de dégâts + concentration gérés par `handleCast`, qui supporte déjà
-  // le cas `isCantrip` sans classe lanceuse). Seuls les sorts d'ascendance de
-  // niveau ≥ 1 (typiquement 1×/jour) restent bloqués tant que le compteur
-  // d'usages `featureUsage` n'est pas câblé (D12). Cf. plan 13.8b commit 1.
-  const ancestryLeveledLocked = ancestryOnly && spell.level > 0;
-  const castDisabledHint = ancestryLeveledLocked
-    ? t('sheet.magie.cantNotImplementedAncestry')
-    : undefined;
+  // aucun emplacement, aucun compteur d'usage. Un sort d'ascendance de niveau
+  // ≥ 1 (Tieffelin / Elfe L3-L5, Gnome des forêts) se lance via le compteur
+  // `featureUsage` (D12b) : pas d'emplacement de classe, un quota de
+  // `usage.max` usages par repos long.
+  const isAncestryLeveledCast = ancestryOnly && spell.level > 0;
+  const ancestryUsage = ancestrySource?.usage ?? null;
+  // Verrou RAW : un sort L3/L5 n'est lançable qu'à partir du niveau de perso
+  // qui le débloque (les trois sorts d'héritage sont inscrits dès la création).
+  const ancestryUnlocked =
+    !isAncestryLeveledCast || character.totalLevel >= (ancestrySource?.unlockedAt ?? 1);
+  const ancestryRemaining = ancestryUsage
+    ? remainingAncestrySpellUses(character, ancestryUsage)
+    : null;
+  const ancestryExhausted = ancestryRemaining !== null && ancestryRemaining <= 0;
+  // Bouton « Lancer » désactivé pour un sort d'ascendance pas encore débloqué
+  // ou dont le quota du jour est épuisé.
+  const ancestryCastBlocked =
+    isAncestryLeveledCast && (!ancestryUnlocked || ancestryExhausted);
+  const castDisabledHint = !ancestryUnlocked
+    ? `${t('sheet.magie.ancestryLockedUntilLevel')} ${ancestrySource?.unlockedAt ?? ''}`
+    : ancestryExhausted
+      ? t('sheet.magie.ancestryNoUsesLeft')
+      : undefined;
   // Choix de la classe lanceuse (si multi-class) : on prend la première par
   // défaut, l'utilisateur peut basculer via un sélecteur si plusieurs.
   const [activeClassId, setActiveClassId] = useState<string>(
@@ -120,16 +144,36 @@ export function SpellDetailModal({
 
   async function handleCast(): Promise<void> {
     if (readOnly || busy) return;
-    if (!activeClass && !isCantrip) {
+    if (!activeClass && !isCantrip && !isAncestryLeveledCast) {
       showToast({ kind: 'info', title: 'Aucune classe lanceuse', sub: 'Le sort ne peut être lancé.' });
       return;
     }
+    if (ancestryCastBlocked) return;
     setBusy(true);
     try {
       const patch: Partial<Character> = {};
+      // Niveau effectif du lancement : cantrip → 0 ; sort d'ascendance → son
+      // propre niveau (pas d'upcast hors emplacement) ; sinon le slot choisi.
+      const castLevel = isCantrip ? 0 : isAncestryLeveledCast ? spell.level : chosenLevel;
 
-      // 1. Consommation du slot (sauf cantrip).
-      if (!isCantrip) {
+      // 1. Consommation de la ressource selon la source.
+      if (isAncestryLeveledCast) {
+        // Sort d'ascendance L3/L5 : consomme un usage `featureUsage` (pas
+        // d'emplacement). `ancestryUsage` peut être null (cantrip déguisé en
+        // level>0 — donnée incohérente) : dans ce cas, lancement à volonté.
+        if (ancestryUsage) {
+          const remaining = ancestryRemaining ?? ancestryUsage.max;
+          patch.featureUsage = {
+            ...character.featureUsage,
+            [ancestryUsage.key]: {
+              current: Math.max(0, remaining - 1),
+              max: ancestryUsage.max,
+              restoresOn: ancestryUsage.restoresOn,
+            },
+          };
+        }
+      } else if (!isCantrip) {
+        // Consommation du slot (sorts de classe).
         const nextSlots = consumeSlot(character.spellSlots, chosenLevel);
         if (!nextSlots) {
           showToast({
@@ -154,7 +198,7 @@ export function SpellDetailModal({
         }
         patch.currentConcentration = {
           spellId: spell.id,
-          slotLevel: isCantrip ? 0 : chosenLevel,
+          slotLevel: castLevel,
         };
       }
 
@@ -168,8 +212,9 @@ export function SpellDetailModal({
       void logSpellCast({
         characterId: character.id,
         spellId: spell.id,
-        level: isCantrip ? 0 : chosenLevel,
-        slotConsumed: isCantrip ? null : chosenLevel,
+        level: castLevel,
+        // Un cast d'ascendance ne consomme jamais d'emplacement de classe.
+        slotConsumed: isCantrip || isAncestryLeveledCast ? null : chosenLevel,
         components: { v: spell.components.v, s: spell.components.s, m: spell.components.m },
       });
 
@@ -203,7 +248,7 @@ export function SpellDetailModal({
         // choisi de ne pas logger le nombre de dégâts. C'est intentionnel ;
         // pas de rollback de slot, pas de toast de dégâts dupliqué.
         const damage = await dice.rollDamageWithMode(damageFormula, {
-          label: `${spellName}${isCantrip ? '' : ` · niv. ${chosenLevel}`}`,
+          label: `${spellName}${castLevel === 0 ? '' : ` · niv. ${castLevel}`}`,
           characterId: character.id,
           kind: 'damage',
         });
@@ -219,7 +264,7 @@ export function SpellDetailModal({
         showToast({
           kind: 'roll',
           title: spellName,
-          big: isCantrip ? 'Tour' : `Niv. ${chosenLevel}`,
+          big: castLevel === 0 ? 'Tour' : `Niv. ${castLevel}`,
           sub: dc !== null ? `DD ${dc} si jet de sauvegarde requis` : 'Lancé',
         });
       }
@@ -351,7 +396,20 @@ export function SpellDetailModal({
             </label>
           )}
 
-          {!isCantrip && (
+          {/* Quota d'usage des sorts d'ascendance L3/L5 (D12b) — remplace le
+              sélecteur d'emplacement (ils ne consomment pas de slot). */}
+          {isAncestryLeveledCast && ancestryUsage && (
+            <div className="mb-3 flex items-center justify-between rounded-card-sm border border-amethyst/25 bg-amethyst/[0.06] px-3 py-2">
+              <span className="font-title text-[9px] font-bold uppercase tracking-[0.22em] text-amethyst">
+                {t('sheet.magie.ancestryUsesLabel')}
+              </span>
+              <span className="font-serif text-body-sm text-text-secondary">
+                {ancestryRemaining} / {ancestryUsage.max} · {t('sheet.magie.ancestryPerLongRest')}
+              </span>
+            </div>
+          )}
+
+          {!isCantrip && !isAncestryLeveledCast && (
             <div className="mb-3">
               <p className="mb-1 font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
                 Emplacement
@@ -404,8 +462,8 @@ export function SpellDetailModal({
               disabled={
                 readOnly ||
                 busy ||
-                ancestryLeveledLocked ||
-                (!isCantrip && availableSlots.length === 0)
+                ancestryCastBlocked ||
+                (!isCantrip && !isAncestryLeveledCast && availableSlots.length === 0)
               }
               className="flex-1"
               title={castDisabledHint}
