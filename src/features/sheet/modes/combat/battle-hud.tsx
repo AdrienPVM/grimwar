@@ -48,6 +48,23 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
     showToast({ kind: 'info', title: 'Fin du tour', sub: 'Économie d\'action réinitialisée' });
   }
 
+  /**
+   * Bascule l'Inspiration héroïque (SRD 5.2.1) — drapeau binaire octroyé par le
+   * MJ, dépensé par le joueur pour relancer un test. Jusqu'ici le drapeau était
+   * CONSOMMÉ par `rollWithFlags` mais jamais OCTROYÉ depuis l'UI : impossible de
+   * la donner. Ce toggle comble le trou (octroi MJ ou auto-octroi de table).
+   */
+  async function toggleInspiration(): Promise<void> {
+    if (readOnly) return;
+    const next = !character.inspiration;
+    await updateCharacter({ inspiration: next });
+    showToast({
+      kind: next ? 'crit' : 'info',
+      title: 'Inspiration héroïque',
+      sub: next ? 'Octroyée — relancez un test au choix.' : 'Retirée.',
+    });
+  }
+
   async function rollInitiative(): Promise<void> {
     if (readOnly) return;
     // Le pivot rollWithFlags émet déjà le toast avec crit/fumble/advantage.
@@ -112,6 +129,25 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
             {character.initiative >= 0 ? '+' : ''}
             {character.initiative}
           </span>
+        </button>
+        <button
+          type="button"
+          disabled={readOnly}
+          onClick={() => void toggleInspiration()}
+          aria-pressed={character.inspiration}
+          aria-label={
+            character.inspiration
+              ? 'Retirer l’Inspiration héroïque'
+              : 'Octroyer l’Inspiration héroïque'
+          }
+          className={cn(
+            'ml-1 inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40',
+            character.inspiration
+              ? 'border-gold bg-gradient-to-b from-gold-bright to-gold text-ink shadow-[0_2px_10px_rgba(220,184,108,0.4)]'
+              : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-soft hover:text-gold-bright',
+          )}
+        >
+          <span aria-hidden="true">✦</span> Inspiration
         </button>
       </div>
       <button
