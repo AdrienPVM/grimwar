@@ -7,6 +7,7 @@ import { ConditionsRow } from './combat/conditions-row';
 import { DeathSavesModal } from './combat/death-saves-modal';
 import { FightingStyleCard } from './combat/fighting-style-card';
 import { GiantAncestryCard } from './combat/giant-ancestry-card';
+import { HitDiceCard } from './combat/hit-dice-card';
 import { HpMegaCard } from './combat/hp-mega-card';
 import { PartyStrip } from './combat/party-strip';
 import { SlotsCompact } from './combat/slots-compact';
@@ -48,6 +49,7 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
         <HpMegaCard character={character} readOnly={readOnly} />
       </div>
       <ConditionsRow character={character} readOnly={readOnly} />
+      <HitDiceCard character={character} />
       {hasSpellSlots && <SlotsCompact character={character} readOnly={readOnly} />}
       <div className="xl:col-span-2">
         <AttacksList character={character} readOnly={readOnly} />

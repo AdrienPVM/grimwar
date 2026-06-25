@@ -294,6 +294,7 @@ export type StringKey =
   | 'sheet.stat.init'
   | 'sheet.stat.speed'
   | 'sheet.stat.passivePerception'
+  | 'sheet.combat.hitDice.title'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -1977,6 +1978,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Vit.',
     'sheet.stat.passivePerception': 'Perc. passive',
+    'sheet.combat.hitDice.title': 'Dés de vie',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -4098,6 +4100,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Spd',
     'sheet.stat.passivePerception': 'Pass. perc.',
+    'sheet.combat.hitDice.title': 'Hit Dice',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',
