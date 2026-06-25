@@ -26,6 +26,13 @@ const CodexScreen = lazy(async () => {
   return { default: mod.CodexScreen };
 });
 
+// Route /account — compte + préférences de jeu (amorce plan 35). Destination
+// du losange avatar du NavShell. Écrit `users/{uid}.settings.*` (rule existante).
+const AccountScreen = lazy(async () => {
+  const mod = await import('@/features/account/account-screen');
+  return { default: mod.AccountScreen };
+});
+
 // Route /map-proto — squelette de prototype carte (PAS production).
 // Cf. plans/MAP-MODE-PROPOSAL.md. Pas listée au menu, accessible par URL.
 const MapProtoScreen = lazy(async () => {
@@ -184,6 +191,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/create" element={<WizardScreen />} />
         <Route path="/character/:id" element={<SheetScreen />} />
         <Route path="/codex" element={<CodexScreen />} />
+        <Route path="/account" element={<AccountScreen />} />
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />

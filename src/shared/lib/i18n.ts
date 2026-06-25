@@ -117,6 +117,29 @@ export type StringKey =
   | 'size.large'
   | 'size.huge'
   | 'size.gargantuan'
+  // Compte / préférences (plan 35 — amorce)
+  | 'account.title'
+  | 'account.subtitle'
+  | 'account.profile.title'
+  | 'account.profile.anonymous'
+  | 'account.profile.anonymousHint'
+  | 'account.profile.emailLabel'
+  | 'account.profile.providerLabel'
+  | 'account.provider.google'
+  | 'account.provider.password'
+  | 'account.provider.anonymous'
+  | 'account.prefs.title'
+  | 'account.dice.title'
+  | 'account.dice.hint'
+  | 'account.dice.digital'
+  | 'account.dice.digitalHint'
+  | 'account.dice.physical'
+  | 'account.dice.physicalHint'
+  | 'account.dice.followCampaign'
+  | 'account.dice.followCampaignHint'
+  | 'account.signOut'
+  | 'account.signOutConfirm'
+  | 'account.cancel'
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
@@ -1844,6 +1867,32 @@ const STRINGS: Record<Locale, Dict> = {
     'size.large': 'Grande',
     'size.huge': 'Très grande',
     'size.gargantuan': 'Gigantesque',
+    // Compte / préférences (plan 35 — amorce)
+    'account.title': 'Mon compte',
+    'account.subtitle': 'Profil et préférences de jeu.',
+    'account.profile.title': 'Profil',
+    'account.profile.anonymous': 'Aventurier anonyme',
+    'account.profile.anonymousHint':
+      'Tes données vivent sur cet appareil. Lie un compte pour les retrouver ailleurs.',
+    'account.profile.emailLabel': 'Adresse e-mail',
+    'account.profile.providerLabel': 'Connexion',
+    'account.provider.google': 'Google',
+    'account.provider.password': 'E-mail / mot de passe',
+    'account.provider.anonymous': 'Invité',
+    'account.prefs.title': 'Préférences',
+    'account.dice.title': 'Mode de dés',
+    'account.dice.hint':
+      'Comment tu lances : l’app tire les dés, ou tu les lances en vrai et saisis le résultat.',
+    'account.dice.digital': 'Numérique',
+    'account.dice.digitalHint': 'L’app lance les dés pour toi.',
+    'account.dice.physical': 'Physique',
+    'account.dice.physicalHint': 'Tu lances tes dés et saisis les faces ; l’app calcule.',
+    'account.dice.followCampaign': 'Suivre le mode de la campagne',
+    'account.dice.followCampaignHint':
+      'Adopter automatiquement le mode de dés défini par le meneur.',
+    'account.signOut': 'Se déconnecter',
+    'account.signOutConfirm': 'Confirmer la déconnexion',
+    'account.cancel': 'Annuler',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
     'wizard.subtitle':
@@ -4104,6 +4153,31 @@ const STRINGS: Record<Locale, Dict> = {
     'size.large': 'Large',
     'size.huge': 'Huge',
     'size.gargantuan': 'Gargantuan',
+    'account.title': 'My account',
+    'account.subtitle': 'Profile and game preferences.',
+    'account.profile.title': 'Profile',
+    'account.profile.anonymous': 'Anonymous adventurer',
+    'account.profile.anonymousHint':
+      'Your data lives on this device. Link an account to find it elsewhere.',
+    'account.profile.emailLabel': 'Email address',
+    'account.profile.providerLabel': 'Sign-in',
+    'account.provider.google': 'Google',
+    'account.provider.password': 'Email / password',
+    'account.provider.anonymous': 'Guest',
+    'account.prefs.title': 'Preferences',
+    'account.dice.title': 'Dice mode',
+    'account.dice.hint':
+      'How you roll: the app rolls for you, or you roll real dice and enter the result.',
+    'account.dice.digital': 'Digital',
+    'account.dice.digitalHint': 'The app rolls the dice for you.',
+    'account.dice.physical': 'Physical',
+    'account.dice.physicalHint': 'You roll your dice and enter the faces; the app computes.',
+    'account.dice.followCampaign': 'Follow the campaign mode',
+    'account.dice.followCampaignHint':
+      'Automatically adopt the dice mode set by the DM.',
+    'account.signOut': 'Sign out',
+    'account.signOutConfirm': 'Confirm sign-out',
+    'account.cancel': 'Cancel',
     'wizard.title': 'Create a character',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",

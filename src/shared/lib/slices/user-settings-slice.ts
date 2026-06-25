@@ -64,6 +64,26 @@ export async function setDiceMode(uid: string, next: DiceMode): Promise<void> {
 }
 
 /**
+ * Setter `users/{uid}.settings.followCampaignDiceMode` — même chemin d'écriture
+ * que `setDiceMode` (merge Firestore + maj optimiste). Détermine si le mode de
+ * dés du joueur suit le défaut de table (`campaigns/{id}.settings.diceMode`)
+ * ou reste forcé à sa préférence perso. Aucune nouvelle règle : la rule
+ * `users/{userId}` autorise déjà l'écriture du propriétaire.
+ */
+export async function setFollowCampaignDiceMode(
+  uid: string,
+  next: boolean,
+): Promise<void> {
+  useUserSettingsStore.setState({ followCampaignDiceMode: next });
+  const firestore = getDb();
+  const ref = doc(firestore, 'users', uid);
+  await trackPendingWrite(
+    firestore,
+    setDoc(ref, { settings: { followCampaignDiceMode: next } }, { merge: true }),
+  );
+}
+
+/**
  * Souscrit aux settings `users/{uid}` au sign-in. À monter une fois (dans
  * auth-provider). Merge avec les défauts si fields absents → lazy migration.
  */

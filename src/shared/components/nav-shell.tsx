@@ -92,10 +92,10 @@ export function NavShell(): JSX.Element | null {
         type="button"
         aria-label={t('nav.avatar.aria')}
         onClick={() => {
-          // Placeholder plan 35 — Account management : tap ouvrira un menu
-          // (profil, paramètres, GDPR, déconnexion). Noop en S1 pour ne pas
-          // afficher d'UI vide ; les hooks de focus + click sont prêts.
-          navigate('/');
+          // Tap → écran Compte (profil + préférences de jeu, amorce plan 35).
+          // GDPR / abonnement / switch de langue restent différés au plan 35
+          // complet (S5).
+          navigate('/account');
         }}
         className={cn(
           'flex h-[38px] w-[38px] items-center justify-center',
