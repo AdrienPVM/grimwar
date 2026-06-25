@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
+import { PageContainer } from '@/shared/components/page-container';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
@@ -149,10 +150,7 @@ export function ImportScreen(): JSX.Element {
   if (!isReady) return <Splash />;
 
   return (
-    <main
-      className="relative z-10 mx-auto w-full max-w-[760px] px-4 py-8 sm:px-6"
-      data-screen="custom-content-import"
-    >
+    <PageContainer width="prose" data-screen="custom-content-import">
       <header className="text-center">
         <Divider className="mb-4" />
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
@@ -234,7 +232,7 @@ export function ImportScreen(): JSX.Element {
           </ul>
         )}
       </section>
-    </main>
+    </PageContainer>
   );
 }
 

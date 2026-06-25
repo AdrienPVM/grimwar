@@ -225,6 +225,27 @@ A decorative SVG ornament. Four placement variants for hero card corners: `tl`, 
 
 ## Layout patterns
 
+### Page container (`<PageContainer>`)
+
+Every top-level screen wraps its content in `<PageContainer>` (`src/shared/components/page-container.tsx`) instead of a hand-rolled `<main className="relative z-10 mx-auto w-full max-w-… px-4 py-8 sm:px-6 lg:px-8">`. The primitive centralises the shared padding and the responsive width scale so a single edit re-tunes every screen for desktop/TV.
+
+Each width tier keeps **exactly** the historic mobile→desktop width up to `lg` (≤1279px) — zero regression on phone and standard desktop — then grows at `xl` (≥1280px) and `2xl` (≥1536px) for wide screens / TV.
+
+| `width` | base (mobile→lg) | `xl` | `2xl` | Used by |
+|---|---|---|---|---|
+| `narrow` | 460px | — | — | short forms, centred error/empty states |
+| `prose` | 760px | 920px | 1040px | reading-dense screens (content import) |
+| `content` *(default)* | 860px | 1080px | 1320px | campaign family, journal, combat |
+| `wide` | 960px | 1160px | 1360px | library / content browsers |
+| `xwide` | 1280px | 1280px | 1536px | grid dashboards (campaigns list, DM dashboard) |
+
+```tsx
+<PageContainer width="content">…</PageContainer>      {/* defaults to a <main> */}
+<PageContainer as="section" width="wide">…</PageContainer>
+```
+
+`as` accepts `main` | `div` | `section` (defaults to `main`). The `content` scale mirrors the combat screen's already-validated `xl:max-w-[1080px] 2xl:max-w-[1320px]`. Centred error/empty states stay hand-rolled `<main>` with their own flex centring — they are not page-width concerns. The exact per-tier class strings are frozen by `page-container.test.tsx`.
+
 ### Bento grids
 
 Card-rich screens use asymmetric bento layouts. Standard cards span 1 column, hero cards span 2 columns. Always `grid-template-columns: 1fr 1fr` collapsing to `1fr` at `<= 540px`.

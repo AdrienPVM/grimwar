@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
+import { PageContainer } from '@/shared/components/page-container';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
@@ -427,10 +428,7 @@ export function PackEditorScreen(): JSX.Element {
   const classCount = builder.state.classes.length;
 
   return (
-    <main
-      className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6"
-      data-screen="custom-content-pack-editor"
-    >
+    <PageContainer width="content" data-screen="custom-content-pack-editor">
       <header className="text-center">
         <Divider className="mb-4" />
         <h1
@@ -1315,7 +1313,7 @@ export function PackEditorScreen(): JSX.Element {
           {t('customContent.editor.save')}
         </Button>
       </footer>
-    </main>
+    </PageContainer>
   );
 }
 

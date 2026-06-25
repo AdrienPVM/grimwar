@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
+import { PageContainer } from '@/shared/components/page-container';
 import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
@@ -136,7 +137,7 @@ export function CampaignDetailScreen(): JSX.Element {
 
   return (
     <>
-      <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8">
+      <PageContainer width="content">
         <nav className="flex items-center justify-between">
           <Button
             type="button"
@@ -267,7 +268,7 @@ export function CampaignDetailScreen(): JSX.Element {
             {t('campaigns.detail.leaveCta')}
           </Button>
         </div>
-      </main>
+      </PageContainer>
 
       <LeaveCampaignModal
         open={leaveOpen}

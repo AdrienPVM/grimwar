@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
+import { PageContainer } from '@/shared/components/page-container';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
@@ -79,7 +80,7 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   }
 
   return (
-    <main className="relative z-10 mx-auto w-full max-w-[960px] px-4 py-8 sm:px-6">
+    <PageContainer width="wide">
       <header className="text-center">
         <Divider className="mb-4" />
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
@@ -125,6 +126,6 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
           </button>
         </div>
       </div>
-    </main>
+    </PageContainer>
   );
 }
