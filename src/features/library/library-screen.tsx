@@ -9,6 +9,7 @@ import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
 
 import { CharacterCard } from './character-card';
+import { NavHub } from './nav-hub';
 import { useCharactersList } from './use-characters-list';
 
 /**
@@ -57,8 +58,8 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
 
   if (characters.length === 0) {
     return (
-      <main className="relative z-10 mx-auto flex min-h-[60vh] max-w-[480px] flex-col items-center justify-center px-6 py-12">
-        <GlassPanel className="w-full px-7 py-10 text-center">
+      <main className="relative z-10 mx-auto flex min-h-[60vh] w-full max-w-[680px] flex-col items-center justify-center px-6 py-12">
+        <GlassPanel className="w-full max-w-[480px] px-7 py-10 text-center">
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
             {t('library.empty.title')}
           </h1>
@@ -74,16 +75,8 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
           >
             {t('library.cta.create')}
           </Button>
-          <div className="mt-6">
-            <button
-              type="button"
-              onClick={() => navigate('/codex')}
-              className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
-            >
-              {t('codex.nav.cta')} →
-            </button>
-          </div>
         </GlassPanel>
+        <NavHub className="mt-8" />
       </main>
     );
   }
@@ -109,38 +102,11 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
         ))}
       </section>
 
-      <div className="mt-10 flex flex-col items-center gap-4">
+      <div className="mt-10 flex flex-col items-center gap-6">
         <Button variant="primary" size="lg" onClick={() => navigate('/create')}>
           {t('library.cta.create')}
         </Button>
-        {/*
-          Raccourcis discrets vers Campagnes (S2 plan 4.0.4) + vue MJ. Style
-          minimal pour ne pas voler la vedette au CTA Créer ; un vrai nav-shell
-          arrivera quand la séquence 4.0.x sera terminée.
-        */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-          <button
-            type="button"
-            onClick={() => navigate('/codex')}
-            className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
-          >
-            {t('codex.nav.cta')} →
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/campaigns')}
-            className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
-          >
-            {t('campaigns.title')} →
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/dm')}
-            className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
-          >
-            {t('dm.title')} →
-          </button>
-        </div>
+        <NavHub className="max-w-[720px]" />
       </div>
     </PageContainer>
   );

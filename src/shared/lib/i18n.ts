@@ -140,6 +140,11 @@ export type StringKey =
   | 'account.signOut'
   | 'account.signOutConfirm'
   | 'account.cancel'
+  // Accueil — hub de navigation
+  | 'home.hub.title'
+  | 'home.hub.codex.sub'
+  | 'home.hub.campaigns.sub'
+  | 'home.hub.dm.sub'
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
@@ -1893,6 +1898,11 @@ const STRINGS: Record<Locale, Dict> = {
     'account.signOut': 'Se déconnecter',
     'account.signOutConfirm': 'Confirmer la déconnexion',
     'account.cancel': 'Annuler',
+    // Accueil — hub de navigation
+    'home.hub.title': 'Explorer',
+    'home.hub.codex.sub': 'Sorts, objets, espèces, classes…',
+    'home.hub.campaigns.sub': 'Rejoins ou crée une table.',
+    'home.hub.dm.sub': 'Pilote tes rencontres et ton journal.',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
     'wizard.subtitle':
@@ -4178,6 +4188,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.signOut': 'Sign out',
     'account.signOutConfirm': 'Confirm sign-out',
     'account.cancel': 'Cancel',
+    'home.hub.title': 'Explore',
+    'home.hub.codex.sub': 'Spells, items, species, classes…',
+    'home.hub.campaigns.sub': 'Join or create a table.',
+    'home.hub.dm.sub': 'Run your encounters and journal.',
     'wizard.title': 'Create a character',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",
