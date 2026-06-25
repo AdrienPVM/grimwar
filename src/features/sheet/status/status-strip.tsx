@@ -24,9 +24,15 @@ interface StatusStripProps {
 }
 
 /**
- * Strip de stats vitales : PV / CA / Init / Vitesse en grille 4-up. Mobile-first,
- * tap-friendly (44px min cible). Aucune action en S1 — purement informatif.
- * Les + / – HP arrivent dans le mode Combat (plan 07).
+ * Strip de stats vitales : CA / Init / Vitesse en grille 3-up. Mobile-first,
+ * tap-friendly (44px min cible). Purement informatif.
+ *
+ * Les PV ne figurent PLUS ici : ils sont déjà portés, en évidence, par le badge
+ * de l'emblème du HeroCard rendu juste au-dessus dans la même colonne — les
+ * répéter ici était une duplication pure (UAT « même info deux fois »). L'emblème
+ * est la vue « portrait » glanceable des PV ; le contrôle interactif +/− vit dans
+ * la HpMegaCard du mode Combat. Chaque affichage des PV a désormais un rôle
+ * distinct, jamais redondant sur une même vue.
  */
 export function StatusStrip({
   character,
@@ -38,15 +44,8 @@ export function StatusStrip({
   return (
     <section
       aria-label={t('sheet.statusStrip.aria')}
-      className="mx-auto mt-6 grid w-full max-w-[420px] grid-cols-4 gap-2 px-4 lg:grid-cols-2 lg:px-2"
+      className="mx-auto mt-6 grid w-full max-w-[420px] grid-cols-3 gap-2 px-4 lg:px-2"
     >
-      <StatusCell
-        icon="i-heart"
-        label={t('sheet.stat.hp')}
-        value={`${character.hp.current}`}
-        sub={`/ ${character.hp.max}`}
-        emphasis="hp"
-      />
       <StatusCell
         icon="i-shield"
         label={t('sheet.stat.ac')}
@@ -72,16 +71,14 @@ interface StatusCellProps {
   label: string;
   value: string;
   sub?: string;
-  emphasis?: 'hp';
 }
 
-function StatusCell({ icon, label, value, sub, emphasis }: StatusCellProps): JSX.Element {
+function StatusCell({ icon, label, value, sub }: StatusCellProps): JSX.Element {
   return (
     <div
       className={cn(
         'flex min-h-[68px] flex-col items-center justify-center gap-0.5',
         'rounded-card-sm border border-white-8 bg-glass-2 px-1 py-2 backdrop-blur-md',
-        emphasis === 'hp' && 'border-soft',
       )}
     >
       <span className="flex items-center gap-1 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">

@@ -121,4 +121,23 @@ describe('<StatusStrip>', () => {
     expect(readAcCell()).toBe('42');
     expect(screen.queryByText('99')).toBeNull();
   });
+
+  it('ne rend PLUS les PV — anti-duplication (les PV sont portés par l’emblème)', () => {
+    // Rouge avant vert : sur l'ancien code, la cellule PV existait ici ET sur le
+    // badge de l'emblème ET (en Combat) sur la HpMegaCard → triple affichage. La
+    // cellule PV est retirée ; ce test échouerait si on la réintroduisait.
+    render(
+      <StatusStrip
+        character={buildCharacter({ hp: { current: 7, max: 23, temp: 0 } })}
+        displayedAc={15}
+      />,
+    );
+    // Les vitales secondaires restent.
+    expect(screen.getByText('CA')).toBeInTheDocument();
+    expect(screen.getByText('Init')).toBeInTheDocument();
+    expect(screen.getByText('Vit.')).toBeInTheDocument();
+    // Mais plus de cellule PV (label « PV » + le « / 23 » du sub).
+    expect(screen.queryByText('PV')).toBeNull();
+    expect(screen.queryByText('/ 23')).toBeNull();
+  });
 });
