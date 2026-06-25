@@ -20,6 +20,8 @@ import type {
 } from '@/shared/types/content';
 import type { WizardDraft } from '@/shared/lib/slices/wizard-slice';
 
+import { fullSpellSlots } from '@/features/sheet/modes/magie/spell-slots';
+
 import { resolveSkillIds } from './steps/skill-resolver';
 import { getMissingAncestrySubChoiceKeys } from './steps/ancestry/use-ancestry-sub-choices';
 import {
@@ -355,7 +357,14 @@ export async function buildCharacterFromWizard(
     exhaustion: 0,
     currentConcentration: null,
     classResources: {},
-    spellSlots: {},
+    // Emplacements de sort initialisés à PLEIN dès la création (cf.
+    // `plans/DEBT.md > D28`). Avant ce fix, ce champ valait `{}` et seul un
+    // level-up le peuplait : un caster fraîchement créé ne pouvait lancer AUCUN
+    // sort à emplacement (bouton « Lancer » désactivé). Un Occultiste pur reçoit
+    // `{}` ici (pact magic hors table unifiée — chantier dédié) ; les
+    // demi-lanceurs L1 (Paladin/Rôdeur) reçoivent `{}` aussi (pas d'emplacement
+    // au niveau 1, conforme SRD).
+    spellSlots: fullSpellSlots(characterClasses, classes),
     preparedSpells,
     knownSpells,
     spellcastingAbility,

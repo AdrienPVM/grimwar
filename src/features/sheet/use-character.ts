@@ -1,10 +1,12 @@
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { useContent } from '@/shared/hooks/use-content';
 import { getDb } from '@/shared/lib/firebase';
 import { CharacterSchema, type Character } from '@/shared/types/character';
 import { migrateSpellRecord } from '@/shared/lib/rules/spell-aliases';
+import { reconcileSpellSlots } from '@/features/sheet/modes/magie/spell-slots';
 import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import {
   needsV1ToV2Upgrade,
@@ -47,6 +49,11 @@ export function useCharacter(
   // comportement de l'écran de fiche existant.
   const effectiveOwnerUid = ownerUid ?? user?.uid;
   const isOwnerRead = effectiveOwnerUid === user?.uid;
+
+  // Référentiel de classes (classes.json) — requis pour dériver le niveau
+  // d'incantateur unifié et donc les emplacements de sort attendus. Chargé
+  // async (cache Dexie 7j) ; `[]` tant qu'il n'est pas prêt.
+  const { data: classCatalog } = useContent('classes');
 
   useEffect(() => {
     if (!user || !characterId || !effectiveOwnerUid) {
@@ -152,6 +159,34 @@ export function useCharacter(
     );
     return unsubscribe;
   }, [user, characterId, effectiveOwnerUid, isOwnerRead]);
+
+  // Réconciliation one-shot des emplacements de sort (cf. `plans/DEBT.md > D28`).
+  // Les fiches créées avant l'init à la création portent `spellSlots: {}` et ne
+  // pouvaient lancer aucun sort à emplacement. Dès que le contenu (classes.json)
+  // et la fiche sont prêts, et si l'on est PROPRIÉTAIRE du doc (le MJ en lecture
+  // cross-owner ne possède pas la fiche — la rule de write l'interdit), on
+  // remplit à plein les niveaux attendus manquants et on persiste le patch.
+  // Effet séparé de la souscription pour ne PAS re-créer le listener quand le
+  // contenu finit de charger. `reconcileSpellSlots` est pure et renvoie `null`
+  // (no-op) pour une fiche déjà correcte → idempotent, pas de boucle d'écriture.
+  useEffect(() => {
+    if (!character || !characterId || !effectiveOwnerUid || !isOwnerRead) return;
+    if (classCatalog.length === 0) return;
+    const patch = reconcileSpellSlots(character, classCatalog);
+    if (!patch) return;
+    console.info(
+      `[sheet] spellSlots.reconciled character=${characterId} (D28 — fiche sans emplacements initialisés)`,
+    );
+    const ref = doc(getDb(), 'users', effectiveOwnerUid, 'characters', characterId);
+    void trackPendingWrite(getDb(), updateDoc(ref, { spellSlots: patch })).catch(
+      (err) => {
+        console.warn(
+          `[sheet] spellSlots reconcile write failed for ${characterId}:`,
+          err,
+        );
+      },
+    );
+  }, [character, characterId, effectiveOwnerUid, isOwnerRead, classCatalog]);
 
   return { character, isLoading, error };
 }

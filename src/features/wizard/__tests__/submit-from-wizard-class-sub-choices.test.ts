@@ -333,6 +333,49 @@ describe('buildCharacterFromWizard — propagation draft → character.classes[i
   });
 
   /**
+   * D28 — emplacements de sort initialisés à PLEIN dès la création. Avant le fix
+   * ce champ valait `{}` et un caster fraîchement créé ne pouvait lancer aucun
+   * sort à emplacement avant un premier level-up.
+   */
+  it('Magicien complet (full caster L1) → spellSlots = { 1: 2/2 }', async () => {
+    const character = await buildCharacterFromWizard(
+      buildArgs(
+        draftFor(
+          'wizard',
+          {
+            wizardSpellbookL1: [
+              'burning-hands',
+              'mage-armor',
+              'magic-missile',
+              'shield',
+              'sleep',
+              'detect-magic',
+            ],
+          },
+          { pickedSkills: ['arcana', 'history'] },
+        ),
+      ),
+    );
+    expect(character.spellSlots).toEqual({ '1': { current: 2, max: 2 } });
+  });
+
+  it('Guerrier (non-lanceur) → spellSlots = {}', async () => {
+    const character = await buildCharacterFromWizard(
+      buildArgs(
+        draftFor(
+          'fighter',
+          {
+            fighterFightingStyle: 'defense',
+            weaponMasteries: ['longsword', 'greatsword', 'battleaxe'],
+          },
+          { pickedSkills: ['athletics', 'intimidation'] },
+        ),
+      ),
+    );
+    expect(character.spellSlots).toEqual({});
+  });
+
+  /**
    * D13c-followup-chooser — Pact of the Blade pré-bonde une arme au L1. Le
    * chooser est conditionnel sur l'invocation `pact-of-the-blade` ; si elle
    * n'est pas prise, `pactBladeWeapon` reste `null` et le submit ne throw pas.

@@ -69,6 +69,63 @@ export function expectedSpellSlots(
 }
 
 /**
+ * Emplacements de sort « pleins » attendus pour l'état actuel des classes du
+ * personnage (table unifiée), chaque niveau débloqué posé à `current === max`.
+ *
+ * Prend `characterClasses` plutôt qu'un `Character` complet pour être appelable
+ * AVANT que la fiche n'existe (init à la création, `submit-from-wizard`) comme
+ * APRÈS (réconciliation on-load). Le pact (Occultiste) est exclu de la table
+ * unifiée — `casterLevel` l'ignore — donc un Occultiste pur reçoit `{}` ici ;
+ * ses emplacements de pacte restent un chantier dédié.
+ *
+ * Pourquoi : un caster fraîchement créé doit pouvoir lancer ses sorts à
+ * emplacement sans attendre un premier level-up (cf. `plans/DEBT.md > D28`).
+ */
+export function fullSpellSlots(
+  characterClasses: Character['classes'],
+  classCatalog: readonly ClassEntity[],
+): SpellSlotState {
+  const level = casterLevel(deriveCasterEntries(characterClasses, classCatalog));
+  const slotMap = spellSlotsForCasterLevel(level);
+  const out: SpellSlotState = {};
+  for (const lvl of SLOT_LEVEL_KEYS) {
+    const max = slotMap[lvl];
+    if (max > 0) out[String(lvl)] = { current: max, max };
+  }
+  return out;
+}
+
+/**
+ * Réconcilie les emplacements stockés avec la table attendue : remplit à PLEIN
+ * tout niveau attendu (max > 0) absent de `spellSlots` ou qui y figure avec
+ * `max === 0`. Ne TOUCHE PAS un niveau déjà initialisé (`max > 0`) — la
+ * consommation en cours (`current`) est préservée, jamais réinitialisée. Ne
+ * RETIRE jamais un niveau (la suppression d'un niveau devenu inaccessible relève
+ * du level-up). Retourne `null` si rien n'est à faire (no-op), pour que
+ * l'appelant n'écrive pas inutilement dans Firestore.
+ *
+ * Couvre `plans/DEBT.md > D28` : les fiches créées avant l'init à la création
+ * portent `spellSlots: {}` et ne pouvaient lancer aucun sort à emplacement.
+ */
+export function reconcileSpellSlots(
+  character: Character,
+  classCatalog: readonly ClassEntity[],
+): SpellSlotState | null {
+  const full = fullSpellSlots(character.classes, classCatalog);
+  const stored = character.spellSlots;
+  const out: SpellSlotState = { ...stored };
+  let changed = false;
+  for (const [key, slot] of Object.entries(full)) {
+    const cur = stored[key];
+    if (!cur || cur.max <= 0) {
+      out[key] = slot;
+      changed = true;
+    }
+  }
+  return changed ? out : null;
+}
+
+/**
  * Niveaux 1-9 effectivement débloqués (max > 0) selon la table unifiée ou la
  * fiche elle-même (l'un ou l'autre). Sert à savoir quels anneaux dessiner.
  */

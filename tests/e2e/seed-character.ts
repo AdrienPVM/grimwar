@@ -1071,6 +1071,34 @@ export const wizardSigilShowcase: SeedPreset = {
   spellcastingAbility: { wizard: 'int' },
 };
 
+/**
+ * Caster L5 dans l'état CASSÉ d'avant le fix D28 : `spellSlots` ABSENT du preset
+ * → seedé à `{}`. Sert la spec `spell-slots-reconcile.spec.ts` : à l'ouverture de
+ * la fiche, `useCharacter` doit réconcilier les emplacements (table unifiée full
+ * caster L5 = L1×4 / L2×3 / L3×2) et persister le patch, rendant un sort à
+ * emplacement (Bouclier, L1) lançable. Mêmes sorts que `wizardSigilShowcase`.
+ */
+export const wizardL5NoSlots: SeedPreset = {
+  name: 'Orsia sans Emplacements',
+  classes: [{ classId: 'wizard', subclassId: null, level: 5 }],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  backgroundId: 'sage',
+  abilities: { for: 8, dex: 14, con: 12, int: 18, sag: 13, cha: 10 },
+  hp: { current: 32, max: 32 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 5, max: 5, die: 'd6' }],
+  saves: { int: true, sag: true },
+  // PAS de `spellSlots` → buildCharacterDoc pose `{}` (état legacy D28).
+  knownSpells: {
+    wizard: ['lumiere', 'bouclier', 'graisse', 'detection-de-la-magie'],
+  },
+  preparedSpells: {
+    wizard: ['bouclier', 'graisse', 'detection-de-la-magie'],
+  },
+  spellcastingAbility: { wizard: 'int' },
+};
+
 export const druidL9D14: SeedPreset = {
   name: 'Brann le Pivert',
   classes: [{ classId: 'druid', subclassId: null, level: 9 }],

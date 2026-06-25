@@ -17,7 +17,9 @@ import {
   consumeSlot,
   deriveCasterEntries,
   expectedSpellSlots,
+  fullSpellSlots,
   hasPactProgression,
+  reconcileSpellSlots,
   restoreSlot,
   spellcastingClasses,
   unlockedSlotLevels,
@@ -170,6 +172,101 @@ describe('expectedSpellSlots', () => {
     expect(slots[2]).toBe(3);
     expect(slots[3]).toBe(2);
     expect(slots[4]).toBe(0);
+  });
+});
+
+describe('fullSpellSlots (D28 — init à la création)', () => {
+  it('Wizard 5 → 4/3/2 pleins (current === max)', () => {
+    const slots = fullSpellSlots([mkClassEntry('wizard', 5)], [wizard]);
+    expect(slots).toEqual({
+      '1': { current: 4, max: 4 },
+      '2': { current: 3, max: 3 },
+      '3': { current: 2, max: 2 },
+    });
+  });
+
+  it('Wizard 1 (caster fresh) → un seul niveau, 2/2 pleins', () => {
+    const slots = fullSpellSlots([mkClassEntry('wizard', 1)], [wizard]);
+    expect(slots).toEqual({ '1': { current: 2, max: 2 } });
+  });
+
+  it('Paladin 1 (demi-lanceur niveau 1) → AUCUN emplacement (SRD : sorts dès le niv. 2)', () => {
+    expect(fullSpellSlots([mkClassEntry('paladin', 1)], [paladin])).toEqual({});
+  });
+
+  it('Paladin 2 (demi-lanceur) → caster level 1 → 2/2 au niveau 1', () => {
+    const slots = fullSpellSlots([mkClassEntry('paladin', 2)], [paladin]);
+    expect(slots).toEqual({ '1': { current: 2, max: 2 } });
+  });
+
+  it('Fighter (non-lanceur) → {}', () => {
+    expect(fullSpellSlots([mkClassEntry('fighter', 5)], [fighter])).toEqual({});
+  });
+
+  it('Warlock pur (pact hors table unifiée) → {}', () => {
+    expect(fullSpellSlots([mkClassEntry('warlock', 3)], [warlock])).toEqual({});
+  });
+
+  it('catalogue vide (contenu pas encore chargé) → {}', () => {
+    expect(fullSpellSlots([mkClassEntry('wizard', 5)], [])).toEqual({});
+  });
+});
+
+describe('reconcileSpellSlots (D28 — réconciliation on-load)', () => {
+  it('fiche caster avec spellSlots={} → remplit à plein la table attendue', () => {
+    const character = baseCharacter();
+    character.spellSlots = {};
+    const patch = reconcileSpellSlots(character, [wizard]);
+    expect(patch).toEqual({
+      '1': { current: 4, max: 4 },
+      '2': { current: 3, max: 3 },
+      '3': { current: 2, max: 2 },
+    });
+  });
+
+  it('fiche déjà correcte → null (no-op, pas d\'écriture inutile)', () => {
+    const character = baseCharacter(); // spellSlots déjà 4/3/2
+    expect(reconcileSpellSlots(character, [wizard])).toBeNull();
+  });
+
+  it('préserve la consommation en cours d\'un niveau déjà initialisé', () => {
+    const character = baseCharacter();
+    // Niveau 1 partiellement consommé, niveau 2 et 3 corrects.
+    character.spellSlots = {
+      '1': { current: 1, max: 4 },
+      '2': { current: 3, max: 3 },
+      '3': { current: 2, max: 2 },
+    };
+    // Tous les niveaux attendus ont max > 0 → aucun à remplir → no-op.
+    expect(reconcileSpellSlots(character, [wizard])).toBeNull();
+  });
+
+  it('remplit uniquement les niveaux manquants/à max 0, sans toucher les autres', () => {
+    const character = baseCharacter();
+    character.spellSlots = {
+      '1': { current: 0, max: 4 }, // déjà init et consommé → préservé
+      '2': { current: 0, max: 0 }, // max 0 → à remplir
+      // niveau 3 absent → à remplir
+    };
+    const patch = reconcileSpellSlots(character, [wizard]);
+    expect(patch).toEqual({
+      '1': { current: 0, max: 4 }, // intact
+      '2': { current: 3, max: 3 }, // rempli
+      '3': { current: 2, max: 2 }, // rempli
+    });
+  });
+
+  it('non-lanceur → null', () => {
+    const character = baseCharacter();
+    character.classes = [mkClassEntry('fighter', 5)];
+    character.spellSlots = {};
+    expect(reconcileSpellSlots(character, [fighter])).toBeNull();
+  });
+
+  it('catalogue pas encore chargé → null (rien à réconcilier sans la table)', () => {
+    const character = baseCharacter();
+    character.spellSlots = {};
+    expect(reconcileSpellSlots(character, [])).toBeNull();
   });
 });
 
