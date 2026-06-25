@@ -14,6 +14,9 @@ export type CodexCategoryId =
   | 'spells'
   | 'magicItems'
   | 'items'
+  | 'ancestries'
+  | 'backgrounds'
+  | 'classes'
   | 'feats'
   | 'invocations'
   | 'conditions';
@@ -28,6 +31,9 @@ export const CODEX_CATEGORIES: readonly CodexCategory[] = [
   { id: 'spells', labelKey: 'codex.cat.spells', icon: 'i-spell' },
   { id: 'magicItems', labelKey: 'codex.cat.magicItems', icon: 'i-potion' },
   { id: 'items', labelKey: 'codex.cat.items', icon: 'i-bag' },
+  { id: 'ancestries', labelKey: 'codex.cat.ancestries', icon: 'i-eye' },
+  { id: 'backgrounds', labelKey: 'codex.cat.backgrounds', icon: 'i-book' },
+  { id: 'classes', labelKey: 'codex.cat.classes', icon: 'i-staff' },
   { id: 'feats', labelKey: 'codex.cat.feats', icon: 'i-feather' },
   { id: 'invocations', labelKey: 'codex.cat.invocations', icon: 'i-magic' },
   { id: 'conditions', labelKey: 'codex.cat.conditions', icon: 'i-skull' },

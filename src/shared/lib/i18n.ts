@@ -98,6 +98,25 @@ export type StringKey =
   | 'codex.item.properties'
   | 'codex.item.attunement'
   | 'codex.item.attunementRequired'
+  | 'codex.species.size'
+  | 'codex.species.speed'
+  | 'codex.species.asi'
+  | 'codex.common.languages'
+  | 'codex.common.traits'
+  | 'codex.bg.skills'
+  | 'codex.bg.coins'
+  | 'codex.class.hitDie'
+  | 'codex.class.primaryAbility'
+  | 'codex.class.savingThrows'
+  | 'codex.class.skills'
+  | 'codex.class.chooseAmong'
+  | 'codex.class.features'
+  | 'size.tiny'
+  | 'size.small'
+  | 'size.medium'
+  | 'size.large'
+  | 'size.huge'
+  | 'size.gargantuan'
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
@@ -1806,6 +1825,25 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.item.properties': 'Propriétés',
     'codex.item.attunement': 'Harmonisation',
     'codex.item.attunementRequired': 'Harmonisation requise',
+    'codex.species.size': 'Taille',
+    'codex.species.speed': 'Vitesse',
+    'codex.species.asi': 'Augmentations de caractéristique',
+    'codex.common.languages': 'Langues',
+    'codex.common.traits': 'Traits',
+    'codex.bg.skills': 'Maîtrises de compétences',
+    'codex.bg.coins': 'Pièces de départ',
+    'codex.class.hitDie': 'Dé de vie',
+    'codex.class.primaryAbility': 'Caractéristique principale',
+    'codex.class.savingThrows': 'Jets de sauvegarde',
+    'codex.class.skills': 'Compétences',
+    'codex.class.chooseAmong': 'au choix parmi',
+    'codex.class.features': 'Aptitudes de classe',
+    'size.tiny': 'Très petite',
+    'size.small': 'Petite',
+    'size.medium': 'Moyenne',
+    'size.large': 'Grande',
+    'size.huge': 'Très grande',
+    'size.gargantuan': 'Gigantesque',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
     'wizard.subtitle':
@@ -4047,6 +4085,25 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.item.properties': 'Properties',
     'codex.item.attunement': 'Attunement',
     'codex.item.attunementRequired': 'Requires attunement',
+    'codex.species.size': 'Size',
+    'codex.species.speed': 'Speed',
+    'codex.species.asi': 'Ability Score Increase',
+    'codex.common.languages': 'Languages',
+    'codex.common.traits': 'Traits',
+    'codex.bg.skills': 'Skill Proficiencies',
+    'codex.bg.coins': 'Starting Coins',
+    'codex.class.hitDie': 'Hit Die',
+    'codex.class.primaryAbility': 'Primary Ability',
+    'codex.class.savingThrows': 'Saving Throws',
+    'codex.class.skills': 'Skills',
+    'codex.class.chooseAmong': 'chosen from',
+    'codex.class.features': 'Class Features',
+    'size.tiny': 'Tiny',
+    'size.small': 'Small',
+    'size.medium': 'Medium',
+    'size.large': 'Large',
+    'size.huge': 'Huge',
+    'size.gargantuan': 'Gargantuan',
     'wizard.title': 'Create a character',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",

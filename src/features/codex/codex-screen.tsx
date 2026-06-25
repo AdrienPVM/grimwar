@@ -10,6 +10,11 @@ import {
   type CodexCategoryId,
 } from './codex-categories';
 import {
+  AncestryBrowser,
+  BackgroundBrowser,
+  ClassBrowser,
+} from './browsers/codex-build-browsers';
+import {
   ConditionBrowser,
   FeatBrowser,
   InvocationBrowser,
@@ -69,6 +74,12 @@ function CodexActiveBrowser({
       return <MagicItemBrowser />;
     case 'items':
       return <ItemBrowser />;
+    case 'ancestries':
+      return <AncestryBrowser />;
+    case 'backgrounds':
+      return <BackgroundBrowser />;
+    case 'classes':
+      return <ClassBrowser />;
     case 'feats':
       return <FeatBrowser />;
     case 'invocations':

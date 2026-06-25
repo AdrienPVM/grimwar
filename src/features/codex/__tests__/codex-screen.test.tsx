@@ -13,16 +13,27 @@ vi.mock('@/shared/hooks/use-content', () => ({
 }));
 
 describe('CodexScreen', () => {
-  it('rend le titre et les 6 onglets de catégorie', () => {
+  it('rend le titre et les 9 onglets de catégorie', () => {
     render(<CodexScreen />);
     expect(screen.getByRole('heading', { name: 'Le Codex' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Sorts/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Objets magiques/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Équipement/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Espèces/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Historiques/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Classes/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Dons/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Invocations/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /États/ })).toBeInTheDocument();
-    expect(screen.getAllByRole('tab')).toHaveLength(6);
+    expect(screen.getAllByRole('tab')).toHaveLength(9);
+  });
+
+  it('bascule vers Classes et affiche le navigateur de classes', () => {
+    render(<CodexScreen />);
+    fireEvent.click(screen.getByRole('tab', { name: /Classes/ }));
+    expect(
+      screen.getByPlaceholderText('Rechercher une classe…'),
+    ).toBeInTheDocument();
   });
 
   it('bascule vers Objets magiques puis Équipement', () => {

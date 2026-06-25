@@ -41,7 +41,7 @@ const LONGSWORD: Item = {
   id: 'longsword',
   name: { fr: 'Épée longue', en: 'Longsword' },
   category: 'weapon',
-  cost: { qty: 15, unit: 'po' },
+  cost: { qty: 15, unit: 'gp' },
   weight: 1.5,
   description: null,
   damage: { dice: '1d8', type: 'slashing', typeLabel: { fr: 'tranchant', en: 'slashing' } },
@@ -53,7 +53,7 @@ const CHAIN_MAIL: Item = {
   id: 'chain-mail',
   name: { fr: 'Cotte de mailles', en: 'Chain Mail' },
   category: 'armor',
-  cost: { qty: 75, unit: 'po' },
+  cost: { qty: 75, unit: 'gp' },
   weight: 25,
   description: { fr: 'Armure lourde faite d’anneaux entrelacés.', en: '' },
   acBase: 16,
@@ -111,7 +111,7 @@ describe('ItemBrowser (Codex)', () => {
     fireEvent.click(screen.getByText('Épée longue'));
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText('1d8 tranchant')).toBeInTheDocument();
-    expect(within(dialog).getByText('15 po')).toBeInTheDocument();
+    expect(within(dialog).getByText('15 gp')).toBeInTheDocument();
     expect(within(dialog).getByText('1.5 kg')).toBeInTheDocument();
     expect(within(dialog).getByText('Polyvalente (1d10)')).toBeInTheDocument();
   });
