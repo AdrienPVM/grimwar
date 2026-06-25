@@ -27,6 +27,7 @@ interface HeroCardProps {
 export function HeroCard({ character }: HeroCardProps): JSX.Element {
   const { data: ancestries } = useContent('ancestries');
   const { data: classes } = useContent('classes');
+  const { data: backgrounds } = useContent('backgrounds');
   // Le passage de niveau / l'ajout de classe écrivent la fiche → réservés au
   // propriétaire. En lecture MJ (`!canEdit`, JALON 4A.3) le bouton disparaît :
   // le meneur consulte, il ne fait pas monter le joueur de niveau.
@@ -39,6 +40,16 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
     const ancestry = ancestries.find((a) => a.id === character.ancestryId);
     return ancestry ? localize(ancestry.name) : character.ancestryId;
   }, [ancestries, character.ancestryId]);
+
+  // Historique : présent sur la fiche aux côtés de l'espèce (« Humain · Soldat »).
+  // L'id est stocké mais n'était affiché nulle part — le joueur perdait de vue
+  // son historique après création. `null` si non résolu (le bundle peut ne pas
+  // être encore chargé, ou un historique custom non présent) → segment omis,
+  // jamais de slug brut affiché.
+  const backgroundName = useMemo(() => {
+    const background = backgrounds.find((b) => b.id === character.backgroundId);
+    return background ? localize(background.name) : null;
+  }, [backgrounds, character.backgroundId]);
 
   const primaryClassName = useMemo(() => {
     const cls = classes.find((c) => c.id === character.primaryClassId);
@@ -97,6 +108,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
       </p>
       <p className="mt-1 text-center font-serif text-body-sm italic text-text-tertiary">
         {ancestryName}
+        {backgroundName ? <> · {backgroundName}</> : null}
       </p>
 
       <Chip variant="gold" className="mt-3">

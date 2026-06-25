@@ -49,6 +49,14 @@ test.describe('UAT — fidélité fiche L1 (Perception passive / Maîtrises / La
       timeout: 10_000,
     });
 
+    // Ligne d'identité (carte héros) : l'historique « Soldat » apparaît désormais
+    // à côté de l'espèce — jadis stocké mais affiché nulle part.
+    await expect(page.getByText(/·\s*Soldat/)).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/sheet-fidelity/07-identite-guerrier-soldat.png',
+      fullPage: false,
+    });
+
     // Strip : la 4e cellule « Perc. passive » est présente.
     // Sigrid : SAG 10 (mod 0), pas de maîtrise Perception → 10.
     await expect(page.getByText('Perc. passive')).toBeVisible();
@@ -133,6 +141,13 @@ test.describe('UAT — fidélité fiche L1 (Perception passive / Maîtrises / La
     await page.goto(`/character/${charId}`);
     await expect(page.getByText(clericL1Protector.name).first()).toBeVisible({
       timeout: 10_000,
+    });
+
+    // Ligne d'identité : l'historique « Acolyte » à côté de l'espèce.
+    await expect(page.getByText(/·\s*Acolyte/)).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/sheet-fidelity/08-identite-clerc-acolyte.png',
+      fullPage: false,
     });
 
     await page.getByRole('tab', { name: /^Essence$/i }).click();
