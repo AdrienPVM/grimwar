@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/auth-provider';
 import { HitMissGateModal } from '@/features/dice/hit-miss-gate-modal';
 import { PhysicalRollModal } from '@/features/dice/physical-roll-modal';
+import { SpellSigilOverlay } from '@/features/dice/spell-sigil-overlay';
 import { useAuth } from '@/features/auth/use-auth';
 import { AppRoutes } from '@/routes';
 import { Aurora } from '@/shared/components/aurora';
@@ -34,6 +35,9 @@ export function App(): JSX.Element {
           rendus hors du Routes pour rester montés au switch de route. */}
       <PhysicalRollModal />
       <HitMissGateModal />
+      {/* Sceaux de sort (plan 38) — singleton décoratif, au-dessus de la fiche
+          mais sous les modales de saisie et les toasts. */}
+      <SpellSigilOverlay />
       <ToastHost />
       {/* Bannière offline globale (jalon 1D). Rendue après le ToastHost pour
           être au-dessus dans le DOM, et au-dessus de tout via z-[120]. */}

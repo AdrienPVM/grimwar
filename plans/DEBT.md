@@ -676,6 +676,20 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - (c) Rendre la migration v1→v2 non-perturbante (écrire sans re-trigger d'un render qui repasse `homeCampaignId` par null).
 - **Risque** : faible runtime aujourd'hui ; le vrai coût est la fragilité des tests d'auto-log et un trou de couverture potentiel quand le doc fiche re-sync sous une action concurrente.
 
+## D28 — Emplacements de sort jamais initialisés à la création : casts à emplacement bloqués hors level-up
+
+- **Owner** : non assigné — candidat à un fix dédié (init au wizard submit + reconcile on-load des fiches existantes).
+- **Statut** : **OUVERTE 2026-06-25** — découverte en livrant le plan 38 (sceaux de sort), en câblant une spec e2e qui lance des sorts à emplacement.
+- **Description** : `submit-from-wizard.ts:358` écrit `spellSlots: {}` à la création d'un personnage. **Rien ne reconstruit `character.spellSlots` à partir de la progression attendue** (`expectedSpellSlots` n'est consommé QUE par `unlockedSlotLevels`, pour *dessiner* les anneaux du `MagicCircle` — jamais pour peupler le doc). Seul `apply-level-up.ts:367` écrit des emplacements calculés. Conséquence : un caster créé via le wizard (jamais monté de niveau) a `spellSlots: {}` et **ne peut lancer aucun sort à emplacement** — `SpellDetailModal.handleCast → consumeSlot(character.spellSlots, lvl)` retourne `null` (« Aucun emplacement disponible », bouton Lancer désactivé), et le `MagicCircle` dessine les anneaux mais ne peut rien consommer (`handleConsume` → « Plus aucun emplacement à consommer »). Les sorts mineurs (cantrips, à volonté) ne sont PAS affectés.
+- **Preuve** : spec e2e `spell-sigils-uat.spec.ts` — les 2 cantrips (Lumière, Illusion mineure) castent ; les 3 sorts L1 (Bouclier, Graisse, Détection de la magie) échouent sur « element is not enabled » (bouton Lancer désactivé) tant que le seed n'a pas de `spellSlots`. Vert dès que le preset `wizardSigilShowcase` pose `spellSlots: { '1': 4/4, '2': 3/3, '3': 2/2 }`.
+- **Mitigation en place** : aucune côté prod. Côté test, le fixture `seed-character.ts` accepte désormais un champ optionnel `spellSlots` (additif, défaut `{}`) qui pose un état caster valide sans rejouer le wizard.
+- **Portée prod** : **réelle et visible**. Tout PJ caster créé via le wizard (Magicien L1, Clerc L1, etc.) ne peut pas lancer ses sorts à emplacement avant un premier level-up. Probablement non détecté jusqu'ici car les UAT sorts précédentes (D1 « section Dégâts ») ouvraient la modale sans cliquer « Lancer ».
+- **Options de résolution** :
+  - (a) Au `submit-from-wizard`, initialiser `spellSlots` via `expectedSpellSlots(character, classCatalog)` (current = max) au lieu de `{}`.
+  - (b) Reconcilier on-load : un helper `ensureSlots(character)` qui, si `spellSlots` est vide mais que la progression attend des emplacements, écrit les emplacements pleins (one-shot, comme la migration de slugs `migrateSpellIds`). Couvre aussi les fiches déjà créées.
+  - (c) Les deux (création + reconcile rétroactif). Recommandé — (a) seul laisse les fiches existantes cassées.
+- **Risque** : moyen. Touche le chemin de création (toutes nouvelles fiches) + un write rétroactif sur les fiches existantes. À cadrer avec Adrien — hors scope plan 38 (scope creep), flaggé ici.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).

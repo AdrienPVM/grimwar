@@ -124,6 +124,25 @@ const config: Config = {
           from: { opacity: '0', transform: 'translateY(4px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        // Plan 38 — tracé du sceau de sort. Les chemins portent `pathLength=1`
+        // donc dasharray/dashoffset travaillent en espace normalisé [0,1].
+        traceSigil: {
+          from: { strokeDashoffset: '1' },
+          to: { strokeDashoffset: '0' },
+        },
+        // Cycle de vie de l'overlay : 0 → 1 → 0.85 → 0 sur ~2.6s.
+        sigilLife: {
+          '0%': { opacity: '0', transform: 'scale(0.92)' },
+          '12%': { opacity: '1', transform: 'scale(1)' },
+          '75%': { opacity: '0.85', transform: 'scale(1)' },
+          '100%': { opacity: '0', transform: 'scale(1.04)' },
+        },
+        // Halo d'aurore derrière le sceau (école-coloré), bref éclat.
+        sigilFlare: {
+          '0%': { opacity: '0', transform: 'scale(0.4)' },
+          '40%': { opacity: '0.7', transform: 'scale(1)' },
+          '100%': { opacity: '0', transform: 'scale(1.7)' },
+        },
       },
       animation: {
         drift1: 'drift1 25s ease-in-out infinite',
@@ -135,6 +154,11 @@ const config: Config = {
         slowDrift: 'slowDrift 180s linear infinite',
         runeBreath: 'runeBreath 3.5s ease-in-out infinite',
         fadeIn: 'fadeIn 220ms cubic-bezier(0.22, 0.61, 0.36, 1) both',
+        // Plan 38 — sceaux de sort (durées fixes ; le stagger par chemin est
+        // appliqué via `animationDelay` inline, valeur dynamique par chemin).
+        'trace-sigil': 'traceSigil 1300ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards',
+        'sigil-life': 'sigilLife 2600ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards',
+        'sigil-flare': 'sigilFlare 1100ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards',
       },
     },
   },

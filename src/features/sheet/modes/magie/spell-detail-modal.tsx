@@ -7,6 +7,7 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { logSpellCast } from '@/shared/lib/event-logger';
 import { localize, t } from '@/shared/lib/i18n';
+import { triggerCastSigil } from '@/shared/lib/slices/cast-fx-slice';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
 import { showToast } from '@/shared/lib/slices/toast-slice';
@@ -169,6 +170,16 @@ export function SpellDetailModal({
         spellId: spell.id,
         level: isCantrip ? 0 : chosenLevel,
         slotConsumed: isCantrip ? null : chosenLevel,
+        components: { v: spell.components.v, s: spell.components.s, m: spell.components.m },
+      });
+
+      // Plan 38 — sceau de sort : déclenché à l'instant où le lancement est
+      // engagé (slot consommé, concentration posée, log émis), avant le jet de
+      // dégâts pour que l'animation recouvre la résolution. Purement décoratif.
+      triggerCastSigil({
+        spellId: spell.id,
+        school: spell.school,
+        level: spell.level,
         components: { v: spell.components.v, s: spell.components.s, m: spell.components.m },
       });
 

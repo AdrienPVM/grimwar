@@ -163,6 +163,14 @@ export interface SeedPreset {
   knownSpells?: Record<string, string[]>;
   preparedSpells?: Record<string, string[]>;
   spellcastingAbility?: Record<string, AbilityCode>;
+  /**
+   * Emplacements de sort stockés (clé = niveau « 1 ».. « 9 »). Défaut `{}`.
+   * À poser explicitement pour seed un caster déjà monté en niveau : la fiche
+   * NE reconstruit PAS `spellSlots` à partir de la progression attendue (seul
+   * `apply-level-up` les écrit) — un caster fraîchement créé a `{}` et ne peut
+   * pas lancer de sort à emplacement tant qu'il n'a pas monté de niveau.
+   */
+  spellSlots?: Record<string, { current: number; max: number }>;
   /** Skills pré-maîtrisés (slug, valeur = 1). */
   skills?: Record<string, 1 | 2>;
   /** Langues bonus choisies (slugs `languages.ts`, ex. langue extra du Roublard). */
@@ -1025,6 +1033,44 @@ export const wizardL5DamageD1: SeedPreset = {
   spellcastingAbility: { wizard: 'int' },
 };
 
+/**
+ * Plan 38 — Magicien L5 « vitrine de sceaux ». Catalogue choisi pour couvrir
+ * 5 écoles aux fioritures V/S/M variées, tous SANS dégâts (le cast prend la
+ * branche « toast » de `handleCast` — aucun jet, aucune modale de jet physique
+ * ne recouvre le sceau, capture propre quel que soit le mode de dés) :
+ *   - Lumière (evocation, cantrip, V·M)
+ *   - Illusion mineure (illusion, cantrip, S·M)
+ *   - Bouclier (abjuration, L1, V·S)
+ *   - Graisse (conjuration, L1, V·S·M)
+ *   - Détection de la magie (divination, L1, V·S)
+ */
+export const wizardSigilShowcase: SeedPreset = {
+  name: 'Iriel aux Mille-Sceaux',
+  classes: [{ classId: 'wizard', subclassId: null, level: 5 }],
+  primaryClassId: 'wizard',
+  ancestryId: 'human',
+  backgroundId: 'sage',
+  abilities: { for: 8, dex: 14, con: 12, int: 18, sag: 13, cha: 10 },
+  hp: { current: 32, max: 32 },
+  ac: 12,
+  hitDice: [{ classId: 'wizard', current: 5, max: 5, die: 'd6' }],
+  saves: { int: true, sag: true },
+  // Table de full-caster L5 (SRD) : L1×4, L2×3, L3×2. Posé explicitement car la
+  // fiche ne reconstruit pas les emplacements depuis la progression attendue.
+  spellSlots: {
+    '1': { current: 4, max: 4 },
+    '2': { current: 3, max: 3 },
+    '3': { current: 2, max: 2 },
+  },
+  knownSpells: {
+    wizard: ['lumiere', 'illusion-mineure', 'bouclier', 'graisse', 'detection-de-la-magie'],
+  },
+  preparedSpells: {
+    wizard: ['bouclier', 'graisse', 'detection-de-la-magie'],
+  },
+  spellcastingAbility: { wizard: 'int' },
+};
+
 export const druidL9D14: SeedPreset = {
   name: 'Brann le Pivert',
   classes: [{ classId: 'druid', subclassId: null, level: 9 }],
@@ -1212,7 +1258,7 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
     exhaustion: 0,
     currentConcentration: preset.currentConcentration ?? null,
     classResources: {},
-    spellSlots: {},
+    spellSlots: preset.spellSlots ?? {},
     preparedSpells: preset.preparedSpells ?? {},
     knownSpells: preset.knownSpells ?? {},
     spellcastingAbility: preset.spellcastingAbility ?? {},
