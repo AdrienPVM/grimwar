@@ -272,3 +272,51 @@ describe('formatEventTime', () => {
     expect(formatEventTime(null)).toBe('');
   });
 });
+
+describe('summarizeEvent — dm-edit (plan 26)', () => {
+  it('libellé « Édition MJ » + détail « N champ·s modifié·s »', () => {
+    expect(
+      summarizeEvent(ev('dm-edit', { fieldsChanged: ['hp', 'conditions', 'status'] })),
+    ).toEqual({
+      kindLabel: 'Édition MJ',
+      detail: '3 champ·s modifié·s',
+    });
+  });
+
+  it('aucun champ → « 0 champ·s modifié·s » (jamais un identifiant brut)', () => {
+    expect(summarizeEvent(ev('dm-edit', {}))).toEqual({
+      kindLabel: 'Édition MJ',
+      detail: '0 champ·s modifié·s',
+    });
+  });
+});
+
+describe('eventDetailRows — dm-edit (plan 26)', () => {
+  it('liste les champs en FR (labels mappés) + before → after scalaire', () => {
+    const rows = eventDetailRows(
+      ev('dm-edit', {
+        fieldsChanged: ['hp', 'status'],
+        changes: { status: { before: 'alive', after: 'dead' } },
+      }),
+    );
+    expect(rows).toEqual([
+      { label: 'Champs modifiés', value: 'Points de vie · Statut' },
+      { label: 'Statut', value: 'alive → dead' },
+    ]);
+  });
+
+  it('un champ non mappé retombe sur « Autre champ » (jamais l’anglais brut)', () => {
+    const rows = eventDetailRows(ev('dm-edit', { fieldsChanged: ['portrait'] }));
+    expect(rows[0]).toEqual({ label: 'Champs modifiés', value: 'Autre champ' });
+  });
+
+  it('un booléen scalaire est rendu Oui/Non en FR', () => {
+    const rows = eventDetailRows(
+      ev('dm-edit', {
+        fieldsChanged: ['inspiration'],
+        changes: { inspiration: { before: false, after: true } },
+      }),
+    );
+    expect(rows).toContainEqual({ label: 'Inspiration', value: 'Non → Oui' });
+  });
+});

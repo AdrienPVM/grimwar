@@ -23,7 +23,9 @@ const DEAD = { status: 'dead' } as Character;
 function wrapperWith(canEdit: boolean, isDM: boolean) {
   return function Wrapper({ children }: { children: ReactNode }): JSX.Element {
     return (
-      <PermissionProvider value={{ canEdit, isDM }}>{children}</PermissionProvider>
+      <PermissionProvider value={{ canEdit, isDM, isDMEdit: false, lockedFields: [] }}>
+        {children}
+      </PermissionProvider>
     );
   };
 }

@@ -180,6 +180,71 @@ export async function logCharacterDiff(
   }
 }
 
+/** Un scalaire journalisable tel quel dans le payload `dm-edit` (before/after). */
+function isScalar(v: unknown): v is string | number | boolean | null {
+  return (
+    v === null ||
+    typeof v === 'string' ||
+    typeof v === 'number' ||
+    typeof v === 'boolean'
+  );
+}
+
+/** Plafond de champs portant un snapshot before/after (anti-gonflement, plan 26 step 5). */
+const DM_EDIT_SNAPSHOT_CAP = 5;
+
+/**
+ * Journalise une édition MJ de la fiche d'un joueur (plan 26, kind `dm-edit`).
+ *
+ * UN SEUL événement d'AUDIT par patch (pas un diff sémantique par champ comme
+ * `logCharacterDiff`) : l'acteur est le MJ, pas le personnage, et l'objectif est
+ * la traçabilité — qui a changé quoi sur la fiche de qui. Visibilité `all` :
+ * l'édition MJ est auditable par toute la table (feed MJ, onglet Events de
+ * séance, journal de campagne) — la transparence prime sur le secret ici.
+ *
+ * Payload :
+ *  - `fieldsChanged`: chemins de premier niveau réellement modifiés ;
+ *  - `changes`: snapshot `{before, after}` UNIQUEMENT pour les champs scalaires,
+ *    plafonné à `DM_EDIT_SNAPSHOT_CAP` entrées. Les gros champs (inventory,
+ *    classes, spellSlots…) ne sont listés que par nom dans `fieldsChanged`.
+ *
+ * No-op si aucun champ pertinent n'a changé. Best-effort (avale ses erreurs via
+ * `writeEvent`) : une édition MJ ne doit jamais échouer parce que l'audit échoue.
+ */
+export async function logDmEdit(
+  before: Character,
+  patch: Partial<Character>,
+  characterId: string,
+): Promise<void> {
+  const fieldsChanged: string[] = [];
+  const changes: Record<string, { before: unknown; after: unknown }> = {};
+
+  for (const key of Object.keys(patch) as (keyof Character)[]) {
+    // Champs d'intendance posés par `useUpdateCharacter` — hors audit fonctionnel.
+    if (key === 'updatedAt' || key === 'updatedBy') continue;
+    const after = patch[key];
+    const beforeVal = before[key];
+    if (JSON.stringify(beforeVal) === JSON.stringify(after)) continue; // inchangé
+    fieldsChanged.push(key);
+    if (
+      Object.keys(changes).length < DM_EDIT_SNAPSHOT_CAP &&
+      isScalar(beforeVal) &&
+      isScalar(after)
+    ) {
+      changes[key] = { before: beforeVal, after };
+    }
+  }
+
+  if (fieldsChanged.length === 0) return; // rien de pertinent → pas d'event
+  await writeEvent({
+    kind: 'dm-edit',
+    actorCharacterId: null,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { fieldsChanged, changes },
+  });
+}
+
 /**
  * Journalise le démarrage d'une séance (plan 23.4, kind `session-start`,
  * visibilité `all`). Pré-requis d'appel : la campagne active DOIT être posée

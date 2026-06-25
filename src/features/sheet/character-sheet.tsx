@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { RollHistoryPanel } from '@/features/dice/roll-history-panel';
 import { Icon } from '@/shared/components/icon';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { computeDisplayedAc } from '@/shared/lib/rules/ac';
 import { computeDisplayedSpeed } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
@@ -16,7 +17,7 @@ import { useInventoryDerived } from './modes/avoir/use-inventory-derived';
 import { CombatMode } from './modes/combat-mode';
 import { EssenceMode } from './modes/essence-mode';
 import { MagieMode } from './modes/magie-mode';
-import { useSheetReadOnly } from './permissions-context';
+import { usePermissionContext, useSheetReadOnly } from './permissions-context';
 import { StatusStrip } from './status/status-strip';
 import { useSheetMode, type SheetMode } from './use-sheet-mode';
 
@@ -63,6 +64,9 @@ export function CharacterSheet({
   // les pointer-events). Inclut la lecture MJ (`!canEdit`) en plus du décès, en
   // cohérence avec les modes — double rideau côté MJ comme côté PJ mort.
   const readOnly = useSheetReadOnly(character);
+  // Omni-edit MJ (plan 26) : barre d'indication dorée en tête de fiche. `isDM`
+  // seul (lecture) ne la déclenche pas — uniquement `isDMEdit` (écriture active).
+  const { isDMEdit } = usePermissionContext();
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
 
   // CA affichée : dérivée d'inventaire + Defense +1 conditionnel (D19/D20) +
@@ -86,6 +90,7 @@ export function CharacterSheet({
       className={cn('sheet-state relative min-h-screen pb-32', hpClass)}
       data-readonly={readOnly ? 'true' : 'false'}
     >
+      {isDMEdit ? <DmEditBanner /> : null}
       {/*
         DESKTOP SHELL — Plan 13.14 (densification v1).
         Mobile / tablet (< lg) : passthrough — les enfants gardent leur
@@ -129,5 +134,33 @@ export function CharacterSheet({
         </>
       ) : null}
     </main>
+  );
+}
+
+/**
+ * Barre d'indication d'omni-edit MJ (plan 26 step 2) — confirme visuellement que
+ * le meneur édite la fiche d'un joueur, et rappelle que l'identité (nom +
+ * personnalité) reste réservée au propriétaire (cf. `DM_LOCKED_FIELDS`).
+ */
+function DmEditBanner(): JSX.Element {
+  return (
+    <div
+      role="status"
+      className={cn(
+        'mx-auto mb-3 mt-1 flex max-w-[420px] items-center gap-3 rounded-card-sm px-4 py-2.5 lg:max-w-[1240px]',
+        'border border-gold-bright/45 bg-gold-bright/10',
+        'transition-colors duration-200 ease-base',
+      )}
+    >
+      <Icon name="i-shield" className="h-4 w-4 shrink-0 text-gold-bright" />
+      <span className="flex min-w-0 flex-col">
+        <span className="font-title text-meta uppercase tracking-[0.16em] text-gold-bright">
+          {t('sheet.dmEdit.bannerTitle')}
+        </span>
+        <span className="font-serif text-body-sm text-text-secondary">
+          {t('sheet.dmEdit.bannerHint')}
+        </span>
+      </span>
+    </div>
   );
 }

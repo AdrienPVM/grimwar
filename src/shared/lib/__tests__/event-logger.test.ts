@@ -35,6 +35,7 @@ vi.mock('@/shared/lib/firebase', () => ({
 
 import {
   logCharacterDiff,
+  logDmEdit,
   logEncounterEnd,
   logEncounterStart,
   logMonsterHpChange,
@@ -392,6 +393,99 @@ describe('event-logger — logCharacterDiff (plan 22.2)', () => {
   it('no-op silencieux hors campagne active', async () => {
     useActiveCampaignStore.getState().clearActiveCampaign();
     await logCharacterDiff(BEFORE, { hp: { current: 1, max: 18, temp: 0 } }, 'char-1');
+    expect(addDocMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('event-logger — logDmEdit (plan 26)', () => {
+  const BEFORE = {
+    status: 'alive',
+    alignment: 'LB',
+    exhaustion: 0,
+    inspiration: false,
+    ac: 15,
+    speed: 9,
+    initiative: 2,
+    totalLevel: 3,
+    hp: { current: 18, max: 18, temp: 0 },
+    conditions: [],
+  } as unknown as Character;
+
+  beforeEach(() => {
+    useActiveCampaignStore.getState().setActiveCampaign('camp-1');
+    useAuthStore.getState().setUser(AUTH_USER);
+  });
+
+  it('écrit UN seul event dm-edit, visibilité all, acteur null, cible = characterId', async () => {
+    await logDmEdit(BEFORE, { status: 'dead' } as Partial<Character>, 'char-9');
+    expect(addDocMock).toHaveBeenCalledTimes(1);
+    const written = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(written.kind).toBe('dm-edit');
+    expect(written.visibility).toBe('all');
+    expect(written.actorCharacterId).toBeNull();
+    expect(written.targetCharacterId).toBe('char-9');
+  });
+
+  it('fieldsChanged liste les champs touchés ; changes porte le before/after scalaire', async () => {
+    await logDmEdit(BEFORE, { status: 'dead' } as Partial<Character>, 'char-9');
+    const written = addDocMock.mock.calls[0]![1] as { payload: Record<string, unknown> };
+    expect(written.payload.fieldsChanged).toEqual(['status']);
+    expect(written.payload.changes).toEqual({
+      status: { before: 'alive', after: 'dead' },
+    });
+  });
+
+  it('un gros champ (hp objet) est listé par nom mais SANS snapshot scalaire', async () => {
+    await logDmEdit(BEFORE, { hp: { current: 0, max: 18, temp: 0 } } as Partial<Character>, 'char-9');
+    const written = addDocMock.mock.calls[0]![1] as { payload: Record<string, unknown> };
+    expect(written.payload.fieldsChanged).toEqual(['hp']);
+    expect(written.payload.changes).toEqual({}); // objet → pas de before/after scalaire
+  });
+
+  it('un booléen scalaire est capturé (inspiration false → true)', async () => {
+    await logDmEdit(BEFORE, { inspiration: true } as Partial<Character>, 'char-9');
+    const written = addDocMock.mock.calls[0]![1] as { payload: Record<string, unknown> };
+    expect(written.payload.changes).toEqual({
+      inspiration: { before: false, after: true },
+    });
+  });
+
+  it('plafonne les snapshots à 5 champs scalaires (6 changés → 5 capturés)', async () => {
+    await logDmEdit(
+      BEFORE,
+      {
+        status: 'dead',
+        alignment: 'CN',
+        exhaustion: 2,
+        ac: 17,
+        speed: 12,
+        initiative: 4,
+      } as Partial<Character>,
+      'char-9',
+    );
+    const written = addDocMock.mock.calls[0]![1] as { payload: Record<string, unknown> };
+    expect((written.payload.fieldsChanged as string[]).length).toBe(6);
+    expect(Object.keys(written.payload.changes as object).length).toBe(5);
+  });
+
+  it('ignore les champs d’intendance updatedAt/updatedBy', async () => {
+    await logDmEdit(
+      BEFORE,
+      { status: 'dead', updatedBy: 'gm-1', updatedAt: 1 } as unknown as Partial<Character>,
+      'char-9',
+    );
+    const written = addDocMock.mock.calls[0]![1] as { payload: Record<string, unknown> };
+    expect(written.payload.fieldsChanged).toEqual(['status']);
+  });
+
+  it('aucun champ pertinent changé → aucune écriture', async () => {
+    await logDmEdit(BEFORE, { status: 'alive' } as Partial<Character>, 'char-9');
+    expect(addDocMock).not.toHaveBeenCalled();
+  });
+
+  it('no-op silencieux hors campagne active', async () => {
+    useActiveCampaignStore.getState().clearActiveCampaign();
+    await logDmEdit(BEFORE, { status: 'dead' } as Partial<Character>, 'char-9');
     expect(addDocMock).not.toHaveBeenCalled();
   });
 });

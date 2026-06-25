@@ -29,6 +29,67 @@ function asNumber(value: unknown): number | null {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
+/**
+ * Libellé FR d'un champ de fiche édité par le MJ (plan 26). Mappe les chemins
+ * machine (clés de premier niveau du `Character`) vers une clé i18n. Tout champ
+ * non mappé retombe sur « Autre champ » (jamais l'identifiant anglais brut — cf.
+ * garde-fou anti-anglais du contenu FR). La traduction des libellés métier
+ * réutilise la terminologie officielle déjà figée dans le projet.
+ */
+const DM_EDIT_FIELD_KEYS = [
+  'hp',
+  'conditions',
+  'exhaustion',
+  'inspiration',
+  'deathSaves',
+  'abilities',
+  'saveProficiencies',
+  'skills',
+  'ac',
+  'speed',
+  'initiative',
+  'hitDice',
+  'spellSlots',
+  'classResources',
+  'preparedSpells',
+  'knownSpells',
+  'inventory',
+  'featureUsage',
+  'extraProficiencies',
+  'experience',
+  'alignment',
+  'totalLevel',
+  'status',
+  'stats',
+] as const;
+
+function dmEditFieldLabel(field: string): string {
+  const known = (DM_EDIT_FIELD_KEYS as readonly string[]).includes(field);
+  return t(
+    `campaigns.detail.eventFeed.dmEditField.${known ? field : 'generic'}` as Parameters<
+      typeof t
+    >[0],
+  );
+}
+
+/** Tableau de chaînes non vide (les `fieldsChanged` du payload `dm-edit`), ou `null`. */
+function asStringArray(value: unknown): string[] | null {
+  if (!Array.isArray(value)) return null;
+  const strs = value.filter((v): v is string => typeof v === 'string' && v.length > 0);
+  return strs.length > 0 ? strs : null;
+}
+
+/** Scalaire d'un snapshot `dm-edit` rendu en FR (null → « — », booléen → Oui/Non). */
+function formatScalar(value: unknown): string {
+  if (value === null || value === undefined) return '—';
+  if (typeof value === 'boolean') {
+    return value
+      ? t('campaigns.detail.eventFeed.value.yes')
+      : t('campaigns.detail.eventFeed.value.no');
+  }
+  return String(value);
+}
+
 function asString(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 ? value : null;
 }
@@ -126,6 +187,17 @@ export function summarizeEvent(
         kindLabel: t('campaigns.detail.eventFeed.kind.sessionEnd'),
         detail: asString(p.title),
       };
+    case 'dm-edit': {
+      const fields = asStringArray(p.fieldsChanged);
+      const count = fields?.length ?? 0;
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.dmEdit'),
+        detail: t('campaigns.detail.eventFeed.dmEdit.summary').replace(
+          '{count}',
+          String(count),
+        ),
+      };
+    }
     default:
       return {
         kindLabel: t('campaigns.detail.eventFeed.kind.generic'),
@@ -248,6 +320,31 @@ export function eventDetailRows(
     case 'item-removed': {
       const qty = asNumber(p.qty);
       push(f('quantity'), qty !== null ? String(qty) : null);
+      break;
+    }
+    case 'dm-edit': {
+      // Récapitulatif d'audit (plan 26 step 6) : la liste FR des champs touchés,
+      // puis un before → after par champ scalaire capturé (`changes`).
+      const fields = asStringArray(p.fieldsChanged);
+      if (fields !== null) {
+        push(
+          t('campaigns.detail.eventFeed.dmEdit.fieldsRow'),
+          fields.map(dmEditFieldLabel).join(' · '),
+        );
+      }
+      const changes = p.changes;
+      if (typeof changes === 'object' && changes !== null) {
+        for (const [field, change] of Object.entries(
+          changes as Record<string, unknown>,
+        )) {
+          if (typeof change !== 'object' || change === null) continue;
+          const c = change as { before?: unknown; after?: unknown };
+          push(
+            dmEditFieldLabel(field),
+            `${formatScalar(c.before)} → ${formatScalar(c.after)}`,
+          );
+        }
+      }
       break;
     }
     default:

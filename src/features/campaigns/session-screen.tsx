@@ -24,6 +24,7 @@ import { useContent } from '@/shared/hooks/use-content';
 
 import { buildRoster } from './campaign-detail-screen';
 import { SessionAttendanceTab } from './session-attendance-tab';
+import { SessionEventsTab } from './session-events-tab';
 import { SessionNotesTab } from './session-notes-tab';
 import type { LinkedMember } from './use-encounter-party-draft';
 import { useCampaign } from './use-campaign';
@@ -103,6 +104,16 @@ export function SessionScreen(): JSX.Element {
         .filter((r): r is typeof r & { characterId: string } => r.characterId !== null)
         .map((r) => ({ userId: r.uid, characterId: r.characterId })),
     [roster],
+  );
+
+  // Personnages que le spectateur possède dans cette campagne — filtre `self`
+  // de `canViewEvent` pour l'onglet Events (plan 26 step 7).
+  const myCharacterIds = useMemo<string[]>(
+    () =>
+      user
+        ? linkedMembers.filter((m) => m.userId === user.uid).map((m) => m.characterId)
+        : [],
+    [linkedMembers, user],
   );
 
   const backToSessions = (): void =>
@@ -327,7 +338,15 @@ export function SessionScreen(): JSX.Element {
         ) : null}
 
         {tab === 'events' ? (
-          <TabPlaceholder body={t('sessions.events.placeholder')} />
+          <SessionEventsTab
+            key={session.id}
+            campaignId={cid}
+            sessionId={sid}
+            isDM={isGm}
+            viewerUid={user?.uid ?? ''}
+            myCharacterIds={myCharacterIds}
+            members={members}
+          />
         ) : null}
 
         {tab === 'journal' ? (
@@ -346,15 +365,5 @@ export function SessionScreen(): JSX.Element {
         ) : null}
       </section>
     </main>
-  );
-}
-
-function TabPlaceholder({ body }: { body: string }): JSX.Element {
-  return (
-    <GlassPanel className="px-6 py-10 text-center">
-      <p className="mx-auto max-w-[44ch] font-serif text-body italic text-text-secondary">
-        {body}
-      </p>
-    </GlassPanel>
   );
 }

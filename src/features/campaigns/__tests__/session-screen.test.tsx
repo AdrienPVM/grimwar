@@ -69,6 +69,13 @@ vi.mock('@/shared/lib/slices/active-campaign-slice', () => ({
 
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
 
+// Onglet Events (plan 26 step 7) : on isole le composant de Firestore — la query
+// de séance est testée séparément. Ici on vérifie juste que l'onglet rend l'état
+// vide (et plus l'ancien placeholder).
+vi.mock('../use-session-events', () => ({
+  useSessionEvents: () => ({ events: [], isLoading: false, error: null }),
+}));
+
 import { SessionScreen } from '../session-screen';
 import { SessionServiceError as FakeSessionError } from '@/shared/lib/services/sessions';
 
@@ -177,12 +184,14 @@ describe('<SessionScreen> — en-tête + onglets', () => {
     expect(screen.getByRole('textbox')).toBeInTheDocument();
   });
 
-  it('Events / Journal montrent un placeholder', () => {
+  it('onglet Events rend la liste (état vide) + filtres ; Journal son état', () => {
     campaignHolder.campaign = mkCampaign();
     sessionHolder.session = mkSession();
     renderScreen();
     fireEvent.click(screen.getByRole('tab', { name: 'Événements' }));
-    expect(screen.getByText(/une fois la séance démarrée/i)).toBeInTheDocument();
+    // Plus de placeholder : la liste réelle (vide ici) + le filtre « Éditions MJ ».
+    expect(screen.getByText(/Aucun événement enregistré/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Éditions MJ' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('tab', { name: 'Journal' }));
     expect(screen.getByText(/journal compilé/i)).toBeInTheDocument();
   });

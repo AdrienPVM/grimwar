@@ -19,6 +19,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
   writeBatch,
 } from 'firebase/firestore';
@@ -393,6 +394,118 @@ describeIfEmulator('firestore.rules — lecture MJ d\'une fiche liée (JALON 4A.
   it('REFUSE le MJ si la fiche n\'est rattachée à aucune campagne (homeCampaignId = null)', async () => {
     await seed({ homeCampaignId: null });
     await assertFails(readPj(GM_UID));
+  });
+});
+
+/**
+ * Plan 26 — ÉCRITURE MJ (omni-edit) d'une fiche liée, Voie B « rules-only »
+ * (SUPERSEDE plan 16 « via Cloud Function »). La rule `allow update` autorise le
+ * MJ via la MÊME autorité live que la lecture A2 (`gmCanReadLinkedCharacter`),
+ * AVEC immuabilité des champs réservés au propriétaire (`name`, `personality`,
+ * `homeCampaignId`).
+ *
+ * Doivent être ROUGES contre l'ancienne rule `allow update: if isOwner(userId)`
+ * et VERTES une fois la Voie B en place.
+ */
+describeIfEmulator('firestore.rules — écriture MJ omni-edit d\'une fiche liée (plan 26)', () => {
+  beforeAll(async () => {
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (env) await env.clearFirestore();
+  });
+
+  // Même seed que la lecture A2 : campagne + member + fiche valide (shape-OK).
+  async function seed(opts: {
+    gmIds?: string[];
+    memberCharacterId?: string | null;
+    memberExists?: boolean;
+  } = {}): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    const { gmIds = [GM_UID], memberCharacterId = PJ_ID, memberExists = true } = opts;
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', HOME_CID), {
+        id: HOME_CID,
+        name: 'Home',
+        gmIds,
+        createdBy: GM_UID,
+        status: 'active',
+        schemaVersion: 1,
+      });
+      if (memberExists) {
+        await setDoc(doc(adminDb, 'campaigns', HOME_CID, 'members', OWNER_UID), {
+          userId: OWNER_UID,
+          role: 'member',
+          characterId: memberCharacterId,
+          schemaVersion: 1,
+        });
+      }
+      await setDoc(doc(adminDb, 'users', OWNER_UID, 'characters', PJ_ID), {
+        ...makeMulticlassPayloadV2(),
+        homeCampaignId: HOME_CID,
+        updatedBy: OWNER_UID,
+      });
+    });
+  }
+
+  function updatePj(uid: string, patch: Record<string, unknown>) {
+    if (!env) throw new Error('env not initialized');
+    const db = env.authenticatedContext(uid).firestore();
+    return updateDoc(doc(db, 'users', OWNER_UID, 'characters', PJ_ID), patch);
+  }
+
+  it('ACCEPTE que le MJ édite un champ non réservé (états) d\'un membre lié', async () => {
+    await seed();
+    await assertSucceeds(updatePj(GM_UID, { conditions: ['poisoned'] }));
+  });
+
+  it('REFUSE au MJ de changer le NOM (réservé au propriétaire)', async () => {
+    await seed();
+    await assertFails(updatePj(GM_UID, { name: 'Renommé par le MJ' }));
+  });
+
+  it('REFUSE au MJ de changer la PERSONNALITÉ (réservée au propriétaire)', async () => {
+    await seed();
+    await assertFails(
+      updatePj(GM_UID, {
+        personality: { trait: 'x', ideal: 'y', bond: 'z', flaw: 'w', backstory: 'b' },
+      }),
+    );
+  });
+
+  it('REFUSE au MJ de relier la fiche à une autre campagne (homeCampaignId immuable)', async () => {
+    await seed();
+    await assertFails(updatePj(GM_UID, { homeCampaignId: 'camp-autre' }));
+  });
+
+  it('REFUSE un non-MJ (étranger) d\'éditer la fiche', async () => {
+    await seed();
+    await assertFails(updatePj(STRANGER_UID, { conditions: ['poisoned'] }));
+  });
+
+  it('REFUSE un ex-MJ retiré de gmIds', async () => {
+    await seed({ gmIds: ['someone-else'] });
+    await assertFails(updatePj(GM_UID, { conditions: ['poisoned'] }));
+  });
+
+  it('REFUSE le MJ si la fiche est DÉLIÉE (members.characterId ≠ cette fiche)', async () => {
+    await seed({ memberCharacterId: 'char-autre' });
+    await assertFails(updatePj(GM_UID, { conditions: ['poisoned'] }));
+  });
+
+  it('ACCEPTE toujours le propriétaire, y compris sur son propre nom (régression)', async () => {
+    await seed();
+    await assertSucceeds(updatePj(OWNER_UID, { name: 'Renommé par moi' }));
   });
 });
 

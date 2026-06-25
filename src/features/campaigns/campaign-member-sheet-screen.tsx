@@ -1,15 +1,19 @@
-import { useMemo, type JSX, type ReactNode } from 'react';
+import { useEffect, useMemo, type JSX, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { CharacterSheet } from '@/features/sheet/character-sheet';
-import { PermissionProvider } from '@/features/sheet/permissions-context';
+import {
+  DM_LOCKED_FIELDS,
+  PermissionProvider,
+} from '@/features/sheet/permissions-context';
 import { useCharacter } from '@/features/sheet/use-character';
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
+import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
 import { formatUid } from './campaign-detail-screen';
 import { useCampaign } from './use-campaign';
@@ -29,11 +33,16 @@ import { useCampaign } from './use-campaign';
  *     liée). Un `permission-denied` ici ⇒ lien rompu entre l'affichage du roster et
  *     l'ouverture, OU rules A2 pas encore déployées en prod → écran « inaccessible ».
  *
- * La fiche est rendue en LECTURE SEULE : `PermissionProvider` force `canEdit: false`
- * (les modes lisent le flag via `usePermissionContext`) et `showRollHistory={false}`
- * masque le FAB d'historique (la sous-collection de jets vit sous le sous-arbre du
- * joueur, hors périmètre de la rule A2 — l'ouvrir déclencherait un `permission-denied`).
- * L'édition MJ (omni-edit) est un jalon ultérieur via Cloud Function.
+ * La fiche est rendue en OMNI-EDIT MJ (plan 26) : `PermissionProvider` pose
+ * `canEdit: true` + `isDMEdit: true` + `ownerUid: memberUid` + `lockedFields`
+ * (champs réservés au propriétaire). `useUpdateCharacter` route alors l'écriture
+ * vers `users/{memberUid}/...` et journalise un `dm-edit` ; la barrière réelle est
+ * `firestore.rules > dmOmniEditLockedFieldsUnchanged` + `gmCanReadLinkedCharacter`.
+ * `showRollHistory={false}` reste : la sous-collection de jets vit sous le sous-arbre
+ * du joueur, hors périmètre de la rule cross-owner (l'ouvrir ferait un `permission-denied`).
+ *
+ * ⚠ SUPERSEDE la décision plan 16 « omni-edit via Cloud Function » (Voie B
+ * rules-only — cf. firestore.rules + docs/PERMISSIONS.md, acté 2026-06-25).
  */
 export function CampaignMemberSheetScreen(): JSX.Element {
   const navigate = useNavigate();
@@ -59,6 +68,25 @@ export function CampaignMemberSheetScreen(): JSX.Element {
     isLoading: charLoading,
     error: charError,
   } = useCharacter(linkedCharacterId, memberUid);
+
+  // Pose la campagne active pour que les éditions MJ journalisent `dm-edit` dans
+  // la bonne campagne (l'event-logger lit `useActiveCampaignStore`). Préserve une
+  // séance déjà active sur CETTE campagne (le MJ peut arriver depuis l'écran de
+  // séance) → les éditions faites pendant une séance restent taguées `sessionId`.
+  // Synchro d'un store EXTERNE (effet de bord légitime, pas du state dérivé).
+  useEffect(() => {
+    if (!cid) return;
+    const store = useActiveCampaignStore.getState();
+    const inheritsSession =
+      store.activeCampaignId === cid && store.activeSessionId !== null;
+    if (!inheritsSession) store.setActiveCampaign(cid);
+    return () => {
+      // Ne nettoie QUE si aucune séance n'est en cours — sinon on casserait le
+      // tagging de séance d'un écran de séance encore monté ailleurs.
+      const s = useActiveCampaignStore.getState();
+      if (s.activeSessionId === null) s.clearActiveCampaign();
+    };
+  }, [cid]);
 
   const backToCampaign = (): void => navigate(`/campaigns/${cid ?? ''}`);
 
@@ -137,10 +165,18 @@ export function CampaignMemberSheetScreen(): JSX.Element {
           <span className="font-mono text-body-sm tracking-[0.16em] text-text">
             {formatUid(member.userId)}
           </span>
-          <Chip variant="gold">{t('campaigns.memberSheet.readOnlyBadge')}</Chip>
+          <Chip variant="gold">{t('campaigns.memberSheet.dmEditBadge')}</Chip>
         </div>
       </header>
-      <PermissionProvider value={{ canEdit: false, isDM: true }}>
+      <PermissionProvider
+        value={{
+          canEdit: true,
+          isDM: true,
+          isDMEdit: true,
+          ownerUid: member.userId,
+          lockedFields: DM_LOCKED_FIELDS,
+        }}
+      >
         <CharacterSheet character={character} showRollHistory={false} />
       </PermissionProvider>
     </>

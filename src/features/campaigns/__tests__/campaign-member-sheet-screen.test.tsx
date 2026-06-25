@@ -61,9 +61,10 @@ vi.mock('@/features/sheet/character-sheet', () => ({
   },
 }));
 
-// PermissionProvider stubé pour capturer la valeur du contexte (canEdit/isDM).
+// PermissionProvider stubé pour capturer la valeur du contexte (omni-edit MJ).
 const permissionValueHolder: { value: unknown } = { value: undefined };
 vi.mock('@/features/sheet/permissions-context', () => ({
+  DM_LOCKED_FIELDS: ['name', 'personality', 'homeCampaignId'],
   PermissionProvider: ({
     value,
     children,
@@ -205,7 +206,7 @@ describe('<CampaignMemberSheetScreen>', () => {
     expect(screen.getByText(/Fiche inaccessible/i)).toBeInTheDocument();
   });
 
-  it('rend la fiche en LECTURE SEULE quand MJ + membre lié + fiche chargée', () => {
+  it('rend la fiche en OMNI-EDIT MJ quand MJ + membre lié + fiche chargée', () => {
     campaignHolder.campaign = mkCampaign({ gmIds: ['gm-1'] });
     campaignHolder.members = [mkMember({ userId: 'player-2', characterId: 'char-9' })];
     charHolder.character = FAKE_CHARACTER;
@@ -213,16 +214,23 @@ describe('<CampaignMemberSheetScreen>', () => {
 
     // Cible bien le sous-arbre du joueur (ownerUid = player-2).
     expect(useCharacterSpy).toHaveBeenCalledWith('char-9', 'player-2');
-    // Sheet rendu, FAB historique masqué (lecture cross-owner).
+    // Sheet rendu, FAB historique masqué (sous-arbre de jets hors rule cross-owner).
     const sheet = screen.getByTestId('character-sheet');
     expect(sheet).toHaveTextContent('Lyra du Crépuscule');
     expect(characterSheetSpy).toHaveBeenCalledWith(
       expect.objectContaining({ showRollHistory: false }),
     );
-    // Contexte de permission : non éditable, vue MJ.
-    expect(permissionValueHolder.value).toEqual({ canEdit: false, isDM: true });
-    // Bandeau « Lecture seule » + identité du joueur.
-    expect(screen.getByText(/Lecture seule/i)).toBeInTheDocument();
+    // Contexte de permission : ÉDITABLE par le MJ, write routé vers player-2,
+    // champs réservés au propriétaire verrouillés (plan 26).
+    expect(permissionValueHolder.value).toEqual({
+      canEdit: true,
+      isDM: true,
+      isDMEdit: true,
+      ownerUid: 'player-2',
+      lockedFields: ['name', 'personality', 'homeCampaignId'],
+    });
+    // Badge « Édition MJ » + identité du joueur.
+    expect(screen.getByText(/Édition MJ/i)).toBeInTheDocument();
     expect(screen.getByText(/Fiche de/i)).toBeInTheDocument();
   });
 

@@ -194,3 +194,32 @@ describe('renderEventLine — kind non templaté', () => {
     expect(renderEventLine(ev('level-up', { newLevel: 5 }), ctx)).toBeNull();
   });
 });
+
+describe('renderEventLine — dm-edit (plan 26)', () => {
+  function dmEditEvent(target: string | null, fieldsChanged: string[]): GameEvent {
+    return {
+      id: 'e1',
+      kind: 'dm-edit',
+      actorUserId: 'gm-1',
+      actorCharacterId: null,
+      targetCharacterId: target,
+      sessionId: 's1',
+      encounterId: null,
+      payload: { fieldsChanged, changes: {} },
+      visibility: 'all',
+      createdAt: null,
+    };
+  }
+
+  it('nomme la fiche CIBLE + le nombre de champs (identité exacte)', () => {
+    expect(renderEventLine(dmEditEvent('lyralei', ['hp', 'conditions']), ctx)).toBe(
+      'Le meneur ajuste la fiche de **Lyralei** (2 champ·s).',
+    );
+  });
+
+  it('cible non résolue → repli « Quelqu’un » (jamais l’id brut)', () => {
+    expect(renderEventLine(dmEditEvent('inconnu', ['status']), ctx)).toBe(
+      'Le meneur ajuste la fiche de **Quelqu’un** (1 champ·s).',
+    );
+  });
+});

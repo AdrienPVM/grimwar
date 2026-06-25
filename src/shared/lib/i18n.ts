@@ -480,7 +480,6 @@ export type StringKey =
   | 'campaigns.detail.journalCta'
   // Lecture MJ d'une fiche de joueur — JALON 4A.3
   | 'campaigns.memberSheet.back'
-  | 'campaigns.memberSheet.readOnlyBadge'
   | 'campaigns.memberSheet.viewingPrefix'
   | 'campaigns.memberSheet.forbidden.title'
   | 'campaigns.memberSheet.forbidden.body'
@@ -512,6 +511,46 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.kind.sessionStart'
   | 'campaigns.detail.eventFeed.kind.sessionEnd'
   | 'campaigns.detail.eventFeed.kind.generic'
+  | 'campaigns.detail.eventFeed.kind.dmEdit'
+  | 'campaigns.detail.eventFeed.dmEdit.summary'
+  | 'campaigns.detail.eventFeed.dmEdit.fieldsRow'
+  | 'campaigns.detail.eventFeed.dmEditField.generic'
+  | 'campaigns.detail.eventFeed.dmEditField.hp'
+  | 'campaigns.detail.eventFeed.dmEditField.conditions'
+  | 'campaigns.detail.eventFeed.dmEditField.exhaustion'
+  | 'campaigns.detail.eventFeed.dmEditField.inspiration'
+  | 'campaigns.detail.eventFeed.dmEditField.deathSaves'
+  | 'campaigns.detail.eventFeed.dmEditField.abilities'
+  | 'campaigns.detail.eventFeed.dmEditField.saveProficiencies'
+  | 'campaigns.detail.eventFeed.dmEditField.skills'
+  | 'campaigns.detail.eventFeed.dmEditField.ac'
+  | 'campaigns.detail.eventFeed.dmEditField.speed'
+  | 'campaigns.detail.eventFeed.dmEditField.initiative'
+  | 'campaigns.detail.eventFeed.dmEditField.hitDice'
+  | 'campaigns.detail.eventFeed.dmEditField.spellSlots'
+  | 'campaigns.detail.eventFeed.dmEditField.classResources'
+  | 'campaigns.detail.eventFeed.dmEditField.preparedSpells'
+  | 'campaigns.detail.eventFeed.dmEditField.knownSpells'
+  | 'campaigns.detail.eventFeed.dmEditField.inventory'
+  | 'campaigns.detail.eventFeed.dmEditField.featureUsage'
+  | 'campaigns.detail.eventFeed.dmEditField.extraProficiencies'
+  | 'campaigns.detail.eventFeed.dmEditField.experience'
+  | 'campaigns.detail.eventFeed.dmEditField.alignment'
+  | 'campaigns.detail.eventFeed.dmEditField.totalLevel'
+  | 'campaigns.detail.eventFeed.dmEditField.status'
+  | 'campaigns.detail.eventFeed.dmEditField.stats'
+  | 'campaigns.memberSheet.dmEditBadge'
+  | 'sheet.dmEdit.bannerTitle'
+  | 'sheet.dmEdit.bannerHint'
+  | 'sheet.dmEdit.fieldLocked'
+  | 'journal.tpl.dmEdit'
+  | 'sessions.events.title'
+  | 'sessions.events.empty'
+  | 'sessions.events.loading'
+  | 'sessions.events.error'
+  | 'sessions.events.filter.aria'
+  | 'sessions.events.filter.all'
+  | 'sessions.events.filter.dmEdits'
   | 'campaigns.detail.eventFeed.openDetail'
   | 'campaigns.detail.eventFeed.filter.aria'
   | 'campaigns.detail.eventFeed.filter.all'
@@ -541,6 +580,7 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.reason.damage'
   | 'campaigns.detail.eventFeed.reason.heal'
   | 'campaigns.detail.eventFeed.value.yes'
+  | 'campaigns.detail.eventFeed.value.no'
   | 'campaigns.join.title'
   | 'campaigns.join.intro'
   | 'campaigns.join.code.label'
@@ -632,7 +672,6 @@ export type StringKey =
   | 'sessions.attendance.status.saving'
   | 'sessions.attendance.status.saved'
   | 'sessions.attendance.status.error'
-  | 'sessions.events.placeholder'
   | 'sessions.journal.placeholder'
   // Journal compilé — onglet séance (plan 25.2)
   | 'sessions.journal.emptyTitle'
@@ -1991,7 +2030,6 @@ const STRINGS: Record<Locale, Dict> = {
       "Cette campagne n'existe plus ou tu n'y as pas accès.",
     // Lecture MJ d'une fiche de joueur — JALON 4A.3
     'campaigns.memberSheet.back': 'Retour à la campagne',
-    'campaigns.memberSheet.readOnlyBadge': 'Lecture seule',
     'campaigns.memberSheet.viewingPrefix': 'Fiche de',
     'campaigns.memberSheet.forbidden.title': 'Accès réservé au meneur',
     'campaigns.memberSheet.forbidden.body':
@@ -2027,6 +2065,47 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.sessionStart': 'Séance démarrée',
     'campaigns.detail.eventFeed.kind.sessionEnd': 'Séance terminée',
     'campaigns.detail.eventFeed.kind.generic': 'Événement de jeu',
+    'campaigns.detail.eventFeed.kind.dmEdit': 'Édition MJ',
+    'campaigns.detail.eventFeed.dmEdit.summary': '{count} champ·s modifié·s',
+    'campaigns.detail.eventFeed.dmEdit.fieldsRow': 'Champs modifiés',
+    'campaigns.detail.eventFeed.dmEditField.generic': 'Autre champ',
+    'campaigns.detail.eventFeed.dmEditField.hp': 'Points de vie',
+    'campaigns.detail.eventFeed.dmEditField.conditions': 'États',
+    'campaigns.detail.eventFeed.dmEditField.exhaustion': 'Épuisement',
+    'campaigns.detail.eventFeed.dmEditField.inspiration': 'Inspiration',
+    'campaigns.detail.eventFeed.dmEditField.deathSaves': 'Jets contre la mort',
+    'campaigns.detail.eventFeed.dmEditField.abilities': 'Caractéristiques',
+    'campaigns.detail.eventFeed.dmEditField.saveProficiencies': 'Jets de sauvegarde',
+    'campaigns.detail.eventFeed.dmEditField.skills': 'Compétences',
+    'campaigns.detail.eventFeed.dmEditField.ac': 'Classe d’armure',
+    'campaigns.detail.eventFeed.dmEditField.speed': 'Vitesse',
+    'campaigns.detail.eventFeed.dmEditField.initiative': 'Initiative',
+    'campaigns.detail.eventFeed.dmEditField.hitDice': 'Dés de vie',
+    'campaigns.detail.eventFeed.dmEditField.spellSlots': 'Emplacements de sort',
+    'campaigns.detail.eventFeed.dmEditField.classResources': 'Ressources de classe',
+    'campaigns.detail.eventFeed.dmEditField.preparedSpells': 'Sorts préparés',
+    'campaigns.detail.eventFeed.dmEditField.knownSpells': 'Sorts connus',
+    'campaigns.detail.eventFeed.dmEditField.inventory': 'Inventaire',
+    'campaigns.detail.eventFeed.dmEditField.featureUsage': 'Aptitudes',
+    'campaigns.detail.eventFeed.dmEditField.extraProficiencies': 'Maîtrises',
+    'campaigns.detail.eventFeed.dmEditField.experience': 'Expérience',
+    'campaigns.detail.eventFeed.dmEditField.alignment': 'Alignement',
+    'campaigns.detail.eventFeed.dmEditField.totalLevel': 'Niveau',
+    'campaigns.detail.eventFeed.dmEditField.status': 'Statut',
+    'campaigns.detail.eventFeed.dmEditField.stats': 'Statistiques',
+    'campaigns.memberSheet.dmEditBadge': 'Édition MJ',
+    'sheet.dmEdit.bannerTitle': 'Édition meneur',
+    'sheet.dmEdit.bannerHint':
+      'Tu modifies la fiche d’un joueur. Le nom et la personnalité restent réservés au joueur.',
+    'sheet.dmEdit.fieldLocked': 'Réservé au joueur',
+    'journal.tpl.dmEdit': 'Le meneur ajuste la fiche de **{target}** ({count} champ·s).',
+    'sessions.events.title': 'Événements de la séance',
+    'sessions.events.empty': 'Aucun événement enregistré pour cette séance.',
+    'sessions.events.loading': 'Chargement des événements…',
+    'sessions.events.error': 'Impossible de charger les événements.',
+    'sessions.events.filter.aria': 'Filtrer les événements par type',
+    'sessions.events.filter.all': 'Tous',
+    'sessions.events.filter.dmEdits': 'Éditions MJ',
     'campaigns.detail.eventFeed.openDetail': 'Voir le détail de l’événement',
     'campaigns.detail.eventFeed.filter.aria': 'Filtrer l’activité par joueur',
     'campaigns.detail.eventFeed.filter.all': 'Tous',
@@ -2057,6 +2136,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.reason.damage': 'Dégâts',
     'campaigns.detail.eventFeed.reason.heal': 'Soin',
     'campaigns.detail.eventFeed.value.yes': 'Oui',
+    'campaigns.detail.eventFeed.value.no': 'Non',
     'campaigns.join.title': 'Rejoindre une campagne',
     'campaigns.join.intro':
       "Demande son code d'invitation au meneur, puis saisis-le ici.",
@@ -2173,8 +2253,6 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.attendance.status.saving': 'Enregistrement…',
     'sessions.attendance.status.saved': 'Enregistré',
     'sessions.attendance.status.error': "Échec de l'enregistrement",
-    'sessions.events.placeholder':
-      "Les événements de cette séance s'afficheront ici une fois la séance démarrée.",
     'sessions.journal.placeholder':
       'Le journal compilé de la séance apparaîtra ici à sa clôture.',
     'sessions.journal.emptyTitle': 'Aucun journal compilé',
@@ -3836,7 +3914,6 @@ const STRINGS: Record<Locale, Dict> = {
       'This campaign no longer exists or you no longer have access.',
     // GM reading a player's sheet — JALON 4A.3
     'campaigns.memberSheet.back': 'Back to campaign',
-    'campaigns.memberSheet.readOnlyBadge': 'Read-only',
     'campaigns.memberSheet.viewingPrefix': 'Sheet of',
     'campaigns.memberSheet.forbidden.title': 'GM access only',
     'campaigns.memberSheet.forbidden.body':
@@ -3871,6 +3948,47 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.sessionStart': 'Session started',
     'campaigns.detail.eventFeed.kind.sessionEnd': 'Session ended',
     'campaigns.detail.eventFeed.kind.generic': 'Game event',
+    'campaigns.detail.eventFeed.kind.dmEdit': 'GM edit',
+    'campaigns.detail.eventFeed.dmEdit.summary': '{count} field(s) changed',
+    'campaigns.detail.eventFeed.dmEdit.fieldsRow': 'Fields changed',
+    'campaigns.detail.eventFeed.dmEditField.generic': 'Other field',
+    'campaigns.detail.eventFeed.dmEditField.hp': 'Hit points',
+    'campaigns.detail.eventFeed.dmEditField.conditions': 'Conditions',
+    'campaigns.detail.eventFeed.dmEditField.exhaustion': 'Exhaustion',
+    'campaigns.detail.eventFeed.dmEditField.inspiration': 'Inspiration',
+    'campaigns.detail.eventFeed.dmEditField.deathSaves': 'Death saves',
+    'campaigns.detail.eventFeed.dmEditField.abilities': 'Ability scores',
+    'campaigns.detail.eventFeed.dmEditField.saveProficiencies': 'Saving throws',
+    'campaigns.detail.eventFeed.dmEditField.skills': 'Skills',
+    'campaigns.detail.eventFeed.dmEditField.ac': 'Armor class',
+    'campaigns.detail.eventFeed.dmEditField.speed': 'Speed',
+    'campaigns.detail.eventFeed.dmEditField.initiative': 'Initiative',
+    'campaigns.detail.eventFeed.dmEditField.hitDice': 'Hit dice',
+    'campaigns.detail.eventFeed.dmEditField.spellSlots': 'Spell slots',
+    'campaigns.detail.eventFeed.dmEditField.classResources': 'Class resources',
+    'campaigns.detail.eventFeed.dmEditField.preparedSpells': 'Prepared spells',
+    'campaigns.detail.eventFeed.dmEditField.knownSpells': 'Known spells',
+    'campaigns.detail.eventFeed.dmEditField.inventory': 'Inventory',
+    'campaigns.detail.eventFeed.dmEditField.featureUsage': 'Features',
+    'campaigns.detail.eventFeed.dmEditField.extraProficiencies': 'Proficiencies',
+    'campaigns.detail.eventFeed.dmEditField.experience': 'Experience',
+    'campaigns.detail.eventFeed.dmEditField.alignment': 'Alignment',
+    'campaigns.detail.eventFeed.dmEditField.totalLevel': 'Level',
+    'campaigns.detail.eventFeed.dmEditField.status': 'Status',
+    'campaigns.detail.eventFeed.dmEditField.stats': 'Statistics',
+    'campaigns.memberSheet.dmEditBadge': 'GM edit',
+    'sheet.dmEdit.bannerTitle': 'GM editing',
+    'sheet.dmEdit.bannerHint':
+      "You are editing a player's sheet. Name and personality stay reserved to the player.",
+    'sheet.dmEdit.fieldLocked': 'Player-owned',
+    'journal.tpl.dmEdit': "The DM adjusts **{target}**'s sheet ({count} field(s)).",
+    'sessions.events.title': 'Session events',
+    'sessions.events.empty': 'No events recorded for this session yet.',
+    'sessions.events.loading': 'Loading events…',
+    'sessions.events.error': "Couldn't load events.",
+    'sessions.events.filter.aria': 'Filter events by kind',
+    'sessions.events.filter.all': 'All',
+    'sessions.events.filter.dmEdits': 'GM edits',
     'campaigns.detail.eventFeed.openDetail': 'View event details',
     'campaigns.detail.eventFeed.filter.aria': 'Filter activity by player',
     'campaigns.detail.eventFeed.filter.all': 'All',
@@ -3901,6 +4019,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.reason.damage': 'Damage',
     'campaigns.detail.eventFeed.reason.heal': 'Healing',
     'campaigns.detail.eventFeed.value.yes': 'Yes',
+    'campaigns.detail.eventFeed.value.no': 'No',
     'campaigns.join.title': 'Join a campaign',
     'campaigns.join.intro': 'Ask the GM for the invite code and enter it here.',
     'campaigns.join.code.label': 'Invite code',
@@ -4012,8 +4131,6 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.attendance.status.saving': 'Saving…',
     'sessions.attendance.status.saved': 'Saved',
     'sessions.attendance.status.error': 'Save failed',
-    'sessions.events.placeholder':
-      'Events from this session will appear here once the session has started.',
     'sessions.journal.placeholder':
       'The compiled session journal will appear here when the session ends.',
     'sessions.journal.emptyTitle': 'No compiled journal',

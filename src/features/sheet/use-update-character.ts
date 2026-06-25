@@ -2,10 +2,12 @@ import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useCallback, useRef, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
-import { logCharacterDiff } from '@/shared/lib/event-logger';
+import { logCharacterDiff, logDmEdit } from '@/shared/lib/event-logger';
 import { getDb } from '@/shared/lib/firebase';
 import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import type { Character } from '@/shared/types/character';
+
+import { usePermissionContext } from './permissions-context';
 
 export interface UpdateCharacterOptions {
   /**
@@ -46,6 +48,11 @@ export function useUpdateCharacter(
   character: Character | undefined,
 ): UseUpdateCharacterResult {
   const { user } = useAuth();
+  // Contexte de permission : en omni-edit MJ (plan 26) la fiche éditée vit sous
+  // le sous-arbre du JOUEUR (`ownerUid`), pas du user courant. Hors provider
+  // (écran propriétaire, level-up) le contexte retombe sur ses valeurs par
+  // défaut → `ownerUid` undefined → comportement S1 inchangé (write owner).
+  const { ownerUid, isDMEdit, lockedFields } = usePermissionContext();
   const characterId = character?.id;
   const characterRef = useRef<Character | undefined>(character);
   characterRef.current = character;
@@ -57,11 +64,25 @@ export function useUpdateCharacter(
       if (!user) throw new Error('[sheet] update sans utilisateur connecté');
       if (!characterId) throw new Error('[sheet] update sans characterId');
       const before = characterRef.current;
+      const targetUid = ownerUid ?? user.uid;
+
+      // Garde-fou client (la barrière réelle est `firestore.rules`) : en omni-edit
+      // MJ, un patch qui toucherait un champ réservé au propriétaire échoue vite
+      // avec un message clair plutôt que de partir se faire rejeter côté serveur.
+      if (isDMEdit) {
+        const touched = Object.keys(patch).filter((k) => lockedFields.includes(k));
+        if (touched.length > 0) {
+          throw new Error(
+            `[sheet] champ(s) réservé(s) au propriétaire, édition MJ interdite : ${touched.join(', ')}`,
+          );
+        }
+      }
+
       setIsUpdating(true);
       setError(null);
       try {
         const firestore = getDb();
-        const ref = doc(firestore, 'users', user.uid, 'characters', characterId);
+        const ref = doc(firestore, 'users', targetUid, 'characters', characterId);
         // trackPendingWrite : compteur global incrémenté immédiatement,
         // décrémenté quand l'ack backend résout (cf. JALON 1D.2). Le wrapper
         // ne bloque pas l'appelant — `updateDoc` reste rapide en local.
@@ -73,10 +94,15 @@ export function useUpdateCharacter(
             updatedBy: user.uid,
           }),
         );
-        // Journalisation best-effort du diff (plan 22.2). Fire-and-forget : ne
-        // bloque pas l'appelant, ne casse jamais le gameplay (logCharacterDiff
-        // avale ses erreurs). `'manual'` court-circuite l'auto-log.
-        if ((options?.log ?? 'auto') === 'auto' && before) {
+        // Journalisation best-effort (fire-and-forget : ne bloque pas l'appelant,
+        // ne casse jamais le gameplay — les loggers avalent leurs erreurs).
+        //  - Omni-edit MJ → UN event d'audit `dm-edit` (plan 26 step 5), JAMAIS le
+        //    diff sémantique (l'acteur est le MJ, pas le personnage).
+        //  - Édition propriétaire → diff sémantique (plan 22.2) ; `'manual'`
+        //    court-circuite l'auto-log (le call site journalise lui-même).
+        if (isDMEdit && before) {
+          void logDmEdit(before, patch, characterId);
+        } else if ((options?.log ?? 'auto') === 'auto' && before) {
           void logCharacterDiff(before, patch, characterId);
         }
       } catch (err) {
@@ -87,7 +113,7 @@ export function useUpdateCharacter(
         setIsUpdating(false);
       }
     },
-    [user, characterId],
+    [user, characterId, ownerUid, isDMEdit, lockedFields],
   );
 
   return { updateCharacter, isUpdating, error };

@@ -13,7 +13,7 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
  *   01-notes-empty-mj-desktop-1440.png      — onglet Notes vide (éditeur MJ)
  *   02-notes-filled-mj-desktop-1440.png     — Notes avec texte saisi + indicateur de save
  *   03-attendance-mj-desktop-1440.png       — onglet Présence (roster cochable)
- *   04-events-placeholder-desktop-1440.png  — onglet Événements (placeholder 23.4)
+ *   04-events-empty-desktop-1440.png        — onglet Événements (liste réelle, plan 26)
  *   05-journal-placeholder-desktop-1440.png — onglet Journal (placeholder plan 25)
  *   06-notes-mj-mobile-375.png              — Notes mobile
  *
@@ -83,10 +83,11 @@ test.describe('UAT 23.3 — captures SessionScreen', () => {
     await expect(page.getByText(/Présence à la séance/i)).toBeVisible();
     await captureFull(page, '03-attendance-mj-desktop-1440.png');
 
-    // ─── 04 — Événements (placeholder).
+    // ─── 04 — Événements (onglet réel depuis plan 26 : liste + filtre audit).
     await page.getByRole('tab', { name: 'Événements' }).click();
-    await expect(page.getByText(/une fois la séance démarrée/i)).toBeVisible();
-    await captureFull(page, '04-events-placeholder-desktop-1440.png');
+    await expect(page.getByText(/Aucun événement enregistré/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Éditions MJ' })).toBeVisible();
+    await captureFull(page, '04-events-empty-desktop-1440.png');
 
     // ─── 05 — Journal (placeholder).
     await page.getByRole('tab', { name: 'Journal' }).click();

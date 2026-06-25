@@ -96,3 +96,16 @@ export const itemRemovedTemplate: JournalTemplate = (event: GameEvent, ctx) => {
     qty,
   });
 };
+
+/**
+ * Édition MJ d'une fiche (plan 26, kind `dm-edit`). Ligne d'AUDIT discrète : on
+ * nomme la fiche CIBLE (`targetCharacterId`) et le nombre de champs touchés, sans
+ * détailler les valeurs (le détail vit dans la modale d'événement, pas dans la
+ * prose narrative). Repli sur « Quelqu'un » si la cible n'est pas résolvable.
+ */
+export const dmEditTemplate: JournalTemplate = (event: GameEvent, ctx) => {
+  const target = ctx.resolveCharacterName(event.targetCharacterId) ?? t('journal.actor.someone');
+  const fields = event.payload.fieldsChanged;
+  const count = Array.isArray(fields) ? fields.length : 0;
+  return fillTemplate(t('journal.tpl.dmEdit'), { target, count });
+};

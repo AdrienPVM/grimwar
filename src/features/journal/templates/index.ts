@@ -4,6 +4,7 @@ import type { JournalContext, JournalTemplate } from './context';
 import {
   conditionAddTemplate,
   conditionRemoveTemplate,
+  dmEditTemplate,
   hpChangeTemplate,
   itemAcquiredTemplate,
   itemRemovedTemplate,
@@ -27,8 +28,8 @@ export type { JournalContext, JournalTemplate } from './context';
  *
  * PARTIEL À DESSEIN : seuls les kinds réellement écrits par `event-logger.ts`
  * aujourd'hui ont un template (cf. audit du payload réel). Les ~24 kinds encore
- * non journalisés (level-up, death, xp-gain, revival, treasure-drop, note,
- * dm-edit…) n'ont pas d'entrée — `renderEventLine` retourne alors `null`
+ * non journalisés (level-up, death, xp-gain, revival, treasure-drop, note…)
+ * n'ont pas d'entrée — `renderEventLine` retourne alors `null`
  * (aucune ligne) plutôt que de planter ou d'inventer de la prose. Ajouter un
  * logger pour un de ces kinds = ajouter sa clé i18n + son template ici, sans
  * toucher au compilateur.
@@ -59,6 +60,8 @@ export const EVENT_TEMPLATES: Partial<Record<EventKind, JournalTemplate>> = {
   // Cycle de vie de séance (plan 23)
   'session-start': sessionStartTemplate,
   'session-end': sessionEndTemplate,
+  // Audit d'édition MJ (plan 26)
+  'dm-edit': dmEditTemplate,
 };
 
 /**

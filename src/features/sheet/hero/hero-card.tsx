@@ -3,11 +3,12 @@ import { useMemo } from 'react';
 import { LevelUpButton } from '@/features/level-up/level-up-button';
 import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
+import { Icon } from '@/shared/components/icon';
 import { useContent } from '@/shared/hooks/use-content';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
-import { usePermissionContext } from '../permissions-context';
+import { useFieldLocked, usePermissionContext } from '../permissions-context';
 import { HeroEmblem } from './hero-emblem';
 
 interface HeroCardProps {
@@ -30,6 +31,9 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
   // propriétaire. En lecture MJ (`!canEdit`, JALON 4A.3) le bouton disparaît :
   // le meneur consulte, il ne fait pas monter le joueur de niveau.
   const { canEdit } = usePermissionContext();
+  // Omni-edit MJ (plan 26 step 3) : le nom est réservé au propriétaire. On le
+  // signale sous le titre par un cadenas — la barrière réelle est la rule.
+  const nameLocked = useFieldLocked('name');
 
   const ancestryName = useMemo(() => {
     const ancestry = ancestries.find((a) => a.id === character.ancestryId);
@@ -73,6 +77,13 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
       >
         {character.name}
       </h1>
+
+      {nameLocked ? (
+        <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-soft bg-bg-3/40 px-2.5 py-1 font-title text-meta uppercase tracking-[0.14em] text-text-tertiary">
+          <Icon name="i-shield" className="h-3 w-3 text-gold-bright/70" />
+          {t('sheet.dmEdit.fieldLocked')}
+        </span>
+      ) : null}
 
       <Divider className="my-3" />
 

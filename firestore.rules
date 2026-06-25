@@ -58,12 +58,28 @@ service cloud.firestore {
         allow read: if isOwner(userId)
           || gmCanReadLinkedCharacter(userId, characterId);
 
-        // Write: owner only via direct client write.
-        // DM-authority edits go through a Cloud Function (Admin SDK) post-S2.
+        // Create : propriétaire uniquement (le wizard écrit sous SON sous-arbre).
         allow create: if isOwner(userId)
           && characterShapeOK(request.resource.data);
-        allow update: if isOwner(userId)
-          && characterShapeOK(request.resource.data);
+        // Update : propriétaire OU MJ omni-edit (plan 26 — Voie B, « rules-only »,
+        // SANS Cloud Function). Le MJ écrit la fiche d'un de ses joueurs liés via
+        // la MÊME autorisation « live » que la lecture A2 (`gmCanReadLinkedCharacter`
+        // : MJ ∈ gmIds de la campagne d'attache, joueur encore membre, fiche encore
+        // liée), AVEC immuabilité des champs réservés au propriétaire (`name`,
+        // `personality`, `homeCampaignId` — cf. docs/PERMISSIONS.md).
+        //
+        // ⚠ SUPERSEDE la décision plan 16 « DM-authority via Cloud Function (Admin
+        // SDK) post-S2 ». Justification : le pointeur unique `homeCampaignId` posé
+        // par A2 (« une seule campagne d'attache à la fois ») a levé l'obstacle que
+        // plan 16 citait (« Firestore ne peut pas vérifier des arrays cross-collection
+        // de façon fiable »). L'autorité MJ est désormais vérifiable côté rules sans
+        // backend Functions ni plan de facturation Blaze. Acté 2026-06-25.
+        allow update: if characterShapeOK(request.resource.data)
+          && (
+            isOwner(userId)
+            || (gmCanReadLinkedCharacter(userId, characterId)
+                && dmOmniEditLockedFieldsUnchanged())
+          );
         allow delete: if isOwner(userId);
       }
 
@@ -115,6 +131,17 @@ service cloud.firestore {
         && request.auth.uid in get(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId)).data.gmIds
         && exists(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId)/members/$(characterOwnerId))
         && get(/databases/$(database)/documents/campaigns/$(resource.data.homeCampaignId)/members/$(characterOwnerId)).data.characterId == characterId;
+    }
+
+    // Champs réservés au PROPRIÉTAIRE (plan 26) : un MJ en omni-edit ne peut
+    // JAMAIS les muter. On compare le doc mergé post-écriture (`request.resource`)
+    // au doc courant (`resource`). L'égalité de map (`personality`) est supportée
+    // par Firestore Rules (comparaison structurelle profonde). N'est appelée que
+    // depuis `allow update` (contexte d'écriture → `request.resource` défini).
+    function dmOmniEditLockedFieldsUnchanged() {
+      return request.resource.data.name == resource.data.name
+        && request.resource.data.personality == resource.data.personality
+        && request.resource.data.homeCampaignId == resource.data.homeCampaignId;
     }
 
     function characterShapeOK(data) {

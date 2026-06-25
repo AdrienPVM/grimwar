@@ -7,34 +7,32 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import { fighterL3, seedCharacter } from './seed-character';
 
 /**
- * JALON 4A.3 — e2e « lecture MJ d'une fiche liée ».
+ * Plan 26 — e2e « omni-edit MJ + journalisation d'audit » (Voie B, rules-only).
  *
- * Premier consommateur UI de la rule de lecture cross-owner A2 (4A.1) : le MJ
- * ouvre, EN LECTURE SEULE, la fiche d'un de ses joueurs. La spec exerce la chaîne
- * 4A complète contre les VRAIES rules Firestore chargées dans l'émulateur :
+ * Prouve le PARCOURS NAVIGATEUR cross-utilisateur de bout en bout contre les
+ * VRAIES rules Firestore (émulateur) :
  *
- *   1. Un MJ (contexte A) crée une campagne → on extrait code + cid.
- *   2. Un joueur (contexte B, UID anon distinct) se voit seed une fiche (Admin SDK,
- *      bypass rules), rejoint par code, puis LIE sa fiche via le picker (4A.2) —
- *      write owner-only qui estampille `members/{uid}.characterId` + `homeCampaignId`.
- *   3. Le MJ recharge le détail : la ligne du joueur expose « Voir la fiche » (4A.3,
- *      affordance MJ uniquement, conditionnée à une fiche liée).
- *   4. Le MJ ouvre la fiche → la rule A2 autorise la lecture `users/{player}/characters/{c}`
- *      → la fiche s'affiche en lecture seule (bandeau « Lecture seule », pas de FAB
- *      d'historique de jets — la sous-collection de rolls du joueur est hors A2).
+ *   1. Un MJ crée une campagne ; un joueur (UID distinct) seed une fiche, rejoint
+ *      par code, lie sa fiche (write owner-only → members.characterId + homeCampaignId).
+ *   2. Le MJ ouvre la fiche via « Voir la fiche » → la fiche est EN ÉDITION (bandeau
+ *      « Édition MJ », bouton de montée de niveau présent — plus de lecture seule).
+ *   3. Le MJ baisse les PV du joueur (tap « Subir 1 dégât ») → write cross-owner
+ *      autorisé par `gmCanReadLinkedCharacter` + immuabilité des champs réservés.
+ *      La fiche reflète le nouveau total (28 → 27).
+ *   4. De retour sur la campagne, le feed d'activité MJ montre un événement
+ *      « Édition MJ » ; son détail liste « Points de vie » (audit, plan 26 step 6).
  *
- * Couvre la dimension manquante des couches inférieures : l'autorisation A2 est
- * testée en rules-unit (4A.1) et le link en unit/services (4A.2) — ici on prouve
- * le PARCOURS NAVIGATEUR cross-utilisateur de bout en bout contre les rules réelles.
+ * Couvre la dimension manquante des couches inférieures : la rule de write est
+ * testée en rules-unit, le routage du hook en unit — ici on prouve le parcours
+ * réel cross-utilisateur (DoD step 8).
  *
- * Captures → `uat-review/jalon-4/4A.3/` (gitignored). Skip propre si l'émulateur
- * n'est pas joignable (Java/JRE absent) — pas de faux-vert silencieux.
+ * Captures → `uat-review/jalon-26/` (gitignored). Skip propre si l'émulateur n'est
+ * pas joignable (Java/JRE absent) — pas de faux-vert silencieux.
  */
 
-const UAT_DIR = path.resolve(process.cwd(), 'uat-review/jalon-4/4A.3');
-const CAMPAIGN_NAME = 'Le Serment de Korvath';
-const CAMPAIGN_DESC =
-  'Une marche frontalière où un ancien serment lie les vivants aux morts.';
+const UAT_DIR = path.resolve(process.cwd(), 'uat-review/jalon-26');
+const CAMPAIGN_NAME = 'Les Cendres de Vael';
+const CAMPAIGN_DESC = 'Le meneur tient la plume autant que les dés.';
 const INVITE_CODE_PATTERN = /^[A-HJ-NP-Z2-9]{6}$/;
 
 function ensureUatDir(): void {
@@ -55,12 +53,12 @@ async function newDesktopContext(browser: Browser): Promise<BrowserContext> {
   return browser.newContext({ viewport: { width: 1440, height: 900 } });
 }
 
-test.describe('JALON 4A.3 — lecture MJ (lecture seule) d’une fiche liée', () => {
-  test('le MJ ouvre la fiche d’un joueur lié via « Voir la fiche »', async ({
+test.describe('Plan 26 — omni-edit MJ + audit dm-edit', () => {
+  test('le MJ édite les PV d’un joueur lié → fiche à jour + événement « Édition MJ »', async ({
     browser,
   }) => {
     const reachable = await isEmulatorReachable();
-    test.skip(!reachable, 'Émulateur Firestore non joignable — 4A.3 skippé.');
+    test.skip(!reachable, 'Émulateur Firestore non joignable — plan 26 skippé.');
 
     const dmCtx = await newDesktopContext(browser);
     const dm = await dmCtx.newPage();
@@ -105,18 +103,14 @@ test.describe('JALON 4A.3 — lecture MJ (lecture seule) d’une fiche liée', (
           player.getByRole('heading', { name: CAMPAIGN_NAME }),
         ).toBeVisible({ timeout: 15_000 });
 
-        // Lie la fiche seedée via le picker (write owner-only → characterId +
-        // homeCampaignId). La fiche apparaît comme option radio par son nom.
         await player.getByRole('button', { name: /Lier un personnage/i }).click();
         await expect(player.getByRole('dialog')).toBeVisible();
         await player.getByRole('radio', { name: new RegExp(fighterL3.name, 'i') }).click();
         await player.getByRole('button', { name: /^Lier$/ }).click();
         await expect(player.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
-        // La section reflète la fiche liée.
         await expect(player.getByText(new RegExp(fighterL3.name, 'i'))).toBeVisible();
-        await captureFull(player, '01-joueur-fiche-liee.png');
 
-        // ─── MJ : recharge → « Voir la fiche » apparaît pour ce joueur.
+        // ─── MJ : recharge → ouvre la fiche du joueur.
         await dm.reload();
         await waitForAppReady(dm);
         await expect(dm.getByRole('heading', { name: CAMPAIGN_NAME })).toBeVisible();
@@ -124,27 +118,48 @@ test.describe('JALON 4A.3 — lecture MJ (lecture seule) d’une fiche liée', (
         await expect(viewBtn).toBeVisible({ timeout: 15_000 });
         await viewBtn.click();
 
-        // ─── Lecture seule : route member-sheet + rendu de la fiche du joueur.
         await expect(dm).toHaveURL(
           new RegExp(`/campaigns/${cid}/members/${playerUid}/sheet$`),
         );
-        await expect(dm.getByText(/Lecture seule/i)).toBeVisible({ timeout: 15_000 });
-        await expect(dm.getByText(new RegExp(fighterL3.name, 'i')).first()).toBeVisible();
-        // Pas de FAB d'historique des jets en lecture cross-owner (hors A2).
-        await expect(
-          dm.getByRole('button', { name: /historique des jets/i }),
-        ).toHaveCount(0);
-        // Lecture seule RÉELLE (pas cosmétique) : l'affordance de montée de niveau
-        // (qui écrirait la fiche du joueur) est absente côté MJ.
-        await expect(
-          dm.getByRole('button', { name: /Monter au niveau/i }),
-        ).toHaveCount(0);
-        await captureFull(dm, '02-mj-fiche-lecture-seule.png');
-        await captureViewport(dm, '03-mj-fiche-lecture-seule-viewport.png');
 
-        // ─── Retour → détail campagne.
+        // ─── OMNI-EDIT (et NON lecture seule) : bandeau « Édition MJ » + montée de
+        //     niveau disponible (write réel, plus une consultation passive).
+        await expect(dm.getByText(/Édition MJ/i).first()).toBeVisible({ timeout: 15_000 });
+        await expect(dm.getByText(/Lecture seule/i)).toHaveCount(0);
+        await expect(dm.getByRole('button', { name: /Monter au niveau/i })).toBeVisible();
+        // L'historique des jets du joueur reste hors-périmètre (sous-arbre rolls non
+        // couvert par la rule cross-owner) → pas de FAB d'historique côté MJ.
+        await expect(dm.getByRole('button', { name: /historique des jets/i })).toHaveCount(0);
+        await captureFull(dm, '01-fiche-omni-edit.png');
+
+        // ─── Le MJ baisse les PV du joueur (28 → 27).
+        await dm.getByRole('tab', { name: /^Combat$/i }).click();
+        await expect(dm.locator('#sheet-mode-panel-combat')).toBeVisible();
+        await expect(
+          dm.locator('[role="tabpanel"]#sheet-mode-panel-combat').getByText(/^28$/).first(),
+        ).toBeVisible();
+        await dm.getByRole('button', { name: /^Subir 1 dégât/i }).click();
+        await expect(
+          dm.locator('[role="tabpanel"]#sheet-mode-panel-combat').getByText(/^27$/).first(),
+          'La fiche du joueur doit refléter le write MJ (28 → 27).',
+        ).toBeVisible({ timeout: 8_000 });
+        await captureFull(dm, '02-pv-baisses-par-mj.png');
+
+        // ─── Retour campagne → le feed d'activité MJ montre « Édition MJ ».
         await dm.getByRole('button', { name: /Retour à la campagne/i }).first().click();
         await expect(dm).toHaveURL(new RegExp(`/campaigns/${cid}$`));
+        const feedEntry = dm.getByText(/Édition MJ/i).first();
+        await expect(feedEntry, 'Le feed MJ doit logguer un événement dm-edit.').toBeVisible({
+          timeout: 15_000,
+        });
+        await captureFull(dm, '03-feed-edition-mj.png');
+
+        // ─── Détail de l'événement : le champ « Points de vie » est tracé (audit).
+        await feedEntry.click();
+        await expect(dm.getByRole('dialog')).toBeVisible();
+        await expect(dm.getByRole('dialog').getByText(/Points de vie/i).first()).toBeVisible();
+        await captureFull(dm, '04-detail-audit.png');
+        await captureViewport(dm, '05-detail-audit-viewport.png');
       } finally {
         await playerCtx.close();
       }
