@@ -110,6 +110,22 @@ export function applyHeal(hp: HpVitals, amount: number): HpVitals {
   return { current: clampHpCurrent(hp.current + heal, hp.max), max: hp.max, temp: hp.temp };
 }
 
+/**
+ * Pose des PV temporaires (SRD 5.2.1, glossaire « Points de vie temporaires ») :
+ * ils NE se cumulent PAS. Quand on en reçoit alors qu'on en a déjà, on garde le
+ * plus grand des deux montants (« vous choisissez lesquels conserver »), jamais
+ * la somme. Poser `0` retire les PV temporaires (fin d'effet / nettoyage).
+ *
+ * N'affecte ni `current` ni `max` : les PV temporaires sont un tampon distinct,
+ * absorbé en premier par `applyDamage`. Fonction PURE.
+ */
+export function setTempHp(hp: HpVitals, amount: number): HpVitals {
+  const next = Math.max(0, Math.floor(amount));
+  // Pose 0 → reset explicite. Sinon, règle « le plus grand l'emporte ».
+  const temp = next === 0 ? 0 : Math.max(hp.temp, next);
+  return { current: hp.current, max: hp.max, temp };
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Death-save state machine
 // ─────────────────────────────────────────────────────────────────────

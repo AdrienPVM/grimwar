@@ -9,6 +9,7 @@ import {
   HP_BAND_LABEL,
   hpHealthBand,
   isSheetReadOnly,
+  setTempHp,
 } from '../hp-combat';
 
 /**
@@ -114,6 +115,40 @@ describe('concentrationSaveDc', () => {
   it('dégâts négatifs ou nuls → plancher DD 10', () => {
     expect(concentrationSaveDc(0)).toBe(10);
     expect(concentrationSaveDc(-5)).toBe(10);
+  });
+});
+
+describe('setTempHp', () => {
+  // SRD 5.2.1 : les PV temporaires NE se cumulent PAS — le plus grand l'emporte.
+  it('pose des PV temp sur une réserve vide', () => {
+    expect(setTempHp({ current: 20, max: 30, temp: 0 }, 8)).toEqual({
+      current: 20,
+      max: 30,
+      temp: 8,
+    });
+  });
+
+  it('ne cumule pas : un nouveau montant PLUS GRAND remplace l’ancien', () => {
+    expect(setTempHp({ current: 20, max: 30, temp: 5 }, 9).temp).toBe(9);
+  });
+
+  it('ne cumule pas : un nouveau montant PLUS PETIT est ignoré (on garde le plus grand)', () => {
+    expect(setTempHp({ current: 20, max: 30, temp: 9 }, 5).temp).toBe(9);
+  });
+
+  it('poser 0 retire explicitement les PV temporaires', () => {
+    expect(setTempHp({ current: 20, max: 30, temp: 12 }, 0).temp).toBe(0);
+  });
+
+  it('ne touche jamais current ni max', () => {
+    const r = setTempHp({ current: 7, max: 30, temp: 3 }, 10);
+    expect(r.current).toBe(7);
+    expect(r.max).toBe(30);
+  });
+
+  it('plancher à 0 + arrondi bas sur montant fractionnaire/négatif', () => {
+    expect(setTempHp({ current: 20, max: 30, temp: 0 }, -4).temp).toBe(0);
+    expect(setTempHp({ current: 20, max: 30, temp: 0 }, 6.9).temp).toBe(6);
   });
 });
 

@@ -14,9 +14,10 @@ import {
   concentrationSaveDc,
   HP_BAND_LABEL,
   hpHealthBand,
+  setTempHp,
   type HpHealthBand,
 } from './hp-combat';
-import { NumberPad } from './number-pad';
+import { NumberPad, type NumberPadIntent } from './number-pad';
 
 /**
  * Style de la pastille d'état (point + libellé) par bande de santé. Le signal de
@@ -46,7 +47,7 @@ interface HpMegaCardProps {
  */
 export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Element {
   const { updateCharacter } = useUpdateCharacter(character);
-  const [padIntent, setPadIntent] = useState<'damage' | 'heal' | null>(null);
+  const [padIntent, setPadIntent] = useState<NumberPadIntent | null>(null);
 
   const hp = character.hp;
   const ratio = hp.max > 0 ? Math.max(0, Math.min(1, hp.current / hp.max)) : 0;
@@ -117,6 +118,23 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
     }
   }
 
+  /**
+   * Pose des PV temporaires (ne se cumulent pas — le plus grand l'emporte, SRD).
+   * Poser 0 les retire (fin d'effet). Utilise le pivot HP standard.
+   */
+  async function applyTempHp(amount: number): Promise<void> {
+    if (readOnly) return;
+    const next = setTempHp(hp, amount);
+    if (next.temp === hp.temp) return;
+    await updateCharacter({ hp: next });
+    showToast({
+      kind: 'info',
+      title: 'PV temporaires',
+      big: next.temp > 0 ? `+${next.temp}` : '0',
+      sub: next.temp > 0 ? 'Tampon avant les PV' : 'PV temporaires retirés',
+    });
+  }
+
   const minusHandlers = useLongPress(
     () => void applyDelta(-1),
     () => !readOnly && setPadIntent('damage'),
@@ -164,10 +182,27 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
                 {label}
               </span>
             </span>
-            {hp.temp > 0 && (
-              <span className="inline-flex items-center gap-1.5 rounded-pill border border-amethyst/30 bg-amethyst/10 px-3 py-1 font-title text-micro font-bold uppercase text-amethyst">
+            {hp.temp > 0 ? (
+              <button
+                type="button"
+                onClick={() => !readOnly && setPadIntent('temp')}
+                disabled={readOnly}
+                aria-label={`Modifier les PV temporaires (${hp.temp} actuellement)`}
+                className="inline-flex items-center gap-1.5 rounded-pill border border-amethyst/30 bg-amethyst/10 px-3 py-1 font-title text-micro font-bold uppercase text-amethyst transition-colors duration-200 ease-base hover:border-amethyst/60 hover:bg-amethyst/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 +{hp.temp} <span className="text-amethyst/70">PV temp.</span>
-              </span>
+              </button>
+            ) : (
+              !readOnly && (
+                <button
+                  type="button"
+                  onClick={() => setPadIntent('temp')}
+                  aria-label="Ajouter des PV temporaires"
+                  className="inline-flex items-center gap-1 rounded-pill border border-white-8 bg-white/[0.02] px-3 py-1 font-title text-micro font-bold uppercase text-text-tertiary transition-colors duration-200 ease-base hover:border-amethyst/40 hover:text-amethyst"
+                >
+                  + PV temp.
+                </button>
+              )
             )}
           </div>
 
@@ -226,8 +261,13 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
           max={hp.max}
           maxApplicable={padMaxApplicable}
           onCommit={(amount) => {
+            const intent = padIntent;
             setPadIntent(null);
-            const signed = padIntent === 'heal' ? amount : -amount;
+            if (intent === 'temp') {
+              void applyTempHp(amount);
+              return;
+            }
+            const signed = intent === 'heal' ? amount : -amount;
             void applyDelta(signed);
           }}
           onCancel={() => setPadIntent(null)}

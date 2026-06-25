@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
 
+export type NumberPadIntent = 'damage' | 'heal' | 'temp';
+
 interface NumberPadProps {
   /** Mode du tap initial — détermine la couleur du badge "−" ou "+" + le label. */
-  intent: 'damage' | 'heal';
+  intent: NumberPadIntent;
   /** Plafond utile pour le bouton "Plein" (intent === 'heal') et le clamp d'affichage. */
   max: number;
   /** Plafond effectif côté soin (max - hp.current) ; côté dégâts on accepte tout. */
@@ -31,6 +33,7 @@ export function NumberPad({
 }: NumberPadProps): JSX.Element {
   const [value, setValue] = useState<string>('');
   const numeric = Math.max(0, Number.parseInt(value, 10) || 0);
+  // Soin capé au déficit de PV ; dégâts & PV temporaires acceptent tout montant.
   const clamped = Math.min(numeric, intent === 'heal' ? Math.max(0, maxApplicable) : 9999);
 
   function push(token: string | 'back'): void {
@@ -43,6 +46,17 @@ export function NumberPad({
   }
 
   const isHeal = intent === 'heal';
+  const isTemp = intent === 'temp';
+  // Couleur sémantique : soin = teal, PV temp = amethyst (cf. affichage carte),
+  // dégâts = crimson.
+  const accentText = isHeal ? 'text-teal' : isTemp ? 'text-amethyst' : 'text-crimson';
+  const accentBorder = isHeal
+    ? 'border-teal/40 text-teal'
+    : isTemp
+      ? 'border-amethyst/40 text-amethyst'
+      : 'border-crimson/40 text-crimson';
+  const title = isHeal ? 'Soigner' : isTemp ? 'PV temporaires' : 'Dégâts';
+  const commitLabel = isHeal ? 'Soigner' : isTemp ? 'Poser' : 'Appliquer';
 
   return (
     <div
@@ -56,17 +70,15 @@ export function NumberPad({
           id="number-pad-title"
           className={cn(
             'mb-3 text-center font-title text-meta font-bold uppercase tracking-[0.22em]',
-            isHeal ? 'text-teal' : 'text-crimson',
+            accentText,
           )}
         >
-          {isHeal ? 'Soigner' : 'Dégâts'}
+          {title}
         </h2>
         <div
           className={cn(
             'mb-4 flex h-[64px] items-center justify-center rounded-card-sm border bg-bg-2/60 font-display text-[40px] font-bold tracking-[-0.03em]',
-            isHeal
-              ? 'border-teal/40 text-teal'
-              : 'border-crimson/40 text-crimson',
+            accentBorder,
           )}
           aria-live="polite"
         >
@@ -99,13 +111,13 @@ export function NumberPad({
             </Button>
           )}
           <Button
-            variant={isHeal ? 'primary' : 'danger'}
+            variant={isHeal || isTemp ? 'primary' : 'danger'}
             size="sm"
             onClick={() => onCommit(clamped)}
             disabled={clamped <= 0}
             className="flex-1"
           >
-            {isHeal ? 'Soigner' : 'Appliquer'}
+            {commitLabel}
           </Button>
         </div>
       </div>
