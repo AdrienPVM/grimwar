@@ -124,7 +124,7 @@ function PartyRow({ member, resolveConditionLabel }: PartyRowProps): JSX.Element
           {member.conditions.map((id) => (
             <li
               key={id}
-              className="rounded-pill border border-crimson/40 bg-crimson/[0.08] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.1em] text-crimson"
+              className="rounded-pill border border-crimson/40 bg-crimson/[0.08] px-2 py-0.5 font-title text-[10px] font-bold uppercase tracking-[0.1em] text-crimson lg:text-[11px]"
             >
               {resolveConditionLabel(id)}
             </li>

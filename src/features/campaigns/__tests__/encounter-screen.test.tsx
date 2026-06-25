@@ -429,9 +429,10 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
       ],
     });
     renderScreen();
-    // Le libellé localisé de l'état apparaît (chip sur la carte de la strip ET
-    // dans la vue de groupe — d'où getAllByText).
-    expect(screen.getAllByText('Empoisonné').length).toBeGreaterThan(0);
+    // En combat, le libellé localisé de l'état apparaît sur la carte d'initiative
+    // (source unique : plus de doublon avec une vue de groupe).
+    const turnList = screen.getByRole('list', { name: /Ordre d’initiative/ });
+    expect(within(turnList).getByText('Empoisonné')).toBeInTheDocument();
   });
 });
 
@@ -499,13 +500,13 @@ describe('<EncounterScreen> — hand-off dégâts physiques (step 7b)', () => {
   });
 });
 
-describe('<EncounterScreen> — vue de groupe (step 8)', () => {
-  it('rend la vue de groupe pour un joueur, groupée PJ / adversaires avec PV exacts', () => {
+describe('<EncounterScreen> — vue de groupe (préparation)', () => {
+  it('en préparation (avant initiative), rend la vue de groupe PJ / adversaires avec PV exacts', () => {
     campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
     encounterHolder.encounter = mkEncounter({
-      status: 'active',
-      round: 1,
-      turnIndex: 0,
+      // status planned + init 0 → ordre pas encore établi : c'est LE moment de la
+      // vue de groupe (l'ordre d'initiative n'existe pas encore).
+      status: 'planned',
       participants: [
         mkParticipant({ currentHp: 14, maxHp: 20 }),
         mkParticipant({
@@ -526,6 +527,41 @@ describe('<EncounterScreen> — vue de groupe (step 8)', () => {
     expect(within(party).getByText('14/20')).toBeInTheDocument();
     expect(within(party).getByText('3/7')).toBeInTheDocument();
   });
+
+  it('en combat (initiative lancée), la santé vit dans l’ordre d’initiative — PAS de vue de groupe en doublon', () => {
+    // Garde-fou anti-régression du bug UAT 2026-06-25 : « ordre d'initiative » et
+    // « état du groupe » affichaient exactement la même chose côte à côte.
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({
+      status: 'active',
+      round: 1,
+      turnIndex: 0,
+      participants: [
+        mkParticipant({ initiative: 18, currentHp: 14, maxHp: 20 }),
+        mkParticipant({
+          type: 'monster',
+          characterId: null,
+          instanceId: 'inst-gob',
+          name: 'Gobelin 1',
+          initiative: 12,
+          currentHp: 3,
+          maxHp: 7,
+        }),
+      ],
+    });
+    renderScreen();
+    // La vue de groupe n'est PLUS rendue pendant le combat (zéro doublon).
+    expect(
+      screen.queryByRole('region', { name: 'État de santé des participants' }),
+    ).not.toBeInTheDocument();
+    // …mais la santé reste visible de tous : portée par les cartes d'initiative.
+    const turnList = screen.getByRole('list', { name: /Ordre d’initiative/ });
+    expect(within(turnList).getByText('14/20')).toBeInTheDocument();
+    expect(within(turnList).getByText('3/7')).toBeInTheDocument();
+    // Chaque PV n'apparaît qu'UNE fois à l'écran (anti-duplication).
+    expect(screen.getAllByText('14/20')).toHaveLength(1);
+    expect(screen.getAllByText('3/7')).toHaveLength(1);
+  });
 });
 
 describe('<EncounterScreen> — joueur (non MJ)', () => {
@@ -533,7 +569,7 @@ describe('<EncounterScreen> — joueur (non MJ)', () => {
     campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
     encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
     renderScreen();
-    // Noms présents (strip + vue de groupe → getAllByText).
+    // Noms présents dans l'ordre d'initiative (source unique en combat).
     expect(screen.getAllByText('Lyralei').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Fin du tour' })).not.toBeInTheDocument();

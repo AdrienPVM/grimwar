@@ -382,6 +382,12 @@ export function EncounterScreen(): JSX.Element {
   const hasRolled = encounter.participants.some((p) => p.initiative !== 0);
   const canRoll = isGm && encounter.status === 'planned';
   const isActive = encounter.status === 'active';
+  // Affiche l'ordre d'initiative dès que le combat est lancé (statut ≠ planned) OU
+  // que l'initiative a été jetée en préparation. Sinon (planned + non jeté), la vue
+  // de groupe groupée prend le relais — l'ordre n'existe pas encore. On ne se fie
+  // PAS au seul `hasRolled` (une init légitime à 0 le mettrait à false en plein
+  // combat) : le statut prime.
+  const showInitiativeOrder = encounter.status !== 'planned' || hasRolled;
 
   // Participant ciblé par la modale de contrôle, dérivé EN LIVE du doc : les PV /
   // états affichés se rafraîchissent via `onSnapshot` après chaque application.
@@ -535,44 +541,55 @@ export function EncounterScreen(): JSX.Element {
         />
       ) : null}
 
-      <section className="mt-8">
-        <h2 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          {t('encounters.turnOrder.title')}
-        </h2>
-
-        {encounter.status === 'planned' && !hasRolled ? (
-          <p className="mt-3 font-serif text-body-sm italic text-text-secondary">
-            {t('encounters.turnOrder.empty')}
-          </p>
-        ) : null}
-
-        <ul
-          aria-label={t('encounters.turnOrder.aria')}
-          className="mt-4 flex gap-3 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-x-visible"
-        >
-          {encounter.participants.map((participant, idx) => (
-            <ParticipantCard
-              key={participant.instanceId}
-              participant={participant}
-              isActiveTurn={isActive && idx === encounter.turnIndex}
-              showInit={hasRolled}
-              canReroll={canRoll}
-              rerolling={rerollingId === participant.instanceId}
-              onReroll={() => handleReroll(participant)}
-              // Contrôle MJ (step 7) : monstres / PNJ uniquement, MJ uniquement.
-              // Le PJ se gère sur sa propre fiche.
-              canControl={isGm && participant.type !== 'player'}
-              onControl={() => setControlTargetId(participant.instanceId)}
-              resolveConditionLabel={conditionLabel}
-            />
-          ))}
-        </ul>
-      </section>
-
-      <EncounterPartyView
-        participants={encounter.participants}
-        resolveConditionLabel={conditionLabel}
-      />
+      {showInitiativeOrder ? (
+        // ── Combat : ordre d'initiative — UNE seule source d'info par combattant.
+        // Chaque carte porte l'ordre, le tour actif, les PV ET les états : la vue
+        // de groupe (santé groupée par camp) n'est PAS rendue en parallèle, elle
+        // ferait doublon avec ces cartes (corrigé suite à l'UAT du 2026-06-25 —
+        // « ordre d'initiative » et « état du groupe » affichaient la même chose).
+        <section className="mt-8">
+          <h2 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            {t('encounters.turnOrder.title')}
+          </h2>
+          <ul
+            aria-label={t('encounters.turnOrder.aria')}
+            className="mt-4 flex gap-3 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-x-visible"
+          >
+            {encounter.participants.map((participant, idx) => (
+              <ParticipantCard
+                key={participant.instanceId}
+                participant={participant}
+                isActiveTurn={isActive && idx === encounter.turnIndex}
+                showInit
+                canReroll={canRoll}
+                rerolling={rerollingId === participant.instanceId}
+                onReroll={() => handleReroll(participant)}
+                // Contrôle MJ (step 7) : monstres / PNJ uniquement, MJ uniquement.
+                // Le PJ se gère sur sa propre fiche.
+                canControl={isGm && participant.type !== 'player'}
+                onControl={() => setControlTargetId(participant.instanceId)}
+                resolveConditionLabel={conditionLabel}
+              />
+            ))}
+          </ul>
+        </section>
+      ) : (
+        // ── Préparation (avant le jet d'initiative) : la vue de groupe groupée
+        // PJ / adversaires est ICI à sa place — l'ordre des tours n'existe pas
+        // encore. Dès l'initiative lancée, elle cède la place à l'ordre
+        // d'initiative ci-dessus (santé portée par les cartes) : jamais les deux.
+        <>
+          <EncounterPartyView
+            participants={encounter.participants}
+            resolveConditionLabel={conditionLabel}
+          />
+          {encounter.status === 'planned' ? (
+            <p className="mt-4 text-center font-serif text-body-sm italic text-text-secondary">
+              {t('encounters.turnOrder.empty')}
+            </p>
+          ) : null}
+        </>
+      )}
 
       {isGm && controlTarget ? (
         <ParticipantControlModal
@@ -642,9 +659,11 @@ function ParticipantCard({
       className={cn(
         'flex w-[160px] shrink-0 flex-col gap-2 rounded-card-sm border px-3 py-3',
         'lg:w-[200px] lg:gap-2.5 lg:px-4 lg:py-4',
-        'transition-colors duration-200 ease-base',
+        // `transition-all` car la carte active s'élargit (lg:w) en plus de changer
+        // de bordure — la dominance du tour actif doit se lire à distance (TV).
+        'transition-all duration-200 ease-base',
         isActiveTurn
-          ? 'border-gold bg-gold/[0.1] shadow-[0_0_12px_var(--gold-glow)]'
+          ? 'border-gold bg-gold/[0.12] shadow-[0_0_16px_var(--gold-glow)] lg:w-[248px]'
           : 'border-white-8 bg-bg-3/40',
       )}
     >
@@ -654,7 +673,14 @@ function ParticipantCard({
         </span>
       ) : null}
       <div className="flex items-start justify-between gap-2">
-        <span className="min-w-0 truncate font-serif text-body text-text lg:text-lg">
+        <span
+          className={cn(
+            'min-w-0 truncate font-serif text-body text-text lg:text-lg',
+            // Le combattant dont c'est le tour porte un nom doré, plus grand :
+            // signal n°1 du combat, lisible depuis le canapé / la TV.
+            isActiveTurn && 'text-gold-bright lg:text-2xl',
+          )}
+        >
           {participant.name}
         </span>
       </div>
@@ -695,7 +721,7 @@ function ParticipantCard({
           {participant.conditions.map((id) => (
             <li
               key={id}
-              className="rounded-pill border border-crimson/40 bg-crimson/[0.08] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.1em] text-crimson"
+              className="rounded-pill border border-crimson/40 bg-crimson/[0.08] px-2 py-0.5 font-title text-[10px] font-bold uppercase tracking-[0.1em] text-crimson lg:text-[11px]"
             >
               {resolveConditionLabel(id)}
             </li>

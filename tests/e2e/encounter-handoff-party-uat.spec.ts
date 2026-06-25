@@ -11,14 +11,15 @@ import { seedCampaignEvent, seedEncounter } from './seed-character';
  * sur le tracker (`EncounterScreen`).
  *
  * On seede directement (Admin SDK) une rencontre ACTIVE riche : un PJ allié
- * (« Lyralei ») + 3 gobelins aux PV variés, pour montrer la vue de groupe avec
- * ses DEUX colonnes (« Votre groupe » / « Adversaires »). Puis on injecte deux
- * events `roll` physiques (un jet de dégâts + un jet d'attaque) posés par le
- * joueur : le panneau de hand-off apparaît côté MJ. Le MJ choisit une cible
- * (jamais le joueur) et applique les dégâts ; l'event quitte le panneau.
+ * (« Lyralei ») + 3 gobelins aux PV variés. Pendant le combat, la santé de tous
+ * est portée par l'ordre d'initiative (source UNIQUE — plus de vue de groupe en
+ * doublon, corrigé 2026-06-25). Puis on injecte deux events `roll` physiques (un
+ * jet de dégâts + un jet d'attaque) posés par le joueur : le panneau de hand-off
+ * apparaît côté MJ. Le MJ choisit une cible (jamais le joueur) et applique les
+ * dégâts ; l'event quitte le panneau.
  *
  * Plan UAT (captures `uat-review/jalon-24/24.4-suite/`) :
- *   01-combat-et-groupe.png   — tracker actif + vue de groupe (2 colonnes, PV variés)
+ *   01-combat-tracker.png     — tracker actif : ordre d'initiative + PV variés
  *   02-handoff-panneau.png    — panneau « Dégâts à appliquer » : ligne dégâts + ligne attaque
  *   03-handoff-cibles.png     — « Appliquer à… » déplié : chips de cibles (gobelins)
  *   04-handoff-applique.png    — après application : Gobelin 1 à 0/7 + panneau réduit à l'attaque
@@ -94,12 +95,12 @@ test.describe('UAT 24.4 — hand-off dégâts physiques + vue de groupe', () => 
     await waitForAppReady(page);
     await expect(page.getByText('En cours', { exact: true })).toBeVisible({ timeout: 10_000 });
 
-    // ─── 01 — Combat actif + vue de groupe (2 colonnes).
-    const party = page.getByRole('region', { name: 'État de santé des participants' });
-    await expect(party.getByText('Votre groupe')).toBeVisible();
-    await expect(party.getByText('Adversaires')).toBeVisible();
-    await expect(party.getByText('14/20')).toBeVisible();
-    await captureFull(page, '01-combat-et-groupe.png');
+    // ─── 01 — Combat actif : l'ordre d'initiative porte la santé de TOUS (source
+    // unique ; aucune vue de groupe en doublon pendant le combat — 2026-06-25).
+    const order = page.getByRole('list', { name: /Ordre d.initiative/i });
+    await expect(order.getByText('Lyralei')).toBeVisible();
+    await expect(order.getByText('14/20')).toBeVisible();
+    await captureFull(page, '01-combat-tracker.png');
 
     // ─── Le joueur a lancé physiquement : un jet de dégâts + un jet d'attaque.
     await seedCampaignEvent(cid!, {
@@ -130,10 +131,10 @@ test.describe('UAT 24.4 — hand-off dégâts physiques + vue de groupe', () => 
     await expect(handoff.getByRole('button', { name: 'Gobelin 1' })).toBeVisible();
     await captureFull(page, '03-handoff-cibles.png');
 
-    // ─── 04 — Applique 11 dégâts à Gobelin 1 (5 → 0, clamp). La vue de groupe
+    // ─── 04 — Applique 11 dégâts à Gobelin 1 (5 → 0, clamp). L'ordre d'initiative
     // reflète 0/7 et l'event de dégâts quitte le panneau (reste l'attaque).
     await handoff.getByRole('button', { name: 'Gobelin 1' }).click();
-    await expect(party.getByText('0/7')).toBeVisible({ timeout: 10_000 });
+    await expect(order.getByText('0/7')).toBeVisible({ timeout: 10_000 });
     await expect(handoff.getByText('11 dégâts')).toHaveCount(0);
     await expect(handoff.getByText('Att 17')).toBeVisible();
     await captureFull(page, '04-handoff-applique.png');

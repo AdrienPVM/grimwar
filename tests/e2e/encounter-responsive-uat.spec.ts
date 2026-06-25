@@ -123,28 +123,28 @@ test.describe('UAT design — écran de combat responsive', () => {
     await waitForAppReady(page);
     await expect(page.getByText('En cours', { exact: true })).toBeVisible({ timeout: 10_000 });
 
-    // La strip d'ordre + la vue de groupe doivent être présentes à TOUTES les
-    // largeurs (non-régression structurelle de la dégradation responsive).
+    // Pendant le combat, l'ordre d'initiative est la source UNIQUE de la santé
+    // (plus de vue de groupe en doublon — corrigé 2026-06-25). On vérifie sa
+    // présence ET sa lisibilité (noms + PV) à TOUTES les largeurs (non-régression
+    // structurelle de la dégradation responsive).
     const order = page.getByRole('list', { name: /Ordre d.initiative/i });
-    const party = page.getByRole('region', { name: 'État de santé des participants' });
 
     // ─── 01 — Mobile (390px) : strip en scroll horizontal, mise en page compacte.
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(order).toBeVisible();
-    await expect(party.getByText('Votre groupe')).toBeVisible();
-    await expect(party.getByText('Adversaires')).toBeVisible();
+    await expect(order.getByText('Ogre')).toBeVisible();
     await captureFull(page, '01-mobile-combat.png');
 
     // ─── 02 — Desktop (1440px) : conteneur élargi, strip enroulée, cartes lisibles.
     await page.setViewportSize({ width: 1440, height: 900 });
     await expect(order).toBeVisible();
-    await expect(party.getByText('24/30')).toBeVisible();
+    await expect(order.getByText('24/30')).toBeVisible();
     await captureFull(page, '02-desktop-combat.png');
 
     // ─── 03 — TV (1920px) : conteneur 2xl, exploite toute la largeur.
     await page.setViewportSize({ width: 1920, height: 1080 });
     await expect(order).toBeVisible();
-    await expect(party.getByText('Adversaires')).toBeVisible();
+    await expect(order.getByText('Ogre')).toBeVisible();
     await captureFull(page, '03-tv-combat.png');
   });
 });
