@@ -39,11 +39,11 @@ test.describe('Ancestry — Gnome des forêts (sorts de lignage)', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('heading', { name: 'Illusion mineure' })).toBeVisible();
+    // « Illusion mineure » est un cantrip d'ascendance (à volonté) : lançable
+    // directement même pour un non-caster. Seuls les sorts d'ascendance de
+    // niveau ≥ 1 restent bloqués (compteur d'usages à venir, D12).
     const launchBtn = dialog.getByRole('button', { name: /Lancer/ });
-    await expect(launchBtn).toBeDisabled();
-    await expect(launchBtn).toHaveAttribute(
-      'title',
-      "Lancement des sorts d'ascendance pas encore implémenté.",
-    );
+    await expect(launchBtn).toBeEnabled();
+    await expect(launchBtn).not.toHaveAttribute('title');
   });
 });

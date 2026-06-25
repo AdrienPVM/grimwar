@@ -1,7 +1,12 @@
+import { mkdirSync } from 'node:fs';
+import path from 'node:path';
+
 import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import { seedCharacter, tieflingL1Infernal } from './seed-character';
+
+const UAT_DIR = path.resolve(process.cwd(), 'uat-review/ancestry-cantrip-castable');
 
 /**
  * Plan 13.8 step 37 — Tieffelin Infernal L1 → `Trait de feu` apparaît
@@ -16,7 +21,7 @@ test.describe('Ancestry — Tieffelin Infernal (sorts d\'héritage)', () => {
     );
   });
 
-  test('seed Tieffelin Infernal Roublard L1 → mode Magie → tap Trait de feu (carte + SpellList) ouvre la modale + Lancer désactivé', async ({
+  test('seed Tieffelin Infernal Roublard L1 → mode Magie → tap Trait de feu (carte + SpellList) ouvre la modale + cantrip d\'ascendance lançable', async ({
     page,
   }) => {
     await page.goto('/');
@@ -53,12 +58,22 @@ test.describe('Ancestry — Tieffelin Infernal (sorts d\'héritage)', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('heading', { name: 'Trait de feu' })).toBeVisible();
+    // Trait de feu est un CANTRIP d'ascendance (à volonté, aucun emplacement) :
+    // il est désormais lançable directement (le blocage ne vaut plus que pour
+    // les sorts d'ascendance de niveau ≥ 1, en attente du compteur d'usages).
     const launchBtn = dialog.getByRole('button', { name: /Lancer/ });
-    await expect(launchBtn).toBeDisabled();
-    await expect(launchBtn).toHaveAttribute(
-      'title',
-      "Lancement des sorts d'ascendance pas encore implémenté.",
-    );
+    await expect(launchBtn).toBeEnabled();
+    await expect(launchBtn).not.toHaveAttribute('title');
+    mkdirSync(UAT_DIR, { recursive: true });
+    // Pleine page (contenu exhaustif de la modale) + viewport (ressenti overlay).
+    await page.screenshot({
+      path: path.join(UAT_DIR, '01-trait-de-feu-lancable-pleine-page.png'),
+      fullPage: true,
+    });
+    await page.screenshot({
+      path: path.join(UAT_DIR, '02-trait-de-feu-lancable-overlay.png'),
+      fullPage: false,
+    });
 
     // Ferme la modale, ouvre depuis la SpellList — même modale.
     await dialog.getByRole('button', { name: /Fermer/ }).first().click();

@@ -41,13 +41,11 @@ test.describe('Ancestry — Elfe Drow (sorts de lignage)', () => {
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('heading', { name: 'Lumières dansantes' })).toBeVisible();
-    // Bouton « Lancer » désactivé avec hint (Roublard non-caster + sort
-    // d'ascendance pure → DEBT D12).
+    // « Lumières dansantes » est un cantrip d'ascendance (à volonté) : lançable
+    // directement même pour un Roublard non-caster. Seuls les sorts d'ascendance
+    // de niveau ≥ 1 restent bloqués (compteur d'usages à venir, D12).
     const launchBtn = dialog.getByRole('button', { name: /Lancer/ });
-    await expect(launchBtn).toBeDisabled();
-    await expect(launchBtn).toHaveAttribute(
-      'title',
-      "Lancement des sorts d'ascendance pas encore implémenté.",
-    );
+    await expect(launchBtn).toBeEnabled();
+    await expect(launchBtn).not.toHaveAttribute('title');
   });
 });

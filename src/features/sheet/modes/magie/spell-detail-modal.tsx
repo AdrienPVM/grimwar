@@ -71,10 +71,16 @@ export function SpellDetailModal({
   readOnly,
   onClose,
 }: SpellDetailModalProps): JSX.Element {
-  // Sort d'ascendance pure (aucune classe lanceuse pour ce sort) → bouton
-  // « Lancer » désactivé avec hint, cf. plan 13.8b commit 1 + D12.
+  // Sort d'ascendance pure (aucune classe lanceuse pour ce sort).
   const ancestryOnly = spellcastingClasses.length === 0 && ancestrySource !== null;
-  const castDisabledHint = ancestryOnly
+  // Un cantrip d'ascendance (Prestidigitation, Thaumaturgie…) est à VOLONTÉ :
+  // aucun emplacement, aucun compteur d'usage → on peut le lancer directement
+  // (rolls de dégâts + concentration gérés par `handleCast`, qui supporte déjà
+  // le cas `isCantrip` sans classe lanceuse). Seuls les sorts d'ascendance de
+  // niveau ≥ 1 (typiquement 1×/jour) restent bloqués tant que le compteur
+  // d'usages `featureUsage` n'est pas câblé (D12). Cf. plan 13.8b commit 1.
+  const ancestryLeveledLocked = ancestryOnly && spell.level > 0;
+  const castDisabledHint = ancestryLeveledLocked
     ? t('sheet.magie.cantNotImplementedAncestry')
     : undefined;
   // Choix de la classe lanceuse (si multi-class) : on prend la première par
@@ -387,7 +393,7 @@ export function SpellDetailModal({
               disabled={
                 readOnly ||
                 busy ||
-                ancestryOnly ||
+                ancestryLeveledLocked ||
                 (!isCantrip && availableSlots.length === 0)
               }
               className="flex-1"

@@ -5,6 +5,26 @@ import type { Character } from '@/shared/types/character';
 import type { Ancestry, ClassEntity, Spell } from '@/shared/types/content';
 
 import { MagieMode } from '../magie-mode';
+import { PermissionProvider, type PermissionContextValue } from '../../permissions-context';
+
+// Contexte propriétaire (canEdit) — sans Provider, `usePermissionContext`
+// tombe sur `{ canEdit: false }` qui force la fiche en lecture seule et
+// désactive le bouton « Lancer » indépendamment des règles de sort. Les tests
+// d'interaction doivent donc monter un Provider, comme la vraie fiche.
+const ownerCtx: PermissionContextValue = {
+  canEdit: true,
+  isDM: false,
+  isDMEdit: false,
+  lockedFields: [],
+};
+
+function renderMagie(character: Character) {
+  return render(
+    <PermissionProvider value={ownerCtx}>
+      <MagieMode character={character} />
+    </PermissionProvider>,
+  );
+}
 
 /**
  * Plan 13.8b commit 2 — `MagieMode` orchestre `AncestrySpellsCard` +
@@ -321,53 +341,47 @@ function clickAncestrySpell(spellName: string): void {
 }
 
 describe('<MagieMode> — sort d\'ascendance ouvre la modale détail (non-caster)', () => {
-  it('Tieffelin Infernal Roublard L1 → clic sur Trait de feu ouvre la modale + Lancer désactivé avec hint', () => {
-    render(<MagieMode character={tieflingRogue()} />);
+  // Les sorts d'ascendance testés ici (Trait de feu / Lumières dansantes /
+  // Illusion mineure) sont tous des CANTRIPS (niveau 0, à volonté) : ils sont
+  // lançables directement même pour un Roublard non-caster, car ils ne
+  // consomment ni emplacement ni compteur d'usages. Seuls les sorts
+  // d'ascendance de niveau ≥ 1 (1×/jour) restent désactivés en attendant le
+  // câblage du compteur `featureUsage` (D12).
+  it('Tieffelin Infernal Roublard L1 → clic sur Trait de feu ouvre la modale + cantrip lançable', () => {
+    renderMagie(tieflingRogue());
     clickAncestrySpell('Trait de feu');
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
-    // Nom du sort dans le heading.
     expect(within(dialog).getByRole('heading', { name: 'Trait de feu' })).toBeInTheDocument();
-    // Description visible.
     expect(within(dialog).getByText(/bille de feu/i)).toBeInTheDocument();
-    // Bouton "Lancer" désactivé avec hint title.
     const launchBtn = within(dialog).getByRole('button', { name: /Lancer/ });
-    expect(launchBtn).toBeDisabled();
-    expect(launchBtn).toHaveAttribute(
-      'title',
-      "Lancement des sorts d'ascendance pas encore implémenté.",
-    );
+    expect(launchBtn).toBeEnabled();
+    expect(launchBtn).not.toHaveAttribute('title');
   });
 
-  it('Elfe Drow Roublard L1 → clic sur Lumières dansantes ouvre la modale + Lancer désactivé', () => {
-    render(<MagieMode character={elfDrowRogue()} />);
+  it('Elfe Drow Roublard L1 → clic sur Lumières dansantes ouvre la modale + cantrip lançable', () => {
+    renderMagie(elfDrowRogue());
     clickAncestrySpell('Lumières dansantes');
 
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('heading', { name: 'Lumières dansantes' })).toBeInTheDocument();
     expect(within(dialog).getByText(/lumières scintillantes/i)).toBeInTheDocument();
     const launchBtn = within(dialog).getByRole('button', { name: /Lancer/ });
-    expect(launchBtn).toBeDisabled();
-    expect(launchBtn).toHaveAttribute(
-      'title',
-      "Lancement des sorts d'ascendance pas encore implémenté.",
-    );
+    expect(launchBtn).toBeEnabled();
+    expect(launchBtn).not.toHaveAttribute('title');
   });
 
-  it('Gnome Forêt Roublard L1 → clic sur Illusion mineure ouvre la modale + Lancer désactivé', () => {
-    render(<MagieMode character={gnomeForestRogue()} />);
+  it('Gnome Forêt Roublard L1 → clic sur Illusion mineure ouvre la modale + cantrip lançable', () => {
+    renderMagie(gnomeForestRogue());
     clickAncestrySpell('Illusion mineure');
 
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByRole('heading', { name: 'Illusion mineure' })).toBeInTheDocument();
     expect(within(dialog).getByText(/son ou une image/i)).toBeInTheDocument();
     const launchBtn = within(dialog).getByRole('button', { name: /Lancer/ });
-    expect(launchBtn).toBeDisabled();
-    expect(launchBtn).toHaveAttribute(
-      'title',
-      "Lancement des sorts d'ascendance pas encore implémenté.",
-    );
+    expect(launchBtn).toBeEnabled();
+    expect(launchBtn).not.toHaveAttribute('title');
   });
 });
 
@@ -444,7 +458,7 @@ describe('<MagieMode> — D13e-followup-grant-display : Pacte du grimoire', () =
   }
 
   it('Sorcier L1 avec Pacte du grimoire → Illusion mineure rendue avec chip « Pacte du grimoire » dans la SpellList', () => {
-    render(<MagieMode character={warlockL1WithPactTome()} />);
+    renderMagie(warlockL1WithPactTome());
     // Le sort granté apparaît bien dans la liste (passe par knownSet via la
     // map pactTomeSourceLabels calculée dans MagieMode).
     expect(screen.getByText('Illusion mineure')).toBeInTheDocument();
@@ -453,7 +467,7 @@ describe('<MagieMode> — D13e-followup-grant-display : Pacte du grimoire', () =
   });
 
   it('Sorcier L1 avec Pacte du grimoire → tap sur le sort ouvre la modale avec chip « Pacte du grimoire » dans l\'en-tête', () => {
-    render(<MagieMode character={warlockL1WithPactTome()} />);
+    renderMagie(warlockL1WithPactTome());
     // L'élément `<div>` interne contient le nom ; on remonte au `<button>`
     // parent (l'aria-label n'est pas posé sur la ligne SpellList).
     const nameNode = screen.getByText('Illusion mineure');
