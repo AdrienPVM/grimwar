@@ -1,9 +1,12 @@
 import { useMemo, type JSX } from 'react';
 
+import { rollWithFlags } from '@/features/dice/roll-with-flags';
 import { Button } from '@/shared/components/button';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { abilityModifier } from '@/shared/lib/rules/abilities';
+import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -74,6 +77,30 @@ export function ConcentrationCard({
     });
   }
 
+  /**
+   * Jet de sauvegarde de Constitution pour MAINTENIR la concentration (SRD 5e :
+   * sur dégâts, DD = max(10, moitié des dégâts)). On lance le jet ici via le
+   * moteur de dés (digital = l'app lance ; physique = saisie/Passer → null) ;
+   * le DD dépend des dégâts subis et est rappelé par le toast de dégâts +
+   * `damageRule`, donc le joueur compare lui-même au DD. On ne rompt PAS
+   * automatiquement (on ne connaît pas le DD ici) — le bouton « Rompre » reste
+   * la décision du joueur. Maître de la sauvegarde Con ⇒ +PB.
+   */
+  async function rollConcentrationSave(): Promise<void> {
+    if (readOnly || isUpdating) return;
+    const pb = proficiencyBonus(totalLevel(character.classes));
+    const mod = abilityModifier(character.abilities.con) + (character.saves.con ? pb : 0);
+    await rollWithFlags({
+      character,
+      baseMod: mod,
+      label: t('sheet.combat.concentration.rollSave'),
+      advantage: 'normal',
+      consumeInspiration: async () => {
+        await updateCharacter({ inspiration: false });
+      },
+    });
+  }
+
   return (
     <Card className="border-amethyst/30 bg-amethyst/[0.05]">
       <CardHeader>
@@ -101,15 +128,26 @@ export function ConcentrationCard({
       </p>
 
       {!readOnly && (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => void breakConcentration()}
-          disabled={isUpdating}
-          className="mt-4 w-full"
-        >
-          {t('sheet.combat.concentration.break')}
-        </Button>
+        <div className="mt-4 flex flex-col gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => void rollConcentrationSave()}
+            disabled={isUpdating}
+            className="w-full"
+          >
+            {t('sheet.combat.concentration.rollSave')}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void breakConcentration()}
+            disabled={isUpdating}
+            className="w-full"
+          >
+            {t('sheet.combat.concentration.break')}
+          </Button>
+        </div>
       )}
     </Card>
   );

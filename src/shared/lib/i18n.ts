@@ -426,6 +426,7 @@ export type StringKey =
   | 'sheet.combat.concentration.castAt'
   | 'sheet.combat.concentration.damageRule'
   | 'sheet.combat.concentration.break'
+  | 'sheet.combat.concentration.rollSave'
   | 'sheet.combat.concentration.broken'
   | 'sheet.combat.concentration.unknownSpell'
   | 'sheet.combat.concentration.checkBig'
@@ -1186,6 +1187,11 @@ export type StringKey =
   | 'journal.aggregate.retry'
   // Avoir — form custom item (placeholder neutralisé — plan 13.6 cleanup)
   | 'avoir.customItem.placeholder'
+  // Avoir — résumé d'harmonisation (carte « Harmonisation »)
+  | 'sheet.avoir.attunement.title'
+  | 'sheet.avoir.attunement.count'
+  | 'sheet.avoir.attunement.empty'
+  | 'sheet.avoir.attunement.atCap'
   // Connectivité (jalon 1D — mode offline)
   | 'connectivity.offline.title'
   | 'connectivity.offline.body'
@@ -2263,6 +2269,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.concentration.damageRule':
       'Sur dégât : jet de sauvegarde de Constitution, DD 10 ou la moitié des dégâts subis (le plus élevé).',
     'sheet.combat.concentration.break': 'Rompre la concentration',
+    'sheet.combat.concentration.rollSave': 'Jet de Constitution',
     'sheet.combat.concentration.broken': 'Concentration rompue',
     'sheet.combat.concentration.unknownSpell': 'Sort en cours',
     'sheet.combat.concentration.checkBig': 'DD {dc}',
@@ -3160,6 +3167,10 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.aggregate.retry': 'Réessayer',
     // Avoir
     'avoir.customItem.placeholder': 'Mon trésor personnel',
+    'sheet.avoir.attunement.title': 'Harmonisation',
+    'sheet.avoir.attunement.count': '{count} / {cap} objets liés',
+    'sheet.avoir.attunement.empty': 'Aucun objet harmonisé.',
+    'sheet.avoir.attunement.atCap': 'Limite atteinte',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
     // écritures en file et les rejoue à la reconnexion, le cache Dexie
     // restitue les bundles publics, et le SW Workbox sert les assets.
@@ -4540,6 +4551,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.concentration.damageRule':
       'On taking damage: Constitution saving throw, DC 10 or half the damage taken (whichever is higher).',
     'sheet.combat.concentration.break': 'Break concentration',
+    'sheet.combat.concentration.rollSave': 'Constitution save',
     'sheet.combat.concentration.broken': 'Concentration ended',
     'sheet.combat.concentration.unknownSpell': 'Active spell',
     'sheet.combat.concentration.checkBig': 'DC {dc}',
@@ -5376,6 +5388,10 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.aggregate.error': 'Loading the journal failed.',
     'journal.aggregate.retry': 'Retry',
     'avoir.customItem.placeholder': 'My personal treasure',
+    'sheet.avoir.attunement.title': 'Attunement',
+    'sheet.avoir.attunement.count': '{count} / {cap} attuned items',
+    'sheet.avoir.attunement.empty': 'No attuned items.',
+    'sheet.avoir.attunement.atCap': 'Limit reached',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':
       'Reading still works. Your changes will sync when you reconnect.',

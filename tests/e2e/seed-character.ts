@@ -168,7 +168,9 @@ export interface SeedPreset {
   /** Langues bonus choisies (slugs `languages.ts`, ex. langue extra du Roublard). */
   extraLanguages?: string[];
   /** Items pré-équipés (slug items.json) — utile pour tester les attaques. */
-  inventory?: { items: { contentId: string; equipped: boolean; qty?: number }[] };
+  inventory?: {
+    items: { contentId: string; equipped: boolean; qty?: number; attuned?: boolean }[];
+  };
   /** Personnalité pré-remplie (mode Âme) — chaque champ optionnel, défaut vide. */
   personality?: Partial<{
     trait: string;
@@ -1220,7 +1222,7 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
         contentScope: 'public',
         qty: it.qty ?? 1,
         equipped: it.equipped,
-        attuned: false,
+        attuned: it.attuned ?? false,
         notes: '',
       })),
       coins: { cu: 0, ar: 0, el: 0, or: 0, pl: 0 },

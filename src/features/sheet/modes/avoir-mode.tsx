@@ -4,6 +4,7 @@ import type { Character } from '@/shared/types/character';
 
 import { useSheetReadOnly } from '../permissions-context';
 import { AddItemModal } from './avoir/add-item-modal';
+import { AttunementSummary } from './avoir/attunement-summary';
 import { CoinsSection } from './avoir/coins-section';
 import { InventoryList } from './avoir/inventory-list';
 import { ItemDetailModal } from './avoir/item-detail-modal';
@@ -48,6 +49,10 @@ export function AvoirMode({ character }: AvoirModeProps): JSX.Element {
         level={derived.encumbranceLevel}
       />
       <CoinsSection character={character} readOnly={readOnly} />
+      <AttunementSummary
+        resolvedItems={derived.resolvedItems}
+        attunedCount={derived.attunedCount}
+      />
       <InventoryList
         resolvedItems={derived.resolvedItems}
         onItemSelect={setActiveRow}
