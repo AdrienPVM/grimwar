@@ -1,7 +1,15 @@
 import { useMemo, type JSX } from 'react';
 
-import type { FogPolygon, MapMeta, MapPosition, MapToken } from '@/shared/types/map';
+import type {
+  AoeTemplate,
+  FogPolygon,
+  MapMeta,
+  MapPosition,
+  MapToken,
+} from '@/shared/types/map';
 
+import { AoeLayer } from './aoe-layer';
+import { scaleAoeDimensions } from './aoe-state';
 import { FogLayer } from './fog-layer';
 import { pointsToSvgString } from './fog-state';
 import { LightLayer } from './light-layer';
@@ -91,6 +99,17 @@ export function MapScene({
     return m;
   }, [tokens]);
 
+  // Templates AoE : leurs `dimensions` sont stockées en PIEDS (schéma canonique),
+  // mais `AoeLayer` trace en pixels viewBox. On convertit via l'échelle réelle
+  // de la carte (gridSize/feetPerSquare) — même conversion que `tokenVisionPx`.
+  const aoesPx = useMemo<readonly AoeTemplate[]>(() => {
+    const feetScale = map.gridSize / map.feetPerSquare;
+    return map.aoeTemplates.map((aoe) => ({
+      ...aoe,
+      dimensions: scaleAoeDimensions(aoe.dimensions, feetScale),
+    }));
+  }, [map.aoeTemplates, map.gridSize, map.feetPerSquare]);
+
   return (
     <>
       {imageHref && (
@@ -160,6 +179,11 @@ export function MapScene({
       {map.lightingEnabled && (
         <LightLayer lights={map.lightSources} tokenPositions={tokenPositions} />
       )}
+
+      {/* Templates AoE — overlays tactiques posés par le MJ. Rendus au-dessus du
+          décor (fog/lumière) pour rester visibles, sous les tokens (dessinés par
+          l'écran parent). Read-only ici : le retrait passe par « Effacer AoE ». */}
+      {aoesPx.length > 0 && <AoeLayer aoes={aoesPx} />}
     </>
   );
 }

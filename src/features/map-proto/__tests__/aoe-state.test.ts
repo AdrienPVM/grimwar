@@ -12,6 +12,7 @@ import {
   DEFAULT_AOE_DIMENSIONS,
   removeAoe,
   rotateAoe,
+  scaleAoeDimensions,
 } from '../aoe-state';
 
 describe('aoe-state — DEFAULT_AOE_DIMENSIONS', () => {
@@ -121,5 +122,29 @@ describe('aoe-state — geometry helpers', () => {
     expect(pts).toHaveLength(4);
     expect(pts[0]).toEqual({ x: -50, y: -50 });
     expect(pts[2]).toEqual({ x: 50, y: 50 });
+  });
+});
+
+describe('aoe-state — scaleAoeDimensions (pieds → px)', () => {
+  it("met à l'échelle les longueurs (radius/length/width/side) par feetScale", () => {
+    // Carte 70 px/case, 5 ft/case → 14 px/ft.
+    expect(scaleAoeDimensions({ radius: 20 }, 14)).toEqual({ radius: 280 });
+    expect(scaleAoeDimensions({ length: 100, width: 5 }, 14)).toEqual({
+      length: 1400,
+      width: 70,
+    });
+    expect(scaleAoeDimensions({ side: 15 }, 14)).toEqual({ side: 210 });
+  });
+
+  it("laisse les angles intacts (angleDeg n'est pas une longueur)", () => {
+    expect(scaleAoeDimensions({ radius: 15, angleDeg: 53.13 }, 14)).toEqual({
+      radius: 210,
+      angleDeg: 53.13,
+    });
+  });
+
+  it('retourne une copie inchangée pour un feetScale non positif', () => {
+    expect(scaleAoeDimensions({ radius: 20 }, 0)).toEqual({ radius: 20 });
+    expect(scaleAoeDimensions({ radius: 20 }, -1)).toEqual({ radius: 20 });
   });
 });

@@ -47,6 +47,34 @@ export const DEFAULT_AOE_DIMENSIONS: Record<AoeShape, Record<string, number>> = 
   cube: { side: 200 },
 };
 
+/**
+ * Clés de `dimensions` exprimées en PIEDS (à convertir en px au rendu via
+ * l'échelle de la carte). `angleDeg` en est exclue : c'est un angle, pas une
+ * longueur — elle ne se met jamais à l'échelle.
+ */
+const FEET_DIMENSION_KEYS = new Set(['radius', 'length', 'width', 'side']);
+
+/**
+ * Convertit les dimensions d'un AoE de PIEDS vers PIXELS viewBox.
+ *
+ * Le schéma `AoeTemplate.dimensions` est canoniquement en pieds (cf. `map.ts`),
+ * mais `aoe-layer.tsx` trace en pixels. `feetScale` = px par pied de la carte
+ * (`gridSize / feetPerSquare`) ; on multiplie chaque longueur, en laissant les
+ * angles intacts. Un `feetScale` non positif (carte dégénérée) laisse les
+ * dimensions telles quelles (pas de division/multiplication absurde).
+ */
+export function scaleAoeDimensions(
+  dimensions: Record<string, number>,
+  feetScale: number,
+): Record<string, number> {
+  if (feetScale <= 0) return { ...dimensions };
+  const out: Record<string, number> = {};
+  for (const [key, value] of Object.entries(dimensions)) {
+    out[key] = FEET_DIMENSION_KEYS.has(key) ? value * feetScale : value;
+  }
+  return out;
+}
+
 /** Couleurs par défaut par forme (overrides plus tard, par sort). */
 export const DEFAULT_AOE_COLORS: Record<AoeShape, string> = {
   sphere: '#fb7185', // rose feu (Boule de feu, Souffle de glace…)

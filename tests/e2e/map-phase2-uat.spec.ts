@@ -131,6 +131,16 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
       timeout: 5000,
     });
 
+    // 9a. Le template AoE doit être DESSINÉ sur la carte (la couche AoE est
+    // câblée dans MapScene → live + TV). Avant ce fix, « Ajouter une sphère »
+    // incrémentait le compteur mais ne rendait rien. Le cercle est tracé à
+    // l'échelle réelle (20 ft → 280 px sur une carte 70 px/case).
+    const aoeLayer = page.locator('[data-testid="aoe-layer"]');
+    await expect(aoeLayer).toBeVisible({ timeout: 5000 });
+    const aoeCircle = aoeLayer.locator('circle').first();
+    await expect(aoeCircle).toBeVisible();
+    expect(Number(await aoeCircle.getAttribute('r'))).toBeGreaterThan(100);
+
     await takeStepScreenshot(page, testInfo, 'live-populated');
 
     // Pas d'erreur d'écriture surfacée.

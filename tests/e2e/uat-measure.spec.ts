@@ -16,7 +16,7 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
  *
  * Sans émulateur, il se skip proprement.
  */
-const OUT = path.resolve(process.cwd(), 'uat-review');
+const OUT = path.resolve(process.cwd(), 'uat-review', 'mesure');
 
 test.describe('UAT — mesure de distance (carte live)', () => {
   test.beforeAll(async () => {
