@@ -299,6 +299,8 @@ export type StringKey =
   | 'sheet.essence.proficiencies.armor'
   | 'sheet.essence.proficiencies.weapons'
   | 'sheet.essence.proficiencies.tools'
+  | 'sheet.essence.originFeat.title'
+  | 'sheet.essence.originFeat.openLabel'
   | 'sheet.mode.combat'
   | 'sheet.mode.essence'
   | 'sheet.mode.magie'
@@ -1954,6 +1956,11 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.proficiencies.armor': 'Armures',
     'sheet.essence.proficiencies.weapons': 'Armes',
     'sheet.essence.proficiencies.tools': 'Outils',
+    // « Don d'origines » : terme officiel du SRD FR (FR_SRD_CC_v5.2.1.txt,
+    // titres de section l. 9500/9506/9534). Le don lui-même garde son nom
+    // depuis le bundle (ex. « Don : Initié à la magie (Clerc) »).
+    'sheet.essence.originFeat.title': "Don d'origines",
+    'sheet.essence.originFeat.openLabel': "Don d'origines : {name}",
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magie',
@@ -4040,6 +4047,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.proficiencies.armor': 'Armor',
     'sheet.essence.proficiencies.weapons': 'Weapons',
     'sheet.essence.proficiencies.tools': 'Tools',
+    'sheet.essence.originFeat.title': 'Origin Feat',
+    'sheet.essence.originFeat.openLabel': 'Origin Feat: {name}',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magic',

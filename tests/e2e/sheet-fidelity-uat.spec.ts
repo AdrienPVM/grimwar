@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import {
+  clericL1Protector,
   fighterL1MasteryDefense,
   rogueL1Expertise,
   seedCharacter,
@@ -120,6 +121,49 @@ test.describe('UAT — fidélité fiche L1 (Perception passive / Maîtrises / La
     await page.screenshot({
       path: 'uat-review/sheet-fidelity/04-langues-roublard-bonus.png',
       fullPage: true,
+    });
+  });
+
+  test('Clerc : carte « Don d\'origines » (Initié à la magie) + modale détail', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+    const { charId } = await seedCharacter(page, clericL1Protector);
+    await page.goto(`/character/${charId}`);
+    await expect(page.getByText(clericL1Protector.name).first()).toBeVisible({
+      timeout: 10_000,
+    });
+
+    await page.getByRole('tab', { name: /^Essence$/i }).click();
+    const panel = page.locator('#sheet-mode-panel-essence');
+    await expect(panel).toBeVisible();
+
+    // Carte « Don d'origines » : titre de catégorie SRD FR + nom exact du don de
+    // l'historique Acolyte (depuis backgrounds.json, pas une constante). Le titre
+    // est ciblé par rôle (le mot « don d'origines » réapparaît dans la prose du
+    // don → collision strict-mode si on matche par texte).
+    await expect(panel.getByRole('heading', { name: /Don d'origines/ })).toBeVisible();
+    await expect(panel.getByText('Don : Initié à la magie (Clerc)')).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/sheet-fidelity/05-don-origine-clerc.png',
+      fullPage: true,
+    });
+
+    // Tap → modale détail avec la description complète du don.
+    await panel.getByRole('button', { name: /Don d'origines : / }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('heading', { name: /Initié à la magie \(Clerc\)/ })).toBeVisible();
+    // Pleine page (contenu textuel) + viewport (ressenti overlay) — cf. règle
+    // « captures de modale » du CLAUDE.md.
+    await page.screenshot({
+      path: 'uat-review/sheet-fidelity/06-don-origine-modale-full.png',
+      fullPage: true,
+    });
+    await page.screenshot({
+      path: 'uat-review/sheet-fidelity/06-don-origine-modale-viewport.png',
+      fullPage: false,
     });
   });
 });
