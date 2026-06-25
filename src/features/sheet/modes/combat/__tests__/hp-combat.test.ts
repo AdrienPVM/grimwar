@@ -5,6 +5,7 @@ import {
   applyDeathSaveOutcome,
   applyHeal,
   clampHpCurrent,
+  concentrationSaveDc,
   HP_BAND_LABEL,
   hpHealthBand,
   isSheetReadOnly,
@@ -88,6 +89,31 @@ describe('applyDamage', () => {
   it('damage négatif clampé à 0 (UI safe)', () => {
     const r = applyDamage({ current: 10, max: 30, temp: 0 }, -5);
     expect(r.hp).toEqual({ current: 10, max: 30, temp: 0 });
+  });
+});
+
+describe('concentrationSaveDc', () => {
+  // SRD 5.2.1 : DD = max(10, floor(dégâts / 2)), plafonné à 30.
+  it('petits dégâts → plancher DD 10', () => {
+    expect(concentrationSaveDc(1)).toBe(10);
+    expect(concentrationSaveDc(19)).toBe(10); // floor(19/2)=9 < 10
+    expect(concentrationSaveDc(20)).toBe(10); // floor(20/2)=10
+  });
+
+  it('dégâts moyens → moitié arrondie à l’inférieur', () => {
+    expect(concentrationSaveDc(21)).toBe(10); // floor(21/2)=10
+    expect(concentrationSaveDc(22)).toBe(11); // floor(22/2)=11
+    expect(concentrationSaveDc(45)).toBe(22); // floor(45/2)=22
+  });
+
+  it('gros dégâts → plafonné à DD 30', () => {
+    expect(concentrationSaveDc(60)).toBe(30);
+    expect(concentrationSaveDc(200)).toBe(30);
+  });
+
+  it('dégâts négatifs ou nuls → plancher DD 10', () => {
+    expect(concentrationSaveDc(0)).toBe(10);
+    expect(concentrationSaveDc(-5)).toBe(10);
   });
 });
 

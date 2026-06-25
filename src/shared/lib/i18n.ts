@@ -333,6 +333,9 @@ export type StringKey =
   | 'sheet.combat.concentration.break'
   | 'sheet.combat.concentration.broken'
   | 'sheet.combat.concentration.unknownSpell'
+  | 'sheet.combat.concentration.checkBig'
+  | 'sheet.combat.concentration.checkSub'
+  | 'sheet.combat.concentration.lostUnconscious'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -2057,6 +2060,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.concentration.break': 'Rompre la concentration',
     'sheet.combat.concentration.broken': 'Concentration rompue',
     'sheet.combat.concentration.unknownSpell': 'Sort en cours',
+    'sheet.combat.concentration.checkBig': 'DD {dc}',
+    'sheet.combat.concentration.checkSub':
+      'Jet de sauvegarde de Constitution pour la maintenir.',
+    'sheet.combat.concentration.lostUnconscious': 'Concentration rompue · inconscient',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -4219,6 +4226,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.concentration.break': 'Break concentration',
     'sheet.combat.concentration.broken': 'Concentration ended',
     'sheet.combat.concentration.unknownSpell': 'Active spell',
+    'sheet.combat.concentration.checkBig': 'DC {dc}',
+    'sheet.combat.concentration.checkSub': 'Constitution saving throw to maintain it.',
+    'sheet.combat.concentration.lostUnconscious': 'Concentration ended · unconscious',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',

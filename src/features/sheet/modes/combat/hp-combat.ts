@@ -88,6 +88,21 @@ export function applyDamage(hp: HpVitals, amount: number): ApplyDamageResult {
   };
 }
 
+/**
+ * DD du jet de sauvegarde de Constitution pour maintenir la Concentration après
+ * avoir subi des dégâts (SRD 5.2.1, glossaire « Concentration ») : « Le DD est
+ * égal à 10 ou à la moitié des dégâts subis (arrondir à l'inférieur), le nombre
+ * le plus élevé étant retenu, jusqu'à un DD maximal de 30. »
+ *
+ * `damage` = montant de dégâts effectivement subis. Le calcul se fonde sur les
+ * dégâts subis (les PV temporaires absorbent mais on « subit » quand même les
+ * dégâts au sens de la Concentration). Valeurs négatives/nulles → plancher 10.
+ */
+export function concentrationSaveDc(damage: number): number {
+  const half = Math.floor(Math.max(0, damage) / 2);
+  return Math.min(30, Math.max(10, half));
+}
+
 /** Soigne — jamais au-dessus de hp.max, jamais touche à hp.temp. */
 export function applyHeal(hp: HpVitals, amount: number): HpVitals {
   const heal = Math.max(0, Math.floor(amount));

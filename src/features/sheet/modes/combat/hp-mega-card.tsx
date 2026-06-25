@@ -3,11 +3,19 @@ import { useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
 import { useUpdateCharacter } from '../../use-update-character';
-import { applyDamage, applyHeal, HP_BAND_LABEL, hpHealthBand, type HpHealthBand } from './hp-combat';
+import {
+  applyDamage,
+  applyHeal,
+  concentrationSaveDc,
+  HP_BAND_LABEL,
+  hpHealthBand,
+  type HpHealthBand,
+} from './hp-combat';
 import { NumberPad } from './number-pad';
 
 /**
@@ -50,7 +58,17 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
     if (readOnly || delta === 0) return;
     if (delta < 0) {
       const result = applyDamage(hp, -delta);
-      await updateCharacter({ hp: result.hp });
+      // Concentration (SRD 5.2.1) : subir des dégâts impose un JS Constitution ;
+      // tomber à 0 PV (Inconscient) ou la mort y met fin. On combine la fin de
+      // concentration dans le MÊME write que les PV (un seul patch). `current
+      // Concentration` n'est pas dans l'auto-diff → aucun événement généré.
+      const isConcentrating = character.currentConcentration !== null;
+      const droppedToZero = result.hp.current === 0 && hp.current > 0;
+      const patch: Partial<Character> =
+        isConcentrating && droppedToZero
+          ? { hp: result.hp, currentConcentration: null }
+          : { hp: result.hp };
+      await updateCharacter(patch);
       showToast({
         kind: 'damage',
         title: 'Dégâts subis',
@@ -65,6 +83,27 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
           sub: 'Dégâts massifs — pas de jet de mort',
           durationMs: 3000,
         });
+      }
+      // Rappel du jet de Concentration (ou de sa fin si le PJ tombe à 0 PV).
+      if (isConcentrating) {
+        if (droppedToZero) {
+          showToast({
+            kind: 'info',
+            title: t('sheet.combat.concentration.lostUnconscious'),
+            durationMs: 3000,
+          });
+        } else {
+          showToast({
+            kind: 'info',
+            title: t('sheet.combat.concentration.title'),
+            big: t('sheet.combat.concentration.checkBig').replace(
+              '{dc}',
+              String(concentrationSaveDc(-delta)),
+            ),
+            sub: t('sheet.combat.concentration.checkSub'),
+            durationMs: 3200,
+          });
+        }
       }
     } else {
       const next = applyHeal(hp, delta);

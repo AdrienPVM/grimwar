@@ -14,6 +14,13 @@ const CONCENTRATING_CLERIC: SeedPreset = {
   currentConcentration: { spellId: 'benediction', slotLevel: 1 },
 };
 
+/** Concentrée mais à 1 PV : un seul « −1 » la fait tomber à 0 (Inconscient). */
+const DYING_CONCENTRATING_CLERIC: SeedPreset = {
+  ...CONCENTRATING_CLERIC,
+  name: 'Astrid à l’Agonie',
+  hp: { current: 1, max: 10 },
+};
+
 /**
  * UAT visuel — carte « Concentration » (mode Combat). `currentConcentration`
  * était POSÉ au lancement d'un sort à concentration mais affiché nulle part, et
@@ -89,5 +96,48 @@ test.describe('UAT — Concentration (mode Combat)', () => {
       path: 'uat-review/concentration/03-apres-rupture.png',
       fullPage: true,
     });
+  });
+
+  test('Subir des dégâts en concentration → rappel du jet de Constitution', async ({ page }) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+    const { charId } = await seedCharacter(page, CONCENTRATING_CLERIC);
+    await page.goto(`/character/${charId}`);
+    await expect(page.getByText(CONCENTRATING_CLERIC.name).first()).toBeVisible({
+      timeout: 10_000,
+    });
+
+    const combat = page.locator('#sheet-mode-panel-combat');
+    await expect(combat).toBeVisible();
+
+    // Tap « −1 » (10 → 9 PV, non létal) → toast de rappel du jet (DD 10, plancher).
+    await page.getByRole('button', { name: /^Subir 1 dégât/i }).click();
+    await expect(
+      page.getByText('Jet de sauvegarde de Constitution pour la maintenir.'),
+    ).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/concentration/04-rappel-jet-constitution.png',
+      fullPage: true,
+    });
+  });
+
+  test('Tomber à 0 PV en concentration → la concentration prend fin', async ({ page }) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+    const { charId } = await seedCharacter(page, DYING_CONCENTRATING_CLERIC);
+    await page.goto(`/character/${charId}`);
+    await expect(page.getByText(DYING_CONCENTRATING_CLERIC.name).first()).toBeVisible({
+      timeout: 10_000,
+    });
+
+    const combat = page.locator('#sheet-mode-panel-combat');
+    await expect(combat).toBeVisible();
+    await expect(combat.getByText('Bénédiction', { exact: true })).toBeVisible();
+
+    // Tap « −1 » : 1 → 0 PV. Inconscient → la concentration prend fin (SRD).
+    await page.getByRole('button', { name: /^Subir 1 dégât/i }).click();
+
+    // La carte Concentration disparaît (currentConcentration → null).
+    await expect(combat.getByText('Bénédiction', { exact: true })).toHaveCount(0);
   });
 });
