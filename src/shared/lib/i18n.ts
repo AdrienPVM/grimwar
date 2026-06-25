@@ -295,6 +295,10 @@ export type StringKey =
   | 'sheet.stat.speed'
   | 'sheet.stat.passivePerception'
   | 'sheet.combat.hitDice.title'
+  | 'sheet.combat.hitDice.spend'
+  | 'sheet.combat.hitDice.spending'
+  | 'sheet.combat.hitDice.spendLabel'
+  | 'sheet.combat.hitDice.restToast'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -1979,6 +1983,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.speed': 'Vit.',
     'sheet.stat.passivePerception': 'Perc. passive',
     'sheet.combat.hitDice.title': 'Dés de vie',
+    'sheet.combat.hitDice.spend': 'Repos court',
+    'sheet.combat.hitDice.spending': '…',
+    'sheet.combat.hitDice.spendLabel': 'Dépenser un dé de vie ({class})',
+    'sheet.combat.hitDice.restToast': 'Repos court',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -4101,6 +4109,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.speed': 'Spd',
     'sheet.stat.passivePerception': 'Pass. perc.',
     'sheet.combat.hitDice.title': 'Hit Dice',
+    'sheet.combat.hitDice.spend': 'Short rest',
+    'sheet.combat.hitDice.spending': '…',
+    'sheet.combat.hitDice.spendLabel': 'Spend a hit die ({class})',
+    'sheet.combat.hitDice.restToast': 'Short rest',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',

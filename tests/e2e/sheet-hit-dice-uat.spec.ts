@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
-import { fighterL1MasteryDefense, seedCharacter } from './seed-character';
+import { fighterL1MasteryDefense, seedCharacter, type SeedPreset } from './seed-character';
+
+/** Guerrier blessé (PV 4/12) → le repos court a un soin visible à dépenser. */
+const WOUNDED_FIGHTER: SeedPreset = {
+  ...fighterL1MasteryDefense,
+  name: 'Sigrid la Blessée',
+  hp: { current: 4, max: 12 },
+};
 
 /**
  * UAT visuel — carte « Dés de vie » (mode Combat). Le pool de dés de vie
@@ -39,5 +46,34 @@ test.describe('UAT — Dés de vie (mode Combat)', () => {
     await expect(combat.getByText('1d10', { exact: true })).toBeVisible();
 
     await page.screenshot({ path: 'uat-review/hit-dice/01-des-de-vie-guerrier.png', fullPage: true });
+  });
+
+  test('Repos court : dépenser un dé soigne et décrémente le pool (mode digital)', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+    const { charId } = await seedCharacter(page, WOUNDED_FIGHTER);
+    await page.goto(`/character/${charId}`);
+    await expect(page.getByText(WOUNDED_FIGHTER.name).first()).toBeVisible({ timeout: 10_000 });
+
+    const combat = page.locator('#sheet-mode-panel-combat');
+    await expect(combat).toBeVisible();
+
+    // Avant : pool plein (1/1) + bouton « Repos court » disponible (PV non pleins).
+    await expect(combat.getByText('1 / 1')).toBeVisible();
+    const spendButton = combat.getByRole('button', {
+      name: 'Dépenser un dé de vie (Guerrier)',
+    });
+    await expect(spendButton).toBeVisible();
+    await page.screenshot({ path: 'uat-review/hit-dice/02-repos-court-avant.png', fullPage: true });
+
+    // Dépense (digital → l'app lance instantanément, pas de modale).
+    await spendButton.click();
+
+    // Après : le dé est consommé (0 / 1) et le bouton disparaît (plus de dé).
+    await expect(combat.getByText('0 / 1')).toBeVisible();
+    await expect(spendButton).toHaveCount(0);
+    await page.screenshot({ path: 'uat-review/hit-dice/03-repos-court-apres.png', fullPage: true });
   });
 });

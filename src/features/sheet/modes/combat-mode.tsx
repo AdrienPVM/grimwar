@@ -49,7 +49,7 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
         <HpMegaCard character={character} readOnly={readOnly} />
       </div>
       <ConditionsRow character={character} readOnly={readOnly} />
-      <HitDiceCard character={character} />
+      <HitDiceCard character={character} readOnly={readOnly} />
       {hasSpellSlots && <SlotsCompact character={character} readOnly={readOnly} />}
       <div className="xl:col-span-2">
         <AttacksList character={character} readOnly={readOnly} />

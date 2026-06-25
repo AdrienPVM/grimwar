@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
@@ -10,8 +11,14 @@ import classesBundle from '../../../../../../public/data/classes.json';
 
 /**
  * Carte « Dés de vie » — Cat. 2 (identité : nom de classe résolu + dé exacts) +
- * Cat. 4 (le ratio courant/max affiché au NOMBRE). Lecture seule.
+ * Cat. 4 (ratio courant/max au NOMBRE) + repos court (dépense d'un dé → patch
+ * PV + décrément, mode-aware via `rollExpression`).
  */
+
+const { rollExpressionMock, updateCharacterMock } = vi.hoisted(() => ({
+  rollExpressionMock: vi.fn(),
+  updateCharacterMock: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
@@ -22,7 +29,29 @@ vi.mock('@/shared/hooks/use-content', () => ({
   },
 }));
 
-function buildCharacter(hitDice: Character['hitDice']): Character {
+vi.mock('@/features/dice/use-dice', () => ({
+  useDice: () => ({ rollExpression: rollExpressionMock }),
+}));
+
+vi.mock('@/features/sheet/use-update-character', () => ({
+  useUpdateCharacter: () => ({
+    updateCharacter: updateCharacterMock,
+    isUpdating: false,
+    error: null,
+  }),
+}));
+
+vi.mock('@/shared/lib/slices/toast-slice', () => ({ showToast: vi.fn() }));
+
+beforeEach(() => {
+  rollExpressionMock.mockReset();
+  updateCharacterMock.mockClear();
+});
+
+function buildCharacter(
+  hitDice: Character['hitDice'],
+  hp: Character['hp'] = { current: 12, max: 12, temp: 0 },
+): Character {
   return {
     id: 'hd',
     name: 'Hd',
@@ -48,7 +77,7 @@ function buildCharacter(hitDice: Character['hitDice']): Character {
     abilities: { for: 16, dex: 12, con: 14, int: 10, sag: 10, cha: 10 },
     saves: { for: true, dex: false, con: true, int: false, sag: false, cha: false },
     skills: {},
-    hp: { current: 12, max: 12, temp: 0 },
+    hp,
     ac: 16,
     speed: 30,
     initiative: 1,
@@ -110,6 +139,74 @@ describe('<HitDiceCard>', () => {
   it('ne rend rien sans dé de vie', () => {
     const { container } = render(<HitDiceCard character={buildCharacter([])} />);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('PV pleins : pas de bouton « Repos court » (un dé gaspillé serait inutile)', () => {
+    render(
+      <HitDiceCard
+        character={buildCharacter([{ classId: 'fighter', current: 1, max: 1, die: 'd10' }], {
+          current: 12,
+          max: 12,
+          temp: 0,
+        })}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /Repos court|hit die/i })).not.toBeInTheDocument();
+  });
+
+  it('lecture seule : pas de bouton de dépense', () => {
+    render(
+      <HitDiceCard
+        readOnly
+        character={buildCharacter([{ classId: 'fighter', current: 1, max: 1, die: 'd10' }], {
+          current: 5,
+          max: 12,
+          temp: 0,
+        })}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /Dépenser un dé/i })).not.toBeInTheDocument();
+  });
+
+  it('repos court : roule 1d10+CON, applique le patch PV + décrément', async () => {
+    const user = userEvent.setup();
+    // CON 14 → +2 ; formule attendue « 1d10+2 ». rollExpression rend total 7.
+    rollExpressionMock.mockResolvedValue({ total: 7, rawFaces: [5], modifier: 2 });
+    render(
+      <HitDiceCard
+        character={buildCharacter([{ classId: 'fighter', current: 1, max: 1, die: 'd10' }], {
+          current: 5,
+          max: 20,
+          temp: 0,
+        })}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Dépenser un dé de vie (Guerrier)' }));
+    expect(rollExpressionMock).toHaveBeenCalledWith(
+      '1d10+2',
+      expect.objectContaining({ characterId: 'hd', kind: 'custom', silent: true }),
+    );
+    expect(updateCharacterMock).toHaveBeenCalledTimes(1);
+    const patch = updateCharacterMock.mock.calls[0]![0];
+    expect(patch.hp.current).toBe(12); // 5 + 7
+    expect(patch.hitDice[0].current).toBe(0); // 1 → 0
+  });
+
+  it('mode physique « Passer » (rollExpression → null) : aucun patch', async () => {
+    const user = userEvent.setup();
+    rollExpressionMock.mockResolvedValue(null);
+    render(
+      <HitDiceCard
+        character={buildCharacter([{ classId: 'fighter', current: 1, max: 1, die: 'd10' }], {
+          current: 5,
+          max: 20,
+          temp: 0,
+        })}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Dépenser un dé de vie (Guerrier)' }));
+    expect(rollExpressionMock).toHaveBeenCalledTimes(1);
+    expect(updateCharacterMock).not.toHaveBeenCalled();
   });
 
   it('ne laisse fuir aucun anglais interdit dans le rendu FR', () => {
