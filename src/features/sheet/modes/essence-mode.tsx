@@ -3,6 +3,7 @@ import type { Character } from '@/shared/types/character';
 
 import { useSheetReadOnly } from '../permissions-context';
 import { useInventoryDerived } from './avoir/use-inventory-derived';
+import { AncestryTraitsCard } from './essence/ancestry-traits-card';
 import { DivineOrderCard } from './essence/divine-order-card';
 import { EssenceHeader } from './essence/essence-header';
 import { Hexagram } from './essence/hexagram';
@@ -61,6 +62,7 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
           extraSaveBonus={extraSaveBonus}
         />
       </div>
+      <AncestryTraitsCard character={character} />
       <DivineOrderCard character={character} />
       <PrimalOrderCard character={character} />
       <InvocationsCard character={character} />

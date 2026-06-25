@@ -301,6 +301,8 @@ export type StringKey =
   | 'sheet.essence.proficiencies.tools'
   | 'sheet.essence.originFeat.title'
   | 'sheet.essence.originFeat.openLabel'
+  | 'sheet.essence.ancestryTraits.title'
+  | 'sheet.essence.ancestryTraits.openLabel'
   | 'sheet.mode.combat'
   | 'sheet.mode.essence'
   | 'sheet.mode.magie'
@@ -1982,6 +1984,8 @@ const STRINGS: Record<Locale, Dict> = {
     // depuis le bundle (ex. « Don : Initié à la magie (Clerc) »).
     'sheet.essence.originFeat.title': "Don d'origines",
     'sheet.essence.originFeat.openLabel': "Don d'origines : {name}",
+    'sheet.essence.ancestryTraits.title': "Traits d'ascendance",
+    'sheet.essence.ancestryTraits.openLabel': 'Trait : {name}',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magie',
@@ -4095,6 +4099,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.proficiencies.tools': 'Tools',
     'sheet.essence.originFeat.title': 'Origin Feat',
     'sheet.essence.originFeat.openLabel': 'Origin Feat: {name}',
+    'sheet.essence.ancestryTraits.title': 'Ancestry traits',
+    'sheet.essence.ancestryTraits.openLabel': 'Trait: {name}',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magic',
