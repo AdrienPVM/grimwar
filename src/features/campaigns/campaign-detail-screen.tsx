@@ -2,6 +2,8 @@ import { useMemo, useState, type JSX } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { QuickNotes } from '@/features/dm-view/quick-notes';
+import { SecretRollButton } from '@/features/dm-view/secret-roll-button';
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
 import { Chip } from '@/shared/components/chip';
@@ -283,6 +285,25 @@ export function CampaignDetailScreen(): JSX.Element {
             ))}
           </ul>
         </section>
+
+        {/* Outils du meneur — jet secret (d20 sous le paravent) + bloc-notes
+            volatil, cloisonné par campagne. MJ-only : ces outils n'ont de sens
+            que côté meneur, et le jet secret ne doit jamais fuiter aux joueurs.
+            Réutilise les composants de la vue MJ (autrefois seulement à `/dm`). */}
+        {isGm ? (
+          <section
+            className="mt-10"
+            aria-label={t('campaigns.detail.dmTools.aria')}
+          >
+            <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+              {t('campaigns.detail.dmTools.title')}
+            </h2>
+            <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <SecretRollButton />
+              <QuickNotes scopeKey={campaign.id} />
+            </div>
+          </section>
+        ) : null}
 
         {isGm && user ? (
           <CampaignEventFeed

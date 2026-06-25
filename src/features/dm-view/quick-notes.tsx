@@ -6,21 +6,32 @@ import { t } from '@/shared/lib/i18n';
 
 const STORAGE_KEY_PREFIX = 'grimwar.dm.notes.v1.';
 
+interface QuickNotesProps {
+  /**
+   * Suffixe de portée (ex. `campaignId`) pour cloisonner les notes par
+   * campagne. Absent → scratchpad global du MJ (comportement S1 d'origine).
+   * Permet d'avoir un bloc-notes distinct par table sans collision.
+   */
+  scopeKey?: string;
+}
+
 /**
- * Scratchpad MJ — texte libre persisté en localStorage (clé par user uid).
+ * Scratchpad MJ — texte libre persisté en localStorage (clé par user uid,
+ * éventuellement par portée `scopeKey`).
  *
- * En S1, pas de modèle de campagne / session — on stocke local pour
- * permettre au MJ de noter ses intrigues entre 2 sessions sans qu'elles ne
- * voyagent. Quand le modèle Session/Campagne arrivera (plan 23), les notes
- * basculeront vers Firestore via `session.notes` ; cette UI sera réutilisée
- * en backing-store-agnostic.
+ * Pas encore de modèle Firestore pour ces notes volatiles : on stocke local
+ * pour permettre au MJ de noter ses intrigues entre 2 sessions sans qu'elles
+ * ne voyagent. Les notes de séance structurées vivent ailleurs (plan 23,
+ * `session.notes` Firestore) ; ce scratchpad reste le brouillon volatil du MJ.
  *
- * Anti-collision : préfixe + uid → un même device qui change de compte ne
- * mélange pas les scratchpads.
+ * Anti-collision : préfixe + uid (+ scopeKey) → un même device qui change de
+ * compte ou de campagne ne mélange pas les scratchpads.
  */
-export function QuickNotes(): JSX.Element {
+export function QuickNotes({ scopeKey }: QuickNotesProps = {}): JSX.Element {
   const { user } = useAuth();
-  const key = user ? `${STORAGE_KEY_PREFIX}${user.uid}` : null;
+  const key = user
+    ? `${STORAGE_KEY_PREFIX}${user.uid}${scopeKey ? `.${scopeKey}` : ''}`
+    : null;
   const [value, setValue] = useState<string>('');
 
   // Hydrate depuis localStorage au montage / au changement de user.

@@ -635,6 +635,8 @@ export type StringKey =
   | 'campaigns.detail.invite.help'
   | 'campaigns.detail.roster.aria'
   | 'campaigns.detail.roster.title'
+  | 'campaigns.detail.dmTools.title'
+  | 'campaigns.detail.dmTools.aria'
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
   | 'campaigns.detail.roster.viewSheet'
@@ -2541,6 +2543,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Toute personne possédant ce code peut rejoindre cette campagne. Partage-le uniquement avec les joueurs invités.',
     'campaigns.detail.roster.aria': 'Membres de la campagne',
     'campaigns.detail.roster.title': 'La compagnie',
+    'campaigns.detail.dmTools.title': 'Outils du meneur',
+    'campaigns.detail.dmTools.aria': 'Outils du meneur — jet secret et bloc-notes',
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
     'campaigns.detail.roster.viewSheet': 'Voir la fiche',
@@ -4782,6 +4786,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Anyone with this code can join the campaign. Share it only with invited players.',
     'campaigns.detail.roster.aria': 'Campaign members',
     'campaigns.detail.roster.title': 'The party',
+    'campaigns.detail.dmTools.title': 'Game master tools',
+    'campaigns.detail.dmTools.aria': 'Game master tools — secret roll and scratchpad',
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
     'campaigns.detail.roster.viewSheet': 'View sheet',
