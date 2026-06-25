@@ -19,6 +19,13 @@ const SheetScreen = lazy(async () => {
   return { default: mod.SheetScreen };
 });
 
+// Route /codex — navigateur de contenu SRD (plan 19) : sorts, dons, états,
+// invocations… Lecture seule, dérivé des bundles `public/data/*.json`.
+const CodexScreen = lazy(async () => {
+  const mod = await import('@/features/codex/codex-screen');
+  return { default: mod.CodexScreen };
+});
+
 // Route /map-proto — squelette de prototype carte (PAS production).
 // Cf. plans/MAP-MODE-PROPOSAL.md. Pas listée au menu, accessible par URL.
 const MapProtoScreen = lazy(async () => {
@@ -176,6 +183,7 @@ export function AppRoutes(): JSX.Element {
         <Route path="/" element={<LibraryScreen />} />
         <Route path="/create" element={<WizardScreen />} />
         <Route path="/character/:id" element={<SheetScreen />} />
+        <Route path="/codex" element={<CodexScreen />} />
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />

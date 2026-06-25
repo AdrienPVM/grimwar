@@ -57,6 +57,38 @@ export type StringKey =
   | 'item.category.pack'
   | 'item.category.mount'
   | 'item.category.vehicle'
+  // Codex — navigateur de contenu SRD (plan 19)
+  | 'codex.title'
+  | 'codex.subtitle'
+  | 'codex.nav.cta'
+  | 'codex.loading'
+  | 'codex.empty'
+  | 'codex.result.singular'
+  | 'codex.result.plural'
+  | 'codex.cat.aria'
+  | 'codex.cat.spells'
+  | 'codex.cat.feats'
+  | 'codex.cat.invocations'
+  | 'codex.cat.conditions'
+  | 'codex.cat.magicItems'
+  | 'codex.cat.items'
+  | 'codex.cat.ancestries'
+  | 'codex.cat.backgrounds'
+  | 'codex.cat.classes'
+  | 'codex.search.spells'
+  | 'codex.search.feats'
+  | 'codex.search.invocations'
+  | 'codex.search.conditions'
+  | 'codex.search.magicItems'
+  | 'codex.search.items'
+  | 'codex.search.ancestries'
+  | 'codex.search.backgrounds'
+  | 'codex.search.classes'
+  | 'codex.detail.prerequisite'
+  | 'codex.detail.prereqLevel'
+  | 'codex.spell.allLevels'
+  | 'codex.spell.allSchools'
+  | 'codex.spell.classesLabel'
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
@@ -1724,6 +1756,38 @@ const STRINGS: Record<Locale, Dict> = {
     'item.category.pack': 'Sac',
     'item.category.mount': 'Monture',
     'item.category.vehicle': 'Véhicule',
+    // Codex — navigateur de contenu SRD (plan 19)
+    'codex.title': 'Le Codex',
+    'codex.subtitle': 'Tout le contenu du SRD 5.2.1, à portée de main.',
+    'codex.nav.cta': 'Le Codex',
+    'codex.loading': 'Invocation du contenu…',
+    'codex.empty': 'Aucune entrée ne correspond à ta recherche.',
+    'codex.result.singular': 'résultat',
+    'codex.result.plural': 'résultats',
+    'codex.cat.aria': 'Catégories du Codex',
+    'codex.cat.spells': 'Sorts',
+    'codex.cat.feats': 'Dons',
+    'codex.cat.invocations': 'Invocations',
+    'codex.cat.conditions': 'États',
+    'codex.cat.magicItems': 'Objets magiques',
+    'codex.cat.items': 'Équipement',
+    'codex.cat.ancestries': 'Espèces',
+    'codex.cat.backgrounds': 'Historiques',
+    'codex.cat.classes': 'Classes',
+    'codex.search.spells': 'Rechercher un sort…',
+    'codex.search.feats': 'Rechercher un don…',
+    'codex.search.invocations': 'Rechercher une invocation…',
+    'codex.search.conditions': 'Rechercher un état…',
+    'codex.search.magicItems': 'Rechercher un objet magique…',
+    'codex.search.items': 'Rechercher un équipement…',
+    'codex.search.ancestries': 'Rechercher une espèce…',
+    'codex.search.backgrounds': 'Rechercher un historique…',
+    'codex.search.classes': 'Rechercher une classe…',
+    'codex.detail.prerequisite': 'Prérequis',
+    'codex.detail.prereqLevel': 'Niveau requis',
+    'codex.spell.allLevels': 'Tous niveaux',
+    'codex.spell.allSchools': 'Toutes écoles',
+    'codex.spell.classesLabel': 'Disponible pour',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
     'wizard.subtitle':
@@ -3924,6 +3988,38 @@ const STRINGS: Record<Locale, Dict> = {
     'item.category.pack': 'Pack',
     'item.category.mount': 'Mount',
     'item.category.vehicle': 'Vehicle',
+    // Codex — SRD content browser (plan 19)
+    'codex.title': 'The Codex',
+    'codex.subtitle': 'All SRD 5.2.1 content, at your fingertips.',
+    'codex.nav.cta': 'The Codex',
+    'codex.loading': 'Summoning content…',
+    'codex.empty': 'No entry matches your search.',
+    'codex.result.singular': 'result',
+    'codex.result.plural': 'results',
+    'codex.cat.aria': 'Codex categories',
+    'codex.cat.spells': 'Spells',
+    'codex.cat.feats': 'Feats',
+    'codex.cat.invocations': 'Invocations',
+    'codex.cat.conditions': 'Conditions',
+    'codex.cat.magicItems': 'Magic Items',
+    'codex.cat.items': 'Equipment',
+    'codex.cat.ancestries': 'Species',
+    'codex.cat.backgrounds': 'Backgrounds',
+    'codex.cat.classes': 'Classes',
+    'codex.search.spells': 'Search a spell…',
+    'codex.search.feats': 'Search a feat…',
+    'codex.search.invocations': 'Search an invocation…',
+    'codex.search.conditions': 'Search a condition…',
+    'codex.search.magicItems': 'Search a magic item…',
+    'codex.search.items': 'Search equipment…',
+    'codex.search.ancestries': 'Search a species…',
+    'codex.search.backgrounds': 'Search a background…',
+    'codex.search.classes': 'Search a class…',
+    'codex.detail.prerequisite': 'Prerequisite',
+    'codex.detail.prereqLevel': 'Required level',
+    'codex.spell.allLevels': 'All levels',
+    'codex.spell.allSchools': 'All schools',
+    'codex.spell.classesLabel': 'Available to',
     'wizard.title': 'Create a character',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",

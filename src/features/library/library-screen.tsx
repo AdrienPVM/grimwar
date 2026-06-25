@@ -74,6 +74,15 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
           >
             {t('library.cta.create')}
           </Button>
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => navigate('/codex')}
+              className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
+            >
+              {t('codex.nav.cta')} →
+            </button>
+          </div>
         </GlassPanel>
       </main>
     );
@@ -110,6 +119,13 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
           arrivera quand la séquence 4.0.x sera terminée.
         */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+          <button
+            type="button"
+            onClick={() => navigate('/codex')}
+            className="font-title text-meta uppercase tracking-[0.22em] text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
+          >
+            {t('codex.nav.cta')} →
+          </button>
           <button
             type="button"
             onClick={() => navigate('/campaigns')}
