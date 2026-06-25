@@ -303,6 +303,9 @@ export type StringKey =
   | 'sheet.essence.originFeat.openLabel'
   | 'sheet.essence.ancestryTraits.title'
   | 'sheet.essence.ancestryTraits.openLabel'
+  | 'sheet.essence.classFeatures.title'
+  | 'sheet.essence.classFeatures.openLabel'
+  | 'sheet.essence.classFeatures.level'
   | 'sheet.mode.combat'
   | 'sheet.mode.essence'
   | 'sheet.mode.magie'
@@ -1986,6 +1989,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.originFeat.openLabel': "Don d'origines : {name}",
     'sheet.essence.ancestryTraits.title': "Traits d'ascendance",
     'sheet.essence.ancestryTraits.openLabel': 'Trait : {name}',
+    'sheet.essence.classFeatures.title': 'Aptitudes de classe',
+    'sheet.essence.classFeatures.openLabel': 'Aptitude : {name}',
+    'sheet.essence.classFeatures.level': 'Niv. {level}',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magie',
@@ -4101,6 +4107,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.originFeat.openLabel': 'Origin Feat: {name}',
     'sheet.essence.ancestryTraits.title': 'Ancestry traits',
     'sheet.essence.ancestryTraits.openLabel': 'Trait: {name}',
+    'sheet.essence.classFeatures.title': 'Class features',
+    'sheet.essence.classFeatures.openLabel': 'Feature: {name}',
+    'sheet.essence.classFeatures.level': 'Lv. {level}',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magic',
