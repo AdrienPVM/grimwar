@@ -437,25 +437,52 @@ Campaign-scoped homebrew. Visible to all members of the campaign. Items added to
 }
 ```
 
-### `campaigns/{campaignId}/maps/{mapId}` (S4)
+### `campaigns/{campaignId}/maps/{mapId}` (prototype mode carte — chantier D + plans 29/31/33)
+
+Schéma réel implémenté (`src/shared/types/map.ts`, `mapMetaSchema`). Coords dans
+le viewBox logique `MAP_VIEWBOX_W × MAP_VIEWBOX_H` (cf. `map-viewport.ts`).
 
 ```ts
 {
-  id: string,
+  id: string,                              // slug kebab-case
   name: string,
-  importSource: 'dd2vtt' | 'image' | 'custom',
-  // dd2vtt-derived fields
-  width: number, height: number,           // pixels
-  pixelsPerGrid: number,
-  imageData: string,                       // Storage URL
-  walls: Array<{ x1, y1, x2, y2 }>,
-  lights: Array<{ x, y, color, radius, intensity }>,
-  portals: Array<{ ... }>,
-  // grimwar-added
-  fogState: Record<string, boolean> | null,
+  imageUrl: string | null,                 // URL externe/blob ; null si image locale (Dexie)
+  gridSize: number,                        // px viewBox par case
+  feetPerSquare: number,                   // 5 par convention SRD
+  showGrid: boolean,
+  fogEnabled: boolean,                     // toggle global du voile
+  lightingEnabled: boolean,                // toggle global de la lumière
+  fogPolygons: FogPolygon[],               // reveal/mask manuels (inline)
+  lightSources: LightSource[],             // statiques + attachées token (inline)
+  aoeTemplates: AoeTemplate[],             // sphère/cône/ligne/cube (inline)
+  walls?: WallPolyline[],                  // OPTIONNEL — murs d'occlusion (import .dd2vtt)
+  losEnabled?: boolean,                    // OPTIONNEL — ligne de vue dynamique calculée
+  schemaVersion: 1,
   createdAt: Timestamp,
+  updatedAt: Timestamp,                    // last-write-wins inter-clients
+  updatedBy: string,
 }
+
+// WallPolyline : { id: string, points: { x, y }[] }  (≥ 2 points)
 ```
+
+Tokens en sous-collection `campaigns/{cid}/maps/{mid}/tokens/{tid}` (write par
+mouvement borné). Permissions : `read` MJ **ou** membre ; `create/update/delete`
+MJ uniquement (cf. `firestore.rules`).
+
+> **`walls` + `losEnabled` (plan 29/31) sont ADDITIFS et OPTIONNELS.** Une carte
+> créée avant cette capacité n'a pas ces champs (`undefined`) et parse toujours —
+> **pas de bump `schemaVersion`**, **pas de nouvelle rule** (champs sur un doc
+> `maps/{mid}` déjà MJ-writable). Les murs alimentent le moteur de ligne de vue
+> (`los-state.ts`, raycasting pur) ; quand `losEnabled` est vrai, le rendu calcule
+> un polygone de visibilité par token (NON persisté) et l'ajoute au fog.
+>
+> **Image de fond `.dd2vtt`** : trop volumineuse pour un doc Firestore (> 1 Mo) et
+> Firebase Storage non activé (décision bundle-vs-Blaze parquée) → stockée en
+> **local sur l'appareil** (IndexedDB, table Dexie `mapImages`, clé `${cid}/${mid}`).
+> Survit au reload, pas de synchro cross-device tant que Storage n'est pas tranché.
+> `imageUrl` reste `null` pour ces cartes ; murs/lumières/grille (eux, légers) sont
+> bien persistés Firestore.
 
 ### `campaigns/{campaignId}/handouts/{handoutId}` (S3, plan 27)
 

@@ -1,5 +1,17 @@
 # Plan 29 — Dynamic lighting + line of sight
 
+> **✅ LIGNE DE VUE LIVRÉE EN SVG (2026-06-25).** Moteur de raycasting pur
+> `src/features/map-proto/los-state.ts` (balayage angulaire, occlusion par les
+> murs, cap de vision circulaire) — 100 % réutilisable même si PixiJS arrive un
+> jour. Intégré au fog via `map-scene.tsx` : quand `MapMeta.losEnabled`, un
+> polygone de visibilité par token-créature (borné murs + `visionRadius`) est
+> calculé au rendu (NON persisté) et ajouté aux révélations. Toggle « Ligne de
+> vue ON/OFF » sur la vue live. La **lumière dynamique** (sources statiques +
+> presets) était déjà livrée (chantiers F) ; ce plan ajoutait l'occlusion par
+> les murs, désormais en place. Vision par-joueur (chaque PJ ne voit que SA LOS)
+> : raffinement différé. Tests : `los-state.test.ts` (occlusion prouvée),
+> `map-scene.test.tsx`.
+
 ## Goal
 Light sources from the .dd2vtt + DM-placed lights illuminate the map. Each PC token has vision (darkvision range per ancestry). Walls block light. The map renders an overlay revealing only what each viewer's tokens can see.
 

@@ -41,10 +41,25 @@ export type SettingsRow = {
   value: unknown;
 };
 
+/**
+ * Image de fond d'une carte importée (`.dd2vtt`), stockée localement sur
+ * l'appareil. Une image de donjon dépasse la limite de 1 Mo d'un doc Firestore
+ * et Firebase Storage n'est pas activé (décision bundle-vs-Blaze parquée), donc
+ * on persiste l'image en IndexedDB : elle survit au reload sur CE device
+ * (« phone in a cave », offline-first). La synchro cross-device viendra avec
+ * Storage. Clé = `${campaignId}/${mapId}`.
+ */
+export type MapImageRow = {
+  id: string;
+  dataUrl: string;
+  importedAt: number;
+};
+
 export class GrimWarDB extends Dexie {
   content!: Table<ContentRow, [string, string]>;
   diceHistory!: Table<DiceHistoryRow, string>;
   settings!: Table<SettingsRow, string>;
+  mapImages!: Table<MapImageRow, string>;
 
   constructor() {
     super('grimwar');
@@ -72,6 +87,15 @@ export class GrimWarDB extends Dexie {
           if (r.fumble === undefined) r.fumble = false;
         });
       });
+    // v3 (mode carte — import .dd2vtt) : ajoute la table `mapImages`. Ajout
+    // d'une nouvelle table = additif et sûr — Dexie la crée, les tables
+    // existantes ne sont pas touchées, aucune fonction d'upgrade requise.
+    this.version(3).stores({
+      content: '[type+id], type',
+      diceHistory: 'id, characterId, timestamp',
+      settings: 'key',
+      mapImages: 'id',
+    });
   }
 }
 

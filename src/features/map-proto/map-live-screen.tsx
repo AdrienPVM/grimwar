@@ -5,7 +5,7 @@ import {
   type JSX,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import {
@@ -23,7 +23,9 @@ import type {
 } from '@/shared/types/map';
 
 import { createCirclePolygon } from './fog-state';
+import { MapScene } from './map-scene';
 import { useMap } from './use-map';
+import { useMapImage } from './use-map-image';
 
 /**
  * Vue live de carte côté MJ (CHANTIER D phase 2, tracer D.4).
@@ -68,8 +70,10 @@ function randomSlug(prefix: string): string {
 
 export function MapLiveScreen(): JSX.Element {
   const { cid, mid } = useParams<{ cid: string; mid: string }>();
+  const navigate = useNavigate();
   const { user, isReady } = useAuth();
   const { map, tokens, isLoading, error } = useMap(cid, mid);
+  const { localImageUrl } = useMapImage(cid, mid);
   const [localPositions, setLocalPositions] = useState<
     Record<string, { x: number; y: number }>
   >({});
@@ -272,6 +276,27 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, mid, user]);
 
+  // ── Toggles fog / ligne de vue ─────────────────────────────────────────
+  const handleToggleFogEnabled = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    try {
+      await updateMap(cid, mid, { fogEnabled: !map.fogEnabled }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
+  const handleToggleLos = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    try {
+      await updateMap(cid, mid, { losEnabled: !(map.losEnabled === true) }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
   if (!cid || !mid) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
@@ -463,6 +488,43 @@ export function MapLiveScreen(): JSX.Element {
             Effacer AoE
           </button>
         </div>
+        {/* Ligne de vue + voile + vue présentation. */}
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span
+            data-testid="map-live-walls-count"
+            className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
+          >
+            Murs ({(map.walls ?? []).length})
+          </span>
+          <button
+            type="button"
+            data-testid="map-live-toggle-fog"
+            onClick={() => {
+              void handleToggleFogEnabled();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Voile : {map.fogEnabled ? 'ON' : 'OFF'}
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-toggle-los"
+            onClick={() => {
+              void handleToggleLos();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Ligne de vue : {map.losEnabled === true ? 'ON' : 'OFF'}
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-open-tv"
+            onClick={() => navigate(`/map-proto/cloud/${cid}/maps/${mid}/tv`)}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Vue présentation ▸
+          </button>
+        </div>
       </header>
 
       <div
@@ -476,38 +538,17 @@ export function MapLiveScreen(): JSX.Element {
           className="h-full w-full touch-none select-none"
           data-testid="map-live-svg"
         >
-          {map.imageUrl && (
-            <image
-              href={map.imageUrl}
-              x={0}
-              y={0}
-              width={VIEWBOX_W}
-              height={VIEWBOX_H}
-              preserveAspectRatio="xMidYMid slice"
-            />
-          )}
-          {map.showGrid && (
-            <g stroke="rgba(220,184,108,0.18)" strokeWidth={0.5}>
-              {Array.from({ length: Math.floor(VIEWBOX_W / map.gridSize) + 1 }).map((_, i) => (
-                <line
-                  key={`v-${i}`}
-                  x1={i * map.gridSize}
-                  y1={0}
-                  x2={i * map.gridSize}
-                  y2={VIEWBOX_H}
-                />
-              ))}
-              {Array.from({ length: Math.floor(VIEWBOX_H / map.gridSize) + 1 }).map((_, i) => (
-                <line
-                  key={`h-${i}`}
-                  x1={0}
-                  y1={i * map.gridSize}
-                  x2={VIEWBOX_W}
-                  y2={i * map.gridSize}
-                />
-              ))}
-            </g>
-          )}
+          {/* Décor partagé : image, grille, murs (debug MJ), fog (voile
+              atténué côté MJ pour qu'il voie au travers) + LOS, lumières. Les
+              tokens draggables sont rendus PAR-DESSUS, juste après. */}
+          <MapScene
+            map={map}
+            localImageUrl={localImageUrl}
+            tokens={tokens}
+            maskId={`fog-live-${mid}`}
+            showWalls
+            fogOpacity={0.45}
+          />
           {tokens.map((token) => {
             const pos = positionOf(token);
             const isDragging = draggingTokenId === token.id;

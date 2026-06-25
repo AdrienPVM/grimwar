@@ -26,10 +26,14 @@ import { t } from '../lib/i18n';
  * est rendu hors flux car sticky : la main suit toujours, mais on évite que
  * le contenu se cache derrière au scroll-up extrême ou en mobile <56px).
  */
-export function NavShell(): JSX.Element {
+export function NavShell(): JSX.Element | null {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Mode présentation / TV (route `…/tv`) : aucune chrome d'app — la carte
+  // occupe tout l'écran pour la projection. Cf. `map-tv-screen.tsx`.
+  if (/\/tv$/.test(pathname)) return null;
 
   const showBack = pathname !== '/' && pathname !== '';
   const avatarLetter =

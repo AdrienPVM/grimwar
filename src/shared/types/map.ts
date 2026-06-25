@@ -116,6 +116,24 @@ export const lightSourceSchema = z
   );
 export type LightSource = z.infer<typeof lightSourceSchema>;
 
+/**
+ * Polyligne de mur (occlusion ligne de vue — import `.dd2vtt`).
+ *
+ * Une polyligne = une suite ordonnée de points en coords image (mêmes unités
+ * que `MapPosition`, soit le viewBox `MAP_VIEWBOX_*`). Le format Dungeon
+ * Alchemist `.dd2vtt` exprime ses murs (`line_of_sight`) sous forme de
+ * polylignes ; on les conserve telles quelles plutôt que de les éclater en
+ * segments — le moteur de raycasting (`los-state.ts`) aplatit en segments à
+ * la volée, et la polyligne est plus compacte à persister.
+ *
+ * ≥ 2 points : un mur dégénéré (1 point) n'occlut rien.
+ */
+export const wallPolylineSchema = z.object({
+  id: slug,
+  points: z.array(mapPositionSchema).min(2),
+});
+export type WallPolyline = z.infer<typeof wallPolylineSchema>;
+
 /** Template AoE (phase G) — sphère / cône / ligne / cube. */
 export const aoeTemplateSchema = z.object({
   id: slug,
@@ -175,6 +193,21 @@ export const mapMetaSchema = z.object({
   lightSources: z.array(lightSourceSchema),
   /** Templates AoE éphémères ou épinglés. */
   aoeTemplates: z.array(aoeTemplateSchema),
+  /**
+   * Murs vectoriels pour l'occlusion de ligne de vue (import `.dd2vtt`).
+   * OPTIONNEL et rétrocompatible : les cartes créées avant cette capacité
+   * n'ont pas le champ (→ `undefined`), le rendu traite `undefined` comme
+   * « aucun mur ». Pas de bump `schemaVersion` (ajout additif optionnel).
+   */
+  walls: z.array(wallPolylineSchema).optional(),
+  /**
+   * Toggle de la ligne de vue dynamique. Quand `true` ET que des `walls`
+   * existent, le rendu calcule un polygone de visibilité par token (borné
+   * par les murs + `visionRadius`) et l'utilise comme révélation de fog
+   * temps réel — calcul client, NON persisté (cf. `los-state.ts`).
+   * OPTIONNEL : absent → `false`.
+   */
+  losEnabled: z.boolean().optional(),
   /** Migration future via bump. */
   schemaVersion: z.literal(1),
   /** `serverTimestamp()` à la création — typage opaque ici. */

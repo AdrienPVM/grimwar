@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent, type JSX } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { ensureCampaignExists } from '@/shared/lib/services/campaigns';
@@ -194,6 +194,13 @@ export function MapsCloudScreen(): JSX.Element {
         >
           Campagne : {cid}
         </p>
+        <Link
+          to={`/map-proto/cloud/${cid}/import`}
+          data-testid="maps-cloud-import-link"
+          className="mt-3 inline-flex items-center gap-2 rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+        >
+          Importer une carte .dd2vtt
+        </Link>
         {ensureError && (
           <p
             data-testid="maps-cloud-ensure-error"
@@ -297,12 +304,16 @@ export function MapsCloudScreen(): JSX.Element {
               data-testid={`maps-cloud-card-${m.id}`}
               className="flex items-start justify-between rounded-md border border-gold-dim/30 bg-bg-elev/60 p-3"
             >
-              <div className="min-w-0 flex-1">
+              <Link
+                to={`/map-proto/cloud/${cid}/maps/${m.id}`}
+                data-testid={`maps-cloud-open-${m.id}`}
+                className="min-w-0 flex-1"
+              >
                 <p className="truncate font-title text-[13px] text-gold-bright">{m.name}</p>
                 <p className="mt-0.5 truncate font-mono text-[10px] text-text-tertiary">
                   {m.id}
                 </p>
-              </div>
+              </Link>
               <button
                 type="button"
                 onClick={() => {

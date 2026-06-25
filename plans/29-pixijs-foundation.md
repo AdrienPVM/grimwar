@@ -1,5 +1,14 @@
 # Plan 27 — PixiJS foundation + .dd2vtt import
 
+> **✅ IMPORT `.dd2vtt` LIVRÉ EN SVG (2026-06-25), PAS EN PIXIJS.** Mode carte
+> bâti en SVG natif (décision `MAP-MODE-PROPOSAL.md` §1, zéro dépendance).
+> Parseur pur `src/features/map-proto/dd2vtt.ts` (murs `line_of_sight` + objets +
+> portes fermées + lumières + image, normalisés dans le viewBox `map-viewport.ts`),
+> écran `map-import-screen.tsx` (route `/map-proto/cloud/:cid/import`), murs/
+> lumières/grille persistés Firestore (`MapMeta.walls?`), image de fond en LOCAL
+> IndexedDB (`map-image-store.ts` — Storage parqué). Pan/zoom/pinch : différé (le
+> viewBox SVG fixe suffit au proto). Tests : `dd2vtt.test.ts`, `map-dd2vtt.spec.ts`.
+
 ## Goal
 A map view at `/campaign/:id/map` renders a Dungeon Alchemist `.dd2vtt` export with the right grid, walls preview, and pan/zoom/pinch viewport. No tokens, no lighting yet — just the canvas reading the map.
 

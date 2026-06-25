@@ -202,6 +202,16 @@ export function CampaignDetailScreen(): JSX.Element {
                 >
                   {t('campaigns.detail.encountersCta')}
                 </Button>
+                {/* Cartes — prototype mode carte (import .dd2vtt, fog, LOS, TV).
+                    Réutilise le cid de la campagne réelle. MJ-only. */}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
+                >
+                  {t('campaigns.detail.mapsCta')}
+                </Button>
               </>
             ) : null}
           </div>

@@ -479,6 +479,7 @@ export type StringKey =
   | 'campaigns.detail.encountersCta'
   | 'campaigns.detail.journalCta'
   | 'campaigns.detail.handoutsCta'
+  | 'campaigns.detail.mapsCta'
   // Handouts MJ→joueur — plan 27
   | 'handouts.toast.title'
   | 'handouts.screen.back'
@@ -2340,6 +2341,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.encountersCta': 'Rencontres',
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Documents',
+    'campaigns.detail.mapsCta': 'Cartes',
     // Handouts MJ→joueur — plan 27
     'handouts.toast.title': 'Le MJ vous a transmis un document',
     'handouts.screen.back': 'Retour à la campagne',
@@ -4382,6 +4384,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.encountersCta': 'Encounters',
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Handouts',
+    'campaigns.detail.mapsCta': 'Maps',
     // Handouts DM→player — plan 27
     'handouts.toast.title': 'The DM sent you a handout',
     'handouts.screen.back': 'Back to campaign',

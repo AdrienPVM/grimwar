@@ -1,5 +1,15 @@
 # Plan 33 — Mode présentation / TV
 
+> **✅ VUE CARTE TV LIVRÉE EN SVG (2026-06-25).** `map-tv-screen.tsx`, route
+> `/map-proto/cloud/:cid/maps/:mid/tv` : plein écran, fond noir, lecture seule,
+> AUCUN outil. Mêmes données live (`useMap` temps réel) — un déplacement de
+> token côté MJ se répercute instantanément. Voile rendu à PLEINE opacité
+> (perspective joueurs), vs atténué côté MJ. `NavShell` masqué sur la route `/tv`
+> (vrai plein écran). Bouton « Vue présentation » sur la vue live MJ. **Portée :
+> carte uniquement** — l'agrégat encounter + tour de combat + état des
+> participants (le volet « combat » de ce plan) reste à câbler quand le besoin
+> se présentera. Test : `map-dd2vtt.spec.ts` (ouverture + rendu TV).
+
 ## Goal
 A full-screen presentation mode at `/campaign/:id/tv` designed for projecting on a TV during in-person sessions. Shows the active encounter (carte + tour de combat + état des participants) in big, glanceable visuals. **No interactive controls** — the DM continues to drive everything from their phone. Pure display.
 

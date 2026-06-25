@@ -42,6 +42,20 @@ const MapLiveScreen = lazy(async () => {
   return { default: mod.MapLiveScreen };
 });
 
+// Route /map-proto/cloud/:cid/import — import d'une carte Dungeon Alchemist
+// `.dd2vtt` (plan 29) : parse murs/lumières/grille + image locale → carte Firestore.
+const MapImportScreen = lazy(async () => {
+  const mod = await import('@/features/map-proto/map-import-screen');
+  return { default: mod.MapImportScreen };
+});
+
+// Route /map-proto/cloud/:cid/maps/:mid/tv — vue présentation / TV (plan 33) :
+// plein écran, lecture seule, voile à pleine opacité (perspective joueurs).
+const MapTvScreen = lazy(async () => {
+  const mod = await import('@/features/map-proto/map-tv-screen');
+  return { default: mod.MapTvScreen };
+});
+
 // Route /account/content — écran d'import de packs de contenu custom
 // (JALON 3B.4, option γ user-scoped). Pas listée au menu : accessible par
 // URL directe en V1, un point d'entrée nav-shell viendra plus tard.
@@ -165,6 +179,11 @@ export function AppRoutes(): JSX.Element {
         <Route path="/debug-content" element={<DebugContent />} />
         <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />
+        <Route path="/map-proto/cloud/:cid/import" element={<MapImportScreen />} />
+        <Route
+          path="/map-proto/cloud/:cid/maps/:mid/tv"
+          element={<MapTvScreen />}
+        />
         <Route path="/map-proto/cloud/:cid/maps/:mid" element={<MapLiveScreen />} />
         <Route path="/account/content" element={<ImportScreen />} />
         <Route path="/account/content/new" element={<PackEditorScreen />} />
