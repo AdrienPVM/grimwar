@@ -39,3 +39,56 @@ export function applyHitDieSpend(
     healedBy,
   };
 }
+
+export interface ShortRestResult {
+  /** Patch à appliquer via `updateCharacter` (réserves court-repos réinitialisées). */
+  patch: Pick<Character, 'classResources'>;
+  /** Résumé pour le toast / journal. */
+  summary: {
+    /** Nombre de réserves de classe (court-repos) réinitialisées à leur max. */
+    resourcesReset: number;
+    /** Vrai si au moins une réserve « emplacements de pacte » a été rechargée. */
+    pactSlotsRestored: boolean;
+  };
+}
+
+/**
+ * Applique un REPOS COURT (SRD 5.2.1), partie « réinitialisation des réserves ».
+ *
+ * Règle 5e : un repos court (~1 h) ne rend AUCUN PV automatiquement — le joueur
+ * dépense des dés de vie (carte « Dés de vie », `applyHitDieSpend`). Il ne
+ * réinitialise QUE les réserves de classe `restoresOn: 'short'` :
+ *   - Second souffle, Fougue (Guerrier) ;
+ *   - Conduit divin (Clerc / Paladin) ;
+ *   - Forme sauvage (Druide) ;
+ *   - Points de focalisation (Moine) ;
+ *   - **Emplacements de pacte du Occultiste** (`pact-magic-slots`) — la seule
+ *     magie qui recharge au repos court, encodée dans `classResources` et non
+ *     dans `spellSlots` (cf. `apply-level-up.ts > inferRestoresOn`).
+ *
+ * Ne touche PAS : les PV (dés de vie à part), les emplacements de sort standard
+ * (`spellSlots`), l'épuisement, ni les réserves `restoresOn: 'long'` (Rage,
+ * Imposition des mains, Points de sorcellerie…). Un repos long fait tout cela
+ * en plus via `applyLongRest`.
+ *
+ * Fonction PURE : on lit l'état courant de `character.classResources` et on
+ * remet chaque entrée short-rest à `max`. Aucun contenu requis — le `restoresOn`
+ * vit déjà sur chaque entrée. Retourne `summary.resourcesReset === 0` si rien
+ * n'était à recharger (l'appelant peut alors ne pas patcher).
+ */
+export function applyShortRest(character: Character): ShortRestResult {
+  const classResources: Character['classResources'] = { ...character.classResources };
+  let resourcesReset = 0;
+  let pactSlotsRestored = false;
+
+  for (const [key, pool] of Object.entries(character.classResources)) {
+    if (pool.restoresOn !== 'short') continue;
+    // Déjà pleine → ne compte pas comme « rechargée » (évite un toast trompeur).
+    if (pool.current >= pool.max) continue;
+    classResources[key] = { ...pool, current: pool.max };
+    resourcesReset += 1;
+    if (key === 'pact-magic-slots') pactSlotsRestored = true;
+  }
+
+  return { patch: { classResources }, summary: { resourcesReset, pactSlotsRestored } };
+}

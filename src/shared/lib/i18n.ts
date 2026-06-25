@@ -392,6 +392,13 @@ export type StringKey =
   | 'sheet.combat.longRest.toastTitle'
   | 'sheet.combat.longRest.grittyNote'
   | 'sheet.combat.longRest.slowHealingNote'
+  | 'sheet.combat.shortRest.button'
+  | 'sheet.combat.shortRest.confirm'
+  | 'sheet.combat.shortRest.toastTitle'
+  | 'sheet.combat.shortRest.toastNone'
+  | 'sheet.combat.shortRest.hint'
+  | 'sheet.combat.shortRest.pactNote'
+  | 'sheet.combat.shortRest.grittyNote'
   | 'sheet.combat.resources.title'
   | 'sheet.combat.resources.spend'
   | 'sheet.combat.resources.restore'
@@ -2220,6 +2227,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.longRest.grittyNote': 'Réalisme rugueux : un repos long dure 7 jours.',
     'sheet.combat.longRest.slowHealingNote':
       'Guérison naturelle lente : dépensez vos dés de vie pour récupérer des PV.',
+    'sheet.combat.shortRest.button': 'Repos court',
+    'sheet.combat.shortRest.confirm': 'Confirmer le repos court ?',
+    'sheet.combat.shortRest.toastTitle': 'Repos court',
+    'sheet.combat.shortRest.toastNone': 'Rien à recharger pour l’instant.',
+    'sheet.combat.shortRest.hint':
+      'Recharge les aptitudes à repos court. Dépensez vos dés de vie ci-dessus pour récupérer des PV.',
+    'sheet.combat.shortRest.pactNote': 'Emplacements de pacte rechargés.',
+    'sheet.combat.shortRest.grittyNote': 'Réalisme rugueux : un repos court dure 8 heures.',
     'sheet.combat.resources.title': 'Réserves de classe',
     'sheet.combat.resources.spend': 'Dépenser',
     'sheet.combat.resources.restore': 'Récupérer',
@@ -4489,6 +4504,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.longRest.grittyNote': 'Gritty realism: a long rest takes 7 days.',
     'sheet.combat.longRest.slowHealingNote':
       'Slow natural healing: spend hit dice to recover HP.',
+    'sheet.combat.shortRest.button': 'Short rest',
+    'sheet.combat.shortRest.confirm': 'Confirm short rest?',
+    'sheet.combat.shortRest.toastTitle': 'Short rest',
+    'sheet.combat.shortRest.toastNone': 'Nothing to recharge right now.',
+    'sheet.combat.shortRest.hint':
+      'Recharges short-rest abilities. Spend hit dice above to recover HP.',
+    'sheet.combat.shortRest.pactNote': 'Pact slots recharged.',
+    'sheet.combat.shortRest.grittyNote': 'Gritty realism: a short rest takes 8 hours.',
     'sheet.combat.resources.title': 'Class resources',
     'sheet.combat.resources.spend': 'Spend',
     'sheet.combat.resources.restore': 'Restore',

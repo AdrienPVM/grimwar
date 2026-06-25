@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Character } from '../../../types/character';
-import { applyHitDieSpend } from '../short-rest';
+import { applyHitDieSpend, applyShortRest } from '../short-rest';
 
 /**
  * `applyHitDieSpend` — Cat. 4 (calcul chiffré contre la règle SRD). Le tirage
@@ -109,5 +109,76 @@ describe('applyHitDieSpend', () => {
     const result = applyHitDieSpend(c, 'wizard', 4);
     expect(result!.patch.hitDice[0]!.current).toBe(2); // fighter intact
     expect(result!.patch.hitDice[1]!.current).toBe(0); // wizard décrémenté
+  });
+});
+
+/**
+ * `applyShortRest` — Cat. 4 + Cat. 6 (calcul chiffré + cas-limites de règles).
+ * SRD 5.2.1 : un repos court réinitialise les réserves `restoresOn: 'short'`
+ * (incl. `pact-magic-slots` du Occultiste) et NE touche PAS aux réserves
+ * `'long'`, aux PV, aux emplacements de sort standard ni à l'épuisement.
+ */
+describe('applyShortRest', () => {
+  it('réinitialise une réserve short-rest entamée (Second souffle)', () => {
+    const c = build({
+      classResources: { 'second-wind': { current: 0, max: 1, restoresOn: 'short' } },
+    });
+    const { patch, summary } = applyShortRest(c);
+    expect(patch.classResources['second-wind']).toEqual({
+      current: 1,
+      max: 1,
+      restoresOn: 'short',
+    });
+    expect(summary.resourcesReset).toBe(1);
+    expect(summary.pactSlotsRestored).toBe(false);
+  });
+
+  it('NE touche PAS aux réserves long-rest (Rage reste entamée)', () => {
+    const c = build({
+      classResources: {
+        rage: { current: 1, max: 3, restoresOn: 'long' },
+        'channel-divinity': { current: 0, max: 2, restoresOn: 'short' },
+      },
+    });
+    const { patch, summary } = applyShortRest(c);
+    expect(patch.classResources.rage).toEqual({ current: 1, max: 3, restoresOn: 'long' });
+    expect(patch.classResources['channel-divinity']!.current).toBe(2);
+    expect(summary.resourcesReset).toBe(1); // seul channel-divinity rechargé
+  });
+
+  it('recharge les emplacements de pacte du Occultiste (signale pactSlotsRestored)', () => {
+    const c = build({
+      classResources: { 'pact-magic-slots': { current: 0, max: 2, restoresOn: 'short' } },
+    });
+    const { patch, summary } = applyShortRest(c);
+    expect(patch.classResources['pact-magic-slots']!.current).toBe(2);
+    expect(summary.pactSlotsRestored).toBe(true);
+    expect(summary.resourcesReset).toBe(1);
+  });
+
+  it('une réserve déjà pleine ne compte pas comme rechargée', () => {
+    const c = build({
+      classResources: { 'action-surge': { current: 1, max: 1, restoresOn: 'short' } },
+    });
+    const { summary } = applyShortRest(c);
+    expect(summary.resourcesReset).toBe(0);
+  });
+
+  it('aucune réserve à recharger → resourcesReset 0 (l\'appelant peut ne pas patcher)', () => {
+    const { summary } = applyShortRest(build());
+    expect(summary.resourcesReset).toBe(0);
+    expect(summary.pactSlotsRestored).toBe(false);
+  });
+
+  it('ne renvoie aucun patch HP / spellSlots (repos court = pas de soin auto)', () => {
+    const c = build({
+      hp: { current: 5, max: 28, temp: 0 },
+      spellSlots: { '1': { current: 0, max: 2 } },
+      classResources: { 'second-wind': { current: 0, max: 1, restoresOn: 'short' } },
+    });
+    const { patch } = applyShortRest(c);
+    expect(patch).not.toHaveProperty('hp');
+    expect(patch).not.toHaveProperty('spellSlots');
+    expect(Object.keys(patch)).toEqual(['classResources']);
   });
 });
