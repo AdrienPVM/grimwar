@@ -26,6 +26,34 @@ export function clampHpCurrent(value: number, max: number): number {
   return value;
 }
 
+/**
+ * Bande de santé sémantique d'un ratio PV (current/max, supposé clampé à [0, 1]).
+ * Pilote UNIQUEMENT la pastille d'état (point + mot) de la carte Vitalité — pas
+ * un fond de jauge. Le grand nombre de PV reste doré ; le signal de santé passe
+ * par une petite pastille colorée (vert sain → ambre blessé → rouge critique →
+ * inconscient à 0 PV), jamais par une « barre de vie » qui remplit la carte.
+ */
+export type HpHealthBand = 'dead' | 'critical' | 'wounded' | 'healthy';
+
+export function hpHealthBand(ratio: number): HpHealthBand {
+  if (ratio <= 0) return 'dead';
+  if (ratio < 0.25) return 'critical';
+  if (ratio < 0.6) return 'wounded';
+  return 'healthy';
+}
+
+/**
+ * Libellé FR de la pastille d'état par bande. « Inconscient » = condition SRD FR
+ * officielle pour 0 PV (le PJ chute inconscient + jets de mort). « À terre » est
+ * proscrit : c'est la traduction officielle de la condition *Prone*, pas de 0 PV.
+ */
+export const HP_BAND_LABEL: Record<HpHealthBand, string> = {
+  healthy: 'Sain',
+  wounded: 'Blessé',
+  critical: 'Critique',
+  dead: 'Inconscient',
+};
+
 export interface ApplyDamageResult {
   hp: HpVitals;
   /** True si le PJ vient de tomber à 0 PV (déclenche la modale death-saves). */

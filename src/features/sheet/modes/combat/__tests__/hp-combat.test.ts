@@ -5,6 +5,8 @@ import {
   applyDeathSaveOutcome,
   applyHeal,
   clampHpCurrent,
+  HP_BAND_LABEL,
+  hpHealthBand,
   isSheetReadOnly,
 } from '../hp-combat';
 
@@ -25,6 +27,34 @@ describe('clampHpCurrent', () => {
   });
   it('passe-plat sur valeur valide', () => {
     expect(clampHpCurrent(12, 30)).toBe(12);
+  });
+});
+
+describe('hpHealthBand', () => {
+  it('classe 0 PV en "dead" (pastille « Inconscient »)', () => {
+    expect(hpHealthBand(0)).toBe('dead');
+  });
+  it('classe < 25 % en "critique"', () => {
+    expect(hpHealthBand(0.24)).toBe('critical');
+    expect(hpHealthBand(0.01)).toBe('critical');
+  });
+  it('classe [25 %, 60 %[ en "blessé"', () => {
+    expect(hpHealthBand(0.25)).toBe('wounded');
+    expect(hpHealthBand(0.59)).toBe('wounded');
+  });
+  it('classe >= 60 % en "sain"', () => {
+    expect(hpHealthBand(0.6)).toBe('healthy');
+    expect(hpHealthBand(1)).toBe('healthy');
+  });
+});
+
+describe('HP_BAND_LABEL', () => {
+  it('mappe chaque bande sur son libellé FR officiel/descriptif', () => {
+    expect(HP_BAND_LABEL.healthy).toBe('Sain');
+    expect(HP_BAND_LABEL.wounded).toBe('Blessé');
+    expect(HP_BAND_LABEL.critical).toBe('Critique');
+    // 0 PV = condition SRD FR « Inconscient » — surtout pas « À terre » (= Prone).
+    expect(HP_BAND_LABEL.dead).toBe('Inconscient');
   });
 });
 
