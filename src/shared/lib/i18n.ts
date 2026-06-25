@@ -299,6 +299,11 @@ export type StringKey =
   | 'sheet.combat.hitDice.spending'
   | 'sheet.combat.hitDice.spendLabel'
   | 'sheet.combat.hitDice.restToast'
+  | 'sheet.combat.longRest.button'
+  | 'sheet.combat.longRest.confirm'
+  | 'sheet.combat.longRest.toastTitle'
+  | 'sheet.combat.longRest.grittyNote'
+  | 'sheet.combat.longRest.slowHealingNote'
   | 'sheet.combat.resources.title'
   | 'sheet.combat.resources.spend'
   | 'sheet.combat.resources.restore'
@@ -2002,6 +2007,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.hitDice.spending': '…',
     'sheet.combat.hitDice.spendLabel': 'Dépenser un dé de vie ({class})',
     'sheet.combat.hitDice.restToast': 'Repos court',
+    'sheet.combat.longRest.button': 'Repos long',
+    'sheet.combat.longRest.confirm': 'Confirmer le repos long ?',
+    'sheet.combat.longRest.toastTitle': 'Repos long',
+    'sheet.combat.longRest.grittyNote': 'Réalisme rugueux : un repos long dure 7 jours.',
+    'sheet.combat.longRest.slowHealingNote':
+      'Guérison naturelle lente : dépensez vos dés de vie pour récupérer des PV.',
     'sheet.combat.resources.title': 'Réserves de classe',
     'sheet.combat.resources.spend': 'Dépenser',
     'sheet.combat.resources.restore': 'Récupérer',
@@ -4143,6 +4154,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.hitDice.spending': '…',
     'sheet.combat.hitDice.spendLabel': 'Spend a hit die ({class})',
     'sheet.combat.hitDice.restToast': 'Short rest',
+    'sheet.combat.longRest.button': 'Long rest',
+    'sheet.combat.longRest.confirm': 'Confirm long rest?',
+    'sheet.combat.longRest.toastTitle': 'Long rest',
+    'sheet.combat.longRest.grittyNote': 'Gritty realism: a long rest takes 7 days.',
+    'sheet.combat.longRest.slowHealingNote':
+      'Slow natural healing: spend hit dice to recover HP.',
     'sheet.combat.resources.title': 'Class resources',
     'sheet.combat.resources.spend': 'Spend',
     'sheet.combat.resources.restore': 'Restore',

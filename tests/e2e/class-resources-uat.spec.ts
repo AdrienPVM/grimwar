@@ -54,18 +54,25 @@ test.describe('UAT — Réserves de classe (mode Combat)', () => {
     // Carte présente avec le libellé FR officiel.
     await expect(panel.getByText('Réserves de classe')).toBeVisible();
     await expect(panel.getByText('Rage', { exact: true })).toBeVisible();
-    await expect(panel.getByText('Repos long', { exact: true })).toBeVisible();
-    await captureFull(page, '01-barbare-rage-pleine.png');
-
-    // Scoper à la ligne « Rage » : le ratio 3 / 3 du dé de vie (3d12) est
-    // identique côté carte Dés de vie — on cible donc le <li> de la Rage.
+    // Scoper à la ligne « Rage » : le badge « Repos long » + le ratio 3 / 3 du
+    // dé de vie (3d12) existent aussi ailleurs (bouton Repos long, carte Dés
+    // de vie) — on cible donc le <li> de la Rage.
     const rageRow = panel.locator('li', { hasText: 'Rage' });
+    await expect(rageRow.getByText('Repos long', { exact: true })).toBeVisible();
+    await captureFull(page, '01-barbare-rage-pleine.png');
     // Avant dépense : 3 / 3 (réserve pleine par défaut).
     await expect(rageRow.getByText('3 / 3')).toBeVisible();
     // Dépense une Rage → 2 / 3 après round-trip Firestore.
     await rageRow.getByRole('button', { name: 'Dépenser un point de Rage' }).click();
     await expect(rageRow.getByText('2 / 3')).toBeVisible();
     await captureFull(page, '02-barbare-rage-depensee.png');
+
+    // ── Repos long : confirmation deux temps → Rage revient à 3 / 3 ─────────
+    await panel.getByRole('button', { name: 'Repos long' }).click();
+    await captureFull(page, '03-repos-long-confirmation.png');
+    await panel.getByRole('button', { name: 'Confirmer le repos long ?' }).click();
+    await expect(rageRow.getByText('3 / 3')).toBeVisible();
+    await captureFull(page, '04-repos-long-applique.png');
   });
 
   test('Guerrier L3 → Réserves : Second souffle + Fougue (repos court)', async ({ page }) => {

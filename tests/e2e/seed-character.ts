@@ -233,9 +233,11 @@ export const barbarianL3: SeedPreset = {
   ancestryId: 'human',
   backgroundId: 'soldier',
   abilities: { for: 16, dex: 14, con: 14, int: 8, sag: 10, cha: 10 },
-  hp: { current: 32, max: 32 },
+  // Blessé + dés de vie entamés → le repos long a un effet visible (PV au max,
+  // dés regagnés) dans l'UAT.
+  hp: { current: 14, max: 32 },
   ac: 14,
-  hitDice: [{ classId: 'barbarian', current: 3, max: 3, die: 'd12' }],
+  hitDice: [{ classId: 'barbarian', current: 1, max: 3, die: 'd12' }],
   saves: { for: true, con: true },
   inventory: {
     items: [{ contentId: 'greataxe', equipped: true, qty: 1 }],
