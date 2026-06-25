@@ -395,8 +395,11 @@ export type StringKey =
   | 'sheet.magie.prep.edit'
   | 'sheet.magie.prep.done'
   | 'sheet.magie.prep.hint'
+  | 'sheet.magie.prep.hintWizard'
   | 'sheet.magie.prep.levelLabel'
   | 'sheet.magie.prep.prepared'
+  | 'sheet.magie.prep.alwaysAvailable'
+  | 'sheet.magie.prep.emptyPrepared'
   // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
@@ -2136,8 +2139,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.done': 'Terminer',
     'sheet.magie.prep.hint':
       'Choisis tes sorts préparés dans la liste de ta classe. Les sorts mineurs sont toujours disponibles.',
+    'sheet.magie.prep.hintWizard':
+      'Prépare tes sorts depuis ton grimoire. Les sorts mineurs sont toujours disponibles.',
     'sheet.magie.prep.levelLabel': 'Niveau {n}',
     'sheet.magie.prep.prepared': 'Préparé',
+    'sheet.magie.prep.alwaysAvailable': 'Toujours',
+    'sheet.magie.prep.emptyPrepared': 'Aucun sort préparé pour le moment.',
     // Plan D1 — modes de résolution des dégâts de sort (modale détail)
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
@@ -4304,8 +4311,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.done': 'Done',
     'sheet.magie.prep.hint':
       'Choose your prepared spells from your class list. Cantrips are always available.',
+    'sheet.magie.prep.hintWizard':
+      'Prepare your spells from your spellbook. Cantrips are always available.',
     'sheet.magie.prep.levelLabel': 'Level {n}',
     'sheet.magie.prep.prepared': 'Prepared',
+    'sheet.magie.prep.alwaysAvailable': 'Always',
+    'sheet.magie.prep.emptyPrepared': 'No spells prepared yet.',
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',

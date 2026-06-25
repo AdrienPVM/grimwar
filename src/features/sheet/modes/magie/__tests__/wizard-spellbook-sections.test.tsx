@@ -1,11 +1,13 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
 import { WizardSpellbookSections } from '../wizard-spellbook-sections';
 
+import classesBundle from '../../../../../../public/data/classes.json';
 import spellsBundle from '../../../../../../public/data/spells.json';
 
 /**
@@ -69,11 +71,36 @@ function spellFromBundle(id: string): Spell {
 
 const INSCRIBED_SPELLS = INSCRIBED_IDS.map(spellFromBundle);
 
-vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({ data: [], isLoading: false, error: null }),
+const { updateCharacterMock } = vi.hoisted(() => ({
+  updateCharacterMock: vi.fn().mockResolvedValue(undefined),
 }));
 
-function wizardL1(): Character {
+// Type-aware : la cap de préparation Magicien se lit dans
+// `classes.spellProgression.spellsKnownOrPrepared` (L1 = 4). Les autres types
+// renvoient `[]` (le composant n'en consomme pas).
+vi.mock('@/shared/hooks/use-content', () => ({
+  useContent: (type: string) =>
+    type === 'classes'
+      ? { data: classesBundle, isLoading: false, error: null }
+      : { data: [], isLoading: false, error: null },
+}));
+
+vi.mock('@/features/sheet/use-update-character', () => ({
+  useUpdateCharacter: () => ({
+    updateCharacter: updateCharacterMock,
+    isUpdating: false,
+    error: null,
+  }),
+}));
+
+beforeEach(() => {
+  updateCharacterMock.mockClear();
+});
+
+function wizardL1(
+  prepared: readonly string[] = PREPARED_IDS,
+  known: readonly string[] = INSCRIBED_IDS,
+): Character {
   return {
     id: 'test',
     name: 'Test Magicien',
@@ -124,8 +151,8 @@ function wizardL1(): Character {
     currentConcentration: null,
     classResources: {},
     spellSlots: {},
-    knownSpells: { wizard: [...INSCRIBED_IDS] },
-    preparedSpells: { wizard: [...PREPARED_IDS] },
+    knownSpells: { wizard: [...known] },
+    preparedSpells: { wizard: [...prepared] },
     spellcastingAbility: { wizard: 'int' },
     inventory: { items: [], coins: { cu: 0, ar: 0, el: 0, or: 0, pl: 0 }, weightCache: 0 },
     personality: { trait: '', ideal: '', bond: '', flaw: '', backstory: '' },
@@ -278,5 +305,134 @@ describe('<WizardSpellbookSections>', () => {
     expect(onSpellSelect).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'alarme' }),
     );
+  });
+
+  // --- Mode préparation (cette passe) -------------------------------------
+
+  it('mode édition — « Modifier » révèle le plafond chiffré « 2 / 4 préparés » (cap Magicien L1)', async () => {
+    const user = userEvent.setup();
+    render(
+      <WizardSpellbookSections
+        character={wizardL1(PREPARED_IDS.slice(0, 2))}
+        spells={INSCRIBED_SPELLS}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    expect(screen.getByText('2 / 4 préparés')).toBeInTheDocument();
+  });
+
+  it('mode édition — préparer un sort du Grimoire écrit preparedSpells.wizard avec l’id ajouté', async () => {
+    const user = userEvent.setup();
+    const prepared = PREPARED_IDS.slice(0, 2); // bouclier, projectile-magique
+    render(
+      <WizardSpellbookSections
+        character={wizardL1(prepared)}
+        spells={INSCRIBED_SPELLS}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const grimoireSection = screen.getByRole('region', { name: /Grimoire/i });
+    // 'armure-du-mage' est inscrit non-préparé → dans le Grimoire.
+    const target = spellFromBundle('armure-du-mage');
+    const row = within(grimoireSection).getByText(target.name.fr).closest('button');
+    if (!row) throw new Error('Pas de bouton pour armure-du-mage');
+    await user.click(row);
+    expect(updateCharacterMock).toHaveBeenCalledWith({
+      preparedSpells: { wizard: [...prepared, 'armure-du-mage'] },
+    });
+  });
+
+  it('mode édition — retirer un sort préparé écrit preparedSpells.wizard sans l’id', async () => {
+    const user = userEvent.setup();
+    const prepared = [...PREPARED_IDS]; // 4 préparés (au plafond)
+    render(
+      <WizardSpellbookSections
+        character={wizardL1(prepared)}
+        spells={INSCRIBED_SPELLS}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const preparedSection = screen.getByRole('region', { name: /Sorts préparés/i });
+    const bouclier = spellFromBundle('bouclier');
+    const row = within(preparedSection).getByText(bouclier.name.fr).closest('button');
+    if (!row) throw new Error('Pas de bouton pour bouclier');
+    // Le retrait reste permis même au plafond.
+    await user.click(row);
+    expect(updateCharacterMock).toHaveBeenCalledWith({
+      preparedSpells: { wizard: prepared.filter((id) => id !== 'bouclier') },
+    });
+  });
+
+  it('mode édition — au plafond (4/4) une ligne du Grimoire est désactivée, aucune écriture', async () => {
+    const user = userEvent.setup();
+    render(
+      <WizardSpellbookSections
+        character={wizardL1([...PREPARED_IDS])}
+        spells={INSCRIBED_SPELLS}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const grimoireSection = screen.getByRole('region', { name: /Grimoire/i });
+    const row = within(grimoireSection).getByText('Alarme').closest('button');
+    if (!row) throw new Error('Pas de bouton pour Alarme');
+    expect(row).toBeDisabled();
+    await user.click(row);
+    expect(updateCharacterMock).not.toHaveBeenCalled();
+  });
+
+  it('mode édition — un sort mineur (cantrip) n’est jamais toggable et affiche « Toujours »', async () => {
+    const user = userEvent.setup();
+    const cantrip = spellFromBundle('contact-glacial'); // sort mineur Magicien
+    render(
+      <WizardSpellbookSections
+        character={wizardL1(PREPARED_IDS.slice(0, 2), [...INSCRIBED_IDS, 'contact-glacial'])}
+        spells={[...INSCRIBED_SPELLS, cantrip]}
+        onSpellSelect={() => undefined}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const grimoireSection = screen.getByRole('region', { name: /Grimoire/i });
+    const row = within(grimoireSection).getByText(cantrip.name.fr).closest('button');
+    if (!row) throw new Error('Pas de bouton pour le sort mineur');
+    expect(row).toBeDisabled();
+    expect(within(grimoireSection).getByText('Toujours')).toBeInTheDocument();
+    await user.click(row);
+    expect(updateCharacterMock).not.toHaveBeenCalled();
+  });
+
+  it('lecture seule — pas de bouton « Modifier » (préparation verrouillée)', () => {
+    render(
+      <WizardSpellbookSections
+        character={wizardL1()}
+        spells={INSCRIBED_SPELLS}
+        onSpellSelect={() => undefined}
+        readOnly
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Modifier' })).not.toBeInTheDocument();
+  });
+
+  it('hors mode édition — un tap ouvre le détail, AUCUNE écriture de préparation', () => {
+    const onSpellSelect = vi.fn();
+    render(
+      <WizardSpellbookSections
+        character={wizardL1(PREPARED_IDS.slice(0, 2))}
+        spells={INSCRIBED_SPELLS}
+        onSpellSelect={onSpellSelect}
+      />,
+    );
+    const grimoireSection = screen.getByRole('region', { name: /Grimoire/i });
+    const target = spellFromBundle('armure-du-mage');
+    const row = within(grimoireSection).getByText(target.name.fr).closest('button');
+    if (!row) throw new Error('Pas de bouton pour armure-du-mage');
+    fireEvent.click(row);
+    expect(onSpellSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'armure-du-mage' }),
+    );
+    expect(updateCharacterMock).not.toHaveBeenCalled();
   });
 });

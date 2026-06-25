@@ -166,6 +166,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
           character={character}
           spells={spells}
           onSpellSelect={(spell) => setActiveSpell(spell)}
+          readOnly={readOnly}
         />
       ) : (
         (castingClasses.length > 0 || hasAncestrySpells || hasPactTomeSpells) && (
