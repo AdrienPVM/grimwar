@@ -1281,7 +1281,7 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
     initiative: preset.initiative ?? 0,
     hitDice: preset.hitDice ?? [],
     deathSaves: { success: 0, fail: 0 },
-    conditions: [],
+    conditions: preset.conditions ?? [],
     inspiration: false,
     exhaustion: 0,
     currentConcentration: preset.currentConcentration ?? null,

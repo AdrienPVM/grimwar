@@ -8,6 +8,7 @@ import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
 import { useUpdateCharacter } from '../../use-update-character';
+import { ConditionDetailModal } from './condition-detail-modal';
 
 interface ConditionsRowProps {
   character: Character;
@@ -15,8 +16,14 @@ interface ConditionsRowProps {
 }
 
 /**
- * Rangée d'états en cours du PJ. Chip = état actif (tap pour retirer).
+ * Rangée d'états en cours du PJ. Tap sur un chip actif → ouvre la modale de
+ * détail (règle SRD complète) avec un bouton « Retirer cet état » à l'intérieur.
  * Chip "+" ouvre un picker inline qui liste tous les états du SRD, filtrables.
+ *
+ * Pourquoi pas « tap = retrait immédiat » : (1) impossible de lire l'effet d'un
+ * état sans le retirer, (2) retrait accidentel au pouce trop facile. La lecture
+ * reste possible même en lecture seule (perso mort, vue MJ) ; seul le bouton de
+ * retrait est masqué.
  *
  * On stocke des slugs (`character.conditions: string[]`) — la résolution du
  * libellé localisé passe par `useContent('conditions')`. Tant que le bundle
@@ -27,6 +34,8 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
   const { updateCharacter } = useUpdateCharacter(character);
   const [pickerOpen, setPickerOpen] = useState<boolean>(false);
   const [query, setQuery] = useState<string>('');
+  // État dont on lit la règle SRD dans la modale de détail (`null` = fermée).
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const activeIds = character.conditions;
 
@@ -66,13 +75,11 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
             <button
               key={id}
               type="button"
-              disabled={readOnly}
-              onClick={() => void toggle(id, true)}
-              aria-label={`Retirer l'état ${label}`}
-              className="inline-flex items-center gap-1.5 rounded-pill border border-crimson/40 bg-crimson/10 px-3 py-1 font-title text-[10px] font-bold uppercase tracking-[0.14em] text-crimson transition-colors hover:border-crimson hover:bg-crimson/20 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => setDetailId(id)}
+              aria-label={`Voir le détail de l'état ${label}`}
+              className="inline-flex items-center gap-1.5 rounded-pill border border-crimson/40 bg-crimson/10 px-3 py-1 font-title text-[10px] font-bold uppercase tracking-[0.14em] text-crimson transition-colors hover:border-crimson hover:bg-crimson/20"
             >
               {label}
-              <span aria-hidden="true">✕</span>
             </button>
           );
         })}
@@ -130,6 +137,20 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
           </div>
         </div>
       )}
+
+      <ConditionDetailModal
+        conditionId={detailId}
+        onRemove={
+          readOnly || detailId === null
+            ? null
+            : () => {
+                const id = detailId;
+                setDetailId(null);
+                void toggle(id, true);
+              }
+        }
+        onClose={() => setDetailId(null)}
+      />
     </Card>
   );
 }
