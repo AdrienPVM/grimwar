@@ -49,14 +49,14 @@ Plans 14-22 complete.
 
 ### Tests
 - [x] 13. Unit : rules (`tests/firestore-rules.test.ts`, 13 cas) + service (`handouts.test.ts`, 8) + helpers de type (9) + modale de création (4) + hook de notif (3).
-- [ ] 14. e2e : MJ crée un document texte ciblé sur un joueur → ce joueur le voit et l'ouvre ; un autre joueur ne voit rien. (image = 27b)
+- [x] 14. e2e (`tests/e2e/handouts-uat.spec.ts`) : MJ crée un document texte ciblé sur le joueur A → A le voit et l'ouvre (visionneuse rend le Markdown) ; le joueur B ne voit rien (état vide). 1 passed contre l'émulateur. (image = 27b)
 
 ### Final
-- [ ] 15. `pnpm typecheck && pnpm test && pnpm lint`
-- [ ] 16. Commit: `feat(campaigns): handouts MJ→player texte (plan 27, image → 27b)`
+- [x] 15. `pnpm typecheck && pnpm test && pnpm lint` vert (2916 passed) ; `pnpm test:rules` 119/119 ; e2e handouts 1 passed.
+- [x] 16. Commit `b8f97a9` (implémentation) + commit e2e/clôture.
 
 ## Definition of Done
-- [x] Handouts collection + rules (déployées AVANT livraison code consommateur — cf. note deploy ci-dessous)
+- [!] Handouts collection + rules **écrites et validées sur l'émulateur** (rules-unit 13 cas + e2e contre les vraies rules). **Deploy prod en attente** : `pnpm firebase:deploy:rules` à lancer AVANT tout push/mise en prod du code consommateur (requiert `firebase login`).
 - [!] DM creation flow works (**texte** — image différée 27b)
 - [x] Targeted players see notification + can open
 - [x] Non-targeted players cannot read (rule + rules-unit)
