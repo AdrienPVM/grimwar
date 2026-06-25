@@ -104,14 +104,16 @@ function PartyRow({ member, resolveConditionLabel }: PartyRowProps): JSX.Element
   const barColor = hpBarColor(ratio);
 
   return (
-    <li className="rounded-card-sm border border-white-8 bg-bg-3/40 px-3 py-2">
+    <li className="rounded-card-sm border border-white-8 bg-bg-3/40 px-3 py-2 lg:px-4 lg:py-3">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="min-w-0 truncate font-serif text-body text-text">{member.name}</span>
-        <span className="shrink-0 font-serif text-body-sm tabular-nums text-text-secondary">
+        <span className="min-w-0 truncate font-serif text-body text-text lg:text-lg">
+          {member.name}
+        </span>
+        <span className="shrink-0 font-serif text-body-sm tabular-nums text-text-secondary lg:text-base">
           {member.currentHp}/{member.maxHp}
         </span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06] lg:h-2">
         <div
           className={cn('h-full rounded-full transition-[width] duration-300 ease-base', barColor)}
           style={{ width: `${hpPercent}%` }}

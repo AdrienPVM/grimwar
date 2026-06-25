@@ -408,7 +408,7 @@ export function EncounterScreen(): JSX.Element {
     .map((p) => ({ instanceId: p.instanceId, name: p.name }));
 
   return (
-    <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8">
+    <main className="relative z-10 mx-auto w-full max-w-[860px] px-4 py-8 sm:px-6 lg:px-8 xl:max-w-[1080px] 2xl:max-w-[1320px]">
       <nav className="flex">
         <Button
           type="button"
@@ -423,7 +423,7 @@ export function EncounterScreen(): JSX.Element {
 
       <header className="mt-4 text-center">
         <Divider className="mb-4" />
-        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
+        <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright lg:text-4xl">
           {encounter.name}
         </h1>
         <div className="mt-3 flex items-center justify-center gap-3">
@@ -548,7 +548,7 @@ export function EncounterScreen(): JSX.Element {
 
         <ul
           aria-label={t('encounters.turnOrder.aria')}
-          className="mt-4 flex gap-3 overflow-x-auto pb-2"
+          className="mt-4 flex gap-3 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-x-visible"
         >
           {encounter.participants.map((participant, idx) => (
             <ParticipantCard
@@ -641,6 +641,7 @@ function ParticipantCard({
       aria-current={isActiveTurn ? 'true' : undefined}
       className={cn(
         'flex w-[160px] shrink-0 flex-col gap-2 rounded-card-sm border px-3 py-3',
+        'lg:w-[200px] lg:gap-2.5 lg:px-4 lg:py-4',
         'transition-colors duration-200 ease-base',
         isActiveTurn
           ? 'border-gold bg-gold/[0.1] shadow-[0_0_12px_var(--gold-glow)]'
@@ -653,7 +654,9 @@ function ParticipantCard({
         </span>
       ) : null}
       <div className="flex items-start justify-between gap-2">
-        <span className="min-w-0 truncate font-serif text-body text-text">{participant.name}</span>
+        <span className="min-w-0 truncate font-serif text-body text-text lg:text-lg">
+          {participant.name}
+        </span>
       </div>
 
       <div className="flex items-center justify-between gap-2">
@@ -672,11 +675,11 @@ function ParticipantCard({
           <span className="font-title text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
             {t('encounters.participant.hpLabel')}
           </span>
-          <span className="font-serif text-body-sm tabular-nums text-text-secondary">
+          <span className="font-serif text-body-sm tabular-nums text-text-secondary lg:text-base">
             {participant.currentHp}/{participant.maxHp}
           </span>
         </div>
-        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06] lg:h-2">
           <div
             className={cn('h-full rounded-full transition-[width] duration-300 ease-base', barColor)}
             style={{ width: `${hpPercent}%` }}
