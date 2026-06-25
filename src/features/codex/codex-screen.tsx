@@ -14,6 +14,8 @@ import {
   FeatBrowser,
   InvocationBrowser,
 } from './browsers/codex-text-browsers';
+import { ItemBrowser } from './browsers/item-browser';
+import { MagicItemBrowser } from './browsers/magic-item-browser';
 import { SpellBrowser } from './browsers/spell-browser';
 
 /**
@@ -63,6 +65,10 @@ function CodexActiveBrowser({
   switch (category) {
     case 'spells':
       return <SpellBrowser />;
+    case 'magicItems':
+      return <MagicItemBrowser />;
+    case 'items':
+      return <ItemBrowser />;
     case 'feats':
       return <FeatBrowser />;
     case 'invocations':

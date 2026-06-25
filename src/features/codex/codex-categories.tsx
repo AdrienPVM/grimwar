@@ -12,6 +12,8 @@ import { t, type StringKey } from '@/shared/lib/i18n';
  */
 export type CodexCategoryId =
   | 'spells'
+  | 'magicItems'
+  | 'items'
   | 'feats'
   | 'invocations'
   | 'conditions';
@@ -24,6 +26,8 @@ interface CodexCategory {
 
 export const CODEX_CATEGORIES: readonly CodexCategory[] = [
   { id: 'spells', labelKey: 'codex.cat.spells', icon: 'i-spell' },
+  { id: 'magicItems', labelKey: 'codex.cat.magicItems', icon: 'i-potion' },
+  { id: 'items', labelKey: 'codex.cat.items', icon: 'i-bag' },
   { id: 'feats', labelKey: 'codex.cat.feats', icon: 'i-feather' },
   { id: 'invocations', labelKey: 'codex.cat.invocations', icon: 'i-magic' },
   { id: 'conditions', labelKey: 'codex.cat.conditions', icon: 'i-skull' },

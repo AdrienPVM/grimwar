@@ -13,13 +13,28 @@ vi.mock('@/shared/hooks/use-content', () => ({
 }));
 
 describe('CodexScreen', () => {
-  it('rend le titre et les 4 onglets de catégorie', () => {
+  it('rend le titre et les 6 onglets de catégorie', () => {
     render(<CodexScreen />);
     expect(screen.getByRole('heading', { name: 'Le Codex' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Sorts/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Objets magiques/ })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Équipement/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Dons/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Invocations/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /États/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('tab')).toHaveLength(6);
+  });
+
+  it('bascule vers Objets magiques puis Équipement', () => {
+    render(<CodexScreen />);
+    fireEvent.click(screen.getByRole('tab', { name: /Objets magiques/ }));
+    expect(
+      screen.getByPlaceholderText('Rechercher un objet magique…'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: /Équipement/ }));
+    expect(
+      screen.getByPlaceholderText('Rechercher un équipement…'),
+    ).toBeInTheDocument();
   });
 
   it('sélectionne Sorts par défaut', () => {

@@ -89,6 +89,15 @@ export type StringKey =
   | 'codex.spell.allLevels'
   | 'codex.spell.allSchools'
   | 'codex.spell.classesLabel'
+  | 'codex.item.allRarities'
+  | 'codex.item.allCategories'
+  | 'codex.item.weight'
+  | 'codex.item.cost'
+  | 'codex.item.damage'
+  | 'codex.item.ac'
+  | 'codex.item.properties'
+  | 'codex.item.attunement'
+  | 'codex.item.attunementRequired'
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
@@ -1788,6 +1797,15 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.spell.allLevels': 'Tous niveaux',
     'codex.spell.allSchools': 'Toutes écoles',
     'codex.spell.classesLabel': 'Disponible pour',
+    'codex.item.allRarities': 'Toutes raretés',
+    'codex.item.allCategories': 'Toutes catégories',
+    'codex.item.weight': 'Poids',
+    'codex.item.cost': 'Coût',
+    'codex.item.damage': 'Dégâts',
+    'codex.item.ac': 'Classe d’armure',
+    'codex.item.properties': 'Propriétés',
+    'codex.item.attunement': 'Harmonisation',
+    'codex.item.attunementRequired': 'Harmonisation requise',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
     'wizard.subtitle':
@@ -4020,6 +4038,15 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.spell.allLevels': 'All levels',
     'codex.spell.allSchools': 'All schools',
     'codex.spell.classesLabel': 'Available to',
+    'codex.item.allRarities': 'All rarities',
+    'codex.item.allCategories': 'All categories',
+    'codex.item.weight': 'Weight',
+    'codex.item.cost': 'Cost',
+    'codex.item.damage': 'Damage',
+    'codex.item.ac': 'Armor Class',
+    'codex.item.properties': 'Properties',
+    'codex.item.attunement': 'Attunement',
+    'codex.item.attunementRequired': 'Requires attunement',
     'wizard.title': 'Create a character',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",

@@ -7,93 +7,127 @@ import { waitForAppReady } from './fixtures';
  * lit ses bundles depuis `public/data/*.json` (aucune écriture Firestore,
  * aucun `character`), donc elle tourne SANS l'émulateur Firebase / sans Java.
  *
- * Asserte l'IDENTITÉ du contenu (pas la présence) : un sort/état précis du
- * bundle SRD avec ses champs exacts (niveau, école, portée, description). Les
- * captures pleine page + viewport (modales) sont écrites dans
- * `uat-review/codex/`.
+ * Asserte l'IDENTITÉ du contenu (pas la présence) : sorts/objets/états précis du
+ * bundle SRD avec leurs champs exacts (niveau, école, rareté, dégâts chiffrés,
+ * description). Captures pleine page + viewport (modales) dans
+ * `uat-review/codex/`, dans l'ordre des onglets.
  */
 
 test.describe('UAT — Le Codex', () => {
-  test('Sorts / États / Dons / Invocations : navigation + détail identité', async ({
-    page,
-  }) => {
+  test('6 catégories : navigation + détail identité', async ({ page }) => {
     await page.goto('/codex');
     await waitForAppReady(page);
 
-    // ── Sorts ────────────────────────────────────────────────────────
-    await expect(
-      page.getByRole('heading', { name: 'Le Codex' }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Le Codex' })).toBeVisible();
+
+    // ── 1. Sorts ─────────────────────────────────────────────────────
     await expect(page.getByRole('tab', { name: /Sorts/ })).toHaveAttribute(
       'aria-selected',
       'true',
     );
-    // Contenu chargé : le compteur de résultats affiche le total du bundle.
     await expect(page.getByText(/\d+ · résultats/)).toBeVisible({
       timeout: 15_000,
     });
     await page.screenshot({
-      path: 'uat-review/codex/01-codex-sorts-liste.png',
+      path: 'uat-review/codex/01-sorts-liste.png',
       fullPage: true,
     });
 
-    // Détail d'un sort précis — Boule de feu (Fireball), niveau 3, évocation.
     await page.getByPlaceholder('Rechercher un sort…').fill('boule de feu');
     await page.getByText('Boule de feu', { exact: true }).click();
-    const spellDialog = page.getByRole('dialog');
-    await expect(spellDialog).toBeVisible();
-    await expect(
-      spellDialog.getByText('Niveau 3 · Évocation'),
-    ).toBeVisible();
-    await expect(spellDialog.getByText('45 m')).toBeVisible();
+    let dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Niveau 3 · Évocation')).toBeVisible();
+    await expect(dialog.getByText('45 m')).toBeVisible();
     await page.screenshot({
-      path: 'uat-review/codex/02-sort-detail-boule-de-feu-full.png',
+      path: 'uat-review/codex/02-sort-detail-full.png',
       fullPage: true,
     });
     await page.screenshot({
-      path: 'uat-review/codex/02-sort-detail-boule-de-feu-viewport.png',
-      fullPage: false,
-    });
-    await page.keyboard.press('Escape');
-    await expect(spellDialog).not.toBeVisible();
-
-    // ── États ────────────────────────────────────────────────────────
-    await page.getByRole('tab', { name: /États/ }).click();
-    await expect(page.getByText('Aveuglé', { exact: true })).toBeVisible();
-    await page.screenshot({
-      path: 'uat-review/codex/03-codex-etats.png',
-      fullPage: true,
-    });
-    await page.getByText('Aveuglé', { exact: true }).click();
-    const condDialog = page.getByRole('dialog');
-    await expect(condDialog).toBeVisible();
-    await expect(condDialog.getByText(/vous ne voyez rien/)).toBeVisible();
-    await page.screenshot({
-      path: 'uat-review/codex/04-etat-detail-aveugle-full.png',
-      fullPage: true,
-    });
-    await page.screenshot({
-      path: 'uat-review/codex/04-etat-detail-aveugle-viewport.png',
+      path: 'uat-review/codex/02-sort-detail-viewport.png',
       fullPage: false,
     });
     await page.keyboard.press('Escape');
 
-    // ── Dons ─────────────────────────────────────────────────────────
+    // ── 2. Objets magiques ───────────────────────────────────────────
+    await page.getByRole('tab', { name: /Objets magiques/ }).click();
+    await page
+      .getByPlaceholder('Rechercher un objet magique…')
+      .fill('amulette de bonne santé');
+    await page.getByText('Amulette de bonne santé', { exact: true }).click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Équipement · Peu commun')).toBeVisible();
+    await expect(dialog.getByText('Harmonisation requise')).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/codex/03-objet-magique-detail-full.png',
+      fullPage: true,
+    });
+    await page.screenshot({
+      path: 'uat-review/codex/03-objet-magique-detail-viewport.png',
+      fullPage: false,
+    });
+    await page.keyboard.press('Escape');
+    await page.screenshot({
+      path: 'uat-review/codex/04-objets-magiques-liste.png',
+      fullPage: true,
+    });
+
+    // ── 3. Équipement ────────────────────────────────────────────────
+    await page.getByRole('tab', { name: /Équipement/ }).click();
+    await page.getByPlaceholder('Rechercher un équipement…').fill('dague');
+    await page.getByText('Dague', { exact: true }).click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    // Dégâts chiffrés exacts (1d4 perforants), poids exact.
+    await expect(dialog.getByText('1d4 perforants')).toBeVisible();
+    await expect(dialog.getByText('1 kg')).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/codex/05-equipement-detail-full.png',
+      fullPage: true,
+    });
+    await page.screenshot({
+      path: 'uat-review/codex/05-equipement-detail-viewport.png',
+      fullPage: false,
+    });
+    await page.keyboard.press('Escape');
+
+    // ── 4. Dons ──────────────────────────────────────────────────────
     await page.getByRole('tab', { name: /Dons/ }).click();
     await expect(page.getByText('Vigilant', { exact: true })).toBeVisible();
     await page.screenshot({
-      path: 'uat-review/codex/05-codex-dons.png',
+      path: 'uat-review/codex/06-dons-liste.png',
       fullPage: true,
     });
 
-    // ── Invocations ──────────────────────────────────────────────────
+    // ── 5. Invocations ───────────────────────────────────────────────
     await page.getByRole('tab', { name: /Invocations/ }).click();
     await expect(
       page.getByText('Décharge déchirante', { exact: true }),
     ).toBeVisible();
     await page.screenshot({
-      path: 'uat-review/codex/06-codex-invocations.png',
+      path: 'uat-review/codex/07-invocations-liste.png',
       fullPage: true,
+    });
+
+    // ── 6. États ─────────────────────────────────────────────────────
+    await page.getByRole('tab', { name: /États/ }).click();
+    await expect(page.getByText('Aveuglé', { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/codex/08-etats-liste.png',
+      fullPage: true,
+    });
+    await page.getByText('Aveuglé', { exact: true }).click();
+    dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/vous ne voyez rien/)).toBeVisible();
+    await page.screenshot({
+      path: 'uat-review/codex/09-etat-detail-full.png',
+      fullPage: true,
+    });
+    await page.screenshot({
+      path: 'uat-review/codex/09-etat-detail-viewport.png',
+      fullPage: false,
     });
   });
 });
