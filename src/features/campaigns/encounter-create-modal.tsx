@@ -173,7 +173,7 @@ export function EncounterCreateModal({
       onClose={resetAndClose}
       titleId={titleId}
       closeLabel={t('encounters.create.close')}
-      className="max-w-[520px]"
+      size="lg"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
         <header className="text-center">

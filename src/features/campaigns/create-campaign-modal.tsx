@@ -110,7 +110,7 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props): JSX.El
       onClose={resetAndClose}
       titleId={titleId}
       closeLabel={t('campaigns.create.close')}
-      className="max-w-[480px]"
+      size="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
         <header className="text-center">

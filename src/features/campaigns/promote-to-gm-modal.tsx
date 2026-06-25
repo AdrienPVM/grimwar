@@ -72,7 +72,7 @@ export function PromoteToGmModal({
       onClose={resetAndClose}
       titleId={titleId}
       closeLabel={t('campaigns.promote.close')}
-      className="max-w-[440px]"
+      size="sm"
     >
       <div className="flex flex-col gap-5 p-6">
         <header className="text-center">

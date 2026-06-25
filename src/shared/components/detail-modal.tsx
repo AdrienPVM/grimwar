@@ -36,6 +36,25 @@ import { cn } from '../lib/cn';
  * longues descriptions.
  */
 
+/**
+ * Gabarit de largeur responsive. Avant le plan 27, le panneau était figé à
+ * `max-w-[460px]` à toutes les tailles → à l'étroit sur tablette/TV (et chaque
+ * caller bricolait son `max-w` en className, source de conflits tailwind-merge).
+ * On centralise trois échelles :
+ *  - `sm` : confirmations / dialogues compacts — reste étroit même sur grand
+ *    écran (un « Quitter la campagne ? » n'a pas vocation à faire 760px).
+ *  - `md` (défaut) : formulaires et modales standard — élargissement doux.
+ *  - `lg` : contenu dense (détail de sort, montée de niveau, création de
+ *    rencontre) — profite franchement de la largeur sur desktop/TV.
+ */
+type ModalSize = 'sm' | 'md' | 'lg';
+
+const SIZE_CLASS: Record<ModalSize, string> = {
+  sm: 'max-w-[440px]',
+  md: 'max-w-[480px] sm:max-w-[560px]',
+  lg: 'max-w-[480px] sm:max-w-[600px] lg:max-w-[760px]',
+};
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -48,6 +67,8 @@ interface Props {
   titleId?: string;
   /** Libellé du bouton de fermeture (a11y). Défaut "Fermer". */
   closeLabel?: string;
+  /** Gabarit de largeur responsive (cf. `ModalSize`). Défaut `md`. */
+  size?: ModalSize;
   children: ReactNode;
   className?: string;
 }
@@ -67,6 +88,7 @@ export function DetailModal({
   onClose,
   titleId: providedTitleId,
   closeLabel = 'Fermer',
+  size = 'md',
   children,
   className,
 }: Props): JSX.Element | null {
@@ -163,7 +185,9 @@ export function DetailModal({
       aria-labelledby={titleId}
       onClick={handleBackdropClick}
       className={cn(
-        'fixed inset-0 z-[80] flex items-center justify-center px-4 py-6',
+        // Ancrage bottom-sheet sur mobile (`items-end` → atteignable au pouce),
+        // recentré à partir de `sm` — aligné sur les modales custom (item, dés…).
+        'fixed inset-0 z-[80] flex items-end justify-center px-4 py-6 sm:items-center',
         'bg-ink/85 backdrop-blur-xl',
         'animate-fadeIn motion-reduce:animate-none',
       )}
@@ -174,7 +198,8 @@ export function DetailModal({
         // si aucun focusable interne, sans entrer dans l'ordre de tabulation.
         tabIndex={-1}
         className={cn(
-          'relative flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-y-auto',
+          'relative flex max-h-[90vh] w-full flex-col overflow-y-auto',
+          SIZE_CLASS[size],
           'rounded-card border border-soft bg-glass shadow-card-lg',
           'focus:outline-none',
           className,

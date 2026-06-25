@@ -102,7 +102,7 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
       aria-labelledby="physical-roll-title"
       className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/85 px-4 py-6 backdrop-blur-xl sm:items-center"
     >
-      <div className="flex w-full max-w-[460px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg">
+      <div className="flex w-full max-w-[460px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg sm:max-w-[520px]">
         <header className="border-b border-white-8 px-6 py-4">
           <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
             Mode physique — saisis tes dés

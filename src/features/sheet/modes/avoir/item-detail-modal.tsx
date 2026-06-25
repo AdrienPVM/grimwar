@@ -134,7 +134,7 @@ export function ItemDetailModal({
       aria-labelledby="item-detail-title"
       className="fixed inset-0 z-[80] flex items-end justify-center bg-ink/85 px-4 py-6 backdrop-blur-xl sm:items-center"
     >
-      <div className="flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg">
+      <div className="flex max-h-[90vh] w-full max-w-[460px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg sm:max-w-[560px] lg:max-w-[720px]">
         <header className="flex items-start justify-between gap-3 border-b border-white-8 px-6 py-4">
           <div className="min-w-0">
             <h2

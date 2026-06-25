@@ -83,7 +83,7 @@ export function LinkCharacterModal({
       onClose={requestClose}
       titleId={titleId}
       closeLabel={t('campaigns.linkCharacter.close')}
-      className="max-w-[480px]"
+      size="md"
     >
       <div className="flex flex-col gap-5 p-6">
         <header className="text-center">

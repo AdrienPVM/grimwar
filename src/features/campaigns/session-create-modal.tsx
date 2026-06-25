@@ -99,7 +99,7 @@ export function SessionCreateModal({
       onClose={resetAndClose}
       titleId={titleId}
       closeLabel={t('sessions.create.close')}
-      className="max-w-[480px]"
+      size="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6">
         <header className="text-center">

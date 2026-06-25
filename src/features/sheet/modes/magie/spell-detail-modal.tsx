@@ -235,6 +235,7 @@ export function SpellDetailModal({
       open
       onClose={onClose}
       titleId="spell-detail-title"
+      size="lg"
       // Override `overflow-y-auto` du panneau partagé : la modale sort garde le
       // pattern header sticky / body scrollable / footer sticky historique
       // (header + footer fixes, body défile), au lieu d'un scroll global.

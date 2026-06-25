@@ -153,7 +153,7 @@ export function LevelUpModal({
       open={open}
       onClose={safeOnClose}
       titleId={titleId}
-      className="max-w-[560px]"
+      size="lg"
     >
       <header className="border-b border-white-8 px-6 py-4 pr-14">
         <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">

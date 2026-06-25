@@ -40,7 +40,7 @@ export function EventDetailModal({
       onClose={onClose}
       titleId={titleId}
       closeLabel={t('campaigns.detail.eventFeed.detail.close')}
-      className="max-w-[420px]"
+      size="sm"
     >
       {event !== null ? (
         <EventDetailContent

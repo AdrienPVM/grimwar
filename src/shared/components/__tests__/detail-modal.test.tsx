@@ -265,3 +265,67 @@ describe('DetailModal — vraie modale (portal + overlay + body lock)', () => {
     expect(document.body.style.overflow).not.toBe('hidden');
   });
 });
+
+/**
+ * Plan 27 — gabarit de largeur responsive + ancrage bottom-sheet mobile.
+ *
+ * Avant, le panneau était figé à `max-w-[460px]` à toutes les tailles (à
+ * l'étroit sur tablette/TV) et toujours centré. Jsdom ne calcule pas le layout,
+ * mais l'absence des classes Tailwind attendues est une régression visuelle
+ * immédiate — on fige donc le contrat structurel des 3 gabarits + l'ancrage.
+ */
+describe('DetailModal — gabarit responsive (size) + ancrage mobile', () => {
+  function panelClassName(): string {
+    const dialog = screen.getByRole('dialog');
+    const panel = dialog.querySelector<HTMLElement>('[tabindex="-1"]');
+    if (!panel) throw new Error('panneau interne introuvable');
+    return panel.className;
+  }
+
+  it('défaut = md : élargissement doux à partir de sm', () => {
+    render(
+      <DetailModal open onClose={() => {}} titleId="t">
+        <h2 id="t">Titre</h2>
+      </DetailModal>,
+    );
+    const cls = panelClassName();
+    expect(cls).toContain('max-w-[480px]');
+    expect(cls).toContain('sm:max-w-[560px]');
+    // Plus de largeur figée historique.
+    expect(cls).not.toContain('max-w-[460px]');
+  });
+
+  it('size="sm" : reste étroit même sur grand écran (pas de variante sm:)', () => {
+    render(
+      <DetailModal open onClose={() => {}} titleId="t" size="sm">
+        <h2 id="t">Titre</h2>
+      </DetailModal>,
+    );
+    const cls = panelClassName();
+    expect(cls).toContain('max-w-[440px]');
+    expect(cls).not.toMatch(/sm:max-w-/);
+    expect(cls).not.toMatch(/lg:max-w-/);
+  });
+
+  it('size="lg" : élargit jusqu’au palier lg (contenu dense)', () => {
+    render(
+      <DetailModal open onClose={() => {}} titleId="t" size="lg">
+        <h2 id="t">Titre</h2>
+      </DetailModal>,
+    );
+    const cls = panelClassName();
+    expect(cls).toContain('sm:max-w-[600px]');
+    expect(cls).toContain('lg:max-w-[760px]');
+  });
+
+  it('backdrop ancré bottom-sheet sur mobile, recentré dès sm', () => {
+    render(
+      <DetailModal open onClose={() => {}} titleId="t">
+        <h2 id="t">Titre</h2>
+      </DetailModal>,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.className).toMatch(/\bitems-end\b/);
+    expect(dialog.className).toMatch(/\bsm:items-center\b/);
+  });
+});

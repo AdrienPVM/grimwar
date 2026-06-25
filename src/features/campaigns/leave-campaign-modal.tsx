@@ -80,7 +80,7 @@ export function LeaveCampaignModal({
       onClose={resetAndClose}
       titleId={titleId}
       closeLabel={t('campaigns.leave.close')}
-      className="max-w-[440px]"
+      size="sm"
     >
       <div className="flex flex-col gap-5 p-6">
         <header className="text-center">

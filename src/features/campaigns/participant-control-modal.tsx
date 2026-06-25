@@ -63,7 +63,7 @@ export function ParticipantControlModal({
       onClose={onClose}
       titleId={titleId}
       closeLabel={t('encounters.control.closeAria')}
-      className="max-w-[440px]"
+      size="md"
     >
       <div className="flex flex-col gap-6 px-5 py-6 pr-12">
         <header className="flex flex-col gap-2">
