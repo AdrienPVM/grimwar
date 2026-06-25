@@ -6,6 +6,33 @@ The signature press-hold-drag radial menu: hold the FAB, drag toward a wedge to 
 ## Context
 Read `prototype/grimwar.html` (the radial FAB animation in detail). The gesture is the soul of the app — get it right.
 
+## État de livraison (2026-06-26) — cœur déterministe livré, geste différé
+
+Livré dans `src/features/radial-menu/` (pur client, zéro rule/schéma/dep/path protégé) :
+- **Menu tactile docké (step 15)** — l'« accessibility fallback » du plan, monté
+  bottom-right sur la fiche (sous la garde `showRollHistory`). Il REMPLACE l'ancien
+  bouton flottant d'historique comme unique contrôle du coin ; l'historique devient
+  un wedge (« Outils › Historique »).
+- **Config data-driven (`wedge-config.ts`)** — source unique des 5 wedges (Aller à,
+  Sorts, Repos, Lancer, Outils) + sous-menus, gatée par `canEdit`/`showHistory`.
+  C'est le SEAM que la couche gestuelle réutilisera sans réécriture.
+- **Actions des wedges (steps 7-11)** câblées aux implémentations RÉELLES déjà
+  éprouvées : bascule de mode, repos court/long, toggle Inspiration, d20 vif
+  (mode-aware via `useDice`), ouverture de l'historique. « Sorts » saute au mode
+  Magie (le quick-cast top-5 direct depuis le FAB est différé : dérivation des
+  classes lanceuses + ressenti du cast = périmètre Adrien).
+- **Géométrie pure `angle-to-wedge.ts` (step 20)** — socle testé de la future
+  couche gestuelle (pas encore consommé par le menu docké).
+- **a11y** : aria-labels (step 19), Échap ferme, focus initial. Nav clavier
+  complète des wedges (step 18) = avec le geste.
+- Tests : 30 unit (angle + config + composant) + e2e `radial-fab-uat.spec.ts`
+  (step 21 : tap FAB → menu → bascule mode → d20 → historique reçoit le jet).
+
+**DIFFÉRÉ — le geste press-hold-drag (steps 1-6, 12-14, 16-17) = « l'âme de
+l'app », à CALER EN MAIN avec Adrien.** Il enveloppera la même `wedge-config`
+(rien de livré ici n'est jeté). C'est volontairement hors de l'autonomie : le
+ressenti du geste est précisément ce qu'Adrien valide en direct.
+
 ## Prerequisites
 Plans 01-10 **et plan 12** (swap d'ordre acté dans `plans/00-overview.md`). Plans 07, 09, 10 utilisent les actions de ce menu. **Tous les wedges qui déclenchent un jet (Lancer, Sorts, …) DOIVENT router via `useDice()` / `rollWithFlags` du plan 12 — jamais `dice.ts` en direct** — pour hériter du mode physique transparent.
 
@@ -41,19 +68,19 @@ Plans 01-10 **et plan 12** (swap d'ordre acté dans `plans/00-overview.md`). Pla
 - [ ] 14. Long-press a main wedge to commit to its sub-menu without releasing.
 
 ### Tap vs drag
-- [ ] 15. Quick tap (< 150ms, no movement) on FAB → opens a docked menu (touchable, no gesture). This is the accessibility fallback.
+- [x] 15. Quick tap (< 150ms, no movement) on FAB → opens a docked menu (touchable, no gesture). This is the accessibility fallback. **(Livré 2026-06-26 — `docked-menu.tsx`. En l'absence du geste, le tap est le SEUL mode d'ouverture pour l'instant.)**
 
 ### Haptic + sound
 - [ ] 16. On wedge highlight change: short `navigator.vibrate(10)` if supported.
 - [ ] 17. On fire: medium vibrate + soft sound (use Web Audio API, prefer settings-controlled).
 
 ### Accessibility
-- [ ] 18. Keyboard support: ArrowKeys to navigate wedges, Enter to fire. Tab opens the docked variant.
-- [ ] 19. `aria-label`s on each wedge.
+- [ ] 18. Keyboard support: ArrowKeys to navigate wedges, Enter to fire. Tab opens the docked variant. **(Partiel : Échap ferme + focus initial livrés ; nav flèches/Enter des wedges = avec le geste.)**
+- [x] 19. `aria-label`s on each wedge. **(Livré : FAB `openLabel`, dialog `menuAria`, items via `t(labelKey)`, close/back labellisés.)**
 
 ### Tests
-- [ ] 20. Unit: angle-to-wedge mapping function.
-- [ ] 21. e2e (Playwright): tap FAB, see docked menu, fire an action.
+- [x] 20. Unit: angle-to-wedge mapping function. **(Livré — `angle-to-wedge.test.ts`, 15 cas.)**
+- [x] 21. e2e (Playwright): tap FAB, see docked menu, fire an action. **(Livré — `radial-fab-uat.spec.ts`.)**
 
 ### Final
 - [ ] 22. `pnpm typecheck && pnpm test && pnpm lint`

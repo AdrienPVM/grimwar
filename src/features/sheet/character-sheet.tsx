@@ -1,6 +1,4 @@
-import { useState } from 'react';
-
-import { RollHistoryPanel } from '@/features/dice/roll-history-panel';
+import { RadialFab } from '@/features/radial-menu/radial-fab';
 import { Icon } from '@/shared/components/icon';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
@@ -67,7 +65,6 @@ export function CharacterSheet({
   // Omni-edit MJ (plan 26) : barre d'indication dorée en tête de fiche. `isDM`
   // seul (lecture) ne la déclenche pas — uniquement `isDMEdit` (écriture active).
   const { isDMEdit } = usePermissionContext();
-  const [historyOpen, setHistoryOpen] = useState<boolean>(false);
 
   // CA affichée : dérivée d'inventaire + Defense +1 conditionnel (D19/D20) +
   // bonus magic items (JALON 1B.2). L'appel est dupliqué dans AvoirMode (qui en
@@ -116,22 +113,16 @@ export function CharacterSheet({
           <ActiveMode character={character} />
         </div>
       </div>
+      {/*
+        Radial FAB (plan 11) — unique contrôle du coin inférieur droit. Remplace
+        l'ancien bouton flottant d'historique : l'historique des jets devient un
+        wedge (« Outils › Historique »). Même garde `showRollHistory` que l'ancien
+        bouton — absent en lecture MJ cross-owner (rule de lecture limitée au doc
+        fiche, pas au sous-arbre de rolls du joueur). Le geste press-hold-drag
+        reste à caler en main ; cette livraison fournit le menu tactile docké.
+      */}
       {showRollHistory ? (
-        <>
-          <button
-            type="button"
-            onClick={() => setHistoryOpen(true)}
-            aria-label="Ouvrir l'historique des jets"
-            className="fixed bottom-6 right-6 z-[60] inline-flex h-12 w-12 items-center justify-center rounded-full border border-soft bg-glass-2 shadow-card backdrop-blur-2xl transition-all hover:border-gold-bright hover:bg-gold-bright/10 active:scale-95"
-          >
-            <Icon name="i-dice" className="h-5 w-5 text-gold-bright" />
-          </button>
-          <RollHistoryPanel
-            open={historyOpen}
-            characterId={character.id}
-            onClose={() => setHistoryOpen(false)}
-          />
-        </>
+        <RadialFab character={character} setMode={setMode} showHistory={showRollHistory} />
       ) : null}
     </main>
   );

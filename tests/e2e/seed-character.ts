@@ -201,6 +201,12 @@ export interface SeedPreset {
    * mineur. Défaut : `null` (aucune concentration).
    */
   currentConcentration?: { spellId: string; slotLevel: number } | null;
+  /**
+   * États actifs (slugs SRD, ex. `'blinded'`). Défaut `[]`. Honoré par
+   * `buildCharacterDoc` pour seed une fiche avec des états posés (UAT modale
+   * d'état / mode Combat).
+   */
+  conditions?: string[];
 }
 
 export interface SeededCharacter {

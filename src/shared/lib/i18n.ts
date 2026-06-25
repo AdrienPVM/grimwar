@@ -449,6 +449,21 @@ export type StringKey =
   | 'sheet.mode.magie'
   | 'sheet.mode.avoir'
   | 'sheet.mode.ame'
+  // Radial FAB (plan 11) — menu d'action docké
+  | 'sheet.fab.openLabel'
+  | 'sheet.fab.closeLabel'
+  | 'sheet.fab.menuAria'
+  | 'sheet.fab.back'
+  | 'sheet.fab.allerA'
+  | 'sheet.fab.sorts'
+  | 'sheet.fab.outils'
+  | 'sheet.fab.lancer'
+  | 'sheet.fab.repos'
+  | 'sheet.fab.inspiration'
+  | 'sheet.fab.inspirationOn'
+  | 'sheet.fab.inspirationOff'
+  | 'sheet.fab.historique'
+  | 'sheet.fab.d20Label'
   | 'sheet.placeholder.todo'
   // Mode Âme (plan 20) — personnalité, histoire, statistiques
   | 'sheet.ame.personality.title'
@@ -2298,6 +2313,20 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.magie': 'Magie',
     'sheet.mode.avoir': 'Avoir',
     'sheet.mode.ame': 'Âme',
+    'sheet.fab.openLabel': "Ouvrir le menu d'action",
+    'sheet.fab.closeLabel': 'Fermer le menu',
+    'sheet.fab.menuAria': "Menu d'action",
+    'sheet.fab.back': 'Retour',
+    'sheet.fab.allerA': 'Aller à',
+    'sheet.fab.sorts': 'Sorts',
+    'sheet.fab.outils': 'Outils',
+    'sheet.fab.lancer': 'Lancer',
+    'sheet.fab.repos': 'Repos',
+    'sheet.fab.inspiration': 'Inspiration héroïque',
+    'sheet.fab.inspirationOn': 'Octroyée — relancez un test au choix.',
+    'sheet.fab.inspirationOff': 'Retirée.',
+    'sheet.fab.historique': 'Historique des jets',
+    'sheet.fab.d20Label': 'd20 vif',
     'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
     'sheet.ame.personality.title': 'Personnalité',
     'sheet.ame.personality.empty': 'Pas encore renseigné.',
@@ -4578,6 +4607,20 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.magie': 'Magic',
     'sheet.mode.avoir': 'Inv.',
     'sheet.mode.ame': 'Soul',
+    'sheet.fab.openLabel': 'Open action menu',
+    'sheet.fab.closeLabel': 'Close menu',
+    'sheet.fab.menuAria': 'Action menu',
+    'sheet.fab.back': 'Back',
+    'sheet.fab.allerA': 'Go to',
+    'sheet.fab.sorts': 'Spells',
+    'sheet.fab.outils': 'Tools',
+    'sheet.fab.lancer': 'Roll',
+    'sheet.fab.repos': 'Rest',
+    'sheet.fab.inspiration': 'Heroic Inspiration',
+    'sheet.fab.inspirationOn': 'Granted — reroll any check.',
+    'sheet.fab.inspirationOff': 'Removed.',
+    'sheet.fab.historique': 'Roll history',
+    'sheet.fab.d20Label': 'Quick d20',
     'sheet.placeholder.todo': 'Section coming in a later plan.',
     'sheet.ame.personality.title': 'Personality',
     'sheet.ame.personality.empty': 'Not filled in yet.',
