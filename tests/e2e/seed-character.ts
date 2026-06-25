@@ -169,6 +169,22 @@ export interface SeedPreset {
   extraLanguages?: string[];
   /** Items pré-équipés (slug items.json) — utile pour tester les attaques. */
   inventory?: { items: { contentId: string; equipped: boolean; qty?: number }[] };
+  /** Personnalité pré-remplie (mode Âme) — chaque champ optionnel, défaut vide. */
+  personality?: Partial<{
+    trait: string;
+    ideal: string;
+    bond: string;
+    flaw: string;
+    backstory: string;
+  }>;
+  /** Stats de jeu cumulées (mode Âme — tableau de bord). Défaut : tout à zéro. */
+  stats?: {
+    totalRolls: number;
+    totalD20Sum: number;
+    crits: number;
+    fumbles: number;
+    skillUses: Record<string, number>;
+  };
 }
 
 export interface SeededCharacter {
@@ -1180,12 +1196,18 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
       coins: { cu: 0, ar: 0, el: 0, or: 0, pl: 0 },
       weightCache: 0,
     },
-    personality: { trait: '', ideal: '', bond: '', flaw: '', backstory: '' },
+    personality: {
+      trait: preset.personality?.trait ?? '',
+      ideal: preset.personality?.ideal ?? '',
+      bond: preset.personality?.bond ?? '',
+      flaw: preset.personality?.flaw ?? '',
+      backstory: preset.personality?.backstory ?? '',
+    },
     featureUsage: {},
     extraProficiencies: { armor: [], weapons: [], tools: [], languages: [] },
     presentInCampaigns: [],
     homeCampaignId: null,
-    stats: { totalRolls: 0, totalD20Sum: 0, crits: 0, fumbles: 0, skillUses: {} },
+    stats: preset.stats ?? { totalRolls: 0, totalD20Sum: 0, crits: 0, fumbles: 0, skillUses: {} },
     portrait: { type: 'letter', value: initial.toUpperCase() },
     schemaVersion: writeV2 ? 2 : 1,
     createdAt: FieldValue.serverTimestamp(),

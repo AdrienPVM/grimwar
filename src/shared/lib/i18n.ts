@@ -307,6 +307,27 @@ export type StringKey =
   | 'sheet.mode.avoir'
   | 'sheet.mode.ame'
   | 'sheet.placeholder.todo'
+  // Mode Âme (plan 20) — personnalité, histoire, statistiques
+  | 'sheet.ame.personality.title'
+  | 'sheet.ame.personality.empty'
+  | 'sheet.ame.personality.edit'
+  | 'sheet.ame.personality.save'
+  | 'sheet.ame.personality.cancel'
+  | 'sheet.ame.personality.editLabel'
+  | 'sheet.ame.personality.placeholder.trait'
+  | 'sheet.ame.personality.placeholder.ideal'
+  | 'sheet.ame.personality.placeholder.bond'
+  | 'sheet.ame.personality.placeholder.flaw'
+  | 'sheet.ame.backstory.title'
+  | 'sheet.ame.backstory.empty'
+  | 'sheet.ame.backstory.placeholder'
+  | 'sheet.ame.stats.title'
+  | 'sheet.ame.stats.totalRolls'
+  | 'sheet.ame.stats.avgD20'
+  | 'sheet.ame.stats.crits'
+  | 'sheet.ame.stats.fumbles'
+  | 'sheet.ame.stats.topSkill'
+  | 'sheet.ame.stats.noRolls'
   // Sorts d'ascendance — plan 13.8 / 13.8b
   | 'sheet.magie.ancestry.tieflingTitle'
   | 'sheet.magie.ancestry.elfTitle'
@@ -1967,6 +1988,31 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.avoir': 'Avoir',
     'sheet.mode.ame': 'Âme',
     'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
+    'sheet.ame.personality.title': 'Personnalité',
+    'sheet.ame.personality.empty': 'Pas encore renseigné.',
+    'sheet.ame.personality.edit': 'Modifier',
+    'sheet.ame.personality.save': 'Enregistrer',
+    'sheet.ame.personality.cancel': 'Annuler',
+    'sheet.ame.personality.editLabel': 'Modifier {field}',
+    'sheet.ame.personality.placeholder.trait':
+      'Ex. : « Je cite toujours un proverbe à propos. »',
+    'sheet.ame.personality.placeholder.ideal':
+      'Ex. : « La liberté. Les chaînes sont faites pour être brisées. »',
+    'sheet.ame.personality.placeholder.bond':
+      'Ex. : « Je donnerais ma vie pour ceux de mon ancien refuge. »',
+    'sheet.ame.personality.placeholder.flaw':
+      'Ex. : « Je ne résiste jamais à un trésor mal gardé. »',
+    'sheet.ame.backstory.title': 'Histoire',
+    'sheet.ame.backstory.empty': 'Aucune histoire écrite pour l’instant.',
+    'sheet.ame.backstory.placeholder':
+      'Raconte le passé de ton personnage : ses origines, ce qui l’a poussé à l’aventure…',
+    'sheet.ame.stats.title': 'Statistiques',
+    'sheet.ame.stats.totalRolls': 'Jets lancés',
+    'sheet.ame.stats.avgD20': 'Moyenne au d20',
+    'sheet.ame.stats.crits': 'Coups critiques',
+    'sheet.ame.stats.fumbles': 'Échecs critiques',
+    'sheet.ame.stats.topSkill': 'Compétence fétiche',
+    'sheet.ame.stats.noRolls': 'Aucun jet enregistré pour l’instant.',
     'sheet.magie.ancestry.tieflingTitle': "Sorts d'héritage fiélon",
     'sheet.magie.ancestry.elfTitle': 'Sorts de lignage elfique',
     'sheet.magie.ancestry.gnomeTitle': 'Sorts de lignage gnome',
@@ -4055,6 +4101,31 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.avoir': 'Inv.',
     'sheet.mode.ame': 'Soul',
     'sheet.placeholder.todo': 'Section coming in a later plan.',
+    'sheet.ame.personality.title': 'Personality',
+    'sheet.ame.personality.empty': 'Not filled in yet.',
+    'sheet.ame.personality.edit': 'Edit',
+    'sheet.ame.personality.save': 'Save',
+    'sheet.ame.personality.cancel': 'Cancel',
+    'sheet.ame.personality.editLabel': 'Edit {field}',
+    'sheet.ame.personality.placeholder.trait':
+      'E.g. “I always have a proverb ready for the occasion.”',
+    'sheet.ame.personality.placeholder.ideal':
+      'E.g. “Freedom. Chains are meant to be broken.”',
+    'sheet.ame.personality.placeholder.bond':
+      'E.g. “I would give my life for those of my old refuge.”',
+    'sheet.ame.personality.placeholder.flaw':
+      'E.g. “I can never resist a poorly guarded treasure.”',
+    'sheet.ame.backstory.title': 'Backstory',
+    'sheet.ame.backstory.empty': 'No backstory written yet.',
+    'sheet.ame.backstory.placeholder':
+      'Tell your character’s past: their origins, what drove them to adventure…',
+    'sheet.ame.stats.title': 'Statistics',
+    'sheet.ame.stats.totalRolls': 'Rolls made',
+    'sheet.ame.stats.avgD20': 'Average d20',
+    'sheet.ame.stats.crits': 'Critical hits',
+    'sheet.ame.stats.fumbles': 'Critical misses',
+    'sheet.ame.stats.topSkill': 'Favourite skill',
+    'sheet.ame.stats.noRolls': 'No rolls recorded yet.',
     'sheet.magie.ancestry.tieflingTitle': 'Fiendish legacy spells',
     'sheet.magie.ancestry.elfTitle': 'Elven lineage spells',
     'sheet.magie.ancestry.gnomeTitle': 'Gnomish lineage spells',

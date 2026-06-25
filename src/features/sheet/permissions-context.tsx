@@ -13,7 +13,7 @@ import { isSheetReadOnly } from './modes/combat/hp-combat';
  */
 export const DM_LOCKED_FIELDS = ['name', 'personality', 'homeCampaignId'] as const;
 
-interface PermissionContextValue {
+export interface PermissionContextValue {
   canEdit: boolean;
   /**
    * True si le viewer est MJ d'une campagne où vit ce PJ. En S1 toujours

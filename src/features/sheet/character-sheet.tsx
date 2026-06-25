@@ -30,7 +30,7 @@ const MODE_COMPONENTS: Record<SheetMode, (props: ModeProps) => JSX.Element> = {
   essence: EssenceMode,
   magie: MagieMode,
   avoir: AvoirMode,
-  ame: () => <AmeMode />,
+  ame: AmeMode,
 };
 
 interface CharacterSheetProps {
