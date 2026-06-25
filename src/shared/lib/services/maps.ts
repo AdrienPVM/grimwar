@@ -113,8 +113,13 @@ export async function deleteMap(campaignId: string, mapId: string): Promise<void
 // ─── Tokens (sous-collection) ──────────────────────────────────────────────
 
 /**
- * Crée un token via `addDoc` (Firestore génère l'ID). On retourne l'ID pour
- * que l'UI puisse le suivre côté local immédiatement (avant le snapshot).
+ * Crée un token via `addDoc` (Firestore génère l'ID).
+ *
+ * ⚠ ATTENTION : l'ID auto-généré contient des MAJUSCULES, donc il échoue au
+ * parse Zod de `mapTokenSchema.id` (slug `[a-z0-9-]+`) et le token est filtré
+ * par `useMap` (jamais affiché). Pour une création depuis l'UI, préférer
+ * `createTokenWithId` avec un slug. `createToken` reste pour un usage futur où
+ * l'ID serait normalisé en amont.
  */
 export async function createToken(
   campaignId: string,
@@ -133,6 +138,43 @@ export async function createToken(
     }),
   );
   return docRef.id;
+}
+
+/**
+ * Crée un token avec un ID SLUG explicite (kebab-case), via `setDoc`.
+ *
+ * Pourquoi pas `createToken`/`addDoc` : Firestore génère des IDs auto qui
+ * contiennent des MAJUSCULES, alors que `mapTokenSchema.id` impose un slug
+ * `[a-z0-9-]+`. Un token créé par `addDoc` est donc silencieusement rejeté au
+ * parse Zod du listener `useMap` (jamais affiché). Pour toute création de token
+ * depuis l'UI, utiliser CE helper avec un slug (ex. `token-ab12cd34`).
+ */
+export async function createTokenWithId(
+  campaignId: string,
+  mapId: string,
+  tokenId: string,
+  input: CreateTokenInput,
+  uid: string,
+): Promise<string> {
+  const firestore = getDb();
+  const ref = doc(
+    firestore,
+    'campaigns',
+    campaignId,
+    'maps',
+    mapId,
+    'tokens',
+    tokenId,
+  );
+  await trackPendingWrite(
+    firestore,
+    setDoc(ref, {
+      ...input,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    }),
+  );
+  return tokenId;
 }
 
 export async function updateToken(

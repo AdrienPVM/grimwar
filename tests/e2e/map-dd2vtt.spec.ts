@@ -70,9 +70,11 @@ function syntheticDd2vtt(): string {
       { position: { x: 5, y: 5 }, range: 4, color: 'ffcc66' },
       { position: { x: 15, y: 9 }, range: 3, color: '66ccff' },
     ],
-    // PNG 1×1 transparent — exerce le chemin de persistance image locale.
+    // PNG 16×16 ardoise opaque (#4a4658) — fond uni : rend la révélation de
+    // ligne de vue VISIBLE (le trou éclairé tranche sur le voile sombre), et
+    // exerce le chemin de persistance image locale (Dexie).
     image:
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGUlEQVR4nGPwcov4TwlmGDVg1IBRA4aLAQBddOcQFmErwgAAAABJRU5ErkJggg==',
   });
 }
 
@@ -165,15 +167,29 @@ test.describe('Mode carte — import .dd2vtt + LOS + vue présentation', () => {
     await takeStepScreenshot(page, testInfo, 'live-importee');
     await uatShot(page, '02-live-importee');
 
-    // 5. Activer le voile → fog rendu.
+    // 5. Poser un token PJ → il alimente la ligne de vue.
+    await page.getByTestId('map-live-add-pj').click();
+    await expect(page.getByTestId('map-live-tokens-count')).toContainText('(1)', {
+      timeout: 5000,
+    });
+
+    // 6. Activer le voile → la LOS du token perce un trou de visibilité dans le
+    // voile (occlusion par les murs). Le fog mask doit contenir ≥ 1 reveal.
     await page.getByTestId('map-live-toggle-fog').click();
     await expect(page.getByTestId('map-live-toggle-fog')).toContainText('ON', {
       timeout: 5000,
     });
     await expect(page.getByTestId('fog-layer')).toBeVisible();
+    // FogLayer rend les reveals (manuels + LOS) en <polygon fill="black"> dans
+    // le <mask>. Avec 1 token + losEnabled, il y a ≥ 1 polygone de visibilité.
+    await expect
+      .poll(() => page.locator('mask polygon[fill="black"]').count(), {
+        timeout: 5000,
+      })
+      .toBeGreaterThanOrEqual(1);
 
-    await takeStepScreenshot(page, testInfo, 'live-voile-on');
-    await uatShot(page, '03-live-voile-on');
+    await takeStepScreenshot(page, testInfo, 'live-los');
+    await uatShot(page, '03-live-los');
 
     // 6. Vue présentation / TV.
     await page.getByTestId('map-live-open-tv').click();

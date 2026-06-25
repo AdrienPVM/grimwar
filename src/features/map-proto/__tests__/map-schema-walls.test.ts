@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { mapMetaSchema, wallPolylineSchema } from '@/shared/types/map';
+import {
+  mapMetaSchema,
+  mapTokenSchema,
+  wallPolylineSchema,
+} from '@/shared/types/map';
 
 /**
  * Garde-fou de rétrocompatibilité : l'ajout de `walls` / `losEnabled` est
@@ -41,6 +45,31 @@ describe('mapMetaSchema — rétrocompat walls/losEnabled', () => {
     });
     expect(parsed.walls).toHaveLength(1);
     expect(parsed.losEnabled).toBe(true);
+  });
+});
+
+describe('mapTokenSchema — contrainte slug sur id (cf. createTokenWithId)', () => {
+  const base = {
+    kind: 'pj' as const,
+    label: 'PJ',
+    position: { x: 500, y: 350 },
+    color: '#60a5fa',
+    visionRadius: 30,
+    updatedAt: null,
+    updatedBy: 'uid',
+  };
+
+  it('REJETTE un id auto-Firestore (majuscules) — raison du bug createToken', () => {
+    // Un addDoc Firestore génère p.ex. "aB3xY9kLmN0pQ" → échoue le slug.
+    expect(
+      mapTokenSchema.safeParse({ id: 'aB3xY9kLmN0pQ', ...base }).success,
+    ).toBe(false);
+  });
+
+  it('accepte un id slug kebab-case (ce que pose createTokenWithId)', () => {
+    expect(
+      mapTokenSchema.safeParse({ id: 'token-ab12cd34', ...base }).success,
+    ).toBe(true);
   });
 });
 

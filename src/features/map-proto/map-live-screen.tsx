@@ -12,6 +12,8 @@ import {
   addAoeTemplate,
   addFogPolygon,
   addLightSource,
+  createTokenWithId,
+  deleteToken,
   updateMap,
   updateToken,
 } from '@/shared/lib/services/maps';
@@ -61,6 +63,17 @@ const FOG_DEFAULT_RADIUS = 120;
 const LIGHT_TORCH_BRIGHT = 20; // ft
 const LIGHT_TORCH_DIM = 20; // ft
 const AOE_SPHERE_RADIUS = 20; // ft
+const TOKEN_VISION_FT = 30; // vision normale par défaut (alimente la LOS)
+const TOKEN_COLORS: Record<MapToken['kind'], string> = {
+  pj: '#60a5fa',
+  pnj: '#f87171',
+  marker: '#9ca3af',
+};
+const TOKEN_LABELS: Record<MapToken['kind'], string> = {
+  pj: 'PJ',
+  pnj: 'PNJ',
+  marker: '•',
+};
 
 function randomSlug(prefix: string): string {
   // 8 chars [a-z0-9] — conforme au regex slug de mapMetaSchema.
@@ -297,6 +310,46 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, map, mid, user]);
 
+  // ── Tokens (affordance prototype « au centre », parité fog/light/AoE) ───
+  // N'arbitre PAS la décision produit F23 (UX d'édition complète) : c'est le
+  // même geste minimal que les boutons « Torche/Sphère au centre » déjà
+  // mergés. Le token apparaît au centre, draggable, et alimente la LOS via
+  // son rayon de vision par défaut.
+  const handleAddToken = useCallback(
+    async (kind: MapToken['kind']): Promise<void> => {
+      if (!cid || !mid || !user) return;
+      try {
+        await createTokenWithId(
+          cid,
+          mid,
+          randomSlug('token'),
+          {
+            kind,
+            label: TOKEN_LABELS[kind],
+            position: { x: CENTER_X, y: CENTER_Y },
+            color: TOKEN_COLORS[kind],
+            ...(kind !== 'marker' ? { visionRadius: TOKEN_VISION_FT } : {}),
+          },
+          user.uid,
+        );
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, mid, user],
+  );
+
+  const handleClearTokens = useCallback(async (): Promise<void> => {
+    if (!cid || !mid) return;
+    try {
+      await Promise.all(tokens.map((tk) => deleteToken(cid, mid, tk.id)));
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, mid, tokens]);
+
   if (!cid || !mid) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
@@ -486,6 +539,46 @@ export function MapLiveScreen(): JSX.Element {
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
             Effacer AoE
+          </button>
+        </div>
+        {/* Tokens — affordance prototype « au centre » (parité fog/light/AoE). */}
+        <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
+          <span
+            data-testid="map-live-tokens-count"
+            className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
+          >
+            Tokens ({tokens.length})
+          </span>
+          <button
+            type="button"
+            data-testid="map-live-add-pj"
+            onClick={() => {
+              void handleAddToken('pj');
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            + PJ
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-add-pnj"
+            onClick={() => {
+              void handleAddToken('pnj');
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            + PNJ
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-clear-tokens"
+            onClick={() => {
+              void handleClearTokens();
+            }}
+            disabled={tokens.length === 0}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Effacer tokens
           </button>
         </div>
         {/* Ligne de vue + voile + vue présentation. */}
