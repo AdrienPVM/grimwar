@@ -122,6 +122,27 @@ describe('<StatusStrip>', () => {
     expect(screen.queryByText('99')).toBeNull();
   });
 
+  it('affiche la Perception passive calculée (SAG 14 + maîtrise, niveau 1 → 14)', () => {
+    // Rouge avant vert : avant ce plan, la cellule Perception passive n'existait
+    // pas. On asserte le NOMBRE exact (10 + mod SAG +2 + PB 2), pas sa présence.
+    render(
+      <StatusStrip
+        character={buildCharacter({
+          classes: [
+            { classId: 'fighter', subclassId: null, level: 1 } as Character['classes'][number],
+          ],
+          abilities: { for: 16, dex: 12, con: 14, int: 10, sag: 14, cha: 10 },
+          skills: { perception: 1 },
+        })}
+        displayedAc={17}
+      />,
+    );
+    const label = screen.getByText('Perc. passive');
+    const cell = label.closest('div');
+    if (!cell) throw new Error('cellule Perception passive introuvable');
+    expect(within(cell).getByText('14')).toBeInTheDocument();
+  });
+
   it('ne rend PLUS les PV — anti-duplication (les PV sont portés par l’emblème)', () => {
     // Rouge avant vert : sur l'ancien code, la cellule PV existait ici ET sur le
     // badge de l'emblème ET (en Combat) sur la HpMegaCard → triple affichage. La

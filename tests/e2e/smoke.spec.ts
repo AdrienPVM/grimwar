@@ -122,9 +122,11 @@ test.describe('Smoke central — / → /create → /character/:id → /', () => 
       'Le nom du perso doit apparaître sur la fiche (hero card).',
     ).toBeVisible();
 
-    // Status strip : 4 chips HP / CA / Init / Vit (variant `<StatusStrip>`).
-    // On valide la présence d'au moins 2 stats (HP, CA) — le markup peut évoluer.
-    await expect(page.getByText(/PV|HP/).first()).toBeVisible();
+    // Les PV vivent sur le badge de l'emblème (HeroEmblem rend « N » + « / Nmax »),
+    // plus dans le status strip (retirés pour éviter la duplication). Le strip
+    // porte CA / Init / Vit / Perc. passive. On valide les PV via la fraction
+    // « / Nmax » de l'emblème + la CA du strip — le markup peut évoluer.
+    await expect(page.getByText(/^\/\s*\d+$/).first()).toBeVisible();
     await expect(page.getByText(/CA|AC/).first()).toBeVisible();
 
     // 5 onglets de mode sur la fiche (Combat / Essence / Magie / Avoir / Âme).

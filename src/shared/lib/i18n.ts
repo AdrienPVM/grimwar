@@ -293,6 +293,12 @@ export type StringKey =
   | 'sheet.stat.ac'
   | 'sheet.stat.init'
   | 'sheet.stat.speed'
+  | 'sheet.stat.passivePerception'
+  | 'sheet.essence.languages.title'
+  | 'sheet.essence.proficiencies.title'
+  | 'sheet.essence.proficiencies.armor'
+  | 'sheet.essence.proficiencies.weapons'
+  | 'sheet.essence.proficiencies.tools'
   | 'sheet.mode.combat'
   | 'sheet.mode.essence'
   | 'sheet.mode.magie'
@@ -1942,6 +1948,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.ac': 'CA',
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Vit.',
+    'sheet.stat.passivePerception': 'Perc. passive',
+    'sheet.essence.languages.title': 'Langues',
+    'sheet.essence.proficiencies.title': 'Maîtrises',
+    'sheet.essence.proficiencies.armor': 'Armures',
+    'sheet.essence.proficiencies.weapons': 'Armes',
+    'sheet.essence.proficiencies.tools': 'Outils',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magie',
@@ -4022,6 +4034,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.ac': 'AC',
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Spd',
+    'sheet.stat.passivePerception': 'Pass. perc.',
+    'sheet.essence.languages.title': 'Languages',
+    'sheet.essence.proficiencies.title': 'Proficiencies',
+    'sheet.essence.proficiencies.armor': 'Armor',
+    'sheet.essence.proficiencies.weapons': 'Weapons',
+    'sheet.essence.proficiencies.tools': 'Tools',
     'sheet.mode.combat': 'Combat',
     'sheet.mode.essence': 'Essence',
     'sheet.mode.magie': 'Magic',

@@ -327,7 +327,13 @@ export async function buildCharacterFromWizard(
     ancestryId: ancestry.id,
     ancestrySubChoices: { ...draft.ancestrySubChoices },
     backgroundId: background.id,
-    extraLanguages: [],
+    // Langues bonus choisies au wizard (ex. langue supplémentaire du Roublard
+    // via ExtraLanguagesChooser). AVANT ce fix, ce champ était codé en dur à
+    // `[]` — le choix du joueur était silencieusement perdu au submit. Cloné
+    // pour couper la référence partagée avec le state Zustand. Les langues
+    // d'ascendance ne sont PAS dénormalisées ici : elles se dérivent du contenu
+    // de l'ascendance à l'affichage (cf. resolveCharacterLanguages).
+    extraLanguages: [...draft.extraLanguages],
     experience: 0,
     alignment: draft.alignment,
     abilities: { ...draft.abilities },

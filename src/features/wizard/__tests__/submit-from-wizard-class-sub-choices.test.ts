@@ -495,3 +495,45 @@ describe('buildCharacterFromWizard — knownSpells.wizard reflète le grimoire i
     expect(known.has('mage-armor')).toBe(true);
   });
 });
+
+describe('buildCharacterFromWizard — propagation des langues bonus (régression)', () => {
+  // Patch de sous-choix complet pour un Roublard L1 valide (sinon la garde
+  // `areAllClassSubChoicesCompleted` throw avant qu'on observe extraLanguages).
+  const ROGUE_COMPLETE = {
+    weaponMasteries: ['dagger', 'rapier'],
+    expertiseSkills: ['stealth', 'sleight-of-hand'],
+  };
+  const FIGHTER_COMPLETE = {
+    fighterFightingStyle: 'defense' as const,
+    weaponMasteries: ['longsword', 'greatsword', 'battleaxe'],
+  };
+
+  it('persiste draft.extraLanguages dans character.extraLanguages (Roublard → Elfique)', async () => {
+    // Rouge avant vert : avant le fix, submit-from-wizard.ts codait
+    // `extraLanguages: []` en dur → le choix de langue du Roublard était perdu.
+    const draft = draftFor('rogue', ROGUE_COMPLETE, {
+      pickedSkills: ['stealth', 'sleight-of-hand'],
+      extraLanguages: ['elvish'],
+    });
+    const character = await buildCharacterFromWizard(buildArgs(draft));
+    expect(character.extraLanguages).toEqual(['elvish']);
+  });
+
+  it("n'invente aucune langue quand le draft n'en porte pas (cas par défaut)", async () => {
+    const draft = draftFor('fighter', FIGHTER_COMPLETE, {
+      pickedSkills: ['athletics', 'intimidation'],
+    });
+    const character = await buildCharacterFromWizard(buildArgs(draft));
+    expect(character.extraLanguages).toEqual([]);
+  });
+
+  it('clone le tableau (pas de référence partagée avec le draft Zustand)', async () => {
+    const draft = draftFor('rogue', ROGUE_COMPLETE, {
+      pickedSkills: ['stealth', 'sleight-of-hand'],
+      extraLanguages: ['orc'],
+    });
+    const character = await buildCharacterFromWizard(buildArgs(draft));
+    expect(character.extraLanguages).not.toBe(draft.extraLanguages);
+    expect(character.extraLanguages).toEqual(['orc']);
+  });
+});

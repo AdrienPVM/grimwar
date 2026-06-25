@@ -1,6 +1,7 @@
 import { Icon } from '@/shared/components/icon';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { passivePerception } from '@/shared/lib/rules/passive-perception';
 import type { Character } from '@/shared/types/character';
 import type { IconName } from '@/shared/design/icons';
 
@@ -41,10 +42,14 @@ export function StatusStrip({
 }: StatusStripProps): JSX.Element {
   const initSign = character.initiative >= 0 ? '+' : '';
   const speedValue = displayedSpeed ?? character.speed;
+  // Perception passive (SRD 5.2.1) : 10 + mod de Perception. Valeur de fiche
+  // glanceable au même titre que CA/Init/Vitesse — l'un des chiffres les plus
+  // consultés au jeu (détection de pièges, créatures cachées) côté MJ.
+  const passivePerc = passivePerception(character);
   return (
     <section
       aria-label={t('sheet.statusStrip.aria')}
-      className="mx-auto mt-6 grid w-full max-w-[420px] grid-cols-3 gap-2 px-4 lg:px-2"
+      className="mx-auto mt-6 grid w-full max-w-[420px] grid-cols-2 gap-2 px-4 sm:grid-cols-4 lg:px-2"
     >
       <StatusCell
         icon="i-shield"
@@ -61,6 +66,11 @@ export function StatusStrip({
         label={t('sheet.stat.speed')}
         value={`${speedValue}`}
         sub="m"
+      />
+      <StatusCell
+        icon="i-eye"
+        label={t('sheet.stat.passivePerception')}
+        value={`${passivePerc}`}
       />
     </section>
   );

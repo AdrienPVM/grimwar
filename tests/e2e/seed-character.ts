@@ -165,6 +165,8 @@ export interface SeedPreset {
   spellcastingAbility?: Record<string, AbilityCode>;
   /** Skills pré-maîtrisés (slug, valeur = 1). */
   skills?: Record<string, 1 | 2>;
+  /** Langues bonus choisies (slugs `languages.ts`, ex. langue extra du Roublard). */
+  extraLanguages?: string[];
   /** Items pré-équipés (slug items.json) — utile pour tester les attaques. */
   inventory?: { items: { contentId: string; equipped: boolean; qty?: number }[] };
 }
@@ -1136,9 +1138,9 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
     ancestryId: preset.ancestryId,
     backgroundId: preset.backgroundId,
     // `extraLanguages` ajouté en plan 13.9 (sous-choix Roublard 1 langue
-    // extra + dette de modèle). Tableau vide par défaut côté seed — les
-    // presets l1 actuels ne posent pas de langues supplémentaires.
-    extraLanguages: [],
+    // extra + dette de modèle). Honore désormais `preset.extraLanguages` pour
+    // seed un Roublard avec sa langue bonus (UAT carte Langues).
+    extraLanguages: preset.extraLanguages ?? [],
     experience: 0,
     alignment: 'N',
     abilities: preset.abilities,
