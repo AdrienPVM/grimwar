@@ -389,6 +389,14 @@ export type StringKey =
   // grant-display) — 3 sorts mineurs + 2 sorts L1 rituels au choix de n'importe
   // quelle classe, persistés dans `classes[warlock].pactTomeCantrips`/`.pactTomeRituals`.
   | 'sheet.magie.pactTome.sourceLabel'
+  // Préparation des sorts (Clerc/Druide/Paladin) — éditeur de liste préparée
+  | 'sheet.magie.prep.titleFor'
+  | 'sheet.magie.prep.count'
+  | 'sheet.magie.prep.edit'
+  | 'sheet.magie.prep.done'
+  | 'sheet.magie.prep.hint'
+  | 'sheet.magie.prep.levelLabel'
+  | 'sheet.magie.prep.prepared'
   // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
@@ -2120,6 +2128,16 @@ const STRINGS: Record<Locale, Dict> = {
     // D13e-followup-grant-display — nom de l'invocation `pact-of-the-tome`
     // (SRD FR : « Pacte du grimoire » — invocations.json > pact-of-the-tome.name.fr).
     'sheet.magie.pactTome.sourceLabel': 'Pacte du grimoire',
+    // Préparation des sorts — « sort mineur » = terme officiel SRD FR 5.2.1
+    // pour cantrip (cf. règle terminologique du projet).
+    'sheet.magie.prep.titleFor': 'Préparation · {class}',
+    'sheet.magie.prep.count': '{n} / {cap} préparés',
+    'sheet.magie.prep.edit': 'Modifier',
+    'sheet.magie.prep.done': 'Terminer',
+    'sheet.magie.prep.hint':
+      'Choisis tes sorts préparés dans la liste de ta classe. Les sorts mineurs sont toujours disponibles.',
+    'sheet.magie.prep.levelLabel': 'Niveau {n}',
+    'sheet.magie.prep.prepared': 'Préparé',
     // Plan D1 — modes de résolution des dégâts de sort (modale détail)
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
@@ -4280,6 +4298,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.cantNotImplementedAncestry':
       'Casting ancestry spells is not yet implemented.',
     'sheet.magie.pactTome.sourceLabel': 'Pact of the Tome',
+    'sheet.magie.prep.titleFor': 'Preparation · {class}',
+    'sheet.magie.prep.count': '{n} / {cap} prepared',
+    'sheet.magie.prep.edit': 'Edit',
+    'sheet.magie.prep.done': 'Done',
+    'sheet.magie.prep.hint':
+      'Choose your prepared spells from your class list. Cantrips are always available.',
+    'sheet.magie.prep.levelLabel': 'Level {n}',
+    'sheet.magie.prep.prepared': 'Prepared',
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',

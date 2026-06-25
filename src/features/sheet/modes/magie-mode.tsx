@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { useContent } from '@/shared/hooks/use-content';
 import { localize } from '@/shared/lib/i18n';
+import { isPreparedCaster } from '@/shared/lib/rules/spell-preparation';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
@@ -16,6 +17,7 @@ import {
   buildPactTomeSourceLabelMap,
   resolvePactTomeSpellEntries,
 } from './magie/pact-tome-source-label';
+import { PreparationEditor } from './magie/preparation-editor';
 import { SpellDetailModal } from './magie/spell-detail-modal';
 import { SpellList } from './magie/spell-list';
 import { SpellStatsBar } from './magie/spell-stats-bar';
@@ -129,6 +131,25 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
           <MagicCircle character={character} readOnly={readOnly} />
         </>
       ) : null}
+      {/*
+        Préparation des sorts — un éditeur par classe préparatrice de liste
+        complète (Clerc, Druide, Paladin). Le Magicien prépare depuis son
+        grimoire (`WizardSpellbookSections`) ; les connaisseurs (Barde,
+        Ensorceleur, Rôdeur, Occultiste) n'ont pas d'éditeur. La carte se
+        masque d'elle-même si rien n'est préparable.
+      */}
+      {castingClasses
+        .filter((c) => isPreparedCaster(c.classId) && c.classId !== 'wizard')
+        .map((c) => (
+          <PreparationEditor
+            key={c.classId}
+            character={character}
+            classId={c.classId}
+            className={c.name}
+            classLevel={c.level}
+            readOnly={readOnly}
+          />
+        ))}
       <AncestrySpellsCard
         character={character}
         onSpellSelect={(spell) => setActiveSpell(spell)}
