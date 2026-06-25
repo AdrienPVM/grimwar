@@ -14,15 +14,19 @@ const LEVEL_LABEL: Record<EncumbranceLevel, string> = {
   'heavily-encumbered': 'Fortement encombré',
 };
 
+// Rampe sémantique 100% tokens (l'ambre Tailwind par défaut jurait avec l'or
+// chaud du manuscrit) : or sobre (charge normale) → or vif d'alerte (encombré)
+// → crimson de danger (fortement encombré). Escalade de luminosité = escalade
+// de gravité.
 const LEVEL_BAR_CLASS: Record<EncumbranceLevel, string> = {
-  normal: 'bg-gradient-to-r from-gold-bright to-gold',
-  encumbered: 'bg-gradient-to-r from-amber-400 to-amber-600',
-  'heavily-encumbered': 'bg-gradient-to-r from-crimson to-[#a83d3d]',
+  normal: 'bg-gradient-to-r from-gold to-gold-deep',
+  encumbered: 'bg-gradient-to-r from-gold-bright to-gold-lite',
+  'heavily-encumbered': 'bg-gradient-to-r from-crimson to-crimson/70',
 };
 
 const LEVEL_LABEL_CLASS: Record<EncumbranceLevel, string> = {
   normal: 'text-text-tertiary',
-  encumbered: 'text-amber-300',
+  encumbered: 'text-gold-text',
   'heavily-encumbered': 'text-crimson',
 };
 
@@ -62,7 +66,10 @@ export function WeightBar({
       </div>
       <div className="relative h-2 overflow-hidden rounded-full bg-white-8">
         <div
-          className={cn('h-full rounded-full transition-all duration-300', LEVEL_BAR_CLASS[level])}
+          className={cn(
+            'h-full rounded-full transition-all duration-300 ease-base',
+            LEVEL_BAR_CLASS[level],
+          )}
           style={{ width: `${fillPercent}%` }}
         />
       </div>

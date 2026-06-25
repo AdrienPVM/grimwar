@@ -99,7 +99,7 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
       </div>
 
       {pickerOpen && (
-        <div className="mt-4 rounded-card-sm border border-white-8 bg-bg-2/60 p-3">
+        <div className="mt-4 animate-fadeIn rounded-card-sm border border-white-8 bg-bg-2/60 p-3">
           <input
             type="search"
             value={query}
