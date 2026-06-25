@@ -82,6 +82,8 @@ export async function logRoll(args: {
 | `dm-edit` | DM édite un PJ via authority | `all` | targetCharacterId, fieldsChanged, before, after |
 | `campaign-join` | Joueur rejoint | `all` | userId, characterId |
 | `campaign-leave` | Joueur quitte | `all` | userId, reason |
+| `handout-sent` | DM transmet un document | `all` | handoutId, recipients, title |
+| `handout-revealed` | Joueur ouvre un document | `all` | handoutId, revealedByUserId |
 
 ## Common payload structure
 

@@ -363,12 +363,33 @@ service cloud.firestore {
 
       // ── Handouts (S3, plan 27) ────────────────────────────────
       match /handouts/{handoutId} {
-        // Members can read handouts they are recipients of (or 'all')
-        allow read: if isMemberOf(campaignId)
-          && (isDMOf(campaignId)
-              || resource.data.recipients == 'all'
-              || request.auth.uid in resource.data.recipients);
-        allow create, update, delete: if isDMOf(campaignId);
+        // Read : le MJ lit TOUT (pur MJ → pas de doc `members/`, donc gardé par
+        // `isDMOf` en premier — même piège que sessions 23.1 / events 22.3 /
+        // encounters 24.1 / maps D.6 ; le scaffold gardait `isMemberOf` en tête
+        // et excluait le MJ de ses propres documents). Un joueur (membre) lit un
+        // handout s'il en est destinataire, ou si la diffusion est `'all'`.
+        // Structure alignée sur le bloc NPCs voisin.
+        allow read: if isDMOf(campaignId)
+          || (isMemberOf(campaignId)
+              && (resource.data.recipients == 'all'
+                  || request.auth.uid in resource.data.recipients));
+
+        allow create, delete: if isDMOf(campaignId);
+
+        // Update : le MJ modifie tout (archivage, correction). Un joueur
+        // destinataire ne peut faire QU'UNE chose — s'ajouter lui-même à
+        // `revealedTo` à l'ouverture (plan 27 step 9) : le seul champ modifié est
+        // `revealedTo`, et sa nouvelle valeur est exactement l'ancienne + son
+        // propre UID. Toute autre mutation (contenu, destinataires, révéler
+        // autrui) est refusée. Le client garde l'opération idempotente (n'écrit
+        // que si l'UID n'est pas déjà présent — sinon le `concat` ne matcherait
+        // pas).
+        allow update: if isDMOf(campaignId)
+          || (isMemberOf(campaignId)
+              && (resource.data.recipients == 'all'
+                  || request.auth.uid in resource.data.recipients)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['revealedTo'])
+              && request.resource.data.revealedTo == resource.data.revealedTo.concat([request.auth.uid]));
       }
 
       // ── NPCs (S3, plan 28) ────────────────────────────────────

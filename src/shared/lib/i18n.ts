@@ -478,6 +478,51 @@ export type StringKey =
   | 'campaigns.detail.sessionsCta'
   | 'campaigns.detail.encountersCta'
   | 'campaigns.detail.journalCta'
+  | 'campaigns.detail.handoutsCta'
+  // Handouts MJ→joueur — plan 27
+  | 'handouts.toast.title'
+  | 'handouts.screen.back'
+  | 'handouts.screen.title'
+  | 'handouts.screen.subtitleDm'
+  | 'handouts.screen.subtitlePlayer'
+  | 'handouts.screen.newCta'
+  | 'handouts.screen.empty.dm'
+  | 'handouts.screen.empty.player'
+  | 'handouts.screen.activeHeading'
+  | 'handouts.screen.archivedHeading'
+  | 'handouts.screen.loadError'
+  | 'handouts.card.recipientsAll'
+  | 'handouts.card.recipientsTargeted'
+  | 'handouts.card.open'
+  | 'handouts.card.archive'
+  | 'handouts.card.archivedBadge'
+  | 'handouts.card.openedBadge'
+  | 'handouts.card.newBadge'
+  | 'handouts.detail.close'
+  | 'handouts.create.title'
+  | 'handouts.create.fieldTitle'
+  | 'handouts.create.titlePlaceholder'
+  | 'handouts.create.fieldType'
+  | 'handouts.create.type.text'
+  | 'handouts.create.type.image'
+  | 'handouts.create.type.mixed'
+  | 'handouts.create.imageDeferred'
+  | 'handouts.create.fieldContent'
+  | 'handouts.create.contentPlaceholder'
+  | 'handouts.create.previewLabel'
+  | 'handouts.create.previewEmpty'
+  | 'handouts.create.fieldRecipients'
+  | 'handouts.create.recipientsAll'
+  | 'handouts.create.recipientsSome'
+  | 'handouts.create.noPlayers'
+  | 'handouts.create.cancel'
+  | 'handouts.create.send'
+  | 'handouts.create.sending'
+  | 'handouts.create.error.title'
+  | 'handouts.create.error.content'
+  | 'handouts.create.error.recipients'
+  | 'handouts.create.error.send'
+  | 'handouts.create.sentToast'
   // Lecture MJ d'une fiche de joueur — JALON 4A.3
   | 'campaigns.memberSheet.back'
   | 'campaigns.memberSheet.viewingPrefix'
@@ -2190,6 +2235,53 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.sessionsCta': 'Séances',
     'campaigns.detail.encountersCta': 'Rencontres',
     'campaigns.detail.journalCta': 'Journal',
+    'campaigns.detail.handoutsCta': 'Documents',
+    // Handouts MJ→joueur — plan 27
+    'handouts.toast.title': 'Le MJ vous a transmis un document',
+    'handouts.screen.back': 'Retour à la campagne',
+    'handouts.screen.title': 'Documents',
+    'handouts.screen.subtitleDm': 'Cartes, lettres et indices transmis à la table.',
+    'handouts.screen.subtitlePlayer': 'Les documents que le MJ vous a transmis.',
+    'handouts.screen.newCta': 'Nouveau document',
+    'handouts.screen.empty.dm': 'Aucun document transmis pour le moment.',
+    'handouts.screen.empty.player': "Le MJ ne vous a transmis aucun document.",
+    'handouts.screen.activeHeading': 'Actifs',
+    'handouts.screen.archivedHeading': 'Archivés',
+    'handouts.screen.loadError': 'Impossible de charger les documents.',
+    'handouts.card.recipientsAll': 'Toute la table',
+    'handouts.card.recipientsTargeted': 'Ciblé',
+    'handouts.card.open': 'Ouvrir',
+    'handouts.card.archive': 'Archiver',
+    'handouts.card.archivedBadge': 'Archivé',
+    'handouts.card.openedBadge': 'Ouvert',
+    'handouts.card.newBadge': 'Nouveau',
+    'handouts.detail.close': 'Fermer le document',
+    'handouts.create.title': 'Nouveau document',
+    'handouts.create.fieldTitle': 'Titre',
+    'handouts.create.titlePlaceholder': 'Titre du document',
+    'handouts.create.fieldType': 'Type',
+    'handouts.create.type.text': 'Texte',
+    'handouts.create.type.image': 'Image',
+    'handouts.create.type.mixed': 'Les deux',
+    'handouts.create.imageDeferred':
+      "L'envoi d'image arrivera bientôt — pour l'instant, transmettez un document texte.",
+    'handouts.create.fieldContent': 'Contenu',
+    'handouts.create.contentPlaceholder':
+      'Rédigez le document. Markdown : ## titre, - liste, **gras**, _italique_.',
+    'handouts.create.previewLabel': 'Aperçu',
+    'handouts.create.previewEmpty': "L'aperçu s'affichera ici.",
+    'handouts.create.fieldRecipients': 'Destinataires',
+    'handouts.create.recipientsAll': 'Toute la table',
+    'handouts.create.recipientsSome': 'Choisir des joueurs',
+    'handouts.create.noPlayers': "Aucun joueur n'a encore rejoint la campagne.",
+    'handouts.create.cancel': 'Annuler',
+    'handouts.create.send': 'Envoyer',
+    'handouts.create.sending': 'Envoi…',
+    'handouts.create.error.title': 'Donnez un titre au document.',
+    'handouts.create.error.content': 'Le document est vide.',
+    'handouts.create.error.recipients': 'Choisissez au moins un destinataire.',
+    'handouts.create.error.send': "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
+    'handouts.create.sentToast': 'Document transmis',
     // Séances — JALON 23.2
     'sessions.back': 'Retour à la campagne',
     'sessions.title': 'Séances',
@@ -4072,6 +4164,53 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.sessionsCta': 'Sessions',
     'campaigns.detail.encountersCta': 'Encounters',
     'campaigns.detail.journalCta': 'Journal',
+    'campaigns.detail.handoutsCta': 'Handouts',
+    // Handouts DM→player — plan 27
+    'handouts.toast.title': 'The DM sent you a handout',
+    'handouts.screen.back': 'Back to campaign',
+    'handouts.screen.title': 'Handouts',
+    'handouts.screen.subtitleDm': 'Maps, letters and clues shared with the table.',
+    'handouts.screen.subtitlePlayer': 'Handouts the DM has shared with you.',
+    'handouts.screen.newCta': 'New handout',
+    'handouts.screen.empty.dm': 'No handout shared yet.',
+    'handouts.screen.empty.player': 'The DM has not shared any handout with you.',
+    'handouts.screen.activeHeading': 'Active',
+    'handouts.screen.archivedHeading': 'Archived',
+    'handouts.screen.loadError': 'Could not load handouts.',
+    'handouts.card.recipientsAll': 'Whole table',
+    'handouts.card.recipientsTargeted': 'Targeted',
+    'handouts.card.open': 'Open',
+    'handouts.card.archive': 'Archive',
+    'handouts.card.archivedBadge': 'Archived',
+    'handouts.card.openedBadge': 'Opened',
+    'handouts.card.newBadge': 'New',
+    'handouts.detail.close': 'Close handout',
+    'handouts.create.title': 'New handout',
+    'handouts.create.fieldTitle': 'Title',
+    'handouts.create.titlePlaceholder': 'Handout title',
+    'handouts.create.fieldType': 'Type',
+    'handouts.create.type.text': 'Text',
+    'handouts.create.type.image': 'Image',
+    'handouts.create.type.mixed': 'Both',
+    'handouts.create.imageDeferred':
+      'Image upload is coming soon — for now, share a text handout.',
+    'handouts.create.fieldContent': 'Content',
+    'handouts.create.contentPlaceholder':
+      'Write the handout. Markdown: ## heading, - list, **bold**, _italic_.',
+    'handouts.create.previewLabel': 'Preview',
+    'handouts.create.previewEmpty': 'The preview will appear here.',
+    'handouts.create.fieldRecipients': 'Recipients',
+    'handouts.create.recipientsAll': 'Whole table',
+    'handouts.create.recipientsSome': 'Pick players',
+    'handouts.create.noPlayers': 'No player has joined the campaign yet.',
+    'handouts.create.cancel': 'Cancel',
+    'handouts.create.send': 'Send',
+    'handouts.create.sending': 'Sending…',
+    'handouts.create.error.title': 'Give the handout a title.',
+    'handouts.create.error.content': 'The handout is empty.',
+    'handouts.create.error.recipients': 'Pick at least one recipient.',
+    'handouts.create.error.send': 'Sending failed. Check your connection and try again.',
+    'handouts.create.sentToast': 'Handout sent',
     // Sessions — JALON 23.2
     'sessions.back': 'Back to campaign',
     'sessions.title': 'Sessions',

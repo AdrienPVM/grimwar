@@ -18,6 +18,7 @@ import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
 import { PromoteToGmModal } from './promote-to-gm-modal';
 import { useCampaign } from './use-campaign';
+import { useHandoutNotifications } from './use-handout-notifications';
 
 interface PromoteTarget {
   uid: string;
@@ -73,6 +74,11 @@ export function CampaignDetailScreen(): JSX.Element {
     if (!campaign || !user) return false;
     return campaign.gmIds.includes(user.uid);
   }, [campaign, user]);
+
+  // Toast « le MJ vous a transmis un document » sur tout nouveau handout reçu
+  // (plan 27 step 7-8). Désactivé pour le MJ (cf. `useHandoutNotifications`).
+  // Appelé avant les early-returns pour respecter les règles des hooks.
+  useHandoutNotifications(cid, user?.uid, !isGm);
 
   const roster = useMemo<RosterEntry[]>(() => {
     if (!campaign) return [];
@@ -157,6 +163,16 @@ export function CampaignDetailScreen(): JSX.Element {
               onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
             >
               {t('campaigns.detail.journalCta')}
+            </Button>
+            {/* Documents — accessible à tout membre (le MJ crée, le joueur
+                consulte ceux qui lui sont destinés). */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/handouts`)}
+            >
+              {t('campaigns.detail.handoutsCta')}
             </Button>
             {isGm ? (
               <>

@@ -53,6 +53,8 @@ export const EVENT_KINDS = [
   'dm-edit',
   'campaign-join',
   'campaign-leave',
+  'handout-sent',
+  'handout-revealed',
 ] as const;
 
 export type EventKind = (typeof EVENT_KINDS)[number];

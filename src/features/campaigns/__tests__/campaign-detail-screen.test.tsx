@@ -30,6 +30,12 @@ vi.mock('../use-campaign', () => ({
   useCampaign: () => stateHolder,
 }));
 
+// La notification de handouts ouvre un listener Firestore (`onSnapshot`) —
+// hors périmètre de ce test d'écran, couverte par son propre test unitaire.
+vi.mock('../use-handout-notifications', () => ({
+  useHandoutNotifications: () => undefined,
+}));
+
 const navigateMock = vi.fn();
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>(

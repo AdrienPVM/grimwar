@@ -478,6 +478,15 @@ DM-to-player documents sent during sessions.
 }
 ```
 
+> **V1 (plan 27, Option A) = texte/Markdown uniquement.** L'upload d'image
+> (`content.imageUrl` via Firebase Storage) est **différé en sous-plan 27b** :
+> aucune infra Storage n'existe encore (décision en attente — bundle vs Blaze).
+> Le champ `imageUrl` reste au schéma et la visionneuse le rend déjà, donc 27b
+> n'introduira que l'upload, pas de migration. Lecture filtrée côté
+> `firestore.rules` : le MJ lit tout ; un joueur lit un handout s'il est dans
+> `recipients` ou si `recipients === 'all'`. Un destinataire peut s'auto-ajouter
+> à `revealedTo` (et rien d'autre) — c'est la seule écriture joueur autorisée.
+
 ### `campaigns/{campaignId}/npcs/{npcId}` (S3, plan 28)
 
 Recurring NPCs — distinct from one-off monsters and player-owned PJs.

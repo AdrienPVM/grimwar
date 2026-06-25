@@ -389,3 +389,40 @@ export async function logMonsterHpChange(
 export async function logRollIfCampaign(result: RollResult): Promise<void> {
   await logRoll(result);
 }
+
+/**
+ * Journalise l'envoi d'un document par le MJ (kind `handout-sent`, plan 27).
+ * Visibilité `all` : la table sait qu'un document a circulé (et son titre) —
+ * pas son contenu, qui reste accessible aux seuls destinataires via la rule de
+ * lecture des handouts. Le payload porte l'id, le titre et les destinataires
+ * (UIDs ou `'all'`) pour la narration du journal.
+ */
+export async function logHandoutSent(
+  handoutId: string,
+  recipients: string[] | 'all',
+  title: string,
+): Promise<void> {
+  await writeEvent({
+    kind: 'handout-sent',
+    actorCharacterId: null,
+    visibility: 'all',
+    payload: { handoutId, recipients, title },
+  });
+}
+
+/**
+ * Journalise l'ouverture d'un document par un joueur (kind `handout-revealed`,
+ * plan 27). Visibilité `all` — le MJ et la table voient qui a pris connaissance
+ * du document.
+ */
+export async function logHandoutRevealed(
+  handoutId: string,
+  revealedByUserId: string,
+): Promise<void> {
+  await writeEvent({
+    kind: 'handout-revealed',
+    actorCharacterId: null,
+    visibility: 'all',
+    payload: { handoutId, revealedByUserId },
+  });
+}

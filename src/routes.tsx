@@ -133,6 +133,13 @@ const CampaignJournalScreen = lazy(async () => {
   return { default: mod.CampaignJournalScreen };
 });
 
+// Route /campaigns/:cid/handouts — documents MJ→joueur (plan 27). MJ : crée +
+// gère ; joueur : consulte ceux qui lui sont destinés. Tout membre y accède.
+const CampaignHandoutsScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/campaign-handouts-screen');
+  return { default: mod.CampaignHandoutsScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -168,6 +175,7 @@ export function AppRoutes(): JSX.Element {
           element={<EncountersListScreen />}
         />
         <Route path="/campaigns/:cid/journal" element={<CampaignJournalScreen />} />
+        <Route path="/campaigns/:cid/handouts" element={<CampaignHandoutsScreen />} />
         <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

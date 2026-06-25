@@ -2116,3 +2116,146 @@ describeIfEmulator('firestore.rules — encounters (plan 24 / JALON 24.1)', () =
     await assertFails(deleteDoc(doc(db, 'campaigns', ENC_CID, 'encounters', 'enc-d2')));
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// Handouts — `campaigns/{cid}/handouts/{hid}` (plan 27)
+// ═══════════════════════════════════════════════════════════════════════
+
+const HD_CID = 'camp-handouts';
+const HD_GM = 'dm-handouts';
+const HD_PLAYER = 'player-handouts';
+const HD_OTHER = 'player-other';
+
+function makeHandoutDoc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'hd-x',
+    title: 'La lettre scellée',
+    type: 'text',
+    content: { text: '## Un indice' },
+    recipients: 'all',
+    revealedTo: [],
+    visibility: 'sent',
+    createdBy: HD_GM,
+    createdAt: serverTimestamp(),
+    ...overrides,
+  };
+}
+
+describeIfEmulator('firestore.rules — handouts (plan 27)', () => {
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (!env) return;
+    await env.clearFirestore();
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', HD_CID), makeCampaignDoc(HD_GM));
+      // Deux joueurs membres ; le MJ pur n'a PAS de doc members/.
+      for (const uid of [HD_PLAYER, HD_OTHER]) {
+        await setDoc(doc(adminDb, 'campaigns', HD_CID, 'members', uid), {
+          userId: uid,
+          role: 'member',
+          characterId: null,
+          joinedAt: serverTimestamp(),
+          schemaVersion: 1,
+        });
+      }
+    });
+  });
+
+  async function seed(handoutId: string, overrides: Record<string, unknown>): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', HD_CID, 'handouts', handoutId),
+        makeHandoutDoc({ id: handoutId, ...overrides }),
+      );
+    });
+  }
+
+  function hRef(uid: string, handoutId: string) {
+    return doc(env!.authenticatedContext(uid).firestore(), 'campaigns', HD_CID, 'handouts', handoutId);
+  }
+
+  // ── Création / suppression (MJ only) ──────────────────────────────
+  it('MJ crée un handout', async () => {
+    await assertSucceeds(setDoc(hRef(HD_GM, 'hd-1'), makeHandoutDoc({ id: 'hd-1' })));
+  });
+
+  it('Joueur ne peut PAS créer un handout', async () => {
+    await assertFails(setDoc(hRef(HD_PLAYER, 'hd-2'), makeHandoutDoc({ id: 'hd-2' })));
+  });
+
+  it('MJ supprime un handout ; un joueur ne peut pas', async () => {
+    await seed('hd-del', { recipients: 'all' });
+    await assertSucceeds(deleteDoc(hRef(HD_GM, 'hd-del')));
+    await seed('hd-del2', { recipients: 'all' });
+    await assertFails(deleteDoc(hRef(HD_PLAYER, 'hd-del2')));
+  });
+
+  // ── Lecture (filtrage destinataire) ───────────────────────────────
+  it("MJ pur (sans doc members/) lit un handout — fix du gating isMemberOf", async () => {
+    await seed('hd-r', { recipients: [HD_PLAYER] });
+    await assertSucceeds(getDoc(hRef(HD_GM, 'hd-r')));
+  });
+
+  it('Joueur destinataire explicite lit son handout', async () => {
+    await seed('hd-r', { recipients: [HD_PLAYER] });
+    await assertSucceeds(getDoc(hRef(HD_PLAYER, 'hd-r')));
+  });
+
+  it('Joueur NON destinataire ne peut PAS lire un handout ciblé', async () => {
+    await seed('hd-r', { recipients: [HD_PLAYER] });
+    await assertFails(getDoc(hRef(HD_OTHER, 'hd-r')));
+  });
+
+  it("Tout joueur lit un handout diffusé à 'all'", async () => {
+    await seed('hd-all', { recipients: 'all' });
+    await assertSucceeds(getDoc(hRef(HD_OTHER, 'hd-all')));
+  });
+
+  // ── Self-reveal (update borné) ────────────────────────────────────
+  it("Destinataire s'ajoute à revealedTo (seul champ, seul son UID)", async () => {
+    await seed('hd-rev', { recipients: [HD_PLAYER], revealedTo: [] });
+    await assertSucceeds(updateDoc(hRef(HD_PLAYER, 'hd-rev'), { revealedTo: [HD_PLAYER] }));
+  });
+
+  it('Destinataire ne peut PAS modifier un autre champ (titre)', async () => {
+    await seed('hd-rev', { recipients: [HD_PLAYER] });
+    await assertFails(updateDoc(hRef(HD_PLAYER, 'hd-rev'), { title: 'Piraté' }));
+  });
+
+  it('Destinataire ne peut PAS révéler quelqu’un d’autre', async () => {
+    await seed('hd-rev', { recipients: [HD_PLAYER], revealedTo: [] });
+    await assertFails(updateDoc(hRef(HD_PLAYER, 'hd-rev'), { revealedTo: [HD_OTHER] }));
+  });
+
+  it('Non-destinataire ne peut PAS se révéler sur un handout ciblé', async () => {
+    await seed('hd-rev', { recipients: [HD_PLAYER], revealedTo: [] });
+    await assertFails(updateDoc(hRef(HD_OTHER, 'hd-rev'), { revealedTo: [HD_OTHER] }));
+  });
+
+  // ── Archivage (MJ) ────────────────────────────────────────────────
+  it("MJ archive (visibility → 'archived')", async () => {
+    await seed('hd-arch', { recipients: 'all' });
+    await assertSucceeds(updateDoc(hRef(HD_GM, 'hd-arch'), { visibility: 'archived' }));
+  });
+});
