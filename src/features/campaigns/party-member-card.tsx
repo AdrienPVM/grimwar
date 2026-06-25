@@ -1,5 +1,4 @@
 import { type JSX } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { PartyCard } from '@/features/dm-view/party-card';
 import { useInventoryDerived } from '@/features/sheet/modes/avoir/use-inventory-derived';
@@ -8,14 +7,16 @@ import { GlassPanel } from '@/shared/components/glass-panel';
 import { computeDisplayedAc } from '@/shared/lib/rules/ac';
 import { t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
-import type { Membership } from '@/shared/types/campaign';
 
 import { formatUid } from './campaign-detail-screen';
 
 interface PartyMemberCardProps {
-  campaignId: string;
-  /** Membership du joueur — DOIT porter un `characterId` non nul (le panneau filtre en amont). */
-  member: Membership;
+  /** Fiche liée du joueur (`members/{uid}.characterId`) — non nul (le parent filtre en amont). */
+  characterId: string;
+  /** UID propriétaire de la fiche (le joueur), pour la lecture cross-owner A2. */
+  ownerUid: string;
+  /** Ouverture de la fiche en lecture seule MJ — injecté par le parent (route cross-owner). */
+  onOpen: () => void;
 }
 
 /**
@@ -25,9 +26,10 @@ interface PartyMemberCardProps {
  * qu'un joueur change ses PV / états sur sa fiche liée, la carte se met à jour
  * sans refresh (plan 21 step 9).
  *
- * Tap → ouvre la fiche du joueur en lecture seule MJ
- * (`/campaigns/:cid/members/:uid/sheet`, 4A.3) — PAS `/character/:id` (qui vit
- * sous le sous-arbre du MJ, pas du joueur).
+ * Depuis le plan 27 (fusion roster + état), cette carte EST la représentation
+ * riche d'un membre lié dans la section unique « La compagnie » — elle remplace
+ * la ligne plate du roster pour les joueurs dont le MJ peut lire la fiche. Tap
+ * → fiche en lecture seule MJ (`onOpen`, route cross-owner injectée par le parent).
  *
  * La CA affichée est la VRAIE CA (armure + Defense + magic items) calculée par
  * `computeDisplayedAc`, pas la valeur désarmée `character.ac`. Caveat cross-owner
@@ -36,29 +38,28 @@ interface PartyMemberCardProps {
  * ne contribue pas à la CA (les armures SRD `public` résolvent normalement). C'est
  * une limite V1 acceptable : la quasi-totalité des armures sont du contenu public.
  */
-export function PartyMemberCard({ campaignId, member }: PartyMemberCardProps): JSX.Element {
-  const navigate = useNavigate();
-  const { character, isLoading, error } = useCharacter(
-    member.characterId ?? undefined,
-    member.userId,
-  );
-
-  const openSheet = (): void =>
-    navigate(`/campaigns/${campaignId}/members/${member.userId}/sheet`);
+export function PartyMemberCard({
+  characterId,
+  ownerUid,
+  onOpen,
+}: PartyMemberCardProps): JSX.Element {
+  const { character, isLoading, error } = useCharacter(characterId, ownerUid);
 
   if (isLoading) {
-    return <PlaceholderCard uid={member.userId} message={t('campaigns.detail.party.cardLoading')} />;
+    return <PlaceholderCard uid={ownerUid} message={t('campaigns.detail.party.cardLoading')} />;
   }
   if (error) {
-    return <PlaceholderCard uid={member.userId} message={t('campaigns.detail.party.cardError')} tone="error" />;
+    return (
+      <PlaceholderCard uid={ownerUid} message={t('campaigns.detail.party.cardError')} tone="error" />
+    );
   }
   if (!character) {
     return (
-      <PlaceholderCard uid={member.userId} message={t('campaigns.detail.party.cardUnavailable')} />
+      <PlaceholderCard uid={ownerUid} message={t('campaigns.detail.party.cardUnavailable')} />
     );
   }
 
-  return <LoadedPartyMemberCard character={character} onOpen={openSheet} />;
+  return <LoadedPartyMemberCard character={character} onOpen={onOpen} />;
 }
 
 /**

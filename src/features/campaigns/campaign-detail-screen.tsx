@@ -11,7 +11,7 @@ import { t } from '@/shared/lib/i18n';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
 import { CampaignEventFeed } from './campaign-event-feed';
-import { CampaignPartyPanel } from './campaign-party-panel';
+import { CampaignMemberItem } from './campaign-member-item';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
@@ -220,30 +220,32 @@ export function CampaignDetailScreen(): JSX.Element {
           />
         ) : null}
 
+        {/* Section UNIQUE « La compagnie » (plan 27) — fusion de l'ancien roster
+            (UID + rôle + actions) et de l'ancien « État de la compagnie » (PV/CA
+            live). Chaque membre apparaît une seule fois, dans sa représentation
+            la plus riche : carte live pour les joueurs liés que le MJ peut lire,
+            ligne compacte sinon. Fini la duplication « deux sections, mêmes gens ». */}
         <section className="mt-10" aria-label={t('campaigns.detail.roster.aria')}>
           <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
             {t('campaigns.detail.roster.title')}
           </h2>
-          <ul className="mt-4 flex flex-col gap-2">
+          <ul className="mt-4 flex flex-col gap-3">
             {roster.map((entry) => (
-              <RosterRow
-                key={entry.uid}
-                entry={entry}
-                viewerIsGm={isGm}
-                onPromote={() =>
-                  setPromoteTarget({ uid: entry.uid, label: entry.label })
-                }
-                onViewSheet={() =>
-                  navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
-                }
-              />
+              <li key={entry.uid}>
+                <CampaignMemberItem
+                  entry={entry}
+                  viewerIsGm={isGm}
+                  onPromote={() =>
+                    setPromoteTarget({ uid: entry.uid, label: entry.label })
+                  }
+                  onViewSheet={() =>
+                    navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
+                  }
+                />
+              </li>
             ))}
           </ul>
         </section>
-
-        {isGm ? (
-          <CampaignPartyPanel campaignId={campaign.id} members={members} />
-        ) : null}
 
         {isGm && user ? (
           <CampaignEventFeed
@@ -355,55 +357,4 @@ export function buildRoster(
 export function formatUid(uid: string): string {
   if (uid.length <= 10) return uid;
   return `${uid.slice(0, 8)}…`;
-}
-
-interface RosterRowProps {
-  entry: RosterEntry;
-  viewerIsGm: boolean;
-  onPromote: () => void;
-  onViewSheet: () => void;
-}
-
-function RosterRow({
-  entry,
-  viewerIsGm,
-  onPromote,
-  onViewSheet,
-}: RosterRowProps): JSX.Element {
-  const canPromote = viewerIsGm && entry.role === 'member';
-  // Le MJ peut consulter (lecture seule, 4A.3) la fiche d'un joueur uniquement si
-  // celui-ci en a lié une. Sans fiche liée, pas d'affordance (rien à lire).
-  const canViewSheet =
-    viewerIsGm && entry.role === 'member' && entry.characterId !== null;
-  return (
-    <li className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="truncate font-mono text-body tracking-[0.16em] text-text">
-          {entry.label}
-        </span>
-        {entry.isSelf ? (
-          <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-            {t('campaigns.detail.roster.youSuffix')}
-          </span>
-        ) : null}
-      </div>
-      <div className="flex items-center gap-2">
-        {entry.role === 'gm' ? (
-          <Chip variant="gold">{t('campaigns.card.roleGm')}</Chip>
-        ) : (
-          <Chip variant="magic">{t('campaigns.card.roleMember')}</Chip>
-        )}
-        {canViewSheet ? (
-          <Button type="button" variant="ghost" size="sm" onClick={onViewSheet}>
-            {t('campaigns.detail.roster.viewSheet')}
-          </Button>
-        ) : null}
-        {canPromote ? (
-          <Button type="button" variant="secondary" size="sm" onClick={onPromote}>
-            {t('campaigns.detail.roster.promote')}
-          </Button>
-        ) : null}
-      </div>
-    </li>
-  );
 }

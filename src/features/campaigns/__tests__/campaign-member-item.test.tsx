@@ -2,14 +2,14 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { Membership } from '@/shared/types/campaign';
 import type { Character } from '@/shared/types/character';
 
+import type { RosterEntry } from '../campaign-detail-screen';
+
 // ─────────────────────────────────────────────────────────────────────
-// Mocks — on isole le panneau de Firestore : `useCharacter` (lecture live
-// cross-owner) et `useInventoryDerived` (CA dérivée) sont stubés par holder
-// contrôlable. La résolution de contenu (classes / conditions) suit le même
-// stub que `dm-dashboard-screen.test`.
+// Mocks — la carte live abonne `useCharacter` (lecture cross-owner A2) et
+// `useInventoryDerived` (CA dérivée). On les stube par holder contrôlable, comme
+// l'ancien test du panneau compagnie (dont ce fichier hérite les invariants).
 // ─────────────────────────────────────────────────────────────────────
 
 const navigateMock = vi.fn();
@@ -39,8 +39,6 @@ vi.mock('@/features/sheet/use-character', () => ({
   },
 }));
 
-// CA dérivée stubée : on contrôle `acFromArmor` pour prouver que la carte
-// affiche la VRAIE CA (armure) et non la valeur désarmée `character.ac`.
 const derivedHolder = {
   acFromArmor: null as number | null,
   hasEquippedBodyArmor: false,
@@ -82,7 +80,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
 
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
 
-import { CampaignPartyPanel } from '../campaign-party-panel';
+import { CampaignMemberItem } from '../campaign-member-item';
 
 function mkCharacter(overrides: Partial<Character> = {}): Character {
   return {
@@ -154,21 +152,29 @@ function mkCharacter(overrides: Partial<Character> = {}): Character {
   };
 }
 
-function mkMembership(overrides: Partial<Membership> = {}): Membership {
+function mkEntry(overrides: Partial<RosterEntry> = {}): RosterEntry {
   return {
-    userId: 'player-uid',
+    uid: 'player-uid',
+    label: 'player-u…',
     role: 'member',
+    isSelf: false,
     characterId: 'char-aelys',
-    joinedAt: null,
-    schemaVersion: 1,
     ...overrides,
   };
 }
 
-function renderPanel(members: Membership[]): ReturnType<typeof render> {
+function renderItem(
+  entry: RosterEntry,
+  opts: { viewerIsGm?: boolean; onPromote?: () => void; onViewSheet?: () => void } = {},
+): ReturnType<typeof render> {
   return render(
     <MemoryRouter>
-      <CampaignPartyPanel campaignId="camp-1" members={members} />
+      <CampaignMemberItem
+        entry={entry}
+        viewerIsGm={opts.viewerIsGm ?? true}
+        onPromote={opts.onPromote ?? vi.fn()}
+        onViewSheet={opts.onViewSheet ?? vi.fn()}
+      />
     </MemoryRouter>,
   );
 }
@@ -182,31 +188,14 @@ afterEach(() => {
   derivedHolder.magicItemsAcBonus = 0;
 });
 
-describe('<CampaignPartyPanel>', () => {
-  it('empty state quand aucun membre n’a lié de personnage', () => {
-    renderPanel([
-      mkMembership({ userId: 'p1', characterId: null }),
-      mkMembership({ userId: 'gm-1', role: 'gm', characterId: null }),
-    ]);
-    expect(
-      screen.getByText('Aucun joueur n’a encore lié de personnage.'),
-    ).toBeInTheDocument();
-    // Aucune souscription de fiche déclenchée pour des membres non liés.
-    expect(useCharacterCalls).toHaveLength(0);
-  });
+// ─────────────────────────────────────────────────────────────────────
+// Carte LIVE — MJ + joueur avec fiche liée (hérite les invariants 4A.4)
+// ─────────────────────────────────────────────────────────────────────
 
-  it('ne rend une carte QUE pour les membres avec une fiche liée', () => {
-    charByKey.set('char-aelys', {
-      character: mkCharacter(),
-      isLoading: false,
-      error: null,
-    });
-    renderPanel([
-      mkMembership({ userId: 'player-uid', characterId: 'char-aelys' }),
-      mkMembership({ userId: 'p2', characterId: null }),
-    ]);
-    // 1 seule carte (p2 sans fiche est filtré, pas même de souscription).
-    expect(screen.getByText('Aëlys')).toBeInTheDocument();
+describe('<CampaignMemberItem> — carte live (MJ + joueur lié)', () => {
+  it('abonne la fiche du joueur en cross-owner (characterId + ownerUid)', () => {
+    charByKey.set('char-aelys', { character: mkCharacter(), isLoading: false, error: null });
+    renderItem(mkEntry({ uid: 'player-uid', characterId: 'char-aelys' }));
     expect(useCharacterCalls).toHaveLength(1);
     expect(useCharacterCalls[0]).toEqual({
       characterId: 'char-aelys',
@@ -214,52 +203,53 @@ describe('<CampaignPartyPanel>', () => {
     });
   });
 
-  it('identité du contenu : classe + niveau + état affichés exactement', () => {
+  it('identité du contenu : nom + classe·niveau + état affichés exactement', () => {
     charByKey.set('char-aelys', {
       character: mkCharacter({ conditions: ['poisoned'] }),
       isLoading: false,
       error: null,
     });
-    renderPanel([mkMembership()]);
+    renderItem(mkEntry());
     expect(screen.getByText('Aëlys')).toBeInTheDocument();
     expect(screen.getByText('Magicien · Niveau 5')).toBeInTheDocument();
     expect(screen.getByText('Empoisonné')).toBeInTheDocument();
   });
 
   it('affiche la VRAIE CA dérivée (armure), pas la valeur désarmée character.ac', () => {
-    // character.ac = 12 (désarmé) mais armure de plates équipée → acFromArmor 18.
     derivedHolder.acFromArmor = 18;
     charByKey.set('char-aelys', {
       character: mkCharacter({ ac: 12 }),
       isLoading: false,
       error: null,
     });
-    renderPanel([mkMembership()]);
+    renderItem(mkEntry());
     expect(screen.getByText('18')).toBeInTheDocument();
-    // La valeur de base ne doit PAS s'afficher comme CA (c'était le bug).
     expect(screen.queryByText('12')).not.toBeInTheDocument();
   });
 
-  it('tap sur une carte ouvre la lecture MJ cross-owner, pas /character/:id', () => {
+  it('tap sur la carte ouvre la fiche via onViewSheet (route cross-owner injectée)', () => {
+    const onViewSheet = vi.fn();
     charByKey.set('char-aelys', {
       character: mkCharacter({ name: 'Aëlys' }),
       isLoading: false,
       error: null,
     });
-    renderPanel([mkMembership({ userId: 'player-uid' })]);
+    renderItem(mkEntry(), { onViewSheet });
     fireEvent.click(screen.getByRole('button', { name: /Ouvrir la fiche de Aëlys/i }));
-    expect(navigateMock).toHaveBeenCalledWith(
-      '/campaigns/camp-1/members/player-uid/sheet',
-    );
+    expect(onViewSheet).toHaveBeenCalledTimes(1);
+  });
+
+  it('affiche « Promouvoir » sous la carte d’un joueur lié et le clic appelle onPromote', () => {
+    const onPromote = vi.fn();
+    charByKey.set('char-aelys', { character: mkCharacter(), isLoading: false, error: null });
+    renderItem(mkEntry(), { onPromote });
+    fireEvent.click(screen.getByRole('button', { name: /Promouvoir meneur/i }));
+    expect(onPromote).toHaveBeenCalledTimes(1);
   });
 
   it('placeholder de chargement tant que la fiche n’est pas résolue', () => {
-    charByKey.set('char-aelys', {
-      character: null,
-      isLoading: true,
-      error: null,
-    });
-    renderPanel([mkMembership()]);
+    charByKey.set('char-aelys', { character: null, isLoading: true, error: null });
+    renderItem(mkEntry());
     expect(screen.getByText('Chargement…')).toBeInTheDocument();
   });
 
@@ -269,17 +259,13 @@ describe('<CampaignPartyPanel>', () => {
       isLoading: false,
       error: new Error('permission-denied'),
     });
-    renderPanel([mkMembership()]);
+    renderItem(mkEntry());
     expect(screen.getByText('Fiche indisponible')).toBeInTheDocument();
   });
 
   it('placeholder « introuvable » quand le doc fiche n’existe pas', () => {
-    charByKey.set('char-aelys', {
-      character: null,
-      isLoading: false,
-      error: null,
-    });
-    renderPanel([mkMembership()]);
+    charByKey.set('char-aelys', { character: null, isLoading: false, error: null });
+    renderItem(mkEntry());
     expect(screen.getByText('Personnage introuvable')).toBeInTheDocument();
   });
 
@@ -289,10 +275,9 @@ describe('<CampaignPartyPanel>', () => {
       isLoading: false,
       error: null,
     });
-    const { rerender } = renderPanel([mkMembership()]);
+    const { rerender } = renderItem(mkEntry());
     expect(screen.queryByText('Effrayé')).not.toBeInTheDocument();
 
-    // Le joueur applique « effrayé » sur sa fiche → onSnapshot pousse la maj.
     charByKey.set('char-aelys', {
       character: mkCharacter({ conditions: ['frightened'] }),
       isLoading: false,
@@ -300,9 +285,63 @@ describe('<CampaignPartyPanel>', () => {
     });
     rerender(
       <MemoryRouter>
-        <CampaignPartyPanel campaignId="camp-1" members={[mkMembership()]} />
+        <CampaignMemberItem
+          entry={mkEntry()}
+          viewerIsGm
+          onPromote={vi.fn()}
+          onViewSheet={vi.fn()}
+        />
       </MemoryRouter>,
     );
     expect(screen.getByText('Effrayé')).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Ligne compacte — pas de fiche live (gating cross-owner A2)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('<CampaignMemberItem> — ligne compacte', () => {
+  it('joueur SANS fiche liée → ligne compacte, aucune souscription de fiche', () => {
+    renderItem(mkEntry({ characterId: null, label: 'player-u…' }));
+    expect(screen.getByText('player-u…')).toBeInTheDocument();
+    // Aucune carte live → aucun abonnement Firestore déclenché.
+    expect(useCharacterCalls).toHaveLength(0);
+  });
+
+  it('entrée MJ → chip rôle MJ, jamais de bouton Promouvoir (le MJ ne se promeut pas)', () => {
+    renderItem(mkEntry({ role: 'gm', characterId: null, label: 'gm-uid…' }));
+    expect(screen.getByText('Meneur')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Promouvoir meneur/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('spectateur NON-MJ → ligne compacte même pour un joueur lié (gating cross-owner)', () => {
+    // Un joueur lambda ne peut pas lire la fiche d'un autre (rule A2 = MJ only) :
+    // l'item ne doit PAS rendre de carte live ni s'abonner à la fiche.
+    charByKey.set('char-aelys', { character: mkCharacter(), isLoading: false, error: null });
+    renderItem(mkEntry({ characterId: 'char-aelys', label: 'player-u…' }), {
+      viewerIsGm: false,
+    });
+    expect(screen.getByText('player-u…')).toBeInTheDocument();
+    expect(useCharacterCalls).toHaveLength(0);
+    expect(screen.queryByText('Aëlys')).not.toBeInTheDocument();
+    // Pas d'affordance d'autorité pour un non-MJ.
+    expect(
+      screen.queryByRole('button', { name: /Promouvoir meneur/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('joueur non lié + MJ → bouton Promouvoir présent et clic appelle onPromote', () => {
+    const onPromote = vi.fn();
+    renderItem(mkEntry({ characterId: null }), { onPromote });
+    fireEvent.click(screen.getByRole('button', { name: /Promouvoir meneur/i }));
+    expect(onPromote).toHaveBeenCalledTimes(1);
+  });
+
+  it('marqueur (toi) sur l’entrée du spectateur', () => {
+    renderItem(mkEntry({ characterId: null, isSelf: true }));
+    expect(screen.getByText('(toi)')).toBeInTheDocument();
   });
 });

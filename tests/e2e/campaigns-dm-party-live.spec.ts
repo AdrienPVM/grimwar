@@ -67,11 +67,12 @@ test.describe('JALON 4A.4 — panneau compagnie MJ (état live des joueurs)', ()
       charId: playerCharId,
     });
 
-    // ─── Le MJ ouvre le détail → la section compagnie rend la carte du joueur.
+    // ─── Le MJ ouvre le détail → la section UNIQUE « La compagnie » (plan 27,
+    // fusion roster + état) rend la carte LIVE du joueur lié.
     await page.goto(`/campaigns/${cid}`);
     await waitForAppReady(page);
     const region = page.getByRole('region', {
-      name: /État de combat de la compagnie/i,
+      name: /Membres de la campagne/i,
     });
     await expect(region).toBeVisible({ timeout: 15_000 });
     // La carte du joueur lié : nom + PV initiaux (28 / 28 pour fighterL3).

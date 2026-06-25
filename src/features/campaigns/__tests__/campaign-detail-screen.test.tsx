@@ -89,12 +89,17 @@ vi.mock('../use-campaign-events', () => ({
   useCampaignEvents: () => eventsHolder,
 }));
 
-// Le panneau compagnie (JALON 4A.4) abonne `useCharacter` (onSnapshot) par
-// carte de joueur lié ; on le stube pour le test d'écran — sa couverture
-// (rendu live, CA dérivée, navigation cross-owner) vit dans
-// campaign-party-panel.test.tsx.
-vi.mock('../campaign-party-panel', () => ({
-  CampaignPartyPanel: () => null,
+// La carte live d'un membre lié (`CampaignMemberItem` → `PartyMemberCard`) abonne
+// `useCharacter` (onSnapshot) ; on stube la carte pour le test d'écran — sa
+// couverture (rendu live, CA dérivée, navigation cross-owner, gating) vit dans
+// campaign-member-item.test.tsx. Le stub expose `onOpen` via un bouton « Ouvrir
+// la fiche » pour vérifier le câblage de navigation côté écran.
+vi.mock('../party-member-card', () => ({
+  PartyMemberCard: ({ onOpen }: { onOpen: () => void }) => (
+    <button type="button" onClick={onOpen}>
+      Ouvrir la fiche
+    </button>
+  ),
 }));
 
 import { CampaignDetailScreen, buildRoster } from '../campaign-detail-screen';
@@ -308,21 +313,22 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByText('Épée longue · 18')).toBeInTheDocument();
   });
 
-  it("affiche « Voir la fiche » pour un joueur avec fiche liée et navigue au clic (4A.3)", () => {
+  it("rend la carte live d'un joueur lié et le tap navigue vers la fiche cross-owner (4A.3)", () => {
     stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
     stateHolder.members = [
       mkMember({ userId: 'uid-2', role: 'member', characterId: 'char-9' }),
     ];
     renderScreen();
 
-    const viewBtn = screen.getByRole('button', { name: /Voir la fiche/i });
+    // La carte live (stub) expose l'ouverture de fiche — tap → route cross-owner.
+    const viewBtn = screen.getByRole('button', { name: /Ouvrir la fiche/i });
     fireEvent.click(viewBtn);
     expect(navigateMock).toHaveBeenCalledWith(
       '/campaigns/c-1/members/uid-2/sheet',
     );
   });
 
-  it("masque « Voir la fiche » pour un joueur SANS fiche liée", () => {
+  it("masque la carte live pour un joueur SANS fiche liée (ligne compacte seule)", () => {
     stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
     stateHolder.members = [
       mkMember({ userId: 'uid-2', role: 'member', characterId: null }),
@@ -330,7 +336,7 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     renderScreen();
 
     expect(
-      screen.queryByRole('button', { name: /Voir la fiche/i }),
+      screen.queryByRole('button', { name: /Ouvrir la fiche/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -374,10 +380,10 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     expect(screen.queryByText(/Inviter à la table/i)).not.toBeInTheDocument();
     expect(screen.queryByText('ABC234')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Promouvoir meneur/i })).not.toBeInTheDocument();
-    // Un joueur ne voit JAMAIS l'affordance de lecture MJ, même si un autre
-    // membre a une fiche liée (la lecture cross-owner est réservée au MJ).
+    // Un joueur ne voit JAMAIS la carte live d'un autre membre, même lié (la
+    // lecture cross-owner est réservée au MJ) → pas d'affordance d'ouverture.
     expect(
-      screen.queryByRole('button', { name: /Voir la fiche/i }),
+      screen.queryByRole('button', { name: /Ouvrir la fiche/i }),
     ).not.toBeInTheDocument();
     // Mais le bouton Quitter reste visible.
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
