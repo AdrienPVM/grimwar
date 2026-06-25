@@ -185,6 +185,12 @@ export interface SeedPreset {
     fumbles: number;
     skillUses: Record<string, number>;
   };
+  /**
+   * Concentration active (carte « Concentration » du mode Combat). `spellId`
+   * doit résoudre dans spells.json pour afficher le nom ; `slotLevel` 0 = sort
+   * mineur. Défaut : `null` (aucune concentration).
+   */
+  currentConcentration?: { spellId: string; slotLevel: number } | null;
 }
 
 export interface SeededCharacter {
@@ -1202,7 +1208,7 @@ function buildCharacterDoc(preset: SeedPreset, charId: string, uid: string): Rec
     conditions: [],
     inspiration: false,
     exhaustion: 0,
-    currentConcentration: null,
+    currentConcentration: preset.currentConcentration ?? null,
     classResources: {},
     spellSlots: {},
     preparedSpells: preset.preparedSpells ?? {},

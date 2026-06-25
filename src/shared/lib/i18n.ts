@@ -326,6 +326,13 @@ export type StringKey =
   | 'sheet.combat.exhaustion.death'
   | 'sheet.combat.exhaustion.decrease'
   | 'sheet.combat.exhaustion.increase'
+  | 'sheet.combat.concentration.title'
+  | 'sheet.combat.concentration.cantrip'
+  | 'sheet.combat.concentration.castAt'
+  | 'sheet.combat.concentration.damageRule'
+  | 'sheet.combat.concentration.break'
+  | 'sheet.combat.concentration.broken'
+  | 'sheet.combat.concentration.unknownSpell'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -2042,6 +2049,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.exhaustion.death': 'Niveau 6 : mort.',
     'sheet.combat.exhaustion.decrease': 'Diminuer l’épuisement',
     'sheet.combat.exhaustion.increase': 'Augmenter l’épuisement',
+    'sheet.combat.concentration.title': 'Concentration',
+    'sheet.combat.concentration.cantrip': 'Sort mineur',
+    'sheet.combat.concentration.castAt': 'Lancé au niveau {n}',
+    'sheet.combat.concentration.damageRule':
+      'Sur dégât : jet de sauvegarde de Constitution, DD 10 ou la moitié des dégâts subis (le plus élevé).',
+    'sheet.combat.concentration.break': 'Rompre la concentration',
+    'sheet.combat.concentration.broken': 'Concentration rompue',
+    'sheet.combat.concentration.unknownSpell': 'Sort en cours',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -4196,6 +4211,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.exhaustion.death': 'Level 6: death.',
     'sheet.combat.exhaustion.decrease': 'Decrease exhaustion',
     'sheet.combat.exhaustion.increase': 'Increase exhaustion',
+    'sheet.combat.concentration.title': 'Concentration',
+    'sheet.combat.concentration.cantrip': 'Cantrip',
+    'sheet.combat.concentration.castAt': 'Cast at level {n}',
+    'sheet.combat.concentration.damageRule':
+      'On taking damage: Constitution saving throw, DC 10 or half the damage taken (whichever is higher).',
+    'sheet.combat.concentration.break': 'Break concentration',
+    'sheet.combat.concentration.broken': 'Concentration ended',
+    'sheet.combat.concentration.unknownSpell': 'Active spell',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',

@@ -4,6 +4,7 @@ import { AttacksList } from './combat/attacks-list';
 import { BattleHud } from './combat/battle-hud';
 import { BreathWeaponCard } from './combat/breath-weapon-card';
 import { ClassResourcesCard } from './combat/class-resources-card';
+import { ConcentrationCard } from './combat/concentration-card';
 import { ConditionsRow } from './combat/conditions-row';
 import { ExhaustionCard } from './combat/exhaustion-card';
 import { DeathSavesModal } from './combat/death-saves-modal';
@@ -52,6 +53,7 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
         <HpMegaCard character={character} readOnly={readOnly} />
       </div>
       <ConditionsRow character={character} readOnly={readOnly} />
+      <ConcentrationCard character={character} readOnly={readOnly} />
       <ExhaustionCard character={character} readOnly={readOnly} />
       <ClassResourcesCard character={character} readOnly={readOnly} />
       <HitDiceCard character={character} readOnly={readOnly} />
