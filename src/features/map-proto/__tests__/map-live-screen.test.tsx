@@ -101,34 +101,64 @@ function mkToken(overrides: Partial<MapToken> = {}): MapToken {
   };
 }
 
-// JSDOM ne fournit pas SVG matrix APIs ni setPointerCapture — stub minimal qui
-// mappe identité matricielle + capture pointer en no-op.
+// JSDOM ne fournit pas (fidèlement) les SVG matrix APIs ni setPointerCapture.
+// On stub une transformation IDENTITÉ : screenToSvg(clientX, clientY) renvoie
+// exactement (clientX, clientY), ce qui rend les coordonnées de drag
+// DÉTERMINISTES dans les tests (sinon `matrixTransform` natif de JSDOM, appelé
+// avec une matrice factice, renvoie NaN). On passe par `Object.defineProperty`
+// (et non une simple affectation) car les versions récentes de JSDOM exposent
+// `createSVGPoint` en propriété non réinscriptible : une affectation directe
+// est silencieusement ignorée et on retombe sur l'implémentation native → NaN.
+function definePrototype(
+  proto: object,
+  name: string,
+  value: (...args: never[]) => unknown,
+): void {
+  Object.defineProperty(proto, name, { configurable: true, writable: true, value });
+}
+
 function installSvgStubs(): void {
-  const svgProto = SVGSVGElement.prototype as unknown as {
-    createSVGPoint: () => {
-      x: number;
-      y: number;
-      matrixTransform: (m: unknown) => { x: number; y: number };
+  definePrototype(SVGSVGElement.prototype, 'createSVGPoint', function () {
+    const pt = {
+      x: 0,
+      y: 0,
+      matrixTransform(_m: unknown): { x: number; y: number } {
+        return { x: pt.x, y: pt.y };
+      },
     };
-    getScreenCTM: () => { inverse: () => unknown };
-  };
-  svgProto.createSVGPoint = function () {
-    const pt = { x: 0, y: 0, matrixTransform: (_m: unknown) => ({ x: pt.x, y: pt.y }) };
     return pt;
-  };
-  svgProto.getScreenCTM = function () {
+  });
+  definePrototype(SVGSVGElement.prototype, 'getScreenCTM', function () {
     return { inverse: () => ({}) };
-  };
-  const elProto = Element.prototype as unknown as {
-    setPointerCapture: (id: number) => void;
-    releasePointerCapture: (id: number) => void;
-  };
-  elProto.setPointerCapture = function () {
+  });
+  definePrototype(Element.prototype, 'setPointerCapture', function () {
     // no-op
-  };
-  elProto.releasePointerCapture = function () {
+  });
+  definePrototype(Element.prototype, 'releasePointerCapture', function () {
     // no-op
-  };
+  });
+}
+
+// jsdom n'expose PAS `PointerEvent` : `fireEvent.pointer*` crée alors un
+// événement qui PERD `clientX`/`clientY` → les coordonnées de drag arrivent
+// `undefined` dans le composant (puis NaN). Un `MouseEvent` PORTE clientX/Y et
+// React écoute le *nom* de l'événement (pas la classe concrète) — on dispatch
+// donc un MouseEvent au type pointer voulu pour obtenir des coordonnées
+// DÉTERMINISTES. `pointerId` est absent (setPointerCapture est stubé no-op).
+function firePointer(
+  el: Element,
+  type: 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel',
+  clientX: number,
+  clientY: number,
+): void {
+  // `fireEvent(node, event)` dispatche l'événement fourni ET l'enveloppe dans
+  // act() — indispensable pour que les setState (draggingTokenId) soient
+  // flushés ENTRE pointerdown et pointermove, sinon le garde de
+  // handlePointerMove voit `draggingTokenId === null` et ignore le geste.
+  fireEvent(
+    el,
+    new MouseEvent(type, { clientX, clientY, bubbles: true, cancelable: true }),
+  );
 }
 
 import { MapLiveScreen } from '../map-live-screen';
@@ -225,6 +255,82 @@ describe('MapLiveScreen', () => {
     expect(patch).toHaveProperty('position');
     expect(typeof patch.position.x).toBe('number');
     expect(typeof patch.position.y).toBe('number');
+  });
+
+  it('aimante la position sur le centre de case quand la grille est affichée', async () => {
+    // Grille 70 affichée + aimant actif par défaut. Drag de (200,200) vers
+    // (260,240) → case 3 sur les deux axes → centre 245,245.
+    useMapState.map = mkMap({ showGrid: true, gridSize: 70 });
+    useMapState.tokens = [mkToken({ id: 't1', position: { x: 200, y: 200 } })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointermove', 260, 240);
+    firePointer(tokenG, 'pointerup', 260, 240);
+
+    await waitFor(() => {
+      expect(mockUpdateToken).toHaveBeenCalledTimes(1);
+    });
+    const patch = mockUpdateToken.mock.calls[0]![3] as {
+      position: { x: number; y: number };
+    };
+    expect(patch.position).toEqual({ x: 245, y: 245 });
+  });
+
+  it("n'aimante pas quand l'aimant est désactivé (position brute persistée)", async () => {
+    useMapState.map = mkMap({ showGrid: true, gridSize: 70 });
+    useMapState.tokens = [mkToken({ id: 't1', position: { x: 200, y: 200 } })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    // Aimant ON par défaut → on le coupe.
+    fireEvent.click(screen.getByTestId('map-live-toggle-snap'));
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointermove', 260, 240);
+    firePointer(tokenG, 'pointerup', 260, 240);
+
+    await waitFor(() => {
+      expect(mockUpdateToken).toHaveBeenCalledTimes(1);
+    });
+    const patch = mockUpdateToken.mock.calls[0]![3] as {
+      position: { x: number; y: number };
+    };
+    expect(patch.position).toEqual({ x: 260, y: 240 });
+  });
+
+  it("n'aimante pas quand la grille est masquée (showGrid false)", async () => {
+    useMapState.map = mkMap({ showGrid: false, gridSize: 70 });
+    useMapState.tokens = [mkToken({ id: 't1', position: { x: 200, y: 200 } })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointermove', 260, 240);
+    firePointer(tokenG, 'pointerup', 260, 240);
+
+    await waitFor(() => {
+      expect(mockUpdateToken).toHaveBeenCalledTimes(1);
+    });
+    const patch = mockUpdateToken.mock.calls[0]![3] as {
+      position: { x: number; y: number };
+    };
+    expect(patch.position).toEqual({ x: 260, y: 240 });
+  });
+
+  it('désactive le bouton Aimant quand la grille est masquée', () => {
+    useMapState.map = mkMap({ showGrid: false });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const btn = screen.getByTestId('map-live-toggle-snap') as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+  });
+
+  it('bascule showGrid via updateMap quand "Grille" cliqué', async () => {
+    useMapState.map = mkMap({ showGrid: true });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-grid'));
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ showGrid: false });
   });
 
   it('surfaces updateToken errors and clears local override', async () => {

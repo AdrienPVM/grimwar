@@ -136,6 +136,62 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
     // Pas d'erreur d'écriture surfacée.
     await expect(page.getByTestId('map-live-write-error')).toHaveCount(0);
 
+    // 9b. Grille + aimantage du jeton. La carte créée via le formulaire a
+    // `showGrid:true` + `gridSize` 70 : les nouveaux contrôles Grille/Aimant
+    // sont présents et ON par défaut, et un jeton lâché hors-grille s'aligne
+    // sur le CENTRE de sa case → cx,cy ≡ 35 (mod 70). Preuve bout-en-bout via
+    // les vraies security rules (le déplacement persiste puis le listener
+    // ré-émet la position aimantée).
+    const GRID = 70;
+    await expect(page.getByTestId('map-live-toggle-grid')).toContainText('ON');
+    await expect(page.getByTestId('map-live-toggle-snap')).toContainText('ON');
+
+    await page.getByTestId('map-live-add-pj').click();
+    await expect(page.getByTestId('map-live-tokens-count')).toContainText('(1)', {
+      timeout: 5000,
+    });
+
+    const tokenG = page.locator('[data-testid^="map-live-token-"]').first();
+    await expect(tokenG).toBeVisible();
+    const circle = tokenG.locator('circle');
+
+    // On drague depuis la bounding box DU JETON (pas le centre du svg : sur le
+    // layout mobile haut, le jeton n'est pas au centre visuel). `steps` + un
+    // petit déplacement initial garantissent qu'au moins un `pointermove` part
+    // une fois `draggingTokenId` posé. La cible (~80px) est volontairement
+    // hors-grille ; peu importe où il atterrit, l'aimant le recale au centre.
+    await tokenG.scrollIntoViewIfNeeded();
+    const tBox = await tokenG.boundingBox();
+    expect(tBox).not.toBeNull();
+    if (!tBox) return;
+    const startX = tBox.x + tBox.width / 2;
+    const startY = tBox.y + tBox.height / 2;
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 8, startY + 8);
+    await page.mouse.move(startX + 84, startY - 58, { steps: 12 });
+    await page.mouse.up();
+
+    // Après round-trip Firestore, cx et cy sont des centres de case (≡ 35 mod 70).
+    await expect
+      .poll(
+        async () => {
+          const cx = await circle.getAttribute('cx');
+          return cx === null ? null : Math.round(Number(cx)) % GRID;
+        },
+        { timeout: 5000 },
+      )
+      .toBe(GRID / 2);
+    expect(Math.round(Number(await circle.getAttribute('cy'))) % GRID).toBe(GRID / 2);
+
+    await takeStepScreenshot(page, testInfo, 'token-snapped-grid');
+
+    // Ménage : on retire le jeton pour ne pas alourdir les compteurs suivants.
+    await page.getByTestId('map-live-clear-tokens').click();
+    await expect(page.getByTestId('map-live-tokens-count')).toContainText('(0)', {
+      timeout: 5000,
+    });
+
     // 10-12. Effacer fog / lumières / AoE.
     await page.getByTestId('map-live-clear-fog').click();
     await expect(page.getByTestId('map-live-fog-count')).toContainText('(0)', {

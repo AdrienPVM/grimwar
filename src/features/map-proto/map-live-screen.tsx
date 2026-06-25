@@ -25,6 +25,7 @@ import type {
 } from '@/shared/types/map';
 
 import { createCirclePolygon } from './fog-state';
+import { snapToGridCell } from './grid-snap';
 import { MapScene } from './map-scene';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
@@ -92,6 +93,9 @@ export function MapLiveScreen(): JSX.Element {
   >({});
   const [draggingTokenId, setDraggingTokenId] = useState<string | null>(null);
   const [writeError, setWriteError] = useState<string | null>(null);
+  // Aimantage à la grille — préférence d'affichage LOCALE (pas persistée :
+  // c'est un confort de manipulation côté MJ, pas une donnée de la carte).
+  const [snapEnabled, setSnapEnabled] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{
     pointerX: number;
@@ -160,10 +164,20 @@ export function MapLiveScreen(): JSX.Element {
     setDraggingTokenId(null);
     dragStart.current = null;
     if (!tokenId || !cid || !mid || !user) return;
-    const newPos = localPositions[tokenId];
-    if (!newPos) return;
+    const rawPos = localPositions[tokenId];
+    if (!rawPos) return;
+    // Aimantage : si la grille est affichée ET que l'aimant est actif, on
+    // aligne le jeton sur le CENTRE de sa case (convention VTT — une créature
+    // occupe une case de 1,50 m). Sinon, position libre (battlemap sans grille
+    // ou aimant désactivé par le MJ).
+    const finalPos =
+      snapEnabled && map?.showGrid ? snapToGridCell(rawPos, map.gridSize) : rawPos;
+    // Reflet visuel immédiat : on pose la position alignée en local AVANT le
+    // round-trip Firestore, pour que le jeton « claque » dans sa case sans
+    // attendre l'aller-retour du listener.
+    setLocalPositions((prev) => ({ ...prev, [tokenId]: finalPos }));
     try {
-      await updateToken(cid, mid, tokenId, { position: newPos }, user.uid);
+      await updateToken(cid, mid, tokenId, { position: finalPos }, user.uid);
       // Le listener `useMap` ré-émettra le token avec la nouvelle position ;
       // on retire l'override local pour ne pas masquer un éventuel re-write.
       setLocalPositions((prev) => {
@@ -183,7 +197,7 @@ export function MapLiveScreen(): JSX.Element {
         return next;
       });
     }
-  }, [cid, draggingTokenId, localPositions, mid, user]);
+  }, [cid, draggingTokenId, localPositions, mid, user, map, snapEnabled]);
 
   // ── D.5 : fog / lights / AoE persistence via service maps.ts ───────────
   // Toutes les actions inline qui suivent posent la valeur côté Firestore et
@@ -304,6 +318,16 @@ export function MapLiveScreen(): JSX.Element {
     if (!cid || !mid || !user || !map) return;
     try {
       await updateMap(cid, mid, { losEnabled: !(map.losEnabled === true) }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
+  const handleToggleGrid = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    try {
+      await updateMap(cid, mid, { showGrid: !map.showGrid }, user.uid);
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
@@ -589,6 +613,30 @@ export function MapLiveScreen(): JSX.Element {
           >
             Murs ({(map.walls ?? []).length})
           </span>
+          <button
+            type="button"
+            data-testid="map-live-toggle-grid"
+            onClick={() => {
+              void handleToggleGrid();
+            }}
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Grille : {map.showGrid ? 'ON' : 'OFF'}
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-toggle-snap"
+            onClick={() => setSnapEnabled((s) => !s)}
+            disabled={!map.showGrid}
+            title={
+              map.showGrid
+                ? "Aligner les jetons sur le centre de leur case"
+                : "Affichez d'abord la grille pour aimanter les jetons"
+            }
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+          >
+            Aimant : {snapEnabled ? 'ON' : 'OFF'}
+          </button>
           <button
             type="button"
             data-testid="map-live-toggle-fog"
