@@ -3,6 +3,7 @@ import type { Character } from '@/shared/types/character';
 import { AttacksList } from './combat/attacks-list';
 import { BattleHud } from './combat/battle-hud';
 import { BreathWeaponCard } from './combat/breath-weapon-card';
+import { ClassResourcesCard } from './combat/class-resources-card';
 import { ConditionsRow } from './combat/conditions-row';
 import { DeathSavesModal } from './combat/death-saves-modal';
 import { FightingStyleCard } from './combat/fighting-style-card';
@@ -49,6 +50,7 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
         <HpMegaCard character={character} readOnly={readOnly} />
       </div>
       <ConditionsRow character={character} readOnly={readOnly} />
+      <ClassResourcesCard character={character} readOnly={readOnly} />
       <HitDiceCard character={character} readOnly={readOnly} />
       {hasSpellSlots && <SlotsCompact character={character} readOnly={readOnly} />}
       <div className="xl:col-span-2">

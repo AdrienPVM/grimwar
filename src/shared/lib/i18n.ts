@@ -299,6 +299,21 @@ export type StringKey =
   | 'sheet.combat.hitDice.spending'
   | 'sheet.combat.hitDice.spendLabel'
   | 'sheet.combat.hitDice.restToast'
+  | 'sheet.combat.resources.title'
+  | 'sheet.combat.resources.spend'
+  | 'sheet.combat.resources.restore'
+  | 'sheet.combat.resources.spendLabel'
+  | 'sheet.combat.resources.restoreLabel'
+  | 'sheet.combat.resources.restoresShort'
+  | 'sheet.combat.resources.restoresLong'
+  | 'sheet.combat.resources.rage'
+  | 'sheet.combat.resources.secondWind'
+  | 'sheet.combat.resources.actionSurge'
+  | 'sheet.combat.resources.channelDivinity'
+  | 'sheet.combat.resources.layOnHands'
+  | 'sheet.combat.resources.wildShape'
+  | 'sheet.combat.resources.sorceryPoints'
+  | 'sheet.combat.resources.focusPoints'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -1987,6 +2002,21 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.hitDice.spending': '…',
     'sheet.combat.hitDice.spendLabel': 'Dépenser un dé de vie ({class})',
     'sheet.combat.hitDice.restToast': 'Repos court',
+    'sheet.combat.resources.title': 'Réserves de classe',
+    'sheet.combat.resources.spend': 'Dépenser',
+    'sheet.combat.resources.restore': 'Récupérer',
+    'sheet.combat.resources.spendLabel': 'Dépenser un point de {resource}',
+    'sheet.combat.resources.restoreLabel': 'Récupérer un point de {resource}',
+    'sheet.combat.resources.restoresShort': 'Repos court',
+    'sheet.combat.resources.restoresLong': 'Repos long',
+    'sheet.combat.resources.rage': 'Rage',
+    'sheet.combat.resources.secondWind': 'Second souffle',
+    'sheet.combat.resources.actionSurge': 'Fougue',
+    'sheet.combat.resources.channelDivinity': 'Conduit divin',
+    'sheet.combat.resources.layOnHands': 'Imposition des mains',
+    'sheet.combat.resources.wildShape': 'Forme sauvage',
+    'sheet.combat.resources.sorceryPoints': 'Points de sorcellerie',
+    'sheet.combat.resources.focusPoints': 'Points de focalisation',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -4113,6 +4143,21 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.hitDice.spending': '…',
     'sheet.combat.hitDice.spendLabel': 'Spend a hit die ({class})',
     'sheet.combat.hitDice.restToast': 'Short rest',
+    'sheet.combat.resources.title': 'Class resources',
+    'sheet.combat.resources.spend': 'Spend',
+    'sheet.combat.resources.restore': 'Restore',
+    'sheet.combat.resources.spendLabel': 'Spend one {resource}',
+    'sheet.combat.resources.restoreLabel': 'Restore one {resource}',
+    'sheet.combat.resources.restoresShort': 'Short rest',
+    'sheet.combat.resources.restoresLong': 'Long rest',
+    'sheet.combat.resources.rage': 'Rage',
+    'sheet.combat.resources.secondWind': 'Second Wind',
+    'sheet.combat.resources.actionSurge': 'Action Surge',
+    'sheet.combat.resources.channelDivinity': 'Channel Divinity',
+    'sheet.combat.resources.layOnHands': 'Lay on Hands',
+    'sheet.combat.resources.wildShape': 'Wild Shape',
+    'sheet.combat.resources.sorceryPoints': 'Sorcery Points',
+    'sheet.combat.resources.focusPoints': 'Focus Points',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',

@@ -221,6 +221,28 @@ export const fighterL3: SeedPreset = {
 };
 
 /**
+ * Barbare niv. 3. Cas de test de la carte « Réserves de classe » en mode
+ * Combat : la Rage est une réserve consommable (3 utilisations à L3, repos
+ * long), le bonus de dégâts de rage reste passif (jamais affiché comme
+ * réserve). Sert l'UAT du tracker de ressources.
+ */
+export const barbarianL3: SeedPreset = {
+  name: 'Brak le Déchaîné',
+  classes: [{ classId: 'barbarian', subclassId: null, level: 3 }],
+  primaryClassId: 'barbarian',
+  ancestryId: 'human',
+  backgroundId: 'soldier',
+  abilities: { for: 16, dex: 14, con: 14, int: 8, sag: 10, cha: 10 },
+  hp: { current: 32, max: 32 },
+  ac: 14,
+  hitDice: [{ classId: 'barbarian', current: 3, max: 3, die: 'd12' }],
+  saves: { for: true, con: true },
+  inventory: {
+    items: [{ contentId: 'greataxe', equipped: true, qty: 1 }],
+  },
+};
+
+/**
  * Drakéide Rouge niv. 1 (plan 13.8). Cas de test du Souffle draconique
  * en mode Combat : carte breath-weapon visible, type Feu, DC = 12.
  */
