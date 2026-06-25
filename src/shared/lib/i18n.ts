@@ -523,6 +523,110 @@ export type StringKey =
   | 'handouts.create.error.recipients'
   | 'handouts.create.error.send'
   | 'handouts.create.sentToast'
+  // PNJ récurrents — plan 28
+  | 'campaigns.detail.npcsCta'
+  | 'campaigns.detail.eventFeed.kind.npcIntroduced'
+  | 'campaigns.detail.eventFeed.kind.npcAttitudeChanged'
+  | 'npcs.role.merchant'
+  | 'npcs.role.ally'
+  | 'npcs.role.enemy'
+  | 'npcs.role.contact'
+  | 'npcs.role.noble'
+  | 'npcs.role.other'
+  | 'npcs.attitude.friendly'
+  | 'npcs.attitude.neutral'
+  | 'npcs.attitude.hostile'
+  | 'npcs.attitude.unknown'
+  | 'npcs.visibility.all'
+  | 'npcs.visibility.dm'
+  | 'npcs.screen.back'
+  | 'npcs.screen.title'
+  | 'npcs.screen.subtitleDm'
+  | 'npcs.screen.subtitlePlayer'
+  | 'npcs.screen.newCta'
+  | 'npcs.screen.empty.dm'
+  | 'npcs.screen.empty.player'
+  | 'npcs.screen.noMatch'
+  | 'npcs.screen.loadError'
+  | 'npcs.screen.loading'
+  | 'npcs.card.secretBadge'
+  | 'npcs.card.combatBadge'
+  | 'npcs.filters.aria'
+  | 'npcs.filters.role'
+  | 'npcs.filters.tag'
+  | 'npcs.filters.location'
+  | 'npcs.filters.all'
+  | 'npcs.detail.back'
+  | 'npcs.detail.notFound'
+  | 'npcs.detail.edit'
+  | 'npcs.detail.delete'
+  | 'npcs.detail.secretBadge'
+  | 'npcs.detail.publicHeading'
+  | 'npcs.detail.relationsHeading'
+  | 'npcs.detail.relations.editCta'
+  | 'npcs.detail.relations.empty'
+  | 'npcs.detail.combatHeading'
+  | 'npcs.detail.combat.cr'
+  | 'npcs.detail.combat.ac'
+  | 'npcs.detail.combat.hp'
+  | 'npcs.detail.combat.monster'
+  | 'npcs.detail.dmNotesHeading'
+  | 'npcs.detail.dmOnlyHint'
+  | 'npcs.detail.dmNotesEmpty'
+  | 'npcs.detail.deletedToast'
+  | 'npcs.detail.deleteError'
+  | 'npcs.detail.deleteConfirm.title'
+  | 'npcs.detail.deleteConfirm.body'
+  | 'npcs.detail.deleteConfirm.cancel'
+  | 'npcs.detail.deleteConfirm.confirm'
+  | 'npcs.detail.deleteConfirm.deleting'
+  | 'npcs.relations.title'
+  | 'npcs.relations.close'
+  | 'npcs.relations.done'
+  | 'npcs.relations.noCharacters'
+  | 'npcs.relations.error'
+  | 'npcs.edit.createTitle'
+  | 'npcs.edit.editTitle'
+  | 'npcs.edit.field.name'
+  | 'npcs.edit.field.namePlaceholder'
+  | 'npcs.edit.field.role'
+  | 'npcs.edit.field.location'
+  | 'npcs.edit.field.locationPlaceholder'
+  | 'npcs.edit.field.portrait'
+  | 'npcs.edit.field.portraitHelper'
+  | 'npcs.edit.field.portraitPlaceholder'
+  | 'npcs.edit.field.shortDescription'
+  | 'npcs.edit.field.shortDescriptionPlaceholder'
+  | 'npcs.edit.field.publicDescription'
+  | 'npcs.edit.field.publicDescriptionPlaceholder'
+  | 'npcs.edit.markdownHelper'
+  | 'npcs.edit.field.dmNotes'
+  | 'npcs.edit.field.dmNotesHelper'
+  | 'npcs.edit.field.dmNotesPlaceholder'
+  | 'npcs.edit.field.tags'
+  | 'npcs.edit.field.tagsHelper'
+  | 'npcs.edit.field.tagsPlaceholder'
+  | 'npcs.edit.field.visibility'
+  | 'npcs.edit.field.visibilityHelper'
+  | 'npcs.edit.imageDeferred'
+  | 'npcs.edit.combat.enable'
+  | 'npcs.edit.combat.cr'
+  | 'npcs.edit.combat.ac'
+  | 'npcs.edit.combat.hp'
+  | 'npcs.edit.combat.notes'
+  | 'npcs.edit.combat.monsterDeferred'
+  | 'npcs.edit.cancel'
+  | 'npcs.edit.save'
+  | 'npcs.edit.saving'
+  | 'npcs.edit.error.name'
+  | 'npcs.edit.error.save'
+  | 'npcs.edit.createdToast'
+  | 'npcs.edit.updatedToast'
+  | 'encounters.create.npcs.title'
+  | 'encounters.create.npcs.intro'
+  | 'encounters.create.npcs.empty'
+  | 'encounters.create.npcs.hpLabel'
+  | 'encounters.create.error.npcHp'
   // Lecture MJ d'une fiche de joueur — JALON 4A.3
   | 'campaigns.memberSheet.back'
   | 'campaigns.memberSheet.viewingPrefix'
@@ -2282,6 +2386,119 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.create.error.recipients': 'Choisissez au moins un destinataire.',
     'handouts.create.error.send': "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
     'handouts.create.sentToast': 'Document transmis',
+    // PNJ récurrents — plan 28
+    'campaigns.detail.npcsCta': 'PNJ',
+    'campaigns.detail.eventFeed.kind.npcIntroduced': 'PNJ introduit',
+    'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'Attitude d’un PNJ',
+    'npcs.role.merchant': 'Marchand',
+    'npcs.role.ally': 'Allié',
+    'npcs.role.enemy': 'Ennemi',
+    'npcs.role.contact': 'Contact',
+    'npcs.role.noble': 'Noble',
+    'npcs.role.other': 'Autre',
+    'npcs.attitude.friendly': 'Amical',
+    'npcs.attitude.neutral': 'Neutre',
+    'npcs.attitude.hostile': 'Hostile',
+    'npcs.attitude.unknown': 'Inconnue',
+    'npcs.visibility.all': 'Visible des joueurs',
+    'npcs.visibility.dm': 'Secret (MJ seul)',
+    'npcs.screen.back': 'Retour à la campagne',
+    'npcs.screen.title': 'Personnages non-joueurs',
+    'npcs.screen.subtitleDm':
+      'Marchands, alliés, contacts et ennemis récurrents de votre campagne.',
+    'npcs.screen.subtitlePlayer': 'Les figures que vous avez rencontrées.',
+    'npcs.screen.newCta': 'Nouveau PNJ',
+    'npcs.screen.empty.dm':
+      'Aucun PNJ pour le moment. Créez le premier pour peupler votre monde.',
+    'npcs.screen.empty.player': 'Vous n’avez encore rencontré aucun personnage notable.',
+    'npcs.screen.noMatch': 'Aucun PNJ ne correspond à ces filtres.',
+    'npcs.screen.loadError': 'Impossible de charger les PNJ.',
+    'npcs.screen.loading': 'Chargement…',
+    'npcs.card.secretBadge': 'Secret',
+    'npcs.card.combatBadge': 'Combat',
+    'npcs.filters.aria': 'Filtres de l’annuaire des PNJ',
+    'npcs.filters.role': 'Rôle',
+    'npcs.filters.tag': 'Étiquette',
+    'npcs.filters.location': 'Lieu',
+    'npcs.filters.all': 'Tous',
+    'npcs.detail.back': 'Retour à l’annuaire',
+    'npcs.detail.notFound': 'Ce PNJ est introuvable.',
+    'npcs.detail.edit': 'Modifier',
+    'npcs.detail.delete': 'Supprimer',
+    'npcs.detail.secretBadge': 'Secret',
+    'npcs.detail.publicHeading': 'Description',
+    'npcs.detail.relationsHeading': 'Relations',
+    'npcs.detail.relations.editCta': 'Modifier les relations',
+    'npcs.detail.relations.empty': 'Aucune relation enregistrée.',
+    'npcs.detail.combatHeading': 'Statistiques de combat',
+    'npcs.detail.combat.cr': 'FP',
+    'npcs.detail.combat.ac': 'CA',
+    'npcs.detail.combat.hp': 'PV',
+    'npcs.detail.combat.monster': 'Monstre lié',
+    'npcs.detail.dmNotesHeading': 'Notes du MJ',
+    'npcs.detail.dmOnlyHint': 'Visible du MJ seul',
+    'npcs.detail.dmNotesEmpty': 'Aucune note secrète.',
+    'npcs.detail.deletedToast': 'PNJ supprimé',
+    'npcs.detail.deleteError': 'La suppression a échoué.',
+    'npcs.detail.deleteConfirm.title': 'Supprimer ce PNJ ?',
+    'npcs.detail.deleteConfirm.body': '« {name} » sera définitivement supprimé.',
+    'npcs.detail.deleteConfirm.cancel': 'Annuler',
+    'npcs.detail.deleteConfirm.confirm': 'Supprimer',
+    'npcs.detail.deleteConfirm.deleting': 'Suppression…',
+    'npcs.relations.title': 'Relations du PNJ',
+    'npcs.relations.close': 'Fermer',
+    'npcs.relations.done': 'Terminé',
+    'npcs.relations.noCharacters':
+      'Aucun personnage de joueur dans cette campagne pour le moment.',
+    'npcs.relations.error': 'La mise à jour a échoué.',
+    'npcs.edit.createTitle': 'Nouveau PNJ',
+    'npcs.edit.editTitle': 'Modifier le PNJ',
+    'npcs.edit.field.name': 'Nom',
+    'npcs.edit.field.namePlaceholder': 'Nom du personnage',
+    'npcs.edit.field.role': 'Rôle',
+    'npcs.edit.field.location': 'Lieu',
+    'npcs.edit.field.locationPlaceholder': 'Où le rencontre-t-on ?',
+    'npcs.edit.field.portrait': 'Portrait',
+    'npcs.edit.field.portraitHelper': 'Une lettre ou un emoji.',
+    'npcs.edit.field.portraitPlaceholder': 'A',
+    'npcs.edit.field.shortDescription': 'Résumé',
+    'npcs.edit.field.shortDescriptionPlaceholder': 'Une ou deux phrases.',
+    'npcs.edit.field.publicDescription': 'Description publique',
+    'npcs.edit.field.publicDescriptionPlaceholder':
+      'Ce que les joueurs savent de ce personnage.',
+    'npcs.edit.markdownHelper': 'Markdown : ## titre, - liste, **gras**, _italique_.',
+    'npcs.edit.field.dmNotes': 'Notes du MJ',
+    'npcs.edit.field.dmNotesHelper': 'Secret — jamais montré aux joueurs.',
+    'npcs.edit.field.dmNotesPlaceholder': 'Secrets, intentions, ressorts cachés…',
+    'npcs.edit.field.tags': 'Étiquettes',
+    'npcs.edit.field.tagsHelper': 'Séparées par des virgules.',
+    'npcs.edit.field.tagsPlaceholder': 'récurrent, faction-x',
+    'npcs.edit.field.visibility': 'Visibilité',
+    'npcs.edit.field.visibilityHelper':
+      'Un PNJ secret reste totalement invisible des joueurs.',
+    'npcs.edit.imageDeferred':
+      'Le portrait en image arrivera bientôt — pour l’instant, une lettre ou un emoji.',
+    'npcs.edit.combat.enable': 'PNJ combattant',
+    'npcs.edit.combat.cr': 'FP',
+    'npcs.edit.combat.ac': 'CA',
+    'npcs.edit.combat.hp': 'PV',
+    'npcs.edit.combat.notes': 'Notes de combat',
+    'npcs.edit.combat.monsterDeferred':
+      'Le lien vers un monstre du bestiaire (remplissage auto) arrivera avec le bestiaire SRD.',
+    'npcs.edit.cancel': 'Annuler',
+    'npcs.edit.save': 'Enregistrer',
+    'npcs.edit.saving': 'Enregistrement…',
+    'npcs.edit.error.name': 'Donnez un nom au PNJ.',
+    'npcs.edit.error.save': 'L’enregistrement a échoué. Vérifiez votre connexion et réessayez.',
+    'npcs.edit.createdToast': 'PNJ créé',
+    'npcs.edit.updatedToast': 'PNJ mis à jour',
+    'encounters.create.npcs.title': 'PNJ',
+    'encounters.create.npcs.intro':
+      'Ajoutez des PNJ enregistrés de la campagne au combat.',
+    'encounters.create.npcs.empty':
+      'Aucun PNJ enregistré. Créez-en dans l’annuaire des PNJ.',
+    'encounters.create.npcs.hpLabel': 'PV',
+    'encounters.create.error.npcHp': 'Indiquez des PV valides pour chaque PNJ ajouté.',
     // Séances — JALON 23.2
     'sessions.back': 'Retour à la campagne',
     'sessions.title': 'Séances',
@@ -4211,6 +4428,113 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.create.error.recipients': 'Pick at least one recipient.',
     'handouts.create.error.send': 'Sending failed. Check your connection and try again.',
     'handouts.create.sentToast': 'Handout sent',
+    // NPCs — plan 28
+    'campaigns.detail.npcsCta': 'NPCs',
+    'campaigns.detail.eventFeed.kind.npcIntroduced': 'NPC introduced',
+    'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'NPC attitude',
+    'npcs.role.merchant': 'Merchant',
+    'npcs.role.ally': 'Ally',
+    'npcs.role.enemy': 'Enemy',
+    'npcs.role.contact': 'Contact',
+    'npcs.role.noble': 'Noble',
+    'npcs.role.other': 'Other',
+    'npcs.attitude.friendly': 'Friendly',
+    'npcs.attitude.neutral': 'Neutral',
+    'npcs.attitude.hostile': 'Hostile',
+    'npcs.attitude.unknown': 'Unknown',
+    'npcs.visibility.all': 'Visible to players',
+    'npcs.visibility.dm': 'Secret (DM only)',
+    'npcs.screen.back': 'Back to campaign',
+    'npcs.screen.title': 'Non-player characters',
+    'npcs.screen.subtitleDm':
+      'Merchants, allies, contacts and recurring foes of your campaign.',
+    'npcs.screen.subtitlePlayer': 'The figures you have encountered.',
+    'npcs.screen.newCta': 'New NPC',
+    'npcs.screen.empty.dm': 'No NPCs yet. Create the first to populate your world.',
+    'npcs.screen.empty.player': 'You have not met any notable character yet.',
+    'npcs.screen.noMatch': 'No NPC matches these filters.',
+    'npcs.screen.loadError': 'Could not load NPCs.',
+    'npcs.screen.loading': 'Loading…',
+    'npcs.card.secretBadge': 'Secret',
+    'npcs.card.combatBadge': 'Combat',
+    'npcs.filters.aria': 'NPC directory filters',
+    'npcs.filters.role': 'Role',
+    'npcs.filters.tag': 'Tag',
+    'npcs.filters.location': 'Location',
+    'npcs.filters.all': 'All',
+    'npcs.detail.back': 'Back to directory',
+    'npcs.detail.notFound': 'This NPC could not be found.',
+    'npcs.detail.edit': 'Edit',
+    'npcs.detail.delete': 'Delete',
+    'npcs.detail.secretBadge': 'Secret',
+    'npcs.detail.publicHeading': 'Description',
+    'npcs.detail.relationsHeading': 'Relationships',
+    'npcs.detail.relations.editCta': 'Edit relationships',
+    'npcs.detail.relations.empty': 'No relationship recorded.',
+    'npcs.detail.combatHeading': 'Combat statistics',
+    'npcs.detail.combat.cr': 'CR',
+    'npcs.detail.combat.ac': 'AC',
+    'npcs.detail.combat.hp': 'HP',
+    'npcs.detail.combat.monster': 'Linked monster',
+    'npcs.detail.dmNotesHeading': 'DM notes',
+    'npcs.detail.dmOnlyHint': 'DM only',
+    'npcs.detail.dmNotesEmpty': 'No secret note.',
+    'npcs.detail.deletedToast': 'NPC deleted',
+    'npcs.detail.deleteError': 'Deletion failed.',
+    'npcs.detail.deleteConfirm.title': 'Delete this NPC?',
+    'npcs.detail.deleteConfirm.body': '“{name}” will be permanently deleted.',
+    'npcs.detail.deleteConfirm.cancel': 'Cancel',
+    'npcs.detail.deleteConfirm.confirm': 'Delete',
+    'npcs.detail.deleteConfirm.deleting': 'Deleting…',
+    'npcs.relations.title': 'NPC relationships',
+    'npcs.relations.close': 'Close',
+    'npcs.relations.done': 'Done',
+    'npcs.relations.noCharacters': 'No player character in this campaign yet.',
+    'npcs.relations.error': 'Update failed.',
+    'npcs.edit.createTitle': 'New NPC',
+    'npcs.edit.editTitle': 'Edit NPC',
+    'npcs.edit.field.name': 'Name',
+    'npcs.edit.field.namePlaceholder': 'Character name',
+    'npcs.edit.field.role': 'Role',
+    'npcs.edit.field.location': 'Location',
+    'npcs.edit.field.locationPlaceholder': 'Where do they appear?',
+    'npcs.edit.field.portrait': 'Portrait',
+    'npcs.edit.field.portraitHelper': 'A letter or an emoji.',
+    'npcs.edit.field.portraitPlaceholder': 'A',
+    'npcs.edit.field.shortDescription': 'Summary',
+    'npcs.edit.field.shortDescriptionPlaceholder': 'One or two sentences.',
+    'npcs.edit.field.publicDescription': 'Public description',
+    'npcs.edit.field.publicDescriptionPlaceholder': 'What players know about this character.',
+    'npcs.edit.markdownHelper': 'Markdown: ## heading, - list, **bold**, _italic_.',
+    'npcs.edit.field.dmNotes': 'DM notes',
+    'npcs.edit.field.dmNotesHelper': 'Secret — never shown to players.',
+    'npcs.edit.field.dmNotesPlaceholder': 'Secrets, intentions, hidden hooks…',
+    'npcs.edit.field.tags': 'Tags',
+    'npcs.edit.field.tagsHelper': 'Comma-separated.',
+    'npcs.edit.field.tagsPlaceholder': 'recurring, faction-x',
+    'npcs.edit.field.visibility': 'Visibility',
+    'npcs.edit.field.visibilityHelper': 'A secret NPC stays fully invisible to players.',
+    'npcs.edit.imageDeferred':
+      'Image portraits are coming soon — for now, a letter or an emoji.',
+    'npcs.edit.combat.enable': 'Combatant NPC',
+    'npcs.edit.combat.cr': 'CR',
+    'npcs.edit.combat.ac': 'AC',
+    'npcs.edit.combat.hp': 'HP',
+    'npcs.edit.combat.notes': 'Combat notes',
+    'npcs.edit.combat.monsterDeferred':
+      'Linking to a bestiary monster (auto-fill) will arrive with the SRD bestiary.',
+    'npcs.edit.cancel': 'Cancel',
+    'npcs.edit.save': 'Save',
+    'npcs.edit.saving': 'Saving…',
+    'npcs.edit.error.name': 'Give the NPC a name.',
+    'npcs.edit.error.save': 'Save failed. Check your connection and try again.',
+    'npcs.edit.createdToast': 'NPC created',
+    'npcs.edit.updatedToast': 'NPC updated',
+    'encounters.create.npcs.title': 'NPCs',
+    'encounters.create.npcs.intro': 'Add saved campaign NPCs to the encounter.',
+    'encounters.create.npcs.empty': 'No saved NPC. Create some in the NPC directory.',
+    'encounters.create.npcs.hpLabel': 'HP',
+    'encounters.create.error.npcHp': 'Enter valid HP for each NPC added.',
     // Sessions — JALON 23.2
     'sessions.back': 'Back to campaign',
     'sessions.title': 'Sessions',

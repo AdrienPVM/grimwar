@@ -426,3 +426,45 @@ export async function logHandoutRevealed(
     payload: { handoutId, revealedByUserId },
   });
 }
+
+/**
+ * Journalise l'introduction d'un PNJ (kind `npc-introduced`, plan 28 step 14),
+ * tirée à la création. La visibilité de l'event MIRROR celle du PNJ : un PNJ
+ * `'all'` est visible des joueurs → event `all` (la table sait qu'un PNJ entre
+ * en scène) ; un PNJ `'dm'` (antagoniste secret) → event `dm`, invisible des
+ * joueurs. Le payload porte l'id + le nom (pour la narration du journal sans
+ * relire le doc PNJ — qui peut être `'dm'`, donc illisible côté joueur).
+ */
+export async function logNpcIntroduced(
+  npcId: string,
+  name: string,
+  npcVisibility: 'all' | 'dm',
+): Promise<void> {
+  await writeEvent({
+    kind: 'npc-introduced',
+    actorCharacterId: null,
+    visibility: npcVisibility,
+    payload: { npcId, name },
+  });
+}
+
+/**
+ * Journalise un changement d'attitude d'un PNJ envers un PJ (kind
+ * `npc-attitude-changed`, plan 28 step 14). Visibilité MIRROR de celle du PNJ
+ * (même raisonnement que `npc-introduced` : ne jamais révéler un PNJ secret).
+ * Payload : npcId, characterId, before, after (énumérations `NpcAttitude`).
+ */
+export async function logNpcAttitudeChanged(
+  npcId: string,
+  characterId: string,
+  before: string,
+  after: string,
+  npcVisibility: 'all' | 'dm',
+): Promise<void> {
+  await writeEvent({
+    kind: 'npc-attitude-changed',
+    actorCharacterId: null,
+    visibility: npcVisibility,
+    payload: { npcId, characterId, before, after },
+  });
+}

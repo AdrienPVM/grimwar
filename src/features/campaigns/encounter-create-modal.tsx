@@ -12,10 +12,14 @@ import {
   type CreateParticipantInput,
 } from '@/shared/lib/services/encounters';
 
+import type { Npc } from '@/shared/types/npc';
+
+import { NpcPortraitFor } from './npc-portrait';
 import {
   useEncounterPartyDraft,
   type LinkedMember,
 } from './use-encounter-party-draft';
+import { useNpcs } from './use-npcs';
 
 interface Props {
   campaignId: string;
@@ -69,19 +73,43 @@ export function EncounterCreateModal({
   const nextRowKey = useRef<number>(0);
   const [name, setName] = useState<string>('');
   const [monsters, setMonsters] = useState<MonsterRow[]>([]);
+  // PNJ enregistrés sélectionnés : npcId → PV (string, prérempli depuis combatStats).
+  const [npcSelections, setNpcSelections] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
 
   const party = useEncounterPartyDraft(linkedMembers, open);
+  // PNJ de la campagne (contexte MJ) — chargés seulement quand la modale est
+  // ouverte (le hook ne lance ses lectures que si `campaignId` est défini).
+  const { npcs: savedNpcs } = useNpcs(open ? campaignId : undefined, true);
 
   function resetAndClose(): void {
     setName('');
     setMonsters([]);
+    setNpcSelections({});
     setSubmitError(null);
     setNameError(null);
     setSubmitting(false);
     onClose();
+  }
+
+  /** (Dé)sélectionne un PNJ ; à la sélection, préremplit ses PV depuis `combatStats`. */
+  function toggleNpc(npc: Npc): void {
+    setNpcSelections((prev) => {
+      if (npc.id in prev) {
+        const { [npc.id]: _removed, ...rest } = prev;
+        return rest;
+      }
+      const hp = npc.combatStats?.hp;
+      return { ...prev, [npc.id]: hp !== undefined ? String(hp) : '' };
+    });
+    if (submitError) setSubmitError(null);
+  }
+
+  function updateNpcHp(npcId: string, hp: string): void {
+    setNpcSelections((prev) => ({ ...prev, [npcId]: hp }));
+    if (submitError) setSubmitError(null);
   }
 
   function addMonsterRow(): void {
@@ -146,7 +174,29 @@ export function EncounterCreateModal({
       expandMonsterRow(r),
     );
 
-    const participants = [...playerParticipants, ...monsterParticipants];
+    // PNJ sélectionnés → participants `type:'npc'`. PV depuis le champ (prérempli
+    // de `combatStats.hp`). Un PNJ lié à un monstre conserve son `monsterContentId`.
+    const selectedNpcEntries = savedNpcs.filter((n) => n.id in npcSelections);
+    const npcHps = selectedNpcEntries.map((n) => ({
+      npc: n,
+      hp: Number.parseInt(npcSelections[n.id] ?? '', 10),
+    }));
+    if (npcHps.some((e) => !Number.isFinite(e.hp) || e.hp <= 0)) {
+      setSubmitError(t('encounters.create.error.npcHp'));
+      return;
+    }
+    const npcParticipants: CreateParticipantInput[] = npcHps.map(({ npc, hp }) => ({
+      type: 'npc',
+      monsterContentId: npc.combatStats?.monsterContentId ?? null,
+      name: npc.name,
+      maxHp: hp,
+    }));
+
+    const participants = [
+      ...playerParticipants,
+      ...monsterParticipants,
+      ...npcParticipants,
+    ];
     if (participants.length === 0) {
       setSubmitError(t('encounters.create.error.noParticipants'));
       return;
@@ -295,6 +345,14 @@ export function EncounterCreateModal({
           </div>
         </section>
 
+        <NpcSection
+          npcs={savedNpcs}
+          selections={npcSelections}
+          onToggle={toggleNpc}
+          onHpChange={updateNpcHp}
+          disabled={submitting}
+        />
+
         {submitError ? (
           <p
             role="alert"
@@ -368,6 +426,90 @@ function PartySection({ drafts, isLoading, hadReadError }: PartySectionProps): J
           {t('encounters.create.party.error')}
         </p>
       ) : null}
+    </section>
+  );
+}
+
+interface NpcSectionProps {
+  npcs: Npc[];
+  /** npcId → PV (string) pour les PNJ sélectionnés. */
+  selections: Record<string, string>;
+  onToggle: (npc: Npc) => void;
+  onHpChange: (npcId: string, hp: string) => void;
+  disabled: boolean;
+}
+
+/**
+ * Section « PNJ » (plan 28 steps 9-10) : le MJ choisit parmi les PNJ enregistrés
+ * de la campagne pour les ajouter au combat. Un PNJ sélectionné devient un
+ * participant `type:'npc'` avec ses PV (préremplis depuis `combatStats.hp`,
+ * éditables). Aucun changement de schéma : pas de `npcId` sur le participant
+ * (cf. DATA-MODEL.md note plan 28) — le PNJ contribue nom + PV (+ `monsterContentId`
+ * s'il est lié à un monstre), suffisant pour le tracker.
+ */
+function NpcSection({
+  npcs,
+  selections,
+  onToggle,
+  onHpChange,
+  disabled,
+}: NpcSectionProps): JSX.Element {
+  return (
+    <section aria-label={t('encounters.create.npcs.title')}>
+      <h3 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+        {t('encounters.create.npcs.title')}
+      </h3>
+      <p className="mt-1 font-serif text-body-sm italic text-text-tertiary">
+        {t('encounters.create.npcs.intro')}
+      </p>
+      {npcs.length === 0 ? (
+        <p className="mt-2 font-serif text-body-sm italic text-text-tertiary">
+          {t('encounters.create.npcs.empty')}
+        </p>
+      ) : (
+        <ul className="mt-3 flex flex-col gap-2">
+          {npcs.map((npc) => {
+            const selected = npc.id in selections;
+            return (
+              <li
+                key={npc.id}
+                className={cn(
+                  'flex items-center gap-3 rounded-card-sm border px-3 py-2 transition-colors duration-200 ease-base',
+                  selected
+                    ? 'border-gold-bright/50 bg-gold-bright/[0.06]'
+                    : 'border-white-8 bg-bg-3/40',
+                )}
+              >
+                <label className="flex flex-1 items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={() => onToggle(npc)}
+                    disabled={disabled}
+                    className="h-4 w-4 accent-gold-bright"
+                  />
+                  <NpcPortraitFor npc={npc} size="sm" />
+                  <span className="truncate font-serif text-body text-text">{npc.name}</span>
+                </label>
+                {selected ? (
+                  <label className="flex w-16 flex-col gap-1">
+                    <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
+                      {t('encounters.create.npcs.hpLabel')}
+                    </span>
+                    <NumberInput
+                      value={selections[npc.id] ?? ''}
+                      min={1}
+                      ariaLabel={`${npc.name} — ${t('encounters.create.npcs.hpLabel')}`}
+                      onChange={(v) => onHpChange(npc.id, v)}
+                      disabled={disabled}
+                    />
+                  </label>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

@@ -2259,3 +2259,144 @@ describeIfEmulator('firestore.rules — handouts (plan 27)', () => {
     await assertSucceeds(updateDoc(hRef(HD_GM, 'hd-arch'), { visibility: 'archived' }));
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// NPCs — `campaigns/{cid}/npcs/{npcId}` (plan 28)
+// ═══════════════════════════════════════════════════════════════════════
+
+const NP_CID = 'camp-npcs';
+const NP_GM = 'dm-npcs';
+const NP_PLAYER = 'player-npcs';
+
+function makeNpcDoc(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: 'npc-x',
+    name: 'Aldric le marchand',
+    role: 'merchant',
+    location: 'Valombre',
+    shortDescription: 'Un marchand bourru.',
+    publicDescription: 'Tient une échoppe.',
+    dmNotes: 'Informateur secret.',
+    portrait: { type: 'letter', value: 'A' },
+    combatStats: null,
+    relationships: [],
+    tags: [],
+    visibility: 'all',
+    createdBy: NP_GM,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    ...overrides,
+  };
+}
+
+describeIfEmulator('firestore.rules — npcs (plan 28)', () => {
+  beforeAll(async () => {
+    if (env) {
+      try {
+        await env.cleanup();
+      } catch {
+        // déjà cleaned up
+      }
+      env = null;
+    }
+    env = await initializeTestEnvironment({
+      projectId: PROJECT_ID,
+      firestore: { rules: readFileSync(RULES_PATH, 'utf-8') },
+    });
+  });
+
+  afterAll(async () => {
+    if (env) await env.cleanup();
+    env = null;
+  });
+
+  beforeEach(async () => {
+    if (!env) return;
+    await env.clearFirestore();
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', NP_CID), makeCampaignDoc(NP_GM));
+      // Joueur membre ; le MJ pur n'a PAS de doc members/.
+      await setDoc(doc(adminDb, 'campaigns', NP_CID, 'members', NP_PLAYER), {
+        userId: NP_PLAYER,
+        role: 'member',
+        characterId: null,
+        joinedAt: serverTimestamp(),
+        schemaVersion: 1,
+      });
+    });
+  });
+
+  async function seed(npcId: string, overrides: Record<string, unknown>): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', NP_CID, 'npcs', npcId),
+        makeNpcDoc({ id: npcId, ...overrides }),
+      );
+    });
+  }
+
+  function nRef(uid: string, npcId: string) {
+    return doc(env!.authenticatedContext(uid).firestore(), 'campaigns', NP_CID, 'npcs', npcId);
+  }
+
+  function npcsCol(uid: string) {
+    return collection(env!.authenticatedContext(uid).firestore(), 'campaigns', NP_CID, 'npcs');
+  }
+
+  // ── Création / édition / suppression (MJ only) ────────────────────
+  it('MJ crée un PNJ', async () => {
+    await assertSucceeds(setDoc(nRef(NP_GM, 'npc-1'), makeNpcDoc({ id: 'npc-1' })));
+  });
+
+  it('Joueur ne peut PAS créer un PNJ', async () => {
+    await assertFails(setDoc(nRef(NP_PLAYER, 'npc-2'), makeNpcDoc({ id: 'npc-2' })));
+  });
+
+  it('MJ édite un PNJ ; un joueur ne peut pas', async () => {
+    await seed('npc-e', { visibility: 'all' });
+    await assertSucceeds(updateDoc(nRef(NP_GM, 'npc-e'), { name: 'Aldric II' }));
+    await assertFails(updateDoc(nRef(NP_PLAYER, 'npc-e'), { name: 'Piraté' }));
+  });
+
+  it('MJ supprime un PNJ ; un joueur ne peut pas', async () => {
+    await seed('npc-del', { visibility: 'all' });
+    await assertFails(deleteDoc(nRef(NP_PLAYER, 'npc-del')));
+    await assertSucceeds(deleteDoc(nRef(NP_GM, 'npc-del')));
+  });
+
+  // ── Lecture (filtrage par visibilité) ─────────────────────────────
+  it("MJ pur (sans doc members/) lit un PNJ secret", async () => {
+    await seed('npc-secret', { visibility: 'dm' });
+    await assertSucceeds(getDoc(nRef(NP_GM, 'npc-secret')));
+  });
+
+  it("Joueur lit un PNJ visible ('all')", async () => {
+    await seed('npc-pub', { visibility: 'all' });
+    await assertSucceeds(getDoc(nRef(NP_PLAYER, 'npc-pub')));
+  });
+
+  it("Joueur ne peut PAS lire un PNJ secret ('dm')", async () => {
+    await seed('npc-secret', { visibility: 'dm' });
+    await assertFails(getDoc(nRef(NP_PLAYER, 'npc-secret')));
+  });
+
+  // ── Query bornée (le joueur ne liste que les 'all') ───────────────
+  it("Joueur liste les PNJ 'all' (query bornée visibility == 'all')", async () => {
+    await seed('npc-pub', { visibility: 'all' });
+    await assertSucceeds(getDocs(query(npcsCol(NP_PLAYER), where('visibility', '==', 'all'))));
+  });
+
+  it('Joueur ne peut PAS lister TOUTE la collection (touche des PNJ secrets)', async () => {
+    await seed('npc-pub', { visibility: 'all' });
+    await seed('npc-secret', { visibility: 'dm' });
+    await assertFails(getDocs(npcsCol(NP_PLAYER)));
+  });
+
+  it('MJ liste toute la collection (secrets inclus)', async () => {
+    await seed('npc-pub', { visibility: 'all' });
+    await seed('npc-secret', { visibility: 'dm' });
+    await assertSucceeds(getDocs(npcsCol(NP_GM)));
+  });
+});

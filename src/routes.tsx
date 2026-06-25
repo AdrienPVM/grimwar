@@ -140,6 +140,21 @@ const CampaignHandoutsScreen = lazy(async () => {
   return { default: mod.CampaignHandoutsScreen };
 });
 
+// Route /campaigns/:cid/npcs — annuaire des PNJ récurrents (plan 28). MJ : crée
+// + gère (les secrets `'dm'` lui sont visibles) ; joueur : ne voit que les PNJ
+// `visibility:'all'`. Tout membre y accède.
+const NpcDirectoryScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/npc-directory-screen');
+  return { default: mod.NpcDirectoryScreen };
+});
+
+// Route /campaigns/:cid/npcs/:npcId — détail d'un PNJ (plan 28). Sections
+// publiques + sections MJ (notes secrètes, stats de combat) masquées client.
+const NpcDetailScreen = lazy(async () => {
+  const mod = await import('@/features/campaigns/npc-detail-screen');
+  return { default: mod.NpcDetailScreen };
+});
+
 export function AppRoutes(): JSX.Element {
   return (
     <Suspense fallback={<Splash />}>
@@ -176,6 +191,8 @@ export function AppRoutes(): JSX.Element {
         />
         <Route path="/campaigns/:cid/journal" element={<CampaignJournalScreen />} />
         <Route path="/campaigns/:cid/handouts" element={<CampaignHandoutsScreen />} />
+        <Route path="/campaigns/:cid/npcs/:npcId" element={<NpcDetailScreen />} />
+        <Route path="/campaigns/:cid/npcs" element={<NpcDirectoryScreen />} />
         <Route path="/campaigns/:cid" element={<CampaignDetailScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

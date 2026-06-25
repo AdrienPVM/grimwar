@@ -84,6 +84,8 @@ export async function logRoll(args: {
 | `campaign-leave` | Joueur quitte | `all` | userId, reason |
 | `handout-sent` | DM transmet un document | `all` | handoutId, recipients, title |
 | `handout-revealed` | Joueur ouvre un document | `all` | handoutId, revealedByUserId |
+| `npc-introduced` | DM crée un PNJ | `all` si PNJ `visibility:'all'`, sinon `dm` | npcId, name |
+| `npc-attitude-changed` | Attitude d'un PNJ envers un PJ change | `all` si PNJ `visibility:'all'`, sinon `dm` | npcId, characterId, before, after |
 
 ## Common payload structure
 

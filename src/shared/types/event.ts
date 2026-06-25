@@ -55,6 +55,8 @@ export const EVENT_KINDS = [
   'campaign-leave',
   'handout-sent',
   'handout-revealed',
+  'npc-introduced',
+  'npc-attitude-changed',
 ] as const;
 
 export type EventKind = (typeof EVENT_KINDS)[number];

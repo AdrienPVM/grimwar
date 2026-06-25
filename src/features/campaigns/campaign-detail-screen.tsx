@@ -174,6 +174,16 @@ export function CampaignDetailScreen(): JSX.Element {
             >
               {t('campaigns.detail.handoutsCta')}
             </Button>
+            {/* PNJ — annuaire accessible à tout membre (le MJ gère, le joueur
+                consulte les PNJ publics). */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
+            >
+              {t('campaigns.detail.npcsCta')}
+            </Button>
             {isGm ? (
               <>
                 <Button

@@ -198,6 +198,16 @@ export function summarizeEvent(
         ),
       };
     }
+    case 'npc-introduced':
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.npcIntroduced'),
+        detail: asString(p.name),
+      };
+    case 'npc-attitude-changed':
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.npcAttitudeChanged'),
+        detail: null,
+      };
     default:
       return {
         kindLabel: t('campaigns.detail.eventFeed.kind.generic'),

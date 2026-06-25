@@ -516,6 +516,21 @@ Recurring NPCs — distinct from one-off monsters and player-owned PJs.
 }
 ```
 
+**Confidentialité (plan 28).** `firestore.rules` filtre à la GRANULARITÉ DU DOC :
+un joueur ne lit que les PNJ `visibility:'all'` ; un PNJ `'dm'` lui est totalement
+invisible. Firestore ne sait PAS filtrer par champ — un PNJ `'all'` est donc
+lisible intégralement (y compris `dmNotes` / `combatStats`). Le masquage de ces
+deux sections secrètes pour un lecteur joueur est CLIENT (`NpcDetailScreen`). Un
+secret qui ne doit jamais fuir → poser le PNJ entier en `visibility:'dm'`.
+
+**Intégration rencontre (plan 28, steps 9-11).** Un PNJ invoqué en combat devient
+un `participant` d'`encounter` avec `type:'npc'` (déjà dans l'énum), son `name` et
+ses PV tirés de `combatStats` (ou de `monsterContentId` si lié à un monstre). Le
+schéma `participant` documenté ci-dessus n'a **PAS** de champ `npcId` — le plan 28
+le mentionnait, mais l'ajouter serait un changement de schéma Firestore (sign-off
+Adrien requis). Le combat fonctionne sans back-référence participant→PNJ ; un
+`npcId` pourra être ajouté par un plan dédié si un besoin de back-lien émerge.
+
 ### `publicStats/{slug}` (S5, plan 39)
 
 Public, no-auth-required snapshot of a campaign's aggregated stats. Computed by Cloud Function, cached.
