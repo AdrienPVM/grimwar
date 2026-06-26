@@ -15,6 +15,7 @@ import {
   createTokenWithId,
   deleteToken,
   moveAoeTemplate,
+  removeAoeTemplate,
   rotateAoeTemplate,
   updateMap,
   updateToken,
@@ -540,6 +541,27 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, mid, user]);
 
+  // Suppression DU SEUL gabarit sélectionné (≠ « Effacer AoE » qui vide tout).
+  // Réutilise `removeAoeTemplate` (filtre par id) — symétrique de la suppression
+  // unitaire d'un jeton. La sélection se vide localement ; le listener `useMap`
+  // ré-émet ensuite la liste sans ce gabarit.
+  const handleDeleteSelectedAoe = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map || !selectedAoeId) return;
+    try {
+      await removeAoeTemplate(
+        cid,
+        mid,
+        map.aoeTemplates,
+        selectedAoeId,
+        user.uid,
+      );
+      setSelectedAoeId(null);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, mid, user, map, selectedAoeId]);
+
   // ── Toggles fog / ligne de vue ─────────────────────────────────────────
   const handleToggleFogEnabled = useCallback(async (): Promise<void> => {
     if (!cid || !mid || !user || !map) return;
@@ -908,6 +930,17 @@ export function MapLiveScreen(): JSX.Element {
                 className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
               >
                 ⟳ +{AOE_ROTATE_STEP_DEG}°
+              </button>
+              <button
+                type="button"
+                data-testid="map-live-delete-aoe"
+                onClick={() => {
+                  void handleDeleteSelectedAoe();
+                }}
+                title="Supprimer ce gabarit"
+                className="rounded-pill border border-crimson/40 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
+              >
+                Supprimer
               </button>
             </span>
           )}

@@ -47,6 +47,7 @@ const mockAddLightSource = vi.fn();
 const mockAddAoeTemplate = vi.fn();
 const mockMoveAoeTemplate = vi.fn();
 const mockRotateAoeTemplate = vi.fn();
+const mockRemoveAoeTemplate = vi.fn();
 const mockDeleteToken = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
@@ -56,6 +57,7 @@ vi.mock('@/shared/lib/services/maps', () => ({
   addAoeTemplate: (...args: unknown[]) => mockAddAoeTemplate(...args),
   moveAoeTemplate: (...args: unknown[]) => mockMoveAoeTemplate(...args),
   rotateAoeTemplate: (...args: unknown[]) => mockRotateAoeTemplate(...args),
+  removeAoeTemplate: (...args: unknown[]) => mockRemoveAoeTemplate(...args),
   deleteToken: (...args: unknown[]) => mockDeleteToken(...args),
 }));
 
@@ -204,6 +206,7 @@ beforeEach(() => {
   mockAddAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockMoveAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockRotateAoeTemplate.mockReset().mockResolvedValue(undefined);
+  mockRemoveAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockDeleteToken.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
@@ -973,6 +976,36 @@ describe('MapLiveScreen', () => {
     // Après sélection : contour épaissi (4) + pointillé.
     expect(shape.getAttribute('stroke-width')).toBe('4');
     expect(shape.getAttribute('stroke-dasharray')).toBe('6 4');
+  });
+
+  it('supprime LE SEUL gabarit sélectionné via removeAoeTemplate', async () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    // Le bouton n'apparaît qu'avec une sélection.
+    fireEvent.click(screen.getByTestId('map-live-delete-aoe'));
+    await waitFor(() => {
+      expect(mockRemoveAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, currentArg, idArg, uidArg] =
+      mockRemoveAoeTemplate.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(Array.isArray(currentArg)).toBe(true);
+    expect(idArg).toBe('a1');
+    expect(uidArg).toBe('user-alice');
+    // « Effacer AoE » (vide tout) n'est PAS appelé : suppression ciblée.
+    expect(mockUpdateMap).not.toHaveBeenCalled();
+    // La sélection est purgée localement (contrôles masqués).
+    expect(screen.queryByTestId('map-live-aoe-selection')).toBeNull();
+  });
+
+  it('aucun bouton Supprimer tant qu’aucun AoE n’est sélectionné', () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.queryByTestId('map-live-delete-aoe')).toBeNull();
   });
 
   it('« Effacer AoE » réinitialise la sélection (contrôles de rotation masqués)', async () => {

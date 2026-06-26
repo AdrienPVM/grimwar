@@ -109,5 +109,25 @@ test.describe('UAT — formes AoE + rotation (carte live)', () => {
       path: path.join(OUT, '03-cone-pivote-45.png'),
       fullPage: true,
     });
+
+    // ── Suppression DU SEUL gabarit sélectionné (≠ « Effacer AoE ») ───────
+    // Le bouton « Supprimer » du bloc de sélection retire ce cône via
+    // removeAoeTemplate (filtre par id). Round-trip par le listener `useMap` :
+    // le compteur retombe à (0) et la couche AoE se vide.
+    await page.getByTestId('map-live-delete-aoe').click();
+    await expect(page.getByTestId('map-live-aoe-count')).toContainText('(0)', {
+      timeout: 5000,
+    });
+    await expect(
+      page.locator('[data-testid="aoe-layer"] polygon'),
+    ).toHaveCount(0, { timeout: 5000 });
+    // Les contrôles de sélection disparaissent (plus rien de sélectionné).
+    await expect(page.getByTestId('map-live-aoe-selection')).toBeHidden();
+
+    // 04 — carte vidée du cône après suppression ciblée (pleine page).
+    await page.screenshot({
+      path: path.join(OUT, '04-cone-supprime.png'),
+      fullPage: true,
+    });
   });
 });
