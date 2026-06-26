@@ -33,7 +33,7 @@ import { MapScene } from './map-scene';
 import {
   addAnchor,
   EMPTY_RULER,
-  formatFeet,
+  formatMeters,
   pxPerFoot,
   rulerLengthFeet,
   setCursor,
@@ -712,7 +712,7 @@ export function MapLiveScreen(): JSX.Element {
             }}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
-            Sphère 20 ft au centre
+            Sphère {formatMeters(AOE_SPHERE_RADIUS)} au centre
           </button>
           <button
             type="button"
@@ -847,7 +847,7 @@ export function MapLiveScreen(): JSX.Element {
                 data-testid="map-live-ruler-total"
                 className="rounded-pill border border-gold-dim/30 bg-gold/5 px-3 py-1 font-mono text-[11px] text-gold-bright"
               >
-                Distance : {formatFeet(rulerFeet)}
+                Distance : {formatMeters(rulerFeet)}
               </span>
               <button
                 type="button"
@@ -953,7 +953,7 @@ export function MapLiveScreen(): JSX.Element {
           })}
 
           {/* Règle de mesure — overlay décoratif (clics gérés par le fond SVG).
-              Tracé doré pointillé + pastilles aux ancres + étiquette en pieds. */}
+              Tracé doré pointillé + pastilles aux ancres + étiquette en mètres. */}
           {measureMode && rulerPoints.length >= 2 && (
             <g data-testid="map-live-ruler" pointerEvents="none">
               <polyline
@@ -989,7 +989,7 @@ export function MapLiveScreen(): JSX.Element {
                   strokeWidth={4}
                   paintOrder="stroke"
                 >
-                  {formatFeet(rulerFeet)}
+                  {formatMeters(rulerFeet)}
                 </text>
               )}
             </g>

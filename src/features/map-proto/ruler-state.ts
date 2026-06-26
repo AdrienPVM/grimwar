@@ -98,9 +98,37 @@ export function clearRuler(_ruler: Ruler): Ruler {
 
 /**
  * Formate une distance en pieds avec arrondi à l'entier le plus proche.
- * Convention SRD : les distances de mouvement / portée s'expriment en
- * pieds entiers.
+ * Convention SRD (EN) : les distances de mouvement / portée s'expriment en
+ * pieds entiers. Conservé comme primitive de la géométrie en pieds ; l'app
+ * affiche en mètres via `formatMeters` (cf. ci-dessous).
  */
 export function formatFeet(feet: number): string {
   return `${Math.round(feet)} ft`;
+}
+
+/**
+ * Convention officielle D&D 5e FR : 1 case = 5 ft = 1,50 m, soit 0,3 m/pied.
+ * Le SRD FR exprime TOUTES les portées en mètres (« 30 feet » → « 9 m », cf.
+ * `public/data/spells.json`). On garde la géométrie interne en pieds
+ * (`rulerLengthFeet`, dérivée de la grille en px) et on convertit À L'AFFICHAGE,
+ * exactement comme le bundle — jamais une seconde échelle.
+ */
+export const METERS_PER_FOOT = 0.3;
+
+export function metersFromFeet(feet: number): number {
+  return feet * METERS_PER_FOOT;
+}
+
+/**
+ * Formate une distance (fournie en pieds) en mètres selon la convention FR :
+ * arrondi à 0,1 m près, séparateur décimal virgule, unité « m ». Les valeurs
+ * entières s'affichent sans décimale (« 9 m », « 0 m ») ; les fractions avec
+ * une seule décimale (« 1,5 m », « 4,2 m »).
+ */
+export function formatMeters(feet: number): string {
+  const meters = Math.round(metersFromFeet(feet) * 10) / 10;
+  const text = Number.isInteger(meters)
+    ? String(meters)
+    : meters.toFixed(1).replace('.', ',');
+  return `${text} m`;
 }

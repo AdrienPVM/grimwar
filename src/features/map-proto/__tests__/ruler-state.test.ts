@@ -6,6 +6,8 @@ import {
   distancePx,
   EMPTY_RULER,
   formatFeet,
+  formatMeters,
+  metersFromFeet,
   PX_PER_FOOT,
   pxPerFoot,
   rulerLengthFeet,
@@ -113,5 +115,27 @@ describe('ruler-state — formatFeet', () => {
 
   it("gère 0 ft", () => {
     expect(formatFeet(0)).toBe('0 ft');
+  });
+});
+
+describe('ruler-state — metersFromFeet / formatMeters', () => {
+  it('convertit selon la convention officielle FR (0,3 m/pied)', () => {
+    // 5 ft = 1,50 m ; 30 ft = 9 m (identité avec le bundle SRD FR).
+    expect(metersFromFeet(5)).toBeCloseTo(1.5, 5);
+    expect(metersFromFeet(30)).toBeCloseTo(9, 5);
+    expect(metersFromFeet(0)).toBe(0);
+  });
+
+  it('formate les valeurs entières sans décimale, unité « m »', () => {
+    expect(formatMeters(20)).toBe('6 m'); // sphère AoE 20 ft → 6 m
+    expect(formatMeters(30)).toBe('9 m'); // portée classique 30 ft → 9 m
+    expect(formatMeters(10)).toBe('3 m');
+    expect(formatMeters(0)).toBe('0 m');
+  });
+
+  it('formate les fractions avec une décimale et virgule française', () => {
+    expect(formatMeters(5)).toBe('1,5 m'); // 1 case = 1,50 m
+    // Diagonale ~14,14 ft → 4,24 m, arrondi à 0,1 m près.
+    expect(formatMeters(14.142)).toBe('4,2 m');
   });
 });

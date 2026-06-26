@@ -56,7 +56,7 @@ import {
   addAnchor,
   clearRuler,
   EMPTY_RULER,
-  formatFeet,
+  formatMeters,
   rulerLengthFeet,
   setCursor,
   type Ruler,
@@ -786,7 +786,7 @@ export function MapProtoScreen(): JSX.Element {
             data-testid="toggle-ruler"
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
           >
-            Règle {rulerMode && ruler.anchors.length > 0 ? `(${formatFeet(rulerLengthFeet(ruler))})` : ''}
+            Règle {rulerMode && ruler.anchors.length > 0 ? `(${formatMeters(rulerLengthFeet(ruler))})` : ''}
           </button>
           {rulerMode && ruler.anchors.length > 0 && (
             <button
@@ -983,7 +983,7 @@ export function MapProtoScreen(): JSX.Element {
                     strokeWidth={0.6}
                     data-testid="ruler-distance"
                   >
-                    {formatFeet(rulerLengthFeet(ruler))}
+                    {formatMeters(rulerLengthFeet(ruler))}
                   </text>
                 )}
               </g>

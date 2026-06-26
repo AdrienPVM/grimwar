@@ -12,7 +12,7 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
  * unitaires `ruler-state` + `map-live-screen` et le parcours e2e
  * `map-phase2-uat`). Ce spec ne sert qu'à produire la galerie `uat-review/`
  * qu'Adrien valide à l'œil : barre Mesure lisible, tracé doré pointillé +
- * étiquette en pieds correcte, ressenti général de l'outil.
+ * étiquette en mètres correcte, ressenti général de l'outil.
  *
  * Sans émulateur, il se skip proprement.
  */
@@ -25,7 +25,7 @@ test.describe('UAT — mesure de distance (carte live)', () => {
     mkdirSync(OUT, { recursive: true });
   });
 
-  test('capture barre Mesure + règle tracée + étiquette en pieds', async ({ page }) => {
+  test('capture barre Mesure + règle tracée + étiquette en mètres', async ({ page }) => {
     const cid = `uat-measure-${Date.now().toString(36)}`;
     const mapSlug = `carte-${Date.now().toString(36)}`;
     const mapName = 'Salle du Trône (UAT)';
@@ -57,10 +57,10 @@ test.describe('UAT — mesure de distance (carte live)', () => {
       timeout: 10_000,
     });
 
-    // Active la mesure → barre Mesure : ON + total à 0 ft + consigne.
+    // Active la mesure → barre Mesure : ON + total à 0 m + consigne.
     await page.getByTestId('map-live-toggle-measure').click();
     await expect(page.getByTestId('map-live-toggle-measure')).toContainText('ON');
-    await expect(page.getByTestId('map-live-ruler-total')).toContainText('0 ft');
+    await expect(page.getByTestId('map-live-ruler-total')).toContainText('0 m');
 
     // 01 — barre d'outils avec le mode mesure actif (pleine page).
     await page.screenshot({
@@ -92,7 +92,7 @@ test.describe('UAT — mesure de distance (carte live)', () => {
     await page.mouse.move(cx, cy, { steps: 8 });
 
     await expect(page.getByTestId('map-live-ruler-label')).toBeVisible();
-    await expect(page.getByTestId('map-live-ruler-total')).toContainText(/\b[1-9]\d* ft\b/, {
+    await expect(page.getByTestId('map-live-ruler-total')).toContainText(/[1-9]\d*(,\d+)? m\b/, {
       timeout: 5000,
     });
 
@@ -102,7 +102,7 @@ test.describe('UAT — mesure de distance (carte live)', () => {
       fullPage: true,
     });
 
-    // 03 — zoom sur le tracé pour juger la lisibilité de l'étiquette en pieds.
+    // 03 — zoom sur le tracé pour juger la lisibilité de l'étiquette en mètres.
     // viewBox 1000x700 projeté sous xMidYMid meet → on cadre autour du milieu
     // du tracé (ancre 2, point haut).
     const midPx = (ax + bx) / 2;

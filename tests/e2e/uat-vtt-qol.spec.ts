@@ -22,7 +22,7 @@ test.describe('UAT VTT QoL prototype (CHANTIER H)', () => {
     await takeStepScreenshot(page, testInfo, '01-controles-vtt');
   });
 
-  test('règle de distance : 2 segments + total ft', async ({ page }, testInfo) => {
+  test('règle de distance : 2 segments + total en mètres', async ({ page }, testInfo) => {
     await page.goto('/map-proto');
     await waitForAppReady(page);
 
@@ -47,8 +47,8 @@ test.describe('UAT VTT QoL prototype (CHANTIER H)', () => {
 
     await expect(page.getByTestId('ruler-layer')).toBeVisible();
     // Le bouton règle inclut la distance entre parenthèses dès qu'on a
-    // au moins un ancrage + cursor — vérifier qu'un nombre y apparaît.
-    await expect(page.getByTestId('toggle-ruler')).toContainText(/ft/);
+    // au moins un ancrage + cursor — vérifier qu'un nombre en mètres y apparaît.
+    await expect(page.getByTestId('toggle-ruler')).toContainText(/\d+(,\d+)? m\)/);
 
     await takeStepScreenshot(page, testInfo, '02-regle-2-segments');
   });

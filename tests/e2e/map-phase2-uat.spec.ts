@@ -238,13 +238,13 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
     });
 
     // 9c. Mesure de distance. Le mode mesure transforme les clics sur le fond
-    // SVG en ancres de règle ; le total en pieds s'affiche dans la barre. On
-    // pose une première ancre, on déplace le curseur, et le total doit passer
-    // d'« 0 ft » à une distance > 0 — preuve bout-en-bout que la règle dérive
-    // l'échelle réelle de la carte (gridSize/feetPerSquare), pas un défaut.
+    // SVG en ancres de règle ; le total en mètres (convention FR) s'affiche dans
+    // la barre. On pose une première ancre, on déplace le curseur, et le total
+    // doit passer d'« 0 m » à une distance > 0 — preuve bout-en-bout que la règle
+    // dérive l'échelle réelle de la carte (gridSize/feetPerSquare), pas un défaut.
     await page.getByTestId('map-live-toggle-measure').click();
     await expect(page.getByTestId('map-live-toggle-measure')).toContainText('ON');
-    await expect(page.getByTestId('map-live-ruler-total')).toContainText('0 ft');
+    await expect(page.getByTestId('map-live-ruler-total')).toContainText('0 m');
 
     const svg = page.getByTestId('map-live-svg');
     await svg.scrollIntoViewIfNeeded();
@@ -261,9 +261,9 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
     await page.mouse.up();
     await page.mouse.move(p2x, p2y, { steps: 8 });
 
-    // Total non nul (une distance entière en pieds). Le label sur la carte est
+    // Total non nul (une distance en mètres, ≥ 1 m). Le label sur la carte est
     // rendu aussi.
-    await expect(page.getByTestId('map-live-ruler-total')).toContainText(/\b[1-9]\d* ft\b/, {
+    await expect(page.getByTestId('map-live-ruler-total')).toContainText(/[1-9]\d*(,\d+)? m\b/, {
       timeout: 5000,
     });
     await expect(page.getByTestId('map-live-ruler-label')).toBeVisible();

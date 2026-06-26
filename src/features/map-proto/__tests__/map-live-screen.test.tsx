@@ -537,16 +537,17 @@ describe('MapLiveScreen', () => {
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
     fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
     expect(screen.getByTestId('map-live-toggle-measure').textContent).toContain('ON');
-    // Total à 0 ft tant qu'aucune ancre, bouton effacer désactivé.
-    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 ft');
+    // Total à 0 m tant qu'aucune ancre, bouton effacer désactivé.
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 m');
     const clearBtn = screen.getByTestId('map-live-clear-measure') as HTMLButtonElement;
     expect(clearBtn.disabled).toBe(true);
   });
 
-  it("mesure la distance à l'échelle RÉELLE de la carte (70 px/case → 14 px/ft)", () => {
+  it("mesure la distance à l'échelle RÉELLE de la carte (70 px/case → 14 px/ft), affichée en mètres", () => {
     // Carte par défaut : gridSize 70, feetPerSquare 5 → 14 px/ft. Un segment
-    // de 140 px doit afficher 10 ft (et NON 14 ft que donnerait le défaut codé
-    // en dur de 10 px/ft). C'est l'invariant « identité du contenu », pas présence.
+    // de 140 px = 10 ft (et NON 14 ft que donnerait le défaut codé en dur de
+    // 10 px/ft) → affiché 3 m (convention FR : 10 ft × 0,3 = 3 m). C'est
+    // l'invariant « identité du contenu », pas présence.
     useMapState.map = mkMap({ gridSize: 70, feetPerSquare: 5 });
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
     fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
@@ -554,8 +555,8 @@ describe('MapLiveScreen', () => {
     // 1ʳᵉ ancre en (0,0), curseur en (140,0) → segment vivant de 140 px.
     firePointer(svg, 'pointerdown', 0, 0);
     firePointer(svg, 'pointermove', 140, 0);
-    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('10 ft');
-    expect(screen.getByTestId('map-live-ruler-label').textContent).toBe('10 ft');
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('3 m');
+    expect(screen.getByTestId('map-live-ruler-label').textContent).toBe('3 m');
   });
 
   it('additionne plusieurs segments (chaîne de clics)', () => {
@@ -563,11 +564,11 @@ describe('MapLiveScreen', () => {
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
     fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
     const svg = screen.getByTestId('map-live-svg');
-    // (0,0) → (140,0) ancré (10 ft) puis curseur vers (280,0) (+10 ft) = 20 ft.
+    // (0,0) → (140,0) ancré (10 ft) puis curseur vers (280,0) (+10 ft) = 20 ft → 6 m.
     firePointer(svg, 'pointerdown', 0, 0);
     firePointer(svg, 'pointerdown', 140, 0);
     firePointer(svg, 'pointermove', 280, 0);
-    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('20 ft');
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('6 m');
   });
 
   it('« Effacer mesure » réinitialise la règle', () => {
@@ -579,7 +580,7 @@ describe('MapLiveScreen', () => {
     expect(screen.getByTestId('map-live-ruler-label')).toBeTruthy();
     fireEvent.click(screen.getByTestId('map-live-clear-measure'));
     expect(screen.queryByTestId('map-live-ruler-label')).toBeNull();
-    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 ft');
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 m');
   });
 
   it('quitter le mode mesure purge la règle', () => {
@@ -593,7 +594,7 @@ describe('MapLiveScreen', () => {
     fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
     fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
     expect(screen.queryByTestId('map-live-ruler-label')).toBeNull();
-    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 ft');
+    expect(screen.getByTestId('map-live-ruler-total').textContent).toContain('0 m');
   });
 
   it("ne déplace PAS un jeton pendant la mesure (updateToken non appelé)", async () => {
