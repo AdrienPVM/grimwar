@@ -441,7 +441,12 @@ describe('MapLiveScreen', () => {
     expect(midArg).toBe('m-1');
     expect(tidArg).toBe('t1');
     expect(uidArg).toBe('user-alice');
-    expect(patchArg).toEqual({ label: 'Gobelin chef', color: '#4ade80' });
+    // Un PJ porte une vision : le patch inclut le défaut 30 ft (non modifié ici).
+    expect(patchArg).toEqual({
+      label: 'Gobelin chef',
+      color: '#4ade80',
+      visionRadius: 30,
+    });
     // La modale se ferme après enregistrement.
     await waitFor(() => {
       expect(screen.queryByTestId('token-edit-save')).toBeNull();

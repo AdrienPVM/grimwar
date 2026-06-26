@@ -613,7 +613,11 @@ export function MapLiveScreen(): JSX.Element {
 
   // ── Édition d'un jeton (nom + couleur + suppression unitaire) ──────────
   const handleSaveToken = useCallback(
-    async (patch: { label: string; color: string }): Promise<void> => {
+    async (patch: {
+      label: string;
+      color: string;
+      visionRadius?: number;
+    }): Promise<void> => {
       const tokenId = editingTokenId;
       if (!tokenId || !cid || !mid || !user) return;
       setEditingTokenId(null);

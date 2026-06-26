@@ -2,6 +2,7 @@ import { useId, useState, type JSX } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
 import { cn } from '@/shared/lib/cn';
+import { formatMetersValue } from '@/shared/lib/rules/distance';
 import type { MapToken } from '@/shared/types/map';
 
 /**
@@ -45,11 +46,36 @@ const KIND_LABELS: Record<MapToken['kind'], string> = {
 
 const LABEL_MAX = 24;
 
+/**
+ * Portées de vision SRD, EN PIEDS (valeur canonique stockée — cf. `distance.ts`).
+ * Affichées en mètres au rendu (convention FR ×0,3). Termes FR repris du bundle
+ * SRD officiel (`public/data/*.json` : « Vision dans le noir », « …étendue à 36 m »).
+ * Le rayon pilote la dissipation du brouillard autour du jeton (ligne de vue) :
+ * un non-marqueur sans valeur explicite vaut `DEFAULT_VISION_FT` côté `map-scene`.
+ */
+const VISION_PRESETS: readonly { ft: number; sub: string }[] = [
+  { ft: 0, sub: 'Sans ligne de vue' },
+  { ft: 30, sub: 'Vision normale' },
+  { ft: 60, sub: 'Vision dans le noir' },
+  { ft: 120, sub: 'Vision dans le noir étendue' },
+];
+
+/** Défaut quand un jeton non-marqueur n'a pas de portée explicite (= map-scene). */
+const VISION_DEFAULT_FT = 30;
+
 interface Props {
   /** Jeton en cours d'édition, ou `null` quand la modale est fermée. */
   token: MapToken | null;
-  /** Persiste le nom + la couleur (le caller route vers `updateToken`). */
-  onSave: (patch: { label: string; color: string }) => void;
+  /**
+   * Persiste le nom + la couleur (+ portée de vision pour les non-marqueurs).
+   * Le caller route vers `updateToken`. `visionRadius` est omis pour un repère
+   * (`marker`) — un repère ne porte pas de vision et n'alimente pas la LOS.
+   */
+  onSave: (patch: {
+    label: string;
+    color: string;
+    visionRadius?: number;
+  }) => void;
   /** Supprime ce seul jeton (le caller route vers `deleteToken`). */
   onDelete: () => void;
   /** Ferme sans rien changer. */
@@ -95,10 +121,25 @@ function TokenEditForm({
 }): JSX.Element {
   const [label, setLabel] = useState(token.label);
   const [color, setColor] = useState(token.color);
+  // Les marqueurs ne portent pas de vision ; on initialise quand même l'état au
+  // défaut pour garder le hook inconditionnel, mais la section n'est pas rendue.
+  const [visionFt, setVisionFt] = useState(
+    token.visionRadius ?? VISION_DEFAULT_FT,
+  );
   const titleId = useId();
 
   const trimmed = label.trim();
   const canSave = trimmed.length > 0;
+  const hasVision = token.kind !== 'marker';
+
+  const handleSave = (): void => {
+    onSave({
+      label: trimmed,
+      color,
+      // Patch minimal : on ne pousse `visionRadius` que pour un porteur de vision.
+      ...(hasVision ? { visionRadius: visionFt } : {}),
+    });
+  };
 
   return (
     <div className="flex flex-col gap-5 p-6">
@@ -163,12 +204,64 @@ function TokenEditForm({
         </div>
       </div>
 
+      {hasVision && (
+        <div className="flex flex-col gap-2">
+          <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            Portée de vision
+          </span>
+          <div
+            role="radiogroup"
+            aria-label="Portée de vision du jeton"
+            className="grid grid-cols-2 gap-2"
+          >
+            {VISION_PRESETS.map((p) => {
+              const selected = p.ft === visionFt;
+              const primary = p.ft === 0 ? 'Aucune' : `${formatMetersValue(p.ft)} m`;
+              return (
+                <button
+                  key={p.ft}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  aria-label={`${primary} — ${p.sub}`}
+                  data-testid={`token-vision-${p.ft}`}
+                  onClick={() => setVisionFt(p.ft)}
+                  className={cn(
+                    'flex flex-col items-start gap-0.5 rounded-card-sm border px-3 py-2 text-left transition-colors duration-200 ease-base',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/50',
+                    selected
+                      ? 'border-gold-bright bg-gold/10'
+                      : 'border-white-8 hover:border-gold-dim/50',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-serif text-body',
+                      selected ? 'text-gold-bright' : 'text-text',
+                    )}
+                  >
+                    {primary}
+                  </span>
+                  <span className="font-title text-[10px] uppercase tracking-[0.12em] text-text-tertiary">
+                    {p.sub}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="font-serif text-meta italic text-text-faint">
+            Rayon de brouillard dissipé autour du jeton quand la ligne de vue
+            est active.
+          </p>
+        </div>
+      )}
+
       <div className="mt-1 flex flex-col gap-2">
         <button
           type="button"
           data-testid="token-edit-save"
           disabled={!canSave}
-          onClick={() => onSave({ label: trimmed, color })}
+          onClick={handleSave}
           className="rounded-pill border border-gold-dim/50 bg-gold/10 px-4 py-3 font-title text-[11px] uppercase tracking-[0.18em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/20 disabled:opacity-40"
         >
           Enregistrer

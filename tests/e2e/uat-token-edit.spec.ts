@@ -106,6 +106,45 @@ test.describe('UAT — édition de jeton (carte live)', () => {
       fullPage: true,
     });
 
+    // ── Portée de vision : sélection → round-trip via les vraies rules ────
+    // Le PNJ porte une vision (défaut 30 ft = « 9 m » présélectionné). On la
+    // passe à 60 ft (« 18 m », Vision dans le noir). La valeur n'a pas d'effet
+    // DOM sur cette carte sans murs (pas de LOS) — on prouve la persistance en
+    // ré-ouvrant l'éditeur après le passage par le listener `useMap`.
+    await tokenG.click();
+    await expect(page.getByTestId('token-vision-30')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    // 04 — section vision (viewport : les 4 portées, 9 m présélectionné).
+    await page.screenshot({
+      path: path.join(OUT, '04-section-vision-viewport.png'),
+      fullPage: false,
+    });
+    await page.getByTestId('token-vision-60').click();
+    await expect(page.getByTestId('token-vision-60')).toContainText('18 m');
+    await page.getByTestId('token-edit-save').click();
+    await expect(page.getByTestId('token-edit-save')).toBeHidden();
+
+    // Ré-ouverture : la portée 60 ft est revenue du snapshot (round-trip réel).
+    await tokenG.click();
+    await expect(page.getByTestId('token-vision-60')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('token-vision-30')).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    // 05 — éditeur rouvert : « 18 m » désormais sélectionné (pleine page).
+    await page.screenshot({
+      path: path.join(OUT, '05-vision-persistee.png'),
+      fullPage: true,
+    });
+    // Referme pour restaurer la précondition du bloc suppression (re-tap).
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('token-edit-save')).toBeHidden();
+
     // ── Suppression unitaire ─────────────────────────────────────────────
     await tokenG.click();
     await expect(page.getByTestId('token-edit-delete')).toBeVisible();
