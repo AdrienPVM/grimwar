@@ -15,6 +15,7 @@ import {
   createTokenWithId,
   deleteToken,
   moveAoeTemplate,
+  rotateAoeTemplate,
   updateMap,
   updateToken,
 } from '@/shared/lib/services/maps';
@@ -75,8 +76,36 @@ const CENTER_Y = VIEWBOX_H / 2;
 const FOG_DEFAULT_RADIUS = 120;
 const LIGHT_TORCH_BRIGHT = 20; // ft
 const LIGHT_TORCH_DIM = 20; // ft
-const AOE_SPHERE_RADIUS = 20; // ft
 const TOKEN_VISION_FT = 30; // vision normale par défaut (alimente la LOS)
+
+// Dimensions par défaut SRD (en PIEDS — le schéma `AoeTemplate.dimensions` est
+// canonique en pieds, converti en px au rendu). Une forme = un sort SRD témoin :
+//   - sphere : Boule de feu (Fireball) → rayon 20 ft
+//   - cone   : Mains brûlantes (Burning Hands) → cône 15 ft (angle SRD 53,13°,
+//              « largeur = distance à l'origine »)
+//   - line   : Mur de feu, option ligne (Wall of Fire) → 60 ft × 5 ft
+//   - cube   : Onde de tonnerre (Thunderwave) → cube 15 ft
+const AOE_DEFAULTS_FT: Record<AoeTemplate['shape'], Record<string, number>> = {
+  sphere: { radius: 20 },
+  cone: { radius: 15, angleDeg: 53.13 },
+  line: { length: 60, width: 5 },
+  cube: { side: 15 },
+};
+// Dimension « principale » en pieds servant à étiqueter le bouton (affichée en m).
+const AOE_LABEL_FT: Record<AoeTemplate['shape'], number> = {
+  sphere: 20,
+  cone: 15,
+  line: 60,
+  cube: 15,
+};
+const AOE_SHAPE_LABELS_FR: Record<AoeTemplate['shape'], string> = {
+  sphere: 'Sphère',
+  cone: 'Cône',
+  line: 'Ligne',
+  cube: 'Cube',
+};
+// Pas de rotation des boutons ±15° (multiple commode de 90° et assez fin).
+const AOE_ROTATE_STEP_DEG = 15;
 const TOKEN_COLORS: Record<MapToken['kind'], string> = {
   pj: '#60a5fa',
   pnj: '#f87171',
@@ -111,6 +140,10 @@ export function MapLiveScreen(): JSX.Element {
     Record<string, { x: number; y: number }>
   >({});
   const [draggingAoeId, setDraggingAoeId] = useState<string | null>(null);
+  // Template AoE sélectionné — cible des boutons de rotation ±15°. La sélection
+  // se pose au pointerdown (saisir = sélectionner) et survit au drag. Réinit au
+  // « Effacer AoE » ; si l'id disparaît du snapshot, les contrôles se masquent.
+  const [selectedAoeId, setSelectedAoeId] = useState<string | null>(null);
   const aoeDragStart = useRef<{
     pointerX: number;
     pointerY: number;
@@ -287,6 +320,8 @@ export function MapLiveScreen(): JSX.Element {
         aoeY: pos.y,
       };
       setDraggingAoeId(id);
+      // Saisir un gabarit le sélectionne (cible des contrôles de rotation).
+      setSelectedAoeId(id);
     },
     [measureMode, map, aoePositionOf, screenToSvg],
   );
@@ -420,27 +455,54 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, mid, user]);
 
-  const handleAddSphereAoe = useCallback(async (): Promise<void> => {
-    if (!cid || !mid || !user || !map) return;
-    const template: AoeTemplate = {
-      id: randomSlug('manual-sphere'),
-      shape: 'sphere',
-      position: { x: CENTER_X, y: CENTER_Y },
-      dimensions: { radius: AOE_SPHERE_RADIUS },
-      pinned: false,
-    };
-    try {
-      await addAoeTemplate(cid, mid, map.aoeTemplates, template, user.uid);
-      setWriteError(null);
-    } catch (err: unknown) {
-      setWriteError(err instanceof Error ? err.message : String(err));
-    }
-  }, [cid, map, mid, user]);
+  const handleAddAoe = useCallback(
+    async (shape: AoeTemplate['shape']): Promise<void> => {
+      if (!cid || !mid || !user || !map) return;
+      const template: AoeTemplate = {
+        id: randomSlug(`manual-${shape}`),
+        shape,
+        position: { x: CENTER_X, y: CENTER_Y },
+        dimensions: { ...AOE_DEFAULTS_FT[shape] },
+        pinned: false,
+      };
+      try {
+        await addAoeTemplate(cid, mid, map.aoeTemplates, template, user.uid);
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, map, mid, user],
+  );
+
+  // Rotation du gabarit sélectionné via le service (write Firestore → le
+  // listener ré-émet le `rotationDeg` normalisé). Pas d'override local : la
+  // rotation est ponctuelle, pas un geste continu < frame.
+  const handleRotateSelectedAoe = useCallback(
+    async (deltaDeg: number): Promise<void> => {
+      if (!cid || !mid || !user || !map || !selectedAoeId) return;
+      try {
+        await rotateAoeTemplate(
+          cid,
+          mid,
+          map.aoeTemplates,
+          selectedAoeId,
+          deltaDeg,
+          user.uid,
+        );
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, mid, user, map, selectedAoeId],
+  );
 
   const handleClearAoe = useCallback(async (): Promise<void> => {
     if (!cid || !mid || !user) return;
     try {
       await updateMap(cid, mid, { aoeTemplates: [] }, user.uid);
+      setSelectedAoeId(null);
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
@@ -597,6 +659,14 @@ export function MapLiveScreen(): JSX.Element {
     position: aoePositionOf(aoe),
     dimensions: scaleAoeDimensions(aoe.dimensions, feetScale),
   }));
+  // Gabarit sélectionné (résolu sur le snapshot live, donc `rotationDeg` à jour
+  // après un round-trip). Une sphère n'a pas d'orientation : la rotation reste
+  // visible mais désactivée pour éviter un bouton sans effet.
+  const selectedAoe =
+    selectedAoeId != null
+      ? (map.aoeTemplates.find((a) => a.id === selectedAoeId) ?? null)
+      : null;
+  const canRotate = selectedAoe != null && selectedAoe.shape !== 'sphere';
   const rulerFeet = rulerLengthFeet(ruler, feetScale);
   const rulerPoints = ruler.cursor
     ? [...ruler.anchors, ruler.cursor]
@@ -704,16 +774,19 @@ export function MapLiveScreen(): JSX.Element {
           >
             AoE ({map.aoeTemplates.length})
           </span>
-          <button
-            type="button"
-            data-testid="map-live-add-sphere-aoe"
-            onClick={() => {
-              void handleAddSphereAoe();
-            }}
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            Sphère {formatMeters(AOE_SPHERE_RADIUS)} au centre
-          </button>
+          {(['sphere', 'cone', 'line', 'cube'] as const).map((shape) => (
+            <button
+              key={shape}
+              type="button"
+              data-testid={`map-live-add-${shape}-aoe`}
+              onClick={() => {
+                void handleAddAoe(shape);
+              }}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              {AOE_SHAPE_LABELS_FR[shape]} {formatMeters(AOE_LABEL_FT[shape])}
+            </button>
+          ))}
           <button
             type="button"
             data-testid="map-live-clear-aoe"
@@ -725,6 +798,51 @@ export function MapLiveScreen(): JSX.Element {
           >
             Effacer AoE
           </button>
+          {/* Rotation du gabarit sélectionné — apparaît dès qu'un AoE est saisi.
+              Désactivée pour une sphère (orientation sans effet visuel). */}
+          {selectedAoe && (
+            <span
+              data-testid="map-live-aoe-selection"
+              className="ml-1 inline-flex items-center gap-2 rounded-pill border border-gold-dim/30 bg-gold/5 px-3 py-1"
+            >
+              <span className="font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
+                {AOE_SHAPE_LABELS_FR[selectedAoe.shape]} ·{' '}
+                {Math.round(selectedAoe.rotationDeg ?? 0)}°
+              </span>
+              <button
+                type="button"
+                data-testid="map-live-rotate-ccw"
+                onClick={() => {
+                  void handleRotateSelectedAoe(-AOE_ROTATE_STEP_DEG);
+                }}
+                disabled={!canRotate}
+                title={
+                  canRotate
+                    ? `Pivoter de ${AOE_ROTATE_STEP_DEG}° dans le sens antihoraire`
+                    : "Une sphère n'a pas d'orientation"
+                }
+                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+              >
+                ⟲ −{AOE_ROTATE_STEP_DEG}°
+              </button>
+              <button
+                type="button"
+                data-testid="map-live-rotate-cw"
+                onClick={() => {
+                  void handleRotateSelectedAoe(AOE_ROTATE_STEP_DEG);
+                }}
+                disabled={!canRotate}
+                title={
+                  canRotate
+                    ? `Pivoter de ${AOE_ROTATE_STEP_DEG}° dans le sens horaire`
+                    : "Une sphère n'a pas d'orientation"
+                }
+                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+              >
+                ⟳ +{AOE_ROTATE_STEP_DEG}°
+              </button>
+            </span>
+          )}
         </div>
         {/* Tokens — affordance prototype « au centre » (parité fog/light/AoE). */}
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
@@ -899,6 +1017,7 @@ export function MapLiveScreen(): JSX.Element {
             <AoeLayer
               aoes={aoesPxLive}
               draggingId={draggingAoeId}
+              selectedId={selectedAoeId}
               interactionDisabled={measureMode}
               onAoePointerDown={handleAoePointerDown}
               onAoePointerMove={handleAoePointerMove}

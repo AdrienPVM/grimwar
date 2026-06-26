@@ -37,6 +37,12 @@ interface AoeLayerProps {
    * doivent traverser jusqu'au fond SVG pour poser des ancres de règle).
    */
   readonly interactionDisabled?: boolean;
+  /**
+   * Template actuellement sélectionné (carte live MJ). Le gabarit sélectionné
+   * reçoit un contour plus épais et pointillé pour signaler qu'il est la cible
+   * des contrôles de rotation. Absent → aucun surlignage (vue TV).
+   */
+  readonly selectedId?: string | null;
 }
 
 /**
@@ -66,6 +72,7 @@ export function AoeLayer({
   onAoePointerMove,
   onAoePointerUp,
   interactionDisabled = false,
+  selectedId,
 }: AoeLayerProps): JSX.Element {
   const draggable = onAoePointerDown !== undefined;
   return (
@@ -73,6 +80,17 @@ export function AoeLayer({
       {aoes.map((aoe) => {
         const color = DEFAULT_AOE_COLORS[aoe.shape as AoeShape];
         const isDragging = draggingId === aoe.id;
+        const isSelected = selectedId != null && selectedId === aoe.id;
+        // Contour : le gabarit sélectionné est épaissi + pointillé pour le
+        // distinguer comme cible des boutons de rotation. Fill inchangé.
+        const strokeProps = {
+          fill: color,
+          fillOpacity: 0.25,
+          stroke: color,
+          strokeWidth: isSelected ? 4 : 2,
+          strokeOpacity: isSelected ? 1 : 0.85,
+          ...(isSelected ? { strokeDasharray: '6 4' } : {}),
+        };
         const onClick = onClickAoe
           ? (): void => {
               onClickAoe(aoe.id);
@@ -130,14 +148,10 @@ export function AoeLayer({
             <circle
               key={aoe.id}
               {...commonProps}
+              {...strokeProps}
               cx={aoe.position.x}
               cy={aoe.position.y}
               r={r}
-              fill={color}
-              fillOpacity={0.25}
-              stroke={color}
-              strokeWidth={2}
-              strokeOpacity={0.85}
             />
           );
         }
@@ -154,13 +168,9 @@ export function AoeLayer({
             <polygon
               key={aoe.id}
               {...commonProps}
+              {...strokeProps}
               transform={transform}
               points={pointsToSvgString(pts)}
-              fill={color}
-              fillOpacity={0.25}
-              stroke={color}
-              strokeWidth={2}
-              strokeOpacity={0.85}
             />
           );
         }
@@ -174,13 +184,9 @@ export function AoeLayer({
             <polygon
               key={aoe.id}
               {...commonProps}
+              {...strokeProps}
               transform={transform}
               points={pointsToSvgString(pts)}
-              fill={color}
-              fillOpacity={0.25}
-              stroke={color}
-              strokeWidth={2}
-              strokeOpacity={0.85}
             />
           );
         }
@@ -191,13 +197,9 @@ export function AoeLayer({
           <polygon
             key={aoe.id}
             {...commonProps}
+            {...strokeProps}
             transform={transform}
             points={pointsToSvgString(pts)}
-            fill={color}
-            fillOpacity={0.25}
-            stroke={color}
-            strokeWidth={2}
-            strokeOpacity={0.85}
           />
         );
       })}

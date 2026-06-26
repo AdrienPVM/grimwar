@@ -181,6 +181,44 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
 
     await takeStepScreenshot(page, testInfo, 'aoe-dragged-snapped');
 
+    // 9a-ter. Cône orientable + rotation. On pose un cône (seul `polygon` de la
+    // couche AoE), on le sélectionne (tap = pointerdown → contrôles de rotation
+    // révélés), puis on le pivote de +15°. Preuve bout-en-bout via les VRAIES
+    // security rules : `rotateAoeTemplate` persiste, le listener ré-émet le
+    // `rotationDeg` normalisé → la transform SVG porte `rotate(15)`. On le fait
+    // AVANT d'ajouter un jeton (qui, rendu par-dessus, capterait le pointeur).
+    await page.getByTestId('map-live-add-cone-aoe').click();
+    await expect(page.getByTestId('map-live-aoe-count')).toContainText('(2)', {
+      timeout: 5000,
+    });
+    const conePoly = aoeLayer.locator('polygon').first();
+    await expect(conePoly).toBeVisible({ timeout: 5000 });
+    // Sélection : `click()` (actionability-checked) dispatche un pointerdown au
+    // centre du gabarit → `selectedAoeId` posé. Plus robuste qu'un mouse.move
+    // manuel (qui peut rater la cible sur une page fraîche).
+    await conePoly.click();
+    // Les contrôles de rotation apparaissent et sont actifs (cône ≠ sphère).
+    await expect(page.getByTestId('map-live-aoe-selection')).toContainText('Cône');
+    const rotateCw = page.getByTestId('map-live-rotate-cw');
+    await expect(rotateCw).toBeEnabled();
+    await rotateCw.click();
+    // La transform porte rotate(15) une fois le write persisté + ré-émis.
+    await expect
+      .poll(async () => await conePoly.getAttribute('transform'), {
+        timeout: 5000,
+      })
+      .toContain('rotate(15)');
+    // Et le badge de sélection reflète l'angle normalisé.
+    await expect(page.getByTestId('map-live-aoe-selection')).toContainText('15°');
+    await expect(page.getByTestId('map-live-write-error')).toHaveCount(0);
+
+    await takeStepScreenshot(page, testInfo, 'aoe-cone-rotated');
+
+    // Le cône (rotaté) et la sphère restent posés : l'étape « 12. Effacer AoE »
+    // plus bas les retire tous les deux (count 2 → 0). Les jetons sont rendus
+    // PAR-DESSUS la couche AoE et utilisent la capture de pointeur, donc le cône
+    // resté au centre n'interfère pas avec le drag du jeton.
+
     // 9b. Grille + aimantage du jeton. La carte créée via le formulaire a
     // `showGrid:true` + `gridSize` 70 : les nouveaux contrôles Grille/Aimant
     // sont présents et ON par défaut, et un jeton lâché hors-grille s'aligne

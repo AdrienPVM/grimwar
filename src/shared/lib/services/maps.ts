@@ -348,3 +348,34 @@ export async function moveAoeTemplate(
     uid,
   );
 }
+
+/**
+ * Pivote un seul template AoE de `deltaDeg` (drag MJ — boutons ±15° sur la
+ * carte live). `rotationDeg` est normalisé dans [0, 360) pour respecter le
+ * schéma Zod (`min(0).lt(360)`). Idempotent : id absent → liste réécrite à
+ * l'identique. La normalisation est volontairement INLINE ici (jumelle de la
+ * version tableau `rotateAoe` côté feature `aoe-state.ts`) pour ne pas créer
+ * de dépendance service → feature ; les 3 lignes de modulo sont triviales.
+ */
+export async function rotateAoeTemplate(
+  campaignId: string,
+  mapId: string,
+  current: readonly AoeTemplate[],
+  templateId: string,
+  deltaDeg: number,
+  uid: string,
+): Promise<void> {
+  await updateMap(
+    campaignId,
+    mapId,
+    {
+      aoeTemplates: current.map((t) => {
+        if (t.id !== templateId) return t;
+        let next = ((t.rotationDeg ?? 0) + deltaDeg) % 360;
+        if (next < 0) next += 360;
+        return { ...t, rotationDeg: next };
+      }),
+    },
+    uid,
+  );
+}

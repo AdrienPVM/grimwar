@@ -45,6 +45,7 @@ const mockAddFogPolygon = vi.fn();
 const mockAddLightSource = vi.fn();
 const mockAddAoeTemplate = vi.fn();
 const mockMoveAoeTemplate = vi.fn();
+const mockRotateAoeTemplate = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
   updateMap: (...args: unknown[]) => mockUpdateMap(...args),
@@ -52,6 +53,7 @@ vi.mock('@/shared/lib/services/maps', () => ({
   addLightSource: (...args: unknown[]) => mockAddLightSource(...args),
   addAoeTemplate: (...args: unknown[]) => mockAddAoeTemplate(...args),
   moveAoeTemplate: (...args: unknown[]) => mockMoveAoeTemplate(...args),
+  rotateAoeTemplate: (...args: unknown[]) => mockRotateAoeTemplate(...args),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({
@@ -178,6 +180,7 @@ beforeEach(() => {
   mockAddLightSource.mockReset().mockResolvedValue(undefined);
   mockAddAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockMoveAoeTemplate.mockReset().mockResolvedValue(undefined);
+  mockRotateAoeTemplate.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
 
@@ -626,6 +629,22 @@ describe('MapLiveScreen', () => {
     });
   }
 
+  function mkConeAoeMap(overrides: Partial<MapMeta> = {}): MapMeta {
+    return mkMap({
+      aoeTemplates: [
+        {
+          id: 'a1',
+          shape: 'cone',
+          position: { x: 200, y: 200 },
+          dimensions: { radius: 15, angleDeg: 53.13 },
+          rotationDeg: 0,
+          pinned: false,
+        },
+      ],
+      ...overrides,
+    });
+  }
+
   it('rend chaque template AoE comme une forme draggable (data-testid aoe-<id>)', () => {
     useMapState.map = mkAoeMap();
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
@@ -697,5 +716,159 @@ describe('MapLiveScreen', () => {
         'aoe-rules-denied',
       );
     });
+  });
+
+  // ── Pose des 4 formes + rotation du gabarit sélectionné ────────────────
+
+  it('place un cône via le bouton dédié (addAoeTemplate shape cone, 15 ft)', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-cone-aoe'));
+    await waitFor(() => {
+      expect(mockAddAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const template = mockAddAoeTemplate.mock.calls[0]![3] as {
+      shape: string;
+      dimensions: { radius: number; angleDeg: number };
+    };
+    expect(template.shape).toBe('cone');
+    expect(template.dimensions.radius).toBe(15);
+    expect(template.dimensions.angleDeg).toBeCloseTo(53.13, 2);
+  });
+
+  it('place une ligne via le bouton dédié (60 ft × 5 ft)', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-line-aoe'));
+    await waitFor(() => {
+      expect(mockAddAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const template = mockAddAoeTemplate.mock.calls[0]![3] as {
+      shape: string;
+      dimensions: { length: number; width: number };
+    };
+    expect(template.shape).toBe('line');
+    expect(template.dimensions.length).toBe(60);
+    expect(template.dimensions.width).toBe(5);
+  });
+
+  it('place un cube via le bouton dédié (15 ft)', async () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-add-cube-aoe'));
+    await waitFor(() => {
+      expect(mockAddAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const template = mockAddAoeTemplate.mock.calls[0]![3] as {
+      shape: string;
+      dimensions: { side: number };
+    };
+    expect(template.shape).toBe('cube');
+    expect(template.dimensions.side).toBe(15);
+  });
+
+  it('le label du bouton sphère affiche la portée en mètres (20 ft → 6 m)', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.getByTestId('map-live-add-sphere-aoe').textContent).toContain(
+      '6 m',
+    );
+    // Cône 15 ft → 4,5 m (virgule française).
+    expect(screen.getByTestId('map-live-add-cone-aoe').textContent).toContain(
+      '4,5 m',
+    );
+  });
+
+  it('aucun contrôle de rotation tant qu’aucun AoE n’est sélectionné', () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.queryByTestId('map-live-aoe-selection')).toBeNull();
+    expect(screen.queryByTestId('map-live-rotate-cw')).toBeNull();
+  });
+
+  it('saisir un AoE le sélectionne et révèle les contrôles de rotation', () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    const selection = screen.getByTestId('map-live-aoe-selection');
+    expect(selection.textContent).toContain('Cône');
+    expect(selection.textContent).toContain('0°');
+    // Cône → rotation active.
+    const cw = screen.getByTestId('map-live-rotate-cw') as HTMLButtonElement;
+    const ccw = screen.getByTestId('map-live-rotate-ccw') as HTMLButtonElement;
+    expect(cw.disabled).toBe(false);
+    expect(ccw.disabled).toBe(false);
+  });
+
+  it('pivote le gabarit sélectionné de +15° via rotateAoeTemplate', async () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    fireEvent.click(screen.getByTestId('map-live-rotate-cw'));
+    await waitFor(() => {
+      expect(mockRotateAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, currentArg, idArg, deltaArg, uidArg] =
+      mockRotateAoeTemplate.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(Array.isArray(currentArg)).toBe(true);
+    expect(idArg).toBe('a1');
+    expect(deltaArg).toBe(15);
+    expect(uidArg).toBe('user-alice');
+  });
+
+  it('pivote de −15° via le bouton antihoraire', async () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    fireEvent.click(screen.getByTestId('map-live-rotate-ccw'));
+    await waitFor(() => {
+      expect(mockRotateAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    expect(mockRotateAoeTemplate.mock.calls[0]![4]).toBe(-15);
+  });
+
+  it('désactive la rotation quand une sphère est sélectionnée (orientation neutre)', () => {
+    useMapState.map = mkAoeMap(); // a1 = sphère
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    expect(screen.getByTestId('map-live-aoe-selection').textContent).toContain(
+      'Sphère',
+    );
+    const cw = screen.getByTestId('map-live-rotate-cw') as HTMLButtonElement;
+    expect(cw.disabled).toBe(true);
+  });
+
+  it('surligne le gabarit sélectionné (contour épaissi à 4)', () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    // Avant sélection : contour standard (2).
+    expect(shape.getAttribute('stroke-width')).toBe('2');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    // Après sélection : contour épaissi (4) + pointillé.
+    expect(shape.getAttribute('stroke-width')).toBe('4');
+    expect(shape.getAttribute('stroke-dasharray')).toBe('6 4');
+  });
+
+  it('« Effacer AoE » réinitialise la sélection (contrôles de rotation masqués)', async () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    expect(screen.getByTestId('map-live-aoe-selection')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('map-live-clear-aoe'));
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalled();
+    });
+    // La sélection est purgée même si le snapshot n'a pas encore ré-émis.
+    expect(screen.queryByTestId('map-live-aoe-selection')).toBeNull();
   });
 });

@@ -55,6 +55,7 @@ import {
   deleteToken,
   moveAoeTemplate,
   removeAoeTemplate,
+  rotateAoeTemplate,
   removeFogPolygon,
   removeLightSource,
   updateMap,
@@ -384,6 +385,87 @@ describe('services/maps — addAoeTemplate / removeAoeTemplate', () => {
       },
     ];
     await moveAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'absent', { x: 0, y: 0 }, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    expect(payload.aoeTemplates).toEqual(current);
+  });
+
+  it('rotateAoeTemplate applique le delta au SEUL template ciblé', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-cone',
+        shape: 'cone',
+        position: { x: 100, y: 100 },
+        dimensions: { radius: 15, angleDeg: 53.13 },
+        rotationDeg: 30,
+        pinned: false,
+      },
+      {
+        id: 'aoe-line',
+        shape: 'line',
+        position: { x: 300, y: 300 },
+        dimensions: { length: 60, width: 5 },
+        pinned: true,
+      },
+    ];
+    await rotateAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'aoe-cone', 15, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    const rotated = payload.aoeTemplates.find((t) => t.id === 'aoe-cone');
+    const untouched = payload.aoeTemplates.find((t) => t.id === 'aoe-line');
+    expect(rotated?.rotationDeg).toBe(45);
+    // Forme / dimensions / position préservées.
+    expect(rotated?.dimensions).toEqual({ radius: 15, angleDeg: 53.13 });
+    expect(rotated?.position).toEqual({ x: 100, y: 100 });
+    // L'autre template reste sans rotation.
+    expect(untouched?.rotationDeg).toBeUndefined();
+  });
+
+  it('rotateAoeTemplate normalise dans [0, 360) — wrap haut (350 + 15 → 5)', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-cone',
+        shape: 'cone',
+        position: { x: 0, y: 0 },
+        dimensions: { radius: 15 },
+        rotationDeg: 350,
+        pinned: false,
+      },
+    ];
+    await rotateAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'aoe-cone', 15, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    expect(payload.aoeTemplates[0]?.rotationDeg).toBe(5);
+  });
+
+  it('rotateAoeTemplate normalise dans [0, 360) — wrap bas (0 − 15 → 345)', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-cone',
+        shape: 'cone',
+        position: { x: 0, y: 0 },
+        dimensions: { radius: 15 },
+        pinned: false,
+      },
+    ];
+    await rotateAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'aoe-cone', -15, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    expect(payload.aoeTemplates[0]?.rotationDeg).toBe(345);
+  });
+
+  it('rotateAoeTemplate sur un id absent réécrit la liste à l’identique (no-op)', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-a',
+        shape: 'cone',
+        position: { x: 0, y: 0 },
+        dimensions: { radius: 15 },
+        rotationDeg: 90,
+        pinned: false,
+      },
+    ];
+    await rotateAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'absent', 15, UID);
 
     const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
     expect(payload.aoeTemplates).toEqual(current);
