@@ -16,6 +16,7 @@ import {
   deleteToken,
   moveAoeTemplate,
   removeAoeTemplate,
+  resizeAoeTemplate,
   rotateAoeTemplate,
   updateMap,
   updateToken,
@@ -28,7 +29,7 @@ import type {
 } from '@/shared/types/map';
 
 import { AoeLayer } from './aoe-layer';
-import { scaleAoeDimensions } from './aoe-state';
+import { aoePrimaryDimensionFt, scaleAoeDimensions } from './aoe-state';
 import { createCirclePolygon } from './fog-state';
 import { snapToGridCell } from './grid-snap';
 import { MapScene } from './map-scene';
@@ -530,6 +531,31 @@ export function MapLiveScreen(): JSX.Element {
     [cid, mid, user, map, selectedAoeId],
   );
 
+  // Redimensionne le gabarit sélectionné d'un pas de grille (une case =
+  // `feetPerSquare`, défaut 5 ft SRD) ; plancher = une case. La dimension
+  // principale dépend de la forme (radius/length/side) — délégué au service.
+  const handleResizeSelectedAoe = useCallback(
+    async (deltaSquares: number): Promise<void> => {
+      if (!cid || !mid || !user || !map || !selectedAoeId) return;
+      const stepFt = map.feetPerSquare;
+      try {
+        await resizeAoeTemplate(
+          cid,
+          mid,
+          map.aoeTemplates,
+          selectedAoeId,
+          deltaSquares * stepFt,
+          user.uid,
+          stepFt, // plancher : jamais sous une case
+        );
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, mid, user, map, selectedAoeId],
+  );
+
   const handleClearAoe = useCallback(async (): Promise<void> => {
     if (!cid || !mid || !user) return;
     try {
@@ -752,6 +778,13 @@ export function MapLiveScreen(): JSX.Element {
       ? (map.aoeTemplates.find((a) => a.id === selectedAoeId) ?? null)
       : null;
   const canRotate = selectedAoe != null && selectedAoe.shape !== 'sphere';
+  // Taille de la dimension principale (pieds) + garde de rétrécissement : on ne
+  // descend pas sous une case (le service plafonne aussi, mais on grise le −).
+  const selectedAoeSizeFt = selectedAoe
+    ? aoePrimaryDimensionFt(selectedAoe.shape, selectedAoe.dimensions)
+    : 0;
+  const canShrinkAoe =
+    selectedAoe != null && selectedAoeSizeFt > map.feetPerSquare;
   const rulerFeet = rulerLengthFeet(ruler, feetScale);
   const rulerPoints = ruler.cursor
     ? [...ruler.anchors, ruler.cursor]
@@ -897,8 +930,34 @@ export function MapLiveScreen(): JSX.Element {
             >
               <span className="font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
                 {AOE_SHAPE_LABELS_FR[selectedAoe.shape]} ·{' '}
-                {Math.round(selectedAoe.rotationDeg ?? 0)}°
+                <span data-testid="map-live-aoe-size">
+                  {formatMeters(selectedAoeSizeFt)}
+                </span>{' '}
+                · {Math.round(selectedAoe.rotationDeg ?? 0)}°
               </span>
+              <button
+                type="button"
+                data-testid="map-live-shrink-aoe"
+                onClick={() => {
+                  void handleResizeSelectedAoe(-1);
+                }}
+                disabled={!canShrinkAoe}
+                title="Réduire d'une case"
+                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+              >
+                −
+              </button>
+              <button
+                type="button"
+                data-testid="map-live-grow-aoe"
+                onClick={() => {
+                  void handleResizeSelectedAoe(1);
+                }}
+                title="Agrandir d'une case"
+                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+              >
+                +
+              </button>
               <button
                 type="button"
                 data-testid="map-live-rotate-ccw"

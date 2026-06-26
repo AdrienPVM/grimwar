@@ -4,6 +4,7 @@ import { aoeTemplateSchema } from '@/shared/types/map';
 
 import {
   addAoe,
+  aoePrimaryDimensionFt,
   buildConePoints,
   buildCubePoints,
   buildLinePoints,
@@ -11,6 +12,7 @@ import {
   createAoe,
   DEFAULT_AOE_DIMENSIONS,
   removeAoe,
+  resizeAoe,
   rotateAoe,
   scaleAoeDimensions,
 } from '../aoe-state';
@@ -94,6 +96,65 @@ describe('aoe-state — clearAoes', () => {
   it("purge la liste", () => {
     const seed = addAoe([], 'sphere', { x: 0, y: 0 });
     expect(clearAoes(seed)).toEqual([]);
+  });
+});
+
+describe('aoe-state — aoePrimaryDimensionFt', () => {
+  it('lit la dimension principale par forme (radius/length/side)', () => {
+    expect(aoePrimaryDimensionFt('sphere', { radius: 20 })).toBe(20);
+    expect(aoePrimaryDimensionFt('cone', { radius: 15, angleDeg: 53 })).toBe(15);
+    expect(aoePrimaryDimensionFt('line', { length: 60, width: 5 })).toBe(60);
+    expect(aoePrimaryDimensionFt('cube', { side: 15 })).toBe(15);
+  });
+});
+
+describe('aoe-state — resizeAoe', () => {
+  function seedShape(
+    shape: 'sphere' | 'cone' | 'line' | 'cube',
+    dimensions: Record<string, number>,
+  ) {
+    return [createAoe('a1', shape, { x: 0, y: 0 }, { dimensions })];
+  }
+
+  it('agrandit la dimension principale (sphère radius +5)', () => {
+    const next = resizeAoe(seedShape('sphere', { radius: 20 }), 'a1', 5);
+    expect(next[0]!.dimensions.radius).toBe(25);
+  });
+
+  it('réduit la dimension principale (sphère radius −5)', () => {
+    const next = resizeAoe(seedShape('sphere', { radius: 20 }), 'a1', -5);
+    expect(next[0]!.dimensions.radius).toBe(15);
+  });
+
+  it('plancher minFt : ne descend pas sous une case', () => {
+    const next = resizeAoe(seedShape('sphere', { radius: 5 }), 'a1', -5, 5);
+    expect(next[0]!.dimensions.radius).toBe(5);
+  });
+
+  it("préserve l'angle d'un cône (seul le radius bouge)", () => {
+    const next = resizeAoe(
+      seedShape('cone', { radius: 15, angleDeg: 53.13 }),
+      'a1',
+      5,
+    );
+    expect(next[0]!.dimensions.radius).toBe(20);
+    expect(next[0]!.dimensions.angleDeg).toBe(53.13);
+  });
+
+  it("préserve l'épaisseur d'une ligne (seul length bouge)", () => {
+    const next = resizeAoe(seedShape('line', { length: 60, width: 5 }), 'a1', 5);
+    expect(next[0]!.dimensions.length).toBe(65);
+    expect(next[0]!.dimensions.width).toBe(5);
+  });
+
+  it('redimensionne le côté d’un cube', () => {
+    const next = resizeAoe(seedShape('cube', { side: 15 }), 'a1', -5);
+    expect(next[0]!.dimensions.side).toBe(10);
+  });
+
+  it('id absent → liste inchangée', () => {
+    const seed = seedShape('sphere', { radius: 20 });
+    expect(resizeAoe(seed, 'nope', 5)).toEqual(seed);
   });
 });
 

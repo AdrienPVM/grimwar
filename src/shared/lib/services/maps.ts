@@ -379,3 +379,48 @@ export async function rotateAoeTemplate(
     uid,
   );
 }
+
+/**
+ * Clé de dimension « principale » redimensionnable par forme (sphere/cone →
+ * radius, line → length, cube → side). Déclaré INLINE ici (jumeau de
+ * `AOE_PRIMARY_DIMENSION_KEY` côté feature `aoe-state.ts`) pour ne pas créer de
+ * dépendance service → feature, comme la normalisation de `rotateAoeTemplate`.
+ * `Record<shape, …>` force la complétude au compile-time des deux côtés.
+ */
+const AOE_PRIMARY_DIMENSION_KEY: Record<AoeTemplate['shape'], string> = {
+  sphere: 'radius',
+  cone: 'radius',
+  line: 'length',
+  cube: 'side',
+};
+
+/**
+ * Redimensionne la dimension principale du gabarit `templateId` de `deltaFt`
+ * pieds (plancher `minFt` — jamais sous une case). L'angle d'un cône et
+ * l'épaisseur d'une ligne sont préservés. Idempotent : id absent → liste
+ * réécrite à l'identique. Jumelle de `resizeAoe` côté feature.
+ */
+export async function resizeAoeTemplate(
+  campaignId: string,
+  mapId: string,
+  current: readonly AoeTemplate[],
+  templateId: string,
+  deltaFt: number,
+  uid: string,
+  minFt = 5,
+): Promise<void> {
+  await updateMap(
+    campaignId,
+    mapId,
+    {
+      aoeTemplates: current.map((t) => {
+        if (t.id !== templateId) return t;
+        const key = AOE_PRIMARY_DIMENSION_KEY[t.shape];
+        const cur = t.dimensions[key] ?? 0;
+        const next = Math.max(minFt, cur + deltaFt);
+        return { ...t, dimensions: { ...t.dimensions, [key]: next } };
+      }),
+    },
+    uid,
+  );
+}

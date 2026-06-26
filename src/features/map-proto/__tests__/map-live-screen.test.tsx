@@ -48,6 +48,7 @@ const mockAddAoeTemplate = vi.fn();
 const mockMoveAoeTemplate = vi.fn();
 const mockRotateAoeTemplate = vi.fn();
 const mockRemoveAoeTemplate = vi.fn();
+const mockResizeAoeTemplate = vi.fn();
 const mockDeleteToken = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
@@ -58,6 +59,7 @@ vi.mock('@/shared/lib/services/maps', () => ({
   moveAoeTemplate: (...args: unknown[]) => mockMoveAoeTemplate(...args),
   rotateAoeTemplate: (...args: unknown[]) => mockRotateAoeTemplate(...args),
   removeAoeTemplate: (...args: unknown[]) => mockRemoveAoeTemplate(...args),
+  resizeAoeTemplate: (...args: unknown[]) => mockResizeAoeTemplate(...args),
   deleteToken: (...args: unknown[]) => mockDeleteToken(...args),
 }));
 
@@ -207,6 +209,7 @@ beforeEach(() => {
   mockMoveAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockRotateAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockRemoveAoeTemplate.mockReset().mockResolvedValue(undefined);
+  mockResizeAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockDeleteToken.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
@@ -976,6 +979,73 @@ describe('MapLiveScreen', () => {
     // Après sélection : contour épaissi (4) + pointillé.
     expect(shape.getAttribute('stroke-width')).toBe('4');
     expect(shape.getAttribute('stroke-dasharray')).toBe('6 4');
+  });
+
+  it('affiche la taille du gabarit sélectionné en mètres (cône 15 ft → 4,5 m)', () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    expect(screen.getByTestId('map-live-aoe-size').textContent).toContain('4,5');
+  });
+
+  it('agrandit le gabarit sélectionné d’une case via resizeAoeTemplate', async () => {
+    useMapState.map = mkConeAoeMap(); // feetPerSquare 5
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    fireEvent.click(screen.getByTestId('map-live-grow-aoe'));
+    await waitFor(() => {
+      expect(mockResizeAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, currentArg, idArg, deltaArg, uidArg, minArg] =
+      mockResizeAoeTemplate.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(Array.isArray(currentArg)).toBe(true);
+    expect(idArg).toBe('a1');
+    expect(deltaArg).toBe(5); // +1 case × feetPerSquare 5
+    expect(uidArg).toBe('user-alice');
+    expect(minArg).toBe(5); // plancher = une case
+  });
+
+  it('réduit le gabarit sélectionné d’une case (delta négatif)', async () => {
+    useMapState.map = mkConeAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    fireEvent.click(screen.getByTestId('map-live-shrink-aoe'));
+    await waitFor(() => {
+      expect(mockResizeAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    expect(mockResizeAoeTemplate.mock.calls[0]![4]).toBe(-5);
+  });
+
+  it('désactive « − » quand la taille est au plancher (une case)', () => {
+    useMapState.map = mkConeAoeMap({
+      aoeTemplates: [
+        {
+          id: 'a1',
+          shape: 'cone',
+          position: { x: 200, y: 200 },
+          dimensions: { radius: 5, angleDeg: 53.13 }, // = feetPerSquare
+          rotationDeg: 0,
+          pinned: false,
+        },
+      ],
+    });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointerup', 200, 200);
+    const shrink = screen.getByTestId('map-live-shrink-aoe') as HTMLButtonElement;
+    expect(shrink.disabled).toBe(true);
+    // « + » reste actif (pas de plafond haut).
+    const grow = screen.getByTestId('map-live-grow-aoe') as HTMLButtonElement;
+    expect(grow.disabled).toBe(false);
   });
 
   it('supprime LE SEUL gabarit sélectionné via removeAoeTemplate', async () => {

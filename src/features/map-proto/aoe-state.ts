@@ -151,6 +151,50 @@ export function clearAoes(_aoes: readonly AoeTemplate[]): readonly AoeTemplate[]
 }
 
 /**
+ * Clé de la dimension « principale » redimensionnable, par forme :
+ *   - sphere / cone → `radius` (portée du gabarit)
+ *   - line          → `length` (l'épaisseur `width` reste fixe)
+ *   - cube          → `side`
+ * `Record<AoeShape, …>` force la complétude au compile-time : ajouter une forme
+ * sans clé principale fait échouer le typecheck (même garde côté service).
+ */
+export const AOE_PRIMARY_DIMENSION_KEY: Record<AoeShape, string> = {
+  sphere: 'radius',
+  cone: 'radius',
+  line: 'length',
+  cube: 'side',
+};
+
+/** Valeur (en pieds) de la dimension principale d'un AoE — pour l'étiquette. */
+export function aoePrimaryDimensionFt(
+  shape: AoeShape,
+  dimensions: Record<string, number>,
+): number {
+  return dimensions[AOE_PRIMARY_DIMENSION_KEY[shape]] ?? 0;
+}
+
+/**
+ * Redimensionne (version tableau) la dimension principale d'un AoE de `deltaFt`
+ * pieds, plancher `minFt` (on ne descend pas sous une case). L'angle d'un cône
+ * et l'épaisseur d'une ligne sont préservés — seule la portée bouge. Jumelle
+ * pure de `resizeAoeTemplate` (service) — cf. note layering sur `rotateAoe`.
+ */
+export function resizeAoe(
+  aoes: readonly AoeTemplate[],
+  id: string,
+  deltaFt: number,
+  minFt = 5,
+): readonly AoeTemplate[] {
+  return aoes.map((a) => {
+    if (a.id !== id) return a;
+    const key = AOE_PRIMARY_DIMENSION_KEY[a.shape];
+    const current = a.dimensions[key] ?? 0;
+    const next = Math.max(minFt, current + deltaFt);
+    return { ...a, dimensions: { ...a.dimensions, [key]: next } };
+  });
+}
+
+/**
  * Construit la liste de points d'un cône isocèle en partant de l'origine.
  *   - longueur `radius` (du sommet au milieu de la base) ;
  *   - angle d'ouverture total `angleDeg` (SRD : cone = 53.13° par défaut) ;

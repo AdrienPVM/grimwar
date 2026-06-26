@@ -55,6 +55,7 @@ import {
   deleteToken,
   moveAoeTemplate,
   removeAoeTemplate,
+  resizeAoeTemplate,
   rotateAoeTemplate,
   removeFogPolygon,
   removeLightSource,
@@ -469,5 +470,49 @@ describe('services/maps — addAoeTemplate / removeAoeTemplate', () => {
 
     const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
     expect(payload.aoeTemplates).toEqual(current);
+  });
+
+  it('resizeAoeTemplate ajuste la dimension principale du SEUL template ciblé', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-cone',
+        shape: 'cone',
+        position: { x: 100, y: 100 },
+        dimensions: { radius: 15, angleDeg: 53.13 },
+        pinned: false,
+      },
+      {
+        id: 'aoe-line',
+        shape: 'line',
+        position: { x: 300, y: 300 },
+        dimensions: { length: 60, width: 5 },
+        pinned: true,
+      },
+    ];
+    await resizeAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'aoe-cone', 5, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    const resized = payload.aoeTemplates.find((t) => t.id === 'aoe-cone');
+    const untouched = payload.aoeTemplates.find((t) => t.id === 'aoe-line');
+    // Cône : radius +5, angle préservé.
+    expect(resized?.dimensions).toEqual({ radius: 20, angleDeg: 53.13 });
+    // L'autre template reste intact.
+    expect(untouched?.dimensions).toEqual({ length: 60, width: 5 });
+  });
+
+  it('resizeAoeTemplate plafonne au plancher minFt (jamais sous une case)', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-sphere',
+        shape: 'sphere',
+        position: { x: 0, y: 0 },
+        dimensions: { radius: 5 },
+        pinned: false,
+      },
+    ];
+    await resizeAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'aoe-sphere', -5, UID, 5);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    expect(payload.aoeTemplates[0]?.dimensions.radius).toBe(5);
   });
 });

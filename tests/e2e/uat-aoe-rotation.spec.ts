@@ -110,6 +110,21 @@ test.describe('UAT — formes AoE + rotation (carte live)', () => {
       fullPage: true,
     });
 
+    // ── Redimensionnement d'une case (cône 15 ft → 20 ft) ────────────────
+    // Le cône témoin fait 15 ft (4,5 m). Un « + » l'agrandit d'une case
+    // (feetPerSquare 5) → 20 ft (6 m). Round-trip via le listener `useMap` :
+    // l'étiquette de taille du bloc de sélection se met à jour.
+    await expect(page.getByTestId('map-live-aoe-size')).toContainText('4,5');
+    await page.getByTestId('map-live-grow-aoe').click();
+    await expect(page.getByTestId('map-live-aoe-size')).toContainText('6 m', {
+      timeout: 5000,
+    });
+    // 04 — le cône agrandi (badge « 6 m »), pleine page.
+    await page.screenshot({
+      path: path.join(OUT, '04-cone-agrandi.png'),
+      fullPage: true,
+    });
+
     // ── Suppression DU SEUL gabarit sélectionné (≠ « Effacer AoE ») ───────
     // Le bouton « Supprimer » du bloc de sélection retire ce cône via
     // removeAoeTemplate (filtre par id). Round-trip par le listener `useMap` :
@@ -124,9 +139,9 @@ test.describe('UAT — formes AoE + rotation (carte live)', () => {
     // Les contrôles de sélection disparaissent (plus rien de sélectionné).
     await expect(page.getByTestId('map-live-aoe-selection')).toBeHidden();
 
-    // 04 — carte vidée du cône après suppression ciblée (pleine page).
+    // 05 — carte vidée du cône après suppression ciblée (pleine page).
     await page.screenshot({
-      path: path.join(OUT, '04-cone-supprime.png'),
+      path: path.join(OUT, '05-cone-supprime.png'),
       fullPage: true,
     });
   });
