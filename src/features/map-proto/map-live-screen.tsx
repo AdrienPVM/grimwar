@@ -40,6 +40,7 @@ import {
   setCursor,
   type Ruler,
 } from './ruler-state';
+import { TokenEditModal } from './token-edit-modal';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
 
@@ -77,6 +78,10 @@ const FOG_DEFAULT_RADIUS = 120;
 const LIGHT_TORCH_BRIGHT = 20; // ft
 const LIGHT_TORCH_DIM = 20; // ft
 const TOKEN_VISION_FT = 30; // vision normale par défaut (alimente la LOS)
+// Seuil (px viewBox) en deçà duquel un pointerdown+up sur un jeton est lu comme
+// un TAP (→ ouvre l'éditeur) plutôt qu'un drag (→ déplace + persiste). Un vrai
+// déplacement franchit largement ce seuil ; un appui « sur place » reste dessous.
+const TOKEN_TAP_THRESHOLD_PX = 6;
 
 // Dimensions par défaut SRD (en PIEDS — le schéma `AoeTemplate.dimensions` est
 // canonique en pieds, converti en px au rendu). Une forme = un sort SRD témoin :
@@ -133,6 +138,10 @@ export function MapLiveScreen(): JSX.Element {
     Record<string, { x: number; y: number }>
   >({});
   const [draggingTokenId, setDraggingTokenId] = useState<string | null>(null);
+  // Jeton en cours d'édition (ouvert au TAP) — `null` quand la modale est
+  // fermée. Le jeton lui-même est dérivé du snapshot (pas de copie d'état) :
+  // si un autre client le supprime, la modale se referme toute seule.
+  const [editingTokenId, setEditingTokenId] = useState<string | null>(null);
   // Drag des templates AoE — même machinerie que les tokens (override local
   // pendant le glisser, write Firestore au lâcher). Distinct du drag de token :
   // un AoE et un token peuvent coexister, et l'AoE se rend SOUS les tokens.
@@ -256,10 +265,32 @@ export function MapLiveScreen(): JSX.Element {
 
   const handlePointerUp = useCallback(async (): Promise<void> => {
     const tokenId = draggingTokenId;
+    const start = dragStart.current;
     setDraggingTokenId(null);
     dragStart.current = null;
     if (!tokenId || !cid || !mid || !user) return;
     const rawPos = localPositions[tokenId];
+    // TAP (appui sans glissement franc) → ouvrir l'éditeur du jeton plutôt que
+    // de persister un déplacement. `rawPos` absent = aucun pointermove ; sinon
+    // on mesure la distance parcourue depuis la position de départ du jeton.
+    const movedPx =
+      rawPos && start
+        ? Math.hypot(rawPos.x - start.tokenX, rawPos.y - start.tokenY)
+        : 0;
+    if (movedPx < TOKEN_TAP_THRESHOLD_PX) {
+      // Purge un éventuel micro-override local avant d'ouvrir la modale.
+      if (rawPos) {
+        setLocalPositions((prev) => {
+          const next = { ...prev };
+          delete next[tokenId];
+          return next;
+        });
+      }
+      setEditingTokenId(tokenId);
+      return;
+    }
+    // Au-delà du seuil, `rawPos` est nécessairement défini (movedPx > 0 l'exige) ;
+    // garde défensif pour le typeur.
     if (!rawPos) return;
     // Aimantage : si la grille est affichée ET que l'aimant est actif, on
     // aligne le jeton sur le CENTRE de sa case (convention VTT — une créature
@@ -580,6 +611,34 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, mid, tokens]);
 
+  // ── Édition d'un jeton (nom + couleur + suppression unitaire) ──────────
+  const handleSaveToken = useCallback(
+    async (patch: { label: string; color: string }): Promise<void> => {
+      const tokenId = editingTokenId;
+      if (!tokenId || !cid || !mid || !user) return;
+      setEditingTokenId(null);
+      try {
+        await updateToken(cid, mid, tokenId, patch, user.uid);
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, editingTokenId, mid, user],
+  );
+
+  const handleDeleteEditingToken = useCallback(async (): Promise<void> => {
+    const tokenId = editingTokenId;
+    if (!tokenId || !cid || !mid) return;
+    setEditingTokenId(null);
+    try {
+      await deleteToken(cid, mid, tokenId);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, editingTokenId, mid]);
+
   if (!cid || !mid) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
@@ -672,6 +731,11 @@ export function MapLiveScreen(): JSX.Element {
     ? [...ruler.anchors, ruler.cursor]
     : [...ruler.anchors];
   const rulerLabelAt = ruler.cursor ?? ruler.anchors[ruler.anchors.length - 1] ?? null;
+  // Jeton édité, dérivé du snapshot (pas une copie d'état) : disparaît du
+  // tableau → la modale se referme d'elle-même (`open={token !== null}`).
+  const editingToken = editingTokenId
+    ? (tokens.find((t) => t.id === editingTokenId) ?? null)
+    : null;
 
   return (
     <main className="mx-auto w-full max-w-[1200px] p-4 sm:p-6">
@@ -1115,6 +1179,17 @@ export function MapLiveScreen(): JSX.Element {
           )}
         </svg>
       </div>
+
+      <TokenEditModal
+        token={editingToken}
+        onClose={() => setEditingTokenId(null)}
+        onSave={(patch) => {
+          void handleSaveToken(patch);
+        }}
+        onDelete={() => {
+          void handleDeleteEditingToken();
+        }}
+      />
     </main>
   );
 }

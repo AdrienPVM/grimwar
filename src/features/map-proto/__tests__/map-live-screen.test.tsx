@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { type JSX } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -46,6 +47,7 @@ const mockAddLightSource = vi.fn();
 const mockAddAoeTemplate = vi.fn();
 const mockMoveAoeTemplate = vi.fn();
 const mockRotateAoeTemplate = vi.fn();
+const mockDeleteToken = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
   updateMap: (...args: unknown[]) => mockUpdateMap(...args),
@@ -54,6 +56,7 @@ vi.mock('@/shared/lib/services/maps', () => ({
   addAoeTemplate: (...args: unknown[]) => mockAddAoeTemplate(...args),
   moveAoeTemplate: (...args: unknown[]) => mockMoveAoeTemplate(...args),
   rotateAoeTemplate: (...args: unknown[]) => mockRotateAoeTemplate(...args),
+  deleteToken: (...args: unknown[]) => mockDeleteToken(...args),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({
@@ -69,6 +72,26 @@ function renderAt(path: string): void {
       </Routes>
     </MemoryRouter>,
   );
+}
+
+/**
+ * Variante qui rend ET expose un `rerender()` re-rendant le MÊME arbre. Utile
+ * pour simuler un nouveau snapshot `useMap` (on mute `useMapState` puis on
+ * re-render) sans changer de route.
+ */
+function renderWithRerender(path: string): { rerender: () => void } {
+  // Élément FRAIS à chaque appel : passer la même référence à `rerender` peut
+  // faire bailer la réconciliation racine → le composant ne relit pas le
+  // snapshot `useMap` muté. Un nouvel objet élément force le re-render.
+  const make = (): JSX.Element => (
+    <MemoryRouter initialEntries={[path]}>
+      <Routes>
+        <Route path="/map-proto/cloud/:cid/maps/:mid" element={<MapLiveScreen />} />
+      </Routes>
+    </MemoryRouter>
+  );
+  const result = render(make());
+  return { rerender: () => result.rerender(make()) };
 }
 
 function mkMap(overrides: Partial<MapMeta> = {}): MapMeta {
@@ -181,6 +204,7 @@ beforeEach(() => {
   mockAddAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockMoveAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockRotateAoeTemplate.mockReset().mockResolvedValue(undefined);
+  mockDeleteToken.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
 
@@ -354,16 +378,105 @@ describe('MapLiveScreen', () => {
     });
   });
 
-  it('does not call updateToken when no drag occurred (just pointerDown+Up)', async () => {
+  it('does not call updateToken when no drag occurred (tap = ouvre l’éditeur)', async () => {
     useMapState.tokens = [mkToken({ id: 't1' })];
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
     const tokenG = screen.getByTestId('map-live-token-t1');
-    // pointerDown puis pointerUp sans move = pas de localPosition stockée.
-    fireEvent.pointerDown(tokenG, { pointerId: 1, clientX: 200, clientY: 200 });
-    fireEvent.pointerUp(tokenG, { pointerId: 1, clientX: 200, clientY: 200 });
-    // Petit délai pour que le handleAsync settle.
+    // pointerDown puis pointerUp sans move = TAP → ouvre l'éditeur, ne persiste pas.
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
     await new Promise((r) => setTimeout(r, 10));
     expect(mockUpdateToken).not.toHaveBeenCalled();
+    expect(screen.getByTestId('token-edit-save')).toBeTruthy();
+  });
+
+  // ── Édition d'un jeton (TAP → modale nom + couleur + suppression) ────────
+  it('un TAP sur un jeton ouvre l’éditeur avec son nom et sa couleur courants', () => {
+    useMapState.tokens = [
+      mkToken({ id: 't1', label: 'Gobelin', color: '#f87171', kind: 'pnj' }),
+    ];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+    const input = screen.getByTestId('token-edit-label') as HTMLInputElement;
+    expect(input.value).toBe('Gobelin');
+    // La pastille rouge (#f87171) est cochée.
+    expect(
+      screen.getByTestId('token-color-f87171').getAttribute('aria-checked'),
+    ).toBe('true');
+  });
+
+  it('un VRAI drag ne déclenche PAS l’éditeur (persiste la position)', async () => {
+    useMapState.map = mkMap({ showGrid: false });
+    useMapState.tokens = [mkToken({ id: 't1', position: { x: 200, y: 200 } })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointermove', 260, 240);
+    firePointer(tokenG, 'pointerup', 260, 240);
+    await waitFor(() => {
+      expect(mockUpdateToken).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.queryByTestId('token-edit-save')).toBeNull();
+  });
+
+  it('Enregistrer écrit le nom + la couleur via updateToken puis ferme', async () => {
+    useMapState.tokens = [mkToken({ id: 't1', label: 'PNJ', color: '#f87171' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    const input = screen.getByTestId('token-edit-label') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'Gobelin chef' } });
+    fireEvent.click(screen.getByTestId('token-color-4ade80')); // vert
+    fireEvent.click(screen.getByTestId('token-edit-save'));
+
+    await waitFor(() => {
+      expect(mockUpdateToken).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, tidArg, patchArg, uidArg] = mockUpdateToken.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(tidArg).toBe('t1');
+    expect(uidArg).toBe('user-alice');
+    expect(patchArg).toEqual({ label: 'Gobelin chef', color: '#4ade80' });
+    // La modale se ferme après enregistrement.
+    await waitFor(() => {
+      expect(screen.queryByTestId('token-edit-save')).toBeNull();
+    });
+  });
+
+  it('Supprimer ce jeton appelle deleteToken puis ferme la modale', async () => {
+    useMapState.tokens = [mkToken({ id: 't1' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    fireEvent.click(screen.getByTestId('token-edit-delete'));
+
+    await waitFor(() => {
+      expect(mockDeleteToken).toHaveBeenCalledTimes(1);
+    });
+    expect(mockDeleteToken.mock.calls[0]!.slice(0, 3)).toEqual(['camp-1', 'm-1', 't1']);
+    await waitFor(() => {
+      expect(screen.queryByTestId('token-edit-save')).toBeNull();
+    });
+  });
+
+  it('la modale d’édition se referme si le jeton disparaît du snapshot', () => {
+    useMapState.tokens = [mkToken({ id: 't1' })];
+    const { rerender } = renderWithRerender('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+    expect(screen.getByTestId('token-edit-save')).toBeTruthy();
+    // Un autre client supprime le jeton → snapshot vide → modale fermée.
+    useMapState.tokens = [];
+    rerender();
+    expect(screen.queryByTestId('token-edit-save')).toBeNull();
   });
 
   // ── D.5 fog / lights / AoE ─────────────────────────────────────────────
