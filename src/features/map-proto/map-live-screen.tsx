@@ -462,12 +462,23 @@ export function MapLiveScreen(): JSX.Element {
 
   const handleAddTorch = useCallback(async (): Promise<void> => {
     if (!cid || !mid || !user || !map) return;
+    // BUG fix : `LightLayer` trace le rayon BRUT en px viewBox (pas de mise à
+    // l'échelle), et les deux autres producteurs de lumières (presets proto +
+    // import .dd2vtt) stockent déjà des PIXELS. La torche live écrivait des
+    // PIEDS (20) → rendue comme un point de 40 px (≈ une demi-case) au lieu de
+    // 40 ft de rayon. On convertit ici les pieds SRD en px à l'échelle réelle
+    // de la carte (comme `dd2vtt` fait `range_cases × échelle`), alignant la
+    // torche sur le contrat px de fait. NB : le nettoyage « pieds canoniques
+    // partout + scale au rendu » (cf. schéma `map.ts`) reste à faire — il
+    // changerait l'interprétation d'un champ persisté (migration des cartes
+    // .dd2vtt déjà importées) → décision Adrien, hors scope de ce fix isolé.
+    const scale = pxPerFoot(map.gridSize, map.feetPerSquare);
     const light: LightSource = {
       id: randomSlug('manual-torch'),
       position: { x: CENTER_X, y: CENTER_Y },
       attachedTokenId: null,
-      brightRadius: LIGHT_TORCH_BRIGHT,
-      dimRadius: LIGHT_TORCH_DIM,
+      brightRadius: Math.round(LIGHT_TORCH_BRIGHT * scale),
+      dimRadius: Math.round(LIGHT_TORCH_DIM * scale),
       preset: 'torch',
     };
     try {

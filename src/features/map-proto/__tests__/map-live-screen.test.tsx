@@ -572,7 +572,13 @@ describe('MapLiveScreen', () => {
     expect(btn.disabled).toBe(true);
   });
 
-  it('calls addLightSource with torch preset when torch button clicked', async () => {
+  it('pose une torche aux rayons SRD convertis à l’échelle de la carte (px)', async () => {
+    // Carte fixture : gridSize 70, feetPerSquare 5 → 14 px/pied. Torche SRD =
+    // 20 ft vive + 20 ft faible → 280 px chacun. `LightLayer` trace le rayon
+    // BRUT en px (pas de mise à l'échelle) comme l'import .dd2vtt et les presets
+    // proto ; écrire 20 (pieds) rendait la torche à 40 px (un point). Cette
+    // assertion chiffrée est le garde-fou anti-régression (l'ancien « > 0 »
+    // passait pendant que la torche était invisible).
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
     fireEvent.click(screen.getByTestId('map-live-add-torch'));
     await waitFor(() => {
@@ -581,10 +587,12 @@ describe('MapLiveScreen', () => {
     const light = mockAddLightSource.mock.calls[0]![3] as {
       preset: string;
       brightRadius: number;
+      dimRadius: number;
       position: { x: number; y: number };
     };
     expect(light.preset).toBe('torch');
-    expect(light.brightRadius).toBeGreaterThan(0);
+    expect(light.brightRadius).toBe(280); // 20 ft × 14 px/ft
+    expect(light.dimRadius).toBe(280);
     expect(light.position).toBeDefined();
   });
 
