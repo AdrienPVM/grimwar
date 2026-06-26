@@ -44,12 +44,14 @@ const mockUpdateMap = vi.fn();
 const mockAddFogPolygon = vi.fn();
 const mockAddLightSource = vi.fn();
 const mockAddAoeTemplate = vi.fn();
+const mockMoveAoeTemplate = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
   updateMap: (...args: unknown[]) => mockUpdateMap(...args),
   addFogPolygon: (...args: unknown[]) => mockAddFogPolygon(...args),
   addLightSource: (...args: unknown[]) => mockAddLightSource(...args),
   addAoeTemplate: (...args: unknown[]) => mockAddAoeTemplate(...args),
+  moveAoeTemplate: (...args: unknown[]) => mockMoveAoeTemplate(...args),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({
@@ -175,6 +177,7 @@ beforeEach(() => {
   mockAddFogPolygon.mockReset().mockResolvedValue(undefined);
   mockAddLightSource.mockReset().mockResolvedValue(undefined);
   mockAddAoeTemplate.mockReset().mockResolvedValue(undefined);
+  mockMoveAoeTemplate.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
 
@@ -603,5 +606,95 @@ describe('MapLiveScreen', () => {
     firePointer(tokenG, 'pointerup', 260, 240);
     await new Promise((r) => setTimeout(r, 10));
     expect(mockUpdateToken).not.toHaveBeenCalled();
+  });
+
+  // ── Drag des templates AoE (CHANTIER carte — drag + aimantage) ──────────
+
+  function mkAoeMap(overrides: Partial<MapMeta> = {}): MapMeta {
+    return mkMap({
+      aoeTemplates: [
+        {
+          id: 'a1',
+          shape: 'sphere',
+          position: { x: 200, y: 200 },
+          dimensions: { radius: 20 },
+          pinned: false,
+        },
+      ],
+      ...overrides,
+    });
+  }
+
+  it('rend chaque template AoE comme une forme draggable (data-testid aoe-<id>)', () => {
+    useMapState.map = mkAoeMap();
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    expect(shape).toBeTruthy();
+    // Curseur grab → la couche est interactive (pas le simple décor read-only).
+    expect((shape as unknown as SVGElement).style.cursor).toBe('grab');
+  });
+
+  it('repositionne un AoE via moveAoeTemplate au lâcher (aimanté au centre de case)', async () => {
+    // Grille 70 + aimant ON par défaut. Drag (200,200) → (260,240) → case 3 sur
+    // les deux axes → centre 245,245 (même règle que les jetons).
+    useMapState.map = mkAoeMap({ showGrid: true, gridSize: 70 });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointermove', 260, 240);
+    firePointer(shape, 'pointerup', 260, 240);
+
+    await waitFor(() => {
+      expect(mockMoveAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, currentArg, idArg, posArg, uidArg] =
+      mockMoveAoeTemplate.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    expect(Array.isArray(currentArg)).toBe(true);
+    expect(idArg).toBe('a1');
+    expect(uidArg).toBe('user-alice');
+    expect(posArg).toEqual({ x: 245, y: 245 });
+  });
+
+  it("n'aimante PAS un AoE quand la grille est masquée (position brute)", async () => {
+    useMapState.map = mkAoeMap({ showGrid: false, gridSize: 70 });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointermove', 260, 240);
+    firePointer(shape, 'pointerup', 260, 240);
+
+    await waitFor(() => {
+      expect(mockMoveAoeTemplate).toHaveBeenCalledTimes(1);
+    });
+    expect(mockMoveAoeTemplate.mock.calls[0]![4]).toEqual({ x: 260, y: 240 });
+  });
+
+  it('ne déplace PAS un AoE pendant la mesure (moveAoeTemplate non appelé)', async () => {
+    useMapState.map = mkAoeMap({ showGrid: true, gridSize: 70 });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    fireEvent.click(screen.getByTestId('map-live-toggle-measure'));
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointermove', 260, 240);
+    firePointer(shape, 'pointerup', 260, 240);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockMoveAoeTemplate).not.toHaveBeenCalled();
+  });
+
+  it('surface une erreur de write AoE et nettoie la position locale', async () => {
+    mockMoveAoeTemplate.mockRejectedValueOnce(new Error('aoe-rules-denied'));
+    useMapState.map = mkAoeMap({ showGrid: true, gridSize: 70 });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const shape = screen.getByTestId('aoe-a1');
+    firePointer(shape, 'pointerdown', 200, 200);
+    firePointer(shape, 'pointermove', 260, 240);
+    firePointer(shape, 'pointerup', 260, 240);
+    await waitFor(() => {
+      expect(screen.getByTestId('map-live-write-error').textContent).toContain(
+        'aoe-rules-denied',
+      );
+    });
   });
 });

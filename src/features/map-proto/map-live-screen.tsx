@@ -14,6 +14,7 @@ import {
   addLightSource,
   createTokenWithId,
   deleteToken,
+  moveAoeTemplate,
   updateMap,
   updateToken,
 } from '@/shared/lib/services/maps';
@@ -24,6 +25,8 @@ import type {
   MapToken,
 } from '@/shared/types/map';
 
+import { AoeLayer } from './aoe-layer';
+import { scaleAoeDimensions } from './aoe-state';
 import { createCirclePolygon } from './fog-state';
 import { snapToGridCell } from './grid-snap';
 import { MapScene } from './map-scene';
@@ -101,6 +104,19 @@ export function MapLiveScreen(): JSX.Element {
     Record<string, { x: number; y: number }>
   >({});
   const [draggingTokenId, setDraggingTokenId] = useState<string | null>(null);
+  // Drag des templates AoE — même machinerie que les tokens (override local
+  // pendant le glisser, write Firestore au lâcher). Distinct du drag de token :
+  // un AoE et un token peuvent coexister, et l'AoE se rend SOUS les tokens.
+  const [localAoePositions, setLocalAoePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
+  const [draggingAoeId, setDraggingAoeId] = useState<string | null>(null);
+  const aoeDragStart = useRef<{
+    pointerX: number;
+    pointerY: number;
+    aoeX: number;
+    aoeY: number;
+  } | null>(null);
   const [writeError, setWriteError] = useState<string | null>(null);
   // Aimantage à la grille — préférence d'affichage LOCALE (pas persistée :
   // c'est un confort de manipulation côté MJ, pas une donnée de la carte).
@@ -244,6 +260,88 @@ export function MapLiveScreen(): JSX.Element {
       });
     }
   }, [cid, draggingTokenId, localPositions, mid, user, map, snapEnabled]);
+
+  // ── Drag des templates AoE (réutilise l'infra de drag des tokens) ──────
+  // Le MJ pose une sphère/un gabarit au centre, puis le glisse là où le sort
+  // atterrit. `position` est en pixels viewBox (comme les tokens) ; les
+  // dimensions du template restent en pieds côté schéma et sont mises à
+  // l'échelle au rendu seulement.
+  const aoePositionOf = useCallback(
+    (aoe: AoeTemplate): { x: number; y: number } =>
+      localAoePositions[aoe.id] ?? aoe.position,
+    [localAoePositions],
+  );
+
+  const handleAoePointerDown = useCallback(
+    (e: ReactPointerEvent<SVGElement>, id: string): void => {
+      if (measureMode || !map) return;
+      const aoe = map.aoeTemplates.find((a) => a.id === id);
+      if (!aoe) return;
+      (e.target as Element).setPointerCapture(e.pointerId);
+      const pos = aoePositionOf(aoe);
+      const svgPos = screenToSvg(e.clientX, e.clientY);
+      aoeDragStart.current = {
+        pointerX: svgPos.x,
+        pointerY: svgPos.y,
+        aoeX: pos.x,
+        aoeY: pos.y,
+      };
+      setDraggingAoeId(id);
+    },
+    [measureMode, map, aoePositionOf, screenToSvg],
+  );
+
+  const handleAoePointerMove = useCallback(
+    (e: ReactPointerEvent<SVGElement>, id: string): void => {
+      if (draggingAoeId !== id || !aoeDragStart.current) return;
+      const svgPos = screenToSvg(e.clientX, e.clientY);
+      const dx = svgPos.x - aoeDragStart.current.pointerX;
+      const dy = svgPos.y - aoeDragStart.current.pointerY;
+      setLocalAoePositions((prev) => ({
+        ...prev,
+        [id]: {
+          x: aoeDragStart.current!.aoeX + dx,
+          y: aoeDragStart.current!.aoeY + dy,
+        },
+      }));
+    },
+    [draggingAoeId, screenToSvg],
+  );
+
+  const handleAoePointerUp = useCallback(
+    async (_e: ReactPointerEvent<SVGElement>, id: string): Promise<void> => {
+      if (draggingAoeId !== id) return;
+      setDraggingAoeId(null);
+      aoeDragStart.current = null;
+      if (!cid || !mid || !user || !map) return;
+      const rawPos = localAoePositions[id];
+      if (!rawPos) return;
+      // Aimantage : centre de case si la grille est affichée ET l'aimant actif
+      // (même règle que les tokens). Sinon position libre.
+      const finalPos =
+        snapEnabled && map.showGrid
+          ? snapToGridCell(rawPos, map.gridSize)
+          : rawPos;
+      setLocalAoePositions((prev) => ({ ...prev, [id]: finalPos }));
+      try {
+        await moveAoeTemplate(cid, mid, map.aoeTemplates, id, finalPos, user.uid);
+        setLocalAoePositions((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+        setLocalAoePositions((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }
+    },
+    [draggingAoeId, cid, mid, user, map, localAoePositions, snapEnabled],
+  );
 
   // ── D.5 : fog / lights / AoE persistence via service maps.ts ───────────
   // Toutes les actions inline qui suivent posent la valeur côté Firestore et
@@ -491,6 +589,14 @@ export function MapLiveScreen(): JSX.Element {
   // Échelle réelle de CETTE carte (px par pied) — dérivée de gridSize/feetPerSquare,
   // jamais le défaut 50 px/case. Alimente la longueur affichée de la règle.
   const feetScale = pxPerFoot(map.gridSize, map.feetPerSquare);
+  // Templates AoE prêts au rendu : dimensions mises à l'échelle (pieds → px)
+  // et position résolue (override local pendant un drag, sinon Firestore).
+  // Même conversion que `MapScene`, mais ici la couche est draggable.
+  const aoesPxLive: readonly AoeTemplate[] = map.aoeTemplates.map((aoe) => ({
+    ...aoe,
+    position: aoePositionOf(aoe),
+    dimensions: scaleAoeDimensions(aoe.dimensions, feetScale),
+  }));
   const rulerFeet = rulerLengthFeet(ruler, feetScale);
   const rulerPoints = ruler.cursor
     ? [...ruler.anchors, ruler.cursor]
@@ -784,7 +890,23 @@ export function MapLiveScreen(): JSX.Element {
             maskId={`fog-live-${mid}`}
             showWalls
             fogOpacity={0.45}
+            renderAoe={false}
           />
+          {/* Couche AoE draggable (live MJ) — rendue SOUS les tokens (décor
+              tactique), au-dessus du décor de `MapScene`. En mode mesure, elle
+              laisse passer les clics au fond SVG. */}
+          {aoesPxLive.length > 0 && (
+            <AoeLayer
+              aoes={aoesPxLive}
+              draggingId={draggingAoeId}
+              interactionDisabled={measureMode}
+              onAoePointerDown={handleAoePointerDown}
+              onAoePointerMove={handleAoePointerMove}
+              onAoePointerUp={(e, id) => {
+                void handleAoePointerUp(e, id);
+              }}
+            />
+          )}
           {tokens.map((token) => {
             const pos = positionOf(token);
             const isDragging = draggingTokenId === token.id;

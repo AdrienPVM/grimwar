@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { type JSX, type PointerEvent as ReactPointerEvent } from 'react';
 
 import type { AoeTemplate } from '@/shared/types/map';
 
@@ -14,6 +14,29 @@ import { pointsToSvgString } from './fog-state';
 interface AoeLayerProps {
   readonly aoes: readonly AoeTemplate[];
   readonly onClickAoe?: (id: string) => void;
+  /**
+   * Drag MJ (carte live). Si `onAoePointerDown` est fourni, chaque template
+   * devient saisissable : curseur `grab`/`grabbing` et handlers pointeur par
+   * id. Absents → couche read-only (vue TV, décor partagé).
+   */
+  readonly draggingId?: string | null;
+  readonly onAoePointerDown?: (
+    e: ReactPointerEvent<SVGElement>,
+    id: string,
+  ) => void;
+  readonly onAoePointerMove?: (
+    e: ReactPointerEvent<SVGElement>,
+    id: string,
+  ) => void;
+  readonly onAoePointerUp?: (
+    e: ReactPointerEvent<SVGElement>,
+    id: string,
+  ) => void;
+  /**
+   * Neutralise toute interaction sur la couche (mode mesure : les clics
+   * doivent traverser jusqu'au fond SVG pour poser des ancres de règle).
+   */
+  readonly interactionDisabled?: boolean;
 }
 
 /**
@@ -31,14 +54,25 @@ interface AoeLayerProps {
  * Couleurs par défaut depuis `DEFAULT_AOE_COLORS`. Fill semi-transparent
  * (0.25), stroke opaque (0.85) — assez visible sans masquer le fond.
  *
- * Clic sur un AoE : remonte `onClickAoe(id)` pour permettre suppression
- * UI (l'AoeLayer ne mute pas l'état lui-même).
+ * Interaction : clic simple via `onClickAoe(id)`, OU drag MJ via les handlers
+ * pointeur (`onAoePointerDown/Move/Up`). L'AoeLayer ne mute jamais l'état
+ * lui-même — il remonte les événements au parent.
  */
-export function AoeLayer({ aoes, onClickAoe }: AoeLayerProps): JSX.Element {
+export function AoeLayer({
+  aoes,
+  onClickAoe,
+  draggingId,
+  onAoePointerDown,
+  onAoePointerMove,
+  onAoePointerUp,
+  interactionDisabled = false,
+}: AoeLayerProps): JSX.Element {
+  const draggable = onAoePointerDown !== undefined;
   return (
     <g data-testid="aoe-layer">
       {aoes.map((aoe) => {
         const color = DEFAULT_AOE_COLORS[aoe.shape as AoeShape];
+        const isDragging = draggingId === aoe.id;
         const onClick = onClickAoe
           ? (): void => {
               onClickAoe(aoe.id);
@@ -47,15 +81,47 @@ export function AoeLayer({ aoes, onClickAoe }: AoeLayerProps): JSX.Element {
         // Stop propagation au pointerdown : sans ça, le SVG parent fait
         // setPointerCapture et le clic atterrit sur le SVG (pas sur l'AoE).
         const onPointerDownInner = (
-          e: React.PointerEvent<SVGElement>,
+          e: ReactPointerEvent<SVGElement>,
         ): void => {
-          if (onClickAoe) e.stopPropagation();
+          if (onAoePointerDown) {
+            e.stopPropagation();
+            onAoePointerDown(e, aoe.id);
+          } else if (onClickAoe) {
+            e.stopPropagation();
+          }
         };
+        const cursor = draggable
+          ? isDragging
+            ? 'grabbing'
+            : 'grab'
+          : onClickAoe
+            ? 'pointer'
+            : 'default';
         const commonProps = {
           'data-testid': `aoe-${aoe.id}`,
-          style: { cursor: onClickAoe ? 'pointer' : ('default' as const) },
+          style: { cursor },
+          // En mode mesure, la couche laisse passer les clics au fond SVG.
+          pointerEvents: interactionDisabled
+            ? ('none' as const)
+            : undefined,
+          opacity: isDragging ? 0.8 : 1,
           onClick,
           onPointerDown: onPointerDownInner,
+          onPointerMove: onAoePointerMove
+            ? (e: ReactPointerEvent<SVGElement>): void => {
+                onAoePointerMove(e, aoe.id);
+              }
+            : undefined,
+          onPointerUp: onAoePointerUp
+            ? (e: ReactPointerEvent<SVGElement>): void => {
+                onAoePointerUp(e, aoe.id);
+              }
+            : undefined,
+          onPointerCancel: onAoePointerUp
+            ? (e: ReactPointerEvent<SVGElement>): void => {
+                onAoePointerUp(e, aoe.id);
+              }
+            : undefined,
         };
 
         if (aoe.shape === 'sphere') {

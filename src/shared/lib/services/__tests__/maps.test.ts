@@ -53,6 +53,7 @@ import {
   createToken,
   deleteMap,
   deleteToken,
+  moveAoeTemplate,
   removeAoeTemplate,
   removeFogPolygon,
   removeLightSource,
@@ -339,5 +340,52 @@ describe('services/maps — addAoeTemplate / removeAoeTemplate', () => {
 
     const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
     expect(payload.aoeTemplates).toEqual([]);
+  });
+
+  it('moveAoeTemplate ne change QUE la position du template ciblé', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-a',
+        shape: 'sphere',
+        position: { x: 100, y: 100 },
+        dimensions: { radius: 20 },
+        pinned: false,
+      },
+      {
+        id: 'aoe-b',
+        shape: 'cube',
+        position: { x: 300, y: 300 },
+        dimensions: { side: 15 },
+        pinned: true,
+      },
+    ];
+    await moveAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'aoe-a', { x: 245, y: 245 }, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    expect(payload.aoeTemplates).toHaveLength(2);
+    const moved = payload.aoeTemplates.find((t) => t.id === 'aoe-a');
+    const untouched = payload.aoeTemplates.find((t) => t.id === 'aoe-b');
+    // Position mise à jour, dimensions/forme/pinned préservés.
+    expect(moved?.position).toEqual({ x: 245, y: 245 });
+    expect(moved?.dimensions).toEqual({ radius: 20 });
+    expect(moved?.shape).toBe('sphere');
+    // L'autre template n'est pas touché.
+    expect(untouched?.position).toEqual({ x: 300, y: 300 });
+  });
+
+  it('moveAoeTemplate sur un id absent réécrit la liste à l’identique (no-op)', async () => {
+    const current: AoeTemplate[] = [
+      {
+        id: 'aoe-a',
+        shape: 'sphere',
+        position: { x: 100, y: 100 },
+        dimensions: { radius: 20 },
+        pinned: false,
+      },
+    ];
+    await moveAoeTemplate(CAMPAIGN_ID, MAP_ID, current, 'absent', { x: 0, y: 0 }, UID);
+
+    const payload = firstPayload<{ aoeTemplates: AoeTemplate[] }>(mockUpdateDoc);
+    expect(payload.aoeTemplates).toEqual(current);
   });
 });

@@ -321,3 +321,30 @@ export async function removeAoeTemplate(
     uid,
   );
 }
+
+/**
+ * Repositionne un seul template AoE (drag MJ sur la carte live). `position`
+ * est en pixels viewBox (même espace que les tokens) ; les `dimensions` du
+ * template (en pieds) restent inchangées. Idempotent : si l'id est absent, la
+ * liste est réécrite à l'identique (no-op de facto). On garde l'inline
+ * (peu de templates par carte, cf. arbitrage `MapMeta`).
+ */
+export async function moveAoeTemplate(
+  campaignId: string,
+  mapId: string,
+  current: readonly AoeTemplate[],
+  templateId: string,
+  position: AoeTemplate['position'],
+  uid: string,
+): Promise<void> {
+  await updateMap(
+    campaignId,
+    mapId,
+    {
+      aoeTemplates: current.map((t) =>
+        t.id === templateId ? { ...t, position } : t,
+      ),
+    },
+    uid,
+  );
+}

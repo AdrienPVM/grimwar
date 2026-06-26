@@ -146,6 +146,41 @@ test.describe('Map phase 2 — parcours MJ end-to-end (D.6)', () => {
     // Pas d'erreur d'écriture surfacée.
     await expect(page.getByTestId('map-live-write-error')).toHaveCount(0);
 
+    // 9a-bis. DRAG de l'AoE. Le MJ pose la sphère au centre, puis la glisse là
+    // où le sort atterrit. On saisit le cercle, on le déplace hors-grille, et
+    // l'aimant le recale au CENTRE de case (cx,cy ≡ 35 mod 70). Preuve
+    // bout-en-bout via les vraies security rules : `moveAoeTemplate` persiste,
+    // puis le listener ré-émet la position aimantée. On le fait AVANT d'ajouter
+    // un jeton (sinon le jeton, rendu par-dessus, capterait le pointeur au centre).
+    const AOE_GRID = 70;
+    await aoeCircle.scrollIntoViewIfNeeded();
+    const aoeBox = await aoeCircle.boundingBox();
+    expect(aoeBox).not.toBeNull();
+    if (!aoeBox) return;
+    const aStartX = aoeBox.x + aoeBox.width / 2;
+    const aStartY = aoeBox.y + aoeBox.height / 2;
+    await page.mouse.move(aStartX, aStartY);
+    await page.mouse.down();
+    await page.mouse.move(aStartX + 8, aStartY + 8);
+    await page.mouse.move(aStartX + 70, aStartY - 46, { steps: 12 });
+    await page.mouse.up();
+
+    await expect
+      .poll(
+        async () => {
+          const cx = await aoeCircle.getAttribute('cx');
+          return cx === null ? null : Math.round(Number(cx)) % AOE_GRID;
+        },
+        { timeout: 5000 },
+      )
+      .toBe(AOE_GRID / 2);
+    expect(Math.round(Number(await aoeCircle.getAttribute('cy'))) % AOE_GRID).toBe(
+      AOE_GRID / 2,
+    );
+    await expect(page.getByTestId('map-live-write-error')).toHaveCount(0);
+
+    await takeStepScreenshot(page, testInfo, 'aoe-dragged-snapped');
+
     // 9b. Grille + aimantage du jeton. La carte créée via le formulaire a
     // `showGrid:true` + `gridSize` 70 : les nouveaux contrôles Grille/Aimant
     // sont présents et ON par défaut, et un jeton lâché hors-grille s'aligne

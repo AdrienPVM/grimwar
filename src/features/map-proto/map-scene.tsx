@@ -46,6 +46,12 @@ interface MapSceneProps {
   readonly showWalls?: boolean;
   /** Opacité du voile de fog. Défaut 0.85. */
   readonly fogOpacity?: number;
+  /**
+   * Rend la couche AoE statique. Défaut `true` (vue TV, prototype). La vue
+   * live MJ passe `false` : elle rend sa PROPRE couche AoE draggable par-dessus
+   * ce décor (même logique que les tokens, rendus par l'écran parent).
+   */
+  readonly renderAoe?: boolean;
 }
 
 /** Rayon de vision d'un token converti en pixels viewBox. */
@@ -61,6 +67,7 @@ export function MapScene({
   maskId,
   showWalls = false,
   fogOpacity = 0.85,
+  renderAoe = true,
 }: MapSceneProps): JSX.Element {
   const imageHref = map.imageUrl ?? localImageUrl;
   const walls = useMemo(() => map.walls ?? [], [map.walls]);
@@ -182,8 +189,10 @@ export function MapScene({
 
       {/* Templates AoE — overlays tactiques posés par le MJ. Rendus au-dessus du
           décor (fog/lumière) pour rester visibles, sous les tokens (dessinés par
-          l'écran parent). Read-only ici : le retrait passe par « Effacer AoE ». */}
-      {aoesPx.length > 0 && <AoeLayer aoes={aoesPx} />}
+          l'écran parent). Read-only ici : le retrait passe par « Effacer AoE ».
+          La vue live MJ passe `renderAoe={false}` et rend sa propre couche
+          draggable par-dessus ce décor. */}
+      {renderAoe && aoesPx.length > 0 && <AoeLayer aoes={aoesPx} />}
     </>
   );
 }
