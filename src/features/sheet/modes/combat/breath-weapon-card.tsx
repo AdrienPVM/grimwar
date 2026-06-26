@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
@@ -8,10 +8,21 @@ import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
 import type { Character } from '@/shared/types/character';
 
+import { useUpdateCharacter } from '../../use-update-character';
+import {
+  ancestryCombatUsageMax,
+  remainingAncestryCombatUses,
+  setAncestryCombatUses,
+} from './ancestry-combat-usage';
+import { UsageCounter } from './usage-counter';
+
 interface BreathWeaponCardProps {
   character: Character;
   readOnly: boolean;
 }
+
+/** Identifiant de l'aptitude pour la clé `featureUsage` (un par personnage). */
+const BREATH_FEATURE_ID = 'breath-weapon';
 
 /**
  * Carte du Souffle draconique (plan 13.8 step 29).
@@ -23,15 +34,18 @@ interface BreathWeaponCardProps {
  *
  * DC du jet de sauvegarde de Dextérité = 8 + modificateur de Con + PB.
  *
- * Lecture seule pour la V1 — le tap-pour-rouler arrive avec le radial
- * (plan 11) ou un binding direct vers useDice (post-13.8). La carte
- * documente ce qu'on doit annoncer au MJ.
+ * Cadence SRD : utilisable autant de fois que le bonus de maîtrise par repos
+ * long. Le compteur est consommable via `featureUsage` (clé
+ * `ancestry-combat:breath-weapon`) — recharge auto au repos long. Le jet de
+ * dégâts lui-même (tap-pour-rouler) reste au radial (plan 11).
  */
 export function BreathWeaponCard({
   character,
   readOnly,
 }: BreathWeaponCardProps): JSX.Element | null {
   const { data: ancestries } = useContent('ancestries');
+  const { updateCharacter, isUpdating } = useUpdateCharacter(character);
+  const [busy, setBusy] = useState(false);
 
   const dragonOption = useMemo(() => {
     if (character.ancestryId !== 'dragonborn') return null;
@@ -46,6 +60,29 @@ export function BreathWeaponCard({
   const conMod = abilityModifier(character.abilities.con);
   const pb = proficiencyBonus(character.totalLevel);
   const dc = 8 + conMod + pb;
+  const maxUses = ancestryCombatUsageMax(character.totalLevel);
+  const currentUses = remainingAncestryCombatUses(
+    character,
+    BREATH_FEATURE_ID,
+    character.totalLevel,
+  );
+
+  async function setUses(next: number): Promise<void> {
+    if (readOnly || isUpdating) return;
+    const patch = setAncestryCombatUses(
+      character,
+      BREATH_FEATURE_ID,
+      character.totalLevel,
+      next,
+    );
+    if (!patch) return;
+    setBusy(true);
+    try {
+      await updateCharacter({ featureUsage: patch });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   // Échelle des dés : 1d10 / 2d10 / 3d10 / 4d10 selon le niveau total.
   const lvl = character.totalLevel;
@@ -103,10 +140,26 @@ export function BreathWeaponCard({
             <dd className="text-text">{damageLabel}</dd>
           </div>
         </dl>
-        <p className="font-serif text-[12px] italic text-text-tertiary">
-          Action Attaque · usable autant de fois que ton bonus de maîtrise par
-          repos long.
-        </p>
+        <div className="flex items-center justify-between gap-3 border-t border-gold-dim/20 pt-3">
+          <span className="flex min-w-0 flex-col">
+            <span className="font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
+              Utilisations
+            </span>
+            <span className="font-serif text-[12px] italic text-text-tertiary">
+              Action Attaque · par repos long
+            </span>
+          </span>
+          <UsageCounter
+            current={currentUses}
+            max={maxUses}
+            readOnly={readOnly}
+            busy={busy}
+            spendLabel={`Dépenser une utilisation de Souffle draconique (dragon ${dragonName})`}
+            restoreLabel={`Récupérer une utilisation de Souffle draconique (dragon ${dragonName})`}
+            onSpend={() => void setUses(currentUses - 1)}
+            onRestore={() => void setUses(currentUses + 1)}
+          />
+        </div>
       </div>
     </Card>
   );

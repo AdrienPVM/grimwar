@@ -1,10 +1,26 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 import type { Ancestry } from '@/shared/types/content';
 
 import { BreathWeaponCard } from '../breath-weapon-card';
+
+const { updateCharacterMock } = vi.hoisted(() => ({
+  updateCharacterMock: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/features/sheet/use-update-character', () => ({
+  useUpdateCharacter: () => ({
+    updateCharacter: updateCharacterMock,
+    isUpdating: false,
+    error: null,
+  }),
+}));
+
+beforeEach(() => {
+  updateCharacterMock.mockClear();
+});
 
 /**
  * Plan 13.8 step 29 — la carte Souffle s'affiche pour les Drakéides
@@ -167,5 +183,49 @@ describe('<BreathWeaponCard>', () => {
     });
     render(<BreathWeaponCard character={character} readOnly={false} />);
     expect(screen.getAllByText('Froid').length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── Compteur d'utilisations (featureUsage) ─────────────────────────────
+
+  it('L1 → compteur plein « 2 / 2 » (PB du niveau 1)', () => {
+    const character = buildCharacter();
+    render(<BreathWeaponCard character={character} readOnly={false} />);
+    expect(screen.getByTestId('usage-counter-value').textContent).toContain('2');
+    expect(screen.getByTestId('usage-counter-value').textContent).toContain('/ 2');
+  });
+
+  it('« Dépenser » écrit featureUsage current=1 (clé ancestry-combat:breath-weapon)', () => {
+    const character = buildCharacter();
+    render(<BreathWeaponCard character={character} readOnly={false} />);
+    fireEvent.click(
+      screen.getByLabelText(/Dépenser une utilisation de Souffle draconique/),
+    );
+    expect(updateCharacterMock).toHaveBeenCalledTimes(1);
+    expect(updateCharacterMock.mock.calls[0]![0]).toEqual({
+      featureUsage: {
+        'ancestry-combat:breath-weapon': { current: 1, max: 2, restoresOn: 'long' },
+      },
+    });
+  });
+
+  it('compteur épuisé → « Dépenser » désactivé', () => {
+    const character = buildCharacter({
+      featureUsage: {
+        'ancestry-combat:breath-weapon': { current: 0, max: 2, restoresOn: 'long' },
+      },
+    });
+    render(<BreathWeaponCard character={character} readOnly={false} />);
+    const spend = screen.getByLabelText(
+      /Dépenser une utilisation de Souffle draconique/,
+    ) as HTMLButtonElement;
+    expect(spend.disabled).toBe(true);
+  });
+
+  it('lecture seule → aucun bouton, seul le ratio reste', () => {
+    const character = buildCharacter();
+    render(<BreathWeaponCard character={character} readOnly />);
+    expect(screen.queryByLabelText(/Dépenser une utilisation/)).toBeNull();
+    expect(screen.queryByLabelText(/Récupérer une utilisation/)).toBeNull();
+    expect(screen.getByTestId('usage-counter-value')).toBeInTheDocument();
   });
 });

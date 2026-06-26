@@ -35,7 +35,22 @@ test.describe('Ancestry — Goliath Storm (Tonnerre)', () => {
     const card = page.locator('[aria-label*="Ascendance gigante"]').first();
     await expect(card).toBeVisible();
     await expect(card.getByText(/Tonnerre/)).toBeVisible();
-    // 2× / RL = PB du niveau 1.
-    await expect(card.getByText(/2×/)).toBeVisible();
+
+    // Compteur d'utilisations consommable (featureUsage). PB L1 = 2 → « 2 / 2 ».
+    const counter = card.getByTestId('usage-counter-value');
+    await expect(counter).toContainText('2 / 2');
+
+    // Dépenser → « 1 / 2 », persisté via les vraies security rules.
+    await card.getByLabel(/Dépenser une utilisation d'Ascendance gigante/).click();
+    await expect(counter).toContainText('1 / 2');
+
+    // Reload → la consommation doit avoir été persistée (1 / 2).
+    await page.reload();
+    await waitForAppReady(page);
+    await page.getByRole('tab', { name: /^Combat$/i }).click();
+    const cardAfter = page.locator('[aria-label*="Ascendance gigante"]').first();
+    await expect(cardAfter.getByTestId('usage-counter-value')).toContainText('1 / 2', {
+      timeout: 10_000,
+    });
   });
 });

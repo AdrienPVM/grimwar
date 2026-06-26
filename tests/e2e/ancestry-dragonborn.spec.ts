@@ -42,5 +42,23 @@ test.describe('Ancestry — Drakéide Rouge (souffle feu)', () => {
     await expect(card.getByText(/Feu/).first()).toBeVisible();
     // DC = 8 + Con(14)mod(+2) + PB(L1=+2) = 12.
     await expect(card.getByText('12').first()).toBeVisible();
+
+    // Compteur d'utilisations consommable (featureUsage). PB L1 = 2 → « 2 / 2 ».
+    const counter = card.getByTestId('usage-counter-value');
+    await expect(counter).toContainText('2 / 2');
+
+    // Dépenser une utilisation → « 1 / 2 », persisté via les vraies security rules.
+    await card.getByLabel(/Dépenser une utilisation de Souffle draconique/).click();
+    await expect(counter).toContainText('1 / 2');
+
+    // Recharge : reload → la valeur consommée doit avoir été persistée (1 / 2),
+    // PAS revenue à plein (preuve d'écriture Firestore réussie).
+    await page.reload();
+    await waitForAppReady(page);
+    await page.getByRole('tab', { name: /^Combat$/i }).click();
+    const cardAfter = page.locator('[aria-label*="Souffle draconique"]').first();
+    await expect(cardAfter.getByTestId('usage-counter-value')).toContainText('1 / 2', {
+      timeout: 10_000,
+    });
   });
 });
