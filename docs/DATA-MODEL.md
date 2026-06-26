@@ -722,7 +722,17 @@ class GrimWarDB extends Dexie {
     fumble: boolean,
   }, string>;
   settings: Table<{ key: string, value: unknown }, string>;
-  
+  // v3 — image de fond d'une carte importée `.dd2vtt` (locale, Storage parqué).
+  mapImages: Table<{ id: string, dataUrl: string, importedAt: number }, string>;
+  // v4 — portrait (image) d'un jeton de carte (local, Storage parqué).
+  tokenImages: Table<{
+    id: string,            // `${cid}/${mid}/${tid}`
+    mapKey: string,        // `${cid}/${mid}` (index → tous les portraits d'une carte)
+    tokenId: string,
+    dataUrl: string,       // déjà recadré 256² + ré-encodé webp/jpeg
+    updatedAt: number,
+  }, string>;
+
   constructor() {
     super('grimwar');
     this.version(1).stores({
@@ -730,9 +740,20 @@ class GrimWarDB extends Dexie {
       diceHistory: 'id, characterId, timestamp',
       settings: 'key',
     });
+    // … v2 (dice mode) …
+    this.version(3).stores({ /* + */ mapImages: 'id' });
+    this.version(4).stores({ /* + */ tokenImages: 'id, mapKey' });
   }
 }
 ```
+
+> **Portrait de jeton** : même contrainte que l'image de fond (> 1 Mo, Storage
+> parqué) → stocké en **local** (table Dexie `tokenImages`, clé
+> `${cid}/${mid}/${tid}`, index `mapKey`). **Aucun champ ajouté au doc Firestore
+> du jeton** : le portrait est indexé par l'`id` (slug) que le jeton porte déjà.
+> Survit au reload, pas de synchro cross-device tant que Storage n'est pas tranché
+> ; visible en vue live ET TV dans le même navigateur. Recopié sur le clone lors
+> d'une duplication de jeton (meute).
 
 ## Firestore indexes
 

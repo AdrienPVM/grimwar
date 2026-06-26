@@ -3,7 +3,13 @@ import { type JSX } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { db } from '@/shared/lib/dexie-db';
 import type { MapMeta, MapToken } from '@/shared/types/map';
+
+import {
+  loadTokenImagesForMap,
+  saveTokenImage,
+} from '../token-image-store';
 
 /**
  * Tests pour MapLiveScreen (CHANTIER D tracer D.4).
@@ -196,7 +202,7 @@ function firePointer(
 
 import { MapLiveScreen } from '../map-live-screen';
 
-beforeEach(() => {
+beforeEach(async () => {
   authState.user = { uid: 'user-alice' };
   authState.isReady = true;
   useMapState.map = mkMap();
@@ -215,6 +221,9 @@ beforeEach(() => {
   mockCreateTokenWithId.mockReset().mockResolvedValue('token-new');
   mockDeleteToken.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
+  // Portraits = vraie table Dexie (fake-indexeddb), pas mockée. On la vide
+  // entre tests pour éviter toute fuite d'état (les portraits chargent en async).
+  await db.tokenImages.clear();
 });
 
 afterEach(() => {
@@ -1138,5 +1147,45 @@ describe('MapLiveScreen', () => {
     });
     // La sélection est purgée même si le snapshot n'a pas encore ré-émis.
     expect(screen.queryByTestId('map-live-aoe-selection')).toBeNull();
+  });
+
+  // ── Portrait de jeton (image locale IndexedDB) ─────────────────────────
+
+  it('rend un portrait <image> (recadré en disque) pour un jeton qui en a un', async () => {
+    const portrait = 'data:image/webp;base64,PORTRAIT';
+    await saveTokenImage('camp-1', 'm-1', 't1', portrait);
+    useMapState.tokens = [mkToken({ id: 't1' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    // Le hook charge le portrait en async → on attend l'<image>.
+    const img = await screen.findByTestId('map-live-token-image-t1');
+    expect(img.getAttribute('href')).toBe(portrait);
+    expect(img.getAttribute('clip-path')).toBe('url(#live-tok-clip-t1)');
+    // Le disque coloré « plein » + le label centré sont remplacés (portrait).
+    expect(screen.queryByText('PJ-1')).toBeNull();
+  });
+
+  it('Dupliquer recopie le portrait local sur le clone (meute)', async () => {
+    const portrait = 'data:image/webp;base64,GOBELIN';
+    await saveTokenImage('camp-1', 'm-1', 't1', portrait);
+    useMapState.tokens = [mkToken({ id: 't1', label: 'Gobelin' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    // Attend que le portrait de la source soit chargé avant de dupliquer.
+    await screen.findByTestId('map-live-token-image-t1');
+
+    const tokenG = screen.getByTestId('map-live-token-image-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+    fireEvent.click(screen.getByTestId('token-edit-duplicate'));
+
+    await waitFor(() => {
+      expect(mockCreateTokenWithId).toHaveBeenCalledTimes(1);
+    });
+    // Le portrait a été recopié : 2 entrées en IndexedDB, même data URL.
+    await waitFor(async () => {
+      const images = await loadTokenImagesForMap('camp-1', 'm-1');
+      expect(images.size).toBe(2);
+    });
+    const images = await loadTokenImagesForMap('camp-1', 'm-1');
+    for (const url of images.values()) expect(url).toBe(portrait);
   });
 });

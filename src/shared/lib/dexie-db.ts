@@ -55,11 +55,31 @@ export type MapImageRow = {
   importedAt: number;
 };
 
+/**
+ * Portrait (image) d'un jeton de carte, stocké localement comme l'image de fond
+ * (`MapImageRow`) et pour la MÊME raison : une image dépasse vite la limite de
+ * 1 Mo d'un doc Firestore et Firebase Storage n'est pas activé. Le portrait vit
+ * donc sur l'appareil — il survit au reload, ne se synchronise PAS cross-device
+ * (ça viendra avec Storage). Le doc Firestore du jeton est INCHANGÉ : on n'ajoute
+ * aucun champ au schéma cloud, l'image est juste indexée par l'`id` (slug) que le
+ * jeton porte déjà. Clé `id` = `${campaignId}/${mapId}/${tokenId}` ; index
+ * secondaire `mapKey` = `${campaignId}/${mapId}` pour charger tous les portraits
+ * d'une carte en une requête.
+ */
+export type TokenImageRow = {
+  id: string;
+  mapKey: string;
+  tokenId: string;
+  dataUrl: string;
+  updatedAt: number;
+};
+
 export class GrimWarDB extends Dexie {
   content!: Table<ContentRow, [string, string]>;
   diceHistory!: Table<DiceHistoryRow, string>;
   settings!: Table<SettingsRow, string>;
   mapImages!: Table<MapImageRow, string>;
+  tokenImages!: Table<TokenImageRow, string>;
 
   constructor() {
     super('grimwar');
@@ -95,6 +115,16 @@ export class GrimWarDB extends Dexie {
       diceHistory: 'id, characterId, timestamp',
       settings: 'key',
       mapImages: 'id',
+    });
+    // v4 (portraits de jeton) : ajoute la table `tokenImages`, indexée par
+    // `mapKey` pour charger d'un coup tous les portraits d'une carte. Additif et
+    // sûr (cf. v3) — aucune table existante n'est touchée.
+    this.version(4).stores({
+      content: '[type+id], type',
+      diceHistory: 'id, characterId, timestamp',
+      settings: 'key',
+      mapImages: 'id',
+      tokenImages: 'id, mapKey',
     });
   }
 }

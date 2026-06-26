@@ -8,6 +8,7 @@ import { MapScene } from './map-scene';
 import { MAP_VIEWBOX_H, MAP_VIEWBOX_W } from './map-viewport';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
+import { useTokenImages } from './use-token-images';
 
 /**
  * Vue présentation / TV (capacité titre du plan 33). Route
@@ -32,6 +33,10 @@ export function MapTvScreen(): JSX.Element {
   const { isReady } = useAuth();
   const { map, tokens, isLoading, error } = useMap(cid, mid);
   const { localImageUrl } = useMapImage(cid, mid);
+  // Portraits locaux (IndexedDB). Présents si la TV tourne dans le MÊME
+  // navigateur que la vue MJ ; sinon retombe proprement sur le disque coloré
+  // (la synchro cross-device viendra avec Firebase Storage).
+  const { tokenImages } = useTokenImages(cid, mid);
 
   if (!cid || !mid) {
     return (
@@ -88,30 +93,66 @@ export function MapTvScreen(): JSX.Element {
           maskId={`fog-tv-${mid}`}
           fogOpacity={TV_FOG_OPACITY}
         />
-        {tokens.map((token: MapToken) => (
-          <g key={token.id} data-testid={`map-tv-token-${token.id}`}>
-            <circle
-              cx={token.position.x}
-              cy={token.position.y}
-              r={TV_TOKEN_RADIUS}
-              fill={token.color}
-              stroke="white"
-              strokeWidth={2}
-            />
-            <text
-              x={token.position.x}
-              y={token.position.y + 4}
-              textAnchor="middle"
-              fontFamily="sans-serif"
-              fontWeight="bold"
-              fontSize="11"
-              fill="white"
-              pointerEvents="none"
-            >
-              {token.label}
-            </text>
-          </g>
-        ))}
+        {tokens.map((token: MapToken) => {
+          const portrait = tokenImages.get(token.id);
+          const clipId = `tv-tok-clip-${token.id}`;
+          return (
+            <g key={token.id} data-testid={`map-tv-token-${token.id}`}>
+              {portrait ? (
+                <>
+                  <clipPath id={clipId}>
+                    <circle
+                      cx={token.position.x}
+                      cy={token.position.y}
+                      r={TV_TOKEN_RADIUS}
+                    />
+                  </clipPath>
+                  <image
+                    data-testid={`map-tv-token-image-${token.id}`}
+                    href={portrait}
+                    x={token.position.x - TV_TOKEN_RADIUS}
+                    y={token.position.y - TV_TOKEN_RADIUS}
+                    width={TV_TOKEN_RADIUS * 2}
+                    height={TV_TOKEN_RADIUS * 2}
+                    preserveAspectRatio="xMidYMid slice"
+                    clipPath={`url(#${clipId})`}
+                  />
+                  <circle
+                    cx={token.position.x}
+                    cy={token.position.y}
+                    r={TV_TOKEN_RADIUS}
+                    fill="none"
+                    stroke={token.color}
+                    strokeWidth={3}
+                  />
+                </>
+              ) : (
+                <>
+                  <circle
+                    cx={token.position.x}
+                    cy={token.position.y}
+                    r={TV_TOKEN_RADIUS}
+                    fill={token.color}
+                    stroke="white"
+                    strokeWidth={2}
+                  />
+                  <text
+                    x={token.position.x}
+                    y={token.position.y + 4}
+                    textAnchor="middle"
+                    fontFamily="sans-serif"
+                    fontWeight="bold"
+                    fontSize="11"
+                    fill="white"
+                    pointerEvents="none"
+                  >
+                    {token.label}
+                  </text>
+                </>
+              )}
+            </g>
+          );
+        })}
       </svg>
     </main>
   );

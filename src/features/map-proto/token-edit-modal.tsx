@@ -1,9 +1,11 @@
-import { useId, useState, type JSX } from 'react';
+import { useId, useState, type ChangeEvent, type JSX } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
 import { cn } from '@/shared/lib/cn';
 import { formatMetersValue } from '@/shared/lib/rules/distance';
 import type { MapToken } from '@/shared/types/map';
+
+import { fileToTokenImage, TokenImageError } from './token-image-file';
 
 /**
  * Éditeur d'un jeton de carte live (nom + couleur + suppression unitaire).
@@ -82,6 +84,18 @@ interface Props {
   onDelete: () => void;
   /** Ferme sans rien changer. */
   onClose: () => void;
+  /**
+   * Portrait local courant (data URL) ou `null`. Affiché en vignette ronde.
+   * Stocké localement (IndexedDB), pas sur le doc Firestore du jeton.
+   */
+  imageUrl?: string | null;
+  /**
+   * Persiste un portrait (data URL DÉJÀ redimensionné par le form). Quand
+   * absent, la section « Portrait » n'est pas rendue (capacité non câblée).
+   */
+  onUploadImage?: (dataUrl: string) => void;
+  /** Retire le portrait local. Rendu seulement si `onUploadImage` est fourni. */
+  onRemoveImage?: () => void;
 }
 
 export function TokenEditModal({
@@ -90,6 +104,9 @@ export function TokenEditModal({
   onDuplicate,
   onDelete,
   onClose,
+  imageUrl = null,
+  onUploadImage,
+  onRemoveImage,
 }: Props): JSX.Element | null {
   return (
     <DetailModal
@@ -108,6 +125,9 @@ export function TokenEditModal({
           onSave={onSave}
           onDuplicate={onDuplicate}
           onDelete={onDelete}
+          imageUrl={imageUrl}
+          onUploadImage={onUploadImage}
+          onRemoveImage={onRemoveImage}
         />
       )}
     </DetailModal>
@@ -119,11 +139,17 @@ function TokenEditForm({
   onSave,
   onDuplicate,
   onDelete,
+  imageUrl,
+  onUploadImage,
+  onRemoveImage,
 }: {
   token: MapToken;
   onSave: Props['onSave'];
   onDuplicate: Props['onDuplicate'];
   onDelete: Props['onDelete'];
+  imageUrl: string | null;
+  onUploadImage: Props['onUploadImage'];
+  onRemoveImage: Props['onRemoveImage'];
 }): JSX.Element {
   const [label, setLabel] = useState(token.label);
   const [color, setColor] = useState(token.color);
@@ -132,11 +158,39 @@ function TokenEditForm({
   const [visionFt, setVisionFt] = useState(
     token.visionRadius ?? VISION_DEFAULT_FT,
   );
+  // État LOCAL de l'upload de portrait : `busy` pendant le décodage/redim, et
+  // message d'erreur FR adjacent au champ. Le portrait lui-même vient de la prop
+  // `imageUrl` (source = IndexedDB côté parent), jamais d'un state local.
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const titleId = useId();
 
   const trimmed = label.trim();
   const canSave = trimmed.length > 0;
   const hasVision = token.kind !== 'marker';
+  // La section portrait n'existe que si le caller a câblé l'upload (capacité).
+  const canEditImage = onUploadImage != null;
+
+  const handleFile = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = e.target.files?.[0];
+    // Réinitialise l'input pour autoriser le re-choix du même fichier.
+    e.target.value = '';
+    if (!file || !onUploadImage) return;
+    setImageError(null);
+    setImageBusy(true);
+    try {
+      const dataUrl = await fileToTokenImage(file);
+      onUploadImage(dataUrl);
+    } catch (err) {
+      setImageError(
+        err instanceof TokenImageError
+          ? err.message
+          : "Échec du chargement de l'image.",
+      );
+    } finally {
+      setImageBusy(false);
+    }
+  };
 
   const handleSave = (): void => {
     onSave({
@@ -160,6 +214,76 @@ function TokenEditForm({
           Modifier le jeton
         </h2>
       </header>
+
+      {canEditImage && (
+        <div className="flex flex-col gap-2">
+          <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            Portrait
+          </span>
+          <div className="flex items-center gap-4">
+            {/* Vignette ronde : portrait s'il existe, sinon pastille couleur de
+                repli (ce que la carte affiche sans portrait). */}
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={`Portrait de ${trimmed || 'ce jeton'}`}
+                data-testid="token-image-preview"
+                className="h-16 w-16 shrink-0 rounded-full border-2 border-gold-dim/50 object-cover"
+              />
+            ) : (
+              <span
+                aria-hidden
+                data-testid="token-image-placeholder"
+                // Couleur de domaine (teinte du jeton) → style dynamique légitime.
+                style={{ backgroundColor: token.color }}
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-white-8 font-title text-[10px] uppercase tracking-[0.12em] text-white/70"
+              >
+                {token.kind === 'marker' ? '•' : token.kind.toUpperCase()}
+              </span>
+            )}
+            <div className="flex flex-col gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-pill border border-gold-dim/50 px-4 py-2 font-title text-[11px] uppercase tracking-[0.18em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10">
+                <input
+                  type="file"
+                  accept="image/*"
+                  data-testid="token-image-input"
+                  onChange={(e) => {
+                    void handleFile(e);
+                  }}
+                  className="sr-only"
+                />
+                {imageBusy
+                  ? 'Traitement…'
+                  : imageUrl
+                    ? 'Remplacer'
+                    : 'Ajouter une image'}
+              </label>
+              {imageUrl && onRemoveImage && (
+                <button
+                  type="button"
+                  data-testid="token-image-remove"
+                  onClick={onRemoveImage}
+                  className="rounded-pill border border-crimson/40 px-4 py-2 font-title text-[10px] uppercase tracking-[0.18em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
+                >
+                  Retirer l&apos;image
+                </button>
+              )}
+            </div>
+          </div>
+          {imageError && (
+            <p
+              data-testid="token-image-error"
+              className="rounded-card-sm border border-crimson/40 bg-crimson/10 px-3 py-1.5 font-serif text-meta text-crimson"
+            >
+              {imageError}
+            </p>
+          )}
+          <p className="font-serif text-meta italic text-text-faint">
+            Stockée sur cet appareil (recadrée en rond). La synchro vers les
+            autres écrans viendra plus tard.
+          </p>
+        </div>
+      )}
 
       <label className="flex flex-col gap-2">
         <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">

@@ -213,4 +213,101 @@ describe('TokenEditModal', () => {
     );
     expect(screen.getByText('PNJ / monstre')).toBeTruthy();
   });
+
+  describe('portrait', () => {
+    it("n'affiche pas la section portrait quand l'upload n'est pas câblé", () => {
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.queryByTestId('token-image-input')).toBeNull();
+    });
+
+    it('propose « Ajouter une image » + pastille de repli quand aucun portrait', () => {
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          imageUrl={null}
+          onSave={vi.fn()}
+          onUploadImage={vi.fn()}
+          onRemoveImage={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.getByTestId('token-image-input')).toBeTruthy();
+      expect(screen.getByTestId('token-image-placeholder')).toBeTruthy();
+      expect(screen.queryByTestId('token-image-preview')).toBeNull();
+      expect(screen.getByText('Ajouter une image')).toBeTruthy();
+    });
+
+    it('affiche la vignette + « Retirer » quand un portrait existe', () => {
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          imageUrl="data:image/webp;base64,ZZZ"
+          onSave={vi.fn()}
+          onUploadImage={vi.fn()}
+          onRemoveImage={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      const preview = screen.getByTestId('token-image-preview') as HTMLImageElement;
+      expect(preview.src).toBe('data:image/webp;base64,ZZZ');
+      expect(screen.queryByTestId('token-image-placeholder')).toBeNull();
+      expect(screen.getByText('Remplacer')).toBeTruthy();
+      expect(screen.getByTestId('token-image-remove')).toBeTruthy();
+    });
+
+    it('« Retirer l’image » remonte onRemoveImage', () => {
+      const onRemoveImage = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          imageUrl="data:image/webp;base64,ZZZ"
+          onSave={vi.fn()}
+          onUploadImage={vi.fn()}
+          onRemoveImage={onRemoveImage}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      fireEvent.click(screen.getByTestId('token-image-remove'));
+      expect(onRemoveImage).toHaveBeenCalledTimes(1);
+    });
+
+    it('un fichier non-image affiche une erreur et n’upload pas', async () => {
+      const onUploadImage = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          imageUrl={null}
+          onSave={vi.fn()}
+          onUploadImage={onUploadImage}
+          onRemoveImage={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      const notImage = new File(['{}'], 'data.json', {
+        type: 'application/json',
+      });
+      fireEvent.change(screen.getByTestId('token-image-input'), {
+        target: { files: [notImage] },
+      });
+      const error = await screen.findByTestId('token-image-error');
+      expect(error.textContent).toMatch(/fichier image/i);
+      expect(onUploadImage).not.toHaveBeenCalled();
+    });
+  });
 });

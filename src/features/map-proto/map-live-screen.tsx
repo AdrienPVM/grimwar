@@ -43,8 +43,14 @@ import {
   type Ruler,
 } from './ruler-state';
 import { TokenEditModal } from './token-edit-modal';
+import {
+  deleteTokenImage,
+  deleteTokenImagesForMap,
+  saveTokenImage,
+} from './token-image-store';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
+import { useTokenImages } from './use-token-images';
 
 /**
  * Vue live de carte côté MJ (CHANTIER D phase 2, tracer D.4).
@@ -136,6 +142,9 @@ export function MapLiveScreen(): JSX.Element {
   const { user, isReady } = useAuth();
   const { map, tokens, isLoading, error } = useMap(cid, mid);
   const { localImageUrl } = useMapImage(cid, mid);
+  // Portraits locaux des jetons (IndexedDB). `reloadTokenImages` re-lit après
+  // un upload / retrait / clear (la source est hors React).
+  const { tokenImages, reloadTokenImages } = useTokenImages(cid, mid);
   const [localPositions, setLocalPositions] = useState<
     Record<string, { x: number; y: number }>
   >({});
@@ -664,11 +673,14 @@ export function MapLiveScreen(): JSX.Element {
     if (!cid || !mid) return;
     try {
       await Promise.all(tokens.map((tk) => deleteToken(cid, mid, tk.id)));
+      // Purge les portraits locaux des jetons effacés (sinon orphelins Dexie).
+      await deleteTokenImagesForMap(cid, mid);
+      reloadTokenImages();
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
     }
-  }, [cid, mid, tokens]);
+  }, [cid, mid, tokens, reloadTokenImages]);
 
   // ── Édition d'un jeton (nom + couleur + suppression unitaire) ──────────
   const handleSaveToken = useCallback(
@@ -696,11 +708,41 @@ export function MapLiveScreen(): JSX.Element {
     setEditingTokenId(null);
     try {
       await deleteToken(cid, mid, tokenId);
+      // Le portrait local n'a plus de jeton à habiller → on le purge.
+      await deleteTokenImage(cid, mid, tokenId);
+      reloadTokenImages();
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
     }
-  }, [cid, editingTokenId, mid]);
+  }, [cid, editingTokenId, mid, reloadTokenImages]);
+
+  // ── Portrait d'un jeton (image locale, IndexedDB) ──────────────────────
+  // Le data URL arrive DÉJÀ redimensionné par la modale (`fileToTokenImage`).
+  // On le persiste sous l'`id` du jeton édité — aucun champ ajouté au doc
+  // Firestore (cf. `token-image-store.ts`). La modale reste ouverte : le MJ voit
+  // la vignette se mettre à jour (la prop `imageUrl` suit `tokenImages`).
+  const handleUploadTokenImage = useCallback(
+    async (dataUrl: string): Promise<void> => {
+      const tokenId = editingTokenId;
+      if (!tokenId || !cid || !mid) return;
+      try {
+        await saveTokenImage(cid, mid, tokenId, dataUrl);
+        reloadTokenImages();
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, editingTokenId, mid, reloadTokenImages],
+  );
+
+  const handleRemoveTokenImage = useCallback(async (): Promise<void> => {
+    const tokenId = editingTokenId;
+    if (!tokenId || !cid || !mid) return;
+    await deleteTokenImage(cid, mid, tokenId);
+    reloadTokenImages();
+  }, [cid, editingTokenId, mid, reloadTokenImages]);
 
   // Duplique le jeton en cours d'édition (gain de temps majeur pour poser une
   // meute : un gobelin → « Dupliquer » ×4). Copie kind/label/couleur/vision,
@@ -717,11 +759,14 @@ export function MapLiveScreen(): JSX.Element {
       x: Math.min(VIEWBOX_W, src.position.x + map.gridSize),
       y: Math.min(VIEWBOX_H, src.position.y + map.gridSize),
     };
+    // Id du clone capturé pour copier aussi son portrait (meute : on dessine
+    // une fois le gobelin, chaque « Dupliquer » garde l'art).
+    const cloneId = randomSlug('token');
     try {
       await createTokenWithId(
         cid,
         mid,
-        randomSlug('token'),
+        cloneId,
         {
           kind: src.kind,
           label: src.label,
@@ -733,11 +778,17 @@ export function MapLiveScreen(): JSX.Element {
         },
         user.uid,
       );
+      // Recopie le portrait local de la source sur le clone, s'il en a un.
+      const srcImage = tokenImages.get(src.id);
+      if (srcImage) {
+        await saveTokenImage(cid, mid, cloneId, srcImage);
+        reloadTokenImages();
+      }
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
     }
-  }, [cid, mid, user, map, tokens, editingTokenId]);
+  }, [cid, mid, user, map, tokens, editingTokenId, tokenImages, reloadTokenImages]);
 
   if (!cid || !mid) {
     return (
@@ -1237,6 +1288,8 @@ export function MapLiveScreen(): JSX.Element {
           {tokens.map((token) => {
             const pos = positionOf(token);
             const isDragging = draggingTokenId === token.id;
+            const portrait = tokenImages.get(token.id);
+            const clipId = `live-tok-clip-${token.id}`;
             return (
               <g
                 key={token.id}
@@ -1254,27 +1307,60 @@ export function MapLiveScreen(): JSX.Element {
                   void handlePointerUp();
                 }}
               >
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={TOKEN_RADIUS}
-                  fill={token.color}
-                  stroke="white"
-                  strokeWidth={2}
-                  opacity={isDragging ? 0.8 : 1}
-                />
-                <text
-                  x={pos.x}
-                  y={pos.y + 4}
-                  textAnchor="middle"
-                  fontFamily="sans-serif"
-                  fontWeight="bold"
-                  fontSize="11"
-                  fill="white"
-                  pointerEvents="none"
-                >
-                  {token.label}
-                </text>
+                {portrait ? (
+                  // Portrait recadré en disque. L'image EST la cible de clic
+                  // (cliquable dans la zone détourée) → tap/drag inchangés ;
+                  // la couleur du jeton devient l'anneau (indice de faction).
+                  <>
+                    <clipPath id={clipId}>
+                      <circle cx={pos.x} cy={pos.y} r={TOKEN_RADIUS} />
+                    </clipPath>
+                    <image
+                      data-testid={`map-live-token-image-${token.id}`}
+                      href={portrait}
+                      x={pos.x - TOKEN_RADIUS}
+                      y={pos.y - TOKEN_RADIUS}
+                      width={TOKEN_RADIUS * 2}
+                      height={TOKEN_RADIUS * 2}
+                      preserveAspectRatio="xMidYMid slice"
+                      clipPath={`url(#${clipId})`}
+                      opacity={isDragging ? 0.8 : 1}
+                    />
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r={TOKEN_RADIUS}
+                      fill="none"
+                      stroke={token.color}
+                      strokeWidth={3}
+                      pointerEvents="none"
+                    />
+                  </>
+                ) : (
+                  <>
+                    <circle
+                      cx={pos.x}
+                      cy={pos.y}
+                      r={TOKEN_RADIUS}
+                      fill={token.color}
+                      stroke="white"
+                      strokeWidth={2}
+                      opacity={isDragging ? 0.8 : 1}
+                    />
+                    <text
+                      x={pos.x}
+                      y={pos.y + 4}
+                      textAnchor="middle"
+                      fontFamily="sans-serif"
+                      fontWeight="bold"
+                      fontSize="11"
+                      fill="white"
+                      pointerEvents="none"
+                    >
+                      {token.label}
+                    </text>
+                  </>
+                )}
               </g>
             );
           })}
@@ -1326,9 +1412,16 @@ export function MapLiveScreen(): JSX.Element {
 
       <TokenEditModal
         token={editingToken}
+        imageUrl={editingToken ? (tokenImages.get(editingToken.id) ?? null) : null}
         onClose={() => setEditingTokenId(null)}
         onSave={(patch) => {
           void handleSaveToken(patch);
+        }}
+        onUploadImage={(dataUrl) => {
+          void handleUploadTokenImage(dataUrl);
+        }}
+        onRemoveImage={() => {
+          void handleRemoveTokenImage();
         }}
         onDuplicate={() => {
           void handleDuplicateToken();
