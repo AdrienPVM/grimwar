@@ -44,7 +44,10 @@ function buildCharacter(overrides: Partial<Character> = {}): Character {
     skills: {},
     hp: { current: 12, max: 12, temp: 0 },
     ac: 11,
-    speed: 9,
+    // Valeur SRD canonique en PIEDS (ancestries.json : Humain = 30), PAS la
+    // valeur déjà-en-mètres : c'est précisément l'écart qui masquait le bug
+    // « 30 m » (chiffre en pieds affiché sous le label « m »).
+    speed: 30,
     initiative: 1,
     hitDice: [],
     deathSaves: { success: 0, fail: 0 },
@@ -120,6 +123,33 @@ describe('<StatusStrip>', () => {
     render(<StatusStrip character={buildCharacter({ ac: 99 })} displayedAc={42} />);
     expect(readAcCell()).toBe('42');
     expect(screen.queryByText('99')).toBeNull();
+  });
+
+  it('affiche la Vitesse en MÈTRES, pas le chiffre brut en pieds (30 ft → « 9 m »)', () => {
+    // Rouge avant vert : `character.speed` vaut 30 (pieds, SRD). Le cell était
+    // étiqueté « m » mais montrait « 30 » → « 30 m », un non-sens. La conversion
+    // FR (×0,3) doit afficher « 9 ». Sans le fix, ce test verrait « 30 ».
+    render(<StatusStrip character={buildCharacter({ speed: 30 })} displayedAc={11} />);
+    const speedCell = screen.getByText('Vit.').closest('div');
+    if (!speedCell) throw new Error('cellule Vitesse introuvable');
+    // value « 9 » + sub « m » sont concaténés dans le span de valeur.
+    expect(speedCell.textContent).toContain('9m');
+    expect(speedCell.textContent).not.toContain('30');
+  });
+
+  it('convertit aussi displayedSpeed (pieds → mètres) et gère les fractions (35 ft → « 10,5 m »)', () => {
+    // displayedSpeed prime sur character.speed et reste en pieds (bonus d'effets
+    // « speed-bonus » en ft). 35 ft → 10,5 m, virgule décimale française.
+    render(
+      <StatusStrip
+        character={buildCharacter({ speed: 30 })}
+        displayedAc={11}
+        displayedSpeed={35}
+      />,
+    );
+    const speedCell = screen.getByText('Vit.').closest('div');
+    if (!speedCell) throw new Error('cellule Vitesse introuvable');
+    expect(speedCell.textContent).toContain('10,5m');
   });
 
   it('affiche la Perception passive calculée (SAG 14 + maîtrise, niveau 1 → 14)', () => {

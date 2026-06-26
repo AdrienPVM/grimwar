@@ -1,6 +1,7 @@
 import { Icon } from '@/shared/components/icon';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { formatMetersValue } from '@/shared/lib/rules/distance';
 import { passivePerception } from '@/shared/lib/rules/passive-perception';
 import type { Character } from '@/shared/types/character';
 import type { IconName } from '@/shared/design/icons';
@@ -41,7 +42,11 @@ export function StatusStrip({
   displayedSpeed,
 }: StatusStripProps): JSX.Element {
   const initSign = character.initiative >= 0 ? '+' : '';
-  const speedValue = displayedSpeed ?? character.speed;
+  // `character.speed` (et le bonus d'effets de `computeDisplayedSpeed`) est en
+  // PIEDS, valeur SRD canonique (ancestries.json : 30). On convertit À
+  // L'AFFICHAGE en mètres (convention FR : 30 ft → 9 m) — la cellule était
+  // étiquetée « m » mais montrait le chiffre brut en pieds (« 30 m »).
+  const speedMeters = formatMetersValue(displayedSpeed ?? character.speed);
   // Perception passive (SRD 5.2.1) : 10 + mod de Perception. Valeur de fiche
   // glanceable au même titre que CA/Init/Vitesse — l'un des chiffres les plus
   // consultés au jeu (détection de pièges, créatures cachées) côté MJ.
@@ -64,7 +69,7 @@ export function StatusStrip({
       <StatusCell
         icon="i-speed"
         label={t('sheet.stat.speed')}
-        value={`${speedValue}`}
+        value={speedMeters}
         sub="m"
       />
       <StatusCell

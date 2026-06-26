@@ -10,6 +10,7 @@ import {
   abilityModifier,
   ABILITY_ORDER,
 } from '@/shared/lib/rules/abilities';
+import { formatMetersValue } from '@/shared/lib/rules/distance';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
@@ -147,7 +148,8 @@ export function RecapStep(): JSX.Element {
           {t('wizard.recap.ancestryYou')} {localize(ancestry.name)}.
         </p>
         <p>
-          {t('wizard.recap.speed')} : {ancestry.speed}m.
+          {/* `ancestry.speed` est en pieds (SRD) ; affiché en mètres (30 → 9). */}
+          {t('wizard.recap.speed')} : {formatMetersValue(ancestry.speed)} m.
         </p>
       </Block>
 

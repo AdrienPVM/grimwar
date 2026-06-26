@@ -2,6 +2,7 @@ import type { JSX } from 'react';
 
 import { resolveSkillIds } from '@/features/wizard/steps/skill-resolver';
 import { useContent } from '@/shared/hooks/use-content';
+import { formatMetersValue } from '@/shared/lib/rules/distance';
 import { getSkill } from '@/shared/lib/rules/skills';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import type {
@@ -34,12 +35,6 @@ function localizeSkills(rawNames: readonly string[]): string {
     return skill ? localize(skill.name) : id;
   });
   return names.join(', ');
-}
-
-/** Pieds SRD → mètres (convention FR officielle : 5 ft = 1,50 m). */
-function feetToMeters(feet: number): string {
-  const m = (feet / 5) * 1.5;
-  return Number.isInteger(m) ? String(m) : m.toFixed(1).replace('.', ',');
 }
 
 /**
@@ -98,7 +93,7 @@ function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntry[] {
           <div className="grid grid-cols-2 gap-x-4 gap-y-3">
             <CodexField label={t('codex.species.size')}>{sizeLabel}</CodexField>
             <CodexField label={t('codex.species.speed')}>
-              {feetToMeters(ancestry.speed)} m
+              {formatMetersValue(ancestry.speed)} m
             </CodexField>
           </div>
           {ancestry.abilityScoreIncrease.length > 0 ? (

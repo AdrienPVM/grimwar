@@ -69,6 +69,16 @@ test.describe('Wizard — création rapide', () => {
     await page.getByRole('button', { name: /Choisir pour moi/i }).first().click();
     await clickNext(page);
 
+    // Récap : la vitesse de l'Humain (30 ft, valeur SRD canonique en pieds) doit
+    // s'afficher en MÈTRES — « Vitesse : 9 m. » — et NON le chiffre brut en pieds
+    // (« 30 m »). Garde-fou du fix « feet affiché comme mètres ».
+    await expect(page.getByText(/Vitesse\s*:\s*9\s*m\./)).toBeVisible();
+    await expect(page.getByText(/Vitesse\s*:\s*30/)).toHaveCount(0);
+    await page.screenshot({
+      path: 'uat-review/speed-meters/02-recap-vitesse-metres.png',
+      fullPage: true,
+    });
+
     await page.getByRole('button', { name: /^Créer le personnage$/i }).click();
     await expect(page).toHaveURL(/\/character\/[A-Za-z0-9-]+$/, { timeout: 15_000 });
 
