@@ -154,4 +154,75 @@ test.describe('UAT — édition de jeton (carte live)', () => {
       page.locator('[data-testid^="map-live-token-"]'),
     ).toHaveCount(0, { timeout: 5000 });
   });
+
+  test('tap → dupliquer → deux jetons identiques (gain de temps meute)', async ({
+    page,
+  }) => {
+    const cid = `uat-tokdup-${Date.now().toString(36)}`;
+    const mapSlug = `carte-${Date.now().toString(36)}`;
+    const mapName = 'Meute de gobelins (UAT)';
+
+    await page.goto(`/map-proto/cloud/${cid}`);
+    await waitForAppReady(page);
+    await page.waitForFunction(
+      () => {
+        const w = window as Window & { __e2eAuthUid?: string | null };
+        return typeof w.__e2eAuthUid === 'string' && w.__e2eAuthUid.length > 0;
+      },
+      null,
+      { timeout: 10_000 },
+    );
+
+    await expect(page.getByTestId('maps-cloud-create-submit')).toBeEnabled({
+      timeout: 10_000,
+    });
+    await page.getByTestId('maps-cloud-create-id').fill(mapSlug);
+    await page.getByTestId('maps-cloud-create-name').fill(mapName);
+    await page.getByTestId('maps-cloud-create-submit').click();
+    await expect(page.getByTestId(`maps-cloud-card-${mapSlug}`)).toBeVisible({
+      timeout: 5000,
+    });
+
+    await page.goto(`/map-proto/cloud/${cid}/maps/${mapSlug}`);
+    await waitForAppReady(page);
+    await expect(page.getByRole('heading', { name: mapName })).toBeVisible({
+      timeout: 10_000,
+    });
+
+    // Pose un PNJ, le renomme « Gobelin », puis le duplique 2×.
+    await page.getByTestId('map-live-add-pnj').click();
+    const firstToken = page.locator('[data-testid^="map-live-token-"]').first();
+    await expect(firstToken).toBeVisible();
+    await firstToken.click();
+    await page.getByTestId('token-edit-label').fill('Gobelin');
+    await page.getByTestId('token-edit-save').click();
+    await expect(page.getByTestId('token-edit-save')).toBeHidden();
+
+    // 1re duplication → 2 jetons.
+    await firstToken.click();
+    await page.getByTestId('token-edit-duplicate').click();
+    await expect(page.getByTestId('token-edit-save')).toBeHidden();
+    await expect(
+      page.locator('[data-testid^="map-live-token-"]'),
+    ).toHaveCount(2, { timeout: 5000 });
+
+    // 2e duplication depuis le clone (≠ original) → 3 jetons distincts, tous
+    // « Gobelin » (dupliquer depuis la même source empilerait au même décalage).
+    await page.locator('[data-testid^="map-live-token-"]').nth(1).click();
+    await page.getByTestId('token-edit-duplicate').click();
+    await expect(
+      page.locator('[data-testid^="map-live-token-"]'),
+    ).toHaveCount(3, { timeout: 5000 });
+    // Les 3 libellés « Gobelin » sont bien ceux des jetons (scopé aux groupes
+    // de jeton — le titre de carte contient aussi « gobelins »).
+    await expect(
+      page.locator('[data-testid^="map-live-token-"]').getByText('Gobelin'),
+    ).toHaveCount(3);
+
+    // 04 — la meute de 3 gobelins issus d'une seule pose + 2 dupli (pleine page).
+    await page.screenshot({
+      path: path.join(OUT, '04-meute-dupliquee.png'),
+      fullPage: true,
+    });
+  });
 });

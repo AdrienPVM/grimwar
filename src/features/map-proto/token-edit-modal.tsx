@@ -76,6 +76,8 @@ interface Props {
     color: string;
     visionRadius?: number;
   }) => void;
+  /** Duplique ce jeton (même type/couleur/vision, décalé). Ferme la modale. */
+  onDuplicate: () => void;
   /** Supprime ce seul jeton (le caller route vers `deleteToken`). */
   onDelete: () => void;
   /** Ferme sans rien changer. */
@@ -85,6 +87,7 @@ interface Props {
 export function TokenEditModal({
   token,
   onSave,
+  onDuplicate,
   onDelete,
   onClose,
 }: Props): JSX.Element | null {
@@ -103,6 +106,7 @@ export function TokenEditModal({
           key={token.id}
           token={token}
           onSave={onSave}
+          onDuplicate={onDuplicate}
           onDelete={onDelete}
         />
       )}
@@ -113,10 +117,12 @@ export function TokenEditModal({
 function TokenEditForm({
   token,
   onSave,
+  onDuplicate,
   onDelete,
 }: {
   token: MapToken;
   onSave: Props['onSave'];
+  onDuplicate: Props['onDuplicate'];
   onDelete: Props['onDelete'];
 }): JSX.Element {
   const [label, setLabel] = useState(token.label);
@@ -265,6 +271,14 @@ function TokenEditForm({
           className="rounded-pill border border-gold-dim/50 bg-gold/10 px-4 py-3 font-title text-[11px] uppercase tracking-[0.18em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/20 disabled:opacity-40"
         >
           Enregistrer
+        </button>
+        <button
+          type="button"
+          data-testid="token-edit-duplicate"
+          onClick={onDuplicate}
+          className="rounded-pill border border-gold-dim/40 px-4 py-3 font-title text-[11px] uppercase tracking-[0.18em] text-text-secondary transition-colors duration-200 ease-base hover:bg-gold/10 hover:text-gold-bright"
+        >
+          Dupliquer le jeton
         </button>
         <button
           type="button"

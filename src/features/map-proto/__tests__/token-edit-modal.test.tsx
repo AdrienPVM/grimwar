@@ -29,6 +29,7 @@ describe('TokenEditModal', () => {
         token={null}
         onSave={vi.fn()}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -41,6 +42,7 @@ describe('TokenEditModal', () => {
         token={mkToken({ label: 'Gobelin', color: '#4ade80' })}
         onSave={vi.fn()}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -62,6 +64,7 @@ describe('TokenEditModal', () => {
         token={mkToken()}
         onSave={onSave}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -84,6 +87,7 @@ describe('TokenEditModal', () => {
         token={mkToken({ visionRadius: 60 })}
         onSave={vi.fn()}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -103,6 +107,7 @@ describe('TokenEditModal', () => {
         token={mkToken()}
         onSave={vi.fn()}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -119,6 +124,7 @@ describe('TokenEditModal', () => {
         token={mkToken()}
         onSave={onSave}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -136,6 +142,7 @@ describe('TokenEditModal', () => {
         token={mkToken({ kind: 'marker', label: 'Coffre' })}
         onSave={onSave}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -151,6 +158,7 @@ describe('TokenEditModal', () => {
         token={mkToken()}
         onSave={onSave}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -163,6 +171,21 @@ describe('TokenEditModal', () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it('Dupliquer le jeton remonte onDuplicate', () => {
+    const onDuplicate = vi.fn();
+    render(
+      <TokenEditModal
+        token={mkToken()}
+        onSave={vi.fn()}
+        onDuplicate={onDuplicate}
+        onDelete={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('token-edit-duplicate'));
+    expect(onDuplicate).toHaveBeenCalledTimes(1);
+  });
+
   it('Supprimer ce jeton remonte onDelete', () => {
     const onDelete = vi.fn();
     render(
@@ -170,6 +193,7 @@ describe('TokenEditModal', () => {
         token={mkToken()}
         onSave={vi.fn()}
         onDelete={onDelete}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );
@@ -183,6 +207,7 @@ describe('TokenEditModal', () => {
         token={mkToken({ kind: 'pnj' })}
         onSave={vi.fn()}
         onDelete={vi.fn()}
+        onDuplicate={vi.fn()}
         onClose={vi.fn()}
       />,
     );

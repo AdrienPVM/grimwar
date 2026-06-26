@@ -50,7 +50,9 @@ const mockRotateAoeTemplate = vi.fn();
 const mockRemoveAoeTemplate = vi.fn();
 const mockResizeAoeTemplate = vi.fn();
 const mockDeleteToken = vi.fn();
+const mockCreateTokenWithId = vi.fn();
 vi.mock('@/shared/lib/services/maps', () => ({
+  createTokenWithId: (...args: unknown[]) => mockCreateTokenWithId(...args),
   updateToken: (...args: unknown[]) => mockUpdateToken(...args),
   updateMap: (...args: unknown[]) => mockUpdateMap(...args),
   addFogPolygon: (...args: unknown[]) => mockAddFogPolygon(...args),
@@ -210,6 +212,7 @@ beforeEach(() => {
   mockRotateAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockRemoveAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockResizeAoeTemplate.mockReset().mockResolvedValue(undefined);
+  mockCreateTokenWithId.mockReset().mockResolvedValue('token-new');
   mockDeleteToken.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
 });
@@ -472,6 +475,42 @@ describe('MapLiveScreen', () => {
       expect(mockDeleteToken).toHaveBeenCalledTimes(1);
     });
     expect(mockDeleteToken.mock.calls[0]!.slice(0, 3)).toEqual(['camp-1', 'm-1', 't1']);
+    await waitFor(() => {
+      expect(screen.queryByTestId('token-edit-save')).toBeNull();
+    });
+  });
+
+  it('Dupliquer crée un clone (mêmes props, décalé d’une case) via createTokenWithId', async () => {
+    useMapState.tokens = [
+      mkToken({ id: 't1', label: 'Gobelin', color: '#4ade80', visionRadius: 60 }),
+    ];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    fireEvent.click(screen.getByTestId('token-edit-duplicate'));
+
+    await waitFor(() => {
+      expect(mockCreateTokenWithId).toHaveBeenCalledTimes(1);
+    });
+    const [cidArg, midArg, idArg, inputArg, uidArg] =
+      mockCreateTokenWithId.mock.calls[0]!;
+    expect(cidArg).toBe('camp-1');
+    expect(midArg).toBe('m-1');
+    // Id slug frais (jamais l'id source) — cf. createTokenWithId vs createToken.
+    expect(typeof idArg).toBe('string');
+    expect(idArg).not.toBe('t1');
+    expect(uidArg).toBe('user-alice');
+    // Clone : mêmes type/nom/couleur/vision, position décalée d'une case (70).
+    expect(inputArg).toEqual({
+      kind: 'pj',
+      label: 'Gobelin',
+      color: '#4ade80',
+      visionRadius: 60,
+      position: { x: 270, y: 270 }, // {200,200} + gridSize 70
+    });
+    // La modale se ferme après duplication.
     await waitFor(() => {
       expect(screen.queryByTestId('token-edit-save')).toBeNull();
     });

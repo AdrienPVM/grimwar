@@ -702,6 +702,43 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, editingTokenId, mid]);
 
+  // Duplique le jeton en cours d'édition (gain de temps majeur pour poser une
+  // meute : un gobelin → « Dupliquer » ×4). Copie kind/label/couleur/vision,
+  // décale d'une case en bas-à-droite (clamp viewBox) pour éviter le
+  // chevauchement exact, puis ferme la modale (le clone est posé, le MJ le
+  // déplace ou re-tape pour dupliquer encore). Réutilise `createTokenWithId`
+  // (id slug stable) — JAMAIS `createToken`/`addDoc` (id majuscule → filtré).
+  const handleDuplicateToken = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    const src = tokens.find((t) => t.id === editingTokenId);
+    if (!src) return;
+    setEditingTokenId(null);
+    const position = {
+      x: Math.min(VIEWBOX_W, src.position.x + map.gridSize),
+      y: Math.min(VIEWBOX_H, src.position.y + map.gridSize),
+    };
+    try {
+      await createTokenWithId(
+        cid,
+        mid,
+        randomSlug('token'),
+        {
+          kind: src.kind,
+          label: src.label,
+          position,
+          color: src.color,
+          ...(src.visionRadius != null
+            ? { visionRadius: src.visionRadius }
+            : {}),
+        },
+        user.uid,
+      );
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, mid, user, map, tokens, editingTokenId]);
+
   if (!cid || !mid) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
@@ -1292,6 +1329,9 @@ export function MapLiveScreen(): JSX.Element {
         onClose={() => setEditingTokenId(null)}
         onSave={(patch) => {
           void handleSaveToken(patch);
+        }}
+        onDuplicate={() => {
+          void handleDuplicateToken();
         }}
         onDelete={() => {
           void handleDeleteEditingToken();
