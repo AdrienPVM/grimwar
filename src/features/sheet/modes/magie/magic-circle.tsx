@@ -38,7 +38,7 @@ const INNER_R = 44;
  * press restaure pour récupérer un mistap. Cohérent avec le ton de la fiche
  * (HP mega-card a la même mécanique tap=action, long-press=alternative).
  */
-export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Element {
+export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Element | null {
   const { updateCharacter } = useUpdateCharacter(character);
   const { data: classCatalog } = useContent('classes');
   const levels = useMemo(
@@ -104,25 +104,19 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
   }
 
   if (!hasAnySlot) {
+    // Occultiste pur : pas d'emplacement unifié → la magie de pacte est rendue
+    // par sa propre carte (`PactSlotsCard`), on n'affiche donc PAS de cercle
+    // vide ici (sinon doublon trompeur). Pour un non-lanceur sans pacte, on
+    // garde le message « aucun emplacement ».
+    if (hasPact) return null;
     return (
       <Card>
         <CardHeader>
           <h3>Cercle d'invocation</h3>
         </CardHeader>
-        {hasPact ? (
-          <div className="flex flex-col gap-2">
-            <p className="font-serif text-body-sm italic text-text-secondary">
-              Magie de pacte — bientôt disponible.
-            </p>
-            <p className="font-serif text-body-sm italic text-text-tertiary">
-              Les emplacements d'Occultiste suivent une progression indépendante qui sera intégrée prochainement. En attendant, les sorts mineurs (tours) restent jouables.
-            </p>
-          </div>
-        ) : (
-          <p className="font-serif text-body-sm italic text-text-tertiary">
-            Aucun emplacement de sort débloqué pour le moment.
-          </p>
-        )}
+        <p className="font-serif text-body-sm italic text-text-tertiary">
+          Aucun emplacement de sort débloqué pour le moment.
+        </p>
       </Card>
     );
   }

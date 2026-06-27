@@ -14,6 +14,7 @@ import {
   resolveAncestrySpellEntries,
 } from './magie/ancestry-source-label';
 import { MagicCircle } from './magie/magic-circle';
+import { PactSlotsCard } from './magie/pact-slots-card';
 import {
   buildPactTomeSourceLabelMap,
   resolvePactTomeSpellEntries,
@@ -143,6 +144,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
         <>
           <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
           <MagicCircle character={character} readOnly={readOnly} />
+          <PactSlotsCard character={character} readOnly={readOnly} />
         </>
       ) : null}
       {/*
