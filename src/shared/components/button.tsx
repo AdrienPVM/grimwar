@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '../lib/cn';
+import { Tooltip, type TooltipPlacement } from './tooltip';
 
 /**
  * Variantes définies via `cva` pour rester déclaratives et typées.
@@ -67,6 +68,10 @@ const buttonVariants = cva(
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
     children?: ReactNode;
+    /** Infobulle explicite, déjà localisée (`t('…')`). */
+    tooltip?: string;
+    /** Côté d'apparition de l'infobulle. Défaut : au-dessus. */
+    tooltipPlacement?: TooltipPlacement;
   };
 
 export function Button({
@@ -75,12 +80,24 @@ export function Button({
   className,
   type = 'button',
   children,
+  tooltip,
+  tooltipPlacement,
   ...rest
 }: ButtonProps): JSX.Element {
-  return (
+  const button = (
     <button type={type} className={cn(buttonVariants({ variant, size }), className)} {...rest}>
       {children}
     </button>
+  );
+
+  if (tooltip === undefined) return button;
+
+  // Variante `icon` = pas de nom textuel → l'infobulle DEVIENT le nom accessible.
+  // Les autres variantes ont leur texte comme nom → l'infobulle le décrit.
+  return (
+    <Tooltip label={tooltip} placement={tooltipPlacement} nameTrigger={variant === 'icon'}>
+      {button}
+    </Tooltip>
   );
 }
 

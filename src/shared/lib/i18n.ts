@@ -453,6 +453,14 @@ export type StringKey =
   | 'sheet.mode.magie'
   | 'sheet.mode.avoir'
   | 'sheet.mode.ame'
+  // Infobulles du Battle HUD (combat)
+  | 'combat.hud.tip.action'
+  | 'combat.hud.tip.bonus'
+  | 'combat.hud.tip.reaction'
+  | 'combat.hud.tip.initiative'
+  | 'combat.hud.tip.inspirationGrant'
+  | 'combat.hud.tip.inspirationRemove'
+  | 'combat.hud.tip.endTurn'
   // Radial FAB (plan 11) — menu d'action docké
   | 'sheet.fab.openLabel'
   | 'sheet.fab.closeLabel'
@@ -2421,6 +2429,18 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.magie': 'Magie',
     'sheet.mode.avoir': 'Avoir',
     'sheet.mode.ame': 'Âme',
+    'combat.hud.tip.action':
+      'Marque ton action comme utilisée ce tour-ci (retape pour annuler).',
+    'combat.hud.tip.bonus':
+      'Marque ton action bonus comme utilisée ce tour-ci (retape pour annuler).',
+    'combat.hud.tip.reaction':
+      'Marque ta réaction comme utilisée ce tour-ci (retape pour annuler).',
+    'combat.hud.tip.initiative':
+      "Lance ton initiative pour déterminer ta place dans l'ordre du combat.",
+    'combat.hud.tip.inspirationGrant':
+      'Octroie l’Inspiration héroïque : tu pourras la dépenser pour relancer un test.',
+    'combat.hud.tip.inspirationRemove': 'Retire l’Inspiration héroïque.',
+    'combat.hud.tip.endTurn': 'Termine ton tour et réinitialise ton économie d’action.',
     'sheet.fab.openLabel': "Ouvrir le menu d'action",
     'sheet.fab.closeLabel': 'Fermer le menu',
     'sheet.fab.menuAria': "Menu d'action",
@@ -4848,6 +4868,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.mode.magie': 'Magic',
     'sheet.mode.avoir': 'Inv.',
     'sheet.mode.ame': 'Soul',
+    'combat.hud.tip.action': 'Mark your action as used this turn (tap again to undo).',
+    'combat.hud.tip.bonus': 'Mark your bonus action as used this turn (tap again to undo).',
+    'combat.hud.tip.reaction': 'Mark your reaction as used this turn (tap again to undo).',
+    'combat.hud.tip.initiative': 'Roll your initiative to determine your place in combat order.',
+    'combat.hud.tip.inspirationGrant':
+      'Grant Heroic Inspiration: you can spend it to reroll a check.',
+    'combat.hud.tip.inspirationRemove': 'Remove Heroic Inspiration.',
+    'combat.hud.tip.endTurn': 'End your turn and reset your action economy.',
     'sheet.fab.openLabel': 'Open action menu',
     'sheet.fab.closeLabel': 'Close menu',
     'sheet.fab.menuAria': 'Action menu',
