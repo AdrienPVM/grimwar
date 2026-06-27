@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import { type JSX } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -693,6 +693,48 @@ describe('MapLiveScreen', () => {
     expect(light.brightRadius).toBe(280); // 20 ft × 14 px/ft
     expect(light.dimRadius).toBe(280);
     expect(light.position).toBeDefined();
+  });
+
+  it('pose chaque preset de lumière SRD aux rayons px convertis à l’échelle', async () => {
+    // Carte fixture : 14 px/pied. Chaque preset SRD (rayons en pieds) doit être
+    // converti à cette échelle, et porter la teinte du preset partagé.
+    // candle 5/5 → 70 ; light-spell 20/20 → 280 ; lantern 30/30 → 420 ;
+    // sunlight 60/60 → 840.
+    const cases: { testid: string; preset: string; px: number; color: string }[] = [
+      { testid: 'map-live-add-light-candle', preset: 'candle', px: 70, color: '#fcd34d' },
+      {
+        testid: 'map-live-add-light-light-spell',
+        preset: 'light-spell',
+        px: 280,
+        color: '#e0e7ff',
+      },
+      { testid: 'map-live-add-light-lantern', preset: 'lantern', px: 420, color: '#fde68a' },
+      {
+        testid: 'map-live-add-light-sunlight',
+        preset: 'sunlight',
+        px: 840,
+        color: '#fffbeb',
+      },
+    ];
+    for (const c of cases) {
+      mockAddLightSource.mockClear();
+      renderAt('/map-proto/cloud/camp-1/maps/m-1');
+      fireEvent.click(screen.getByTestId(c.testid));
+      await waitFor(() => {
+        expect(mockAddLightSource).toHaveBeenCalledTimes(1);
+      });
+      const light = mockAddLightSource.mock.calls[0]![3] as {
+        preset: string;
+        brightRadius: number;
+        dimRadius: number;
+        color?: string;
+      };
+      expect(light.preset).toBe(c.preset);
+      expect(light.brightRadius).toBe(c.px);
+      expect(light.dimRadius).toBe(c.px);
+      expect(light.color).toBe(c.color);
+      cleanup();
+    }
   });
 
   it('calls updateMap with empty lightSources when "Effacer lumières" clicked', async () => {

@@ -33,6 +33,7 @@ import { AoeLayer } from './aoe-layer';
 import { aoePrimaryDimensionFt, scaleAoeDimensions } from './aoe-state';
 import { createCirclePolygon } from './fog-state';
 import { snapToGridCell } from './grid-snap';
+import { LIGHT_PRESETS, type LightPresetKey } from './light-state';
 import { MapScene } from './map-scene';
 import { monsterToTokenInput } from './monster-token';
 import { MonsterPickerModal } from './monster-picker-modal';
@@ -80,8 +81,32 @@ const TOKEN_RADIUS = 22;
 const CENTER_X = VIEWBOX_W / 2;
 const CENTER_Y = VIEWBOX_H / 2;
 const FOG_DEFAULT_RADIUS = 120;
-const LIGHT_TORCH_BRIGHT = 20; // ft
-const LIGHT_TORCH_DIM = 20; // ft
+/**
+ * Presets de lumière SRD, en PIEDS (rayon vif / faible), convertis en px à
+ * l'ÉCHELLE RÉELLE de la carte au moment de la pose (cf. `handleAddLight`) —
+ * `LightLayer` trace le rayon BRUT en px, comme l'import .dd2vtt. Valeurs et
+ * couleurs reprises de `LIGHT_PRESETS` (`light-state.ts`, SRD-sourcé) : on garde
+ * ici la version EN PIEDS (la table partagée est en px proto, fausse pour une
+ * carte importée à 14 px/ft) et on pioche la couleur dans la table partagée.
+ */
+const LIGHT_PRESET_FT: Record<
+  LightPresetKey,
+  { brightFt: number; dimFt: number; label: string }
+> = {
+  candle: { brightFt: 5, dimFt: 5, label: 'Bougie' },
+  torch: { brightFt: 20, dimFt: 20, label: 'Torche' },
+  'light-spell': { brightFt: 20, dimFt: 20, label: 'Sort Lumière' },
+  lantern: { brightFt: 30, dimFt: 30, label: 'Lanterne' },
+  sunlight: { brightFt: 60, dimFt: 60, label: 'Lumière du jour' },
+};
+/** Ordre d'affichage des boutons de lumière (rayon croissant). */
+const LIGHT_PRESET_ORDER: readonly LightPresetKey[] = [
+  'candle',
+  'torch',
+  'light-spell',
+  'lantern',
+  'sunlight',
+];
 const TOKEN_VISION_FT = 30; // vision normale par défaut (alimente la LOS)
 // Seuil (px viewBox) en deçà duquel un pointerdown+up sur un jeton est lu comme
 // un TAP (→ ouvre l'éditeur) plutôt qu'un drag (→ déplace + persiste). Un vrai
@@ -472,34 +497,39 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, mid, user]);
 
-  const handleAddTorch = useCallback(async (): Promise<void> => {
-    if (!cid || !mid || !user || !map) return;
-    // BUG fix : `LightLayer` trace le rayon BRUT en px viewBox (pas de mise à
-    // l'échelle), et les deux autres producteurs de lumières (presets proto +
-    // import .dd2vtt) stockent déjà des PIXELS. La torche live écrivait des
-    // PIEDS (20) → rendue comme un point de 40 px (≈ une demi-case) au lieu de
-    // 40 ft de rayon. On convertit ici les pieds SRD en px à l'échelle réelle
-    // de la carte (comme `dd2vtt` fait `range_cases × échelle`), alignant la
-    // torche sur le contrat px de fait. NB : le nettoyage « pieds canoniques
-    // partout + scale au rendu » (cf. schéma `map.ts`) reste à faire — il
-    // changerait l'interprétation d'un champ persisté (migration des cartes
-    // .dd2vtt déjà importées) → décision Adrien, hors scope de ce fix isolé.
-    const scale = pxPerFoot(map.gridSize, map.feetPerSquare);
-    const light: LightSource = {
-      id: randomSlug('manual-torch'),
-      position: { x: CENTER_X, y: CENTER_Y },
-      attachedTokenId: null,
-      brightRadius: Math.round(LIGHT_TORCH_BRIGHT * scale),
-      dimRadius: Math.round(LIGHT_TORCH_DIM * scale),
-      preset: 'torch',
-    };
-    try {
-      await addLightSource(cid, mid, map.lightSources, light, user.uid);
-      setWriteError(null);
-    } catch (err: unknown) {
-      setWriteError(err instanceof Error ? err.message : String(err));
-    }
-  }, [cid, map, mid, user]);
+  const handleAddLight = useCallback(
+    async (preset: LightPresetKey): Promise<void> => {
+      if (!cid || !mid || !user || !map) return;
+      // `LightLayer` trace le rayon BRUT en px viewBox (pas de mise à l'échelle),
+      // et les autres producteurs de lumières (presets proto + import .dd2vtt)
+      // stockent déjà des PIXELS. On convertit donc les pieds SRD du preset en px
+      // à l'échelle réelle de la carte (comme `dd2vtt` fait `range_cases ×
+      // échelle`), alignant la lumière sur le contrat px de fait. NB : le
+      // nettoyage « pieds canoniques partout + scale au rendu » (cf. schéma
+      // `map.ts`) reste à faire — il changerait l'interprétation d'un champ
+      // persisté (migration des cartes .dd2vtt déjà importées) → décision Adrien.
+      const scale = pxPerFoot(map.gridSize, map.feetPerSquare);
+      const spec = LIGHT_PRESET_FT[preset];
+      const light: LightSource = {
+        id: randomSlug(`manual-${preset}`),
+        position: { x: CENTER_X, y: CENTER_Y },
+        attachedTokenId: null,
+        brightRadius: Math.round(spec.brightFt * scale),
+        dimRadius: Math.round(spec.dimFt * scale),
+        // Teinte SRD du preset (torche ambre, sort Lumière blanc-froid, soleil
+        // neutre) — source unique : la table partagée `LIGHT_PRESETS`.
+        color: LIGHT_PRESETS[preset].color,
+        preset,
+      };
+      try {
+        await addLightSource(cid, mid, map.lightSources, light, user.uid);
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, map, mid, user],
+  );
 
   const handleClearLights = useCallback(async (): Promise<void> => {
     if (!cid || !mid || !user) return;
@@ -1001,16 +1031,39 @@ export function MapLiveScreen(): JSX.Element {
           >
             Lumières ({map.lightSources.length})
           </span>
-          <button
-            type="button"
-            data-testid="map-live-add-torch"
-            onClick={() => {
-              void handleAddTorch();
-            }}
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            Torche au centre
-          </button>
+          {LIGHT_PRESET_ORDER.map((preset) => {
+            const spec = LIGHT_PRESET_FT[preset];
+            // Rayon total (vive + faible) affiché en mètres FR (×0,3) pour situer
+            // la taille de chaque source d'un coup d'œil. `formatMeters` prend
+            // des PIEDS.
+            const totalM = formatMeters(spec.brightFt + spec.dimFt);
+            return (
+              <button
+                key={preset}
+                type="button"
+                // La torche garde son testid historique (e2e + test px) ; les
+                // autres presets prennent `map-live-add-light-<preset>`.
+                data-testid={
+                  preset === 'torch'
+                    ? 'map-live-add-torch'
+                    : `map-live-add-light-${preset}`
+                }
+                onClick={() => {
+                  void handleAddLight(preset);
+                }}
+                title={`Poser une lumière « ${spec.label} » au centre (rayon ${totalM})`}
+                className="inline-flex items-center gap-1 rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+              >
+                {/* Pastille de teinte SRD du preset → repère visuel rapide. */}
+                <span
+                  aria-hidden
+                  style={{ backgroundColor: LIGHT_PRESETS[preset].color }}
+                  className="h-2.5 w-2.5 rounded-full border border-white-8"
+                />
+                {spec.label}
+              </button>
+            );
+          })}
           <button
             type="button"
             data-testid="map-live-clear-lights"
