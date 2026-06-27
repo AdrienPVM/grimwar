@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { Condition } from '@/shared/types/content';
+import type { Condition, Monster } from '@/shared/types/content';
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
 import { ParticipantControlModal } from '../participant-control-modal';
@@ -43,9 +43,48 @@ const CONDITIONS: Condition[] = [
   },
 ];
 
+const GOBLIN: Monster = {
+  id: 'gobelin',
+  name: { fr: 'Gobelin', en: 'Goblin' },
+  size: 'small',
+  type: 'humanoïde',
+  alignment: { fr: 'Neutre mauvais', en: 'Neutral Evil' },
+  ac: 15,
+  acDetail: { fr: 'armure de cuir, bouclier', en: 'leather, shield' },
+  hp: { avg: 7, formula: '2d6' },
+  speed: { walk: 30 },
+  abilities: { for: 8, dex: 14, con: 10, int: 10, sag: 8, cha: 8 },
+  saves: {},
+  skills: { stealth: 6 },
+  resistances: [],
+  immunities: [],
+  vulnerabilities: [],
+  conditionImmunities: [],
+  senses: { darkvision: 60, passivePerception: 9 },
+  languages: ['commun', 'gobelin'],
+  cr: 0.25,
+  xp: 50,
+  traits: [
+    {
+      name: { fr: 'Fuite agile', en: 'Nimble Escape' },
+      description: { fr: 'Se désengage ou se cache en action bonus.', en: '' },
+    },
+  ],
+  actions: [
+    {
+      name: { fr: 'Cimeterre', en: 'Scimitar' },
+      description: { fr: 'Mêlée +4, 1d6+2 tranchant.', en: '' },
+    },
+  ],
+  reactions: null,
+  legendaryActions: null,
+  source: 'srd-5.2.1',
+};
+
 function renderModal(
   over: {
     participant?: Partial<EncounterParticipant>;
+    monster?: Monster | null;
     pending?: boolean;
     onApplyHp?: (delta: number) => void;
     onToggleCondition?: (condition: string, action: 'add' | 'remove') => void;
@@ -63,6 +102,7 @@ function renderModal(
     <ParticipantControlModal
       participant={mkParticipant(over.participant)}
       conditions={CONDITIONS}
+      monster={over.monster ?? null}
       pending={over.pending ?? false}
       onApplyHp={onApplyHp}
       onToggleCondition={onToggleCondition}
@@ -132,5 +172,31 @@ describe('<ParticipantControlModal>', () => {
     renderModal({ pending: true });
     expect(screen.getByRole('button', { name: '−5' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'À terre' })).toBeDisabled();
+  });
+
+  // ─── Fiche de créature liée (monsterContentId → bestiaire) ──────────────
+  it('sans `monster` : pas de bouton « Voir la fiche de créature »', () => {
+    renderModal({ monster: null });
+    expect(
+      screen.queryByRole('button', { name: 'Voir la fiche de créature' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('avec `monster` : le bouton ouvre la fiche (identité exacte du bloc de stats)', () => {
+    // Participant nommé différemment du monstre lié pour lever l'ambiguïté du titre.
+    renderModal({ participant: { name: 'Gobelin 2' }, monster: GOBLIN });
+    // La fiche est fermée par défaut : son contenu n'est pas dans le DOM.
+    expect(screen.queryByText('Petite · humanoïde · FP 1/4')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voir la fiche de créature' }));
+
+    // Bloc de stats ouvert : eyebrow + CA + PV + trait/action EXACTS (pas présence).
+    const dialogs = screen.getAllByRole('dialog');
+    const statDialog = dialogs[dialogs.length - 1];
+    expect(within(statDialog).getByText('Petite · humanoïde · FP 1/4')).toBeInTheDocument();
+    expect(within(statDialog).getByText(/15/)).toBeInTheDocument();
+    expect(within(statDialog).getByText(/7 \(2d6\)/)).toBeInTheDocument();
+    expect(within(statDialog).getByText(/Fuite agile/)).toBeInTheDocument();
+    expect(within(statDialog).getByText(/Cimeterre/)).toBeInTheDocument();
   });
 });

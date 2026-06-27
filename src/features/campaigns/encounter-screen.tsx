@@ -122,6 +122,10 @@ export function EncounterScreen(): JSX.Element {
   );
 
   const { data: conditionDefs } = useContent('conditions');
+  // Bestiaire (∪ contenu custom) — sert à résoudre la fiche d'un participant lié
+  // par son `monsterContentId` pour la modale de contrôle MJ. Vide tant qu'aucun
+  // pack monstre n'est importé : la fiche n'est alors simplement pas proposée.
+  const { data: monsterDefs } = useContent('monsters');
 
   const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
   const setActiveEncounter = useActiveCampaignStore((s) => s.setActiveEncounter);
@@ -398,6 +402,14 @@ export function EncounterScreen(): JSX.Element {
       ? (encounter.participants.find((p) => p.instanceId === controlTargetId) ?? null)
       : null;
 
+  // Fiche de créature liée à la cible de contrôle (si autofill depuis le
+  // bestiaire) — `null` pour une ligne saisie à la main ou si le slug n'est plus
+  // dans le bestiaire chargé.
+  const controlTargetMonster =
+    controlTarget?.monsterContentId != null
+      ? (monsterDefs.find((m) => m.id === controlTarget.monsterContentId) ?? null)
+      : null;
+
   // Hand-off (step 7b) — jets physiques récents à appliquer, MJ-only et combat en
   // cours uniquement. Les cibles sont les non-joueurs (un PJ se gère sur sa fiche).
   const handoffRows =
@@ -596,6 +608,7 @@ export function EncounterScreen(): JSX.Element {
         <ParticipantControlModal
           participant={controlTarget}
           conditions={conditionDefs}
+          monster={controlTargetMonster}
           pending={actionPending}
           onApplyHp={(delta) => void handleApplyHp(controlTarget, delta)}
           onToggleCondition={(condition, action) =>

@@ -1145,6 +1145,8 @@ export type StringKey =
   | 'encounters.control.noConditions'
   | 'encounters.control.addCondition'
   | 'encounters.control.closeAria'
+  | 'encounters.control.viewStatBlock'
+  | 'encounters.control.statBlockCloseAria'
   | 'encounters.handoff.title'
   | 'encounters.handoff.help'
   | 'encounters.handoff.aria'
@@ -3230,6 +3232,8 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noConditions': 'Aucun état actif.',
     'encounters.control.addCondition': 'Appliquer un état',
     'encounters.control.closeAria': 'Fermer le contrôle',
+    'encounters.control.viewStatBlock': 'Voir la fiche de créature',
+    'encounters.control.statBlockCloseAria': 'Fermer la fiche de créature',
     // Encounters — hand-off des dégâts physiques (JALON 24.4, step 7b). Le MJ
     // applique les jets physiques récents des joueurs sur une cible qu'il choisit.
     'encounters.handoff.title': 'Dégâts à appliquer',
@@ -5604,6 +5608,8 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noConditions': 'No active conditions.',
     'encounters.control.addCondition': 'Apply a condition',
     'encounters.control.closeAria': 'Close control panel',
+    'encounters.control.viewStatBlock': 'View stat block',
+    'encounters.control.statBlockCloseAria': 'Close stat block',
     'encounters.handoff.title': 'Damage to apply',
     'encounters.handoff.help':
       'Recent physical rolls from players. Pick a target to apply the damage.',

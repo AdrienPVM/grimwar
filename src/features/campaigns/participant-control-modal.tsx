@@ -1,11 +1,12 @@
-import { useMemo, useState, type JSX } from 'react';
+import { useId, useMemo, useState, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { MonsterStatBlock } from '@/features/codex/browsers/monster-stat-block';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
-import type { Condition } from '@/shared/types/content';
+import type { Condition, Monster } from '@/shared/types/content';
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
 import { hpBarColor, hpRatio } from './encounter-hp';
@@ -14,6 +15,13 @@ interface ParticipantControlModalProps {
   participant: EncounterParticipant;
   /** Catalogue des états SRD (∪ custom) — rendu en grille de bascule. */
   conditions: readonly Condition[];
+  /**
+   * Fiche de créature liée au participant via son `monsterContentId` (résolue
+   * côté écran depuis `useContent('monsters')`). `null` si le participant a été
+   * saisi à la main ou si le bestiaire n'a pas la créature — le bouton « Voir la
+   * fiche de créature » n'apparaît alors pas.
+   */
+  monster?: Monster | null;
   /** Action en cours (écriture Firestore) — désactive les contrôles. */
   pending: boolean;
   /** Applique un delta de PV (négatif = dégâts, positif = soin). */
@@ -42,14 +50,18 @@ const QUICK_AMOUNTS = [1, 5, 10] as const;
 export function ParticipantControlModal({
   participant,
   conditions,
+  monster = null,
   pending,
   onApplyHp,
   onToggleCondition,
   onClose,
 }: ParticipantControlModalProps): JSX.Element {
   const [amount, setAmount] = useState<number>(1);
+  // Fiche de créature ouverte en surcouche (modale imbriquée).
+  const [statBlockOpen, setStatBlockOpen] = useState<boolean>(false);
 
   const titleId = `participant-control-${participant.instanceId}`;
+  const statBlockTitleId = useId();
   const ratio = hpRatio(participant.currentHp, participant.maxHp);
   const hpPercent = Math.round(ratio * 100);
   const activeSet = useMemo(() => new Set(participant.conditions), [participant.conditions]);
@@ -76,6 +88,18 @@ export function ParticipantControlModal({
           >
             {participant.name}
           </h2>
+          {monster ? (
+            <div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setStatBlockOpen(true)}
+              >
+                {t('encounters.control.viewStatBlock')}
+              </Button>
+            </div>
+          ) : null}
         </header>
 
         {/* ─── PV ─────────────────────────────────────────────────── */}
@@ -197,6 +221,19 @@ export function ParticipantControlModal({
           )}
         </section>
       </div>
+
+      {/* Fiche de créature liée (modale imbriquée, lecture seule). */}
+      {monster ? (
+        <DetailModal
+          open={statBlockOpen}
+          onClose={() => setStatBlockOpen(false)}
+          titleId={statBlockTitleId}
+          closeLabel={t('encounters.control.statBlockCloseAria')}
+          size="lg"
+        >
+          <MonsterStatBlock monster={monster} titleId={statBlockTitleId} />
+        </DetailModal>
+      ) : null}
     </DetailModal>
   );
 }
