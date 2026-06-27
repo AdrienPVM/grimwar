@@ -7,6 +7,8 @@ import type {
   Feat,
   Invocation,
   Item,
+  MagicItem,
+  Monster,
   Spell,
   Subancestry,
   Subclass,
@@ -44,6 +46,9 @@ export interface PackBuilderState {
   items: Item[];
   ancestries: Ancestry[];
   classes: ClassEntity[];
+  /** Clés state camelCase, mappées vers l'entité kebab `magic-items` au save. */
+  magicItems: MagicItem[];
+  monsters: Monster[];
 }
 
 export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
@@ -65,6 +70,8 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
   items: [],
   ancestries: [],
   classes: [],
+  magicItems: [],
+  monsters: [],
 };
 
 /**
@@ -114,6 +121,9 @@ export function packFromBuilderState(
       ancestries:
         state.ancestries.length > 0 ? state.ancestries : undefined,
       classes: state.classes.length > 0 ? state.classes : undefined,
+      'magic-items':
+        state.magicItems.length > 0 ? state.magicItems : undefined,
+      monsters: state.monsters.length > 0 ? state.monsters : undefined,
     },
   } as CustomContentPack;
 }
@@ -142,9 +152,13 @@ interface UsePackBuilderApi {
   removeAncestry: (id: string) => void;
   addClass: (cls: ClassEntity) => void;
   removeClass: (id: string) => void;
+  addMagicItem: (item: MagicItem) => void;
+  removeMagicItem: (id: string) => void;
+  addMonster: (monster: Monster) => void;
+  removeMonster: (id: string) => void;
   /**
    * Charge un pack existant dans le builder — utilisé par le mode édition
-   * (JALON 3C.10). Écrase entièrement l'état courant : metadata + 9
+   * (JALON 3C.10). Écrase entièrement l'état courant : metadata + 11
    * catégories. Une catégorie absente de `pack.entities` devient un tableau
    * vide.
    */
@@ -184,6 +198,10 @@ export function builderStateFromPack(
     items: pack.entities.items ? [...pack.entities.items] : [],
     ancestries: pack.entities.ancestries ? [...pack.entities.ancestries] : [],
     classes: pack.entities.classes ? [...pack.entities.classes] : [],
+    magicItems: pack.entities['magic-items']
+      ? [...pack.entities['magic-items']]
+      : [],
+    monsters: pack.entities.monsters ? [...pack.entities.monsters] : [],
   };
 }
 
@@ -338,6 +356,38 @@ export function usePackBuilder(
     }));
   }, []);
 
+  const addMagicItem = useCallback((item: MagicItem): void => {
+    setState((prev) => {
+      const next = prev.magicItems.filter(
+        (existing) => existing.id !== item.id,
+      );
+      return { ...prev, magicItems: [...next, item] };
+    });
+  }, []);
+
+  const removeMagicItem = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      magicItems: prev.magicItems.filter((m) => m.id !== id),
+    }));
+  }, []);
+
+  const addMonster = useCallback((monster: Monster): void => {
+    setState((prev) => {
+      const next = prev.monsters.filter(
+        (existing) => existing.id !== monster.id,
+      );
+      return { ...prev, monsters: [...next, monster] };
+    });
+  }, []);
+
+  const removeMonster = useCallback((id: string): void => {
+    setState((prev) => ({
+      ...prev,
+      monsters: prev.monsters.filter((m) => m.id !== id),
+    }));
+  }, []);
+
   const loadFromPack = useCallback((pack: CustomContentPack): void => {
     setState(builderStateFromPack(pack));
   }, []);
@@ -367,6 +417,10 @@ export function usePackBuilder(
     removeAncestry,
     addClass,
     removeClass,
+    addMagicItem,
+    removeMagicItem,
+    addMonster,
+    removeMonster,
     loadFromPack,
     reset,
   };

@@ -480,7 +480,9 @@ function categoryKey(
   | 'customContent.category.backgrounds'
   | 'customContent.category.feats'
   | 'customContent.category.invocations'
-  | 'customContent.category.items' {
+  | 'customContent.category.items'
+  | 'customContent.category.magic-items'
+  | 'customContent.category.monsters' {
   return `customContent.category.${cat}` as const;
 }
 

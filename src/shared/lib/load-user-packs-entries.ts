@@ -18,9 +18,9 @@ import { ContentTypeSchemas, type ContentEntityByKey, type ContentTypeKey } from
  * extrait les entrées du type demandé de chaque pack, valide via Zod et
  * retourne la liste plate.
  *
- * Catégories supportées par les packs (9) : spells, classes, subclasses,
- * ancestries, subancestries, backgrounds, feats, invocations, items.
- * Pour les autres `ContentTypeKey` (monsters, magic-items, conditions,
+ * Catégories supportées par les packs (11) : spells, classes, subclasses,
+ * ancestries, subancestries, backgrounds, feats, invocations, items,
+ * magic-items, monsters. Pour les autres `ContentTypeKey` (conditions,
  * rules, summoned-creatures), la primitive retourne `[]` sans erreur —
  * un pack ne peut pas en contenir.
  *

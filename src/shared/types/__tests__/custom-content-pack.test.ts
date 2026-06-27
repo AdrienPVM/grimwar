@@ -195,7 +195,7 @@ describe('CustomContentPackSchema — duplicate id detection', () => {
 });
 
 describe('CustomContentPackSchema — categories registry', () => {
-  it('expose exactement les 9 catégories utilisateur-facing du JALON 3A', () => {
+  it('expose exactement les 11 catégories utilisateur-facing (9 JALON 3A + magic-items + monsters)', () => {
     expect(CUSTOM_CONTENT_PACK_CATEGORIES).toEqual([
       'spells',
       'classes',
@@ -206,7 +206,9 @@ describe('CustomContentPackSchema — categories registry', () => {
       'feats',
       'invocations',
       'items',
+      'magic-items',
+      'monsters',
     ]);
-    expect(CUSTOM_CONTENT_PACK_CATEGORIES).toHaveLength(9);
+    expect(CUSTOM_CONTENT_PACK_CATEGORIES).toHaveLength(11);
   });
 });

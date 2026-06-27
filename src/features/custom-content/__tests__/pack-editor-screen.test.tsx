@@ -907,6 +907,160 @@ describe("PackEditorScreen — création d'un objet (JALON 3C.7)", () => {
   });
 });
 
+describe('PackEditorScreen — création d’un objet magique (directive 2026-06-27)', () => {
+  async function selectFromCombobox(
+    user: ReturnType<typeof userEvent.setup>,
+    wrapperTestId: string,
+    optionLabel: string,
+  ): Promise<void> {
+    const wrapper = screen.getByTestId(wrapperTestId);
+    const trigger = within(wrapper).getByRole('combobox');
+    await user.click(trigger);
+    await user.click(screen.getByRole('option', { name: optionLabel }));
+  }
+
+  it('saisit méta + objet magique → save → writePack reçoit pack.entities[magic-items]', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-magique');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack magique');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-magic-item'));
+    expect(screen.getByTestId('magic-item-form')).toBeInTheDocument();
+
+    await user.type(
+      screen.getByTestId('magic-item-form-id'),
+      'epee-des-flammes',
+    );
+    await user.type(
+      screen.getByTestId('magic-item-form-name-fr'),
+      'Épée des flammes',
+    );
+    await selectFromCombobox(user, 'magic-item-form-category', 'Arme');
+    await selectFromCombobox(user, 'magic-item-form-rarity', 'Rare');
+    await user.click(screen.getByTestId('magic-item-form-attunement'));
+    await user.type(
+      screen.getByTestId('magic-item-form-magic-desc-fr'),
+      'Sur commande, la lame s’embrase (+2d6 feu).',
+    );
+    await user.click(screen.getByTestId('magic-item-form-confirm'));
+
+    expect(screen.queryByTestId('magic-item-form')).not.toBeInTheDocument();
+    const row = screen.getByTestId('pack-editor-magic-item-row');
+    expect(row).toHaveAttribute('data-item-id', 'epee-des-flammes');
+    expect(row).toHaveTextContent('Épée des flammes');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities['magic-items']).toHaveLength(1);
+    const mi = calledPack.entities['magic-items'][0];
+    expect(mi.id).toBe('epee-des-flammes');
+    expect(mi.name.fr).toBe('Épée des flammes');
+    expect(mi.category).toBe('weapon');
+    expect(mi.rarity).toBe('rare');
+    expect(mi.attunement).toBe(true);
+    expect(mi.magicDescription.fr).toBe(
+      'Sur commande, la lame s’embrase (+2d6 feu).',
+    );
+    expect(mi.description).toBeNull();
+    expect(mi.source).toBe('aidedd-homebrew');
+    // Catégorie distincte des objets « mondains » : items reste vide.
+    expect(calledPack.entities.items).toBeUndefined();
+  });
+
+  it('refuse confirm sans rareté (erreur visible, pas d’ajout)', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-magic-item'));
+    await user.type(screen.getByTestId('magic-item-form-id'), 'sans-rarete');
+    await user.type(
+      screen.getByTestId('magic-item-form-name-fr'),
+      'Sans rareté',
+    );
+    await user.click(screen.getByTestId('magic-item-form-confirm'));
+
+    expect(screen.getByTestId('magic-item-form')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('pack-editor-magic-item-row'),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('PackEditorScreen — création d’un monstre (directive 2026-06-27)', () => {
+  it('saisit méta + monstre minimal → save → writePack reçoit pack.entities.monsters', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-bestiaire');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack bestiaire');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-monster'));
+    expect(screen.getByTestId('monster-form')).toBeInTheDocument();
+
+    await user.type(
+      screen.getByTestId('monster-form-id'),
+      'gobelin-eclaireur',
+    );
+    await user.type(
+      screen.getByTestId('monster-form-name-fr'),
+      'Gobelin éclaireur',
+    );
+    await user.type(screen.getByTestId('monster-form-type'), 'humanoïde');
+    await user.type(
+      screen.getByTestId('monster-form-alignment-fr'),
+      'Neutre mauvais',
+    );
+    await user.type(screen.getByTestId('monster-form-hp-formula'), '2d6');
+
+    await user.click(screen.getByTestId('monster-form-confirm'));
+
+    expect(screen.queryByTestId('monster-form')).not.toBeInTheDocument();
+    const row = screen.getByTestId('pack-editor-monster-row');
+    expect(row).toHaveAttribute('data-item-id', 'gobelin-eclaireur');
+
+    await user.click(screen.getByTestId('pack-editor-save'));
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    expect(calledPack.entities.monsters).toHaveLength(1);
+    const mo = calledPack.entities.monsters[0];
+    expect(mo.id).toBe('gobelin-eclaireur');
+    expect(mo.name.fr).toBe('Gobelin éclaireur');
+    expect(mo.type).toBe('humanoïde');
+    expect(mo.alignment.fr).toBe('Neutre mauvais');
+    expect(mo.hp.formula).toBe('2d6');
+    expect(mo.speed).toEqual({ walk: 30 });
+    expect(mo.reactions).toBeNull();
+    expect(mo.source).toBe('aidedd-homebrew');
+  });
+
+  it('refuse confirm sans formule de PV (erreur visible, pas d’ajout)', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-monster'));
+    await user.type(screen.getByTestId('monster-form-id'), 'sans-pv');
+    await user.type(screen.getByTestId('monster-form-name-fr'), 'Sans PV');
+    await user.type(screen.getByTestId('monster-form-type'), 'bête');
+    await user.type(
+      screen.getByTestId('monster-form-alignment-fr'),
+      'Sans alignement',
+    );
+    await user.click(screen.getByTestId('monster-form-confirm'));
+
+    expect(screen.getByTestId('monster-form')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('pack-editor-monster-row'),
+    ).not.toBeInTheDocument();
+  });
+});
+
 describe("PackEditorScreen — création d'une ascendance (JALON 3C.8)", () => {
   it('saisit méta + ancestry minimale → save → writePack reçoit pack.entities.ancestries', async () => {
     const user = userEvent.setup();

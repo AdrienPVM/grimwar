@@ -48,6 +48,49 @@ function spell(id: string, name: string) {
   };
 }
 
+function magicItem(id: string, name: string) {
+  return {
+    id,
+    name: { fr: name, en: name },
+    category: 'gear' as const,
+    rarity: 'rare' as const,
+    attunement: false,
+    magicDescription: { fr: `${name} magique`, en: `magic ${name}` },
+    description: null,
+    source: 'srd-5.2.1' as const,
+  };
+}
+
+function monster(id: string, name: string) {
+  return {
+    id,
+    name: { fr: name, en: name },
+    size: 'medium' as const,
+    type: 'humanoid',
+    alignment: { fr: 'Neutre', en: 'Neutral' },
+    ac: 13,
+    acDetail: null,
+    hp: { avg: 22, formula: '4d8 + 4' },
+    speed: { walk: 30 },
+    abilities: { for: 12, dex: 14, con: 12, int: 10, sag: 11, cha: 10 },
+    saves: {},
+    skills: {},
+    resistances: [],
+    immunities: [],
+    vulnerabilities: [],
+    conditionImmunities: [],
+    senses: { passivePerception: 10 },
+    languages: [],
+    cr: 1,
+    xp: 200,
+    traits: [],
+    actions: [],
+    reactions: null,
+    legendaryActions: null,
+    source: 'srd-5.2.1' as const,
+  };
+}
+
 describe('loadUserPacksEntries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -108,11 +151,49 @@ describe('loadUserPacksEntries', () => {
     warn.mockRestore();
   });
 
-  it('retourne [] pour un type non-supporté par les packs (magic-items)', async () => {
-    const result = await loadUserPacksEntries('magic-items', 'user-1');
+  it('retourne [] pour un type non-supporté par les packs (conditions)', async () => {
+    const result = await loadUserPacksEntries('conditions', 'user-1');
     expect(result).toEqual([]);
     // Aucune query Firestore ne doit partir — économise un round-trip
     expect(mockedGetDocs).not.toHaveBeenCalled();
+  });
+
+  it('aplatit les objets magiques d’un pack (catégorie magic-items)', async () => {
+    mockedGetDocs.mockResolvedValueOnce(
+      makeSnapshot([
+        {
+          id: 'pack-a',
+          data: () => ({
+            entities: {
+              'magic-items': [magicItem('epee-flamme', 'Épée des flammes')],
+            },
+          }),
+        },
+      ]) as never,
+    );
+
+    const result = await loadUserPacksEntries('magic-items', 'user-1');
+
+    expect(result.map((m) => m.id)).toEqual(['epee-flamme']);
+    expect(result[0]?.name.fr).toBe('Épée des flammes');
+  });
+
+  it('aplatit les monstres d’un pack (catégorie monsters)', async () => {
+    mockedGetDocs.mockResolvedValueOnce(
+      makeSnapshot([
+        {
+          id: 'pack-b',
+          data: () => ({
+            entities: { monsters: [monster('gobelin-roi', 'Roi gobelin')] },
+          }),
+        },
+      ]) as never,
+    );
+
+    const result = await loadUserPacksEntries('monsters', 'user-1');
+
+    expect(result.map((m) => m.id)).toEqual(['gobelin-roi']);
+    expect(result[0]?.cr).toBe(1);
   });
 
   it('dédup in-flight : 30 appels parallèles → 1 seul getDocs', async () => {

@@ -18,6 +18,8 @@ import type {
   Feat,
   Invocation,
   Item,
+  MagicItem,
+  Monster,
   Spell,
   Subancestry,
   Subclass,
@@ -61,6 +63,18 @@ import {
   draftFromItem,
   type ItemFormDraft,
 } from './forms/item-form';
+import {
+  EMPTY_MAGIC_ITEM_DRAFT,
+  MagicItemForm,
+  draftFromMagicItem,
+  type MagicItemFormDraft,
+} from './forms/magic-item-form';
+import {
+  EMPTY_MONSTER_DRAFT,
+  MonsterForm,
+  draftFromMonster,
+  type MonsterFormDraft,
+} from './forms/monster-form';
 import {
   EMPTY_SPELL_DRAFT,
   SpellForm,
@@ -131,6 +145,14 @@ export function PackEditorScreen(): JSX.Element {
   const [isAddingSpell, setIsAddingSpell] = useState<boolean>(false);
   const [itemDraft, setItemDraft] = useState<ItemFormDraft>(EMPTY_ITEM_DRAFT);
   const [isAddingItem, setIsAddingItem] = useState<boolean>(false);
+  const [magicItemDraft, setMagicItemDraft] = useState<MagicItemFormDraft>(
+    EMPTY_MAGIC_ITEM_DRAFT,
+  );
+  const [isAddingMagicItem, setIsAddingMagicItem] = useState<boolean>(false);
+  const [monsterDraft, setMonsterDraft] = useState<MonsterFormDraft>(
+    EMPTY_MONSTER_DRAFT,
+  );
+  const [isAddingMonster, setIsAddingMonster] = useState<boolean>(false);
   const [ancestryDraft, setAncestryDraft] = useState<AncestryFormDraft>(
     EMPTY_ANCESTRY_DRAFT,
   );
@@ -300,6 +322,42 @@ export function PackEditorScreen(): JSX.Element {
     [builder, closeItemForm],
   );
 
+  const openMagicItemForm = useCallback(() => {
+    setMagicItemDraft(EMPTY_MAGIC_ITEM_DRAFT);
+    setIsAddingMagicItem(true);
+  }, []);
+
+  const closeMagicItemForm = useCallback(() => {
+    setIsAddingMagicItem(false);
+    setMagicItemDraft(EMPTY_MAGIC_ITEM_DRAFT);
+  }, []);
+
+  const confirmMagicItem = useCallback(
+    (item: MagicItem) => {
+      builder.addMagicItem(item);
+      closeMagicItemForm();
+    },
+    [builder, closeMagicItemForm],
+  );
+
+  const openMonsterForm = useCallback(() => {
+    setMonsterDraft(EMPTY_MONSTER_DRAFT);
+    setIsAddingMonster(true);
+  }, []);
+
+  const closeMonsterForm = useCallback(() => {
+    setIsAddingMonster(false);
+    setMonsterDraft(EMPTY_MONSTER_DRAFT);
+  }, []);
+
+  const confirmMonster = useCallback(
+    (monster: Monster) => {
+      builder.addMonster(monster);
+      closeMonsterForm();
+    },
+    [builder, closeMonsterForm],
+  );
+
   const openAncestryForm = useCallback(() => {
     setAncestryDraft(EMPTY_ANCESTRY_DRAFT);
     setIsAddingAncestry(true);
@@ -424,6 +482,8 @@ export function PackEditorScreen(): JSX.Element {
   const subclassCount = builder.state.subclasses.length;
   const spellCount = builder.state.spells.length;
   const itemCount = builder.state.items.length;
+  const magicItemCount = builder.state.magicItems.length;
+  const monsterCount = builder.state.monsters.length;
   const ancestryCount = builder.state.ancestries.length;
   const classCount = builder.state.classes.length;
 
@@ -1103,6 +1163,170 @@ export function PackEditorScreen(): JSX.Element {
           ) : null}
         </div>
 
+        {/* Objets magiques */}
+        <div className="mt-10" data-testid="pack-editor-magic-items">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.magic-items')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({magicItemCount})
+              </span>
+            </h3>
+            {!isAddingMagicItem ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openMagicItemForm}
+                data-testid="pack-editor-add-magic-item"
+              >
+                {t('customContent.editor.magicItems.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {magicItemCount === 0 && !isAddingMagicItem ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.magicItems.empty')}
+            </p>
+          ) : null}
+
+          {magicItemCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.magicItems.map((item) => (
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-magic-item-row"
+                  data-item-id={item.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {item.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {item.id} · {t(`rarity.${item.rarity}`)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setMagicItemDraft(draftFromMagicItem(item));
+                        setIsAddingMagicItem(true);
+                      }}
+                      data-testid="pack-editor-magic-item-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeMagicItem(item.id)}
+                      data-testid="pack-editor-magic-item-remove"
+                    >
+                      {t('customContent.editor.magicItems.remove')}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingMagicItem ? (
+            <div className="mt-5">
+              <MagicItemForm
+                draft={magicItemDraft}
+                onChange={setMagicItemDraft}
+                onConfirm={confirmMagicItem}
+                onCancel={closeMagicItemForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
+        {/* Monstres */}
+        <div className="mt-10" data-testid="pack-editor-monsters">
+          <header className="flex items-center justify-between gap-3">
+            <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
+              {t('customContent.category.monsters')}
+              <span className="ml-2 font-meta text-meta text-text-secondary">
+                ({monsterCount})
+              </span>
+            </h3>
+            {!isAddingMonster ? (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={openMonsterForm}
+                data-testid="pack-editor-add-monster"
+              >
+                {t('customContent.editor.monsters.add')}
+              </Button>
+            ) : null}
+          </header>
+
+          {monsterCount === 0 && !isAddingMonster ? (
+            <p className="mt-4 font-serif text-body-sm italic text-text-secondary">
+              {t('customContent.editor.monsters.empty')}
+            </p>
+          ) : null}
+
+          {monsterCount > 0 ? (
+            <ul className="mt-4 space-y-2">
+              {builder.state.monsters.map((monster) => (
+                <li
+                  key={monster.id}
+                  className="flex items-center justify-between gap-3 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
+                  data-testid="pack-editor-monster-row"
+                  data-item-id={monster.id}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-body text-text">
+                      {monster.name.fr}
+                    </p>
+                    <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+                      {monster.id} · {t(`size.${monster.size}`)} · FP {monster.cr}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setMonsterDraft(draftFromMonster(monster));
+                        setIsAddingMonster(true);
+                      }}
+                      data-testid="pack-editor-monster-edit"
+                    >
+                      {t('customContent.editor.entityRow.edit')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => builder.removeMonster(monster.id)}
+                      data-testid="pack-editor-monster-remove"
+                    >
+                      {t('customContent.editor.monsters.remove')}
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {isAddingMonster ? (
+            <div className="mt-5">
+              <MonsterForm
+                draft={monsterDraft}
+                onChange={setMonsterDraft}
+                onConfirm={confirmMonster}
+                onCancel={closeMonsterForm}
+              />
+            </div>
+          ) : null}
+        </div>
+
         {/* Ascendances */}
         <div className="mt-10" data-testid="pack-editor-ancestries">
           <header className="flex items-center justify-between gap-3">
@@ -1305,6 +1529,8 @@ export function PackEditorScreen(): JSX.Element {
             isAddingSubclass ||
             isAddingSpell ||
             isAddingItem ||
+            isAddingMagicItem ||
+            isAddingMonster ||
             isAddingAncestry ||
             isAddingClass
           }

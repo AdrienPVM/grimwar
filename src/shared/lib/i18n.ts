@@ -1253,6 +1253,8 @@ export type StringKey =
   | 'customContent.category.feats'
   | 'customContent.category.invocations'
   | 'customContent.category.items'
+  | 'customContent.category.magic-items'
+  | 'customContent.category.monsters'
   // Pack editor — création in-app (JALON 3C.1)
   | 'customContent.createLink'
   | 'customContent.editor.title'
@@ -1597,6 +1599,97 @@ export type StringKey =
   | 'customContent.editor.itemForm.error.strRequiredRequired'
   | 'customContent.editor.itemForm.error.propertyDuplicate'
   | 'customContent.editor.itemForm.error.propertyEmpty'
+  | 'customContent.editor.magicItems.add'
+  | 'customContent.editor.magicItems.empty'
+  | 'customContent.editor.magicItems.remove'
+  | 'customContent.editor.magicItemForm.title'
+  | 'customContent.editor.magicItemForm.id'
+  | 'customContent.editor.magicItemForm.idHelper'
+  | 'customContent.editor.magicItemForm.nameFr'
+  | 'customContent.editor.magicItemForm.nameEn'
+  | 'customContent.editor.magicItemForm.category'
+  | 'customContent.editor.magicItemForm.categoryPlaceholder'
+  | 'customContent.editor.magicItemForm.rarity'
+  | 'customContent.editor.magicItemForm.rarityPlaceholder'
+  | 'customContent.editor.magicItemForm.attunement'
+  | 'customContent.editor.magicItemForm.attunementHelper'
+  | 'customContent.editor.magicItemForm.magicDescriptionFr'
+  | 'customContent.editor.magicItemForm.magicDescriptionEn'
+  | 'customContent.editor.magicItemForm.magicDescriptionHelper'
+  | 'customContent.editor.magicItemForm.hasDescription'
+  | 'customContent.editor.magicItemForm.hasDescriptionHelper'
+  | 'customContent.editor.magicItemForm.descriptionFr'
+  | 'customContent.editor.magicItemForm.descriptionEn'
+  | 'customContent.editor.magicItemForm.cancel'
+  | 'customContent.editor.magicItemForm.confirm'
+  | 'customContent.editor.magicItemForm.error.idRequired'
+  | 'customContent.editor.magicItemForm.error.idFormat'
+  | 'customContent.editor.magicItemForm.error.nameFrRequired'
+  | 'customContent.editor.magicItemForm.error.categoryRequired'
+  | 'customContent.editor.magicItemForm.error.rarityRequired'
+  | 'customContent.editor.magicItemForm.error.magicDescriptionRequired'
+  | 'customContent.editor.monsters.add'
+  | 'customContent.editor.monsters.empty'
+  | 'customContent.editor.monsters.remove'
+  | 'customContent.editor.monsterForm.title'
+  | 'customContent.editor.monsterForm.id'
+  | 'customContent.editor.monsterForm.idHelper'
+  | 'customContent.editor.monsterForm.nameFr'
+  | 'customContent.editor.monsterForm.nameEn'
+  | 'customContent.editor.monsterForm.size'
+  | 'customContent.editor.monsterForm.type'
+  | 'customContent.editor.monsterForm.typeHelper'
+  | 'customContent.editor.monsterForm.alignmentFr'
+  | 'customContent.editor.monsterForm.alignmentEn'
+  | 'customContent.editor.monsterForm.ac'
+  | 'customContent.editor.monsterForm.hpAvg'
+  | 'customContent.editor.monsterForm.hpFormula'
+  | 'customContent.editor.monsterForm.speedLegend'
+  | 'customContent.editor.monsterForm.speedWalk'
+  | 'customContent.editor.monsterForm.speedFly'
+  | 'customContent.editor.monsterForm.speedSwim'
+  | 'customContent.editor.monsterForm.speedClimb'
+  | 'customContent.editor.monsterForm.speedBurrow'
+  | 'customContent.editor.monsterForm.abilitiesLegend'
+  | 'customContent.editor.monsterForm.sensesLegend'
+  | 'customContent.editor.monsterForm.passivePerception'
+  | 'customContent.editor.monsterForm.darkvision'
+  | 'customContent.editor.monsterForm.blindsight'
+  | 'customContent.editor.monsterForm.tremorsense'
+  | 'customContent.editor.monsterForm.truesight'
+  | 'customContent.editor.monsterForm.cr'
+  | 'customContent.editor.monsterForm.crHelper'
+  | 'customContent.editor.monsterForm.xp'
+  | 'customContent.editor.monsterForm.resistances'
+  | 'customContent.editor.monsterForm.immunities'
+  | 'customContent.editor.monsterForm.vulnerabilities'
+  | 'customContent.editor.monsterForm.conditionImmunities'
+  | 'customContent.editor.monsterForm.languages'
+  | 'customContent.editor.monsterForm.listHelper'
+  | 'customContent.editor.monsterForm.listEmpty'
+  | 'customContent.editor.monsterForm.listAdd'
+  | 'customContent.editor.monsterForm.traits'
+  | 'customContent.editor.monsterForm.traitAdd'
+  | 'customContent.editor.monsterForm.actions'
+  | 'customContent.editor.monsterForm.actionAdd'
+  | 'customContent.editor.monsterForm.reactions'
+  | 'customContent.editor.monsterForm.reactionAdd'
+  | 'customContent.editor.monsterForm.legendaryActions'
+  | 'customContent.editor.monsterForm.legendaryAdd'
+  | 'customContent.editor.monsterForm.namedEmpty'
+  | 'customContent.editor.monsterForm.namedRemove'
+  | 'customContent.editor.monsterForm.entryNameFr'
+  | 'customContent.editor.monsterForm.entryNameEn'
+  | 'customContent.editor.monsterForm.entryDescFr'
+  | 'customContent.editor.monsterForm.entryDescEn'
+  | 'customContent.editor.monsterForm.cancel'
+  | 'customContent.editor.monsterForm.confirm'
+  | 'customContent.editor.monsterForm.error.idRequired'
+  | 'customContent.editor.monsterForm.error.idFormat'
+  | 'customContent.editor.monsterForm.error.nameFrRequired'
+  | 'customContent.editor.monsterForm.error.typeRequired'
+  | 'customContent.editor.monsterForm.error.alignmentRequired'
+  | 'customContent.editor.monsterForm.error.hpFormulaRequired'
   | 'customContent.editor.ancestries.add'
   | 'customContent.editor.ancestries.empty'
   | 'customContent.editor.ancestries.remove'
@@ -3260,6 +3353,8 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.category.feats': 'Dons',
     'customContent.category.invocations': 'Invocations',
     'customContent.category.items': 'Objets',
+    'customContent.category.magic-items': 'Objets magiques',
+    'customContent.category.monsters': 'Monstres',
     // Pack editor — création in-app (JALON 3C.1)
     'customContent.createLink': 'Créer un pack sans fichier',
     'customContent.editor.title': 'Créer un pack',
@@ -3796,6 +3891,128 @@ const STRINGS: Record<Locale, Dict> = {
       'Cette propriété est déjà ajoutée.',
     'customContent.editor.itemForm.error.propertyEmpty':
       'Saisis un mot-clé non vide.',
+    // Magic item — pack editor (objets magiques, directive 2026-06-27)
+    'customContent.editor.magicItems.add': 'Ajouter un objet magique',
+    'customContent.editor.magicItems.empty':
+      'Aucun objet magique ajouté pour l’instant.',
+    'customContent.editor.magicItems.remove': 'Retirer',
+    'customContent.editor.magicItemForm.title': 'Nouvel objet magique',
+    'customContent.editor.magicItemForm.id': 'Identifiant',
+    'customContent.editor.magicItemForm.idHelper':
+      'Slug unique en minuscules (ex. epee-des-flammes).',
+    'customContent.editor.magicItemForm.nameFr': 'Nom (FR)',
+    'customContent.editor.magicItemForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.magicItemForm.category': 'Catégorie',
+    'customContent.editor.magicItemForm.categoryPlaceholder':
+      'Choisir une catégorie…',
+    'customContent.editor.magicItemForm.rarity': 'Rareté',
+    'customContent.editor.magicItemForm.rarityPlaceholder':
+      'Choisir une rareté…',
+    'customContent.editor.magicItemForm.attunement': 'Nécessite l’harmonisation',
+    'customContent.editor.magicItemForm.attunementHelper':
+      'Coché : l’objet doit être harmonisé avant de profiter de ses effets.',
+    'customContent.editor.magicItemForm.magicDescriptionFr': 'Effet magique (FR)',
+    'customContent.editor.magicItemForm.magicDescriptionEn':
+      'Effet magique (EN, optionnel)',
+    'customContent.editor.magicItemForm.magicDescriptionHelper':
+      'Décris les pouvoirs magiques de l’objet (bonus, charges, sorts…).',
+    'customContent.editor.magicItemForm.hasDescription':
+      'Ajouter une description d’ambiance',
+    'customContent.editor.magicItemForm.hasDescriptionHelper':
+      'Texte non mécanique (apparence, histoire) — optionnel.',
+    'customContent.editor.magicItemForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.magicItemForm.descriptionEn':
+      'Description (EN, optionnel)',
+    'customContent.editor.magicItemForm.cancel': 'Annuler',
+    'customContent.editor.magicItemForm.confirm': 'Confirmer l’objet magique',
+    'customContent.editor.magicItemForm.error.idRequired':
+      'L’identifiant est obligatoire.',
+    'customContent.editor.magicItemForm.error.idFormat':
+      'Slug en minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.magicItemForm.error.nameFrRequired':
+      'Le nom français est obligatoire.',
+    'customContent.editor.magicItemForm.error.categoryRequired':
+      'Choisis une catégorie.',
+    'customContent.editor.magicItemForm.error.rarityRequired':
+      'Choisis une rareté.',
+    'customContent.editor.magicItemForm.error.magicDescriptionRequired':
+      'L’effet magique est obligatoire.',
+    // Monster — pack editor (bestiaire, directive 2026-06-27)
+    'customContent.editor.monsters.add': 'Ajouter un monstre',
+    'customContent.editor.monsters.empty':
+      'Aucun monstre ajouté pour l’instant.',
+    'customContent.editor.monsters.remove': 'Retirer',
+    'customContent.editor.monsterForm.title': 'Nouveau monstre',
+    'customContent.editor.monsterForm.id': 'Identifiant',
+    'customContent.editor.monsterForm.idHelper':
+      'Slug unique en minuscules (ex. gobelin-eclaireur).',
+    'customContent.editor.monsterForm.nameFr': 'Nom (FR)',
+    'customContent.editor.monsterForm.nameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.monsterForm.size': 'Taille',
+    'customContent.editor.monsterForm.type': 'Type',
+    'customContent.editor.monsterForm.typeHelper':
+      'Catégorie de créature (ex. humanoïde, bête, mort-vivant).',
+    'customContent.editor.monsterForm.alignmentFr': 'Alignement (FR)',
+    'customContent.editor.monsterForm.alignmentEn': 'Alignement (EN, optionnel)',
+    'customContent.editor.monsterForm.ac': 'Classe d’armure',
+    'customContent.editor.monsterForm.hpAvg': 'Points de vie (moyenne)',
+    'customContent.editor.monsterForm.hpFormula': 'Formule de PV',
+    'customContent.editor.monsterForm.speedLegend': 'Vitesses (en pieds)',
+    'customContent.editor.monsterForm.speedWalk': 'Marche',
+    'customContent.editor.monsterForm.speedFly': 'Vol',
+    'customContent.editor.monsterForm.speedSwim': 'Nage',
+    'customContent.editor.monsterForm.speedClimb': 'Escalade',
+    'customContent.editor.monsterForm.speedBurrow': 'Creusement',
+    'customContent.editor.monsterForm.abilitiesLegend': 'Caractéristiques',
+    'customContent.editor.monsterForm.sensesLegend': 'Sens (en pieds)',
+    'customContent.editor.monsterForm.passivePerception': 'Perception passive',
+    'customContent.editor.monsterForm.darkvision': 'Vision dans le noir',
+    'customContent.editor.monsterForm.blindsight': 'Vision aveugle',
+    'customContent.editor.monsterForm.tremorsense': 'Perception des vibrations',
+    'customContent.editor.monsterForm.truesight': 'Vision véritable',
+    'customContent.editor.monsterForm.cr': 'Facteur de puissance',
+    'customContent.editor.monsterForm.crHelper':
+      'FP — valeurs fractionnaires possibles (0,125 = 1/8, 0,5 = 1/2).',
+    'customContent.editor.monsterForm.xp': 'Points d’expérience',
+    'customContent.editor.monsterForm.resistances': 'Résistances aux dégâts',
+    'customContent.editor.monsterForm.immunities': 'Immunités aux dégâts',
+    'customContent.editor.monsterForm.vulnerabilities': 'Vulnérabilités',
+    'customContent.editor.monsterForm.conditionImmunities':
+      'Immunités aux états',
+    'customContent.editor.monsterForm.languages': 'Langues',
+    'customContent.editor.monsterForm.listHelper':
+      'Ajoute chaque entrée puis valide — clique une étiquette pour la retirer.',
+    'customContent.editor.monsterForm.listEmpty': 'Aucune entrée.',
+    'customContent.editor.monsterForm.listAdd': 'Ajouter',
+    'customContent.editor.monsterForm.traits': 'Traits',
+    'customContent.editor.monsterForm.traitAdd': 'Ajouter un trait',
+    'customContent.editor.monsterForm.actions': 'Actions',
+    'customContent.editor.monsterForm.actionAdd': 'Ajouter une action',
+    'customContent.editor.monsterForm.reactions': 'Réactions',
+    'customContent.editor.monsterForm.reactionAdd': 'Ajouter une réaction',
+    'customContent.editor.monsterForm.legendaryActions': 'Actions légendaires',
+    'customContent.editor.monsterForm.legendaryAdd':
+      'Ajouter une action légendaire',
+    'customContent.editor.monsterForm.namedEmpty': 'Aucune entrée.',
+    'customContent.editor.monsterForm.namedRemove': 'Retirer',
+    'customContent.editor.monsterForm.entryNameFr': 'Nom (FR)',
+    'customContent.editor.monsterForm.entryNameEn': 'Nom (EN, optionnel)',
+    'customContent.editor.monsterForm.entryDescFr': 'Description (FR)',
+    'customContent.editor.monsterForm.entryDescEn': 'Description (EN, optionnel)',
+    'customContent.editor.monsterForm.cancel': 'Annuler',
+    'customContent.editor.monsterForm.confirm': 'Confirmer le monstre',
+    'customContent.editor.monsterForm.error.idRequired':
+      'L’identifiant est obligatoire.',
+    'customContent.editor.monsterForm.error.idFormat':
+      'Slug en minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.monsterForm.error.nameFrRequired':
+      'Le nom français est obligatoire.',
+    'customContent.editor.monsterForm.error.typeRequired':
+      'Le type est obligatoire.',
+    'customContent.editor.monsterForm.error.alignmentRequired':
+      'L’alignement français est obligatoire.',
+    'customContent.editor.monsterForm.error.hpFormulaRequired':
+      'La formule de PV est obligatoire.',
     // Ancestry — pack editor (JALON 3C.8)
     'customContent.editor.ancestries.add': 'Ajouter une ascendance',
     'customContent.editor.ancestries.empty':
@@ -5490,6 +5707,8 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.category.feats': 'Feats',
     'customContent.category.invocations': 'Invocations',
     'customContent.category.items': 'Items',
+    'customContent.category.magic-items': 'Magic items',
+    'customContent.category.monsters': 'Monsters',
     // Pack editor — in-app authoring (JALON 3C.1)
     'customContent.createLink': 'Author a pack without a file',
     'customContent.editor.title': 'Author a pack',
@@ -5985,6 +6204,121 @@ const STRINGS: Record<Locale, Dict> = {
       'This property is already listed.',
     'customContent.editor.itemForm.error.propertyEmpty':
       'Type a non-empty keyword.',
+    // Magic item — pack editor (directive 2026-06-27)
+    'customContent.editor.magicItems.add': 'Add a magic item',
+    'customContent.editor.magicItems.empty': 'No magic item added yet.',
+    'customContent.editor.magicItems.remove': 'Remove',
+    'customContent.editor.magicItemForm.title': 'New magic item',
+    'customContent.editor.magicItemForm.id': 'Identifier',
+    'customContent.editor.magicItemForm.idHelper':
+      'Unique lowercase slug (e.g. flame-tongue).',
+    'customContent.editor.magicItemForm.nameFr': 'Name (FR)',
+    'customContent.editor.magicItemForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.magicItemForm.category': 'Category',
+    'customContent.editor.magicItemForm.categoryPlaceholder': 'Pick a category…',
+    'customContent.editor.magicItemForm.rarity': 'Rarity',
+    'customContent.editor.magicItemForm.rarityPlaceholder': 'Pick a rarity…',
+    'customContent.editor.magicItemForm.attunement': 'Requires attunement',
+    'customContent.editor.magicItemForm.attunementHelper':
+      'Checked: the item must be attuned before its effects apply.',
+    'customContent.editor.magicItemForm.magicDescriptionFr': 'Magic effect (FR)',
+    'customContent.editor.magicItemForm.magicDescriptionEn':
+      'Magic effect (EN, optional)',
+    'customContent.editor.magicItemForm.magicDescriptionHelper':
+      'Describe the item’s magic powers (bonuses, charges, spells…).',
+    'customContent.editor.magicItemForm.hasDescription': 'Add a flavor description',
+    'customContent.editor.magicItemForm.hasDescriptionHelper':
+      'Non-mechanical text (appearance, lore) — optional.',
+    'customContent.editor.magicItemForm.descriptionFr': 'Description (FR)',
+    'customContent.editor.magicItemForm.descriptionEn':
+      'Description (EN, optional)',
+    'customContent.editor.magicItemForm.cancel': 'Cancel',
+    'customContent.editor.magicItemForm.confirm': 'Confirm magic item',
+    'customContent.editor.magicItemForm.error.idRequired':
+      'The identifier is required.',
+    'customContent.editor.magicItemForm.error.idFormat':
+      'Lowercase slug, digits and dashes only.',
+    'customContent.editor.magicItemForm.error.nameFrRequired':
+      'The French name is required.',
+    'customContent.editor.magicItemForm.error.categoryRequired':
+      'Pick a category.',
+    'customContent.editor.magicItemForm.error.rarityRequired': 'Pick a rarity.',
+    'customContent.editor.magicItemForm.error.magicDescriptionRequired':
+      'The magic effect is required.',
+    // Monster — pack editor (directive 2026-06-27)
+    'customContent.editor.monsters.add': 'Add a monster',
+    'customContent.editor.monsters.empty': 'No monster added yet.',
+    'customContent.editor.monsters.remove': 'Remove',
+    'customContent.editor.monsterForm.title': 'New monster',
+    'customContent.editor.monsterForm.id': 'Identifier',
+    'customContent.editor.monsterForm.idHelper':
+      'Unique lowercase slug (e.g. goblin-scout).',
+    'customContent.editor.monsterForm.nameFr': 'Name (FR)',
+    'customContent.editor.monsterForm.nameEn': 'Name (EN, optional)',
+    'customContent.editor.monsterForm.size': 'Size',
+    'customContent.editor.monsterForm.type': 'Type',
+    'customContent.editor.monsterForm.typeHelper':
+      'Creature category (e.g. humanoid, beast, undead).',
+    'customContent.editor.monsterForm.alignmentFr': 'Alignment (FR)',
+    'customContent.editor.monsterForm.alignmentEn': 'Alignment (EN, optional)',
+    'customContent.editor.monsterForm.ac': 'Armor class',
+    'customContent.editor.monsterForm.hpAvg': 'Hit points (average)',
+    'customContent.editor.monsterForm.hpFormula': 'HP formula',
+    'customContent.editor.monsterForm.speedLegend': 'Speeds (in feet)',
+    'customContent.editor.monsterForm.speedWalk': 'Walk',
+    'customContent.editor.monsterForm.speedFly': 'Fly',
+    'customContent.editor.monsterForm.speedSwim': 'Swim',
+    'customContent.editor.monsterForm.speedClimb': 'Climb',
+    'customContent.editor.monsterForm.speedBurrow': 'Burrow',
+    'customContent.editor.monsterForm.abilitiesLegend': 'Ability scores',
+    'customContent.editor.monsterForm.sensesLegend': 'Senses (in feet)',
+    'customContent.editor.monsterForm.passivePerception': 'Passive Perception',
+    'customContent.editor.monsterForm.darkvision': 'Darkvision',
+    'customContent.editor.monsterForm.blindsight': 'Blindsight',
+    'customContent.editor.monsterForm.tremorsense': 'Tremorsense',
+    'customContent.editor.monsterForm.truesight': 'Truesight',
+    'customContent.editor.monsterForm.cr': 'Challenge rating',
+    'customContent.editor.monsterForm.crHelper':
+      'CR — fractional values allowed (0.125 = 1/8, 0.5 = 1/2).',
+    'customContent.editor.monsterForm.xp': 'Experience points',
+    'customContent.editor.monsterForm.resistances': 'Damage resistances',
+    'customContent.editor.monsterForm.immunities': 'Damage immunities',
+    'customContent.editor.monsterForm.vulnerabilities': 'Vulnerabilities',
+    'customContent.editor.monsterForm.conditionImmunities':
+      'Condition immunities',
+    'customContent.editor.monsterForm.languages': 'Languages',
+    'customContent.editor.monsterForm.listHelper':
+      'Add each entry then confirm — click a tag to remove it.',
+    'customContent.editor.monsterForm.listEmpty': 'No entry.',
+    'customContent.editor.monsterForm.listAdd': 'Add',
+    'customContent.editor.monsterForm.traits': 'Traits',
+    'customContent.editor.monsterForm.traitAdd': 'Add a trait',
+    'customContent.editor.monsterForm.actions': 'Actions',
+    'customContent.editor.monsterForm.actionAdd': 'Add an action',
+    'customContent.editor.monsterForm.reactions': 'Reactions',
+    'customContent.editor.monsterForm.reactionAdd': 'Add a reaction',
+    'customContent.editor.monsterForm.legendaryActions': 'Legendary actions',
+    'customContent.editor.monsterForm.legendaryAdd': 'Add a legendary action',
+    'customContent.editor.monsterForm.namedEmpty': 'No entry.',
+    'customContent.editor.monsterForm.namedRemove': 'Remove',
+    'customContent.editor.monsterForm.entryNameFr': 'Name (FR)',
+    'customContent.editor.monsterForm.entryNameEn': 'Name (EN, optional)',
+    'customContent.editor.monsterForm.entryDescFr': 'Description (FR)',
+    'customContent.editor.monsterForm.entryDescEn': 'Description (EN, optional)',
+    'customContent.editor.monsterForm.cancel': 'Cancel',
+    'customContent.editor.monsterForm.confirm': 'Confirm monster',
+    'customContent.editor.monsterForm.error.idRequired':
+      'The identifier is required.',
+    'customContent.editor.monsterForm.error.idFormat':
+      'Lowercase slug, digits and dashes only.',
+    'customContent.editor.monsterForm.error.nameFrRequired':
+      'The French name is required.',
+    'customContent.editor.monsterForm.error.typeRequired':
+      'The type is required.',
+    'customContent.editor.monsterForm.error.alignmentRequired':
+      'The French alignment is required.',
+    'customContent.editor.monsterForm.error.hpFormulaRequired':
+      'The HP formula is required.',
     // Ancestry — pack editor (JALON 3C.8)
     'customContent.editor.ancestries.add': 'Add an ancestry',
     'customContent.editor.ancestries.empty': 'No ancestry added yet.',

@@ -8,6 +8,8 @@ import {
   I18nSchema,
   InvocationSchema,
   ItemSchema,
+  MagicItemSchema,
+  MonsterSchema,
   SpellSchema,
   SubancestrySchema,
   SubclassSchema,
@@ -49,11 +51,17 @@ export const CustomContentPackMetaSchema = z.object({
 export type CustomContentPackMeta = z.infer<typeof CustomContentPackMetaSchema>;
 
 /**
- * 9 catégories utilisateur-facing supportées par les packs custom V1.
+ * 11 catégories utilisateur-facing supportées par les packs custom.
  *
- * Hors V1 (3A) : `magic-items`, `monsters`, `summoned-creatures`,
- * `conditions`, `rules` — ces catégories sont MJ-only ou runtime-only et
- * seront ajoutées par un sous-jalon ultérieur si le besoin se confirme.
+ * Les 9 d'origine (3A) + `magic-items` + `monsters` ajoutées sur directive
+ * Adrien (2026-06-27 : « ajoute les objets magiques et monstres, formulaire
+ * dédié » + import exhaustif des extensions en packs privés). Les clés
+ * `magic-items` / `monsters` sont kebab-case pour COÏNCIDER avec les
+ * `ContentTypeKey` du content-loader → la fusion runtime (`pack.entities[type]`
+ * dans `load-user-packs-entries`) marche sans table de correspondance.
+ *
+ * Restent hors packs : `summoned-creatures`, `conditions`, `rules` (runtime-
+ * only / dérivées du SRD, pas du contenu créable joueur).
  *
  * Chaque tableau est `optional()` : un pack peut ne fournir qu'une seule
  * catégorie. La règle « au moins une catégorie non vide » est appliquée par
@@ -69,12 +77,14 @@ export const CustomContentPackEntitiesSchema = z.object({
   feats: z.array(FeatSchema).optional(),
   invocations: z.array(InvocationSchema).optional(),
   items: z.array(ItemSchema).optional(),
+  'magic-items': z.array(MagicItemSchema).optional(),
+  monsters: z.array(MonsterSchema).optional(),
 });
 export type CustomContentPackEntities = z.infer<
   typeof CustomContentPackEntitiesSchema
 >;
 
-/** Liste figée des 9 catégories supportées — source de vérité pour le UI / loader / tests. */
+/** Liste figée des 11 catégories supportées — source de vérité pour le UI / loader / tests. */
 export const CUSTOM_CONTENT_PACK_CATEGORIES = [
   'spells',
   'classes',
@@ -85,6 +95,8 @@ export const CUSTOM_CONTENT_PACK_CATEGORIES = [
   'feats',
   'invocations',
   'items',
+  'magic-items',
+  'monsters',
 ] as const satisfies ReadonlyArray<keyof CustomContentPackEntities>;
 export type CustomContentPackCategory =
   (typeof CUSTOM_CONTENT_PACK_CATEGORIES)[number];
