@@ -45,6 +45,26 @@ describe('<Tooltip>', () => {
     expect(btn.getAttribute('aria-describedby')).toBeNull();
   });
 
+  it('décorative : aucun câblage ARIA, la cible garde son propre nom', () => {
+    render(
+      <Tooltip label="Dépenser une utilisation" decorative>
+        <button type="button" aria-label="Dépenser">
+          −
+        </button>
+      </Tooltip>,
+    );
+    const btn = screen.getByRole('button', { name: 'Dépenser' });
+    // Pas de describedby/labelledby ajouté → pas de double annonce.
+    expect(btn.getAttribute('aria-describedby')).toBeNull();
+    expect(btn.getAttribute('aria-labelledby')).toBeNull();
+    // La bulle reste hors de l'arbre d'accessibilité mais visible au survol.
+    const tip = screen.getByRole('tooltip', { hidden: true });
+    expect(tip.getAttribute('aria-hidden')).toBe('true');
+    const wrapper = btn.parentElement as HTMLElement;
+    fireEvent.pointerEnter(wrapper, { pointerType: 'mouse' });
+    expect(tip.className).toContain('opacity-100');
+  });
+
   it("préserve un aria-label existant : retombe sur describedby même si nameTrigger", () => {
     render(
       <Tooltip label="Fermer la fenêtre" nameTrigger>

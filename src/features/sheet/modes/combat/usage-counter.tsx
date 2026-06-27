@@ -1,5 +1,6 @@
 import { type JSX } from 'react';
 
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 
 interface UsageCounterProps {
@@ -39,15 +40,17 @@ export function UsageCounter({
   return (
     <span className="flex shrink-0 items-center gap-2">
       {!readOnly && (
-        <button
-          type="button"
-          onClick={onSpend}
-          disabled={!canSpend}
-          aria-label={spendLabel}
-          className="grid size-8 place-items-center rounded-pill border border-rose/40 bg-rose/10 font-display text-[18px] font-black text-rose transition-all duration-200 ease-base hover:border-rose hover:bg-rose/20 disabled:opacity-30"
-        >
-          −
-        </button>
+        <Tooltip label={spendLabel} decorative>
+          <button
+            type="button"
+            onClick={onSpend}
+            disabled={!canSpend}
+            aria-label={spendLabel}
+            className="grid size-8 place-items-center rounded-pill border border-rose/40 bg-rose/10 font-display text-[18px] font-black text-rose transition-all duration-200 ease-base hover:border-rose hover:bg-rose/20 disabled:opacity-30"
+          >
+            −
+          </button>
+        </Tooltip>
       )}
       <span
         data-testid="usage-counter-value"
@@ -60,15 +63,17 @@ export function UsageCounter({
         <span className="text-text-tertiary"> / {max}</span>
       </span>
       {!readOnly && (
-        <button
-          type="button"
-          onClick={onRestore}
-          disabled={!canRestore}
-          aria-label={restoreLabel}
-          className="grid size-8 place-items-center rounded-pill border border-teal/40 bg-teal/10 font-display text-[18px] font-black text-teal transition-all duration-200 ease-base hover:border-teal hover:bg-teal/20 disabled:opacity-30"
-        >
-          +
-        </button>
+        <Tooltip label={restoreLabel} decorative>
+          <button
+            type="button"
+            onClick={onRestore}
+            disabled={!canRestore}
+            aria-label={restoreLabel}
+            className="grid size-8 place-items-center rounded-pill border border-teal/40 bg-teal/10 font-display text-[18px] font-black text-teal transition-all duration-200 ease-base hover:border-teal hover:bg-teal/20 disabled:opacity-30"
+          >
+            +
+          </button>
+        </Tooltip>
       )}
     </span>
   );

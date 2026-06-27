@@ -170,7 +170,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
           </button>
         </Tooltip>
       </div>
-      <Tooltip label={t('combat.hud.tip.endTurn')} placement="left">
+      <Tooltip label={t('combat.hud.tip.endTurn')}>
         <button
           type="button"
           disabled={readOnly}

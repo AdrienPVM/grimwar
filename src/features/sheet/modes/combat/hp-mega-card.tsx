@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
@@ -183,25 +184,29 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
               </span>
             </span>
             {hp.temp > 0 ? (
-              <button
-                type="button"
-                onClick={() => !readOnly && setPadIntent('temp')}
-                disabled={readOnly}
-                aria-label={`Modifier les PV temporaires (${hp.temp} actuellement)`}
-                className="inline-flex items-center gap-1.5 rounded-pill border border-amethyst/30 bg-amethyst/10 px-3 py-1 font-title text-micro font-bold uppercase text-amethyst transition-colors duration-200 ease-base hover:border-amethyst/60 hover:bg-amethyst/20 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                +{hp.temp} <span className="text-amethyst/70">PV temp.</span>
-              </button>
-            ) : (
-              !readOnly && (
+              <Tooltip label={`Modifier les PV temporaires (${hp.temp} actuellement)`} decorative>
                 <button
                   type="button"
-                  onClick={() => setPadIntent('temp')}
-                  aria-label="Ajouter des PV temporaires"
-                  className="inline-flex items-center gap-1 rounded-pill border border-white-8 bg-white/[0.02] px-3 py-1 font-title text-micro font-bold uppercase text-text-tertiary transition-colors duration-200 ease-base hover:border-amethyst/40 hover:text-amethyst"
+                  onClick={() => !readOnly && setPadIntent('temp')}
+                  disabled={readOnly}
+                  aria-label={`Modifier les PV temporaires (${hp.temp} actuellement)`}
+                  className="inline-flex items-center gap-1.5 rounded-pill border border-amethyst/30 bg-amethyst/10 px-3 py-1 font-title text-micro font-bold uppercase text-amethyst transition-colors duration-200 ease-base hover:border-amethyst/60 hover:bg-amethyst/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  + PV temp.
+                  +{hp.temp} <span className="text-amethyst/70">PV temp.</span>
                 </button>
+              </Tooltip>
+            ) : (
+              !readOnly && (
+                <Tooltip label="Ajouter des PV temporaires (tampon avant les PV)" decorative>
+                  <button
+                    type="button"
+                    onClick={() => setPadIntent('temp')}
+                    aria-label="Ajouter des PV temporaires"
+                    className="inline-flex items-center gap-1 rounded-pill border border-white-8 bg-white/[0.02] px-3 py-1 font-title text-micro font-bold uppercase text-text-tertiary transition-colors duration-200 ease-base hover:border-amethyst/40 hover:text-amethyst"
+                  >
+                    + PV temp.
+                  </button>
+                </Tooltip>
               )
             )}
           </div>
@@ -230,24 +235,36 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
 
           {/* Contrôles compacts. */}
           <div className="flex w-full max-w-[260px] items-center justify-between gap-3">
-            <button
-              type="button"
-              aria-label="Subir 1 dégât (long-press pour saisir un montant)"
-              disabled={readOnly}
-              className="h-12 flex-1 rounded-card-sm border border-crimson/40 bg-crimson/10 font-display text-[24px] font-black text-crimson transition-all duration-200 ease-base hover:border-crimson hover:bg-crimson/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-              {...minusHandlers}
+            <Tooltip
+              label="Subir 1 dégât — appui long pour saisir un montant"
+              decorative
+              className="flex-1"
             >
-              −
-            </button>
-            <button
-              type="button"
-              aria-label="Soigner de 1 PV (long-press pour saisir un montant)"
-              disabled={readOnly}
-              className="h-12 flex-1 rounded-card-sm border border-teal/40 bg-teal/10 font-display text-[24px] font-black text-teal transition-all duration-200 ease-base hover:border-teal hover:bg-teal/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-              {...plusHandlers}
+              <button
+                type="button"
+                aria-label="Subir 1 dégât (long-press pour saisir un montant)"
+                disabled={readOnly}
+                className="h-12 w-full rounded-card-sm border border-crimson/40 bg-crimson/10 font-display text-[24px] font-black text-crimson transition-all duration-200 ease-base hover:border-crimson hover:bg-crimson/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                {...minusHandlers}
+              >
+                −
+              </button>
+            </Tooltip>
+            <Tooltip
+              label="Soigner de 1 PV — appui long pour saisir un montant"
+              decorative
+              className="flex-1"
             >
-              +
-            </button>
+              <button
+                type="button"
+                aria-label="Soigner de 1 PV (long-press pour saisir un montant)"
+                disabled={readOnly}
+                className="h-12 w-full rounded-card-sm border border-teal/40 bg-teal/10 font-display text-[24px] font-black text-teal transition-all duration-200 ease-base hover:border-teal hover:bg-teal/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                {...plusHandlers}
+              >
+                +
+              </button>
+            </Tooltip>
           </div>
           <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-faint">
             Tap = ±1 · Long-press = pad numérique

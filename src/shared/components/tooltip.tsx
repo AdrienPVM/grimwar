@@ -3,6 +3,8 @@ import {
   cloneElement,
   useCallback,
   useId,
+  useLayoutEffect,
+  useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -48,6 +50,13 @@ interface TooltipProps {
    * le nom accessible. Ignoré si la cible a déjà son propre `aria-label`/`-labelledby`.
    */
   nameTrigger?: boolean;
+  /**
+   * `true` quand la cible porte DÉJÀ son propre nom accessible (`aria-label`) et
+   * que l'infobulle n'est qu'un rappel visuel au survol : aucun câblage ARIA
+   * (ni describedby ni labelledby), la bulle reste hors de l'arbre d'accessibilité
+   * → évite la double annonce « nom + description identique » par le lecteur d'écran.
+   */
+  decorative?: boolean;
   /** Classes supplémentaires sur l'enveloppe (ex. `w-full`). */
   className?: string;
   /** Cible unique : un élément focusable/survolable (bouton, lien…). */
@@ -70,11 +79,34 @@ export function Tooltip({
   label,
   placement = 'top',
   nameTrigger = false,
+  decorative = false,
   className,
   children,
 }: TooltipProps): JSX.Element {
   const id = useId();
   const [open, setOpen] = useState(false);
+  const bubbleRef = useRef<HTMLSpanElement>(null);
+  // Décalage horizontal correctif pour garder la bulle dans le viewport (pas de
+  // dépendance type floating-ui : on mesure et on recale au moment de l'ouverture).
+  const [shiftX, setShiftX] = useState(0);
+
+  // Mesure APRÈS layout, AVANT peinture (pas de flash) : si la bulle déborde un
+  // bord du viewport, on la repousse vers l'intérieur via `marginLeft` (qui ne
+  // rentre pas en conflit avec les `transform` de placement/scale de Tailwind).
+  useLayoutEffect(() => {
+    if (!open) {
+      setShiftX(0);
+      return;
+    }
+    const el = bubbleRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const margin = 8;
+    const vw = window.innerWidth;
+    if (rect.left < margin) setShiftX(margin - rect.left);
+    else if (rect.right > vw - margin) setShiftX(vw - margin - rect.right);
+    else setShiftX(0);
+  }, [open]);
 
   const show = useCallback(() => {
     setOpen(true);
@@ -101,10 +133,12 @@ export function Tooltip({
   const hasOwnName =
     childAria['aria-label'] != null || childAria['aria-labelledby'] != null;
 
-  // Infobulle = nom (labelledby) seulement si la cible n'a pas déjà un nom propre ;
-  // sinon elle reste une simple description (describedby).
-  const ariaPatch: TriggerAria =
-    nameTrigger && !hasOwnName
+  // Décorative : aucune retouche ARIA (la cible garde son propre nom).
+  // Sinon : infobulle = nom (labelledby) si la cible n'a pas déjà un nom propre,
+  // ou simple description (describedby) dans tous les autres cas.
+  const ariaPatch: TriggerAria = decorative
+    ? {}
+    : nameTrigger && !hasOwnName
       ? { 'aria-labelledby': mergeIds(childAria['aria-labelledby'], id) }
       : { 'aria-describedby': mergeIds(childAria['aria-describedby'], id) };
 
@@ -121,14 +155,19 @@ export function Tooltip({
     >
       {trigger}
       <span
+        ref={bubbleRef}
         role="tooltip"
         id={id}
-        // Hors de l'arbre d'accessibilité quand l'infobulle est fermée, SAUF si
-        // elle sert de nom (labelledby/aria-hidden ne doivent pas se masquer
-        // mutuellement — labelledby lit le texte quelle que soit la visibilité).
-        aria-hidden={nameTrigger ? undefined : !open}
+        style={shiftX !== 0 ? { marginLeft: `${shiftX}px` } : undefined}
+        // Décorative → toujours hors de l'arbre d'accessibilité (le nom vit sur
+        // la cible). Sinon hors arbre quand fermée, SAUF si l'infobulle sert de
+        // nom (labelledby lit le texte quelle que soit la visibilité).
+        aria-hidden={decorative ? true : nameTrigger ? undefined : !open}
         className={cn(
-          'pointer-events-none absolute z-50 max-w-[16rem] whitespace-normal text-balance',
+          // `w-max` : la bulle se dimensionne à son contenu (borné par max-w),
+          // sinon une cible étroite (− / +) clampe la largeur en « shrink-to-fit »
+          // et le texte s'empile sur trop de lignes.
+          'pointer-events-none absolute z-50 w-max max-w-[16rem] whitespace-normal text-balance',
           'rounded-card-sm border border-gold-dim/40 bg-[#1a1410]/95 px-2.5 py-1.5',
           'text-center font-sans text-body-sm font-medium normal-case tracking-normal text-text',
           'shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm',

@@ -103,6 +103,21 @@ describe('<HpMegaCard> — pastille d\'état', () => {
   });
 });
 
+describe('<HpMegaCard> — infobulles explicites des contrôles', () => {
+  it('les boutons − / + portent une infobulle qui explique le geste (appui long)', () => {
+    render(<HpMegaCard character={buildCharacter({ current: 12, max: 24, temp: 0 })} readOnly={false} />);
+    const tips = screen.getAllByRole('tooltip', { hidden: true }).map((el) => el.textContent ?? '');
+    expect(tips).toContain('Subir 1 dégât — appui long pour saisir un montant');
+    expect(tips).toContain('Soigner de 1 PV — appui long pour saisir un montant');
+  });
+
+  it('le bouton « + PV temp. » explique le tampon avant les PV', () => {
+    render(<HpMegaCard character={buildCharacter({ current: 12, max: 24, temp: 0 })} readOnly={false} />);
+    const tips = screen.getAllByRole('tooltip', { hidden: true }).map((el) => el.textContent ?? '');
+    expect(tips).toContain('Ajouter des PV temporaires (tampon avant les PV)');
+  });
+});
+
 describe('<HpMegaCard> — anti-régression « barre de vie »', () => {
   it('ne contient aucune jauge de fond (ni largeur en %, ni dégradé horizontal)', () => {
     const { container } = render(

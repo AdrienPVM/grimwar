@@ -90,6 +90,22 @@ test.describe('UAT infobulles — Battle HUD', () => {
       'Taper la pastille « Action » doit la marquer comme utilisée (clic non avalé par le Tooltip).',
     ).toHaveAttribute('aria-pressed', 'true');
 
+    // ── Infobulle décorative sur le bouton − de Vitalité (PV). Décorative =
+    //    toujours aria-hidden (le nom vit sur le bouton) → on détecte l'ouverture
+    //    par la classe opacity-100, pas par l'exposition ARIA.
+    const minusTip = page
+      .locator('[role="tooltip"]')
+      .filter({ hasText: /Subir 1 dégât/i });
+    await page.getByRole('button', { name: /^Subir 1 dégât/i }).hover();
+    await expect(
+      minusTip,
+      "Au survol du bouton −, l'infobulle de dégâts doit s'ouvrir (opacity-100).",
+    ).toHaveClass(/opacity-100/);
+    writeFileSync(
+      path.join(UAT_DIR, '04-vitalite-infobulle-degats-viewport.png'),
+      await page.screenshot({ fullPage: false, animations: 'disabled' }),
+    );
+
     // ── Baseline pleine page (aucun survol) : prouve que rien n'a cassé ailleurs.
     await page.mouse.move(0, 0);
     writeFileSync(
