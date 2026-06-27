@@ -84,28 +84,36 @@ export function SecretRollButton(): JSX.Element {
           className="w-16 rounded-card-sm border border-white-8 bg-ink/40 px-2 py-1 text-center font-display text-[16px] font-semibold text-gold-bright outline-none focus:border-gold"
           aria-label={t('dm.secretRoll.modLabel')}
         />
-        <div role="radiogroup" aria-label={t('dm.secretRoll.advantageAria')} className="ml-auto flex gap-1.5">
-          {(['normal', 'advantage', 'disadvantage'] as const).map((mode) => {
-            const isActive = mode === advantage;
-            return (
-              <button
-                key={mode}
-                role="radio"
-                aria-checked={isActive}
-                type="button"
-                onClick={() => setAdvantage(mode)}
-                className={cn(
-                  'rounded-pill border px-2.5 py-1 font-title text-[9px] font-bold uppercase tracking-[0.16em] transition-colors duration-150',
-                  isActive
-                    ? 'border-gold bg-gold/15 text-gold-bright'
-                    : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-soft hover:text-text-secondary',
-                )}
-              >
-                {t(ADV_LABEL[mode])}
-              </button>
-            );
-          })}
-        </div>
+      </div>
+
+      {/* Mode du jet — rangée dédiée pleine largeur : les 3 boutons se partagent
+          la largeur (flex-1) pour ne jamais déborder du panneau, même sur une
+          colonne mobile étroite où « Désavantage » sortait du bloc. */}
+      <div
+        role="radiogroup"
+        aria-label={t('dm.secretRoll.advantageAria')}
+        className="flex gap-1.5"
+      >
+        {(['normal', 'advantage', 'disadvantage'] as const).map((mode) => {
+          const isActive = mode === advantage;
+          return (
+            <button
+              key={mode}
+              role="radio"
+              aria-checked={isActive}
+              type="button"
+              onClick={() => setAdvantage(mode)}
+              className={cn(
+                'flex-1 rounded-pill border px-2 py-1.5 text-center font-title text-[9px] font-bold uppercase tracking-[0.14em] transition-colors duration-150',
+                isActive
+                  ? 'border-gold bg-gold/15 text-gold-bright'
+                  : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-soft hover:text-text-secondary',
+              )}
+            >
+              {t(ADV_LABEL[mode])}
+            </button>
+          );
+        })}
       </div>
 
       {/* Bouton roll */}

@@ -60,6 +60,36 @@ test.describe('UAT — Outils du meneur (détail campagne)', () => {
     await expect(region.getByRole('heading', { name: 'Outils du meneur' })).toBeVisible();
     await captureFull(page, '01-outils-meneur-section.png');
 
+    // Garde-fou de mise en page (régression « les 3 boutons sortent du bloc ») :
+    // sur la colonne mobile (Pixel 7), Normal/Avantage/Désavantage doivent
+    // rester DANS le panneau « Jet secret ». On compare le bord droit de chaque
+    // bouton de mode au bord droit du panneau qui le contient. Sur l'ancienne
+    // mise en page (label + input + 3 pastilles sur une seule rangée non
+    // wrappée), « Désavantage » débordait → assertion rouge.
+    const secretPanel = page
+      .locator('div')
+      .filter({ has: page.getByRole('heading', { name: 'Jet secret' }) })
+      .filter({ has: page.getByRole('radiogroup', { name: 'Mode du jet' }) })
+      .last();
+    const panelBox = await secretPanel.boundingBox();
+    expect(panelBox, 'le panneau Jet secret doit être mesurable').not.toBeNull();
+    const modeButtons = secretPanel.getByRole('radio');
+    await expect(modeButtons).toHaveCount(3);
+    const buttonCount = await modeButtons.count();
+    for (let i = 0; i < buttonCount; i++) {
+      const box = await modeButtons.nth(i).boundingBox();
+      expect(box, `le bouton de mode #${i} doit être mesurable`).not.toBeNull();
+      if (!box || !panelBox) continue;
+      // +1 px de tolérance pour les bordures sub-pixel.
+      expect(box.x + box.width).toBeLessThanOrEqual(panelBox.x + panelBox.width + 1);
+      expect(box.x).toBeGreaterThanOrEqual(panelBox.x - 1);
+    }
+    await captureFull(page, '03-jet-secret-mode-dans-le-bloc.png');
+    // Crop serré du panneau : on voit d'un coup d'œil que les 3 boutons de
+    // mode tiennent dans le bloc (le débordement signalé est réglé).
+    mkdirSync(UAT_DIR, { recursive: true });
+    await secretPanel.screenshot({ path: path.join(UAT_DIR, '04-jet-secret-panneau-crop.png') });
+
     // Bloc-notes : on saisit du texte → il persiste localement.
     const notes = region.getByRole('textbox', { name: /bloc-notes|notes/i }).first();
     await notes.fill('Le baron cache une dette de jeu envers la guilde des voleurs.');

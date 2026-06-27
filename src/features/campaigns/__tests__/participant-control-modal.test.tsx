@@ -193,6 +193,7 @@ describe('<ParticipantControlModal>', () => {
     // Bloc de stats ouvert : eyebrow + CA + PV + trait/action EXACTS (pas présence).
     const dialogs = screen.getAllByRole('dialog');
     const statDialog = dialogs[dialogs.length - 1];
+    if (!statDialog) throw new Error('La fiche de créature (dialog) est absente du DOM.');
     expect(within(statDialog).getByText('Petite · humanoïde · FP 1/4')).toBeInTheDocument();
     expect(within(statDialog).getByText(/15/)).toBeInTheDocument();
     expect(within(statDialog).getByText(/7 \(2d6\)/)).toBeInTheDocument();
