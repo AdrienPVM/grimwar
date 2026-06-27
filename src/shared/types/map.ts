@@ -64,6 +64,17 @@ export const mapTokenSchema = z.object({
    * (phase E). Défaut conventionnel 30 ft (vision normale en lumière vive).
    */
   visionRadius: z.number().int().nonnegative().optional(),
+  /**
+   * Portrait du jeton en data URL base64 (webp/jpeg), OPTIMISÉ (recadré disque
+   * ≤192 px, budget ~32 Ko via `PORTRAIT_PRESET`) AVANT écriture — cf.
+   * `@/shared/lib/image-optimize`. Stocké INLINE sur le doc du jeton pour la
+   * synchro cross-device (vue live MJ ↔ vue TV ↔ autres appareils), conformément
+   * à la décision « base64-dans-Firestore pour les portraits » (Adrien
+   * 2026-06-27). Borné à ~32 Ko → très loin de la limite de 1 Mio d'un doc, et
+   * `updateToken` écrit en partiel (un déplacement ne ré-envoie PAS l'image).
+   * `null`/absent = pas de portrait → repli sur le disque coloré.
+   */
+  imageDataUrl: z.string().nullable().optional(),
   /** Last-write-wins via serverTimestamp côté client. */
   updatedAt: z.unknown(), // Firestore Timestamp — typage opaque pour éviter dépendance SDK ici
   updatedBy: z.string(),

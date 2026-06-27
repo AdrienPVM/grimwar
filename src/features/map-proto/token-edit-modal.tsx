@@ -85,8 +85,9 @@ interface Props {
   /** Ferme sans rien changer. */
   onClose: () => void;
   /**
-   * Portrait local courant (data URL) ou `null`. Affiché en vignette ronde.
-   * Stocké localement (IndexedDB), pas sur le doc Firestore du jeton.
+   * Portrait courant (data URL base64) ou `null`. Affiché en vignette ronde.
+   * Persisté INLINE sur le doc Firestore du jeton (`imageDataUrl`, optimisé
+   * ≤32 Ko) → synchronisé cross-device.
    */
   imageUrl?: string | null;
   /**
@@ -94,7 +95,7 @@ interface Props {
    * absent, la section « Portrait » n'est pas rendue (capacité non câblée).
    */
   onUploadImage?: (dataUrl: string) => void;
-  /** Retire le portrait local. Rendu seulement si `onUploadImage` est fourni. */
+  /** Retire le portrait du jeton. Rendu seulement si `onUploadImage` est fourni. */
   onRemoveImage?: () => void;
 }
 
@@ -160,7 +161,7 @@ function TokenEditForm({
   );
   // État LOCAL de l'upload de portrait : `busy` pendant le décodage/redim, et
   // message d'erreur FR adjacent au champ. Le portrait lui-même vient de la prop
-  // `imageUrl` (source = IndexedDB côté parent), jamais d'un state local.
+  // `imageUrl` (source = doc Firestore côté parent), jamais d'un state local.
   const [imageBusy, setImageBusy] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const titleId = useId();
@@ -279,8 +280,8 @@ function TokenEditForm({
             </p>
           )}
           <p className="font-serif text-meta italic text-text-faint">
-            Stockée sur cet appareil (recadrée en rond). La synchro vers les
-            autres écrans viendra plus tard.
+            Recadrée en rond et optimisée, puis synchronisée sur tous les écrans
+            (vue TV, autres appareils).
           </p>
         </div>
       )}

@@ -483,6 +483,20 @@ MJ uniquement (cf. `firestore.rules`).
 > Survit au reload, pas de synchro cross-device tant que Storage n'est pas tranché.
 > `imageUrl` reste `null` pour ces cartes ; murs/lumières/grille (eux, légers) sont
 > bien persistés Firestore.
+>
+> **Portrait de jeton `imageDataUrl` (Adrien 2026-06-27) — ADDITIF, OPTIONNEL,
+> base64 INLINE sur le doc du jeton.** Champ `imageDataUrl: string | null` sur
+> `tokens/{tid}`. Contrairement au fond de carte, un portrait est minuscule :
+> l'optimiseur central (`@/shared/lib/image-optimize`, `PORTRAIT_PRESET`) le
+> recadre en disque ≤ 192 px et borne la chaîne base64 à ~32 Ko AVANT écriture —
+> très loin de la limite de 1 Mio d'un doc. Stocké inline (et non en IndexedDB)
+> POUR la synchro cross-device (vue live MJ ↔ vue TV ↔ autres appareils), décision
+> « base64-dans-Firestore pour les portraits ». **Pas de bump `schemaVersion`**
+> (champ optionnel, un token sans portrait parse toujours), **pas de nouvelle
+> rule** (`update` token déjà MJ-only, sans liste blanche de champs). `updateToken`
+> écrit en PARTIEL → un déplacement de jeton ne ré-envoie jamais l'image. Garde-fou
+> client : refus dur d'une chaîne > 700 Ko (cas pathologique sans canvas). La table
+> Dexie `tokenImages` n'est plus alimentée (héritage, conservée sans migration).
 
 ### `campaigns/{campaignId}/handouts/{handoutId}` (S3, plan 27)
 

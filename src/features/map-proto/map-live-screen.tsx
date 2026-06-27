@@ -43,14 +43,8 @@ import {
   type Ruler,
 } from './ruler-state';
 import { TokenEditModal } from './token-edit-modal';
-import {
-  deleteTokenImage,
-  deleteTokenImagesForMap,
-  saveTokenImage,
-} from './token-image-store';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
-import { useTokenImages } from './use-token-images';
 
 /**
  * Vue live de carte côté MJ (CHANTIER D phase 2, tracer D.4).
@@ -90,6 +84,13 @@ const TOKEN_VISION_FT = 30; // vision normale par défaut (alimente la LOS)
 // un TAP (→ ouvre l'éditeur) plutôt qu'un drag (→ déplace + persiste). Un vrai
 // déplacement franchit largement ce seuil ; un appui « sur place » reste dessous.
 const TOKEN_TAP_THRESHOLD_PX = 6;
+/**
+ * Plafond dur de la chaîne base64 d'un portrait écrite sur le doc Firestore
+ * (~700 Ko < limite de 1 Mio d'un doc, marge pour les autres champs). Le preset
+ * portrait vise ~32 Ko : ce garde-fou n'attrape qu'un cas pathologique (canvas
+ * indisponible → image brute via le repli de l'optimiseur).
+ */
+const MAX_TOKEN_PORTRAIT_BYTES = 700 * 1024;
 
 // Dimensions par défaut SRD (en PIEDS — le schéma `AoeTemplate.dimensions` est
 // canonique en pieds, converti en px au rendu). Une forme = un sort SRD témoin :
@@ -142,9 +143,6 @@ export function MapLiveScreen(): JSX.Element {
   const { user, isReady } = useAuth();
   const { map, tokens, isLoading, error } = useMap(cid, mid);
   const { localImageUrl } = useMapImage(cid, mid);
-  // Portraits locaux des jetons (IndexedDB). `reloadTokenImages` re-lit après
-  // un upload / retrait / clear (la source est hors React).
-  const { tokenImages, reloadTokenImages } = useTokenImages(cid, mid);
   const [localPositions, setLocalPositions] = useState<
     Record<string, { x: number; y: number }>
   >({});
@@ -672,15 +670,13 @@ export function MapLiveScreen(): JSX.Element {
   const handleClearTokens = useCallback(async (): Promise<void> => {
     if (!cid || !mid) return;
     try {
+      // Le portrait vit sur le doc du jeton → supprimé avec lui (rien à purger).
       await Promise.all(tokens.map((tk) => deleteToken(cid, mid, tk.id)));
-      // Purge les portraits locaux des jetons effacés (sinon orphelins Dexie).
-      await deleteTokenImagesForMap(cid, mid);
-      reloadTokenImages();
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
     }
-  }, [cid, mid, tokens, reloadTokenImages]);
+  }, [cid, mid, tokens]);
 
   // ── Édition d'un jeton (nom + couleur + suppression unitaire) ──────────
   const handleSaveToken = useCallback(
@@ -707,42 +703,52 @@ export function MapLiveScreen(): JSX.Element {
     if (!tokenId || !cid || !mid) return;
     setEditingTokenId(null);
     try {
+      // Le portrait vit INLINE sur le doc → supprimé avec le jeton.
       await deleteToken(cid, mid, tokenId);
-      // Le portrait local n'a plus de jeton à habiller → on le purge.
-      await deleteTokenImage(cid, mid, tokenId);
-      reloadTokenImages();
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
     }
-  }, [cid, editingTokenId, mid, reloadTokenImages]);
+  }, [cid, editingTokenId, mid]);
 
-  // ── Portrait d'un jeton (image locale, IndexedDB) ──────────────────────
-  // Le data URL arrive DÉJÀ redimensionné par la modale (`fileToTokenImage`).
-  // On le persiste sous l'`id` du jeton édité — aucun champ ajouté au doc
-  // Firestore (cf. `token-image-store.ts`). La modale reste ouverte : le MJ voit
-  // la vignette se mettre à jour (la prop `imageUrl` suit `tokenImages`).
+  // ── Portrait d'un jeton (base64 INLINE sur le doc → synchro cross-device) ──
+  // Le data URL arrive DÉJÀ optimisé par la modale (`fileToTokenImage` →
+  // `PORTRAIT_PRESET`, recadré disque ≤192 px, budget ~32 Ko). On l'écrit sur le
+  // doc du jeton via `updateToken` (écriture PARTIELLE : un déplacement ne
+  // ré-envoie pas l'image). La vue TV + les autres appareils le reçoivent par
+  // le listener `useMap`. Garde-fou dur : on refuse une chaîne anormalement
+  // lourde (canvas indisponible → image brute) pour ne JAMAIS approcher la
+  // limite de 1 Mio d'un doc Firestore.
   const handleUploadTokenImage = useCallback(
     async (dataUrl: string): Promise<void> => {
       const tokenId = editingTokenId;
-      if (!tokenId || !cid || !mid) return;
+      if (!tokenId || !cid || !mid || !user) return;
+      if (dataUrl.length > MAX_TOKEN_PORTRAIT_BYTES) {
+        setWriteError(
+          'Portrait trop lourd à synchroniser. Réessaie avec une image plus simple.',
+        );
+        return;
+      }
       try {
-        await saveTokenImage(cid, mid, tokenId, dataUrl);
-        reloadTokenImages();
+        await updateToken(cid, mid, tokenId, { imageDataUrl: dataUrl }, user.uid);
         setWriteError(null);
       } catch (err: unknown) {
         setWriteError(err instanceof Error ? err.message : String(err));
       }
     },
-    [cid, editingTokenId, mid, reloadTokenImages],
+    [cid, editingTokenId, mid, user],
   );
 
   const handleRemoveTokenImage = useCallback(async (): Promise<void> => {
     const tokenId = editingTokenId;
-    if (!tokenId || !cid || !mid) return;
-    await deleteTokenImage(cid, mid, tokenId);
-    reloadTokenImages();
-  }, [cid, editingTokenId, mid, reloadTokenImages]);
+    if (!tokenId || !cid || !mid || !user) return;
+    try {
+      await updateToken(cid, mid, tokenId, { imageDataUrl: null }, user.uid);
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, editingTokenId, mid, user]);
 
   // Duplique le jeton en cours d'édition (gain de temps majeur pour poser une
   // meute : un gobelin → « Dupliquer » ×4). Copie kind/label/couleur/vision,
@@ -775,20 +781,17 @@ export function MapLiveScreen(): JSX.Element {
           ...(src.visionRadius != null
             ? { visionRadius: src.visionRadius }
             : {}),
+          // Le portrait vit sur le doc → recopié en une seule écriture (meute :
+          // on dessine le gobelin une fois, chaque « Dupliquer » garde l'art).
+          ...(src.imageDataUrl ? { imageDataUrl: src.imageDataUrl } : {}),
         },
         user.uid,
       );
-      // Recopie le portrait local de la source sur le clone, s'il en a un.
-      const srcImage = tokenImages.get(src.id);
-      if (srcImage) {
-        await saveTokenImage(cid, mid, cloneId, srcImage);
-        reloadTokenImages();
-      }
       setWriteError(null);
     } catch (err: unknown) {
       setWriteError(err instanceof Error ? err.message : String(err));
     }
-  }, [cid, mid, user, map, tokens, editingTokenId, tokenImages, reloadTokenImages]);
+  }, [cid, mid, user, map, tokens, editingTokenId]);
 
   if (!cid || !mid) {
     return (
@@ -1288,7 +1291,7 @@ export function MapLiveScreen(): JSX.Element {
           {tokens.map((token) => {
             const pos = positionOf(token);
             const isDragging = draggingTokenId === token.id;
-            const portrait = tokenImages.get(token.id);
+            const portrait = token.imageDataUrl ?? undefined;
             const clipId = `live-tok-clip-${token.id}`;
             return (
               <g
@@ -1412,7 +1415,7 @@ export function MapLiveScreen(): JSX.Element {
 
       <TokenEditModal
         token={editingToken}
-        imageUrl={editingToken ? (tokenImages.get(editingToken.id) ?? null) : null}
+        imageUrl={editingToken ? (editingToken.imageDataUrl ?? null) : null}
         onClose={() => setEditingTokenId(null)}
         onSave={(patch) => {
           void handleSaveToken(patch);

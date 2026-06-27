@@ -132,12 +132,20 @@ test.describe('UAT — portrait de jeton (carte live + TV)', () => {
       fullPage: true,
     });
 
-    // ── Vue TV : même navigateur → même IndexedDB → portraits rendus ─────
+    // ── Vue TV : preuve de SYNCHRO via Firestore ─────────────────────────
+    // Le portrait vit désormais sur le doc Firestore (base64 optimisé). La vue
+    // TV ne lit PLUS du tout IndexedDB (le hook local a été retiré) : elle rend
+    // exclusivement `token.imageDataUrl` reçu par le listener `useMap`. Donc si
+    // le portrait s'affiche ici, il vient nécessairement de Firestore — et se
+    // synchroniserait à l'identique sur un autre appareil membre de la campagne.
     await page.goto(`/map-proto/cloud/${cid}/maps/${mapSlug}/tv`);
     await waitForAppReady(page);
-    await expect(
-      page.locator('[data-testid^="map-tv-token-image-"]').first(),
-    ).toBeVisible({ timeout: 10_000 });
+    const tvImage = page.locator('[data-testid^="map-tv-token-image-"]').first();
+    await expect(tvImage).toBeVisible({ timeout: 10_000 });
+    // Le href est bien un data URL base64 (le portrait du doc), pas un blob local.
+    await expect(tvImage).toHaveAttribute('href', /^data:image\//, {
+      timeout: 10_000,
+    });
 
     // 05 — portraits projetés sur la vue présentation/TV (pleine page).
     await page.screenshot({

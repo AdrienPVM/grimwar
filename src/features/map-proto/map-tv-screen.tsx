@@ -8,7 +8,6 @@ import { MapScene } from './map-scene';
 import { MAP_VIEWBOX_H, MAP_VIEWBOX_W } from './map-viewport';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
-import { useTokenImages } from './use-token-images';
 
 /**
  * Vue présentation / TV (capacité titre du plan 33). Route
@@ -33,11 +32,6 @@ export function MapTvScreen(): JSX.Element {
   const { isReady } = useAuth();
   const { map, tokens, isLoading, error } = useMap(cid, mid);
   const { localImageUrl } = useMapImage(cid, mid);
-  // Portraits locaux (IndexedDB). Présents si la TV tourne dans le MÊME
-  // navigateur que la vue MJ ; sinon retombe proprement sur le disque coloré
-  // (la synchro cross-device viendra avec Firebase Storage).
-  const { tokenImages } = useTokenImages(cid, mid);
-
   if (!cid || !mid) {
     return (
       <Centered testid="map-tv-missing-params">
@@ -94,7 +88,7 @@ export function MapTvScreen(): JSX.Element {
           fogOpacity={TV_FOG_OPACITY}
         />
         {tokens.map((token: MapToken) => {
-          const portrait = tokenImages.get(token.id);
+          const portrait = token.imageDataUrl ?? undefined;
           const clipId = `tv-tok-clip-${token.id}`;
           return (
             <g key={token.id} data-testid={`map-tv-token-${token.id}`}>

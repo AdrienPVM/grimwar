@@ -3,13 +3,7 @@ import { type JSX } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { db } from '@/shared/lib/dexie-db';
 import type { MapMeta, MapToken } from '@/shared/types/map';
-
-import {
-  loadTokenImagesForMap,
-  saveTokenImage,
-} from '../token-image-store';
 
 /**
  * Tests pour MapLiveScreen (CHANTIER D tracer D.4).
@@ -221,9 +215,6 @@ beforeEach(async () => {
   mockCreateTokenWithId.mockReset().mockResolvedValue('token-new');
   mockDeleteToken.mockReset().mockResolvedValue(undefined);
   installSvgStubs();
-  // Portraits = vraie table Dexie (fake-indexeddb), pas mockée. On la vide
-  // entre tests pour éviter toute fuite d'état (les portraits chargent en async).
-  await db.tokenImages.clear();
 });
 
 afterEach(() => {
@@ -1149,28 +1140,26 @@ describe('MapLiveScreen', () => {
     expect(screen.queryByTestId('map-live-aoe-selection')).toBeNull();
   });
 
-  // ── Portrait de jeton (image locale IndexedDB) ─────────────────────────
+  // ── Portrait de jeton (base64 INLINE sur le doc → synchro cross-device) ──
 
-  it('rend un portrait <image> (recadré en disque) pour un jeton qui en a un', async () => {
+  it('rend un portrait <image> (recadré en disque) à partir de token.imageDataUrl', () => {
     const portrait = 'data:image/webp;base64,PORTRAIT';
-    await saveTokenImage('camp-1', 'm-1', 't1', portrait);
-    useMapState.tokens = [mkToken({ id: 't1' })];
+    useMapState.tokens = [mkToken({ id: 't1', imageDataUrl: portrait })];
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
-    // Le hook charge le portrait en async → on attend l'<image>.
-    const img = await screen.findByTestId('map-live-token-image-t1');
+    // Plus d'async : le portrait vient du doc (listener), pas d'IndexedDB.
+    const img = screen.getByTestId('map-live-token-image-t1');
     expect(img.getAttribute('href')).toBe(portrait);
     expect(img.getAttribute('clip-path')).toBe('url(#live-tok-clip-t1)');
     // Le disque coloré « plein » + le label centré sont remplacés (portrait).
     expect(screen.queryByText('PJ-1')).toBeNull();
   });
 
-  it('Dupliquer recopie le portrait local sur le clone (meute)', async () => {
+  it('Dupliquer recopie le portrait dans l’input du clone (une seule écriture)', async () => {
     const portrait = 'data:image/webp;base64,GOBELIN';
-    await saveTokenImage('camp-1', 'm-1', 't1', portrait);
-    useMapState.tokens = [mkToken({ id: 't1', label: 'Gobelin' })];
+    useMapState.tokens = [
+      mkToken({ id: 't1', label: 'Gobelin', imageDataUrl: portrait }),
+    ];
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
-    // Attend que le portrait de la source soit chargé avant de dupliquer.
-    await screen.findByTestId('map-live-token-image-t1');
 
     const tokenG = screen.getByTestId('map-live-token-image-t1');
     firePointer(tokenG, 'pointerdown', 200, 200);
@@ -1180,12 +1169,34 @@ describe('MapLiveScreen', () => {
     await waitFor(() => {
       expect(mockCreateTokenWithId).toHaveBeenCalledTimes(1);
     });
-    // Le portrait a été recopié : 2 entrées en IndexedDB, même data URL.
-    await waitFor(async () => {
-      const images = await loadTokenImagesForMap('camp-1', 'm-1');
-      expect(images.size).toBe(2);
+    // Le portrait est passé DANS l'input de création (recopié en 1 write,
+    // pas un second write d'image) — preuve de la synchro inline sur le doc.
+    const [, , , input] = mockCreateTokenWithId.mock.calls[0]!;
+    expect((input as { imageDataUrl?: string }).imageDataUrl).toBe(portrait);
+  });
+
+  it('retirer le portrait écrit imageDataUrl:null sur le doc (updateToken partiel)', async () => {
+    const portrait = 'data:image/webp;base64,AEFFACER';
+    useMapState.tokens = [mkToken({ id: 't1', imageDataUrl: portrait })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+
+    // Ouvre la modale d'édition (tap sur le jeton).
+    const tokenG = screen.getByTestId('map-live-token-image-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    // Le bouton « Retirer l'image » n'apparaît que si un portrait est présent.
+    fireEvent.click(screen.getByTestId('token-image-remove'));
+    await waitFor(() => {
+      const removeCall = mockUpdateToken.mock.calls.find(
+        (c) => (c[3] as { imageDataUrl?: unknown }).imageDataUrl === null,
+      );
+      expect(removeCall).toBeTruthy();
     });
-    const images = await loadTokenImagesForMap('camp-1', 'm-1');
-    for (const url of images.values()) expect(url).toBe(portrait);
+    // Écriture PARTIELLE : seul imageDataUrl est dans le patch (pas position).
+    const removeCall = mockUpdateToken.mock.calls.find(
+      (c) => (c[3] as { imageDataUrl?: unknown }).imageDataUrl === null,
+    )!;
+    expect(removeCall[3]).toEqual({ imageDataUrl: null });
   });
 });
