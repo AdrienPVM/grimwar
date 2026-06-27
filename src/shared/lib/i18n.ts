@@ -1096,6 +1096,7 @@ export type StringKey =
   | 'encounters.create.monsters.hpPlaceholder'
   | 'encounters.create.monsters.qtyLabel'
   | 'encounters.create.monsters.addRow'
+  | 'encounters.create.monsters.fromBestiary'
   | 'encounters.create.monsters.removeRow'
   | 'encounters.create.error.nameRequired'
   | 'encounters.create.error.nameTooLong'
@@ -3165,13 +3166,14 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.create.party.hpLabel': 'PV',
     'encounters.create.monsters.title': 'Monstres',
     'encounters.create.monsters.intro':
-      'Saisie manuelle (nom + PV). Le bestiaire complet arrivera plus tard.',
+      'Choisis dans le bestiaire (nom + PV préremplis) ou saisis à la main.',
     'encounters.create.monsters.nameLabel': 'Nom',
     'encounters.create.monsters.namePlaceholder': 'Ex. « Gobelin »',
     'encounters.create.monsters.hpLabel': 'PV',
     'encounters.create.monsters.hpPlaceholder': 'PV',
     'encounters.create.monsters.qtyLabel': 'Nombre',
-    'encounters.create.monsters.addRow': 'Ajouter un monstre',
+    'encounters.create.monsters.addRow': 'Saisir à la main',
+    'encounters.create.monsters.fromBestiary': 'Depuis le bestiaire',
     'encounters.create.monsters.removeRow': 'Retirer ce monstre',
     'encounters.create.error.nameRequired': 'Le nom est obligatoire.',
     'encounters.create.error.nameTooLong': 'Le nom est trop long (120 caractères max).',
@@ -5539,13 +5541,14 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.create.party.hpLabel': 'HP',
     'encounters.create.monsters.title': 'Monsters',
     'encounters.create.monsters.intro':
-      'Manual entry (name + HP). The full bestiary will come later.',
+      'Pick from the bestiary (name + HP prefilled) or enter by hand.',
     'encounters.create.monsters.nameLabel': 'Name',
     'encounters.create.monsters.namePlaceholder': 'E.g. “Goblin”',
     'encounters.create.monsters.hpLabel': 'HP',
     'encounters.create.monsters.hpPlaceholder': 'HP',
     'encounters.create.monsters.qtyLabel': 'Quantity',
-    'encounters.create.monsters.addRow': 'Add a monster',
+    'encounters.create.monsters.addRow': 'Enter by hand',
+    'encounters.create.monsters.fromBestiary': 'From the bestiary',
     'encounters.create.monsters.removeRow': 'Remove this monster',
     'encounters.create.error.nameRequired': 'The name is required.',
     'encounters.create.error.nameTooLong': 'The name is too long (120 characters max).',

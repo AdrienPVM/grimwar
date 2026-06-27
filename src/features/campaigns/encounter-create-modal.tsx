@@ -6,13 +6,16 @@ import { Divider } from '@/shared/components/divider';
 import { FormField } from '@/shared/components/form/form-field';
 import { TextInput } from '@/shared/components/form/text-input';
 import { cn } from '@/shared/lib/cn';
-import { t } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import {
   createEncounter,
   type CreateParticipantInput,
 } from '@/shared/lib/services/encounters';
 
+import type { Monster } from '@/shared/types/content';
 import type { Npc } from '@/shared/types/npc';
+
+import { MonsterPickerModal } from '@/features/map-proto/monster-picker-modal';
 
 import { NpcPortraitFor } from './npc-portrait';
 import {
@@ -36,13 +39,19 @@ const NAME_MAX = 120;
 // Garde-fou anti-saisie absurde : un même monstre instancié au plus 20 fois.
 const QTY_MAX = 20;
 
-/** Ligne de monstre saisie manuellement (stopgap — bestiaire SRD à venir). */
+/** Ligne de monstre : saisie manuelle OU préremplie depuis le bestiaire. */
 interface MonsterRow {
   /** Clé React locale stable (compteur), pas l'`instanceId` Firestore. */
   key: number;
   name: string;
   hp: string;
   qty: string;
+  /**
+   * Slug `monsters.json` (ou contenu custom) si la ligne a été préremplie depuis
+   * le bestiaire — propagé en `monsterContentId` sur le participant. `null` pour
+   * une ligne saisie à la main (le lien au bestiaire est alors inconnu).
+   */
+  contentId: string | null;
 }
 
 /**
@@ -78,6 +87,8 @@ export function EncounterCreateModal({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
+  // Sélecteur de bestiaire (autofill d'une ligne de monstre).
+  const [pickerOpen, setPickerOpen] = useState<boolean>(false);
 
   const party = useEncounterPartyDraft(linkedMembers, open);
   // PNJ de la campagne (contexte MJ) — chargés seulement quand la modale est
@@ -91,6 +102,7 @@ export function EncounterCreateModal({
     setSubmitError(null);
     setNameError(null);
     setSubmitting(false);
+    setPickerOpen(false);
     onClose();
   }
 
@@ -115,8 +127,31 @@ export function EncounterCreateModal({
   function addMonsterRow(): void {
     setMonsters((rows) => [
       ...rows,
-      { key: nextRowKey.current++, name: '', hp: '', qty: '1' },
+      { key: nextRowKey.current++, name: '', hp: '', qty: '1', contentId: null },
     ]);
+  }
+
+  /**
+   * Préremplit une ligne de monstre depuis le bestiaire (autofill rencontre,
+   * directive 2026-06-27) : nom localisé + PV moyens du bloc de stats, et on
+   * mémorise le slug en `contentId` pour lier le participant à sa fiche de
+   * créature. La CA n'est pas portée (le schéma participant n'a pas de champ
+   * `ac` — décision Adrien) ; le MJ ajuste PV et quantité ensuite comme une
+   * ligne manuelle.
+   */
+  function addMonsterFromBestiary(monster: Monster): void {
+    setMonsters((rows) => [
+      ...rows,
+      {
+        key: nextRowKey.current++,
+        name: localize(monster.name),
+        hp: String(monster.hp.avg),
+        qty: '1',
+        contentId: monster.id,
+      },
+    ]);
+    setPickerOpen(false);
+    if (submitError) setSubmitError(null);
   }
 
   function updateMonsterRow(key: number, patch: Partial<Omit<MonsterRow, 'key'>>): void {
@@ -156,6 +191,7 @@ export function EncounterCreateModal({
       name: r.name.trim(),
       hp: Number.parseInt(r.hp, 10),
       qty: clampQty(Number.parseInt(r.qty, 10)),
+      contentId: r.contentId,
     }));
     if (parsedRows.some((r) => !Number.isFinite(r.hp) || r.hp <= 0)) {
       setSubmitError(t('encounters.create.error.monsterHp'));
@@ -287,7 +323,9 @@ export function EncounterCreateModal({
                       value={row.name}
                       maxLength={NAME_MAX}
                       placeholder={t('encounters.create.monsters.namePlaceholder')}
-                      onChange={(e) => updateMonsterRow(row.key, { name: e.target.value })}
+                      onChange={(e) =>
+                        updateMonsterRow(row.key, { name: e.target.value, contentId: null })
+                      }
                       disabled={submitting}
                     />
                   </label>
@@ -332,7 +370,7 @@ export function EncounterCreateModal({
             </ul>
           ) : null}
 
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
             <Button
               type="button"
               variant="secondary"
@@ -341,6 +379,15 @@ export function EncounterCreateModal({
               disabled={submitting}
             >
               + {t('encounters.create.monsters.addRow')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setPickerOpen(true)}
+              disabled={submitting}
+            >
+              + {t('encounters.create.monsters.fromBestiary')}
             </Button>
           </div>
         </section>
@@ -377,6 +424,12 @@ export function EncounterCreateModal({
           </Button>
         </div>
       </form>
+
+      <MonsterPickerModal
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPick={addMonsterFromBestiary}
+      />
     </DetailModal>
   );
 }
@@ -575,10 +628,11 @@ function expandMonsterRow(row: {
   name: string;
   hp: number;
   qty: number;
+  contentId: string | null;
 }): CreateParticipantInput[] {
   return Array.from({ length: row.qty }, (_, i) => ({
     type: 'monster' as const,
-    monsterContentId: null,
+    monsterContentId: row.contentId,
     name: row.qty > 1 ? `${row.name} ${i + 1}` : row.name,
     maxHp: row.hp,
   }));

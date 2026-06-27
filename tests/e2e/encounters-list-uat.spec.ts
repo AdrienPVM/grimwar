@@ -14,6 +14,8 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
  *   02-create-modal-desktop-1440.png             — modale de création (fullPage) : party vide + section monstres
  *   02-create-modal-desktop-1440-viewport.png    — idem en viewport (ressenti overlay)
  *   03-create-modal-with-monster-1440.png        — modale avec une ligne de monstre remplie (nom + PV + nb)
+ *   03b-bestiary-picker-empty-1440.png           — sélecteur « Depuis le bestiaire » (état vide → import de pack)
+ *   03b-bestiary-picker-empty-1440-viewport.png  — idem viewport (ressenti overlay)
  *   04-encounters-list-mj-desktop-1440.png       — liste avec 1 rencontre (chip statut + nb participants)
  *   05-encounters-list-mj-mobile-375.png         — liste mobile
  *   06-encounters-list-mj-tablet-768.png         — liste tablet
@@ -84,11 +86,21 @@ test.describe('UAT 24.2 — captures /campaigns/:cid/encounters', () => {
     await captureFull(page, '02-create-modal-desktop-1440.png');
     await captureViewport(page, '02-create-modal-desktop-1440-viewport.png');
 
-    // ─── 03 — Ajoute une ligne de monstre (nom + PV) → capture du formulaire rempli.
-    await page.getByRole('button', { name: /Ajouter un monstre/i }).click();
+    // ─── 03 — Saisie manuelle d'une ligne de monstre (nom + PV) → formulaire rempli.
+    await page.getByRole('button', { name: /Saisir à la main/i }).click();
     await page.getByPlaceholder('Ex. « Gobelin »').fill('Gobelin');
     await page.getByPlaceholder('PV').fill('7');
     await captureFull(page, '03-create-modal-with-monster-1440.png');
+
+    // ─── 03b — Sélecteur « Depuis le bestiaire ». Campagne fraîche ⇒ bestiaire
+    // vide : on valide l'état vide qui oriente vers l'import de pack d'extension.
+    await page.getByRole('button', { name: /Depuis le bestiaire/i }).click();
+    await expect(page.getByText(/Votre bestiaire est vide/i)).toBeVisible();
+    await captureFull(page, '03b-bestiary-picker-empty-1440.png');
+    await captureViewport(page, '03b-bestiary-picker-empty-1440-viewport.png');
+    // Referme le sélecteur (Échap) avant de soumettre la rencontre.
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(/Votre bestiaire est vide/i)).toHaveCount(0);
 
     // ─── 04 — Soumet → liste avec 1 rencontre.
     await page.getByLabel(/Nom de la rencontre/i).fill('L’embuscade des gobelins');

@@ -304,7 +304,7 @@ describe('<EncounterCreateModal> via screen', () => {
     fireEvent.change(screen.getByLabelText(/Nom de la rencontre/i), {
       target: { value: 'Gobelins' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /Ajouter un monstre/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Saisir à la main/i }));
     fireEvent.change(screen.getByPlaceholderText('Ex. « Gobelin »'), {
       target: { value: 'Gobelin' },
     });
@@ -330,7 +330,7 @@ describe('<EncounterCreateModal> via screen', () => {
     fireEvent.change(screen.getByLabelText(/Nom de la rencontre/i), {
       target: { value: 'Combat' },
     });
-    fireEvent.click(screen.getByRole('button', { name: /Ajouter un monstre/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Saisir à la main/i }));
     fireEvent.change(screen.getByPlaceholderText('Ex. « Gobelin »'), {
       target: { value: 'Gobelin' },
     });
