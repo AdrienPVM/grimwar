@@ -115,6 +115,38 @@ export function removeLight(
 }
 
 /**
+ * Remplace (ou retire) la lumière PORTÉE par un token, à partir d'une source
+ * DÉJÀ CONSTRUITE par l'appelant. Contrairement à `attachLightToToken` (qui
+ * fabrique la source aux rayons px du PROTOTYPE), ce helper laisse l'appelant
+ * — la vue live — bâtir la `LightSource` à l'échelle RÉELLE de la carte
+ * (gridSize/feetPerSquare), puis se contente de la substituer dans le tableau.
+ *
+ * Toute lumière attachée existante du token est d'abord retirée (un seul slot
+ * porté, comme tenir une torche). `replacement = null` ne fait que détacher.
+ * Les lumières statiques et celles des autres tokens sont préservées.
+ */
+export function setTokenCarriedLight(
+  lights: readonly LightSource[],
+  tokenId: string,
+  replacement: LightSource | null,
+): readonly LightSource[] {
+  const without = lights.filter((l) => l.attachedTokenId !== tokenId);
+  return replacement ? [...without, replacement] : without;
+}
+
+/**
+ * Preset de la lumière actuellement portée par `tokenId`, ou `null` si le token
+ * ne porte aucune lumière. Sert à présélectionner le choix dans l'éditeur.
+ */
+export function carriedLightPreset(
+  lights: readonly LightSource[],
+  tokenId: string,
+): LightPresetKey | null {
+  const found = lights.find((l) => l.attachedTokenId === tokenId);
+  return found?.preset ?? null;
+}
+
+/**
  * Résout la position effective d'une lumière à l'instant courant.
  * Une source statique a une position fixe ; une source attachée à un
  * token suit la position du token. Si le token n'existe plus, renvoie

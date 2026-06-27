@@ -501,6 +501,70 @@ describe('MapLiveScreen', () => {
     });
   });
 
+  it('attribuer une torche portée écrit une lumière attachée à l’échelle', async () => {
+    useMapState.tokens = [mkToken({ id: 't1', kind: 'pj', label: 'Bram' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    fireEvent.click(screen.getByTestId('token-light-torch'));
+
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    const patch = mockUpdateMap.mock.calls[0]![2] as {
+      lightSources: {
+        attachedTokenId?: string | null;
+        brightRadius: number;
+        dimRadius: number;
+        preset?: string;
+        position?: unknown;
+      }[];
+    };
+    expect(patch.lightSources).toHaveLength(1);
+    const light = patch.lightSources[0]!;
+    expect(light.attachedTokenId).toBe('t1');
+    expect(light.preset).toBe('torch');
+    // 20 ft × 14 px/ft (carte fixture 70/5) = 280, comme la torche statique.
+    expect(light.brightRadius).toBe(280);
+    expect(light.dimRadius).toBe(280);
+    // Une lumière portée n'a PAS de position (XOR du schéma) — elle suit le token.
+    expect(light.position).toBeUndefined();
+  });
+
+  it('retirer la lumière portée (« Aucune ») écrit lightSources sans elle', async () => {
+    useMapState.map = mkMap({
+      lightSources: [
+        {
+          id: 'carried-torch-1',
+          attachedTokenId: 't1',
+          brightRadius: 280,
+          dimRadius: 280,
+          preset: 'torch',
+        },
+      ],
+    });
+    useMapState.tokens = [mkToken({ id: 't1', kind: 'pj', label: 'Bram' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    // La modale présélectionne « Torche » (le jeton la porte déjà).
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('token-light-torch').getAttribute('aria-checked'),
+      ).toBe('true');
+    });
+    fireEvent.click(screen.getByTestId('token-light-none'));
+
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ lightSources: [] });
+  });
+
   it('reclasser un PNJ en repère persiste kind sans visionRadius', async () => {
     useMapState.tokens = [
       mkToken({ id: 't1', kind: 'pnj', label: 'Coffre', visionRadius: 60 }),

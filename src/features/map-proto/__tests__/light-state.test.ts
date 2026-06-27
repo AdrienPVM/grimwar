@@ -5,13 +5,31 @@ import { lightSourceSchema } from '@/shared/types/map';
 import {
   addStaticLight,
   attachLightToToken,
+  carriedLightPreset,
   createLightFromPreset,
   LIGHT_PRESETS,
   lightRevealId,
   lightRevealRadius,
   removeLight,
   resolveLightPosition,
+  setTokenCarriedLight,
 } from '../light-state';
+import type { LightSource } from '@/shared/types/map';
+
+/** Lumière portée minimale (attachée, à l'échelle réelle déjà appliquée). */
+function carried(
+  id: string,
+  tokenId: string,
+  preset: LightSource['preset'],
+): LightSource {
+  return {
+    id,
+    attachedTokenId: tokenId,
+    brightRadius: 280,
+    dimRadius: 280,
+    preset,
+  };
+}
 
 describe('light-state — LIGHT_PRESETS', () => {
   it('inclut les 5 presets SRD attendus', () => {
@@ -124,6 +142,54 @@ describe('light-state — removeLight', () => {
     const seed = addStaticLight([], { x: 0, y: 0 }, 'torch', 1000);
     const next = removeLight(seed, 'id-inexistant');
     expect(next).toEqual(seed);
+  });
+});
+
+describe('light-state — setTokenCarriedLight / carriedLightPreset', () => {
+  it('attache une lumière portée fournie (à l’échelle de la carte)', () => {
+    const next = setTokenCarriedLight([], 'pj-1', carried('c1', 'pj-1', 'torch'));
+    expect(next).toHaveLength(1);
+    expect(next[0]!.attachedTokenId).toBe('pj-1');
+    expect(carriedLightPreset(next, 'pj-1')).toBe('torch');
+  });
+
+  it('remplace la lumière portée existante du même token (un seul slot)', () => {
+    const a = setTokenCarriedLight([], 'pj-1', carried('c1', 'pj-1', 'torch'));
+    const b = setTokenCarriedLight(a, 'pj-1', carried('c2', 'pj-1', 'lantern'));
+    expect(b).toHaveLength(1);
+    expect(carriedLightPreset(b, 'pj-1')).toBe('lantern');
+  });
+
+  it('détache avec replacement=null', () => {
+    const a = setTokenCarriedLight([], 'pj-1', carried('c1', 'pj-1', 'torch'));
+    const off = setTokenCarriedLight(a, 'pj-1', null);
+    expect(off).toEqual([]);
+    expect(carriedLightPreset(off, 'pj-1')).toBeNull();
+  });
+
+  it('préserve les lumières statiques et celles des autres tokens', () => {
+    const statique = addStaticLight([], { x: 5, y: 5 }, 'candle', 1000);
+    const withPj1 = setTokenCarriedLight(
+      statique,
+      'pj-1',
+      carried('c1', 'pj-1', 'torch'),
+    );
+    const withPj2 = setTokenCarriedLight(
+      withPj1,
+      'pj-2',
+      carried('c2', 'pj-2', 'lantern'),
+    );
+    expect(withPj2).toHaveLength(3);
+    // Détacher pj-1 ne touche ni la statique ni pj-2.
+    const off1 = setTokenCarriedLight(withPj2, 'pj-1', null);
+    expect(off1).toHaveLength(2);
+    expect(carriedLightPreset(off1, 'pj-1')).toBeNull();
+    expect(carriedLightPreset(off1, 'pj-2')).toBe('lantern');
+    expect(off1.some((l) => l.position != null)).toBe(true); // la statique reste
+  });
+
+  it('carriedLightPreset est null quand le token ne porte rien', () => {
+    expect(carriedLightPreset([], 'pj-1')).toBeNull();
   });
 });
 

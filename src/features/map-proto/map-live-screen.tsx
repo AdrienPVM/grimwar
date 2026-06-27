@@ -33,7 +33,12 @@ import { AoeLayer } from './aoe-layer';
 import { aoePrimaryDimensionFt, scaleAoeDimensions } from './aoe-state';
 import { createCirclePolygon } from './fog-state';
 import { snapToGridCell } from './grid-snap';
-import { LIGHT_PRESETS, type LightPresetKey } from './light-state';
+import {
+  carriedLightPreset,
+  LIGHT_PRESETS,
+  setTokenCarriedLight,
+  type LightPresetKey,
+} from './light-state';
 import { MapScene } from './map-scene';
 import { monsterToTokenInput } from './monster-token';
 import { MonsterPickerModal } from './monster-picker-modal';
@@ -811,6 +816,46 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, editingTokenId, mid, user]);
 
+  // ── Lumière PORTÉE par un jeton (torche de PJ qui suit le déplacement) ──────
+  // La lumière vit dans `map.lightSources` (inline sur le doc carte), attachée
+  // via `attachedTokenId` → `LightLayer` la résout à la position courante du
+  // token. On la construit à l'ÉCHELLE RÉELLE de la carte (feet→px), comme une
+  // lumière statique, puis on substitue celle du token dans le tableau. Écriture
+  // immédiate (pas via « Enregistrer ») pour un retour visuel direct.
+  const handleSetCarriedLight = useCallback(
+    async (preset: LightPresetKey | null): Promise<void> => {
+      const tokenId = editingTokenId;
+      if (!tokenId || !cid || !mid || !user || !map) return;
+      let replacement: LightSource | null = null;
+      if (preset) {
+        const scale = pxPerFoot(map.gridSize, map.feetPerSquare);
+        const spec = LIGHT_PRESET_FT[preset];
+        replacement = {
+          id: randomSlug(`carried-${preset}`),
+          attachedTokenId: tokenId,
+          brightRadius: Math.round(spec.brightFt * scale),
+          dimRadius: Math.round(spec.dimFt * scale),
+          color: LIGHT_PRESETS[preset].color,
+          preset,
+        };
+      }
+      const nextLights = setTokenCarriedLight(
+        map.lightSources,
+        tokenId,
+        replacement,
+      );
+      try {
+        // `updateMap` attend un tableau mutable ; `setTokenCarriedLight` est pur
+        // (readonly) → on copie.
+        await updateMap(cid, mid, { lightSources: [...nextLights] }, user.uid);
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, editingTokenId, mid, user, map],
+  );
+
   // Duplique le jeton en cours d'édition (gain de temps majeur pour poser une
   // meute : un gobelin → « Dupliquer » ×4). Copie kind/label/couleur/vision,
   // décale d'une case en bas-à-droite (clamp viewBox) pour éviter le
@@ -1524,6 +1569,14 @@ export function MapLiveScreen(): JSX.Element {
         }}
         onDelete={() => {
           void handleDeleteEditingToken();
+        }}
+        carriedLight={
+          editingToken
+            ? carriedLightPreset(map.lightSources, editingToken.id)
+            : null
+        }
+        onCarriedLightChange={(preset) => {
+          void handleSetCarriedLight(preset);
         }}
       />
 

@@ -5,6 +5,7 @@ import { cn } from '@/shared/lib/cn';
 import { formatMetersValue } from '@/shared/lib/rules/distance';
 import type { MapToken } from '@/shared/types/map';
 
+import type { LightPresetKey } from './light-state';
 import { fileToTokenImage, TokenImageError } from './token-image-file';
 
 /**
@@ -79,6 +80,24 @@ const VISION_PRESETS: readonly { ft: number; sub: string }[] = [
 /** Défaut quand un jeton non-marqueur n'a pas de portée explicite (= map-scene). */
 const VISION_DEFAULT_FT = 30;
 
+/**
+ * Lumières PORTÉES proposées dans l'éditeur. Sous-ensemble des presets SRD
+ * limité aux sources qu'une créature tient réellement (bougie / torche /
+ * lanterne) ; le soleil et le sort Lumière restent posables en source statique
+ * via la barre d'outils. La sentinelle `'none'` = ne porte aucune lumière.
+ * `radius` = portée totale (vive + faible) en pieds, pour l'affichage en mètres.
+ */
+const CARRIED_LIGHT_OPTIONS: readonly {
+  key: LightPresetKey | 'none';
+  label: string;
+  totalFt: number;
+}[] = [
+  { key: 'none', label: 'Aucune', totalFt: 0 },
+  { key: 'candle', label: 'Bougie', totalFt: 10 },
+  { key: 'torch', label: 'Torche', totalFt: 40 },
+  { key: 'lantern', label: 'Lanterne', totalFt: 60 },
+];
+
 interface Props {
   /** Jeton en cours d'édition, ou `null` quand la modale est fermée. */
   token: MapToken | null;
@@ -112,6 +131,18 @@ interface Props {
   onUploadImage?: (dataUrl: string) => void;
   /** Retire le portrait du jeton. Rendu seulement si `onUploadImage` est fourni. */
   onRemoveImage?: () => void;
+  /**
+   * Preset de la lumière actuellement PORTÉE par ce jeton (`null` = aucune).
+   * Source : le caller dérive `carriedLightPreset(map.lightSources, tokenId)`.
+   */
+  carriedLight?: LightPresetKey | null;
+  /**
+   * Change (ou retire avec `null`) la lumière portée par le jeton. Écriture
+   * IMMÉDIATE côté caller (mise à jour de `map.lightSources`), comme le portrait
+   * — pas attachée au bouton « Enregistrer ». Quand absent, la section « Lumière
+   * portée » n'est pas rendue (capacité non câblée).
+   */
+  onCarriedLightChange?: (preset: LightPresetKey | null) => void;
 }
 
 export function TokenEditModal({
@@ -123,6 +154,8 @@ export function TokenEditModal({
   imageUrl = null,
   onUploadImage,
   onRemoveImage,
+  carriedLight = null,
+  onCarriedLightChange,
 }: Props): JSX.Element | null {
   return (
     <DetailModal
@@ -144,6 +177,8 @@ export function TokenEditModal({
           imageUrl={imageUrl}
           onUploadImage={onUploadImage}
           onRemoveImage={onRemoveImage}
+          carriedLight={carriedLight}
+          onCarriedLightChange={onCarriedLightChange}
         />
       )}
     </DetailModal>
@@ -158,6 +193,8 @@ function TokenEditForm({
   imageUrl,
   onUploadImage,
   onRemoveImage,
+  carriedLight,
+  onCarriedLightChange,
 }: {
   token: MapToken;
   onSave: Props['onSave'];
@@ -166,6 +203,8 @@ function TokenEditForm({
   imageUrl: string | null;
   onUploadImage: Props['onUploadImage'];
   onRemoveImage: Props['onRemoveImage'];
+  carriedLight: LightPresetKey | null;
+  onCarriedLightChange: Props['onCarriedLightChange'];
 }): JSX.Element {
   const [kind, setKind] = useState<MapToken['kind']>(token.kind);
   const [label, setLabel] = useState(token.label);
@@ -180,6 +219,12 @@ function TokenEditForm({
   // `imageUrl` (source = doc Firestore côté parent), jamais d'un state local.
   const [imageBusy, setImageBusy] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  // Lumière portée : état LOCAL optimiste seedé une fois au montage (le form est
+  // remonté par jeton via `key`). Le clic écrit IMMÉDIATEMENT côté caller (comme
+  // le portrait) et met à jour la sélection sans attendre le round-trip Firestore.
+  const [carried, setCarried] = useState<LightPresetKey | 'none'>(
+    carriedLight ?? 'none',
+  );
   const titleId = useId();
 
   const trimmed = label.trim();
@@ -189,6 +234,13 @@ function TokenEditForm({
   const hasVision = kind !== 'marker';
   // La section portrait n'existe que si le caller a câblé l'upload (capacité).
   const canEditImage = onUploadImage != null;
+  // Idem pour la lumière portée : rendue seulement si le caller la câble.
+  const canSetLight = onCarriedLightChange != null;
+
+  const handleCarriedLight = (key: LightPresetKey | 'none'): void => {
+    setCarried(key);
+    onCarriedLightChange?.(key === 'none' ? null : key);
+  };
 
   const handleFile = async (e: ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -450,6 +502,61 @@ function TokenEditForm({
           <p className="font-serif text-meta italic text-text-faint">
             Rayon de brouillard dissipé autour du jeton quand la ligne de vue
             est active.
+          </p>
+        </div>
+      )}
+
+      {canSetLight && (
+        <div className="flex flex-col gap-2">
+          <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            Lumière portée
+          </span>
+          <div
+            role="radiogroup"
+            aria-label="Lumière portée par le jeton"
+            className="grid grid-cols-2 gap-2"
+          >
+            {CARRIED_LIGHT_OPTIONS.map((opt) => {
+              const selected = opt.key === carried;
+              const sub =
+                opt.key === 'none'
+                  ? 'Ne porte rien'
+                  : `Rayon ${formatMetersValue(opt.totalFt)} m`;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  aria-label={`${opt.label} — ${sub}`}
+                  data-testid={`token-light-${opt.key}`}
+                  onClick={() => handleCarriedLight(opt.key)}
+                  className={cn(
+                    'flex flex-col items-start gap-0.5 rounded-card-sm border px-3 py-2 text-left transition-colors duration-200 ease-base',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/50',
+                    selected
+                      ? 'border-gold-bright bg-gold/10'
+                      : 'border-white-8 hover:border-gold-dim/50',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-serif text-body',
+                      selected ? 'text-gold-bright' : 'text-text',
+                    )}
+                  >
+                    {opt.label}
+                  </span>
+                  <span className="font-title text-[10px] uppercase tracking-[0.12em] text-text-tertiary">
+                    {sub}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="font-serif text-meta italic text-text-faint">
+            La lumière suit le jeton quand il se déplace (appliquée
+            immédiatement).
           </p>
         </div>
       )}

@@ -327,6 +327,98 @@ describe('TokenEditModal', () => {
     });
   });
 
+  describe('lumière portée', () => {
+    it("n'affiche pas la section quand le caller ne la câble pas", () => {
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.queryByTestId('token-light-torch')).toBeNull();
+    });
+
+    it('présélectionne « Aucune » quand le jeton ne porte rien', () => {
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          carriedLight={null}
+          onCarriedLightChange={vi.fn()}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.getByTestId('token-light-none').getAttribute('aria-checked')).toBe(
+        'true',
+      );
+      expect(screen.getByTestId('token-light-torch').getAttribute('aria-checked')).toBe(
+        'false',
+      );
+    });
+
+    it('présélectionne le preset porté courant', () => {
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          carriedLight="lantern"
+          onCarriedLightChange={vi.fn()}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(
+        screen.getByTestId('token-light-lantern').getAttribute('aria-checked'),
+      ).toBe('true');
+      // Le rayon total est affiché en mètres FR (lanterne 60 ft → 18 m).
+      expect(screen.getByTestId('token-light-lantern').textContent).toContain('18 m');
+    });
+
+    it('choisir un preset déclenche onCarriedLightChange IMMÉDIATEMENT', () => {
+      const onCarriedLightChange = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          carriedLight={null}
+          onCarriedLightChange={onCarriedLightChange}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      fireEvent.click(screen.getByTestId('token-light-torch'));
+      expect(onCarriedLightChange).toHaveBeenCalledWith('torch');
+      // La sélection optimiste suit sans attendre le round-trip.
+      expect(screen.getByTestId('token-light-torch').getAttribute('aria-checked')).toBe(
+        'true',
+      );
+    });
+
+    it('« Aucune » détache (onCarriedLightChange(null))', () => {
+      const onCarriedLightChange = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken()}
+          carriedLight="torch"
+          onCarriedLightChange={onCarriedLightChange}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      fireEvent.click(screen.getByTestId('token-light-none'));
+      expect(onCarriedLightChange).toHaveBeenCalledWith(null);
+    });
+  });
+
   describe('portrait', () => {
     it("n'affiche pas la section portrait quand l'upload n'est pas câblé", () => {
       render(

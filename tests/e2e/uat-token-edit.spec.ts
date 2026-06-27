@@ -186,9 +186,38 @@ test.describe('UAT — édition de jeton (carte live)', () => {
       fullPage: true,
     });
 
-    // Referme pour restaurer la précondition du bloc suppression (re-tap).
+    // ── Lumière portée : le jeton prend une torche qui le suivra ─────────────
+    // Aucune lumière par défaut → on attribue une torche : une source attachée
+    // apparaît dans le DOM (round-trip via les vraies rules), centrée sur le
+    // jeton (rayon total 560 px = 40 ft × 14 px/ft).
+    await expect(page.getByTestId('token-light-none')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await page.getByTestId('token-light-torch').click();
+    await expect(page.getByTestId('token-light-torch')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    const carriedCircle = page.locator('[data-testid^="light-source-"]').first();
+    await expect(carriedCircle).toBeVisible({ timeout: 5000 });
+    await expect
+      .poll(async () => carriedCircle.getAttribute('r'), { timeout: 5000 })
+      .toBe('560');
+    // 09 — éditeur : « Torche » portée sélectionnée (viewport).
+    await page.screenshot({
+      path: path.join(OUT, '09-lumiere-portee-viewport.png'),
+      fullPage: false,
+    });
+
+    // Referme : le jeton brille de sa torche sur la carte.
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('token-edit-save')).toBeHidden();
+    // 10 — le jeton porte sa torche sur la carte (pleine page).
+    await page.screenshot({
+      path: path.join(OUT, '10-jeton-avec-torche.png'),
+      fullPage: true,
+    });
 
     // ── Suppression unitaire ─────────────────────────────────────────────
     await tokenG.click();
