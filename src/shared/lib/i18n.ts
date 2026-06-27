@@ -72,6 +72,10 @@ export type StringKey =
   | 'codex.cat.conditions'
   | 'codex.cat.magicItems'
   | 'codex.cat.items'
+  | 'codex.cat.monsters'
+  | 'codex.search.monsters'
+  | 'codex.monster.allSizes'
+  | 'codex.monster.senses'
   | 'codex.cat.ancestries'
   | 'codex.cat.backgrounds'
   | 'codex.cat.classes'
@@ -1954,6 +1958,10 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.cat.conditions': 'États',
     'codex.cat.magicItems': 'Objets magiques',
     'codex.cat.items': 'Équipement',
+    'codex.cat.monsters': 'Bestiaire',
+    'codex.search.monsters': 'Rechercher un monstre…',
+    'codex.monster.allSizes': 'Toutes tailles',
+    'codex.monster.senses': 'Sens',
     'codex.cat.ancestries': 'Espèces',
     'codex.cat.backgrounds': 'Historiques',
     'codex.cat.classes': 'Classes',
@@ -4400,6 +4408,10 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.cat.conditions': 'Conditions',
     'codex.cat.magicItems': 'Magic Items',
     'codex.cat.items': 'Equipment',
+    'codex.cat.monsters': 'Bestiary',
+    'codex.search.monsters': 'Search a monster…',
+    'codex.monster.allSizes': 'All sizes',
+    'codex.monster.senses': 'Senses',
     'codex.cat.ancestries': 'Species',
     'codex.cat.backgrounds': 'Backgrounds',
     'codex.cat.classes': 'Classes',

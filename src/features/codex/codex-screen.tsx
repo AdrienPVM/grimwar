@@ -21,6 +21,7 @@ import {
 } from './browsers/codex-text-browsers';
 import { ItemBrowser } from './browsers/item-browser';
 import { MagicItemBrowser } from './browsers/magic-item-browser';
+import { MonsterBrowser } from './browsers/monster-browser';
 import { SpellBrowser } from './browsers/spell-browser';
 
 /**
@@ -74,6 +75,8 @@ function CodexActiveBrowser({
       return <MagicItemBrowser />;
     case 'items':
       return <ItemBrowser />;
+    case 'monsters':
+      return <MonsterBrowser />;
     case 'ancestries':
       return <AncestryBrowser />;
     case 'backgrounds':
