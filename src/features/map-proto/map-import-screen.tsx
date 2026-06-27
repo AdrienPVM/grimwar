@@ -8,6 +8,10 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import {
+  MAP_BACKGROUND_PRESET,
+  optimizeDataUrl,
+} from '@/shared/lib/image-optimize';
 import { ensureCampaignExists } from '@/shared/lib/services/campaigns';
 import { createMap, type CreateMapInput } from '@/shared/lib/services/maps';
 
@@ -141,7 +145,15 @@ export function MapImportScreen(): JSX.Element {
       };
       await createMap(cid, id, input, user.uid);
       if (parsed.imageDataUrl) {
-        await saveMapImage(cid, id, parsed.imageDataUrl);
+        // Le `.dd2vtt` embarque l'image de fond en PNG base64 BRUT (souvent
+        // plusieurs Mo). On la ré-encode/réduit avant de l'entreposer en
+        // IndexedDB (preset « fond de carte » : aspect préservé, webp, dimension
+        // plafonnée) — même exigence d'empreinte minimale que les portraits.
+        const optimized = await optimizeDataUrl(
+          parsed.imageDataUrl,
+          MAP_BACKGROUND_PRESET,
+        );
+        await saveMapImage(cid, id, optimized.dataUrl);
       }
       navigate(`/map-proto/cloud/${cid}/maps/${id}`);
     } catch (err) {

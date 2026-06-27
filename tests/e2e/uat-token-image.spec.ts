@@ -18,8 +18,9 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
  */
 const OUT = path.resolve(process.cwd(), 'uat-review', 'token-image');
 
-// PNG 32×32 valide, vert plein (teinte gobeline). Décodé + recadré en 256² par
-// `fileToTokenImage` dans le vrai navigateur → ré-encodé en webp/jpeg. Un carré
+// PNG 32×32 valide, vert plein (teinte gobeline). Décodé + recadré (≤ 192²,
+// budget d'octets) par l'optimiseur centralisé dans le vrai navigateur →
+// ré-encodé en webp/jpeg. Un carré
 // PLEIN (pas transparent) pour que le disque-portrait soit visible aux captures.
 const PNG_SOLID_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAKklEQVR4nGPI2ehDU8QwasGoBaMWjFowasGoBaMWjFowasGoBaMWjFowasGoBaMWDBULAM0spEyJWQ8rAAAAAElFTkSuQmCC';
