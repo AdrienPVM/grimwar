@@ -167,7 +167,12 @@ export function Tooltip({
           // `w-max` : la bulle se dimensionne à son contenu (borné par max-w),
           // sinon une cible étroite (− / +) clampe la largeur en « shrink-to-fit »
           // et le texte s'empile sur trop de lignes.
-          'pointer-events-none absolute z-50 w-max max-w-[16rem] whitespace-normal text-balance',
+          // Plafond responsive : ~22rem sur écran large (texte plus aéré, moins
+          // d'empilement), mais jamais plus que la largeur du viewport moins une
+          // marge (1.5rem de chaque côté) — sur mobile la bulle s'élargit donc
+          // jusqu'au bord utile au lieu de se clamper trop tôt. Le recalage
+          // horizontal (`shiftX`) garde ensuite la bulle dans le viewport.
+          'pointer-events-none absolute z-50 w-max max-w-[min(22rem,calc(100vw_-_3rem))] whitespace-normal text-balance',
           'rounded-card-sm border border-gold-dim/40 bg-[#1a1410]/95 px-2.5 py-1.5',
           'text-center font-sans text-body-sm font-medium normal-case tracking-normal text-text',
           'shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm',
