@@ -46,6 +46,20 @@ const KIND_LABELS: Record<MapToken['kind'], string> = {
   marker: 'Repère',
 };
 
+/**
+ * Sous-titre de chaque type, affiché sous le libellé dans le sélecteur. Aide le
+ * MJ à choisir sans connaître le jargon : un repère ne porte pas de vision et
+ * n'alimente pas la ligne de vue (cf. `map-scene` qui saute les markers).
+ */
+const KIND_HINTS: Record<MapToken['kind'], string> = {
+  pj: 'Allié contrôlé par un joueur',
+  pnj: 'Créature contrôlée par le MJ',
+  marker: 'Point d’intérêt, sans vision',
+};
+
+/** Ordre d'affichage des types dans le sélecteur. */
+const KIND_ORDER: readonly MapToken['kind'][] = ['pj', 'pnj', 'marker'];
+
 const LABEL_MAX = 24;
 
 /**
@@ -74,6 +88,7 @@ interface Props {
    * (`marker`) — un repère ne porte pas de vision et n'alimente pas la LOS.
    */
   onSave: (patch: {
+    kind: MapToken['kind'];
     label: string;
     color: string;
     visionRadius?: number;
@@ -152,6 +167,7 @@ function TokenEditForm({
   onUploadImage: Props['onUploadImage'];
   onRemoveImage: Props['onRemoveImage'];
 }): JSX.Element {
+  const [kind, setKind] = useState<MapToken['kind']>(token.kind);
   const [label, setLabel] = useState(token.label);
   const [color, setColor] = useState(token.color);
   // Les marqueurs ne portent pas de vision ; on initialise quand même l'état au
@@ -168,7 +184,9 @@ function TokenEditForm({
 
   const trimmed = label.trim();
   const canSave = trimmed.length > 0;
-  const hasVision = token.kind !== 'marker';
+  // Dérivé du type LOCAL (pas de `token.kind`) : reclasser en « repère » masque
+  // la section vision instantanément, sans `useEffect` de synchro.
+  const hasVision = kind !== 'marker';
   // La section portrait n'existe que si le caller a câblé l'upload (capacité).
   const canEditImage = onUploadImage != null;
 
@@ -195,6 +213,7 @@ function TokenEditForm({
 
   const handleSave = (): void => {
     onSave({
+      kind,
       label: trimmed,
       color,
       // Patch minimal : on ne pousse `visionRadius` que pour un porteur de vision.
@@ -205,8 +224,11 @@ function TokenEditForm({
   return (
     <div className="flex flex-col gap-5 p-6">
       <header className="flex flex-col gap-1 pr-10">
-        <p className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          {KIND_LABELS[token.kind]}
+        <p
+          data-testid="token-edit-kind-eyebrow"
+          className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary transition-colors duration-200 ease-base"
+        >
+          {KIND_LABELS[kind]}
         </p>
         <h2
           id={titleId}
@@ -239,7 +261,7 @@ function TokenEditForm({
                 style={{ backgroundColor: token.color }}
                 className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-white-8 font-title text-[10px] uppercase tracking-[0.12em] text-white/70"
               >
-                {token.kind === 'marker' ? '•' : token.kind.toUpperCase()}
+                {kind === 'marker' ? '•' : kind.toUpperCase()}
               </span>
             )}
             <div className="flex flex-col gap-2">
@@ -285,6 +307,51 @@ function TokenEditForm({
           </p>
         </div>
       )}
+
+      <div className="flex flex-col gap-2">
+        <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+          Type de jeton
+        </span>
+        <div
+          role="radiogroup"
+          aria-label="Type de jeton"
+          className="flex flex-col gap-2"
+        >
+          {KIND_ORDER.map((k) => {
+            const selected = k === kind;
+            return (
+              <button
+                key={k}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                aria-label={`${KIND_LABELS[k]} — ${KIND_HINTS[k]}`}
+                data-testid={`token-kind-${k}`}
+                onClick={() => setKind(k)}
+                className={cn(
+                  'flex flex-col items-start gap-0.5 rounded-card-sm border px-3 py-2 text-left transition-colors duration-200 ease-base',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/50',
+                  selected
+                    ? 'border-gold-bright bg-gold/10'
+                    : 'border-white-8 hover:border-gold-dim/50',
+                )}
+              >
+                <span
+                  className={cn(
+                    'font-serif text-body',
+                    selected ? 'text-gold-bright' : 'text-text',
+                  )}
+                >
+                  {KIND_LABELS[k]}
+                </span>
+                <span className="font-title text-[10px] uppercase tracking-[0.12em] text-text-tertiary">
+                  {KIND_HINTS[k]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <label className="flex flex-col gap-2">
         <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">

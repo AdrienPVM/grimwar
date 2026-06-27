@@ -75,6 +75,7 @@ describe('TokenEditModal', () => {
     fireEvent.click(screen.getByTestId('token-edit-save'));
     // Un PNJ porte une vision : le patch inclut le défaut 30 ft (jamais touché).
     expect(onSave).toHaveBeenCalledWith({
+      kind: 'pnj',
       label: 'Chef gobelin',
       color: '#c084fc',
       visionRadius: 30,
@@ -148,7 +149,11 @@ describe('TokenEditModal', () => {
     );
     expect(screen.queryByTestId('token-vision-30')).toBeNull();
     fireEvent.click(screen.getByTestId('token-edit-save'));
-    expect(onSave).toHaveBeenCalledWith({ label: 'Coffre', color: '#f87171' });
+    expect(onSave).toHaveBeenCalledWith({
+      kind: 'marker',
+      label: 'Coffre',
+      color: '#f87171',
+    });
   });
 
   it('désactive Enregistrer quand le nom est vide après trim', () => {
@@ -211,7 +216,115 @@ describe('TokenEditModal', () => {
         onClose={vi.fn()}
       />,
     );
-    expect(screen.getByText('PNJ / monstre')).toBeTruthy();
+    // Le sur-titre reflète la catégorie ; « PNJ / monstre » apparaît aussi dans
+    // le sélecteur de type, d'où la cible explicite sur l'eyebrow.
+    expect(screen.getByTestId('token-edit-kind-eyebrow').textContent).toBe(
+      'PNJ / monstre',
+    );
+  });
+
+  describe('type de jeton', () => {
+    it('présélectionne le type courant du jeton', () => {
+      render(
+        <TokenEditModal
+          token={mkToken({ kind: 'pnj' })}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.getByTestId('token-kind-pnj').getAttribute('aria-checked')).toBe(
+        'true',
+      );
+      expect(screen.getByTestId('token-kind-pj').getAttribute('aria-checked')).toBe(
+        'false',
+      );
+      expect(
+        screen.getByTestId('token-kind-marker').getAttribute('aria-checked'),
+      ).toBe('false');
+    });
+
+    it('reclasser PNJ → PJ remonte le nouveau type dans le patch', () => {
+      const onSave = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken({ kind: 'pnj', label: 'Bram' })}
+          onSave={onSave}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      fireEvent.click(screen.getByTestId('token-kind-pj'));
+      fireEvent.click(screen.getByTestId('token-edit-save'));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: 'pj', label: 'Bram' }),
+      );
+    });
+
+    it("reclasser en « repère » masque la section vision et n'émet plus visionRadius", () => {
+      const onSave = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken({ kind: 'pnj', visionRadius: 60 })}
+          onSave={onSave}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      // Avant : la vision est rendue pour un PNJ.
+      expect(screen.getByTestId('token-vision-60')).toBeTruthy();
+      fireEvent.click(screen.getByTestId('token-kind-marker'));
+      // Après : la section vision a disparu (dérivée du type LOCAL).
+      expect(screen.queryByTestId('token-vision-60')).toBeNull();
+      fireEvent.click(screen.getByTestId('token-edit-save'));
+      const patch = onSave.mock.calls[0]?.[0] as Record<string, unknown>;
+      expect(patch.kind).toBe('marker');
+      expect(patch).not.toHaveProperty('visionRadius');
+    });
+
+    it('reclasser un repère en PNJ fait apparaître la vision (défaut 30 ft)', () => {
+      const onSave = vi.fn();
+      render(
+        <TokenEditModal
+          token={mkToken({ kind: 'marker', label: 'Coffre' })}
+          onSave={onSave}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.queryByTestId('token-vision-30')).toBeNull();
+      fireEvent.click(screen.getByTestId('token-kind-pnj'));
+      expect(
+        screen.getByTestId('token-vision-30').getAttribute('aria-checked'),
+      ).toBe('true');
+      fireEvent.click(screen.getByTestId('token-edit-save'));
+      expect(onSave).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: 'pnj', visionRadius: 30 }),
+      );
+    });
+
+    it("met à jour le sur-titre de catégorie au changement de type", () => {
+      render(
+        <TokenEditModal
+          token={mkToken({ kind: 'pnj' })}
+          onSave={vi.fn()}
+          onDelete={vi.fn()}
+          onDuplicate={vi.fn()}
+          onClose={vi.fn()}
+        />,
+      );
+      expect(screen.getByTestId('token-edit-kind-eyebrow').textContent).toBe(
+        'PNJ / monstre',
+      );
+      fireEvent.click(screen.getByTestId('token-kind-pj'));
+      expect(screen.getByTestId('token-edit-kind-eyebrow').textContent).toBe(
+        'Personnage joueur',
+      );
+    });
   });
 
   describe('portrait', () => {

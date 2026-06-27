@@ -490,6 +490,7 @@ describe('MapLiveScreen', () => {
     expect(uidArg).toBe('user-alice');
     // Un PJ porte une vision : le patch inclut le défaut 30 ft (non modifié ici).
     expect(patchArg).toEqual({
+      kind: 'pj',
       label: 'Gobelin chef',
       color: '#4ade80',
       visionRadius: 30,
@@ -498,6 +499,27 @@ describe('MapLiveScreen', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('token-edit-save')).toBeNull();
     });
+  });
+
+  it('reclasser un PNJ en repère persiste kind sans visionRadius', async () => {
+    useMapState.tokens = [
+      mkToken({ id: 't1', kind: 'pnj', label: 'Coffre', visionRadius: 60 }),
+    ];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const tokenG = screen.getByTestId('map-live-token-t1');
+    firePointer(tokenG, 'pointerdown', 200, 200);
+    firePointer(tokenG, 'pointerup', 200, 200);
+
+    fireEvent.click(screen.getByTestId('token-kind-marker'));
+    fireEvent.click(screen.getByTestId('token-edit-save'));
+
+    await waitFor(() => {
+      expect(mockUpdateToken).toHaveBeenCalledTimes(1);
+    });
+    const patchArg = mockUpdateToken.mock.calls[0]![3] as Record<string, unknown>;
+    expect(patchArg.kind).toBe('marker');
+    // Un repère ne porte pas de vision → le patch ne pousse pas visionRadius.
+    expect(patchArg).not.toHaveProperty('visionRadius');
   });
 
   it('Supprimer ce jeton appelle deleteToken puis ferme la modale', async () => {

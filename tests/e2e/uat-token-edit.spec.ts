@@ -141,6 +141,51 @@ test.describe('UAT — édition de jeton (carte live)', () => {
       path: path.join(OUT, '05-vision-persistee.png'),
       fullPage: true,
     });
+
+    // ── Type de jeton : reclasser PNJ → PJ, round-trip via les vraies rules ──
+    // Le jeton a été posé en PNJ : le sélecteur reflète ce type, et l'éditeur
+    // est encore ouvert (réouvert au bloc vision). On le reclasse en PJ.
+    await expect(page.getByTestId('token-kind-pnj')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('token-edit-kind-eyebrow')).toHaveText(
+      'PNJ / monstre',
+    );
+    // 06 — sélecteur de type (viewport : les 3 types, PNJ présélectionné).
+    await page.screenshot({
+      path: path.join(OUT, '06-selecteur-type-viewport.png'),
+      fullPage: false,
+    });
+    await page.getByTestId('token-kind-pj').click();
+    // Le sur-titre se met à jour instantanément (état local).
+    await expect(page.getByTestId('token-edit-kind-eyebrow')).toHaveText(
+      'Personnage joueur',
+    );
+    // 07 — PJ sélectionné, sur-titre mis à jour (viewport).
+    await page.screenshot({
+      path: path.join(OUT, '07-reclasse-pj-viewport.png'),
+      fullPage: false,
+    });
+    await page.getByTestId('token-edit-save').click();
+    await expect(page.getByTestId('token-edit-save')).toBeHidden();
+
+    // Ré-ouverture : le type PJ est revenu du snapshot (round-trip réel).
+    await tokenG.click();
+    await expect(page.getByTestId('token-kind-pj')).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    await expect(page.getByTestId('token-kind-pnj')).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    // 08 — éditeur rouvert : PJ persisté (pleine page).
+    await page.screenshot({
+      path: path.join(OUT, '08-type-persiste.png'),
+      fullPage: true,
+    });
+
     // Referme pour restaurer la précondition du bloc suppression (re-tap).
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('token-edit-save')).toBeHidden();

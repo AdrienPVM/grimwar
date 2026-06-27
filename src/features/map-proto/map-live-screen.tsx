@@ -711,6 +711,7 @@ export function MapLiveScreen(): JSX.Element {
   // ── Édition d'un jeton (nom + couleur + suppression unitaire) ──────────
   const handleSaveToken = useCallback(
     async (patch: {
+      kind: MapToken['kind'];
       label: string;
       color: string;
       visionRadius?: number;
