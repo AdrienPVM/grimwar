@@ -821,6 +821,30 @@ describe('MapLiveScreen', () => {
     expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ lightSources: [] });
   });
 
+  it('bascule l’éclairage (ON → OFF) via le toggle Éclairage', async () => {
+    useMapState.map = mkMap({ lightingEnabled: true });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const btn = screen.getByTestId('map-live-toggle-lighting');
+    expect(btn.textContent).toContain('ON');
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ lightingEnabled: false });
+  });
+
+  it('bascule l’éclairage (OFF → ON) quand il est désactivé', async () => {
+    useMapState.map = mkMap({ lightingEnabled: false });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    const btn = screen.getByTestId('map-live-toggle-lighting');
+    expect(btn.textContent).toContain('OFF');
+    fireEvent.click(btn);
+    await waitFor(() => {
+      expect(mockUpdateMap).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUpdateMap.mock.calls[0]![2]).toEqual({ lightingEnabled: true });
+  });
+
   it('calls addAoeTemplate with sphere shape when AoE button clicked', async () => {
     renderAt('/map-proto/cloud/camp-1/maps/m-1');
     fireEvent.click(screen.getByTestId('map-live-add-sphere-aoe'));

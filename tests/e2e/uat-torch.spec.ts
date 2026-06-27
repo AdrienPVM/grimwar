@@ -81,6 +81,24 @@ test.describe('UAT — torche à l’échelle de la carte (carte live)', () => {
       path: path.join(OUT, '01-torche-a-l-echelle.png'),
       fullPage: true,
     });
+
+    // ── Toggle Éclairage : OFF masque toutes les sources, ON les rétablit ─────
+    await expect(page.getByTestId('map-live-toggle-lighting')).toContainText('ON');
+    await page.getByTestId('map-live-toggle-lighting').click();
+    await expect(page.getByTestId('map-live-toggle-lighting')).toContainText('OFF');
+    // La couche lumière n'est plus rendue (round-trip via les vraies rules).
+    await expect(page.locator('[data-testid^="light-source-"]')).toHaveCount(0, {
+      timeout: 5000,
+    });
+    // 04 — éclairage coupé : la teinte chaude a disparu (pleine page).
+    await page.screenshot({
+      path: path.join(OUT, '04-eclairage-coupe.png'),
+      fullPage: true,
+    });
+    // Réactive : la torche revient (la source était préservée).
+    await page.getByTestId('map-live-toggle-lighting').click();
+    await expect(page.getByTestId('map-live-toggle-lighting')).toContainText('ON');
+    await expect(lightCircle).toBeVisible({ timeout: 5000 });
   });
 
   test('pose plusieurs presets de lumière (tailles SRD distinctes)', async ({

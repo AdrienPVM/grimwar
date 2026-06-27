@@ -677,6 +677,25 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, map, mid, user]);
 
+  // Bascule l'éclairage dynamique. Quand OFF, le rendu ignore TOUTES les
+  // sources (torche, lumière portée…) — utile pour une scène en plein jour où
+  // la teinte chaude n'a pas lieu d'être. Les sources restent persistées et
+  // réapparaissent au ré-activage. `lightingEnabled` existe déjà sur le schéma.
+  const handleToggleLighting = useCallback(async (): Promise<void> => {
+    if (!cid || !mid || !user || !map) return;
+    try {
+      await updateMap(
+        cid,
+        mid,
+        { lightingEnabled: !map.lightingEnabled },
+        user.uid,
+      );
+      setWriteError(null);
+    } catch (err: unknown) {
+      setWriteError(err instanceof Error ? err.message : String(err));
+    }
+  }, [cid, map, mid, user]);
+
   // ── Tokens (affordance prototype « au centre », parité fog/light/AoE) ───
   // N'arbitre PAS la décision produit F23 (UX d'édition complète) : c'est le
   // même geste minimal que les boutons « Torche/Sphère au centre » déjà
@@ -1335,6 +1354,17 @@ export function MapLiveScreen(): JSX.Element {
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
             Ligne de vue : {map.losEnabled === true ? 'ON' : 'OFF'}
+          </button>
+          <button
+            type="button"
+            data-testid="map-live-toggle-lighting"
+            onClick={() => {
+              void handleToggleLighting();
+            }}
+            title="Afficher ou masquer la teinte des sources lumineuses (torches, lanternes…)"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            Éclairage : {map.lightingEnabled ? 'ON' : 'OFF'}
           </button>
           <button
             type="button"
