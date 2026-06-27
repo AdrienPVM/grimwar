@@ -21,6 +21,7 @@ import {
   updateMap,
   updateToken,
 } from '@/shared/lib/services/maps';
+import type { Monster } from '@/shared/types/content';
 import type {
   AoeTemplate,
   FogPolygon,
@@ -33,6 +34,8 @@ import { aoePrimaryDimensionFt, scaleAoeDimensions } from './aoe-state';
 import { createCirclePolygon } from './fog-state';
 import { snapToGridCell } from './grid-snap';
 import { MapScene } from './map-scene';
+import { monsterToTokenInput } from './monster-token';
+import { MonsterPickerModal } from './monster-picker-modal';
 import {
   addAnchor,
   EMPTY_RULER,
@@ -151,6 +154,8 @@ export function MapLiveScreen(): JSX.Element {
   // fermée. Le jeton lui-même est dérivé du snapshot (pas de copie d'état) :
   // si un autre client le supprime, la modale se referme toute seule.
   const [editingTokenId, setEditingTokenId] = useState<string | null>(null);
+  // Sélecteur de bestiaire ouvert (autofill carte depuis un monstre).
+  const [showMonsterPicker, setShowMonsterPicker] = useState(false);
   // Drag des templates AoE — même machinerie que les tokens (override local
   // pendant le glisser, write Firestore au lâcher). Distinct du drag de token :
   // un AoE et un token peuvent coexister, et l'AoE se rend SOUS les tokens.
@@ -667,6 +672,31 @@ export function MapLiveScreen(): JSX.Element {
     [cid, mid, user],
   );
 
+  // ── Autofill carte depuis un monstre du bestiaire ──────────────────────
+  // Le monstre choisi dans le sélecteur devient un jeton PNJ au centre, son
+  // nom dédoublonné (« Gobelin 2 »…) et son rayon de vision tiré du bloc de
+  // stats (vision dans le noir → LOS). Mapping pur dans `monsterToTokenInput`.
+  const handleAddMonsterToken = useCallback(
+    async (monster: Monster): Promise<void> => {
+      if (!cid || !mid || !user) return;
+      try {
+        const input = monsterToTokenInput(monster, {
+          center: { x: CENTER_X, y: CENTER_Y },
+          color: TOKEN_COLORS.pnj,
+          fallbackVisionFt: TOKEN_VISION_FT,
+          existingLabels: tokens.map((tk) => tk.label),
+          bounds: { width: VIEWBOX_W, height: VIEWBOX_H, radius: TOKEN_RADIUS },
+        });
+        await createTokenWithId(cid, mid, randomSlug('token'), input, user.uid);
+        setShowMonsterPicker(false);
+        setWriteError(null);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, mid, user, tokens],
+  );
+
   const handleClearTokens = useCallback(async (): Promise<void> => {
     if (!cid || !mid) return;
     try {
@@ -1136,6 +1166,15 @@ export function MapLiveScreen(): JSX.Element {
           </button>
           <button
             type="button"
+            data-testid="map-live-add-monster"
+            onClick={() => setShowMonsterPicker(true)}
+            title="Poser un monstre du bestiaire (nom + vision auto-remplis)"
+            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            + Bestiaire
+          </button>
+          <button
+            type="button"
             data-testid="map-live-clear-tokens"
             onClick={() => {
               void handleClearTokens();
@@ -1431,6 +1470,14 @@ export function MapLiveScreen(): JSX.Element {
         }}
         onDelete={() => {
           void handleDeleteEditingToken();
+        }}
+      />
+
+      <MonsterPickerModal
+        open={showMonsterPicker}
+        onClose={() => setShowMonsterPicker(false)}
+        onPick={(monster) => {
+          void handleAddMonsterToken(monster);
         }}
       />
     </main>

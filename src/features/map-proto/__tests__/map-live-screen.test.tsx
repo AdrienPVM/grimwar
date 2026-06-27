@@ -69,6 +69,43 @@ vi.mock('@/shared/lib/firebase', () => ({
   getDb: () => ({}),
 }));
 
+// Bestiaire injecté dans le sélecteur d'autofill carte (MonsterPickerModal).
+const useContentState: { data: unknown[] } = { data: [] };
+vi.mock('@/shared/hooks/use-content', () => ({
+  useContent: (type: string) =>
+    type === 'monsters'
+      ? { data: useContentState.data, loading: false, error: null }
+      : { data: [], loading: false, error: null },
+}));
+
+const GOBLIN_BESTIARY = {
+  id: 'gobelin',
+  name: { fr: 'Gobelin', en: 'Goblin' },
+  size: 'small',
+  type: 'humanoïde',
+  alignment: { fr: 'Neutre mauvais', en: '' },
+  ac: 15,
+  acDetail: null,
+  hp: { avg: 7, formula: '2d6' },
+  speed: { walk: 30 },
+  abilities: { for: 8, dex: 14, con: 10, int: 10, sag: 8, cha: 8 },
+  saves: {},
+  skills: {},
+  resistances: [],
+  immunities: [],
+  vulnerabilities: [],
+  conditionImmunities: [],
+  senses: { darkvision: 60, passivePerception: 9 },
+  languages: [],
+  cr: 0.25,
+  xp: 50,
+  traits: [],
+  actions: [],
+  reactions: null,
+  legendaryActions: null,
+  source: 'srd-5.2.1',
+};
+
 // ── Helpers ──────────────────────────────────────────────────────────────
 function renderAt(path: string): void {
   render(
@@ -214,6 +251,7 @@ beforeEach(async () => {
   mockResizeAoeTemplate.mockReset().mockResolvedValue(undefined);
   mockCreateTokenWithId.mockReset().mockResolvedValue('token-new');
   mockDeleteToken.mockReset().mockResolvedValue(undefined);
+  useContentState.data = [];
   installSvgStubs();
 });
 
@@ -1173,6 +1211,49 @@ describe('MapLiveScreen', () => {
     // pas un second write d'image) — preuve de la synchro inline sur le doc.
     const [, , , input] = mockCreateTokenWithId.mock.calls[0]!;
     expect((input as { imageDataUrl?: string }).imageDataUrl).toBe(portrait);
+  });
+
+  it('« + Bestiaire » ouvre le sélecteur puis crée un jeton PNJ auto-rempli depuis le monstre', async () => {
+    useContentState.data = [GOBLIN_BESTIARY];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+
+    // Le sélecteur n'est pas monté tant qu'on n'a pas cliqué « + Bestiaire ».
+    expect(screen.queryByText('Ajouter depuis le bestiaire')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('map-live-add-monster'));
+    expect(screen.getByText('Ajouter depuis le bestiaire')).toBeInTheDocument();
+
+    // Tap sur le monstre → création d'un jeton avec autofill (kind/label/vision).
+    fireEvent.click(screen.getByTestId('monster-pick-gobelin'));
+    await waitFor(() => {
+      expect(mockCreateTokenWithId).toHaveBeenCalledTimes(1);
+    });
+    const [, , , input] = mockCreateTokenWithId.mock.calls[0]!;
+    expect(input).toMatchObject({
+      kind: 'pnj',
+      label: 'Gobelin',
+      visionRadius: 60,
+      color: '#f87171',
+    });
+    // Le sélecteur se referme après le choix.
+    await waitFor(() => {
+      expect(
+        screen.queryByText('Ajouter depuis le bestiaire'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it('« + Bestiaire » numérote le 2ᵉ monstre déposé du même nom', async () => {
+    useContentState.data = [GOBLIN_BESTIARY];
+    useMapState.tokens = [mkToken({ id: 't1', kind: 'pnj', label: 'Gobelin' })];
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+
+    fireEvent.click(screen.getByTestId('map-live-add-monster'));
+    fireEvent.click(screen.getByTestId('monster-pick-gobelin'));
+    await waitFor(() => {
+      expect(mockCreateTokenWithId).toHaveBeenCalledTimes(1);
+    });
+    const [, , , input] = mockCreateTokenWithId.mock.calls[0]!;
+    expect((input as { label: string }).label).toBe('Gobelin 2');
   });
 
   it('retirer le portrait écrit imageDataUrl:null sur le doc (updateToken partiel)', async () => {
