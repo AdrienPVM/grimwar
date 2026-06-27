@@ -184,7 +184,12 @@ export function MapScene({
       )}
 
       {map.lightingEnabled && (
-        <LightLayer lights={map.lightSources} tokenPositions={tokenPositions} />
+        <LightLayer
+          lights={map.lightSources}
+          tokenPositions={tokenPositions}
+          walls={walls}
+          bounds={{ width: MAP_VIEWBOX_W, height: MAP_VIEWBOX_H }}
+        />
       )}
 
       {/* Templates AoE — overlays tactiques posés par le MJ. Rendus au-dessus du

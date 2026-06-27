@@ -97,6 +97,74 @@ describe('MapScene — intégration LOS → fog', () => {
   });
 });
 
+describe('MapScene — lumière occultée par les murs', () => {
+  // Source à gauche du mur vertical x=200 (cf. makeMap), rayon large.
+  const litMap = (overrides: Partial<MapMeta> = {}): MapMeta =>
+    makeMap({
+      lightingEnabled: true,
+      lightSources: [
+        {
+          id: 'lum-1',
+          position: { x: 100, y: 350 },
+          brightRadius: 150,
+          dimRadius: 150,
+          color: '#fbbf24',
+          preset: null,
+        },
+      ],
+      ...overrides,
+    });
+
+  it('découpe la lumière par un clipPath quand des murs existent', () => {
+    const { getByTestId } = renderScene(litMap(), []);
+    // Le clipPath de visibilité est présent…
+    expect(getByTestId('light-clip-lum-1')).toBeTruthy();
+    // …et le cercle de tint le référence (la lumière est bornée par la LOS).
+    const circle = getByTestId('light-source-lum-1');
+    expect(circle.getAttribute('clip-path')).toBe('url(#light-clip-lum-1)');
+  });
+
+  it('NE découpe PAS la lumière en l’absence de mur (cercle plein, compat)', () => {
+    const { getByTestId, queryByTestId } = renderScene(
+      litMap({ walls: [] }),
+      [],
+    );
+    expect(queryByTestId('light-clip-lum-1')).toBeNull();
+    const circle = getByTestId('light-source-lum-1');
+    expect(circle.getAttribute('clip-path')).toBeNull();
+  });
+
+  it('le rayon traversant un mur est coupé AU mur (occlusion réelle)', () => {
+    // Source en (100,350), rayon total 300. Le mur vertical x=200 (y∈[100,600])
+    // barre la route droit devant : le rayon à l'horizontale (y≈350) DOIT
+    // s'arrêter à x≈200, et non atteindre x=400 (100+300) comme un cercle plein.
+    // (La lumière peut légitimement déborder PAR LES BOUTS d'un mur fini — on
+    //  teste donc le rayon qui le traverse de plein fouet, pas l'extension max.)
+    const parsePolygon = (testId: string): { x: number; y: number }[] =>
+      (
+        (getByTestId(testId).querySelector('polygon')?.getAttribute('points') ??
+          '')
+          .trim()
+          .split(/\s+/)
+      ).map((pair) => {
+        const [x, y] = pair.split(',').map(Number);
+        return { x: x ?? 0, y: y ?? 0 };
+      });
+
+    const { getByTestId } = renderScene(litMap(), []);
+    const pts = parsePolygon('light-clip-lum-1');
+    expect(pts.length).toBeGreaterThanOrEqual(3);
+    // Sommet le plus proche de l'horizontale droite (y≈350) : c'est le rayon
+    // qui traverse le mur de plein fouet.
+    const onAxis = pts
+      .filter((p) => p.x > 100 && Math.abs(p.y - 350) < 3)
+      .sort((a, b) => b.x - a.x)[0];
+    expect(onAxis).toBeTruthy();
+    expect(onAxis!.x).toBeGreaterThan(195); // touche bien le mur
+    expect(onAxis!.x).toBeLessThanOrEqual(205); // sans le franchir (≠ x=400)
+  });
+});
+
 describe('MapScene — rendu des templates AoE', () => {
   it("ne rend aucune couche AoE quand la liste est vide", () => {
     const { queryByTestId } = renderScene(makeMap(), [token]);
