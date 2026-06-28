@@ -77,10 +77,7 @@ export function CharacterSheet({
     hasEquippedBodyArmor: derived.hasEquippedBodyArmor,
     magicItemsAcBonus: derived.magicItemsAcBonus,
   });
-  const displayedSpeed = computeDisplayedSpeed(
-    character.speed,
-    derived.activeMagicEffects,
-  );
+  const displayedSpeed = computeDisplayedSpeed(character.speed, derived.activeMagicEffects);
 
   return (
     <main
@@ -100,7 +97,15 @@ export function CharacterSheet({
         élargi pour laisser respirer les listes / cercles d'incantation.
       */}
       <div className="lg:mx-auto lg:grid lg:max-w-[1240px] lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-2 xl:max-w-[1440px] xl:grid-cols-[320px_minmax(0,1fr)] xl:gap-10">
-        <aside className="sheet-desktop-aside lg:sticky lg:top-2 lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:py-2">
+        {/*
+          `contents` à <lg : l'aside ne génère PAS de boîte sur mobile/tablette,
+          ses enfants (hero + status + onglets) remontent dans la grille pleine
+          hauteur. Indispensable pour l'épinglage des onglets : le conteneur
+          d'épinglage devient la grille (toute la fiche), pas l'aside — sinon la
+          barre d'onglets, dernier enfant de l'aside, n'aurait aucune portée
+          d'épinglage. `lg:block` rétablit la boîte pour la sidebar sticky desktop.
+        */}
+        <aside className="sheet-desktop-aside contents lg:block lg:sticky lg:top-2 lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:py-2">
           <HeroCard character={character} />
           <StatusStrip
             character={character}

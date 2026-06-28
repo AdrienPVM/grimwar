@@ -63,7 +63,17 @@
 
 html,
 body {
+  /* Empêche le scroll horizontal parasite (couches décoratives larges). On
+     évite `overflow-x: hidden` SEUL : quand un axe est `hidden`, l'autre axe
+     `visible` est recalculé en `auto` par la spec — `<body>` devient alors un
+     conteneur de défilement et CASSE tout `position: sticky` relatif au viewport
+     (barre d'onglets de fiche, NavShell…). `overflow-x: clip` coupe à
+     l'identique SANS créer ce conteneur de défilement : `overflow-y` reste
+     `visible`, le viewport reste le scrollport, le sticky fonctionne.
+     Forme progressive : les très vieux navigateurs sans `clip` gardent `hidden`
+     (comportement actuel, zéro régression) ; les modernes prennent `clip`. */
   overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
 }
 
