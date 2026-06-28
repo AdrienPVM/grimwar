@@ -1,17 +1,10 @@
 import type { JSX } from 'react';
 
 import { localize, t } from '@/shared/lib/i18n';
+import { formatCr } from '@/shared/lib/rules/challenge-rating';
 import type { Monster } from '@/shared/types/content';
 
 import { CodexField, CodexModalShell } from '../codex-ui';
-
-/** FP affiché en fraction lisible (1/8, 1/4, 1/2) sinon entier. */
-export function formatCr(cr: number): string {
-  if (cr === 0.125) return '1/8';
-  if (cr === 0.25) return '1/4';
-  if (cr === 0.5) return '1/2';
-  return String(cr);
-}
 
 /** Vitesses non nulles → « 9 m, vol 18 m » (pieds → mètres, convention FR). */
 function formatSpeed(speed: Monster['speed']): string {

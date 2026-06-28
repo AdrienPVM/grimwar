@@ -3,15 +3,8 @@ import { useId, useMemo, useState, type JSX } from 'react';
 import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { formatCr } from '@/shared/lib/rules/challenge-rating';
 import type { Monster } from '@/shared/types/content';
-
-/** FP affiché en fraction lisible (1/8, 1/4, 1/2) sinon entier. */
-function formatCr(cr: number): string {
-  if (cr === 0.125) return '1/8';
-  if (cr === 0.25) return '1/4';
-  if (cr === 0.5) return '1/2';
-  return String(cr);
-}
 
 interface Props {
   open: boolean;

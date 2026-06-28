@@ -4,6 +4,7 @@ import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { formatCr } from '@/shared/lib/rules/challenge-rating';
 import type { Monster } from '@/shared/types/content';
 
 import {
@@ -14,7 +15,7 @@ import {
   CodexSearchField,
 } from '../codex-ui';
 
-import { MonsterStatBlock, formatCr } from './monster-stat-block';
+import { MonsterStatBlock } from './monster-stat-block';
 
 /**
  * Navigateur de bestiaire du Codex (directive 2026-06-27). Recherche par nom +
