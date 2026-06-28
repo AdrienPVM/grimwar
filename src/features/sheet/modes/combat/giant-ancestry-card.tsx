@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
 import { useUpdateCharacter } from '../../use-update-character';
@@ -82,33 +82,33 @@ export function GiantAncestryCard({
   return (
     <Card>
       <CardHeader>
-        <h3>Ascendance gigante</h3>
+        <h3>{t('sheet.combat.giant.cardTitle')}</h3>
       </CardHeader>
       <div
         className={cn(
           'flex flex-col gap-3 rounded-card-sm border border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.06] to-gold/[0.02] p-4',
           readOnly && 'opacity-60',
         )}
-        aria-label={`Trait Ascendance gigante : ${giantName}`}
+        aria-label={t('sheet.combat.giant.regionLabel').replace('{name}', giantName)}
       >
         <div className="flex items-center justify-between gap-3">
           <span className="font-display text-[16px] text-gold-bright">{giantName}</span>
           <span className="font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
-            Par repos long
+            {t('sheet.combat.perLongRest')}
           </span>
         </div>
         <p className="font-serif text-[13px] text-text">{effect}</p>
         <div className="flex items-center justify-between gap-3 border-t border-gold-dim/20 pt-3">
           <span className="font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
-            Utilisations
+            {t('sheet.combat.uses')}
           </span>
           <UsageCounter
             current={current}
             max={max}
             readOnly={readOnly}
             busy={busy}
-            spendLabel={`Dépenser une utilisation d'Ascendance gigante (${giantName})`}
-            restoreLabel={`Récupérer une utilisation d'Ascendance gigante (${giantName})`}
+            spendLabel={t('sheet.combat.giant.spendLabel').replace('{name}', giantName)}
+            restoreLabel={t('sheet.combat.giant.restoreLabel').replace('{name}', giantName)}
             onSpend={() => void setUses(current - 1)}
             onRestore={() => void setUses(current + 1)}
           />

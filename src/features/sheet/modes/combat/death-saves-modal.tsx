@@ -1,6 +1,7 @@
 import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -43,7 +44,7 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
     // l'app n'avance arbitrairement le compteur.
     const roll = await dice.rollD20Plus(0, {
       character,
-      label: 'Jet de mort',
+      label: t('sheet.combat.death.rollLabel'),
       kind: 'death-save',
       silent: true,
     });
@@ -57,9 +58,9 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
       });
       showToast({
         kind: 'crit',
-        title: 'Réveil miraculeux !',
+        title: t('sheet.combat.death.revivedTitle'),
         big: 'Nat 20',
-        sub: `${character.name} se relève à 1 PV`,
+        sub: t('sheet.combat.death.revivedSub').replace('{name}', character.name),
         durationMs: 3000,
       });
       return;
@@ -68,9 +69,9 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
       await updateCharacter({ deathSaves: outcome.deathSaves });
       showToast({
         kind: 'heal',
-        title: 'Stabilisé(e)',
+        title: t('sheet.combat.death.stabilizedTitle'),
         big: '3✓',
-        sub: `${character.name} reste à 0 PV mais ne meurt pas`,
+        sub: t('sheet.combat.death.stabilizedSub').replace('{name}', character.name),
         durationMs: 3000,
       });
       return;
@@ -79,9 +80,9 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
       await updateCharacter({ deathSaves: outcome.deathSaves, status: 'dead' });
       showToast({
         kind: 'grim',
-        title: 'Mort confirmée',
+        title: t('sheet.combat.death.deadTitle'),
         big: '✦',
-        sub: `${character.name} s'éteint`,
+        sub: t('sheet.combat.death.deadSub').replace('{name}', character.name),
         durationMs: 3500,
       });
       return;
@@ -89,13 +90,14 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
     await updateCharacter({ deathSaves: outcome.deathSaves });
     showToast({
       kind: natural === 1 ? 'fumble' : natural >= 10 ? 'roll' : 'damage',
-      title: 'Jet de mort',
+      title: t('sheet.combat.death.rollLabel'),
       big: `${natural}`,
-      sub: natural === 1
-        ? '+2 échecs'
-        : natural >= 10
-          ? '+1 succès'
-          : '+1 échec',
+      sub:
+        natural === 1
+          ? t('sheet.combat.death.twoFails')
+          : natural >= 10
+            ? t('sheet.combat.death.oneSuccess')
+            : t('sheet.combat.death.oneFail'),
     });
   }
 
@@ -107,9 +109,9 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
     });
     showToast({
       kind: 'heal',
-      title: 'Ressuscité(e) !',
+      title: t('sheet.combat.death.reviveTitle'),
       big: '✦',
-      sub: `${character.name} revient à la vie`,
+      sub: t('sheet.combat.death.reviveSub').replace('{name}', character.name),
       durationMs: 3000,
     });
   }
@@ -129,24 +131,27 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
             'text-crimson [text-shadow:0_0_24px_rgba(232,90,90,0.5)]',
           )}
         >
-          {isDead ? '✦ Mort ✦' : '✦ Agonie ✦'}
+          {isDead
+            ? t('sheet.combat.death.headingDead')
+            : t('sheet.combat.death.headingDying')}
         </h2>
         <p className="mb-6 mt-2 font-serif italic text-text-secondary">
-          {isDead
-            ? `${character.name} a succombé. Seule la résurrection peut le ramener.`
-            : `${character.name} lutte contre la fin. Tente trois sauvegardes contre la mort.`}
+          {(isDead
+            ? t('sheet.combat.death.proseDead')
+            : t('sheet.combat.death.proseDying')
+          ).replace('{name}', character.name)}
         </p>
 
         <div className="mb-6 flex flex-col gap-3">
           <div className="flex items-center justify-between rounded-[14px] border border-white-8 bg-ink/40 px-5 py-3">
             <span className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-teal">
-              Succès
+              {t('sheet.combat.death.successes')}
             </span>
             <Dots count={character.deathSaves.success} tone="success" />
           </div>
           <div className="flex items-center justify-between rounded-[14px] border border-white-8 bg-ink/40 px-5 py-3">
             <span className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-crimson">
-              Échecs
+              {t('sheet.combat.death.failures')}
             </span>
             <Dots count={character.deathSaves.fail} tone="fail" />
           </div>
@@ -158,7 +163,7 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
             onClick={() => void rollDeathSave()}
             className="mb-3 w-full rounded-[14px] border border-crimson bg-gradient-to-b from-crimson to-[#b73838] py-4 font-display text-[16px] font-extrabold uppercase tracking-[0.2em] text-white shadow-[0_4px_20px_rgba(232,90,90,0.4)] transition-all hover:-translate-y-px hover:shadow-[0_8px_28px_rgba(232,90,90,0.5)] active:scale-[0.97]"
           >
-            Lancer une sauvegarde
+            {t('sheet.combat.death.rollButton')}
           </button>
         )}
 
@@ -169,13 +174,13 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
             onClick={() => void revive()}
             className="w-full"
           >
-            ✦ Ressusciter ✦
+            {t('sheet.combat.death.reviveButton')}
           </Button>
         )}
 
         {isDead && !isDM && (
           <p className="font-serif text-body-sm italic text-text-tertiary">
-            Seul le MJ peut tenter la résurrection.
+            {t('sheet.combat.death.dmOnlyRevive')}
           </p>
         )}
       </div>

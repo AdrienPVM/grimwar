@@ -105,14 +105,14 @@ function buildCharacter(conditions: string[]): Character {
 describe('ConditionsRow — lecture de la règle SRD + retrait depuis la modale', () => {
   it('le chip affiche le libellé FR officiel de l\'état actif', () => {
     render(<ConditionsRow character={buildCharacter(['blinded'])} readOnly={false} />);
-    expect(screen.getByRole('button', { name: /Voir le détail de l'état Aveuglé/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Voir le détail de l’état Aveuglé/ })).toBeInTheDocument();
   });
 
   it('tap sur le chip ouvre la modale avec la description SRD EXACTE (identité, pas présence)', async () => {
     const user = userEvent.setup();
     render(<ConditionsRow character={buildCharacter(['blinded'])} readOnly={false} />);
 
-    await user.click(screen.getByRole('button', { name: /Voir le détail de l'état Aveuglé/ }));
+    await user.click(screen.getByRole('button', { name: /Voir le détail de l’état Aveuglé/ }));
 
     const dialog = screen.getByRole('dialog');
     // Titre = name.fr exact, corps = description.fr exacte (depuis le bundle).
@@ -124,7 +124,7 @@ describe('ConditionsRow — lecture de la règle SRD + retrait depuis la modale'
     const user = userEvent.setup();
     render(<ConditionsRow character={buildCharacter(['blinded'])} readOnly={false} />);
 
-    await user.click(screen.getByRole('button', { name: /Voir le détail de l'état Aveuglé/ }));
+    await user.click(screen.getByRole('button', { name: /Voir le détail de l’état Aveuglé/ }));
     await user.click(screen.getByRole('button', { name: /Retirer cet état/ }));
 
     expect(updateCharacterMock).toHaveBeenCalledWith({ conditions: [] });
@@ -134,7 +134,7 @@ describe('ConditionsRow — lecture de la règle SRD + retrait depuis la modale'
     const user = userEvent.setup();
     render(<ConditionsRow character={buildCharacter(['blinded'])} readOnly={true} />);
 
-    await user.click(screen.getByRole('button', { name: /Voir le détail de l'état Aveuglé/ }));
+    await user.click(screen.getByRole('button', { name: /Voir le détail de l’état Aveuglé/ }));
 
     const dialog = screen.getByRole('dialog');
     expect(within(dialog).getByText(blinded.description.fr)).toBeInTheDocument();

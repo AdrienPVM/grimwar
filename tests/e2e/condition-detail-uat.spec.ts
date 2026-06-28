@@ -44,7 +44,7 @@ test.describe('UAT — détail d\'un état (mode Combat)', () => {
     await page.getByRole('tab', { name: /^Combat$/i }).click();
 
     // La carte « États » montre le chip Aveuglé. Capture de la fiche avant tap.
-    const chip = page.getByRole('button', { name: /Voir le détail de l'état Aveuglé/ });
+    const chip = page.getByRole('button', { name: /Voir le détail de l’état Aveuglé/ });
     await expect(chip).toBeVisible();
     writeFileSync(
       path.join(UAT_DIR, '01-carte-etats-chip.png'),
@@ -77,7 +77,7 @@ test.describe('UAT — détail d\'un état (mode Combat)', () => {
     await dialog.getByRole('button', { name: /Retirer cet état/ }).click();
     await expect(dialog).toBeHidden();
     await expect(
-      page.getByRole('button', { name: /Voir le détail de l'état Aveuglé/ }),
+      page.getByRole('button', { name: /Voir le détail de l’état Aveuglé/ }),
     ).toBeHidden();
   });
 });

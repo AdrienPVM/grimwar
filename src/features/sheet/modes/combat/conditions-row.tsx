@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -57,7 +57,9 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
     const cond = byId.get(id);
     showToast({
       kind: 'info',
-      title: present ? 'État retiré' : 'État appliqué',
+      title: present
+        ? t('sheet.combat.conditions.removed')
+        : t('sheet.combat.conditions.applied'),
       sub: cond ? localize(cond.name) : id,
     });
   }
@@ -65,7 +67,7 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
   return (
     <Card>
       <CardHeader>
-        <h3>États</h3>
+        <h3>{t('sheet.combat.conditions.cardTitle')}</h3>
       </CardHeader>
       <div className="flex flex-wrap gap-2">
         {activeIds.map((id) => {
@@ -76,7 +78,7 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
               key={id}
               type="button"
               onClick={() => setDetailId(id)}
-              aria-label={`Voir le détail de l'état ${label}`}
+              aria-label={t('sheet.combat.conditions.detailAria').replace('{name}', label)}
               className="inline-flex items-center gap-1.5 rounded-pill border border-crimson/40 bg-crimson/10 px-3 py-1 font-title text-[10px] font-bold uppercase tracking-[0.14em] text-crimson transition-colors hover:border-crimson hover:bg-crimson/20"
             >
               {label}
@@ -85,7 +87,7 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
         })}
         {activeIds.length === 0 && (
           <span className="font-serif text-body-sm italic text-text-tertiary">
-            Aucun état actif.
+            {t('sheet.combat.conditions.none')}
           </span>
         )}
         <button
@@ -101,7 +103,7 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
           )}
           aria-expanded={pickerOpen}
         >
-          + État
+          {t('sheet.combat.conditions.add')}
         </button>
       </div>
 
@@ -111,13 +113,13 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher un état…"
+            placeholder={t('sheet.combat.conditions.searchPlaceholder')}
             className="mb-3 w-full rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2 font-serif text-body-sm text-text outline-none transition-colors placeholder:italic placeholder:text-text-faint focus:border-gold"
           />
           <div className="flex flex-wrap gap-2">
             {filtered.length === 0 ? (
               <p className="w-full text-center font-serif text-body-sm italic text-text-tertiary">
-                Aucun état correspondant.
+                {t('sheet.combat.conditions.noMatch')}
               </p>
             ) : (
               filtered.map((c) => (

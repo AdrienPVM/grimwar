@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus } from '@/shared/lib/rules/multiclass';
 import type { Character } from '@/shared/types/character';
@@ -95,22 +95,22 @@ export function BreathWeaponCard({
   return (
     <Card>
       <CardHeader>
-        <h3>Souffle draconique</h3>
+        <h3>{t('sheet.combat.breath.cardTitle')}</h3>
       </CardHeader>
       <div
         className={cn(
           'flex flex-col gap-3 rounded-card-sm border border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.06] to-gold/[0.02] p-4',
           readOnly && 'opacity-60',
         )}
-        aria-label={`Souffle draconique du dragon ${dragonName}`}
+        aria-label={t('sheet.combat.breath.regionLabel').replace('{dragon}', dragonName)}
       >
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col">
             <span className="font-display text-[16px] text-gold-bright">
-              Dragon {dragonName}
+              {t('sheet.combat.breath.dragonLabel').replace('{dragon}', dragonName)}
             </span>
             <span className="font-serif text-[13px] text-text-tertiary">
-              Cône de 4,50 m ou Ligne de 9 m × 1,50 m
+              {t('sheet.combat.breath.shape')}
             </span>
           </div>
           <span
@@ -123,19 +123,19 @@ export function BreathWeaponCard({
         <dl className="grid grid-cols-3 gap-3 font-serif text-[13px]">
           <div className="flex flex-col">
             <dt className="font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-              Dégâts
+              {t('sheet.combat.breath.statDamage')}
             </dt>
             <dd className="text-text">{diceFormula}</dd>
           </div>
           <div className="flex flex-col">
             <dt className="font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-              DD Dextérité
+              {t('sheet.combat.breath.statDc')}
             </dt>
             <dd className="text-text">{dc}</dd>
           </div>
           <div className="flex flex-col">
             <dt className="font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-              Résistance
+              {t('sheet.combat.breath.statResist')}
             </dt>
             <dd className="text-text">{damageLabel}</dd>
           </div>
@@ -143,10 +143,10 @@ export function BreathWeaponCard({
         <div className="flex items-center justify-between gap-3 border-t border-gold-dim/20 pt-3">
           <span className="flex min-w-0 flex-col">
             <span className="font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
-              Utilisations
+              {t('sheet.combat.uses')}
             </span>
             <span className="font-serif text-[12px] italic text-text-tertiary">
-              Action Attaque · par repos long
+              {t('sheet.combat.breath.cadence')}
             </span>
           </span>
           <UsageCounter
@@ -154,8 +154,8 @@ export function BreathWeaponCard({
             max={maxUses}
             readOnly={readOnly}
             busy={busy}
-            spendLabel={`Dépenser une utilisation de Souffle draconique (dragon ${dragonName})`}
-            restoreLabel={`Récupérer une utilisation de Souffle draconique (dragon ${dragonName})`}
+            spendLabel={t('sheet.combat.breath.spendLabel').replace('{dragon}', dragonName)}
+            restoreLabel={t('sheet.combat.breath.restoreLabel').replace('{dragon}', dragonName)}
             onSpend={() => void setUses(currentUses - 1)}
             onRestore={() => void setUses(currentUses + 1)}
           />

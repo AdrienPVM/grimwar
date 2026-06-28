@@ -438,6 +438,102 @@ export type StringKey =
   | 'sheet.combat.concentration.checkBig'
   | 'sheet.combat.concentration.checkSub'
   | 'sheet.combat.concentration.lostUnconscious'
+  // Mode Combat — cartes, toasts et libellés a11y (i18n complète, FR+EN)
+  | 'sheet.combat.uses'
+  | 'sheet.combat.perLongRest'
+  | 'sheet.combat.death.rollLabel'
+  | 'sheet.combat.death.revivedTitle'
+  | 'sheet.combat.death.revivedSub'
+  | 'sheet.combat.death.stabilizedTitle'
+  | 'sheet.combat.death.stabilizedSub'
+  | 'sheet.combat.death.deadTitle'
+  | 'sheet.combat.death.deadSub'
+  | 'sheet.combat.death.twoFails'
+  | 'sheet.combat.death.oneSuccess'
+  | 'sheet.combat.death.oneFail'
+  | 'sheet.combat.death.reviveTitle'
+  | 'sheet.combat.death.reviveSub'
+  | 'sheet.combat.death.headingDead'
+  | 'sheet.combat.death.headingDying'
+  | 'sheet.combat.death.proseDead'
+  | 'sheet.combat.death.proseDying'
+  | 'sheet.combat.death.successes'
+  | 'sheet.combat.death.failures'
+  | 'sheet.combat.death.rollButton'
+  | 'sheet.combat.death.reviveButton'
+  | 'sheet.combat.death.dmOnlyRevive'
+  | 'sheet.combat.hp.cardTitle'
+  | 'sheet.combat.hp.damageTakenTitle'
+  | 'sheet.combat.hp.fraction'
+  | 'sheet.combat.hp.massiveDeathTitle'
+  | 'sheet.combat.hp.massiveDeathSub'
+  | 'sheet.combat.hp.healTitle'
+  | 'sheet.combat.hp.tempTitle'
+  | 'sheet.combat.hp.tempBuffer'
+  | 'sheet.combat.hp.tempRemoved'
+  | 'sheet.combat.hp.tempEdit'
+  | 'sheet.combat.hp.tempShort'
+  | 'sheet.combat.hp.tempAdd'
+  | 'sheet.combat.hp.liveLabel'
+  | 'sheet.combat.hp.controlsHint'
+  | 'sheet.combat.hp.band.healthy'
+  | 'sheet.combat.hp.band.wounded'
+  | 'sheet.combat.hp.band.critical'
+  | 'sheet.combat.hp.band.dead'
+  | 'sheet.combat.attacks.cardTitle'
+  | 'sheet.combat.attacks.emptyPre'
+  | 'sheet.combat.attacks.emptyPost'
+  | 'sheet.combat.attacks.ranged'
+  | 'sheet.combat.attacks.melee'
+  | 'sheet.combat.attacks.menuAdvantage'
+  | 'sheet.combat.attacks.menuDisadvantage'
+  | 'sheet.combat.attacks.menuCrit'
+  | 'sheet.combat.hud.action'
+  | 'sheet.combat.hud.bonus'
+  | 'sheet.combat.hud.reaction'
+  | 'sheet.combat.hud.endTurnTitle'
+  | 'sheet.combat.hud.endTurnSub'
+  | 'sheet.combat.hud.inspirationTitle'
+  | 'sheet.combat.hud.inspirationGranted'
+  | 'sheet.combat.hud.inspirationRemoved'
+  | 'sheet.combat.hud.initiativeLabel'
+  | 'sheet.combat.hud.initShort'
+  | 'sheet.combat.hud.inspirationGrantAria'
+  | 'sheet.combat.hud.inspirationRemoveAria'
+  | 'sheet.combat.hud.inspirationButton'
+  | 'sheet.combat.hud.endTurnButton'
+  | 'sheet.combat.breath.cardTitle'
+  | 'sheet.combat.breath.regionLabel'
+  | 'sheet.combat.breath.dragonLabel'
+  | 'sheet.combat.breath.shape'
+  | 'sheet.combat.breath.statDamage'
+  | 'sheet.combat.breath.statDc'
+  | 'sheet.combat.breath.statResist'
+  | 'sheet.combat.breath.cadence'
+  | 'sheet.combat.breath.spendLabel'
+  | 'sheet.combat.breath.restoreLabel'
+  | 'sheet.combat.conditions.cardTitle'
+  | 'sheet.combat.conditions.removed'
+  | 'sheet.combat.conditions.applied'
+  | 'sheet.combat.conditions.detailAria'
+  | 'sheet.combat.conditions.none'
+  | 'sheet.combat.conditions.add'
+  | 'sheet.combat.conditions.searchPlaceholder'
+  | 'sheet.combat.conditions.noMatch'
+  | 'sheet.combat.fightingStyle.cardTitle'
+  | 'sheet.combat.fightingStyle.regionLabel'
+  | 'sheet.combat.giant.cardTitle'
+  | 'sheet.combat.giant.regionLabel'
+  | 'sheet.combat.giant.spendLabel'
+  | 'sheet.combat.giant.restoreLabel'
+  | 'sheet.combat.party.cardTitle'
+  | 'sheet.combat.party.comingSoon'
+  | 'sheet.combat.party.noCampaign'
+  | 'sheet.combat.slots.cardTitle'
+  | 'sheet.combat.slots.toastTitle'
+  | 'sheet.combat.slots.levelShort'
+  | 'sheet.combat.slots.dotConsume'
+  | 'sheet.combat.slots.dotConsumed'
   | 'sheet.essence.languages.title'
   | 'sheet.essence.proficiencies.title'
   | 'sheet.essence.proficiencies.armor'
@@ -2529,6 +2625,109 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.concentration.checkSub':
       'Jet de sauvegarde de Constitution pour la maintenir.',
     'sheet.combat.concentration.lostUnconscious': 'Concentration rompue · inconscient',
+    // Mode Combat — cartes, toasts et libellés a11y
+    'sheet.combat.uses': 'Utilisations',
+    'sheet.combat.perLongRest': 'Par repos long',
+    'sheet.combat.death.rollLabel': 'Jet de mort',
+    'sheet.combat.death.revivedTitle': 'Réveil miraculeux !',
+    'sheet.combat.death.revivedSub': '{name} se relève à 1 PV',
+    'sheet.combat.death.stabilizedTitle': 'Stabilisé(e)',
+    'sheet.combat.death.stabilizedSub': '{name} reste à 0 PV mais ne meurt pas',
+    'sheet.combat.death.deadTitle': 'Mort confirmée',
+    'sheet.combat.death.deadSub': '{name} s’éteint',
+    'sheet.combat.death.twoFails': '+2 échecs',
+    'sheet.combat.death.oneSuccess': '+1 succès',
+    'sheet.combat.death.oneFail': '+1 échec',
+    'sheet.combat.death.reviveTitle': 'Ressuscité(e) !',
+    'sheet.combat.death.reviveSub': '{name} revient à la vie',
+    'sheet.combat.death.headingDead': '✦ Mort ✦',
+    'sheet.combat.death.headingDying': '✦ Agonie ✦',
+    'sheet.combat.death.proseDead': '{name} a succombé. Seule la résurrection peut le ramener.',
+    'sheet.combat.death.proseDying':
+      '{name} lutte contre la fin. Tente trois sauvegardes contre la mort.',
+    'sheet.combat.death.successes': 'Succès',
+    'sheet.combat.death.failures': 'Échecs',
+    'sheet.combat.death.rollButton': 'Lancer une sauvegarde',
+    'sheet.combat.death.reviveButton': '✦ Ressusciter ✦',
+    'sheet.combat.death.dmOnlyRevive': 'Seul le MJ peut tenter la résurrection.',
+    'sheet.combat.hp.cardTitle': 'Vitalité',
+    'sheet.combat.hp.damageTakenTitle': 'Dégâts subis',
+    'sheet.combat.hp.fraction': '{current}/{max} PV',
+    'sheet.combat.hp.massiveDeathTitle': 'Mort foudroyante',
+    'sheet.combat.hp.massiveDeathSub': 'Dégâts massifs — pas de jet de mort',
+    'sheet.combat.hp.healTitle': 'Soin',
+    'sheet.combat.hp.tempTitle': 'PV temporaires',
+    'sheet.combat.hp.tempBuffer': 'Tampon avant les PV',
+    'sheet.combat.hp.tempRemoved': 'PV temporaires retirés',
+    'sheet.combat.hp.tempEdit': 'Modifier les PV temporaires ({n} actuellement)',
+    'sheet.combat.hp.tempShort': 'PV temp.',
+    'sheet.combat.hp.tempAdd': '+ PV temp.',
+    'sheet.combat.hp.liveLabel': '{current} sur {max} points de vie, état {band}',
+    'sheet.combat.hp.controlsHint': 'Appui bref = ±1 · Appui long = pavé numérique',
+    'sheet.combat.hp.band.healthy': 'Sain',
+    'sheet.combat.hp.band.wounded': 'Blessé',
+    'sheet.combat.hp.band.critical': 'Critique',
+    'sheet.combat.hp.band.dead': 'Inconscient',
+    'sheet.combat.attacks.cardTitle': 'Attaques',
+    'sheet.combat.attacks.emptyPre': 'Aucune arme équipée. Va dans ',
+    'sheet.combat.attacks.emptyPost': ' pour équiper une arme.',
+    'sheet.combat.attacks.ranged': 'Distance',
+    'sheet.combat.attacks.melee': 'Mêlée',
+    'sheet.combat.attacks.menuAdvantage': 'Avantage',
+    'sheet.combat.attacks.menuDisadvantage': 'Désav.',
+    'sheet.combat.attacks.menuCrit': 'Crit',
+    'sheet.combat.hud.action': 'Action',
+    'sheet.combat.hud.bonus': 'Bonus',
+    'sheet.combat.hud.reaction': 'Réaction',
+    'sheet.combat.hud.endTurnTitle': 'Fin du tour',
+    'sheet.combat.hud.endTurnSub': 'Économie d’action réinitialisée',
+    'sheet.combat.hud.inspirationTitle': 'Inspiration héroïque',
+    'sheet.combat.hud.inspirationGranted': 'Octroyée — relancez un test au choix.',
+    'sheet.combat.hud.inspirationRemoved': 'Retirée.',
+    'sheet.combat.hud.initiativeLabel': 'Initiative',
+    'sheet.combat.hud.initShort': 'Init.',
+    'sheet.combat.hud.inspirationGrantAria': 'Octroyer l’Inspiration héroïque',
+    'sheet.combat.hud.inspirationRemoveAria': 'Retirer l’Inspiration héroïque',
+    'sheet.combat.hud.inspirationButton': 'Inspiration',
+    'sheet.combat.hud.endTurnButton': 'Fin du tour',
+    'sheet.combat.breath.cardTitle': 'Souffle draconique',
+    'sheet.combat.breath.regionLabel': 'Souffle draconique du dragon {dragon}',
+    'sheet.combat.breath.dragonLabel': 'Dragon {dragon}',
+    'sheet.combat.breath.shape': 'Cône de 4,50 m ou Ligne de 9 m × 1,50 m',
+    'sheet.combat.breath.statDamage': 'Dégâts',
+    'sheet.combat.breath.statDc': 'DD Dextérité',
+    'sheet.combat.breath.statResist': 'Résistance',
+    'sheet.combat.breath.cadence': 'Action Attaque · par repos long',
+    'sheet.combat.breath.spendLabel':
+      'Dépenser une utilisation de Souffle draconique (dragon {dragon})',
+    'sheet.combat.breath.restoreLabel':
+      'Récupérer une utilisation de Souffle draconique (dragon {dragon})',
+    'sheet.combat.conditions.cardTitle': 'États',
+    'sheet.combat.conditions.removed': 'État retiré',
+    'sheet.combat.conditions.applied': 'État appliqué',
+    'sheet.combat.conditions.detailAria': 'Voir le détail de l’état {name}',
+    'sheet.combat.conditions.none': 'Aucun état actif.',
+    'sheet.combat.conditions.add': '+ État',
+    'sheet.combat.conditions.searchPlaceholder': 'Rechercher un état…',
+    'sheet.combat.conditions.noMatch': 'Aucun état correspondant.',
+    'sheet.combat.fightingStyle.cardTitle': 'Style de combat',
+    'sheet.combat.fightingStyle.regionLabel': 'Style de combat : {name}',
+    'sheet.combat.giant.cardTitle': 'Ascendance gigante',
+    'sheet.combat.giant.regionLabel': 'Trait Ascendance gigante : {name}',
+    'sheet.combat.giant.spendLabel':
+      'Dépenser une utilisation d’Ascendance gigante ({name})',
+    'sheet.combat.giant.restoreLabel':
+      'Récupérer une utilisation d’Ascendance gigante ({name})',
+    'sheet.combat.party.cardTitle': 'Compagnons',
+    'sheet.combat.party.comingSoon':
+      'Liste des compagnons disponible quand la synchronisation de campagne arrivera (plan 16).',
+    'sheet.combat.party.noCampaign':
+      'Aucune campagne rejointe. Rejoins ou crée une campagne pour voir tes compagnons.',
+    'sheet.combat.slots.cardTitle': 'Sortilèges',
+    'sheet.combat.slots.toastTitle': 'Emplacement niv. {n}',
+    'sheet.combat.slots.levelShort': 'Niv. {n}',
+    'sheet.combat.slots.dotConsume': 'Consommer un emplacement (appui long pour restaurer)',
+    'sheet.combat.slots.dotConsumed': 'Emplacement consommé (appui long pour restaurer)',
     'sheet.essence.languages.title': 'Langues',
     'sheet.essence.proficiencies.title': 'Maîtrises',
     'sheet.essence.proficiencies.armor': 'Armures',
@@ -5089,6 +5288,105 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.concentration.checkBig': 'DC {dc}',
     'sheet.combat.concentration.checkSub': 'Constitution saving throw to maintain it.',
     'sheet.combat.concentration.lostUnconscious': 'Concentration ended · unconscious',
+    // Combat mode — cards, toasts and a11y labels
+    'sheet.combat.uses': 'Uses',
+    'sheet.combat.perLongRest': 'Per long rest',
+    'sheet.combat.death.rollLabel': 'Death save',
+    'sheet.combat.death.revivedTitle': 'Miraculous revival!',
+    'sheet.combat.death.revivedSub': '{name} rises at 1 HP',
+    'sheet.combat.death.stabilizedTitle': 'Stabilized',
+    'sheet.combat.death.stabilizedSub': '{name} stays at 0 HP but does not die',
+    'sheet.combat.death.deadTitle': 'Death confirmed',
+    'sheet.combat.death.deadSub': '{name} fades away',
+    'sheet.combat.death.twoFails': '+2 failures',
+    'sheet.combat.death.oneSuccess': '+1 success',
+    'sheet.combat.death.oneFail': '+1 failure',
+    'sheet.combat.death.reviveTitle': 'Resurrected!',
+    'sheet.combat.death.reviveSub': '{name} comes back to life',
+    'sheet.combat.death.headingDead': '✦ Dead ✦',
+    'sheet.combat.death.headingDying': '✦ Dying ✦',
+    'sheet.combat.death.proseDead': '{name} has succumbed. Only resurrection can bring them back.',
+    'sheet.combat.death.proseDying':
+      '{name} fights against the end. Attempt three death saving throws.',
+    'sheet.combat.death.successes': 'Successes',
+    'sheet.combat.death.failures': 'Failures',
+    'sheet.combat.death.rollButton': 'Roll a saving throw',
+    'sheet.combat.death.reviveButton': '✦ Resurrect ✦',
+    'sheet.combat.death.dmOnlyRevive': 'Only the GM can attempt resurrection.',
+    'sheet.combat.hp.cardTitle': 'Vitality',
+    'sheet.combat.hp.damageTakenTitle': 'Damage taken',
+    'sheet.combat.hp.fraction': '{current}/{max} HP',
+    'sheet.combat.hp.massiveDeathTitle': 'Instant death',
+    'sheet.combat.hp.massiveDeathSub': 'Massive damage — no death save',
+    'sheet.combat.hp.healTitle': 'Healing',
+    'sheet.combat.hp.tempTitle': 'Temporary HP',
+    'sheet.combat.hp.tempBuffer': 'Buffer before HP',
+    'sheet.combat.hp.tempRemoved': 'Temporary HP removed',
+    'sheet.combat.hp.tempEdit': 'Edit temporary HP ({n} currently)',
+    'sheet.combat.hp.tempShort': 'Temp HP',
+    'sheet.combat.hp.tempAdd': '+ Temp HP',
+    'sheet.combat.hp.liveLabel': '{current} of {max} hit points, status {band}',
+    'sheet.combat.hp.controlsHint': 'Tap = ±1 · Long press = number pad',
+    'sheet.combat.hp.band.healthy': 'Healthy',
+    'sheet.combat.hp.band.wounded': 'Wounded',
+    'sheet.combat.hp.band.critical': 'Critical',
+    'sheet.combat.hp.band.dead': 'Unconscious',
+    'sheet.combat.attacks.cardTitle': 'Attacks',
+    'sheet.combat.attacks.emptyPre': 'No weapon equipped. Go to ',
+    'sheet.combat.attacks.emptyPost': ' to equip a weapon.',
+    'sheet.combat.attacks.ranged': 'Ranged',
+    'sheet.combat.attacks.melee': 'Melee',
+    'sheet.combat.attacks.menuAdvantage': 'Advantage',
+    'sheet.combat.attacks.menuDisadvantage': 'Disadv.',
+    'sheet.combat.attacks.menuCrit': 'Crit',
+    'sheet.combat.hud.action': 'Action',
+    'sheet.combat.hud.bonus': 'Bonus',
+    'sheet.combat.hud.reaction': 'Reaction',
+    'sheet.combat.hud.endTurnTitle': 'End of turn',
+    'sheet.combat.hud.endTurnSub': 'Action economy reset',
+    'sheet.combat.hud.inspirationTitle': 'Heroic inspiration',
+    'sheet.combat.hud.inspirationGranted': 'Granted — reroll any test of your choice.',
+    'sheet.combat.hud.inspirationRemoved': 'Removed.',
+    'sheet.combat.hud.initiativeLabel': 'Initiative',
+    'sheet.combat.hud.initShort': 'Init.',
+    'sheet.combat.hud.inspirationGrantAria': 'Grant Heroic Inspiration',
+    'sheet.combat.hud.inspirationRemoveAria': 'Remove Heroic Inspiration',
+    'sheet.combat.hud.inspirationButton': 'Inspiration',
+    'sheet.combat.hud.endTurnButton': 'End turn',
+    'sheet.combat.breath.cardTitle': 'Draconic breath',
+    'sheet.combat.breath.regionLabel': 'Draconic breath of the {dragon} dragon',
+    'sheet.combat.breath.dragonLabel': 'Dragon {dragon}',
+    'sheet.combat.breath.shape': 'Cone of 4.5 m or Line of 9 m × 1.5 m',
+    'sheet.combat.breath.statDamage': 'Damage',
+    'sheet.combat.breath.statDc': 'Dexterity DC',
+    'sheet.combat.breath.statResist': 'Resistance',
+    'sheet.combat.breath.cadence': 'Attack action · per long rest',
+    'sheet.combat.breath.spendLabel': 'Spend a use of Draconic Breath ({dragon} dragon)',
+    'sheet.combat.breath.restoreLabel': 'Restore a use of Draconic Breath ({dragon} dragon)',
+    'sheet.combat.conditions.cardTitle': 'Conditions',
+    'sheet.combat.conditions.removed': 'Condition removed',
+    'sheet.combat.conditions.applied': 'Condition applied',
+    'sheet.combat.conditions.detailAria': 'View details of the {name} condition',
+    'sheet.combat.conditions.none': 'No active condition.',
+    'sheet.combat.conditions.add': '+ Condition',
+    'sheet.combat.conditions.searchPlaceholder': 'Search for a condition…',
+    'sheet.combat.conditions.noMatch': 'No matching condition.',
+    'sheet.combat.fightingStyle.cardTitle': 'Fighting style',
+    'sheet.combat.fightingStyle.regionLabel': 'Fighting style: {name}',
+    'sheet.combat.giant.cardTitle': 'Giant ancestry',
+    'sheet.combat.giant.regionLabel': 'Giant Ancestry trait: {name}',
+    'sheet.combat.giant.spendLabel': 'Spend a use of Giant Ancestry ({name})',
+    'sheet.combat.giant.restoreLabel': 'Restore a use of Giant Ancestry ({name})',
+    'sheet.combat.party.cardTitle': 'Companions',
+    'sheet.combat.party.comingSoon':
+      'Companion list available once campaign sync arrives (plan 16).',
+    'sheet.combat.party.noCampaign':
+      'No campaign joined. Join or create a campaign to see your companions.',
+    'sheet.combat.slots.cardTitle': 'Spell slots',
+    'sheet.combat.slots.toastTitle': 'Level {n} slot',
+    'sheet.combat.slots.levelShort': 'Lvl {n}',
+    'sheet.combat.slots.dotConsume': 'Use a slot (long press to restore)',
+    'sheet.combat.slots.dotConsumed': 'Slot used (long press to restore)',
     'sheet.essence.languages.title': 'Languages',
     'sheet.essence.proficiencies.title': 'Proficiencies',
     'sheet.essence.proficiencies.armor': 'Armor',

@@ -158,7 +158,7 @@ describe('<GiantAncestryCard>', () => {
   it('« Dépenser » écrit featureUsage current=2 (clé ancestry-combat:giant-ancestry)', () => {
     render(<GiantAncestryCard character={buildCharacter()} readOnly={false} />);
     fireEvent.click(
-      screen.getByLabelText(/Dépenser une utilisation d'Ascendance gigante/),
+      screen.getByLabelText(/Dépenser une utilisation d’Ascendance gigante/),
     );
     expect(updateCharacterMock).toHaveBeenCalledTimes(1);
     expect(updateCharacterMock.mock.calls[0]![0]).toEqual({
@@ -171,7 +171,7 @@ describe('<GiantAncestryCard>', () => {
   it('« Récupérer » désactivé au plein', () => {
     render(<GiantAncestryCard character={buildCharacter()} readOnly={false} />);
     const restore = screen.getByLabelText(
-      /Récupérer une utilisation d'Ascendance gigante/,
+      /Récupérer une utilisation d’Ascendance gigante/,
     ) as HTMLButtonElement;
     expect(restore.disabled).toBe(true);
   });

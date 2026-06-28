@@ -44,7 +44,7 @@ test.describe('Ancestry — Goliath Storm (Tonnerre)', () => {
     await expect(counter).toContainText('2 / 2');
 
     // Dépenser → « 1 / 2 », persisté via les vraies security rules.
-    await card.getByLabel(/Dépenser une utilisation d'Ascendance gigante/).click();
+    await card.getByLabel(/Dépenser une utilisation d’Ascendance gigante/).click();
     await expect(counter).toContainText('1 / 2');
 
     // Reload → la consommation doit avoir été persistée (1 / 2).

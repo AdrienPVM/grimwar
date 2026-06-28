@@ -1,6 +1,7 @@
 import { Card, CardHeader } from '@/shared/components/card';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -40,7 +41,7 @@ export function SlotsCompact({ character, readOnly }: SlotsCompactProps): JSX.El
     });
     showToast({
       kind: 'info',
-      title: `Emplacement niv. ${level}`,
+      title: t('sheet.combat.slots.toastTitle').replace('{n}', String(level)),
       sub: `${next}/${slot.max}`,
     });
   }
@@ -48,7 +49,7 @@ export function SlotsCompact({ character, readOnly }: SlotsCompactProps): JSX.El
   return (
     <Card>
       <CardHeader>
-        <h3>Sortilèges</h3>
+        <h3>{t('sheet.combat.slots.cardTitle')}</h3>
       </CardHeader>
       <div className="flex flex-col gap-2">
         {levels.map((level) => {
@@ -90,7 +91,7 @@ function SlotRow({
   return (
     <div className="flex items-center gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] px-3 py-2">
       <span className="min-w-[60px] font-title text-[9px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
-        Niv. {level}
+        {t('sheet.combat.slots.levelShort').replace('{n}', String(level))}
       </span>
       <div className="flex flex-1 flex-wrap gap-1.5">
         {Array.from({ length: max }).map((_, i) => (
@@ -126,7 +127,9 @@ function SlotDot({ filled, readOnly, onConsume, onRestore }: SlotDotProps): JSX.
     <button
       type="button"
       disabled={readOnly}
-      aria-label={filled ? 'Consommer un emplacement (appui long pour restaurer)' : 'Emplacement consommé (appui long pour restaurer)'}
+      aria-label={
+        filled ? t('sheet.combat.slots.dotConsume') : t('sheet.combat.slots.dotConsumed')
+      }
       className={cn(
         'h-4 w-4 rounded-full border-[1.5px] transition-all',
         filled

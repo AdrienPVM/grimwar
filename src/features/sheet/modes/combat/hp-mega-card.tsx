@@ -4,7 +4,7 @@ import { Card, CardHeader } from '@/shared/components/card';
 import { Tooltip } from '@/shared/components/tooltip';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -13,11 +13,21 @@ import {
   applyDamage,
   applyHeal,
   concentrationSaveDc,
-  HP_BAND_LABEL,
   hpHealthBand,
   setTempHp,
   type HpHealthBand,
 } from './hp-combat';
+
+/**
+ * Clé i18n du libellé de bande affiché (la valeur FR doit rester alignée sur
+ * `HP_BAND_LABEL` de hp-combat.ts — source de vérité terminologique SRD testée).
+ */
+const HP_BAND_LABEL_KEYS: Record<HpHealthBand, StringKey> = {
+  healthy: 'sheet.combat.hp.band.healthy',
+  wounded: 'sheet.combat.hp.band.wounded',
+  critical: 'sheet.combat.hp.band.critical',
+  dead: 'sheet.combat.hp.band.dead',
+};
 import { NumberPad, type NumberPadIntent } from './number-pad';
 
 /**
@@ -54,7 +64,7 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
   const ratio = hp.max > 0 ? Math.max(0, Math.min(1, hp.current / hp.max)) : 0;
   const band = hpHealthBand(ratio);
   const pill = HP_BAND_PILL[band];
-  const label = HP_BAND_LABEL[band];
+  const label = t(HP_BAND_LABEL_KEYS[band]);
 
   async function applyDelta(delta: number): Promise<void> {
     if (readOnly || delta === 0) return;
@@ -73,16 +83,18 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
       await updateCharacter(patch);
       showToast({
         kind: 'damage',
-        title: 'Dégâts subis',
+        title: t('sheet.combat.hp.damageTakenTitle'),
         big: `−${-delta}`,
-        sub: `${result.hp.current}/${hp.max} PV`,
+        sub: t('sheet.combat.hp.fraction')
+          .replace('{current}', String(result.hp.current))
+          .replace('{max}', String(hp.max)),
       });
       if (result.triggeredMassiveDeath) {
         showToast({
           kind: 'grim',
-          title: 'Mort foudroyante',
+          title: t('sheet.combat.hp.massiveDeathTitle'),
           big: '✦',
-          sub: 'Dégâts massifs — pas de jet de mort',
+          sub: t('sheet.combat.hp.massiveDeathSub'),
           durationMs: 3000,
         });
       }
@@ -112,9 +124,11 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
       await updateCharacter({ hp: next });
       showToast({
         kind: 'heal',
-        title: 'Soin',
+        title: t('sheet.combat.hp.healTitle'),
         big: `+${delta}`,
-        sub: `${next.current}/${hp.max} PV`,
+        sub: t('sheet.combat.hp.fraction')
+          .replace('{current}', String(next.current))
+          .replace('{max}', String(hp.max)),
       });
     }
   }
@@ -130,9 +144,9 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
     await updateCharacter({ hp: next });
     showToast({
       kind: 'info',
-      title: 'PV temporaires',
+      title: t('sheet.combat.hp.tempTitle'),
       big: next.temp > 0 ? `+${next.temp}` : '0',
-      sub: next.temp > 0 ? 'Tampon avant les PV' : 'PV temporaires retirés',
+      sub: next.temp > 0 ? t('sheet.combat.hp.tempBuffer') : t('sheet.combat.hp.tempRemoved'),
     });
   }
 
@@ -158,7 +172,7 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
         />
 
         <CardHeader>
-          <h3>Vitalité</h3>
+          <h3>{t('sheet.combat.hp.cardTitle')}</h3>
         </CardHeader>
 
         <div className="relative flex flex-col items-center gap-3.5">
@@ -184,15 +198,19 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
               </span>
             </span>
             {hp.temp > 0 ? (
-              <Tooltip label={`Modifier les PV temporaires (${hp.temp} actuellement)`} decorative>
+              <Tooltip
+                label={t('sheet.combat.hp.tempEdit').replace('{n}', String(hp.temp))}
+                decorative
+              >
                 <button
                   type="button"
                   onClick={() => !readOnly && setPadIntent('temp')}
                   disabled={readOnly}
-                  aria-label={`Modifier les PV temporaires (${hp.temp} actuellement)`}
+                  aria-label={t('sheet.combat.hp.tempEdit').replace('{n}', String(hp.temp))}
                   className="inline-flex items-center gap-1.5 rounded-pill border border-amethyst/30 bg-amethyst/10 px-3 py-1 font-title text-micro font-bold uppercase text-amethyst transition-colors duration-200 ease-base hover:border-amethyst/60 hover:bg-amethyst/20 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  +{hp.temp} <span className="text-amethyst/70">PV temp.</span>
+                  +{hp.temp}{' '}
+                  <span className="text-amethyst/70">{t('sheet.combat.hp.tempShort')}</span>
                 </button>
               </Tooltip>
             ) : (
@@ -204,7 +222,7 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
                     aria-label={t('combat.hp.tempLabel')}
                     className="inline-flex items-center gap-1 rounded-pill border border-white-8 bg-white/[0.02] px-3 py-1 font-title text-micro font-bold uppercase text-text-tertiary transition-colors duration-200 ease-base hover:border-amethyst/40 hover:text-amethyst"
                   >
-                    + PV temp.
+                    {t('sheet.combat.hp.tempAdd')}
                   </button>
                 </Tooltip>
               )
@@ -216,7 +234,10 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
           <div
             className="flex items-baseline gap-2"
             aria-live="polite"
-            aria-label={`${hp.current} sur ${hp.max} points de vie, état ${label}`}
+            aria-label={t('sheet.combat.hp.liveLabel')
+              .replace('{current}', String(hp.current))
+              .replace('{max}', String(hp.max))
+              .replace('{band}', label)}
           >
             <span
               className={cn(
@@ -259,7 +280,7 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
             </Tooltip>
           </div>
           <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-faint">
-            Tap = ±1 · Long-press = pad numérique
+            {t('sheet.combat.hp.controlsHint')}
           </p>
         </div>
       </Card>

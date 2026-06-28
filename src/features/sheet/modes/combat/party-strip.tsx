@@ -1,4 +1,5 @@
 import { Card, CardHeader } from '@/shared/components/card';
+import { t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
 interface PartyStripProps {
@@ -16,15 +17,15 @@ export function PartyStrip({ character }: PartyStripProps): JSX.Element {
   return (
     <Card>
       <CardHeader>
-        <h3>Compagnons</h3>
+        <h3>{t('sheet.combat.party.cardTitle')}</h3>
       </CardHeader>
       {hasCampaign ? (
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Liste des compagnons disponible quand la synchronisation de campagne arrivera (plan 16).
+          {t('sheet.combat.party.comingSoon')}
         </p>
       ) : (
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Aucune campagne rejointe. Rejoins ou crée une campagne pour voir tes compagnons.
+          {t('sheet.combat.party.noCampaign')}
         </p>
       )}
     </Card>

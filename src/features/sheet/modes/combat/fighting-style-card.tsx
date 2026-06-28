@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import { getFighterFightingStyle } from '@/shared/lib/rules/weapon-mastery';
 import type { Character } from '@/shared/types/character';
 
@@ -51,14 +51,14 @@ export function FightingStyleCard({
   return (
     <Card>
       <CardHeader>
-        <h3>Style de combat</h3>
+        <h3>{t('sheet.combat.fightingStyle.cardTitle')}</h3>
       </CardHeader>
       <div
         className={cn(
           'flex flex-col gap-2 rounded-card-sm border border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.06] to-gold/[0.02] p-4',
           readOnly && 'opacity-60',
         )}
-        aria-label={`Style de combat : ${name}`}
+        aria-label={t('sheet.combat.fightingStyle.regionLabel').replace('{name}', name)}
       >
         <span className="font-display text-[16px] text-gold-bright">{name}</span>
         {summary && (

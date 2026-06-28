@@ -135,10 +135,12 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
     return (
       <Card>
         <CardHeader>
-          <h3>Attaques</h3>
+          <h3>{t('sheet.combat.attacks.cardTitle')}</h3>
         </CardHeader>
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Aucune arme équipée. Va dans <strong className="not-italic text-gold-bright">Avoir</strong> pour équiper une arme.
+          {t('sheet.combat.attacks.emptyPre')}
+          <strong className="not-italic text-gold-bright">{t('sheet.mode.avoir')}</strong>
+          {t('sheet.combat.attacks.emptyPost')}
         </p>
       </Card>
     );
@@ -147,7 +149,7 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
   return (
     <Card>
       <CardHeader>
-        <h3>Attaques</h3>
+        <h3>{t('sheet.combat.attacks.cardTitle')}</h3>
       </CardHeader>
       <div className="flex flex-col gap-2">
         {attacks.map((entry) => (
@@ -240,7 +242,8 @@ function AttackRow({
         <div className="flex-1 min-w-0">
           <div className="truncate font-serif text-body text-text">{name}</div>
           <div className="font-ui text-[11px] uppercase tracking-[0.12em] text-text-tertiary">
-            {entry.ranged ? 'Distance' : 'Mêlée'} · {entry.damageFormula} {entry.damageTypeLabel}
+            {entry.ranged ? t('sheet.combat.attacks.ranged') : t('sheet.combat.attacks.melee')} ·{' '}
+            {entry.damageFormula} {entry.damageTypeLabel}
           </div>
           {/*
             * Placeholder de hauteur réservé pour le badge Mastery — le badge
@@ -283,9 +286,15 @@ function AttackRow({
           role="menu"
           className="absolute right-0 top-full z-30 mt-1 flex gap-1 rounded-card-sm border border-soft bg-glass-2 p-1 shadow-card backdrop-blur-2xl"
         >
-          <MenuItem label="Avantage" onClick={() => onPerform('advantage', false)} />
-          <MenuItem label="Désav." onClick={() => onPerform('disadvantage', false)} />
-          <MenuItem label="Crit" onClick={() => onPerform('normal', true)} />
+          <MenuItem
+            label={t('sheet.combat.attacks.menuAdvantage')}
+            onClick={() => onPerform('advantage', false)}
+          />
+          <MenuItem
+            label={t('sheet.combat.attacks.menuDisadvantage')}
+            onClick={() => onPerform('disadvantage', false)}
+          />
+          <MenuItem label={t('sheet.combat.attacks.menuCrit')} onClick={() => onPerform('normal', true)} />
           <MenuItem label="✕" onClick={onCloseMenu} variant="dim" />
         </div>
       )}

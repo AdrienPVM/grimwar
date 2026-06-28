@@ -16,10 +16,10 @@ interface BattleHudProps {
 
 type EconKind = 'action' | 'bonus' | 'reaction';
 
-const ECON_LABELS: Record<EconKind, string> = {
-  action: 'Action',
-  bonus: 'Bonus',
-  reaction: 'Réaction',
+const ECON_LABEL_KEYS: Record<EconKind, StringKey> = {
+  action: 'sheet.combat.hud.action',
+  bonus: 'sheet.combat.hud.bonus',
+  reaction: 'sheet.combat.hud.reaction',
 };
 
 const ECON_TIP_KEYS: Record<EconKind, StringKey> = {
@@ -53,7 +53,11 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
   function endTurn(): void {
     if (readOnly) return;
     setUsed(new Set());
-    showToast({ kind: 'info', title: 'Fin du tour', sub: 'Économie d\'action réinitialisée' });
+    showToast({
+      kind: 'info',
+      title: t('sheet.combat.hud.endTurnTitle'),
+      sub: t('sheet.combat.hud.endTurnSub'),
+    });
   }
 
   /**
@@ -68,8 +72,10 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
     await updateCharacter({ inspiration: next });
     showToast({
       kind: next ? 'crit' : 'info',
-      title: 'Inspiration héroïque',
-      sub: next ? 'Octroyée — relancez un test au choix.' : 'Retirée.',
+      title: t('sheet.combat.hud.inspirationTitle'),
+      sub: next
+        ? t('sheet.combat.hud.inspirationGranted')
+        : t('sheet.combat.hud.inspirationRemoved'),
     });
   }
 
@@ -80,7 +86,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
     // Aucune action à entreprendre dans ce cas — le pivot n'a rien loggé.
     const result = await dice.rollD20Plus(character.initiative, {
       character,
-      label: 'Initiative',
+      label: t('sheet.combat.hud.initiativeLabel'),
       kind: 'init',
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
@@ -95,7 +101,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
       className="mx-auto mt-3 grid w-full max-w-[420px] grid-cols-[1fr_auto] items-center gap-3 rounded-card border border-white-8 bg-glass px-5 py-4 backdrop-blur-2xl lg:mt-0 lg:max-w-none"
     >
       <div className="flex flex-wrap items-center gap-2">
-        {(Object.keys(ECON_LABELS) as EconKind[]).map((kind) => {
+        {(Object.keys(ECON_LABEL_KEYS) as EconKind[]).map((kind) => {
           const isUsed = used.has(kind);
           return (
             <Tooltip key={kind} label={t(ECON_TIP_KEYS[kind])}>
@@ -121,7 +127,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
                       : 'bg-text-faint',
                   )}
                 />
-                {ECON_LABELS[kind]}
+                {t(ECON_LABEL_KEYS[kind])}
               </button>
             </Tooltip>
           );
@@ -134,7 +140,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
             aria-label={t('combat.hud.rollInitiative')}
             className="inline-flex items-center gap-1.5 rounded-pill border border-soft bg-gold/10 px-3 py-1.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-gold-bright transition-all hover:bg-gold/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <span aria-hidden="true">🎲</span> Init.&nbsp;
+            <span aria-hidden="true">🎲</span> {t('sheet.combat.hud.initShort')}&nbsp;
             <span className="font-display text-[12px] tracking-[-0.02em]">
               {character.initiative >= 0 ? '+' : ''}
               {character.initiative}
@@ -156,8 +162,8 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
             aria-pressed={character.inspiration}
             aria-label={
               character.inspiration
-                ? 'Retirer l’Inspiration héroïque'
-                : 'Octroyer l’Inspiration héroïque'
+                ? t('sheet.combat.hud.inspirationRemoveAria')
+                : t('sheet.combat.hud.inspirationGrantAria')
             }
             className={cn(
               'inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40',
@@ -166,7 +172,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
                 : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-soft hover:text-gold-bright',
             )}
           >
-            <span aria-hidden="true">✦</span> Inspiration
+            <span aria-hidden="true">✦</span> {t('sheet.combat.hud.inspirationButton')}
           </button>
         </Tooltip>
       </div>
@@ -177,7 +183,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
           onClick={endTurn}
           className="rounded-card-sm bg-gradient-to-b from-gold-bright to-gold px-4 py-2.5 font-title text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink shadow-[0_4px_14px_rgba(220,184,108,0.35)] transition-all hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(220,184,108,0.45)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          Fin du tour ⟳
+          {t('sheet.combat.hud.endTurnButton')} ⟳
         </button>
       </Tooltip>
     </section>
