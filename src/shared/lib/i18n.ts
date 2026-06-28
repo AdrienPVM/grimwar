@@ -2519,6 +2519,11 @@ export type StringKey =
   | 'levelUp.tip.addClass'
   | 'levelUp.tip.hpAverage'
   | 'levelUp.tip.hpRoll'
+  // Boutons d'entrée du flow (composant LevelUpButton)
+  | 'levelUp.button.levelUp'
+  | 'levelUp.button.levelUpAria'
+  | 'levelUp.button.addClass'
+  | 'levelUp.button.addClassAria'
   // Modale de montée de niveau / ajout de classe (multiclasse)
   | 'levelUp.mode.levelUp'
   | 'levelUp.mode.addClass'
@@ -5744,6 +5749,10 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.tip.addClass': 'Apprend une nouvelle classe en multiclasse.',
     'levelUp.tip.hpAverage': 'Gain de points de vie fixe, sans hasard.',
     'levelUp.tip.hpRoll': 'Gain de points de vie aléatoire, lancé au dé.',
+    'levelUp.button.levelUp': 'Monter de niveau',
+    'levelUp.button.levelUpAria': 'Monter au niveau {level}',
+    'levelUp.button.addClass': 'Ajouter une classe',
+    'levelUp.button.addClassAria': 'Ajouter une classe en multiclasse',
     // Modale de montée de niveau / ajout de classe (multiclasse)
     'levelUp.mode.levelUp': 'Montée de niveau',
     'levelUp.mode.addClass': 'Ajouter une classe',
@@ -8802,6 +8811,10 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.tip.addClass': 'Learns a new class through multiclassing.',
     'levelUp.tip.hpAverage': 'Fixed hit point gain, no randomness.',
     'levelUp.tip.hpRoll': 'Random hit point gain, rolled with the die.',
+    'levelUp.button.levelUp': 'Level up',
+    'levelUp.button.levelUpAria': 'Level up to level {level}',
+    'levelUp.button.addClass': 'Add a class',
+    'levelUp.button.addClassAria': 'Add a class through multiclassing',
     // Level-up / add-class (multiclass) modal
     'levelUp.mode.levelUp': 'Level up',
     'levelUp.mode.addClass': 'Add a class',

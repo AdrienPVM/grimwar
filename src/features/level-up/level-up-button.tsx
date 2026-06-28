@@ -108,10 +108,13 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
             variant="secondary"
             size="sm"
             onClick={() => setOpenMode('level-up')}
-            aria-label={`Monter au niveau ${primaryEntry.level + 1}`}
+            aria-label={t('levelUp.button.levelUpAria').replace(
+              '{level}',
+              String(primaryEntry.level + 1),
+            )}
             tooltip={t('levelUp.tip.levelUp')}
           >
-            Monter de niveau
+            {t('levelUp.button.levelUp')}
           </Button>
         ) : null}
         {canAddClass ? (
@@ -119,10 +122,10 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
             variant="ghost"
             size="sm"
             onClick={() => setOpenMode('add-class')}
-            aria-label="Ajouter une classe en multiclass"
+            aria-label={t('levelUp.button.addClassAria')}
             tooltip={t('levelUp.tip.addClass')}
           >
-            Ajouter une classe
+            {t('levelUp.button.addClass')}
           </Button>
         ) : null}
       </div>

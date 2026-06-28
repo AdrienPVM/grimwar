@@ -108,6 +108,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
   },
 }));
 
+import { LevelUpButton } from '../level-up-button';
 import { LevelUpModal } from '../level-up-modal';
 
 function makeFighter(level: number): Character {
@@ -255,5 +256,36 @@ describe('LevelUpModal — passe i18n (rouge avant vert)', () => {
     expect(screen.getByText('Level 1 sub-choices — Cleric')).toBeInTheDocument();
     expect(screen.getByText('Divine order')).toBeInTheDocument();
     expect(screen.queryByText('Ordre divin')).not.toBeInTheDocument();
+  });
+});
+
+describe('LevelUpButton — passe i18n (rouge avant vert)', () => {
+  it('rend les deux boutons d’entrée en EN, libellés + aria, aucune fuite FR', () => {
+    useLocaleStore.setState({ locale: 'en' });
+    // Guerrier L3 (peut monter) + Clerc sans prérequis, stats 16 (multiclasse
+    // éligible) → les deux boutons d'entrée sont rendus.
+    render(<LevelUpButton character={makeFighter(3)} />);
+
+    // Libellés visibles en anglais.
+    expect(screen.getByText('Level up')).toBeInTheDocument();
+    expect(screen.getByText('Add a class')).toBeInTheDocument();
+
+    // aria-labels en anglais (le « Level up » interpole N+1 = 4).
+    expect(
+      screen.getByRole('button', { name: 'Level up to level 4' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Add a class through multiclassing' }),
+    ).toBeInTheDocument();
+
+    // Aucune fuite des chaînes FR codées en dur d'avant la passe — y compris
+    // l'anglicisme « multiclass » de l'ancien aria-label.
+    expect(screen.queryByText('Monter de niveau')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /multiclass\b/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Monter au niveau/ }),
+    ).not.toBeInTheDocument();
   });
 });
