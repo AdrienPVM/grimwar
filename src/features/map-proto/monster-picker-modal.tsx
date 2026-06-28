@@ -47,35 +47,36 @@ export function MonsterPickerModal({ open, onClose, onPick }: Props): JSX.Elemen
           id={titleId}
           className="font-title text-[12px] uppercase tracking-[0.18em] text-gold-bright"
         >
-          Ajouter depuis le bestiaire
+          {t('map.monsterPicker.title')}
         </h2>
 
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un monstre…"
-          aria-label="Rechercher un monstre"
+          placeholder={t('map.monsterPicker.searchPlaceholder')}
+          aria-label={t('map.monsterPicker.searchAria')}
           className="w-full rounded-pill border border-gold-dim/40 bg-glass-2 px-4 py-2 font-serif text-body text-text placeholder:text-text-tertiary focus:border-gold-bright focus:outline-none transition-colors duration-200 ease-base"
         />
 
         {loading ? (
           <p className="py-6 text-center font-serif text-[13px] text-text-tertiary">
-            Chargement du bestiaire…
+            {t('map.monsterPicker.loading')}
           </p>
         ) : monsters.length === 0 ? (
           <div className="rounded-card border border-gold-dim/20 bg-glass-2 p-4">
             <p className="font-serif text-[13px] text-text">
-              Votre bestiaire est vide.
+              {t('map.monsterPicker.emptyTitle')}
             </p>
             <p className="mt-1 font-serif text-[12px] text-text-tertiary">
-              Importez un pack d'extension (monstres) depuis Mon compte ›
-              Contenu, puis revenez ici : vos créatures seront posables d'un tap.
+              {t('map.monsterPicker.emptyHint')}
             </p>
           </div>
         ) : filtered.length === 0 ? (
           <p className="py-6 text-center font-serif text-[13px] text-text-tertiary">
-            Aucun monstre ne correspond à « {query.trim()} ».
+            {t('map.monsterPicker.noMatchBefore')}
+            {query.trim()}
+            {t('map.monsterPicker.noMatchAfter')}
           </p>
         ) : (
           <ul className="flex max-h-[50vh] flex-col gap-1 overflow-y-auto">
@@ -92,7 +93,9 @@ export function MonsterPickerModal({ open, onClose, onPick }: Props): JSX.Elemen
                   </span>
                   <span className="flex shrink-0 items-center gap-2 font-title text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
                     <span>{t(`size.${m.size}` as 'size.medium')}</span>
-                    <span className="text-gold">FP {formatCr(m.cr)}</span>
+                    <span className="text-gold">
+                      {t('map.monsterPicker.crPrefix')} {formatCr(m.cr)}
+                    </span>
                   </span>
                 </button>
               </li>

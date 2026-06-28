@@ -2,6 +2,7 @@ import { useId, useState, type ChangeEvent, type JSX } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
 import { cn } from '@/shared/lib/cn';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import { formatMetersValue } from '@/shared/lib/rules/distance';
 import type { MapToken } from '@/shared/types/map';
 
@@ -21,7 +22,9 @@ import { fileToTokenImage, TokenImageError } from './token-image-file';
  * `updateToken`/`deleteToken` (mêmes helpers que le mouvement, même autorité
  * Firestore déjà en live) — zéro changement de schéma, zéro nouvelle rule.
  *
- * Convention map-proto : chaînes FR inline (cf. en-tête `map-live-screen`).
+ * Chaînes UI passées par `t()` (namespace `map.token.*`). Les constantes de
+ * données (palette, types, presets) portent une clé i18n `StringKey` résolue au
+ * rendu, pas le libellé en clair.
  */
 
 /**
@@ -30,21 +33,21 @@ import { fileToTokenImage, TokenImageError } from './token-image-file';
  * d'où les hex en clair, comme `TOKEN_COLORS` côté `map-live-screen`. Huit
  * teintes nettement distinguables sur un fond de carte sombre.
  */
-const TOKEN_PALETTE: readonly { hex: string; label: string }[] = [
-  { hex: '#60a5fa', label: 'Bleu' },
-  { hex: '#f87171', label: 'Rouge' },
-  { hex: '#4ade80', label: 'Vert' },
-  { hex: '#fbbf24', label: 'Ambre' },
-  { hex: '#c084fc', label: 'Violet' },
-  { hex: '#2dd4bf', label: 'Turquoise' },
-  { hex: '#f472b6', label: 'Rose' },
-  { hex: '#9ca3af', label: 'Gris' },
+const TOKEN_PALETTE: readonly { hex: string; labelKey: StringKey }[] = [
+  { hex: '#60a5fa', labelKey: 'map.token.colorBlue' },
+  { hex: '#f87171', labelKey: 'map.token.colorRed' },
+  { hex: '#4ade80', labelKey: 'map.token.colorGreen' },
+  { hex: '#fbbf24', labelKey: 'map.token.colorAmber' },
+  { hex: '#c084fc', labelKey: 'map.token.colorPurple' },
+  { hex: '#2dd4bf', labelKey: 'map.token.colorTurquoise' },
+  { hex: '#f472b6', labelKey: 'map.token.colorPink' },
+  { hex: '#9ca3af', labelKey: 'map.token.colorGray' },
 ];
 
-const KIND_LABELS: Record<MapToken['kind'], string> = {
-  pj: 'Personnage joueur',
-  pnj: 'PNJ / monstre',
-  marker: 'Repère',
+const KIND_LABELS: Record<MapToken['kind'], StringKey> = {
+  pj: 'map.token.kindPj',
+  pnj: 'map.token.kindPnj',
+  marker: 'map.token.kindMarker',
 };
 
 /**
@@ -52,10 +55,10 @@ const KIND_LABELS: Record<MapToken['kind'], string> = {
  * MJ à choisir sans connaître le jargon : un repère ne porte pas de vision et
  * n'alimente pas la ligne de vue (cf. `map-scene` qui saute les markers).
  */
-const KIND_HINTS: Record<MapToken['kind'], string> = {
-  pj: 'Allié contrôlé par un joueur',
-  pnj: 'Créature contrôlée par le MJ',
-  marker: 'Point d’intérêt, sans vision',
+const KIND_HINTS: Record<MapToken['kind'], StringKey> = {
+  pj: 'map.token.kindHintPj',
+  pnj: 'map.token.kindHintPnj',
+  marker: 'map.token.kindHintMarker',
 };
 
 /** Ordre d'affichage des types dans le sélecteur. */
@@ -70,11 +73,11 @@ const LABEL_MAX = 24;
  * Le rayon pilote la dissipation du brouillard autour du jeton (ligne de vue) :
  * un non-marqueur sans valeur explicite vaut `DEFAULT_VISION_FT` côté `map-scene`.
  */
-const VISION_PRESETS: readonly { ft: number; sub: string }[] = [
-  { ft: 0, sub: 'Sans ligne de vue' },
-  { ft: 30, sub: 'Vision normale' },
-  { ft: 60, sub: 'Vision dans le noir' },
-  { ft: 120, sub: 'Vision dans le noir étendue' },
+const VISION_PRESETS: readonly { ft: number; subKey: StringKey }[] = [
+  { ft: 0, subKey: 'map.token.visionNoneSub' },
+  { ft: 30, subKey: 'map.token.visionNormalSub' },
+  { ft: 60, subKey: 'map.token.visionDarkSub' },
+  { ft: 120, subKey: 'map.token.visionDarkExtSub' },
 ];
 
 /** Défaut quand un jeton non-marqueur n'a pas de portée explicite (= map-scene). */
@@ -89,13 +92,13 @@ const VISION_DEFAULT_FT = 30;
  */
 const CARRIED_LIGHT_OPTIONS: readonly {
   key: LightPresetKey | 'none';
-  label: string;
+  labelKey: StringKey;
   totalFt: number;
 }[] = [
-  { key: 'none', label: 'Aucune', totalFt: 0 },
-  { key: 'candle', label: 'Bougie', totalFt: 10 },
-  { key: 'torch', label: 'Torche', totalFt: 40 },
-  { key: 'lantern', label: 'Lanterne', totalFt: 60 },
+  { key: 'none', labelKey: 'map.token.lightNone', totalFt: 0 },
+  { key: 'candle', labelKey: 'map.token.lightCandle', totalFt: 10 },
+  { key: 'torch', labelKey: 'map.token.lightTorch', totalFt: 40 },
+  { key: 'lantern', labelKey: 'map.token.lightLantern', totalFt: 60 },
 ];
 
 interface Props {
@@ -162,7 +165,7 @@ export function TokenEditModal({
       open={token !== null}
       onClose={onClose}
       size="sm"
-      closeLabel="Fermer l'édition du jeton"
+      closeLabel={t('map.token.closeLabel')}
     >
       {/* Form remonté (`key={id}`) à chaque jeton → state local frais sans
           `useEffect` de synchronisation (cf. convention « pas de useEffect
@@ -254,9 +257,7 @@ function TokenEditForm({
       onUploadImage(dataUrl);
     } catch (err) {
       setImageError(
-        err instanceof TokenImageError
-          ? err.message
-          : "Échec du chargement de l'image.",
+        err instanceof TokenImageError ? err.message : t('map.token.imageError'),
       );
     } finally {
       setImageBusy(false);
@@ -280,20 +281,20 @@ function TokenEditForm({
           data-testid="token-edit-kind-eyebrow"
           className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary transition-colors duration-200 ease-base"
         >
-          {KIND_LABELS[kind]}
+          {t(KIND_LABELS[kind])}
         </p>
         <h2
           id={titleId}
           className="font-display text-2xl leading-tight text-gold-bright"
         >
-          Modifier le jeton
+          {t('map.token.editTitle')}
         </h2>
       </header>
 
       {canEditImage && (
         <div className="flex flex-col gap-2">
           <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-            Portrait
+            {t('map.token.portraitSection')}
           </span>
           <div className="flex items-center gap-4">
             {/* Vignette ronde : portrait s'il existe, sinon pastille couleur de
@@ -301,7 +302,7 @@ function TokenEditForm({
             {imageUrl ? (
               <img
                 src={imageUrl}
-                alt={`Portrait de ${trimmed || 'ce jeton'}`}
+                alt={`${t('map.token.portraitAltPrefix')}${trimmed || t('map.token.portraitAltFallback')}`}
                 data-testid="token-image-preview"
                 className="h-16 w-16 shrink-0 rounded-full border-2 border-gold-dim/50 object-cover"
               />
@@ -328,10 +329,10 @@ function TokenEditForm({
                   className="sr-only"
                 />
                 {imageBusy
-                  ? 'Traitement…'
+                  ? t('map.token.imageProcessing')
                   : imageUrl
-                    ? 'Remplacer'
-                    : 'Ajouter une image'}
+                    ? t('map.token.imageReplace')
+                    : t('map.token.imageAdd')}
               </label>
               {imageUrl && onRemoveImage && (
                 <button
@@ -340,7 +341,7 @@ function TokenEditForm({
                   onClick={onRemoveImage}
                   className="rounded-pill border border-crimson/40 px-4 py-2 font-title text-[10px] uppercase tracking-[0.18em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
                 >
-                  Retirer l&apos;image
+                  {t('map.token.imageRemove')}
                 </button>
               )}
             </div>
@@ -354,19 +355,18 @@ function TokenEditForm({
             </p>
           )}
           <p className="font-serif text-meta italic text-text-faint">
-            Recadrée en rond et optimisée, puis synchronisée sur tous les écrans
-            (vue TV, autres appareils).
+            {t('map.token.imageHelp')}
           </p>
         </div>
       )}
 
       <div className="flex flex-col gap-2">
         <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          Type de jeton
+          {t('map.token.kindSection')}
         </span>
         <div
           role="radiogroup"
-          aria-label="Type de jeton"
+          aria-label={t('map.token.kindSection')}
           className="flex flex-col gap-2"
         >
           {KIND_ORDER.map((k) => {
@@ -377,7 +377,7 @@ function TokenEditForm({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={`${KIND_LABELS[k]} — ${KIND_HINTS[k]}`}
+                aria-label={`${t(KIND_LABELS[k])} — ${t(KIND_HINTS[k])}`}
                 data-testid={`token-kind-${k}`}
                 onClick={() => setKind(k)}
                 className={cn(
@@ -394,10 +394,10 @@ function TokenEditForm({
                     selected ? 'text-gold-bright' : 'text-text',
                   )}
                 >
-                  {KIND_LABELS[k]}
+                  {t(KIND_LABELS[k])}
                 </span>
                 <span className="font-title text-[10px] uppercase tracking-[0.12em] text-text-tertiary">
-                  {KIND_HINTS[k]}
+                  {t(KIND_HINTS[k])}
                 </span>
               </button>
             );
@@ -407,7 +407,7 @@ function TokenEditForm({
 
       <label className="flex flex-col gap-2">
         <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          Nom
+          {t('map.common.nameLabel')}
         </span>
         <input
           type="text"
@@ -421,11 +421,11 @@ function TokenEditForm({
 
       <div className="flex flex-col gap-2">
         <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-          Couleur
+          {t('map.token.colorSection')}
         </span>
         <div
           role="radiogroup"
-          aria-label="Couleur du jeton"
+          aria-label={t('map.token.colorGroupAria')}
           className="flex flex-wrap gap-3"
         >
           {TOKEN_PALETTE.map((c) => {
@@ -436,7 +436,7 @@ function TokenEditForm({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={c.label}
+                aria-label={t(c.labelKey)}
                 data-testid={`token-color-${c.hex.slice(1)}`}
                 onClick={() => setColor(c.hex)}
                 // Couleur de domaine (teinte du jeton) → style dynamique légitime.
@@ -457,23 +457,24 @@ function TokenEditForm({
       {hasVision && (
         <div className="flex flex-col gap-2">
           <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-            Portée de vision
+            {t('map.token.visionSection')}
           </span>
           <div
             role="radiogroup"
-            aria-label="Portée de vision du jeton"
+            aria-label={t('map.token.visionGroupAria')}
             className="grid grid-cols-2 gap-2"
           >
             {VISION_PRESETS.map((p) => {
               const selected = p.ft === visionFt;
-              const primary = p.ft === 0 ? 'Aucune' : `${formatMetersValue(p.ft)} m`;
+              const primary =
+                p.ft === 0 ? t('map.token.visionNone') : `${formatMetersValue(p.ft)} m`;
               return (
                 <button
                   key={p.ft}
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  aria-label={`${primary} — ${p.sub}`}
+                  aria-label={`${primary} — ${t(p.subKey)}`}
                   data-testid={`token-vision-${p.ft}`}
                   onClick={() => setVisionFt(p.ft)}
                   className={cn(
@@ -493,15 +494,14 @@ function TokenEditForm({
                     {primary}
                   </span>
                   <span className="font-title text-[10px] uppercase tracking-[0.12em] text-text-tertiary">
-                    {p.sub}
+                    {t(p.subKey)}
                   </span>
                 </button>
               );
             })}
           </div>
           <p className="font-serif text-meta italic text-text-faint">
-            Rayon de brouillard dissipé autour du jeton quand la ligne de vue
-            est active.
+            {t('map.token.visionHelp')}
           </p>
         </div>
       )}
@@ -509,26 +509,26 @@ function TokenEditForm({
       {canSetLight && (
         <div className="flex flex-col gap-2">
           <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-            Lumière portée
+            {t('map.token.lightSection')}
           </span>
           <div
             role="radiogroup"
-            aria-label="Lumière portée par le jeton"
+            aria-label={t('map.token.lightGroupAria')}
             className="grid grid-cols-2 gap-2"
           >
             {CARRIED_LIGHT_OPTIONS.map((opt) => {
               const selected = opt.key === carried;
               const sub =
                 opt.key === 'none'
-                  ? 'Ne porte rien'
-                  : `Rayon ${formatMetersValue(opt.totalFt)} m`;
+                  ? t('map.token.lightNoneSub')
+                  : `${t('map.token.lightRadiusPrefix')}${formatMetersValue(opt.totalFt)} m`;
               return (
                 <button
                   key={opt.key}
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  aria-label={`${opt.label} — ${sub}`}
+                  aria-label={`${t(opt.labelKey)} — ${sub}`}
                   data-testid={`token-light-${opt.key}`}
                   onClick={() => handleCarriedLight(opt.key)}
                   className={cn(
@@ -545,7 +545,7 @@ function TokenEditForm({
                       selected ? 'text-gold-bright' : 'text-text',
                     )}
                   >
-                    {opt.label}
+                    {t(opt.labelKey)}
                   </span>
                   <span className="font-title text-[10px] uppercase tracking-[0.12em] text-text-tertiary">
                     {sub}
@@ -555,8 +555,7 @@ function TokenEditForm({
             })}
           </div>
           <p className="font-serif text-meta italic text-text-faint">
-            La lumière suit le jeton quand il se déplace (appliquée
-            immédiatement).
+            {t('map.token.lightHelp')}
           </p>
         </div>
       )}
@@ -569,7 +568,7 @@ function TokenEditForm({
           onClick={handleSave}
           className="rounded-pill border border-gold-dim/50 bg-gold/10 px-4 py-3 font-title text-[11px] uppercase tracking-[0.18em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/20 disabled:opacity-40"
         >
-          Enregistrer
+          {t('map.token.save')}
         </button>
         <button
           type="button"
@@ -577,7 +576,7 @@ function TokenEditForm({
           onClick={onDuplicate}
           className="rounded-pill border border-gold-dim/40 px-4 py-3 font-title text-[11px] uppercase tracking-[0.18em] text-text-secondary transition-colors duration-200 ease-base hover:bg-gold/10 hover:text-gold-bright"
         >
-          Dupliquer le jeton
+          {t('map.token.duplicate')}
         </button>
         <button
           type="button"
@@ -585,7 +584,7 @@ function TokenEditForm({
           onClick={onDelete}
           className="rounded-pill border border-crimson/40 px-4 py-3 font-title text-[11px] uppercase tracking-[0.18em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
         >
-          Supprimer ce jeton
+          {t('map.token.delete')}
         </button>
       </div>
     </div>

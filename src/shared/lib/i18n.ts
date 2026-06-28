@@ -2338,6 +2338,65 @@ export type StringKey =
   | 'map.import.saveSection'
   | 'map.import.submitting'
   | 'map.import.submit'
+  // Écran carte — édition de jeton (token-edit-modal) + bestiaire (monster-picker)
+  | 'map.token.editTitle'
+  | 'map.token.closeLabel'
+  | 'map.token.portraitSection'
+  | 'map.token.portraitAltPrefix'
+  | 'map.token.portraitAltFallback'
+  | 'map.token.imageProcessing'
+  | 'map.token.imageReplace'
+  | 'map.token.imageAdd'
+  | 'map.token.imageRemove'
+  | 'map.token.imageError'
+  | 'map.token.imageHelp'
+  | 'map.token.kindSection'
+  | 'map.token.colorSection'
+  | 'map.token.colorGroupAria'
+  | 'map.token.visionSection'
+  | 'map.token.visionGroupAria'
+  | 'map.token.visionNone'
+  | 'map.token.visionHelp'
+  | 'map.token.lightSection'
+  | 'map.token.lightGroupAria'
+  | 'map.token.lightNoneSub'
+  | 'map.token.lightRadiusPrefix'
+  | 'map.token.lightHelp'
+  | 'map.token.save'
+  | 'map.token.duplicate'
+  | 'map.token.delete'
+  | 'map.token.fallbackLabel'
+  | 'map.token.colorBlue'
+  | 'map.token.colorRed'
+  | 'map.token.colorGreen'
+  | 'map.token.colorAmber'
+  | 'map.token.colorPurple'
+  | 'map.token.colorTurquoise'
+  | 'map.token.colorPink'
+  | 'map.token.colorGray'
+  | 'map.token.kindPj'
+  | 'map.token.kindPnj'
+  | 'map.token.kindMarker'
+  | 'map.token.kindHintPj'
+  | 'map.token.kindHintPnj'
+  | 'map.token.kindHintMarker'
+  | 'map.token.visionNoneSub'
+  | 'map.token.visionNormalSub'
+  | 'map.token.visionDarkSub'
+  | 'map.token.visionDarkExtSub'
+  | 'map.token.lightNone'
+  | 'map.token.lightCandle'
+  | 'map.token.lightTorch'
+  | 'map.token.lightLantern'
+  | 'map.monsterPicker.title'
+  | 'map.monsterPicker.searchPlaceholder'
+  | 'map.monsterPicker.searchAria'
+  | 'map.monsterPicker.loading'
+  | 'map.monsterPicker.emptyTitle'
+  | 'map.monsterPicker.emptyHint'
+  | 'map.monsterPicker.noMatchBefore'
+  | 'map.monsterPicker.noMatchAfter'
+  | 'map.monsterPicker.crPrefix'
   // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
   | 'wizard.tip.rollAbilities'
   | 'wizard.tip.autofillAbilities'
@@ -5312,6 +5371,69 @@ const STRINGS: Record<Locale, Dict> = {
     'map.import.saveSection': 'Enregistrer la carte',
     'map.import.submitting': 'Import…',
     'map.import.submit': 'Importer',
+    // Écran carte — édition de jeton (token-edit-modal) + bestiaire (monster-picker)
+    'map.token.editTitle': 'Modifier le jeton',
+    'map.token.closeLabel': 'Fermer l’édition du jeton',
+    'map.token.portraitSection': 'Portrait',
+    'map.token.portraitAltPrefix': 'Portrait de ',
+    'map.token.portraitAltFallback': 'ce jeton',
+    'map.token.imageProcessing': 'Traitement…',
+    'map.token.imageReplace': 'Remplacer',
+    'map.token.imageAdd': 'Ajouter une image',
+    'map.token.imageRemove': 'Retirer l’image',
+    'map.token.imageError': 'Échec du chargement de l’image.',
+    'map.token.imageHelp':
+      'Recadrée en rond et optimisée, puis synchronisée sur tous les écrans (vue TV, autres appareils).',
+    'map.token.kindSection': 'Type de jeton',
+    'map.token.colorSection': 'Couleur',
+    'map.token.colorGroupAria': 'Couleur du jeton',
+    'map.token.visionSection': 'Portée de vision',
+    'map.token.visionGroupAria': 'Portée de vision du jeton',
+    'map.token.visionNone': 'Aucune',
+    'map.token.visionHelp':
+      'Rayon de brouillard dissipé autour du jeton quand la ligne de vue est active.',
+    'map.token.lightSection': 'Lumière portée',
+    'map.token.lightGroupAria': 'Lumière portée par le jeton',
+    'map.token.lightNoneSub': 'Ne porte rien',
+    'map.token.lightRadiusPrefix': 'Rayon ',
+    'map.token.lightHelp':
+      'La lumière suit le jeton quand il se déplace (appliquée immédiatement).',
+    'map.token.save': 'Enregistrer',
+    'map.token.duplicate': 'Dupliquer le jeton',
+    'map.token.delete': 'Supprimer ce jeton',
+    'map.token.fallbackLabel': 'Créature',
+    'map.token.colorBlue': 'Bleu',
+    'map.token.colorRed': 'Rouge',
+    'map.token.colorGreen': 'Vert',
+    'map.token.colorAmber': 'Ambre',
+    'map.token.colorPurple': 'Violet',
+    'map.token.colorTurquoise': 'Turquoise',
+    'map.token.colorPink': 'Rose',
+    'map.token.colorGray': 'Gris',
+    'map.token.kindPj': 'Personnage joueur',
+    'map.token.kindPnj': 'PNJ / monstre',
+    'map.token.kindMarker': 'Repère',
+    'map.token.kindHintPj': 'Allié contrôlé par un joueur',
+    'map.token.kindHintPnj': 'Créature contrôlée par le MJ',
+    'map.token.kindHintMarker': 'Point d’intérêt, sans vision',
+    'map.token.visionNoneSub': 'Sans ligne de vue',
+    'map.token.visionNormalSub': 'Vision normale',
+    'map.token.visionDarkSub': 'Vision dans le noir',
+    'map.token.visionDarkExtSub': 'Vision dans le noir étendue',
+    'map.token.lightNone': 'Aucune',
+    'map.token.lightCandle': 'Bougie',
+    'map.token.lightTorch': 'Torche',
+    'map.token.lightLantern': 'Lanterne',
+    'map.monsterPicker.title': 'Ajouter depuis le bestiaire',
+    'map.monsterPicker.searchPlaceholder': 'Rechercher un monstre…',
+    'map.monsterPicker.searchAria': 'Rechercher un monstre',
+    'map.monsterPicker.loading': 'Chargement du bestiaire…',
+    'map.monsterPicker.emptyTitle': 'Votre bestiaire est vide.',
+    'map.monsterPicker.emptyHint':
+      'Importez un pack d’extension (monstres) depuis Mon compte › Contenu, puis revenez ici : vos créatures seront posables d’un tap.',
+    'map.monsterPicker.noMatchBefore': 'Aucun monstre ne correspond à « ',
+    'map.monsterPicker.noMatchAfter': ' ».',
+    'map.monsterPicker.crPrefix': 'FP',
     // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
     'wizard.tip.rollAbilities': 'Lance les dés à votre place pour générer les six valeurs.',
     'wizard.tip.autofillAbilities': 'Remplit les caractéristiques recommandées pour votre classe.',
@@ -8109,6 +8231,69 @@ const STRINGS: Record<Locale, Dict> = {
     'map.import.saveSection': 'Save the map',
     'map.import.submitting': 'Importing…',
     'map.import.submit': 'Import',
+    // Map screen — token editor + bestiary picker
+    'map.token.editTitle': 'Edit the token',
+    'map.token.closeLabel': 'Close token editing',
+    'map.token.portraitSection': 'Portrait',
+    'map.token.portraitAltPrefix': 'Portrait of ',
+    'map.token.portraitAltFallback': 'this token',
+    'map.token.imageProcessing': 'Processing…',
+    'map.token.imageReplace': 'Replace',
+    'map.token.imageAdd': 'Add an image',
+    'map.token.imageRemove': 'Remove image',
+    'map.token.imageError': 'Failed to load the image.',
+    'map.token.imageHelp':
+      'Cropped to a circle and optimized, then synchronized across all screens (TV view, other devices).',
+    'map.token.kindSection': 'Token type',
+    'map.token.colorSection': 'Color',
+    'map.token.colorGroupAria': 'Token color',
+    'map.token.visionSection': 'Vision range',
+    'map.token.visionGroupAria': 'Token vision range',
+    'map.token.visionNone': 'None',
+    'map.token.visionHelp':
+      'Radius of fog cleared around the token when line of sight is active.',
+    'map.token.lightSection': 'Carried light',
+    'map.token.lightGroupAria': 'Light carried by the token',
+    'map.token.lightNoneSub': 'Carries nothing',
+    'map.token.lightRadiusPrefix': 'Radius ',
+    'map.token.lightHelp':
+      'The light follows the token as it moves (applied immediately).',
+    'map.token.save': 'Save',
+    'map.token.duplicate': 'Duplicate the token',
+    'map.token.delete': 'Delete this token',
+    'map.token.fallbackLabel': 'Creature',
+    'map.token.colorBlue': 'Blue',
+    'map.token.colorRed': 'Red',
+    'map.token.colorGreen': 'Green',
+    'map.token.colorAmber': 'Amber',
+    'map.token.colorPurple': 'Purple',
+    'map.token.colorTurquoise': 'Turquoise',
+    'map.token.colorPink': 'Pink',
+    'map.token.colorGray': 'Gray',
+    'map.token.kindPj': 'Player character',
+    'map.token.kindPnj': 'NPC / monster',
+    'map.token.kindMarker': 'Marker',
+    'map.token.kindHintPj': 'Ally controlled by a player',
+    'map.token.kindHintPnj': 'Creature controlled by the GM',
+    'map.token.kindHintMarker': 'Point of interest, no vision',
+    'map.token.visionNoneSub': 'No line of sight',
+    'map.token.visionNormalSub': 'Normal vision',
+    'map.token.visionDarkSub': 'Darkvision',
+    'map.token.visionDarkExtSub': 'Extended darkvision',
+    'map.token.lightNone': 'None',
+    'map.token.lightCandle': 'Candle',
+    'map.token.lightTorch': 'Torch',
+    'map.token.lightLantern': 'Lantern',
+    'map.monsterPicker.title': 'Add from the bestiary',
+    'map.monsterPicker.searchPlaceholder': 'Search for a monster…',
+    'map.monsterPicker.searchAria': 'Search for a monster',
+    'map.monsterPicker.loading': 'Loading the bestiary…',
+    'map.monsterPicker.emptyTitle': 'Your bestiary is empty.',
+    'map.monsterPicker.emptyHint':
+      'Import an expansion pack (monsters) from My account › Content, then come back here: your creatures will be placeable with a tap.',
+    'map.monsterPicker.noMatchBefore': 'No monster matches "',
+    'map.monsterPicker.noMatchAfter': '".',
+    'map.monsterPicker.crPrefix': 'CR',
     // Explicit tooltips — wizard + level-up
     'wizard.tip.rollAbilities': 'Rolls the dice for you to generate the six scores.',
     'wizard.tip.autofillAbilities': 'Fills in the recommended ability scores for your class.',

@@ -1,4 +1,4 @@
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import type { CreateTokenInput } from '@/shared/lib/services/maps';
 import type { Monster } from '@/shared/types/content';
 
@@ -9,9 +9,6 @@ import type { Monster } from '@/shared/types/content';
  * une petite cascade lisible que le MJ écarte ensuite à la main.
  */
 const DUPLICATE_OFFSET_PX = 26;
-
-/** Libellé de repli si le monstre n'a pas de nom localisé exploitable. */
-const FALLBACK_LABEL = 'Créature';
 
 export interface MonsterTokenOptions {
   /** Centre du viewBox (point de dépôt de base). */
@@ -90,7 +87,8 @@ export function monsterToTokenInput(
   monster: Monster,
   opts: MonsterTokenOptions,
 ): CreateTokenInput {
-  const base = localize(monster.name).trim() || FALLBACK_LABEL;
+  // Libellé de repli (locale active) si le monstre n'a pas de nom exploitable.
+  const base = localize(monster.name).trim() || t('map.token.fallbackLabel');
   const { label, index } = nextUniqueLabel(base, opts.existingLabels);
   const offset = (index - 1) * DUPLICATE_OFFSET_PX;
   const position = clampPosition(
