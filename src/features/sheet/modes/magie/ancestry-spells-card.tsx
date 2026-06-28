@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
@@ -65,6 +66,7 @@ export function AncestrySpellsCard({
           const spellName = localize(entry.spell.name);
           return (
             <li key={entry.spell.id}>
+              <Tooltip label={t('sheet.tip.openSpellDetail')} decorative className="w-full">
               <button
                 type="button"
                 aria-label={spellName}
@@ -102,6 +104,7 @@ export function AncestrySpellsCard({
                   </span>
                 ) : null}
               </button>
+              </Tooltip>
             </li>
           );
         })}

@@ -4,6 +4,7 @@ import { RollHistoryPanel } from '@/features/dice/roll-history-panel';
 import { usePermissionContext } from '@/features/sheet/permissions-context';
 import { type SheetMode } from '@/features/sheet/use-sheet-mode';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
@@ -74,23 +75,25 @@ export function RadialFab({ character, setMode, showHistory }: RadialFabProps): 
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={t('sheet.fab.openLabel')}
-        className={cn(
-          'fixed bottom-7 right-5 z-[60] inline-flex h-16 w-16 items-center justify-center rounded-full md:bottom-8 md:right-8',
-          'border-2 border-white/25 text-ink',
-          'bg-[radial-gradient(circle_at_30%_30%,var(--gold-bright),var(--gold)_60%,var(--gold-dim))]',
-          'shadow-[0_8px_32px_rgba(220,184,108,0.5),0_0_0_6px_rgba(220,184,108,0.08)]',
-          'transition-transform duration-200 ease-spring active:scale-90',
-          open && 'rotate-[135deg] scale-95',
-        )}
-      >
-        <Icon name="i-magic" className="h-7 w-7" />
-      </button>
+      <Tooltip label={t('radialMenu.tip.fab')} placement="left" decorative className="fixed bottom-7 right-5 z-[60] md:bottom-8 md:right-8">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-label={t('sheet.fab.openLabel')}
+          className={cn(
+            'inline-flex h-16 w-16 items-center justify-center rounded-full',
+            'border-2 border-white/25 text-ink',
+            'bg-[radial-gradient(circle_at_30%_30%,var(--gold-bright),var(--gold)_60%,var(--gold-dim))]',
+            'shadow-[0_8px_32px_rgba(220,184,108,0.5),0_0_0_6px_rgba(220,184,108,0.08)]',
+            'transition-transform duration-200 ease-spring active:scale-90',
+            open && 'rotate-[135deg] scale-95',
+          )}
+        >
+          <Icon name="i-magic" className="h-7 w-7" />
+        </button>
+      </Tooltip>
 
       {open ? (
         <DockedMenu

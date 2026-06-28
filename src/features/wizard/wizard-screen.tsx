@@ -379,7 +379,14 @@ function MobileNavBar({
         'flex items-center justify-between gap-3',
       )}
     >
-      <Button variant="secondary" size="md" onClick={onPrev} disabled={!canPrev}>
+      <Button
+        variant="secondary"
+        size="md"
+        onClick={onPrev}
+        disabled={!canPrev}
+        tooltip={t('wizard.tip.navPrevious')}
+        aria-label={t('wizard.nav.previous')}
+      >
         ←
       </Button>
       <span className="font-title text-meta text-text-tertiary tracking-[0.18em]">
@@ -398,6 +405,8 @@ function MobileNavBar({
           disabled={!canNext}
           aria-disabled={!canNext}
           title={!canNext ? t('wizard.nav.invalidStep') : undefined}
+          tooltip={t('wizard.tip.navNext')}
+          aria-label={t('wizard.nav.next')}
         >
           →
         </Button>

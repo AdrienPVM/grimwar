@@ -8,6 +8,8 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { Tooltip } from '@/shared/components/tooltip';
+import { t } from '@/shared/lib/i18n';
 import {
   addAoeTemplate,
   addFogPolygon,
@@ -1185,72 +1187,81 @@ export function MapLiveScreen(): JSX.Element {
                 </span>{' '}
                 · {Math.round(selectedAoe.rotationDeg ?? 0)}°
               </span>
-              <button
-                type="button"
-                data-testid="map-live-shrink-aoe"
-                onClick={() => {
-                  void handleResizeSelectedAoe(-1);
-                }}
-                disabled={!canShrinkAoe}
-                title="Réduire d'une case"
-                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
-              >
-                −
-              </button>
-              <button
-                type="button"
-                data-testid="map-live-grow-aoe"
-                onClick={() => {
-                  void handleResizeSelectedAoe(1);
-                }}
-                title="Agrandir d'une case"
-                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-              >
-                +
-              </button>
-              <button
-                type="button"
-                data-testid="map-live-rotate-ccw"
-                onClick={() => {
-                  void handleRotateSelectedAoe(-AOE_ROTATE_STEP_DEG);
-                }}
-                disabled={!canRotate}
-                title={
-                  canRotate
-                    ? `Pivoter de ${AOE_ROTATE_STEP_DEG}° dans le sens antihoraire`
-                    : "Une sphère n'a pas d'orientation"
+              <Tooltip label={t('map.tip.shrinkAoe')} placement="bottom" decorative>
+                <button
+                  type="button"
+                  data-testid="map-live-shrink-aoe"
+                  onClick={() => {
+                    void handleResizeSelectedAoe(-1);
+                  }}
+                  disabled={!canShrinkAoe}
+                  className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+                >
+                  −
+                </button>
+              </Tooltip>
+              <Tooltip label={t('map.tip.growAoe')} placement="bottom" decorative>
+                <button
+                  type="button"
+                  data-testid="map-live-grow-aoe"
+                  onClick={() => {
+                    void handleResizeSelectedAoe(1);
+                  }}
+                  className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+                >
+                  +
+                </button>
+              </Tooltip>
+              <Tooltip
+                label={
+                  canRotate ? t('map.tip.rotateAoeCcw') : t('map.tip.sphereNoRotation')
                 }
-                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+                placement="bottom"
+                decorative
               >
-                ⟲ −{AOE_ROTATE_STEP_DEG}°
-              </button>
-              <button
-                type="button"
-                data-testid="map-live-rotate-cw"
-                onClick={() => {
-                  void handleRotateSelectedAoe(AOE_ROTATE_STEP_DEG);
-                }}
-                disabled={!canRotate}
-                title={
-                  canRotate
-                    ? `Pivoter de ${AOE_ROTATE_STEP_DEG}° dans le sens horaire`
-                    : "Une sphère n'a pas d'orientation"
+                <button
+                  type="button"
+                  data-testid="map-live-rotate-ccw"
+                  onClick={() => {
+                    void handleRotateSelectedAoe(-AOE_ROTATE_STEP_DEG);
+                  }}
+                  disabled={!canRotate}
+                  className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+                >
+                  ⟲ −{AOE_ROTATE_STEP_DEG}°
+                </button>
+              </Tooltip>
+              <Tooltip
+                label={
+                  canRotate ? t('map.tip.rotateAoeCw') : t('map.tip.sphereNoRotation')
                 }
-                className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+                placement="bottom"
+                decorative
               >
-                ⟳ +{AOE_ROTATE_STEP_DEG}°
-              </button>
-              <button
-                type="button"
-                data-testid="map-live-delete-aoe"
-                onClick={() => {
-                  void handleDeleteSelectedAoe();
-                }}
-                title="Supprimer ce gabarit"
-                className="rounded-pill border border-crimson/40 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
-              >
-                Supprimer
-              </button>
+                <button
+                  type="button"
+                  data-testid="map-live-rotate-cw"
+                  onClick={() => {
+                    void handleRotateSelectedAoe(AOE_ROTATE_STEP_DEG);
+                  }}
+                  disabled={!canRotate}
+                  className="rounded-pill border border-gold-dim/40 px-2 py-0.5 font-mono text-[12px] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+                >
+                  ⟳ +{AOE_ROTATE_STEP_DEG}°
+                </button>
+              </Tooltip>
+              <Tooltip label={t('map.tip.deleteAoe')} placement="bottom" decorative>
+                <button
+                  type="button"
+                  data-testid="map-live-delete-aoe"
+                  onClick={() => {
+                    void handleDeleteSelectedAoe();
+                  }}
+                  className="rounded-pill border border-crimson/40 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
+                >
+                  Supprimer
+                </button>
+              </Tooltip>
             </span>
           )}
         </div>
@@ -1282,15 +1293,16 @@ export function MapLiveScreen(): JSX.Element {
           >
             + PNJ
           </button>
-          <button
-            type="button"
-            data-testid="map-live-add-monster"
-            onClick={() => setShowMonsterPicker(true)}
-            title="Poser un monstre du bestiaire (nom + vision auto-remplis)"
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            + Bestiaire
-          </button>
+          <Tooltip label={t('map.tip.addMonster')} decorative>
+            <button
+              type="button"
+              data-testid="map-live-add-monster"
+              onClick={() => setShowMonsterPicker(true)}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              + Bestiaire
+            </button>
+          </Tooltip>
           <button
             type="button"
             data-testid="map-live-clear-tokens"
@@ -1311,61 +1323,73 @@ export function MapLiveScreen(): JSX.Element {
           >
             Murs ({(map.walls ?? []).length})
           </span>
-          <button
-            type="button"
-            data-testid="map-live-toggle-grid"
-            onClick={() => {
-              void handleToggleGrid();
-            }}
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            Grille : {map.showGrid ? 'ON' : 'OFF'}
-          </button>
-          <button
-            type="button"
-            data-testid="map-live-toggle-snap"
-            onClick={() => setSnapEnabled((s) => !s)}
-            disabled={!map.showGrid}
-            title={
+          <Tooltip label={t('map.tip.toggleGrid')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-grid"
+              onClick={() => {
+                void handleToggleGrid();
+              }}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              Grille : {map.showGrid ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
+          <Tooltip
+            label={
               map.showGrid
-                ? "Aligner les jetons sur le centre de leur case"
-                : "Affichez d'abord la grille pour aimanter les jetons"
+                ? t('map.tip.snapToGrid')
+                : t('map.tip.snapNeedsGrid')
             }
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+            placement="bottom"
+            decorative
           >
-            Aimant : {snapEnabled ? 'ON' : 'OFF'}
-          </button>
-          <button
-            type="button"
-            data-testid="map-live-toggle-fog"
-            onClick={() => {
-              void handleToggleFogEnabled();
-            }}
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            Voile : {map.fogEnabled ? 'ON' : 'OFF'}
-          </button>
-          <button
-            type="button"
-            data-testid="map-live-toggle-los"
-            onClick={() => {
-              void handleToggleLos();
-            }}
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            Ligne de vue : {map.losEnabled === true ? 'ON' : 'OFF'}
-          </button>
-          <button
-            type="button"
-            data-testid="map-live-toggle-lighting"
-            onClick={() => {
-              void handleToggleLighting();
-            }}
-            title="Afficher ou masquer la teinte des sources lumineuses (torches, lanternes…)"
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-          >
-            Éclairage : {map.lightingEnabled ? 'ON' : 'OFF'}
-          </button>
+            <button
+              type="button"
+              data-testid="map-live-toggle-snap"
+              onClick={() => setSnapEnabled((s) => !s)}
+              disabled={!map.showGrid}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+            >
+              Aimant : {snapEnabled ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
+          <Tooltip label={t('map.tip.toggleFog')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-fog"
+              onClick={() => {
+                void handleToggleFogEnabled();
+              }}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              Voile : {map.fogEnabled ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
+          <Tooltip label={t('map.tip.toggleLos')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-los"
+              onClick={() => {
+                void handleToggleLos();
+              }}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              Ligne de vue : {map.losEnabled === true ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
+          <Tooltip label={t('map.tip.toggleLighting')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-lighting"
+              onClick={() => {
+                void handleToggleLighting();
+              }}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              Éclairage : {map.lightingEnabled ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
           <button
             type="button"
             data-testid="map-live-open-tv"
@@ -1380,15 +1404,17 @@ export function MapLiveScreen(): JSX.Element {
           <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
             Mesure
           </span>
-          <button
-            type="button"
-            data-testid="map-live-toggle-measure"
-            onClick={handleToggleMeasure}
-            aria-pressed={measureMode}
-            className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold/15"
-          >
-            Mesure : {measureMode ? 'ON' : 'OFF'}
-          </button>
+          <Tooltip label={t('map.tip.toggleMeasure')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-measure"
+              onClick={handleToggleMeasure}
+              aria-pressed={measureMode}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold/15"
+            >
+              Mesure : {measureMode ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
           {measureMode && (
             <>
               <span

@@ -69,6 +69,7 @@ export function InviteCodeReveal({ code, className }: Props): JSX.Element {
           void handleCopy();
         }}
         aria-live="polite"
+        tooltip={t('campaigns.tip.copyInviteCode')}
       >
         {copied
           ? t('campaigns.detail.invite.copied')

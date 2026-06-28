@@ -171,6 +171,7 @@ export function SkillsStep(): JSX.Element {
           size="md"
           onClick={handleAutoFill}
           disabled={!primaryClass}
+          tooltip={t('wizard.tip.autofillSkills')}
         >
           ✨ {t('wizard.action.autofill')}
         </Button>

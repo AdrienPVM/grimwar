@@ -245,6 +245,7 @@ function Block({
           size="sm"
           onClick={() => onJump(step)}
           aria-label={`${t('wizard.recap.editAria')} — ${title}`}
+          tooltip={t('wizard.tip.recapEdit')}
         >
           ✎ {t('wizard.recap.edit')}
         </Button>

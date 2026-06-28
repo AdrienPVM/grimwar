@@ -1,9 +1,11 @@
 import { useMemo, type JSX } from 'react';
 
 import { Card, CardAction, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { PACT_SLOTS_RESOURCE, readPactSlotState } from '@/shared/lib/rules/pact-magic';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
@@ -102,9 +104,11 @@ export function PactSlotsCard({ character, readOnly }: PactSlotsCardProps): JSX.
     <Card>
       <CardHeader>
         <h3>Magie de pacte</h3>
-        <CardAction onClick={() => void handleRestoreAll()} disabled={readOnly || current >= max}>
-          Restaurer
-        </CardAction>
+        <Tooltip label={t('sheet.tip.restorePactSlots')} decorative>
+          <CardAction onClick={() => void handleRestoreAll()} disabled={readOnly || current >= max}>
+            Restaurer
+          </CardAction>
+        </Tooltip>
       </CardHeader>
 
       <div className="flex flex-col gap-3">
@@ -162,27 +166,32 @@ function PactSlotDot({
 }: PactSlotDotProps): JSX.Element {
   const handlers = useLongPress(onConsume, onRestore);
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      aria-label={
-        filled
-          ? `Consommer un emplacement de pacte de niveau ${slotLevel} (long-press pour restaurer)`
-          : `Restaurer un emplacement de pacte de niveau ${slotLevel} (long-press)`
-      }
-      className={cn(
-        'inline-flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition-all',
-        filled
-          ? 'border-gold-bright bg-gradient-to-br from-gold-bright/80 to-gold/30 shadow-[0_0_12px_rgba(220,184,108,0.55)]'
-          : 'border-gold-dim/50 bg-ink/40',
-        'hover:scale-110 active:scale-90',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-      )}
-      {...handlers}
+    <Tooltip
+      label={filled ? t('sheet.tip.consumeSlot') : t('sheet.tip.restoreSlot')}
+      decorative
     >
-      <span className="block font-display text-[12px] font-black leading-none tracking-[-0.02em] text-ink">
-        {filled ? slotLevel : ''}
-      </span>
-    </button>
+      <button
+        type="button"
+        disabled={disabled}
+        aria-label={
+          filled
+            ? `Consommer un emplacement de pacte de niveau ${slotLevel} (long-press pour restaurer)`
+            : `Restaurer un emplacement de pacte de niveau ${slotLevel} (long-press)`
+        }
+        className={cn(
+          'inline-flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition-all',
+          filled
+            ? 'border-gold-bright bg-gradient-to-br from-gold-bright/80 to-gold/30 shadow-[0_0_12px_rgba(220,184,108,0.55)]'
+            : 'border-gold-dim/50 bg-ink/40',
+          'hover:scale-110 active:scale-90',
+          'disabled:cursor-not-allowed disabled:opacity-50',
+        )}
+        {...handlers}
+      >
+        <span className="block font-display text-[12px] font-black leading-none tracking-[-0.02em] text-ink">
+          {filled ? slotLevel : ''}
+        </span>
+      </button>
+    </Tooltip>
   );
 }

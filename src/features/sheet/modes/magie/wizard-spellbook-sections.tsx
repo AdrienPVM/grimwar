@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -135,16 +136,18 @@ export function WizardSpellbookSections({
           <CardHeader>
             <h3>Sorts préparés · {prepared.length}</h3>
             {canEdit && (
-              <CardAction
-                onClick={() => setEditMode((e) => !e)}
-                aria-expanded={editMode}
-                className={cn(
-                  editMode &&
-                    'border-gold bg-gradient-to-b from-gold-bright to-gold text-ink',
-                )}
-              >
-                {editMode ? t('sheet.magie.prep.done') : t('sheet.magie.prep.edit')}
-              </CardAction>
+              <Tooltip label={t('sheet.tip.editPreparation')} decorative>
+                <CardAction
+                  onClick={() => setEditMode((e) => !e)}
+                  aria-expanded={editMode}
+                  className={cn(
+                    editMode &&
+                      'border-gold bg-gradient-to-b from-gold-bright to-gold text-ink',
+                  )}
+                >
+                  {editMode ? t('sheet.magie.prep.done') : t('sheet.magie.prep.edit')}
+                </CardAction>
+              </Tooltip>
             )}
           </CardHeader>
           {editMode && (

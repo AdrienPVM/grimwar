@@ -53,7 +53,13 @@ export function CampaignMemberItem({
         />
         {canPromote ? (
           <div className="flex justify-end">
-            <Button type="button" variant="ghost" size="sm" onClick={onPromote}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onPromote}
+              tooltip={t('campaigns.tip.promoteGm')}
+            >
               {t('campaigns.detail.roster.promote')}
             </Button>
           </div>
@@ -81,7 +87,13 @@ export function CampaignMemberItem({
           <Chip variant="magic">{t('campaigns.card.roleMember')}</Chip>
         )}
         {canPromote ? (
-          <Button type="button" variant="secondary" size="sm" onClick={onPromote}>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onPromote}
+            tooltip={t('campaigns.tip.promoteGm')}
+          >
             {t('campaigns.detail.roster.promote')}
           </Button>
         ) : null}

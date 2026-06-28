@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import type { DiceHistoryRow } from '@/shared/lib/dexie-db';
 import { setDiceMode, useUserSettingsStore } from '@/shared/lib/slices/user-settings-slice';
 import type { DiceMode } from '@/shared/lib/dice/types';
@@ -75,14 +77,16 @@ export function RollHistoryPanel({
                 Historique des jets
               </h2>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Fermer l'historique"
-              className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
-            >
-              ✕
-            </button>
+            <Tooltip label={t('dice.tip.closeHistory')} placement="left" decorative>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Fermer l'historique"
+                className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
+              >
+                ✕
+              </button>
+            </Tooltip>
           </div>
           <DiceModeToggle />
         </header>
@@ -233,23 +237,24 @@ interface ToggleOptionProps {
 
 function ToggleOption({ active, disabled, label, hint, onClick }: ToggleOptionProps): JSX.Element {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={active}
-      aria-disabled={disabled}
-      disabled={disabled}
-      title={hint}
-      onClick={onClick}
-      className={cn(
-        'flex-1 rounded-pill px-3 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.16em] transition-colors',
-        active
-          ? 'bg-gradient-to-b from-gold-bright to-gold text-ink shadow-[0_0_12px_var(--gold-glow)]'
-          : 'text-text-secondary hover:text-gold-bright',
-        disabled && 'cursor-not-allowed opacity-40',
-      )}
-    >
-      {label}
-    </button>
+    <Tooltip label={hint} placement="bottom" decorative className="flex-1">
+      <button
+        type="button"
+        role="radio"
+        aria-checked={active}
+        aria-disabled={disabled}
+        disabled={disabled}
+        onClick={onClick}
+        className={cn(
+          'w-full rounded-pill px-3 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.16em] transition-colors',
+          active
+            ? 'bg-gradient-to-b from-gold-bright to-gold text-ink shadow-[0_0_12px_var(--gold-glow)]'
+            : 'text-text-secondary hover:text-gold-bright',
+          disabled && 'cursor-not-allowed opacity-40',
+        )}
+      >
+        {label}
+      </button>
+    </Tooltip>
   );
 }

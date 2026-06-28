@@ -147,6 +147,7 @@ export function EquipmentStep(): JSX.Element {
           size="md"
           onClick={handleAutoFill}
           disabled={draftClasses.length === 0}
+          tooltip={t('wizard.tip.autofillEquipment')}
         >
           ✨ {t('wizard.action.autofill')}
         </Button>

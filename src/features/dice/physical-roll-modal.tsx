@@ -189,10 +189,21 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
         </div>
 
         <footer className="flex items-center justify-between gap-3 border-t border-white-8 px-6 py-4">
-          <Button variant="ghost" size="sm" onClick={pass}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={pass}
+            tooltip="Abandonne ce jet sans rien enregistrer."
+          >
             Passer
           </Button>
-          <Button variant="primary" size="sm" onClick={validate} disabled={!allValid}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={validate}
+            disabled={!allValid}
+            tooltip="Confirme les faces saisies et calcule le total."
+          >
             Valider
           </Button>
         </footer>

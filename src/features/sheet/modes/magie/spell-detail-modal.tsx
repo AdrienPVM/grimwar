@@ -4,6 +4,7 @@ import { rollWithFlags } from '@/features/dice/roll-with-flags';
 import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { logSpellCast } from '@/shared/lib/event-logger';
 import { localize, t } from '@/shared/lib/i18n';
@@ -421,18 +422,19 @@ export function SpellDetailModal({
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {availableSlots.map((lvl) => (
-                    <button
-                      key={lvl}
-                      type="button"
-                      onClick={() => setChosenLevel(lvl)}
-                      className={
-                        lvl === chosenLevel
-                          ? 'rounded-pill border border-gold-bright bg-gradient-to-b from-gold-bright to-gold px-4 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-ink'
-                          : 'rounded-pill border border-white-8 bg-white/[0.04] px-4 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-secondary hover:border-soft hover:text-gold-bright'
-                      }
-                    >
-                      Niv. {lvl}
-                    </button>
+                    <Tooltip key={lvl} label={t('sheet.tip.chooseSlotLevel')} decorative>
+                      <button
+                        type="button"
+                        onClick={() => setChosenLevel(lvl)}
+                        className={
+                          lvl === chosenLevel
+                            ? 'rounded-pill border border-gold-bright bg-gradient-to-b from-gold-bright to-gold px-4 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-ink'
+                            : 'rounded-pill border border-white-8 bg-white/[0.04] px-4 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-secondary hover:border-soft hover:text-gold-bright'
+                        }
+                      >
+                        Niv. {lvl}
+                      </button>
+                    </Tooltip>
                   ))}
                 </div>
               )}
@@ -450,7 +452,7 @@ export function SpellDetailModal({
                 onClick={() => void handleAttackRoll()}
                 disabled={readOnly}
                 className="flex-1"
-                title="Lance un d20 + bonus d'attaque du sort"
+                tooltip={t('sheet.tip.spellAttackRoll')}
               >
                 Jet d'att.
               </Button>
@@ -466,7 +468,7 @@ export function SpellDetailModal({
                 (!isCantrip && !isAncestryLeveledCast && availableSlots.length === 0)
               }
               className="flex-1"
-              title={castDisabledHint}
+              tooltip={castDisabledHint ?? t('sheet.tip.castSpell')}
             >
               {busy ? '…' : 'Lancer'}
             </Button>

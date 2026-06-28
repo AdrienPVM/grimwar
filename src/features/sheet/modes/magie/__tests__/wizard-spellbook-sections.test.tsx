@@ -178,10 +178,11 @@ describe('<WizardSpellbookSections>', () => {
         onSpellSelect={() => undefined}
       />,
     );
-    // Le test ne dépend pas du DOM exact ; on cherche les en-têtes via leur
-    // texte localisé. Les deux régions sont identifiables par leur titre.
-    expect(screen.getByText(/Sorts préparés/i)).toBeInTheDocument();
-    expect(screen.getByText(/Grimoire/i)).toBeInTheDocument();
+    // On cible les en-têtes par leur rôle de titre (`h3`) plutôt que par texte
+    // libre : l'infobulle « Modifie la liste de tes sorts préparés. » contient
+    // aussi « sorts préparés » et ferait matcher `getByText` deux fois.
+    expect(screen.getByRole('heading', { name: /Sorts préparés/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Grimoire/i })).toBeInTheDocument();
   });
 
   it('cat. 6 — la section « Préparés » contient EXACTEMENT les 4 préparés, JAMAIS les 2 inscrits non-préparés', () => {

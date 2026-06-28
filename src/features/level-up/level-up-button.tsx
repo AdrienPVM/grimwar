@@ -2,6 +2,7 @@ import { useMemo, useState, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { useContent } from '@/shared/hooks/use-content';
+import { t } from '@/shared/lib/i18n';
 import type { LevelUpMode } from '@/shared/lib/level-up/level-up-flow';
 import type { LevelUpDraft } from '@/shared/lib/level-up/level-up-types';
 import { computeMulticlassEligibility } from '@/shared/lib/rules/multiclass-eligibility';
@@ -108,6 +109,7 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
             size="sm"
             onClick={() => setOpenMode('level-up')}
             aria-label={`Monter au niveau ${primaryEntry.level + 1}`}
+            tooltip={t('levelUp.tip.levelUp')}
           >
             Monter de niveau
           </Button>
@@ -118,6 +120,7 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
             size="sm"
             onClick={() => setOpenMode('add-class')}
             aria-label="Ajouter une classe en multiclass"
+            tooltip={t('levelUp.tip.addClass')}
           >
             Ajouter une classe
           </Button>

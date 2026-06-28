@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
 import type { Item, MagicItem, ItemCategory } from '@/shared/types/content';
@@ -52,9 +53,11 @@ export function InventoryList({
     <Card>
       <CardHeader>
         <h3>Inventaire</h3>
-        <CardAction onClick={onAddItemClick} disabled={readOnly}>
-          + Objet
-        </CardAction>
+        <Tooltip label={t('sheet.tip.addItem')} decorative>
+          <CardAction onClick={onAddItemClick} disabled={readOnly}>
+            + Objet
+          </CardAction>
+        </Tooltip>
       </CardHeader>
       <label className="mb-4 flex items-center gap-2 rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2">
         <input

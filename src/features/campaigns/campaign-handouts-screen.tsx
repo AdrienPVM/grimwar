@@ -119,7 +119,12 @@ export function CampaignHandoutsScreen(): JSX.Element {
             {t('handouts.card.open')}
           </Button>
           {isDM && !isArchived ? (
-            <Button variant="ghost" size="sm" onClick={() => void onArchive(handout)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void onArchive(handout)}
+              tooltip={t('campaigns.tip.archiveHandout')}
+            >
               {t('handouts.card.archive')}
             </Button>
           ) : null}

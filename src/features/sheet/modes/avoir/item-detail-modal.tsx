@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
@@ -153,14 +154,16 @@ export function ItemDetailModal({
               {!content && 'Item non résolu'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fermer"
-            className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
-          >
-            ✕
-          </button>
+          <Tooltip label={t('sheet.tip.closeModal')} decorative placement="left">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fermer"
+              className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
+            >
+              ✕
+            </button>
+          </Tooltip>
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -219,33 +222,37 @@ export function ItemDetailModal({
               Quantité
             </span>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => void changeQty(-1)}
-                disabled={readOnly || busy || inventory.qty <= 1}
-                aria-label="Diminuer la quantité"
-                className={cn(
-                  'h-8 w-8 rounded-full border border-white-8 bg-ink/40 font-display text-[16px] text-text transition-colors',
-                  'hover:border-gold-dim hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40',
-                )}
-              >
-                −
-              </button>
+              <Tooltip label={t('sheet.tip.decrement')} decorative>
+                <button
+                  type="button"
+                  onClick={() => void changeQty(-1)}
+                  disabled={readOnly || busy || inventory.qty <= 1}
+                  aria-label="Diminuer la quantité"
+                  className={cn(
+                    'h-8 w-8 rounded-full border border-white-8 bg-ink/40 font-display text-[16px] text-text transition-colors',
+                    'hover:border-gold-dim hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40',
+                  )}
+                >
+                  −
+                </button>
+              </Tooltip>
               <span className="min-w-[2rem] text-center font-display text-[22px] font-bold text-gold-bright">
                 {inventory.qty}
               </span>
-              <button
-                type="button"
-                onClick={() => void changeQty(1)}
-                disabled={readOnly || busy}
-                aria-label="Augmenter la quantité"
-                className={cn(
-                  'h-8 w-8 rounded-full border border-white-8 bg-ink/40 font-display text-[16px] text-text transition-colors',
-                  'hover:border-gold-dim hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40',
-                )}
-              >
-                +
-              </button>
+              <Tooltip label={t('sheet.tip.increment')} decorative>
+                <button
+                  type="button"
+                  onClick={() => void changeQty(1)}
+                  disabled={readOnly || busy}
+                  aria-label="Augmenter la quantité"
+                  className={cn(
+                    'h-8 w-8 rounded-full border border-white-8 bg-ink/40 font-display text-[16px] text-text transition-colors',
+                    'hover:border-gold-dim hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40',
+                  )}
+                >
+                  +
+                </button>
+              </Tooltip>
             </div>
           </div>
 
@@ -277,6 +284,7 @@ export function ItemDetailModal({
                 size="sm"
                 onClick={() => void toggleEquipped()}
                 disabled={readOnly || busy}
+                tooltip={t('sheet.tip.toggleEquip')}
                 className="flex-1"
               >
                 {inventory.equipped ? 'Déséquiper' : 'Équiper'}
@@ -288,6 +296,7 @@ export function ItemDetailModal({
                 size="sm"
                 onClick={() => void toggleAttuned()}
                 disabled={readOnly || busy}
+                tooltip={t('sheet.tip.toggleAttune')}
                 className="flex-1"
               >
                 {inventory.attuned ? 'Délier' : 'Lier'}
@@ -314,6 +323,7 @@ export function ItemDetailModal({
                 size="sm"
                 onClick={() => setConfirmRemove(true)}
                 disabled={readOnly || busy}
+                tooltip={t('sheet.tip.removeItem')}
                 className="flex-1"
               >
                 Retirer

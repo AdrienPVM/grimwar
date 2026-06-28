@@ -72,6 +72,7 @@ function HitMissDialog({ spec }: DialogProps): JSX.Element {
             size="sm"
             onClick={() => resolveHitMissGate('miss')}
             className="flex-1"
+            tooltip="L'attaque rate : ton total n'atteint pas la cible."
           >
             Raté
           </Button>
@@ -80,6 +81,7 @@ function HitMissDialog({ spec }: DialogProps): JSX.Element {
             size="sm"
             onClick={() => resolveHitMissGate('hit')}
             className="flex-1"
+            tooltip="L'attaque touche : ton total atteint ou dépasse la cible."
           >
             Touché
           </Button>

@@ -34,7 +34,10 @@ test.describe('Ancestry — Goliath Storm (Tonnerre)', () => {
 
     const card = page.locator('[aria-label*="Ascendance gigante"]').first();
     await expect(card).toBeVisible();
-    await expect(card.getByText(/Tonnerre/)).toBeVisible();
+    // Le type de dégât s'affiche dans un span dédié. `exact` exclut les
+    // infobulles des boutons de compteur (« … d'Ascendance gigante (Tonnerre) »)
+    // qui contiennent aussi « Tonnerre » au milieu d'une phrase.
+    await expect(card.getByText('Tonnerre', { exact: true })).toBeVisible();
 
     // Compteur d'utilisations consommable (featureUsage). PB L1 = 2 → « 2 / 2 ».
     const counter = card.getByTestId('usage-counter-value');

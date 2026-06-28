@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/shared/components/button';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -117,14 +118,16 @@ export function AddItemModal({
                 : 'Référence personnelle (user scope)'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fermer"
-            className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
-          >
-            ✕
-          </button>
+          <Tooltip label={t('sheet.tip.closeModal')} decorative placement="left">
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fermer"
+              className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
+            >
+              ✕
+            </button>
+          </Tooltip>
         </header>
 
         {view === 'browse' ? (
@@ -193,6 +196,7 @@ export function AddItemModal({
                 variant="ghost"
                 size="sm"
                 onClick={() => setView('custom')}
+                tooltip={t('sheet.tip.createCustomItem')}
                 className="shrink-0"
               >
                 + Maison

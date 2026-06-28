@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -82,14 +84,14 @@ export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.El
           const isZero = value === 0;
           const isEditing = editing === key;
           return (
+            <Tooltip key={key} label={t('sheet.tip.editCoin')} decorative className="w-full">
             <button
-              key={key}
               type="button"
               disabled={readOnly || isUpdating}
               onClick={() => !isEditing && setEditing(key)}
               aria-label={`Éditer pièces ${label}`}
               className={cn(
-                'relative flex flex-col items-center justify-center gap-1 rounded-card-sm border border-white-8 bg-ink/40 px-2 py-3 transition-all',
+                'relative flex w-full flex-col items-center justify-center gap-1 rounded-card-sm border border-white-8 bg-ink/40 px-2 py-3 transition-all',
                 'hover:border-gold-dim hover:-translate-y-0.5',
                 'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0',
                 isEditing && 'border-gold-bright bg-gold-bright/10',
@@ -125,6 +127,7 @@ export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.El
                 </span>
               )}
             </button>
+            </Tooltip>
           );
         })}
       </div>

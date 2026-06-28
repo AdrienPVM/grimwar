@@ -113,7 +113,12 @@ export function CampaignJournalScreen(): JSX.Element {
         </p>
         {completed.length > 0 ? (
           <div className="mt-5 flex justify-center">
-            <Button variant="secondary" size="sm" onClick={handleExport}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleExport}
+              tooltip={t('journal.tip.export')}
+            >
               {t('journal.aggregate.export')}
             </Button>
           </div>

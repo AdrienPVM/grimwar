@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState, type FormEvent, type JSX } from 'reac
 import { Link, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { Tooltip } from '@/shared/components/tooltip';
+import { t } from '@/shared/lib/i18n';
 import { ensureCampaignExists } from '@/shared/lib/services/campaigns';
 import {
   createMap,
@@ -314,17 +316,19 @@ export function MapsCloudScreen(): JSX.Element {
                   {m.id}
                 </p>
               </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  void handleDelete(m.id);
-                }}
-                aria-label={`Supprimer ${m.name}`}
-                data-testid={`maps-cloud-delete-${m.id}`}
-                className="ml-2 rounded-pill border border-gold-dim/30 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-crimson/60 hover:text-crimson"
-              >
-                Suppr.
-              </button>
+              <Tooltip label={t('map.tip.deleteMap')} placement="left" decorative>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleDelete(m.id);
+                  }}
+                  aria-label={`Supprimer ${m.name}`}
+                  data-testid={`maps-cloud-delete-${m.id}`}
+                  className="ml-2 rounded-pill border border-gold-dim/30 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-crimson/60 hover:text-crimson"
+                >
+                  Suppr.
+                </button>
+              </Tooltip>
             </li>
           ))}
         </ul>

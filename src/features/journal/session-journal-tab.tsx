@@ -119,7 +119,13 @@ export function SessionJournalTab({
         </p>
         {canEdit ? (
           <div className="mt-6 flex flex-col items-center gap-3">
-            <Button variant="primary" size="md" onClick={handleCompile} disabled={pending}>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleCompile}
+              disabled={pending}
+              tooltip={t('journal.tip.compile')}
+            >
               {pending ? t('sessions.journal.compiling') : t('sessions.journal.compile')}
             </Button>
             {error ? (
@@ -214,13 +220,19 @@ export function SessionJournalTab({
             </GlassPanel>
           ) : (
             <div className="flex flex-wrap items-center justify-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setDraft(markdown)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDraft(markdown)}
+                tooltip={t('journal.tip.edit')}
+              >
                 {t('sessions.journal.edit')}
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setConfirmingRecompile(true)}
+                tooltip={t('journal.tip.recompile')}
               >
                 {t('sessions.journal.recompile')}
               </Button>

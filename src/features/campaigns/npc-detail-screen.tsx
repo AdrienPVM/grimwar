@@ -117,10 +117,20 @@ export function NpcDetailScreen(): JSX.Element {
           </Button>
           {isDM ? (
             <div className="flex items-center gap-2">
-              <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setEditOpen(true)}
+                tooltip={t('campaigns.tip.editNpc')}
+              >
                 {t('npcs.detail.edit')}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setDeleteOpen(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDeleteOpen(true)}
+                tooltip={t('campaigns.tip.deleteNpc')}
+              >
                 {t('npcs.detail.delete')}
               </Button>
             </div>
@@ -178,7 +188,12 @@ export function NpcDetailScreen(): JSX.Element {
               {t('npcs.detail.relationsHeading')}
             </h2>
             {isDM ? (
-              <Button variant="ghost" size="sm" onClick={() => setRelationOpen(true)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setRelationOpen(true)}
+                tooltip={t('campaigns.tip.editRelations')}
+              >
                 {t('npcs.detail.relations.editCta')}
               </Button>
             ) : null}

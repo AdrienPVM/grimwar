@@ -33,6 +33,23 @@ function spellFromBundle(id: string): Spell {
   return found as Spell;
 }
 
+/**
+ * Résout le texte de l'infobulle décrivant un bouton via `aria-describedby`.
+ * Le hint d'incantation (bloqué ou rappel générique) vit désormais dans la bulle
+ * accessible (composant `Tooltip`), plus dans un attribut `title` natif.
+ */
+function describedByText(el: HTMLElement): string {
+  const id = el.getAttribute('aria-describedby');
+  if (!id) throw new Error('bouton sans aria-describedby (infobulle absente)');
+  // describedby peut concaténer plusieurs ids ; la bulle est le dernier ajouté.
+  const tip = id
+    .split(' ')
+    .map((token) => document.getElementById(token))
+    .find((node): node is HTMLElement => node?.getAttribute('role') === 'tooltip');
+  if (!tip) throw new Error(`aucune infobulle résolue pour describedby="${id}"`);
+  return tip.textContent ?? '';
+}
+
 const { updateCharacterMock } = vi.hoisted(() => ({
   updateCharacterMock: vi.fn().mockResolvedValue(undefined),
 }));
@@ -193,7 +210,9 @@ describe('SpellDetailModal — cast sort d\'ascendance L3 (D12b)', () => {
     const dialog = screen.getByRole('dialog');
     const launchBtn = within(dialog).getByRole('button', { name: /Lancer/ });
     expect(launchBtn).toBeDisabled();
-    expect(launchBtn).toHaveAttribute('title', 'Plus aucun usage avant un repos long.');
+    // Le hint « désactivé » n'est plus un attribut `title` natif (inaccessible
+    // au toucher) mais l'infobulle accessible décrivant le bouton (describedby).
+    expect(describedByText(launchBtn)).toBe('Plus aucun usage avant un repos long.');
     // Cliquer ne déclenche aucune écriture.
     fireEvent.click(launchBtn);
     expect(updateCharacterMock).not.toHaveBeenCalled();
@@ -208,7 +227,7 @@ describe('SpellDetailModal — cast sort d\'ascendance L3 (D12b)', () => {
     const dialog = screen.getByRole('dialog');
     const launchBtn = within(dialog).getByRole('button', { name: /Lancer/ });
     expect(launchBtn).toBeDisabled();
-    expect(launchBtn).toHaveAttribute('title', 'Disponible au niveau 3');
+    expect(describedByText(launchBtn)).toBe('Disponible au niveau 3');
   });
 
   it('cantrip d\'ascendance (usage null) → lançable, aucune écriture featureUsage', async () => {
@@ -227,7 +246,9 @@ describe('SpellDetailModal — cast sort d\'ascendance L3 (D12b)', () => {
     const dialog = screen.getByRole('dialog');
     const launchBtn = within(dialog).getByRole('button', { name: /Lancer/ });
     expect(launchBtn).toBeEnabled();
-    expect(launchBtn).not.toHaveAttribute('title');
+    // Bouton actif : l'infobulle est le rappel générique d'incantation, pas un
+    // hint de blocage (plus de `title` natif).
+    expect(describedByText(launchBtn)).toBe('Lance le sort et consomme la ressource requise.');
     fireEvent.click(launchBtn);
     // Le cast aboutit (onClose appelé) mais un cantrip à volonté ne consomme
     // rien → aucun patch `featureUsage`/slot n'est écrit.

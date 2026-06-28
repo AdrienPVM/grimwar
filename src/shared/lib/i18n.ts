@@ -1898,7 +1898,109 @@ export type StringKey =
   | 'customContent.editor.editMode.back'
   | 'customContent.editor.meta.idHelperEdit'
   | 'customContent.editor.entityRow.edit'
-  | 'customContent.list.edit';
+  | 'customContent.list.edit'
+  // Infobulles explicites — fiche (sheet)
+  | 'sheet.tip.editPreparation'
+  | 'sheet.tip.openSpellDetail'
+  | 'sheet.tip.chooseSlotLevel'
+  | 'sheet.tip.spellAttackRoll'
+  | 'sheet.tip.castSpell'
+  | 'sheet.tip.restoreAllSlots'
+  | 'sheet.tip.restorePactSlots'
+  | 'sheet.tip.consumeSlot'
+  | 'sheet.tip.restoreSlot'
+  | 'sheet.tip.openDetail'
+  | 'sheet.tip.toggleInspiration'
+  | 'sheet.tip.rollSave'
+  | 'sheet.tip.rollSkill'
+  | 'sheet.tip.closeModal'
+  | 'sheet.tip.decrement'
+  | 'sheet.tip.increment'
+  | 'sheet.tip.toggleEquip'
+  | 'sheet.tip.toggleAttune'
+  | 'sheet.tip.removeItem'
+  | 'sheet.tip.editCoin'
+  | 'sheet.tip.addItem'
+  | 'sheet.tip.createCustomItem'
+  // Infobulles explicites — campagnes (campaigns)
+  | 'campaigns.tip.viewStatBlock'
+  | 'campaigns.tip.applyDamage'
+  | 'campaigns.tip.applyHeal'
+  | 'campaigns.tip.quickDamage'
+  | 'campaigns.tip.quickHeal'
+  | 'campaigns.tip.conditionAdd'
+  | 'campaigns.tip.conditionRemove'
+  | 'campaigns.tip.rollInit'
+  | 'campaigns.tip.startCombat'
+  | 'campaigns.tip.endTurn'
+  | 'campaigns.tip.endCombat'
+  | 'campaigns.tip.reroll'
+  | 'campaigns.tip.controlParticipant'
+  | 'campaigns.tip.openJournal'
+  | 'campaigns.tip.openHandouts'
+  | 'campaigns.tip.openNpcs'
+  | 'campaigns.tip.openSessions'
+  | 'campaigns.tip.openEncounters'
+  | 'campaigns.tip.openMaps'
+  | 'campaigns.tip.promoteGm'
+  | 'campaigns.tip.copyInviteCode'
+  | 'campaigns.tip.linkCharacter'
+  | 'campaigns.tip.editNpc'
+  | 'campaigns.tip.deleteNpc'
+  | 'campaigns.tip.editRelations'
+  | 'campaigns.tip.archiveHandout'
+  | 'campaigns.tip.startSession'
+  | 'campaigns.tip.endSession'
+  | 'campaigns.tip.applyHandoff'
+  | 'campaigns.tip.handoffTarget'
+  | 'campaigns.tip.removeMonsterRow'
+  | 'campaigns.tip.fromBestiary'
+  // Infobulles explicites — carte (map)
+  | 'map.tip.placeAoe'
+  | 'map.tip.rotateAoeCcw'
+  | 'map.tip.rotateAoeCw'
+  | 'map.tip.shrinkAoe'
+  | 'map.tip.growAoe'
+  | 'map.tip.sphereNoRotation'
+  | 'map.tip.deleteAoe'
+  | 'map.tip.removeFromInitiative'
+  | 'map.tip.addMonster'
+  | 'map.tip.snapToGrid'
+  | 'map.tip.snapNeedsGrid'
+  | 'map.tip.toggleGrid'
+  | 'map.tip.toggleFog'
+  | 'map.tip.toggleLos'
+  | 'map.tip.toggleLighting'
+  | 'map.tip.toggleMeasure'
+  | 'map.tip.deleteMap'
+  // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
+  | 'wizard.tip.rollAbilities'
+  | 'wizard.tip.autofillAbilities'
+  | 'wizard.tip.navPrevious'
+  | 'wizard.tip.navNext'
+  | 'wizard.tip.autofillSpells'
+  | 'wizard.tip.recapEdit'
+  | 'wizard.tip.removeClass'
+  | 'wizard.tip.addClass'
+  | 'wizard.tip.autofillEquipment'
+  | 'wizard.tip.autofillSkills'
+  | 'levelUp.tip.levelUp'
+  | 'levelUp.tip.addClass'
+  | 'levelUp.tip.hpAverage'
+  | 'levelUp.tip.hpRoll'
+  // Infobulles explicites — menu radial, dés, journal, outils MJ
+  | 'radialMenu.tip.fab'
+  | 'radialMenu.tip.back'
+  | 'radialMenu.tip.close'
+  | 'dice.tip.closeHistory'
+  | 'dm.tip.advNormal'
+  | 'dm.tip.advAdvantage'
+  | 'dm.tip.advDisadvantage'
+  | 'dm.tip.secretRoll'
+  | 'journal.tip.export'
+  | 'journal.tip.compile'
+  | 'journal.tip.edit'
+  | 'journal.tip.recompile';
 
 type Dict = Record<StringKey, string>;
 
@@ -4372,6 +4474,108 @@ const STRINGS: Record<Locale, Dict> = {
       'Identifiant verrouillé : pour le renommer, exporte puis ré-importe sous un nouvel id.',
     'customContent.editor.entityRow.edit': 'Modifier',
     'customContent.list.edit': 'Modifier',
+    // Infobulles explicites — fiche (sheet)
+    'sheet.tip.editPreparation': 'Modifie la liste de tes sorts préparés.',
+    'sheet.tip.openSpellDetail': 'Ouvre la fiche détaillée du sort.',
+    'sheet.tip.chooseSlotLevel': 'Choisis le niveau d’emplacement utilisé.',
+    'sheet.tip.spellAttackRoll': 'Lance un d20 plus ton bonus d’attaque de sort.',
+    'sheet.tip.castSpell': 'Lance le sort et consomme la ressource requise.',
+    'sheet.tip.restoreAllSlots': 'Restaure tous les emplacements de sort.',
+    'sheet.tip.restorePactSlots': 'Restaure tous les emplacements de pacte.',
+    'sheet.tip.consumeSlot': 'Consomme cet emplacement.',
+    'sheet.tip.restoreSlot': 'Restaure cet emplacement.',
+    'sheet.tip.openDetail': 'Ouvre le détail de cet élément.',
+    'sheet.tip.toggleInspiration': 'Accorde ou retire l’inspiration du personnage.',
+    'sheet.tip.rollSave': 'Lance un jet de sauvegarde pour cette caractéristique.',
+    'sheet.tip.rollSkill': 'Lance un test de cette compétence.',
+    'sheet.tip.closeModal': 'Ferme cette fenêtre.',
+    'sheet.tip.decrement': 'Diminue la quantité de un.',
+    'sheet.tip.increment': 'Augmente la quantité de un.',
+    'sheet.tip.toggleEquip': 'Équipe ou retire cet objet.',
+    'sheet.tip.toggleAttune': 'Lie cet objet magique à ton personnage.',
+    'sheet.tip.removeItem': 'Retire cet objet de l’inventaire.',
+    'sheet.tip.editCoin': 'Modifie le nombre de pièces.',
+    'sheet.tip.addItem': 'Ajoute un objet à ton inventaire.',
+    'sheet.tip.createCustomItem': 'Crée un objet personnalisé maison.',
+    // Infobulles explicites — campagnes (campaigns)
+    'campaigns.tip.viewStatBlock': 'Voir la fiche de combat de la créature.',
+    'campaigns.tip.applyDamage': 'Retirer ce nombre de points de vie.',
+    'campaigns.tip.applyHeal': 'Rendre ce nombre de points de vie.',
+    'campaigns.tip.quickDamage': 'Infliger ces dégâts en un toucher.',
+    'campaigns.tip.quickHeal': 'Soigner ce montant en un toucher.',
+    'campaigns.tip.conditionAdd': 'Appliquer cet état à la créature.',
+    'campaigns.tip.conditionRemove': 'Retirer cet état de la créature.',
+    'campaigns.tip.rollInit': 'Lancer l’initiative de tous les combattants.',
+    'campaigns.tip.startCombat': 'Démarrer le combat et figer l’ordre des tours.',
+    'campaigns.tip.endTurn': 'Passer au combattant suivant.',
+    'campaigns.tip.endCombat': 'Clôturer le combat et choisir son issue.',
+    'campaigns.tip.reroll': 'Relancer l’initiative de ce combattant.',
+    'campaigns.tip.controlParticipant': 'Ajuster ses points de vie et ses états.',
+    'campaigns.tip.openJournal': 'Ouvrir le journal de la campagne.',
+    'campaigns.tip.openHandouts': 'Ouvrir les documents partagés avec la table.',
+    'campaigns.tip.openNpcs': 'Ouvrir l’annuaire des personnages non-joueurs.',
+    'campaigns.tip.openSessions': 'Ouvrir la liste des séances de jeu.',
+    'campaigns.tip.openEncounters': 'Ouvrir la liste des rencontres de combat.',
+    'campaigns.tip.openMaps': 'Ouvrir le mode carte de la campagne.',
+    'campaigns.tip.promoteGm': 'Donner à ce joueur les pleins pouvoirs de meneur.',
+    'campaigns.tip.copyInviteCode': 'Copier le code d’invitation dans le presse-papiers.',
+    'campaigns.tip.linkCharacter': 'Choisir le personnage que vous jouez ici.',
+    'campaigns.tip.editNpc': 'Modifier la fiche de ce personnage non-joueur.',
+    'campaigns.tip.deleteNpc': 'Supprimer définitivement ce personnage non-joueur.',
+    'campaigns.tip.editRelations': 'Modifier les liens avec les personnages joueurs.',
+    'campaigns.tip.archiveHandout': 'Archiver ce document et le masquer aux joueurs.',
+    'campaigns.tip.startSession': 'Démarrer la séance et journaliser le jeu.',
+    'campaigns.tip.endSession': 'Clôturer la séance et compiler le journal.',
+    'campaigns.tip.applyHandoff': 'Choisir la cible qui subira ces dégâts.',
+    'campaigns.tip.handoffTarget': 'Appliquer les dégâts à cette créature.',
+    'campaigns.tip.removeMonsterRow': 'Retirer ce monstre de la rencontre.',
+    'campaigns.tip.fromBestiary': 'Préremplir un monstre depuis le bestiaire.',
+    // Infobulles explicites — carte (map)
+    'map.tip.placeAoe': 'Choisir cette forme de zone d’effet à poser.',
+    'map.tip.rotateAoeCcw': 'Pivoter la zone de 15° vers la gauche.',
+    'map.tip.rotateAoeCw': 'Pivoter la zone de 15° vers la droite.',
+    'map.tip.shrinkAoe': 'Réduire la zone d’une case.',
+    'map.tip.growAoe': 'Agrandir la zone d’une case.',
+    'map.tip.sphereNoRotation': 'Une sphère n’a pas d’orientation.',
+    'map.tip.deleteAoe': 'Supprimer cette zone d’effet.',
+    'map.tip.removeFromInitiative': 'Retirer ce combattant de l’initiative.',
+    'map.tip.addMonster': 'Poser un monstre du bestiaire sur la carte.',
+    'map.tip.snapToGrid': 'Aligner les jetons au centre de leur case.',
+    'map.tip.snapNeedsGrid': 'Affichez d’abord la grille pour aimanter les jetons.',
+    'map.tip.toggleGrid': 'Afficher ou masquer la grille de la carte.',
+    'map.tip.toggleFog': 'Activer ou couper le voile de brouillard.',
+    'map.tip.toggleLos': 'Activer ou couper la ligne de vue (occlusion par les murs).',
+    'map.tip.toggleLighting': 'Afficher ou masquer la teinte des sources lumineuses.',
+    'map.tip.toggleMeasure': 'Mesurer une distance en mètres sur la carte.',
+    'map.tip.deleteMap': 'Supprimer définitivement cette carte.',
+    // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
+    'wizard.tip.rollAbilities': 'Lance les dés à votre place pour générer les six valeurs.',
+    'wizard.tip.autofillAbilities': 'Remplit les caractéristiques recommandées pour votre classe.',
+    'wizard.tip.navPrevious': 'Revient à l’étape précédente.',
+    'wizard.tip.navNext': 'Passe à l’étape suivante.',
+    'wizard.tip.autofillSpells': 'Choisit pour vous des sorts adaptés à la classe.',
+    'wizard.tip.recapEdit': 'Retourne à cette étape pour la modifier.',
+    'wizard.tip.removeClass': 'Retire cette classe du personnage.',
+    'wizard.tip.addClass': 'Ajoute une seconde classe au personnage.',
+    'wizard.tip.autofillEquipment': 'Choisit pour vous un équipement de départ adapté.',
+    'wizard.tip.autofillSkills': 'Choisit pour vous des compétences adaptées à la classe.',
+    'levelUp.tip.levelUp': 'Fait gagner un niveau à votre classe principale.',
+    'levelUp.tip.addClass': 'Apprend une nouvelle classe en multiclasse.',
+    'levelUp.tip.hpAverage': 'Gain de points de vie fixe, sans hasard.',
+    'levelUp.tip.hpRoll': 'Gain de points de vie aléatoire, lancé au dé.',
+    // Infobulles explicites — menu radial, dés, journal, outils MJ
+    'radialMenu.tip.fab': 'Ouvre le menu d’actions de la fiche.',
+    'radialMenu.tip.back': 'Revient au menu précédent.',
+    'radialMenu.tip.close': 'Ferme le menu.',
+    'dice.tip.closeHistory': 'Ferme l’historique des jets.',
+    'dm.tip.advNormal': 'Jet normal : un seul d20.',
+    'dm.tip.advAdvantage': 'Avantage : lance deux d20, garde le plus haut.',
+    'dm.tip.advDisadvantage': 'Désavantage : lance deux d20, garde le plus bas.',
+    'dm.tip.secretRoll': 'Lance le d20 secret avec le modificateur.',
+    'journal.tip.export': 'Télécharge le journal complet en fichier Markdown.',
+    'journal.tip.compile': 'Génère le récit de la séance à partir des événements.',
+    'journal.tip.edit': 'Modifie le récit à la main.',
+    'journal.tip.recompile': 'Régénère le récit depuis les événements.',
   },
   en: {
     'splash.brand': 'GrimWar',
@@ -6677,6 +6881,108 @@ const STRINGS: Record<Locale, Dict> = {
       'Identifier locked: to rename, export then re-import under a new id.',
     'customContent.editor.entityRow.edit': 'Edit',
     'customContent.list.edit': 'Edit',
+    // Explicit tooltips — character sheet
+    'sheet.tip.editPreparation': 'Edit your list of prepared spells.',
+    'sheet.tip.openSpellDetail': 'Open the spell’s detailed entry.',
+    'sheet.tip.chooseSlotLevel': 'Choose the spell slot level used.',
+    'sheet.tip.spellAttackRoll': 'Roll a d20 plus your spell attack bonus.',
+    'sheet.tip.castSpell': 'Cast the spell and spend the required resource.',
+    'sheet.tip.restoreAllSlots': 'Restore all spell slots.',
+    'sheet.tip.restorePactSlots': 'Restore all pact slots.',
+    'sheet.tip.consumeSlot': 'Spend this slot.',
+    'sheet.tip.restoreSlot': 'Restore this slot.',
+    'sheet.tip.openDetail': 'Open the details for this element.',
+    'sheet.tip.toggleInspiration': 'Grant or remove the character’s inspiration.',
+    'sheet.tip.rollSave': 'Roll a saving throw for this ability.',
+    'sheet.tip.rollSkill': 'Roll a check for this skill.',
+    'sheet.tip.closeModal': 'Close this window.',
+    'sheet.tip.decrement': 'Decrease the quantity by one.',
+    'sheet.tip.increment': 'Increase the quantity by one.',
+    'sheet.tip.toggleEquip': 'Equip or unequip this item.',
+    'sheet.tip.toggleAttune': 'Attune this magic item to your character.',
+    'sheet.tip.removeItem': 'Remove this item from the inventory.',
+    'sheet.tip.editCoin': 'Edit the number of coins.',
+    'sheet.tip.addItem': 'Add an item to your inventory.',
+    'sheet.tip.createCustomItem': 'Create a custom homebrew item.',
+    // Explicit tooltips — campaigns
+    'campaigns.tip.viewStatBlock': 'View the creature’s combat stat block.',
+    'campaigns.tip.applyDamage': 'Remove this many hit points.',
+    'campaigns.tip.applyHeal': 'Restore this many hit points.',
+    'campaigns.tip.quickDamage': 'Deal this much damage in one tap.',
+    'campaigns.tip.quickHeal': 'Heal this amount in one tap.',
+    'campaigns.tip.conditionAdd': 'Apply this condition to the creature.',
+    'campaigns.tip.conditionRemove': 'Remove this condition from the creature.',
+    'campaigns.tip.rollInit': 'Roll initiative for every combatant.',
+    'campaigns.tip.startCombat': 'Start combat and lock the turn order.',
+    'campaigns.tip.endTurn': 'Move to the next combatant.',
+    'campaigns.tip.endCombat': 'End combat and choose its outcome.',
+    'campaigns.tip.reroll': 'Reroll this combatant’s initiative.',
+    'campaigns.tip.controlParticipant': 'Adjust its hit points and conditions.',
+    'campaigns.tip.openJournal': 'Open the campaign journal.',
+    'campaigns.tip.openHandouts': 'Open the documents shared with the table.',
+    'campaigns.tip.openNpcs': 'Open the directory of non-player characters.',
+    'campaigns.tip.openSessions': 'Open the list of game sessions.',
+    'campaigns.tip.openEncounters': 'Open the list of combat encounters.',
+    'campaigns.tip.openMaps': 'Open the campaign’s map mode.',
+    'campaigns.tip.promoteGm': 'Grant this player full game master authority.',
+    'campaigns.tip.copyInviteCode': 'Copy the invite code to the clipboard.',
+    'campaigns.tip.linkCharacter': 'Choose the character you play here.',
+    'campaigns.tip.editNpc': 'Edit this non-player character’s sheet.',
+    'campaigns.tip.deleteNpc': 'Permanently delete this non-player character.',
+    'campaigns.tip.editRelations': 'Edit the ties with player characters.',
+    'campaigns.tip.archiveHandout': 'Archive this document and hide it from players.',
+    'campaigns.tip.startSession': 'Start the session and log play.',
+    'campaigns.tip.endSession': 'End the session and compile the journal.',
+    'campaigns.tip.applyHandoff': 'Choose the target that takes this damage.',
+    'campaigns.tip.handoffTarget': 'Apply the damage to this creature.',
+    'campaigns.tip.removeMonsterRow': 'Remove this monster from the encounter.',
+    'campaigns.tip.fromBestiary': 'Prefill a monster from the bestiary.',
+    // Explicit tooltips — map
+    'map.tip.placeAoe': 'Pick this area-of-effect shape to place.',
+    'map.tip.rotateAoeCcw': 'Rotate the area 15° counter-clockwise.',
+    'map.tip.rotateAoeCw': 'Rotate the area 15° clockwise.',
+    'map.tip.shrinkAoe': 'Shrink the area by one square.',
+    'map.tip.growAoe': 'Grow the area by one square.',
+    'map.tip.sphereNoRotation': 'A sphere has no orientation.',
+    'map.tip.deleteAoe': 'Delete this area-of-effect.',
+    'map.tip.removeFromInitiative': 'Remove this combatant from initiative.',
+    'map.tip.addMonster': 'Place a bestiary monster on the map.',
+    'map.tip.snapToGrid': 'Snap tokens to the center of their square.',
+    'map.tip.snapNeedsGrid': 'Show the grid first to snap tokens.',
+    'map.tip.toggleGrid': 'Show or hide the map grid.',
+    'map.tip.toggleFog': 'Turn the fog of war on or off.',
+    'map.tip.toggleLos': 'Turn line of sight on or off (walls block vision).',
+    'map.tip.toggleLighting': 'Show or hide the glow of light sources.',
+    'map.tip.toggleMeasure': 'Measure a distance in meters on the map.',
+    'map.tip.deleteMap': 'Permanently delete this map.',
+    // Explicit tooltips — wizard + level-up
+    'wizard.tip.rollAbilities': 'Rolls the dice for you to generate the six scores.',
+    'wizard.tip.autofillAbilities': 'Fills in the recommended ability scores for your class.',
+    'wizard.tip.navPrevious': 'Goes back to the previous step.',
+    'wizard.tip.navNext': 'Moves on to the next step.',
+    'wizard.tip.autofillSpells': 'Picks spells suited to the class for you.',
+    'wizard.tip.recapEdit': 'Returns to this step to edit it.',
+    'wizard.tip.removeClass': 'Removes this class from the character.',
+    'wizard.tip.addClass': 'Adds a second class to the character.',
+    'wizard.tip.autofillEquipment': 'Picks suitable starting equipment for you.',
+    'wizard.tip.autofillSkills': 'Picks skills suited to the class for you.',
+    'levelUp.tip.levelUp': 'Gains a level in your main class.',
+    'levelUp.tip.addClass': 'Learns a new class through multiclassing.',
+    'levelUp.tip.hpAverage': 'Fixed hit point gain, no randomness.',
+    'levelUp.tip.hpRoll': 'Random hit point gain, rolled with the die.',
+    // Explicit tooltips — radial menu, dice, journal, DM tools
+    'radialMenu.tip.fab': 'Open the character action menu.',
+    'radialMenu.tip.back': 'Go back to the previous menu.',
+    'radialMenu.tip.close': 'Close the menu.',
+    'dice.tip.closeHistory': 'Close the roll history.',
+    'dm.tip.advNormal': 'Normal roll: a single d20.',
+    'dm.tip.advAdvantage': 'Advantage: roll two d20, keep the highest.',
+    'dm.tip.advDisadvantage': 'Disadvantage: roll two d20, keep the lowest.',
+    'dm.tip.secretRoll': 'Roll the secret d20 with the modifier.',
+    'journal.tip.export': 'Download the full journal as a Markdown file.',
+    'journal.tip.compile': 'Generate the session narrative from the events.',
+    'journal.tip.edit': 'Edit the narrative by hand.',
+    'journal.tip.recompile': 'Regenerate the narrative from the events.',
   },
 };
 

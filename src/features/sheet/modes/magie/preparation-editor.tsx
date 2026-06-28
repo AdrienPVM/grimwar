@@ -2,6 +2,7 @@ import { useMemo, useState, type JSX } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -119,15 +120,17 @@ export function PreparationEditor({
             .replace('{cap}', String(cap))}
         </span>
         {!readOnly && (
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="flex items-center gap-1.5 rounded-pill border border-gold-dim/40 bg-gold/[0.08] px-3 py-1.5 font-title text-[11px] font-bold uppercase tracking-[0.16em] text-gold-bright transition-all duration-200 ease-base hover:border-gold-dim hover:bg-gold/15"
-          >
-            <Icon name="i-feather" className="h-3.5 w-3.5" />
-            {open ? t('sheet.magie.prep.done') : t('sheet.magie.prep.edit')}
-          </button>
+          <Tooltip label={t('sheet.tip.editPreparation')} decorative>
+            <button
+              type="button"
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              className="flex items-center gap-1.5 rounded-pill border border-gold-dim/40 bg-gold/[0.08] px-3 py-1.5 font-title text-[11px] font-bold uppercase tracking-[0.16em] text-gold-bright transition-all duration-200 ease-base hover:border-gold-dim hover:bg-gold/15"
+            >
+              <Icon name="i-feather" className="h-3.5 w-3.5" />
+              {open ? t('sheet.magie.prep.done') : t('sheet.magie.prep.edit')}
+            </button>
+          </Tooltip>
         )}
       </div>
 

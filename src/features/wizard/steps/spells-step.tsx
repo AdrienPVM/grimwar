@@ -236,7 +236,12 @@ function CasterSection({
         <h3 className="font-display text-display text-gold-bright">
           {localize(characterClass.name)}
         </h3>
-        <Button variant="secondary" size="sm" onClick={handleAutoFill}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleAutoFill}
+          tooltip={t('wizard.tip.autofillSpells')}
+        >
           ✨ {t('wizard.action.autofill')}
         </Button>
       </header>

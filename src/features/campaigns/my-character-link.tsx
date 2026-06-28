@@ -73,6 +73,7 @@ export function MyCharacterLink({
           variant="secondary"
           size="sm"
           onClick={() => setOpen(true)}
+          tooltip={t('campaigns.tip.linkCharacter')}
         >
           {currentCharacterId === null
             ? t('campaigns.detail.myCharacter.link')

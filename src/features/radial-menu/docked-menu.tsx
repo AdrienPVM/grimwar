@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
@@ -70,14 +71,16 @@ export function DockedMenu({
         <header className="mb-1 flex items-center justify-between gap-3 border-b border-white-8 px-1 pb-3">
           <div className="flex min-w-0 items-center gap-2">
             {showBack ? (
-              <button
-                type="button"
-                onClick={onBack}
-                aria-label={t('sheet.fab.back')}
-                className="-ml-1 rounded-full border border-white-8 px-2.5 py-1 font-title text-[12px] text-text-tertiary transition-colors duration-150 ease-base hover:border-soft hover:text-gold-bright"
-              >
-                ‹
-              </button>
+              <Tooltip label={t('radialMenu.tip.back')} decorative>
+                <button
+                  type="button"
+                  onClick={onBack}
+                  aria-label={t('sheet.fab.back')}
+                  className="-ml-1 rounded-full border border-white-8 px-2.5 py-1 font-title text-[12px] text-text-tertiary transition-colors duration-150 ease-base hover:border-soft hover:text-gold-bright"
+                >
+                  ‹
+                </button>
+              </Tooltip>
             ) : (
               <Icon name="i-magic" className="h-4 w-4 shrink-0 text-gold-bright" />
             )}
@@ -85,14 +88,16 @@ export function DockedMenu({
               {title}
             </h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('sheet.fab.closeLabel')}
-            className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors duration-150 ease-base hover:border-soft hover:text-gold-bright"
-          >
-            ✕
-          </button>
+          <Tooltip label={t('radialMenu.tip.close')} placement="left" decorative>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t('sheet.fab.closeLabel')}
+              className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors duration-150 ease-base hover:border-soft hover:text-gold-bright"
+            >
+              ✕
+            </button>
+          </Tooltip>
         </header>
 
         <ul className="flex flex-col gap-1.5">

@@ -362,6 +362,7 @@ export function EncounterCreateModal({
                     aria-label={t('encounters.create.monsters.removeRow')}
                     onClick={() => removeMonsterRow(row.key)}
                     disabled={submitting}
+                    tooltip={t('campaigns.tip.removeMonsterRow')}
                   >
                     ✕
                   </Button>
@@ -386,6 +387,7 @@ export function EncounterCreateModal({
               size="sm"
               onClick={() => setPickerOpen(true)}
               disabled={submitting}
+              tooltip={t('campaigns.tip.fromBestiary')}
             >
               + {t('encounters.create.monsters.fromBestiary')}
             </Button>

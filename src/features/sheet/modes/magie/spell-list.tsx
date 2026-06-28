@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -281,9 +282,11 @@ function SpellRow({
 }: SpellRowProps): JSX.Element {
   const schoolLabel = t(`school.${spell.school}`);
   return (
+    <Tooltip label={t('sheet.tip.openSpellDetail')} decorative className="w-full">
     <button
       type="button"
       onClick={onClick}
+      aria-label={localize(spell.name)}
       className={cn(
         'flex w-full items-center gap-3 rounded-card-sm border px-4 py-3 text-left transition-all',
         'hover:-translate-y-px hover:border-soft active:scale-[0.99]',
@@ -341,6 +344,7 @@ function SpellRow({
         </div>
       </div>
     </button>
+    </Tooltip>
   );
 }
 

@@ -9,6 +9,8 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from 'react';
 
+import { Tooltip } from '@/shared/components/tooltip';
+import { t } from '@/shared/lib/i18n';
 import type {
   AoeTemplate,
   FogPolygon,
@@ -730,41 +732,46 @@ export function MapProtoScreen(): JSX.Element {
             AoE
           </span>
           {(['sphere', 'cone', 'line', 'cube'] as const).map((shape) => (
-            <button
-              key={`aoe-shape-${shape}`}
-              type="button"
-              onClick={() => handleSelectAoeShape(shape)}
-              aria-pressed={aoeShape === shape}
-              data-testid={`aoe-shape-${shape}`}
-              className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
-            >
-              {shape === 'sphere'
-                ? 'Sphère'
-                : shape === 'cone'
-                  ? 'Cône'
-                  : shape === 'line'
-                    ? 'Ligne'
-                    : 'Cube'}
-            </button>
+            <Tooltip key={`aoe-shape-${shape}`} label={t('map.tip.placeAoe')} decorative>
+              <button
+                type="button"
+                onClick={() => handleSelectAoeShape(shape)}
+                aria-pressed={aoeShape === shape}
+                data-testid={`aoe-shape-${shape}`}
+                className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
+              >
+                {shape === 'sphere'
+                  ? 'Sphère'
+                  : shape === 'cone'
+                    ? 'Cône'
+                    : shape === 'line'
+                      ? 'Ligne'
+                      : 'Cube'}
+              </button>
+            </Tooltip>
           ))}
-          <button
-            type="button"
-            onClick={() => handleRotateLastAoe(-15)}
-            disabled={aoeTemplates.length === 0}
-            data-testid="aoe-rotate-ccw"
-            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
-          >
-            ↺ -15°
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRotateLastAoe(15)}
-            disabled={aoeTemplates.length === 0}
-            data-testid="aoe-rotate-cw"
-            className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
-          >
-            ↻ +15°
-          </button>
+          <Tooltip label={t('map.tip.rotateAoeCcw')} decorative>
+            <button
+              type="button"
+              onClick={() => handleRotateLastAoe(-15)}
+              disabled={aoeTemplates.length === 0}
+              data-testid="aoe-rotate-ccw"
+              className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+            >
+              ↺ -15°
+            </button>
+          </Tooltip>
+          <Tooltip label={t('map.tip.rotateAoeCw')} decorative>
+            <button
+              type="button"
+              onClick={() => handleRotateLastAoe(15)}
+              disabled={aoeTemplates.length === 0}
+              data-testid="aoe-rotate-cw"
+              className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
+            >
+              ↻ +15°
+            </button>
+          </Tooltip>
           <button
             type="button"
             onClick={handleClearAoes}
@@ -1074,14 +1081,16 @@ export function MapProtoScreen(): JSX.Element {
                         />
                         <span className="text-text-tertiary">/ {e.hpMax}</span>
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveInitEntry(e.id)}
-                        aria-label={`Retirer ${e.name}`}
-                        className="rounded-pill border border-gold-dim/30 px-1.5 py-0.5 text-[10px] text-text-tertiary transition-colors duration-200 ease-base hover:bg-gold/5"
-                      >
-                        ✕
-                      </button>
+                      <Tooltip label={t('map.tip.removeFromInitiative')} decorative>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveInitEntry(e.id)}
+                          aria-label={`Retirer ${e.name}`}
+                          className="rounded-pill border border-gold-dim/30 px-1.5 py-0.5 text-[10px] text-text-tertiary transition-colors duration-200 ease-base hover:bg-gold/5"
+                        >
+                          ✕
+                        </button>
+                      </Tooltip>
                     </li>
                   );
                 })}

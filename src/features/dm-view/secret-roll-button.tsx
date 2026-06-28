@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { GlassPanel } from '@/shared/components/glass-panel';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { t, type StringKey } from '@/shared/lib/i18n';
 
@@ -17,6 +18,12 @@ const ADV_LABEL: Record<'normal' | 'advantage' | 'disadvantage', StringKey> = {
   normal: 'dm.secretRoll.normal',
   advantage: 'dm.secretRoll.advantage',
   disadvantage: 'dm.secretRoll.disadvantage',
+};
+
+const ADV_TIP: Record<'normal' | 'advantage' | 'disadvantage', StringKey> = {
+  normal: 'dm.tip.advNormal',
+  advantage: 'dm.tip.advAdvantage',
+  disadvantage: 'dm.tip.advDisadvantage',
 };
 
 /**
@@ -97,33 +104,36 @@ export function SecretRollButton(): JSX.Element {
         {(['normal', 'advantage', 'disadvantage'] as const).map((mode) => {
           const isActive = mode === advantage;
           return (
-            <button
-              key={mode}
-              role="radio"
-              aria-checked={isActive}
-              type="button"
-              onClick={() => setAdvantage(mode)}
-              className={cn(
-                'flex-1 rounded-pill border px-2 py-1.5 text-center font-title text-[9px] font-bold uppercase tracking-[0.14em] transition-colors duration-150',
-                isActive
-                  ? 'border-gold bg-gold/15 text-gold-bright'
-                  : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-soft hover:text-text-secondary',
-              )}
-            >
-              {t(ADV_LABEL[mode])}
-            </button>
+            <Tooltip key={mode} label={t(ADV_TIP[mode])} placement="bottom" decorative className="flex-1">
+              <button
+                role="radio"
+                aria-checked={isActive}
+                type="button"
+                onClick={() => setAdvantage(mode)}
+                className={cn(
+                  'w-full rounded-pill border px-2 py-1.5 text-center font-title text-[9px] font-bold uppercase tracking-[0.14em] transition-colors duration-150',
+                  isActive
+                    ? 'border-gold bg-gold/15 text-gold-bright'
+                    : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-soft hover:text-text-secondary',
+                )}
+              >
+                {t(ADV_LABEL[mode])}
+              </button>
+            </Tooltip>
           );
         })}
       </div>
 
       {/* Bouton roll */}
-      <button
-        type="button"
-        onClick={handleRoll}
-        className="rounded-card-sm bg-gradient-to-b from-gold-bright to-gold px-4 py-3 font-title text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink shadow-[0_4px_14px_rgba(220,184,108,0.35)] transition-all hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(220,184,108,0.45)] active:scale-95"
-      >
-        {t('dm.secretRoll.button')}
-      </button>
+      <Tooltip label={t('dm.tip.secretRoll')} decorative>
+        <button
+          type="button"
+          onClick={handleRoll}
+          className="w-full rounded-card-sm bg-gradient-to-b from-gold-bright to-gold px-4 py-3 font-title text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink shadow-[0_4px_14px_rgba(220,184,108,0.35)] transition-all hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(220,184,108,0.45)] active:scale-95"
+        >
+          {t('dm.secretRoll.button')}
+        </button>
+      </Tooltip>
 
       {/* Résultat dernier roll */}
       {last && (

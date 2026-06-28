@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import type { Character, DivineOrder } from '@/shared/types/character';
 
 import { OrderDetailModal } from './order-detail-modal';
@@ -55,16 +56,18 @@ export function DivineOrderCard({ character }: DivineOrderCardProps): JSX.Elemen
       <CardHeader>
         <h3>Ordre divin</h3>
       </CardHeader>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={ariaLabel}
-        aria-haspopup="dialog"
-        className="flex w-full flex-col gap-2 rounded-card-sm border border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.06] to-gold/[0.02] p-4 text-left transition-all duration-200 ease-base hover:-translate-y-px hover:border-gold-dim/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40"
-      >
-        <span className="font-display text-[16px] text-gold-bright">{name}</span>
-        <p className="font-serif text-[13px] text-text-secondary">{summary}</p>
-      </button>
+      <Tooltip label={t('sheet.tip.openDetail')} decorative className="w-full">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label={ariaLabel}
+          aria-haspopup="dialog"
+          className="flex w-full flex-col gap-2 rounded-card-sm border border-gold-dim/30 bg-gradient-to-b from-gold-bright/[0.06] to-gold/[0.02] p-4 text-left transition-all duration-200 ease-base hover:-translate-y-px hover:border-gold-dim/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40"
+        >
+          <span className="font-display text-[16px] text-gold-bright">{name}</span>
+          <p className="font-serif text-[13px] text-text-secondary">{summary}</p>
+        </button>
+      </Tooltip>
       <OrderDetailModal
         open={open}
         onClose={() => setOpen(false)}

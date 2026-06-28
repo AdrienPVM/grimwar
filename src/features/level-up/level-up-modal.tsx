@@ -2,9 +2,10 @@ import { useEffect, useMemo, useReducer, type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import {
   addClassChoices,
   levelUpChoices,
@@ -357,43 +358,47 @@ function HpRollStep({
         </p>
       </header>
       <div className="grid gap-3">
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'set-hp-roll', value: { kind: 'average' } })}
-          aria-pressed={state.hpRoll?.kind === 'average'}
-          className={cn(
-            'flex w-full items-center justify-between rounded-card border px-4 py-3 text-left transition-colors ease-base duration-200',
-            state.hpRoll?.kind === 'average'
-              ? 'border-gold bg-gold-bright/10 text-gold-bright'
-              : 'border-white-8 bg-glass text-text hover:border-soft',
-          )}
-        >
-          <span className="font-title text-meta uppercase tracking-[0.16em]">Moyenne</span>
-          <span className="font-serif text-body-sm text-text-secondary">+{averageGain} PV</span>
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            dispatch({
-              type: 'set-hp-roll',
-              value: { kind: 'rolled', rolled: averageGain },
-            })
-          }
-          aria-pressed={state.hpRoll?.kind === 'rolled'}
-          className={cn(
-            'flex w-full items-center justify-between rounded-card border px-4 py-3 text-left transition-colors ease-base duration-200',
-            state.hpRoll?.kind === 'rolled'
-              ? 'border-gold bg-gold-bright/10 text-gold-bright'
-              : 'border-white-8 bg-glass text-text hover:border-soft',
-          )}
-        >
-          <span className="font-title text-meta uppercase tracking-[0.16em]">
-            Lancer le dé
-          </span>
-          <span className="font-serif text-body-sm text-text-secondary">
-            {rolledValue != null ? `+${rolledValue} PV` : `${classDefinition.hitDie} + ${conMod}`}
-          </span>
-        </button>
+        <Tooltip label={t('levelUp.tip.hpAverage')} decorative className="w-full">
+          <button
+            type="button"
+            onClick={() => dispatch({ type: 'set-hp-roll', value: { kind: 'average' } })}
+            aria-pressed={state.hpRoll?.kind === 'average'}
+            className={cn(
+              'flex w-full items-center justify-between rounded-card border px-4 py-3 text-left transition-colors ease-base duration-200',
+              state.hpRoll?.kind === 'average'
+                ? 'border-gold bg-gold-bright/10 text-gold-bright'
+                : 'border-white-8 bg-glass text-text hover:border-soft',
+            )}
+          >
+            <span className="font-title text-meta uppercase tracking-[0.16em]">Moyenne</span>
+            <span className="font-serif text-body-sm text-text-secondary">+{averageGain} PV</span>
+          </button>
+        </Tooltip>
+        <Tooltip label={t('levelUp.tip.hpRoll')} decorative className="w-full">
+          <button
+            type="button"
+            onClick={() =>
+              dispatch({
+                type: 'set-hp-roll',
+                value: { kind: 'rolled', rolled: averageGain },
+              })
+            }
+            aria-pressed={state.hpRoll?.kind === 'rolled'}
+            className={cn(
+              'flex w-full items-center justify-between rounded-card border px-4 py-3 text-left transition-colors ease-base duration-200',
+              state.hpRoll?.kind === 'rolled'
+                ? 'border-gold bg-gold-bright/10 text-gold-bright'
+                : 'border-white-8 bg-glass text-text hover:border-soft',
+            )}
+          >
+            <span className="font-title text-meta uppercase tracking-[0.16em]">
+              Lancer le dé
+            </span>
+            <span className="font-serif text-body-sm text-text-secondary">
+              {rolledValue != null ? `+${rolledValue} PV` : `${classDefinition.hitDie} + ${conMod}`}
+            </span>
+          </button>
+        </Tooltip>
       </div>
     </section>
   );

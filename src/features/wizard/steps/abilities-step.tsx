@@ -184,7 +184,12 @@ export function AbilitiesStep(): JSX.Element {
 
       {draft.method === 'rolled' && draft.rollSource === 'app' ? (
         <div>
-          <Button variant="secondary" size="md" onClick={handleRollAll}>
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleRollAll}
+            tooltip={t('wizard.tip.rollAbilities')}
+          >
             🎲 {rollBreakdown ? t('wizard.action.reroll') : t('wizard.action.rollAbilities')}
           </Button>
         </div>
@@ -304,6 +309,7 @@ export function AbilitiesStep(): JSX.Element {
             size="md"
             onClick={handleAutoFill}
             disabled={!primaryClass}
+            tooltip={t('wizard.tip.autofillAbilities')}
           >
             ✨ {t('wizard.action.autofill')}
           </Button>

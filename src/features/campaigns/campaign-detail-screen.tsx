@@ -163,6 +163,7 @@ export function CampaignDetailScreen(): JSX.Element {
               variant="secondary"
               size="sm"
               onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
+              tooltip={t('campaigns.tip.openJournal')}
             >
               {t('campaigns.detail.journalCta')}
             </Button>
@@ -173,6 +174,7 @@ export function CampaignDetailScreen(): JSX.Element {
               variant="secondary"
               size="sm"
               onClick={() => navigate(`/campaigns/${campaign.id}/handouts`)}
+              tooltip={t('campaigns.tip.openHandouts')}
             >
               {t('campaigns.detail.handoutsCta')}
             </Button>
@@ -183,6 +185,7 @@ export function CampaignDetailScreen(): JSX.Element {
               variant="secondary"
               size="sm"
               onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
+              tooltip={t('campaigns.tip.openNpcs')}
             >
               {t('campaigns.detail.npcsCta')}
             </Button>
@@ -193,6 +196,7 @@ export function CampaignDetailScreen(): JSX.Element {
                   variant="secondary"
                   size="sm"
                   onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
+                  tooltip={t('campaigns.tip.openSessions')}
                 >
                   {t('campaigns.detail.sessionsCta')}
                 </Button>
@@ -201,6 +205,7 @@ export function CampaignDetailScreen(): JSX.Element {
                   variant="secondary"
                   size="sm"
                   onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
+                  tooltip={t('campaigns.tip.openEncounters')}
                 >
                   {t('campaigns.detail.encountersCta')}
                 </Button>
@@ -211,6 +216,7 @@ export function CampaignDetailScreen(): JSX.Element {
                   variant="secondary"
                   size="sm"
                   onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
+                  tooltip={t('campaigns.tip.openMaps')}
                 >
                   {t('campaigns.detail.mapsCta')}
                 </Button>

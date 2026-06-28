@@ -1,4 +1,5 @@
 import { Card, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
 import { abilityModifier, ABILITY_ORDER } from '@/shared/lib/rules/abilities';
@@ -129,38 +130,40 @@ function SaveChip({
     abilityModifier(score) + (proficient ? profBonus : 0) + extraBonus;
   const signed = mod >= 0 ? `+${mod}` : `${mod}`;
   return (
-    <button
-      type="button"
-      disabled={disabled}
-      aria-label={`Jet de sauvegarde ${t(`ability.${ability}`)}${proficient ? ' (maîtrise)' : ''}`}
-      className={cn(
-        'relative flex flex-col items-center justify-center gap-0.5 rounded-card-sm border bg-bg-2/40 px-2 py-2.5 transition-all',
-        proficient
-          ? 'border-gold-bright/60 bg-gold-bright/[0.06] shadow-[inset_0_0_0_1px_rgba(220,184,108,0.2)]'
-          : 'border-white-8 hover:border-soft',
-        'hover:bg-white/[0.04] active:scale-[0.97]',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-      )}
-      {...handlers}
-    >
-      {proficient && (
-        <span
-          aria-hidden="true"
-          className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-gold-bright shadow-[0_0_6px_rgba(220,184,108,0.8)]"
-        />
-      )}
-      <span className="font-title text-[9px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
-        {ABILITY_SHORT[ability]}
-      </span>
-      <span
+    <Tooltip label={t('sheet.tip.rollSave')} decorative className="w-full">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-label={`Jet de sauvegarde ${t(`ability.${ability}`)}${proficient ? ' (maîtrise)' : ''}`}
         className={cn(
-          'font-display text-[18px] font-black leading-none tracking-[-0.02em]',
-          mod >= 0 ? 'text-gold-bright' : 'text-crimson',
+          'relative flex w-full flex-col items-center justify-center gap-0.5 rounded-card-sm border bg-bg-2/40 px-2 py-2.5 transition-all',
+          proficient
+            ? 'border-gold-bright/60 bg-gold-bright/[0.06] shadow-[inset_0_0_0_1px_rgba(220,184,108,0.2)]'
+            : 'border-white-8 hover:border-soft',
+          'hover:bg-white/[0.04] active:scale-[0.97]',
+          'disabled:cursor-not-allowed disabled:opacity-50',
         )}
+        {...handlers}
       >
-        {signed}
-      </span>
-    </button>
+        {proficient && (
+          <span
+            aria-hidden="true"
+            className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-gold-bright shadow-[0_0_6px_rgba(220,184,108,0.8)]"
+          />
+        )}
+        <span className="font-title text-[9px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
+          {ABILITY_SHORT[ability]}
+        </span>
+        <span
+          className={cn(
+            'font-display text-[18px] font-black leading-none tracking-[-0.02em]',
+            mod >= 0 ? 'text-gold-bright' : 'text-crimson',
+          )}
+        >
+          {signed}
+        </span>
+      </button>
+    </Tooltip>
   );
 }
 

@@ -3,6 +3,7 @@ import { useState, type JSX } from 'react';
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
 import { GlassPanel } from '@/shared/components/glass-panel';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
@@ -97,6 +98,7 @@ export function EncounterHandoffPanel({
                         setPickingForId((cur) => (cur === row.eventId ? null : row.eventId))
                       }
                       aria-expanded={isPicking}
+                      tooltip={t('campaigns.tip.applyHandoff')}
                     >
                       {t('encounters.handoff.apply')}
                     </Button>
@@ -134,23 +136,28 @@ export function EncounterHandoffPanel({
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {targets.map((target) => (
-                        <button
+                        <Tooltip
                           key={target.instanceId}
-                          type="button"
-                          disabled={pending}
-                          onClick={() => {
-                            onApply(row.eventId, row.total, target.instanceId);
-                            setPickingForId(null);
-                          }}
-                          className={cn(
-                            'rounded-pill border border-crimson/40 bg-crimson/[0.06] px-3 py-1',
-                            'font-title text-[10px] font-bold uppercase tracking-[0.12em] text-crimson',
-                            'transition-colors duration-200 ease-base hover:border-crimson hover:bg-crimson/15',
-                            'disabled:cursor-not-allowed disabled:opacity-40',
-                          )}
+                          label={t('campaigns.tip.handoffTarget')}
+                          decorative
                         >
-                          {target.name}
-                        </button>
+                          <button
+                            type="button"
+                            disabled={pending}
+                            onClick={() => {
+                              onApply(row.eventId, row.total, target.instanceId);
+                              setPickingForId(null);
+                            }}
+                            className={cn(
+                              'rounded-pill border border-crimson/40 bg-crimson/[0.06] px-3 py-1',
+                              'font-title text-[10px] font-bold uppercase tracking-[0.12em] text-crimson',
+                              'transition-colors duration-200 ease-base hover:border-crimson hover:bg-crimson/15',
+                              'disabled:cursor-not-allowed disabled:opacity-40',
+                            )}
+                          >
+                            {target.name}
+                          </button>
+                        </Tooltip>
                       ))}
                     </div>
                   )}

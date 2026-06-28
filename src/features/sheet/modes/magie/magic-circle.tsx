@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 
 import { Card, CardAction, CardHeader } from '@/shared/components/card';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -129,9 +131,11 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
     <Card>
       <CardHeader>
         <h3>Cercle d'invocation</h3>
-        <CardAction onClick={() => void handleRestoreAll()} disabled={readOnly}>
-          Restaurer
-        </CardAction>
+        <Tooltip label={t('sheet.tip.restoreAllSlots')} decorative>
+          <CardAction onClick={() => void handleRestoreAll()} disabled={readOnly}>
+            Restaurer
+          </CardAction>
+        </Tooltip>
       </CardHeader>
 
       <div className="relative mx-auto aspect-square w-full max-w-[380px]">

@@ -216,6 +216,7 @@ export function ClassStep(): JSX.Element {
                         size="sm"
                         onClick={() => removeClass(entry.classId)}
                         aria-label={t('wizard.class.remove.aria')}
+                        tooltip={t('wizard.tip.removeClass')}
                       >
                         ✕
                       </Button>
@@ -269,6 +270,7 @@ export function ClassStep(): JSX.Element {
                 size="sm"
                 onClick={() => setAdding(true)}
                 disabled={draft.classes.length === 0}
+                tooltip={t('wizard.tip.addClass')}
               >
                 + {t('wizard.class.multiclass.add')}
               </Button>

@@ -93,7 +93,15 @@ test.describe('D12b — sort d\'ascendance L3 lançable via featureUsage', () =>
       castButton2,
       'après usage, « Lancer » doit être désactivé (quota épuisé, persisté)',
     ).toBeDisabled({ timeout: 10_000 });
-    await expect(castButton2).toHaveAttribute('title', 'Plus aucun usage avant un repos long.');
+    // Le hint « désactivé » n'est plus un `title` natif (inaccessible au
+    // toucher) mais l'infobulle accessible décrivant le bouton (describedby).
+    const tipId = await castButton2.getAttribute('aria-describedby');
+    expect(tipId, 'le bouton désactivé doit décrire son blocage via une infobulle').toBeTruthy();
+    // `useId()` produit des id à deux-points (`:r1j:`) invalides en sélecteur
+    // CSS `#…` → on cible par attribut.
+    await expect(page.locator(`[id="${tipId}"]`)).toHaveText(
+      'Plus aucun usage avant un repos long.',
+    );
     await expect(dialog2.getByText(/0 \/ 1 ·/)).toBeVisible();
 
     writeFileSync(

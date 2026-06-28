@@ -1,6 +1,8 @@
 import { Chip } from '@/shared/components/chip';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -45,31 +47,33 @@ export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.
         <span className="font-title text-[10px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
           Aura
         </span>
-        <button
-          type="button"
-          disabled={readOnly}
-          onClick={() => void toggleInspiration()}
-          aria-pressed={character.inspiration}
-          aria-label={
-            character.inspiration ? 'Retirer l\'inspiration' : 'Accorder l\'inspiration'
-          }
-          className="disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Chip
-            variant={character.inspiration ? 'inspiration' : 'default'}
-            active={character.inspiration}
-            className="gap-1.5"
+        <Tooltip label={t('sheet.tip.toggleInspiration')} decorative>
+          <button
+            type="button"
+            disabled={readOnly}
+            onClick={() => void toggleInspiration()}
+            aria-pressed={character.inspiration}
+            aria-label={
+              character.inspiration ? 'Retirer l\'inspiration' : 'Accorder l\'inspiration'
+            }
+            className="disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Icon
-              name="i-flame"
-              className={cn(
-                'h-3 w-3',
-                character.inspiration ? 'text-ink' : 'text-text-tertiary',
-              )}
-            />
-            Inspiration
-          </Chip>
-        </button>
+            <Chip
+              variant={character.inspiration ? 'inspiration' : 'default'}
+              active={character.inspiration}
+              className="gap-1.5"
+            >
+              <Icon
+                name="i-flame"
+                className={cn(
+                  'h-3 w-3',
+                  character.inspiration ? 'text-ink' : 'text-text-tertiary',
+                )}
+              />
+              Inspiration
+            </Chip>
+          </button>
+        </Tooltip>
       </div>
 
       {character.exhaustion > 0 && (

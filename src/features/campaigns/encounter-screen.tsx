@@ -463,6 +463,7 @@ export function EncounterScreen(): JSX.Element {
                   size="md"
                   onClick={handleRollInitiative}
                   disabled={actionPending || encounter.participants.length === 0}
+                  tooltip={t('campaigns.tip.rollInit')}
                 >
                   {actionPending
                     ? t('encounters.action.rollingInit')
@@ -476,6 +477,7 @@ export function EncounterScreen(): JSX.Element {
                   size="md"
                   onClick={handleStart}
                   disabled={actionPending || encounter.participants.length === 0}
+                  tooltip={t('campaigns.tip.startCombat')}
                 >
                   {actionPending ? t('encounters.action.starting') : t('encounters.action.start')}
                 </Button>
@@ -486,6 +488,7 @@ export function EncounterScreen(): JSX.Element {
                     size="md"
                     onClick={handleEndTurn}
                     disabled={actionPending}
+                    tooltip={t('campaigns.tip.endTurn')}
                   >
                     {t('encounters.action.endTurn')}
                   </Button>
@@ -494,6 +497,7 @@ export function EncounterScreen(): JSX.Element {
                     size="md"
                     onClick={() => setEndMode((v) => !v)}
                     disabled={actionPending}
+                    tooltip={t('campaigns.tip.endCombat')}
                   >
                     {t('encounters.action.end')}
                   </Button>
@@ -750,6 +754,7 @@ function ParticipantCard({
           onClick={onReroll}
           disabled={rerolling}
           aria-label={`${t('encounters.action.reroll')} — ${participant.name}`}
+          tooltip={t('campaigns.tip.reroll')}
         >
           {t('encounters.action.reroll')}
         </Button>
@@ -761,6 +766,7 @@ function ParticipantCard({
           size="sm"
           onClick={onControl}
           aria-label={`${t('encounters.control.open')} — ${participant.name}`}
+          tooltip={t('campaigns.tip.controlParticipant')}
         >
           {t('encounters.control.open')}
         </Button>

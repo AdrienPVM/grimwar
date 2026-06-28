@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
 import { getSkillProficiency, SKILLS, skillModifier } from '@/shared/lib/rules/skills';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t } from '@/shared/lib/i18n';
 import type { Character, SkillProf } from '@/shared/types/character';
 
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
@@ -100,32 +101,34 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
             const signed = mod >= 0 ? `+${mod}` : `${mod}`;
             return (
               <li key={skill.id}>
-                <button
-                  type="button"
-                  disabled={readOnly}
-                  onClick={() => void rollSkill(skill.id)}
-                  className={cn(
-                    'flex w-full items-center gap-3 rounded-card-sm border border-white-8 bg-bg-2/30 px-3 py-2 text-left transition-all',
-                    'hover:border-soft hover:bg-white/[0.04] active:scale-[0.99]',
-                    'disabled:cursor-not-allowed disabled:opacity-50',
-                  )}
-                >
-                  <ProficiencyIndicator level={profLevel} />
-                  <span className="flex-1 truncate font-serif text-body text-text">
-                    {localize(skill.name)}
-                  </span>
-                  <span className="rounded-pill border border-white-8 bg-white/[0.04] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
-                    {skill.ability.toUpperCase()}
-                  </span>
-                  <span
+                <Tooltip label={t('sheet.tip.rollSkill')} decorative className="w-full">
+                  <button
+                    type="button"
+                    disabled={readOnly}
+                    onClick={() => void rollSkill(skill.id)}
                     className={cn(
-                      'min-w-[40px] text-right font-display text-[16px] font-black tracking-[-0.02em]',
-                      mod >= 0 ? 'text-gold-bright' : 'text-crimson',
+                      'flex w-full items-center gap-3 rounded-card-sm border border-white-8 bg-bg-2/30 px-3 py-2 text-left transition-all',
+                      'hover:border-soft hover:bg-white/[0.04] active:scale-[0.99]',
+                      'disabled:cursor-not-allowed disabled:opacity-50',
                     )}
                   >
-                    {signed}
-                  </span>
-                </button>
+                    <ProficiencyIndicator level={profLevel} />
+                    <span className="flex-1 truncate font-serif text-body text-text">
+                      {localize(skill.name)}
+                    </span>
+                    <span className="rounded-pill border border-white-8 bg-white/[0.04] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
+                      {skill.ability.toUpperCase()}
+                    </span>
+                    <span
+                      className={cn(
+                        'min-w-[40px] text-right font-display text-[16px] font-black tracking-[-0.02em]',
+                        mod >= 0 ? 'text-gold-bright' : 'text-crimson',
+                      )}
+                    >
+                      {signed}
+                    </span>
+                  </button>
+                </Tooltip>
               </li>
             );
           })

@@ -82,7 +82,8 @@ test.describe('UAT 24 (step 12) — combat complet bout en bout', () => {
     await page.getByRole('button', { name: /Créer une rencontre/i }).click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByLabel(/Nom de la rencontre/i).fill('Le guet-apens du tunnel');
-    await page.getByRole('button', { name: /Ajouter un monstre/i }).click();
+    // Saisie manuelle d'une ligne de monstre (libellé courant « Saisir à la main »).
+    await page.getByRole('button', { name: /Saisir à la main/i }).click();
     await page.getByPlaceholder('Ex. « Gobelin »').fill('Gobelin');
     await page.getByPlaceholder('PV').fill('7');
     await page.getByLabel('Nombre').fill('3');

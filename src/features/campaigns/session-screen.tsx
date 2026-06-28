@@ -253,6 +253,7 @@ export function SessionScreen(): JSX.Element {
                 size="md"
                 onClick={handleStart}
                 disabled={actionPending}
+                tooltip={t('campaigns.tip.startSession')}
               >
                 {actionPending ? t('sessions.action.starting') : t('sessions.action.start')}
               </Button>
@@ -262,6 +263,7 @@ export function SessionScreen(): JSX.Element {
                 size="md"
                 onClick={handleEnd}
                 disabled={actionPending}
+                tooltip={t('campaigns.tip.endSession')}
               >
                 {actionPending ? t('sessions.action.ending') : t('sessions.action.end')}
               </Button>

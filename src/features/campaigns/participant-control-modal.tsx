@@ -3,6 +3,7 @@ import { useId, useMemo, useState, type JSX } from 'react';
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { Tooltip } from '@/shared/components/tooltip';
 import { MonsterStatBlock } from '@/features/codex/browsers/monster-stat-block';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -95,6 +96,7 @@ export function ParticipantControlModal({
                 variant="secondary"
                 size="sm"
                 onClick={() => setStatBlockOpen(true)}
+                tooltip={t('campaigns.tip.viewStatBlock')}
               >
                 {t('encounters.control.viewStatBlock')}
               </Button>
@@ -143,6 +145,7 @@ export function ParticipantControlModal({
               onClick={() => onApplyHp(-safeAmount)}
               disabled={pending || safeAmount === 0}
               className="border-crimson/50 text-crimson hover:border-crimson"
+              tooltip={t('campaigns.tip.applyDamage')}
             >
               − {t('encounters.control.damage')}
             </Button>
@@ -152,6 +155,7 @@ export function ParticipantControlModal({
               onClick={() => onApplyHp(safeAmount)}
               disabled={pending || safeAmount === 0}
               className="border-teal/50 text-teal hover:border-teal"
+              tooltip={t('campaigns.tip.applyHeal')}
             >
               + {t('encounters.control.heal')}
             </Button>
@@ -160,26 +164,28 @@ export function ParticipantControlModal({
           {/* Montants rapides : un tap = dégâts (−) ou soin (+). */}
           <div className="flex flex-wrap items-center gap-2">
             {QUICK_AMOUNTS.map((q) => (
-              <button
-                key={`dmg-${q}`}
-                type="button"
-                disabled={pending}
-                onClick={() => onApplyHp(-q)}
-                className="rounded-pill border border-crimson/30 bg-crimson/[0.06] px-3 py-1 font-title text-meta font-bold tabular-nums text-crimson transition-colors duration-200 ease-base hover:border-crimson hover:bg-crimson/15 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                −{q}
-              </button>
+              <Tooltip key={`dmg-${q}`} label={t('campaigns.tip.quickDamage')} decorative>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => onApplyHp(-q)}
+                  className="rounded-pill border border-crimson/30 bg-crimson/[0.06] px-3 py-1 font-title text-meta font-bold tabular-nums text-crimson transition-colors duration-200 ease-base hover:border-crimson hover:bg-crimson/15 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  −{q}
+                </button>
+              </Tooltip>
             ))}
             {QUICK_AMOUNTS.map((q) => (
-              <button
-                key={`heal-${q}`}
-                type="button"
-                disabled={pending}
-                onClick={() => onApplyHp(q)}
-                className="rounded-pill border border-teal/30 bg-teal/[0.06] px-3 py-1 font-title text-meta font-bold tabular-nums text-teal transition-colors duration-200 ease-base hover:border-teal hover:bg-teal/15 disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                +{q}
-              </button>
+              <Tooltip key={`heal-${q}`} label={t('campaigns.tip.quickHeal')} decorative>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => onApplyHp(q)}
+                  className="rounded-pill border border-teal/30 bg-teal/[0.06] px-3 py-1 font-title text-meta font-bold tabular-nums text-teal transition-colors duration-200 ease-base hover:border-teal hover:bg-teal/15 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  +{q}
+                </button>
+              </Tooltip>
             ))}
           </div>
         </section>
@@ -198,23 +204,28 @@ export function ParticipantControlModal({
               {conditions.map((c) => {
                 const active = activeSet.has(c.id);
                 return (
-                  <button
+                  <Tooltip
                     key={c.id}
-                    type="button"
-                    disabled={pending}
-                    aria-pressed={active}
-                    onClick={() => onToggleCondition(c.id, active ? 'remove' : 'add')}
-                    className={cn(
-                      'rounded-pill border px-3 py-1 font-title text-[10px] font-bold uppercase tracking-[0.14em]',
-                      'transition-colors duration-200 ease-base',
-                      'disabled:cursor-not-allowed disabled:opacity-40',
-                      active
-                        ? 'border-crimson bg-crimson/15 text-crimson hover:bg-crimson/25'
-                        : 'border-white-8 bg-white/[0.04] text-text-secondary hover:border-gold-bright hover:text-gold-bright',
-                    )}
+                    label={active ? t('campaigns.tip.conditionRemove') : t('campaigns.tip.conditionAdd')}
+                    decorative
                   >
-                    {localize(c.name)}
-                  </button>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      aria-pressed={active}
+                      onClick={() => onToggleCondition(c.id, active ? 'remove' : 'add')}
+                      className={cn(
+                        'rounded-pill border px-3 py-1 font-title text-[10px] font-bold uppercase tracking-[0.14em]',
+                        'transition-colors duration-200 ease-base',
+                        'disabled:cursor-not-allowed disabled:opacity-40',
+                        active
+                          ? 'border-crimson bg-crimson/15 text-crimson hover:bg-crimson/25'
+                          : 'border-white-8 bg-white/[0.04] text-text-secondary hover:border-gold-bright hover:text-gold-bright',
+                      )}
+                    >
+                      {localize(c.name)}
+                    </button>
+                  </Tooltip>
                 );
               })}
             </div>
