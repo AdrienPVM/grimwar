@@ -714,6 +714,22 @@ export type StringKey =
   | 'sheet.magie.stats.attackLabel'
   | 'sheet.magie.stats.preparedLabel'
   | 'sheet.magie.stats.preparedValue'
+  // Carte profil de créature invoquée (plan D14) — rendue inline dans la modale
+  // détail d'un sort d'invocation. Termes FR repris du SRD FR (stat block).
+  | 'sheet.magie.summon.cardLabel'
+  | 'sheet.magie.summon.heading'
+  | 'sheet.magie.summon.ac'
+  | 'sheet.magie.summon.hp'
+  | 'sheet.magie.summon.speed'
+  | 'sheet.magie.summon.senses'
+  | 'sheet.magie.summon.languages'
+  | 'sheet.magie.summon.challenge'
+  | 'sheet.magie.summon.resistances'
+  | 'sheet.magie.summon.immunities'
+  | 'sheet.magie.summon.traits'
+  | 'sheet.magie.summon.actions'
+  | 'sheet.magie.summon.bonusActions'
+  | 'sheet.magie.summon.reactions'
   // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
@@ -3420,6 +3436,23 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.stats.attackLabel': '+ attaque',
     'sheet.magie.stats.preparedLabel': 'Préparation :',
     'sheet.magie.stats.preparedValue': '{n} sorts',
+    // Plan D14 — carte profil de créature invoquée. Libellés du stat block
+    // repris du SRD FR : « Classe d'armure », « Points de vie », « Facteur de
+    // puissance » (= Challenge), « Actions bonus », « Réactions ».
+    'sheet.magie.summon.cardLabel': 'Profil de {name}',
+    'sheet.magie.summon.heading': 'Profil de la créature invoquée',
+    'sheet.magie.summon.ac': "Classe d'armure",
+    'sheet.magie.summon.hp': 'Points de vie',
+    'sheet.magie.summon.speed': 'Vitesse',
+    'sheet.magie.summon.senses': 'Sens',
+    'sheet.magie.summon.languages': 'Langues',
+    'sheet.magie.summon.challenge': 'Facteur de puissance',
+    'sheet.magie.summon.resistances': 'Résistances',
+    'sheet.magie.summon.immunities': 'Immunités',
+    'sheet.magie.summon.traits': 'Traits',
+    'sheet.magie.summon.actions': 'Actions',
+    'sheet.magie.summon.bonusActions': 'Actions bonus',
+    'sheet.magie.summon.reactions': 'Réactions',
     // Plan D1 — modes de résolution des dégâts de sort (modale détail)
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
@@ -6591,6 +6624,20 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.stats.attackLabel': '+ attack',
     'sheet.magie.stats.preparedLabel': 'Preparation:',
     'sheet.magie.stats.preparedValue': '{n} spells',
+    'sheet.magie.summon.cardLabel': 'Profile of {name}',
+    'sheet.magie.summon.heading': 'Summoned creature profile',
+    'sheet.magie.summon.ac': 'Armor class',
+    'sheet.magie.summon.hp': 'Hit points',
+    'sheet.magie.summon.speed': 'Speed',
+    'sheet.magie.summon.senses': 'Senses',
+    'sheet.magie.summon.languages': 'Languages',
+    'sheet.magie.summon.challenge': 'Challenge',
+    'sheet.magie.summon.resistances': 'Resistances',
+    'sheet.magie.summon.immunities': 'Immunities',
+    'sheet.magie.summon.traits': 'Traits',
+    'sheet.magie.summon.actions': 'Actions',
+    'sheet.magie.summon.bonusActions': 'Bonus actions',
+    'sheet.magie.summon.reactions': 'Reactions',
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',
