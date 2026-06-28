@@ -74,21 +74,21 @@ export function AddItemModal({
       };
       await addItemToInventory(inventoryClone, selectedId, 'public', { qty });
       await updateCharacter({ inventory: inventoryClone.inventory });
+      const added = filtered.find((f) => f.item.id === selectedId);
+      const addedName = added ? localize(added.item.name) : selectedId;
       showToast({
         kind: 'crit',
-        title: 'Objet ajouté',
-        sub: `${qty} × ${
-          (filtered.find((f) => f.item.id === selectedId)?.item.name &&
-            localize(filtered.find((f) => f.item.id === selectedId)!.item.name)) ??
-          selectedId
-        }`,
+        title: t('sheet.avoir.add.addedTitle'),
+        sub: t('sheet.avoir.add.addedSub')
+          .replace('{qty}', String(qty))
+          .replace('{name}', addedName),
       });
       onClose();
     } catch (err) {
       showToast({
         kind: 'fumble',
-        title: 'Ajout impossible',
-        sub: err instanceof Error ? err.message : 'Erreur inconnue',
+        title: t('sheet.avoir.add.failTitle'),
+        sub: err instanceof Error ? err.message : t('sheet.avoir.unknownError'),
         durationMs: 4000,
       });
     } finally {
@@ -110,19 +110,23 @@ export function AddItemModal({
               id="add-item-title"
               className="font-display text-[20px] font-black tracking-[-0.02em] text-gold-bright"
             >
-              {view === 'browse' ? 'Ajouter un objet' : 'Créer un objet maison'}
+              {view === 'browse'
+                ? t('sheet.avoir.add.browseTitle')
+                : t('sheet.avoir.add.customTitle')}
             </h2>
             <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
               {view === 'browse'
-                ? `${items.length} objets + ${magicItems.length} magiques`
-                : 'Référence personnelle (user scope)'}
+                ? t('sheet.avoir.add.browseSubtitle')
+                    .replace('{n}', String(items.length))
+                    .replace('{m}', String(magicItems.length))
+                : t('sheet.avoir.add.customSubtitle')}
             </p>
           </div>
           <Tooltip label={t('sheet.tip.closeModal')} decorative placement="left">
             <button
               type="button"
               onClick={onClose}
-              aria-label="Fermer"
+              aria-label={t('sheet.avoir.close')}
               className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
             >
               ✕
@@ -142,7 +146,7 @@ export function AddItemModal({
                     setQuery(e.target.value);
                     setSelectedId(null);
                   }}
-                  placeholder="Rechercher un objet…"
+                  placeholder={t('sheet.avoir.add.searchPlaceholder')}
                   className="w-full bg-transparent font-serif text-body text-text placeholder:text-text-tertiary focus:outline-none"
                 />
               </label>
@@ -151,7 +155,7 @@ export function AddItemModal({
             <div className="flex-1 overflow-y-auto px-6 py-3">
               {filtered.length === 0 ? (
                 <p className="rounded-card-sm border border-soft bg-ink/30 px-6 py-8 text-center font-serif italic text-text-tertiary">
-                  Aucun objet ne correspond.
+                  {t('sheet.avoir.add.noMatch')}
                 </p>
               ) : (
                 <ul className="flex flex-col gap-1.5">
@@ -199,7 +203,7 @@ export function AddItemModal({
                 tooltip={t('sheet.tip.createCustomItem')}
                 className="shrink-0"
               >
-                + Maison
+                {t('sheet.avoir.add.customCta')}
               </Button>
               <div className="flex flex-1 items-center justify-end gap-2">
                 {selectedId && (
@@ -208,7 +212,7 @@ export function AddItemModal({
                     min={1}
                     value={qty}
                     onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
-                    aria-label="Quantité"
+                    aria-label={t('sheet.avoir.quantity')}
                     className="w-16 rounded-card-sm border border-white-8 bg-ink/40 px-2 py-1.5 text-center font-display text-[18px] font-bold text-gold-bright focus:border-gold-dim focus:outline-none"
                   />
                 )}
@@ -218,7 +222,7 @@ export function AddItemModal({
                   onClick={() => void confirmAdd()}
                   disabled={!selectedId || busy}
                 >
-                  {busy ? '…' : 'Ajouter'}
+                  {busy ? '…' : t('sheet.avoir.add.confirm')}
                 </Button>
               </div>
             </footer>

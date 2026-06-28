@@ -4,7 +4,11 @@ import path from 'node:path';
 import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
-import { seedCharacter, warlockL1ArmorOfShadows } from './seed-character';
+import {
+  fighterL1DefenseChainmail,
+  seedCharacter,
+  warlockL1ArmorOfShadows,
+} from './seed-character';
 
 /**
  * UAT — passe d'internationalisation (i18n complète des modes de fiche).
@@ -53,6 +57,31 @@ test.describe('UAT i18n — modes de fiche', () => {
 
     writeFileSync(
       path.join(UAT_DIR, '04-magie-grimoire-et-pacte-pleine-page.png'),
+      await page.screenshot({ fullPage: true, animations: 'disabled' }),
+    );
+  });
+
+  test('mode Avoir (Guerrier) — Inventaire + Bourse localisés (CA, pas AC)', async ({ page }) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { charId } = await seedCharacter(page, fighterL1DefenseChainmail);
+    await page.goto(`/character/${charId}`);
+    await expect(page.getByText(fighterL1DefenseChainmail.name).first()).toBeVisible({
+      timeout: 10_000,
+    });
+
+    await page.getByRole('tab', { name: /^Avoir$/i }).click();
+    const panel = page.locator('#sheet-mode-panel-avoir');
+    await expect(panel).toBeVisible();
+
+    // Vérités visibles : cartes Inventaire + Bourse, et la méta d'armure en
+    // « CA » (Classe d'Armure) et non plus l'anglicisme « AC ».
+    await expect(panel.getByRole('heading', { name: 'Inventaire' })).toBeVisible();
+    await expect(panel.getByRole('heading', { name: 'Bourse' })).toBeVisible();
+
+    writeFileSync(
+      path.join(UAT_DIR, '05-avoir-inventaire-bourse-pleine-page.png'),
       await page.screenshot({ fullPage: true, animations: 'disabled' }),
     );
   });

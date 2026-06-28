@@ -4,7 +4,7 @@ import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
 import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
-import { localize, t } from '@/shared/lib/i18n';
+import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import type { Item, MagicItem, ItemCategory } from '@/shared/types/content';
 
 import type { ResolvedInventoryRow } from './use-inventory-derived';
@@ -52,10 +52,10 @@ export function InventoryList({
   return (
     <Card>
       <CardHeader>
-        <h3>Inventaire</h3>
+        <h3>{t('sheet.avoir.inv.title')}</h3>
         <Tooltip label={t('sheet.tip.addItem')} decorative>
           <CardAction onClick={onAddItemClick} disabled={readOnly}>
-            + Objet
+            {t('sheet.avoir.inv.addCta')}
           </CardAction>
         </Tooltip>
       </CardHeader>
@@ -64,18 +64,18 @@ export function InventoryList({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher…"
+          placeholder={t('sheet.avoir.inv.searchPlaceholder')}
           className="w-full bg-transparent font-serif text-body text-text placeholder:text-text-tertiary focus:outline-none"
         />
       </label>
 
       {resolvedItems.length === 0 ? (
         <p className="rounded-card-sm border border-soft bg-ink/30 px-6 py-8 text-center font-serif italic text-text-tertiary">
-          Inventaire vide. Touche « + Objet » pour ajouter un premier objet.
+          {t('sheet.avoir.inv.empty')}
         </p>
       ) : groups.length === 0 ? (
         <p className="rounded-card-sm border border-soft bg-ink/30 px-6 py-8 text-center font-serif italic text-text-tertiary">
-          Aucun objet ne correspond à « {query} ».
+          {t('sheet.avoir.inv.noMatchQuery').replace('{query}', query)}
         </p>
       ) : (
         <div className="flex flex-col gap-4">
@@ -121,8 +121,10 @@ interface ItemRowProps {
 
 function ItemRow({ row, onSelect }: ItemRowProps): JSX.Element {
   const { inventory, content, isMagic } = row;
-  const name = content ? localize(content.name) : `(introuvable) ${inventory.contentId}`;
-  const meta = content ? buildMetaLine(content, isMagic) : 'Item non résolu — vérifier la DB';
+  const name = content
+    ? localize(content.name)
+    : t('sheet.avoir.inv.notFound').replace('{id}', inventory.contentId);
+  const meta = content ? buildMetaLine(content, isMagic) : t('sheet.avoir.inv.unresolved');
   return (
     <li>
       <button
@@ -136,8 +138,8 @@ function ItemRow({ row, onSelect }: ItemRowProps): JSX.Element {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate font-serif text-body text-text">{name}</span>
-            {inventory.equipped && <Chip variant="gold">Équipé</Chip>}
-            {inventory.attuned && <Chip variant="magic">Lié</Chip>}
+            {inventory.equipped && <Chip variant="gold">{t('sheet.avoir.equipped')}</Chip>}
+            {inventory.attuned && <Chip variant="magic">{t('sheet.avoir.attuned')}</Chip>}
           </div>
           <p className="mt-0.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
             {meta}
@@ -162,7 +164,13 @@ function buildMetaLine(content: Item | MagicItem, isMagic: boolean): string {
   const parts: string[] = [];
   if (it.weight > 0) parts.push(`${formatWeight(it.weight)} kg`);
   if (it.damage) parts.push(`${it.damage.dice} ${localize(it.damage.typeLabel)}`);
-  else if (it.acBase !== undefined) parts.push(`AC ${it.acBase}${it.acDexMax !== undefined && it.acDexMax !== null ? ` + DEX max ${it.acDexMax}` : ''}`);
+  else if (it.acBase !== undefined)
+    parts.push(
+      t('sheet.avoir.inv.acMeta').replace('{ac}', String(it.acBase)) +
+        (it.acDexMax !== undefined && it.acDexMax !== null
+          ? t('sheet.avoir.inv.acDexMeta').replace('{n}', String(it.acDexMax))
+          : ''),
+    );
   else parts.push(t(`item.category.${it.category}`));
   return parts.join(' · ');
 }
@@ -180,15 +188,15 @@ interface CategoryGroup {
   rows: ResolvedInventoryRow[];
 }
 
-const GROUP_ORDER: ReadonlyMap<string, { label: string; order: number }> = new Map([
-  ['weapon', { label: 'Armes', order: 1 }],
-  ['armor', { label: 'Armures & boucliers', order: 2 }],
-  ['tool', { label: 'Outils', order: 3 }],
-  ['pack', { label: 'Sacs & kits', order: 4 }],
-  ['gear', { label: 'Équipement', order: 5 }],
-  ['magic', { label: 'Objets magiques', order: 6 }],
-  ['misc', { label: 'Divers', order: 7 }],
-  ['unknown', { label: 'Inconnus', order: 8 }],
+const GROUP_ORDER: ReadonlyMap<string, { labelKey: StringKey; order: number }> = new Map([
+  ['weapon', { labelKey: 'sheet.avoir.group.weapon', order: 1 }],
+  ['armor', { labelKey: 'sheet.avoir.group.armor', order: 2 }],
+  ['tool', { labelKey: 'sheet.avoir.group.tool', order: 3 }],
+  ['pack', { labelKey: 'sheet.avoir.group.pack', order: 4 }],
+  ['gear', { labelKey: 'sheet.avoir.group.gear', order: 5 }],
+  ['magic', { labelKey: 'sheet.avoir.group.magic', order: 6 }],
+  ['misc', { labelKey: 'sheet.avoir.group.misc', order: 7 }],
+  ['unknown', { labelKey: 'sheet.avoir.group.unknown', order: 8 }],
 ]);
 
 function groupKeyFor(row: ResolvedInventoryRow): string {
@@ -214,7 +222,7 @@ function groupItems(rows: readonly ResolvedInventoryRow[]): readonly CategoryGro
   return Array.from(buckets.entries())
     .map(([key, rowList]) => {
       const meta = GROUP_ORDER.get(key)!;
-      return { key, label: meta.label, order: meta.order, rows: rowList };
+      return { key, label: t(meta.labelKey), order: meta.order, rows: rowList };
     })
     .sort((a, b) => a.order - b.order);
 }

@@ -1393,6 +1393,83 @@ export type StringKey =
   | 'sheet.avoir.attunement.count'
   | 'sheet.avoir.attunement.empty'
   | 'sheet.avoir.attunement.atCap'
+  // Mode Avoir — inventaire, bourse, ajout/création d'objet, détail (i18n complète)
+  | 'sheet.avoir.close'
+  | 'sheet.avoir.cancel'
+  | 'sheet.avoir.quantity'
+  | 'sheet.avoir.unknownError'
+  | 'sheet.avoir.equipped'
+  | 'sheet.avoir.unequipped'
+  | 'sheet.avoir.equip'
+  | 'sheet.avoir.unequip'
+  | 'sheet.avoir.attuned'
+  | 'sheet.avoir.add.addedTitle'
+  | 'sheet.avoir.add.addedSub'
+  | 'sheet.avoir.add.failTitle'
+  | 'sheet.avoir.add.browseTitle'
+  | 'sheet.avoir.add.customTitle'
+  | 'sheet.avoir.add.browseSubtitle'
+  | 'sheet.avoir.add.customSubtitle'
+  | 'sheet.avoir.add.searchPlaceholder'
+  | 'sheet.avoir.add.noMatch'
+  | 'sheet.avoir.add.customCta'
+  | 'sheet.avoir.add.confirm'
+  | 'sheet.avoir.coin.cu'
+  | 'sheet.avoir.coin.ar'
+  | 'sheet.avoir.coin.el'
+  | 'sheet.avoir.coin.or'
+  | 'sheet.avoir.coin.pl'
+  | 'sheet.avoir.coins.title'
+  | 'sheet.avoir.coins.purseToast'
+  | 'sheet.avoir.coins.updated'
+  | 'sheet.avoir.coins.editAria'
+  | 'sheet.avoir.coins.totalValue'
+  | 'sheet.avoir.inv.title'
+  | 'sheet.avoir.inv.addCta'
+  | 'sheet.avoir.inv.searchPlaceholder'
+  | 'sheet.avoir.inv.empty'
+  | 'sheet.avoir.inv.noMatchQuery'
+  | 'sheet.avoir.inv.unresolved'
+  | 'sheet.avoir.inv.notFound'
+  | 'sheet.avoir.inv.acMeta'
+  | 'sheet.avoir.inv.acDexMeta'
+  | 'sheet.avoir.group.weapon'
+  | 'sheet.avoir.group.armor'
+  | 'sheet.avoir.group.tool'
+  | 'sheet.avoir.group.pack'
+  | 'sheet.avoir.group.gear'
+  | 'sheet.avoir.group.magic'
+  | 'sheet.avoir.group.misc'
+  | 'sheet.avoir.group.unknown'
+  | 'sheet.avoir.detail.removed'
+  | 'sheet.avoir.detail.attuneLimitTitle'
+  | 'sheet.avoir.detail.attuneLimitSub'
+  | 'sheet.avoir.detail.linkBroken'
+  | 'sheet.avoir.detail.linkEstablished'
+  | 'sheet.avoir.detail.unresolvedItem'
+  | 'sheet.avoir.detail.weight'
+  | 'sheet.avoir.detail.cost'
+  | 'sheet.avoir.detail.damage'
+  | 'sheet.avoir.detail.ac'
+  | 'sheet.avoir.detail.acDex'
+  | 'sheet.avoir.detail.noDescription'
+  | 'sheet.avoir.detail.decreaseQty'
+  | 'sheet.avoir.detail.increaseQty'
+  | 'sheet.avoir.detail.notes'
+  | 'sheet.avoir.detail.notesPlaceholder'
+  | 'sheet.avoir.detail.unlink'
+  | 'sheet.avoir.detail.link'
+  | 'sheet.avoir.detail.confirmRemove'
+  | 'sheet.avoir.detail.remove'
+  | 'sheet.avoir.customForm.invalidSchema'
+  | 'sheet.avoir.customForm.created'
+  | 'sheet.avoir.customForm.failTitle'
+  | 'sheet.avoir.customForm.name'
+  | 'sheet.avoir.customForm.category'
+  | 'sheet.avoir.customForm.weight'
+  | 'sheet.avoir.customForm.description'
+  | 'sheet.avoir.customForm.descPlaceholder'
+  | 'sheet.avoir.customForm.submit'
   // Connectivité (jalon 1D — mode offline)
   | 'connectivity.offline.title'
   | 'connectivity.offline.body'
@@ -3787,6 +3864,83 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.avoir.attunement.count': '{count} / {cap} objets liés',
     'sheet.avoir.attunement.empty': 'Aucun objet harmonisé.',
     'sheet.avoir.attunement.atCap': 'Limite atteinte',
+    // Mode Avoir — inventaire, bourse, ajout/création, détail
+    'sheet.avoir.close': 'Fermer',
+    'sheet.avoir.cancel': 'Annuler',
+    'sheet.avoir.quantity': 'Quantité',
+    'sheet.avoir.unknownError': 'Erreur inconnue',
+    'sheet.avoir.equipped': 'Équipé',
+    'sheet.avoir.unequipped': 'Déséquipé',
+    'sheet.avoir.equip': 'Équiper',
+    'sheet.avoir.unequip': 'Déséquiper',
+    'sheet.avoir.attuned': 'Lié',
+    'sheet.avoir.add.addedTitle': 'Objet ajouté',
+    'sheet.avoir.add.addedSub': '{qty} × {name}',
+    'sheet.avoir.add.failTitle': 'Ajout impossible',
+    'sheet.avoir.add.browseTitle': 'Ajouter un objet',
+    'sheet.avoir.add.customTitle': 'Créer un objet maison',
+    'sheet.avoir.add.browseSubtitle': '{n} objets + {m} magiques',
+    'sheet.avoir.add.customSubtitle': 'Référence personnelle',
+    'sheet.avoir.add.searchPlaceholder': 'Rechercher un objet…',
+    'sheet.avoir.add.noMatch': 'Aucun objet ne correspond.',
+    'sheet.avoir.add.customCta': '+ Maison',
+    'sheet.avoir.add.confirm': 'Ajouter',
+    'sheet.avoir.coin.cu': 'Cu',
+    'sheet.avoir.coin.ar': 'Ar',
+    'sheet.avoir.coin.el': 'Él',
+    'sheet.avoir.coin.or': 'Or',
+    'sheet.avoir.coin.pl': 'Pl',
+    'sheet.avoir.coins.title': 'Bourse',
+    'sheet.avoir.coins.purseToast': 'Bourse — {coin}',
+    'sheet.avoir.coins.updated': 'Mise à jour',
+    'sheet.avoir.coins.editAria': 'Éditer pièces {coin}',
+    'sheet.avoir.coins.totalValue': 'Valeur totale ≈ {gp} po',
+    'sheet.avoir.inv.title': 'Inventaire',
+    'sheet.avoir.inv.addCta': '+ Objet',
+    'sheet.avoir.inv.searchPlaceholder': 'Rechercher…',
+    'sheet.avoir.inv.empty': 'Inventaire vide. Touche « + Objet » pour ajouter un premier objet.',
+    'sheet.avoir.inv.noMatchQuery': 'Aucun objet ne correspond à « {query} ».',
+    'sheet.avoir.inv.unresolved': 'Objet non résolu — vérifier la base.',
+    'sheet.avoir.inv.notFound': '(introuvable) {id}',
+    'sheet.avoir.inv.acMeta': 'CA {ac}',
+    'sheet.avoir.inv.acDexMeta': ' + DEX max {n}',
+    'sheet.avoir.group.weapon': 'Armes',
+    'sheet.avoir.group.armor': 'Armures & boucliers',
+    'sheet.avoir.group.tool': 'Outils',
+    'sheet.avoir.group.pack': 'Sacs & kits',
+    'sheet.avoir.group.gear': 'Équipement',
+    'sheet.avoir.group.magic': 'Objets magiques',
+    'sheet.avoir.group.misc': 'Divers',
+    'sheet.avoir.group.unknown': 'Inconnus',
+    'sheet.avoir.detail.removed': 'Objet retiré',
+    'sheet.avoir.detail.attuneLimitTitle': 'Limite de liens',
+    'sheet.avoir.detail.attuneLimitSub': 'Maximum de {n} objets liés simultanément.',
+    'sheet.avoir.detail.linkBroken': 'Lien rompu',
+    'sheet.avoir.detail.linkEstablished': 'Lien établi',
+    'sheet.avoir.detail.unresolvedItem': 'Objet non résolu',
+    'sheet.avoir.detail.weight': 'Poids',
+    'sheet.avoir.detail.cost': 'Coût',
+    'sheet.avoir.detail.damage': 'Dégâts',
+    'sheet.avoir.detail.ac': 'CA',
+    'sheet.avoir.detail.acDex': ' + DEX (max {n})',
+    'sheet.avoir.detail.noDescription': 'Aucun descriptif détaillé pour cet objet.',
+    'sheet.avoir.detail.decreaseQty': 'Diminuer la quantité',
+    'sheet.avoir.detail.increaseQty': 'Augmenter la quantité',
+    'sheet.avoir.detail.notes': 'Notes',
+    'sheet.avoir.detail.notesPlaceholder': 'Origine, histoire, runes gravées…',
+    'sheet.avoir.detail.unlink': 'Délier',
+    'sheet.avoir.detail.link': 'Lier',
+    'sheet.avoir.detail.confirmRemove': 'Confirmer le retrait',
+    'sheet.avoir.detail.remove': 'Retirer',
+    'sheet.avoir.customForm.invalidSchema': 'Schéma invalide : {errors}',
+    'sheet.avoir.customForm.created': 'Objet maison créé',
+    'sheet.avoir.customForm.failTitle': 'Création impossible',
+    'sheet.avoir.customForm.name': 'Nom',
+    'sheet.avoir.customForm.category': 'Catégorie',
+    'sheet.avoir.customForm.weight': 'Poids (kg)',
+    'sheet.avoir.customForm.description': 'Description (optionnelle)',
+    'sheet.avoir.customForm.descPlaceholder': 'Notes, propriétés, histoire…',
+    'sheet.avoir.customForm.submit': 'Créer & ajouter',
     // Connectivité — bannière offline (jalon 1D). Le SDK Firestore met les
     // écritures en file et les rejoue à la reconnexion, le cache Dexie
     // restitue les bundles publics, et le SW Workbox sert les assets.
@@ -6441,6 +6595,83 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.avoir.attunement.count': '{count} / {cap} attuned items',
     'sheet.avoir.attunement.empty': 'No attuned items.',
     'sheet.avoir.attunement.atCap': 'Limit reached',
+    // Inventory mode — inventory, purse, add/create item, detail
+    'sheet.avoir.close': 'Close',
+    'sheet.avoir.cancel': 'Cancel',
+    'sheet.avoir.quantity': 'Quantity',
+    'sheet.avoir.unknownError': 'Unknown error',
+    'sheet.avoir.equipped': 'Equipped',
+    'sheet.avoir.unequipped': 'Unequipped',
+    'sheet.avoir.equip': 'Equip',
+    'sheet.avoir.unequip': 'Unequip',
+    'sheet.avoir.attuned': 'Attuned',
+    'sheet.avoir.add.addedTitle': 'Item added',
+    'sheet.avoir.add.addedSub': '{qty} × {name}',
+    'sheet.avoir.add.failTitle': 'Cannot add',
+    'sheet.avoir.add.browseTitle': 'Add an item',
+    'sheet.avoir.add.customTitle': 'Create a custom item',
+    'sheet.avoir.add.browseSubtitle': '{n} items + {m} magic',
+    'sheet.avoir.add.customSubtitle': 'Personal reference',
+    'sheet.avoir.add.searchPlaceholder': 'Search for an item…',
+    'sheet.avoir.add.noMatch': 'No matching item.',
+    'sheet.avoir.add.customCta': '+ Custom',
+    'sheet.avoir.add.confirm': 'Add',
+    'sheet.avoir.coin.cu': 'cp',
+    'sheet.avoir.coin.ar': 'sp',
+    'sheet.avoir.coin.el': 'ep',
+    'sheet.avoir.coin.or': 'gp',
+    'sheet.avoir.coin.pl': 'pp',
+    'sheet.avoir.coins.title': 'Purse',
+    'sheet.avoir.coins.purseToast': 'Purse — {coin}',
+    'sheet.avoir.coins.updated': 'Updated',
+    'sheet.avoir.coins.editAria': 'Edit {coin} coins',
+    'sheet.avoir.coins.totalValue': 'Total value ≈ {gp} gp',
+    'sheet.avoir.inv.title': 'Inventory',
+    'sheet.avoir.inv.addCta': '+ Item',
+    'sheet.avoir.inv.searchPlaceholder': 'Search…',
+    'sheet.avoir.inv.empty': 'Empty inventory. Tap “+ Item” to add a first item.',
+    'sheet.avoir.inv.noMatchQuery': 'No item matches “{query}”.',
+    'sheet.avoir.inv.unresolved': 'Unresolved item — check the database.',
+    'sheet.avoir.inv.notFound': '(not found) {id}',
+    'sheet.avoir.inv.acMeta': 'AC {ac}',
+    'sheet.avoir.inv.acDexMeta': ' + DEX max {n}',
+    'sheet.avoir.group.weapon': 'Weapons',
+    'sheet.avoir.group.armor': 'Armor & shields',
+    'sheet.avoir.group.tool': 'Tools',
+    'sheet.avoir.group.pack': 'Bags & kits',
+    'sheet.avoir.group.gear': 'Gear',
+    'sheet.avoir.group.magic': 'Magic items',
+    'sheet.avoir.group.misc': 'Misc',
+    'sheet.avoir.group.unknown': 'Unknown',
+    'sheet.avoir.detail.removed': 'Item removed',
+    'sheet.avoir.detail.attuneLimitTitle': 'Attunement limit',
+    'sheet.avoir.detail.attuneLimitSub': 'Up to {n} attuned items at once.',
+    'sheet.avoir.detail.linkBroken': 'Attunement broken',
+    'sheet.avoir.detail.linkEstablished': 'Attunement set',
+    'sheet.avoir.detail.unresolvedItem': 'Unresolved item',
+    'sheet.avoir.detail.weight': 'Weight',
+    'sheet.avoir.detail.cost': 'Cost',
+    'sheet.avoir.detail.damage': 'Damage',
+    'sheet.avoir.detail.ac': 'AC',
+    'sheet.avoir.detail.acDex': ' + DEX (max {n})',
+    'sheet.avoir.detail.noDescription': 'No detailed description for this item.',
+    'sheet.avoir.detail.decreaseQty': 'Decrease quantity',
+    'sheet.avoir.detail.increaseQty': 'Increase quantity',
+    'sheet.avoir.detail.notes': 'Notes',
+    'sheet.avoir.detail.notesPlaceholder': 'Origin, history, engraved runes…',
+    'sheet.avoir.detail.unlink': 'Unattune',
+    'sheet.avoir.detail.link': 'Attune',
+    'sheet.avoir.detail.confirmRemove': 'Confirm removal',
+    'sheet.avoir.detail.remove': 'Remove',
+    'sheet.avoir.customForm.invalidSchema': 'Invalid schema: {errors}',
+    'sheet.avoir.customForm.created': 'Custom item created',
+    'sheet.avoir.customForm.failTitle': 'Cannot create',
+    'sheet.avoir.customForm.name': 'Name',
+    'sheet.avoir.customForm.category': 'Category',
+    'sheet.avoir.customForm.weight': 'Weight (kg)',
+    'sheet.avoir.customForm.description': 'Description (optional)',
+    'sheet.avoir.customForm.descPlaceholder': 'Notes, properties, history…',
+    'sheet.avoir.customForm.submit': 'Create & add',
     'connectivity.offline.title': 'You are offline',
     'connectivity.offline.body':
       'Reading still works. Your changes will sync when you reconnect.',

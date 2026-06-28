@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardHeader } from '@/shared/components/card';
 import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -25,13 +25,17 @@ const COIN_TO_GP = {
 
 type CoinKey = keyof typeof COIN_TO_GP;
 
-const COIN_DISPLAY: readonly { key: CoinKey; label: string }[] = [
-  { key: 'cu', label: 'Cu' },
-  { key: 'ar', label: 'Ar' },
-  { key: 'el', label: 'Él' },
-  { key: 'or', label: 'Or' },
-  { key: 'pl', label: 'Pl' },
-];
+/** Ordre d'affichage des pièces (cuivre → platine). */
+const COIN_ORDER: readonly CoinKey[] = ['cu', 'ar', 'el', 'or', 'pl'];
+
+/** Clé i18n du libellé court par type de pièce (Cu/Ar/Él/Or/Pl ↔ cp/sp/ep/gp/pp). */
+const COIN_LABEL_KEYS: Record<CoinKey, StringKey> = {
+  cu: 'sheet.avoir.coin.cu',
+  ar: 'sheet.avoir.coin.ar',
+  el: 'sheet.avoir.coin.el',
+  or: 'sheet.avoir.coin.or',
+  pl: 'sheet.avoir.coin.pl',
+};
 
 /**
  * Bourse de pièces : 5 chips alignés (cuivre, argent, électrum, or, platine).
@@ -46,8 +50,8 @@ export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.El
   const { updateCharacter, isUpdating } = useUpdateCharacter(character);
   const [editing, setEditing] = useState<CoinKey | null>(null);
 
-  const totalGp = COIN_DISPLAY.reduce(
-    (acc, { key }) => acc + character.inventory.coins[key] * COIN_TO_GP[key],
+  const totalGp = COIN_ORDER.reduce(
+    (acc, key) => acc + character.inventory.coins[key] * COIN_TO_GP[key],
     0,
   );
 
@@ -67,19 +71,20 @@ export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.El
     setEditing(null);
     showToast({
       kind: 'roll',
-      title: `Bourse — ${key.toUpperCase()}`,
+      title: t('sheet.avoir.coins.purseToast').replace('{coin}', t(COIN_LABEL_KEYS[key])),
       big: `${safe}`,
-      sub: 'Mise à jour',
+      sub: t('sheet.avoir.coins.updated'),
     });
   }
 
   return (
     <Card>
       <CardHeader>
-        <h3>Bourse</h3>
+        <h3>{t('sheet.avoir.coins.title')}</h3>
       </CardHeader>
       <div className="grid grid-cols-5 gap-2">
-        {COIN_DISPLAY.map(({ key, label }) => {
+        {COIN_ORDER.map((key) => {
+          const label = t(COIN_LABEL_KEYS[key]);
           const value = character.inventory.coins[key];
           const isZero = value === 0;
           const isEditing = editing === key;
@@ -89,7 +94,7 @@ export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.El
               type="button"
               disabled={readOnly || isUpdating}
               onClick={() => !isEditing && setEditing(key)}
-              aria-label={`Éditer pièces ${label}`}
+              aria-label={t('sheet.avoir.coins.editAria').replace('{coin}', label)}
               className={cn(
                 'relative flex w-full flex-col items-center justify-center gap-1 rounded-card-sm border border-white-8 bg-ink/40 px-2 py-3 transition-all',
                 'hover:border-gold-dim hover:-translate-y-0.5',
@@ -132,7 +137,7 @@ export function CoinsSection({ character, readOnly }: CoinsSectionProps): JSX.El
         })}
       </div>
       <p className="mt-3 text-center font-serif text-body-sm italic text-text-tertiary">
-        Valeur totale ≈ {formatGp(totalGp)} po
+        {t('sheet.avoir.coins.totalValue').replace('{gp}', formatGp(totalGp))}
       </p>
     </Card>
   );

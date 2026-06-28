@@ -89,7 +89,7 @@ export function ItemDetailModal({
       await updateCharacter({
         inventory: { ...character.inventory, items: nextItems },
       });
-      showToast({ kind: 'info', title: 'Objet retiré', sub: name });
+      showToast({ kind: 'info', title: t('sheet.avoir.detail.removed'), sub: name });
       onClose();
     } finally {
       setBusy(false);
@@ -100,7 +100,7 @@ export function ItemDetailModal({
     await patchInventoryItem({ equipped: !inventory.equipped });
     showToast({
       kind: inventory.equipped ? 'info' : 'roll',
-      title: !inventory.equipped ? 'Équipé' : 'Déséquipé',
+      title: !inventory.equipped ? t('sheet.avoir.equipped') : t('sheet.avoir.unequipped'),
       sub: name,
     });
   }
@@ -109,15 +109,17 @@ export function ItemDetailModal({
     if (!inventory.attuned && attunedCount >= ATTUNEMENT_CAP) {
       showToast({
         kind: 'fumble',
-        title: 'Limite d\'attunement',
-        sub: `Cap ${ATTUNEMENT_CAP} objets liés simultanément.`,
+        title: t('sheet.avoir.detail.attuneLimitTitle'),
+        sub: t('sheet.avoir.detail.attuneLimitSub').replace('{n}', String(ATTUNEMENT_CAP)),
       });
       return;
     }
     await patchInventoryItem({ attuned: !inventory.attuned });
     showToast({
       kind: inventory.attuned ? 'info' : 'crit',
-      title: inventory.attuned ? 'Lien rompu' : 'Lien établi',
+      title: inventory.attuned
+        ? t('sheet.avoir.detail.linkBroken')
+        : t('sheet.avoir.detail.linkEstablished'),
       sub: name,
     });
   }
@@ -151,14 +153,14 @@ export function ItemDetailModal({
                   {isMagic && ` · ${t(`rarity.${(content as MagicItem).rarity}`)}`}
                 </>
               )}
-              {!content && 'Item non résolu'}
+              {!content && t('sheet.avoir.detail.unresolvedItem')}
             </p>
           </div>
           <Tooltip label={t('sheet.tip.closeModal')} decorative placement="left">
             <button
               type="button"
               onClick={onClose}
-              aria-label="Fermer"
+              aria-label={t('sheet.avoir.close')}
               className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
             >
               ✕
@@ -169,21 +171,24 @@ export function ItemDetailModal({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {content && !isMagic && (
             <dl className="mb-4 grid grid-cols-2 gap-3 font-serif text-body-sm">
-              <Meta label="Poids">
+              <Meta label={t('sheet.avoir.detail.weight')}>
                 {(content as Item).weight > 0 ? `${(content as Item).weight} kg` : '—'}
               </Meta>
-              <Meta label="Coût">{formatCost(content as Item)}</Meta>
+              <Meta label={t('sheet.avoir.detail.cost')}>{formatCost(content as Item)}</Meta>
               {(content as Item).damage && (
-                <Meta label="Dégâts">
+                <Meta label={t('sheet.avoir.detail.damage')}>
                   {(content as Item).damage!.dice} {localize((content as Item).damage!.typeLabel)}
                 </Meta>
               )}
               {(content as Item).acBase !== undefined && (
-                <Meta label="CA">
+                <Meta label={t('sheet.avoir.detail.ac')}>
                   {(content as Item).acBase}
                   {(content as Item).acDexMax !== undefined &&
                     (content as Item).acDexMax !== null &&
-                    ` + DEX (max ${(content as Item).acDexMax})`}
+                    t('sheet.avoir.detail.acDex').replace(
+                      '{n}',
+                      String((content as Item).acDexMax),
+                    )}
                 </Meta>
               )}
             </dl>
@@ -212,14 +217,14 @@ export function ItemDetailModal({
           )}
           {!description && !magicDescription && content && !isMagic && !(content as Item).damage && (
             <p className="font-serif text-body-sm italic text-text-tertiary">
-              Aucun descriptif détaillé pour cet objet.
+              {t('sheet.avoir.detail.noDescription')}
             </p>
           )}
 
           {/* Quantité */}
           <div className="mt-4 flex items-center justify-between rounded-card-sm border border-white-8 bg-ink/30 px-4 py-2">
             <span className="font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-              Quantité
+              {t('sheet.avoir.quantity')}
             </span>
             <div className="flex items-center gap-3">
               <Tooltip label={t('sheet.tip.decrement')} decorative>
@@ -227,7 +232,7 @@ export function ItemDetailModal({
                   type="button"
                   onClick={() => void changeQty(-1)}
                   disabled={readOnly || busy || inventory.qty <= 1}
-                  aria-label="Diminuer la quantité"
+                  aria-label={t('sheet.avoir.detail.decreaseQty')}
                   className={cn(
                     'h-8 w-8 rounded-full border border-white-8 bg-ink/40 font-display text-[16px] text-text transition-colors',
                     'hover:border-gold-dim hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40',
@@ -244,7 +249,7 @@ export function ItemDetailModal({
                   type="button"
                   onClick={() => void changeQty(1)}
                   disabled={readOnly || busy}
-                  aria-label="Augmenter la quantité"
+                  aria-label={t('sheet.avoir.detail.increaseQty')}
                   className={cn(
                     'h-8 w-8 rounded-full border border-white-8 bg-ink/40 font-display text-[16px] text-text transition-colors',
                     'hover:border-gold-dim hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40',
@@ -259,7 +264,7 @@ export function ItemDetailModal({
           {/* Notes */}
           <label className="mt-3 block">
             <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-              Notes
+              {t('sheet.avoir.detail.notes')}
             </span>
             <textarea
               defaultValue={inventory.notes}
@@ -269,7 +274,7 @@ export function ItemDetailModal({
                 }
               }}
               disabled={readOnly}
-              placeholder="Origine, histoire, runes gravées…"
+              placeholder={t('sheet.avoir.detail.notesPlaceholder')}
               rows={2}
               className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2 font-serif text-body-sm text-text placeholder:text-text-tertiary focus:border-gold-dim focus:outline-none disabled:opacity-50"
             />
@@ -287,7 +292,7 @@ export function ItemDetailModal({
                 tooltip={t('sheet.tip.toggleEquip')}
                 className="flex-1"
               >
-                {inventory.equipped ? 'Déséquiper' : 'Équiper'}
+                {inventory.equipped ? t('sheet.avoir.unequip') : t('sheet.avoir.equip')}
               </Button>
             )}
             {requiresAttunement && (
@@ -299,13 +304,13 @@ export function ItemDetailModal({
                 tooltip={t('sheet.tip.toggleAttune')}
                 className="flex-1"
               >
-                {inventory.attuned ? 'Délier' : 'Lier'}
+                {inventory.attuned ? t('sheet.avoir.detail.unlink') : t('sheet.avoir.detail.link')}
               </Button>
             )}
           </div>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={onClose} className="flex-1">
-              Fermer
+              {t('sheet.avoir.close')}
             </Button>
             {confirmRemove ? (
               <Button
@@ -315,7 +320,7 @@ export function ItemDetailModal({
                 disabled={readOnly || busy}
                 className="flex-1"
               >
-                Confirmer le retrait
+                {t('sheet.avoir.detail.confirmRemove')}
               </Button>
             ) : (
               <Button
@@ -326,7 +331,7 @@ export function ItemDetailModal({
                 tooltip={t('sheet.tip.removeItem')}
                 className="flex-1"
               >
-                Retirer
+                {t('sheet.avoir.detail.remove')}
               </Button>
             )}
           </div>

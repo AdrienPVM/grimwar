@@ -23,15 +23,16 @@ interface CustomItemFormProps {
   onCreated: () => Promise<void>;
 }
 
-const CATEGORY_OPTIONS: readonly { value: ItemCategory; label: string }[] = [
-  { value: 'weapon', label: 'Arme' },
-  { value: 'armor', label: 'Armure' },
-  { value: 'shield', label: 'Bouclier' },
-  { value: 'tool', label: 'Outil' },
-  { value: 'pack', label: 'Sac / Kit' },
-  { value: 'gear', label: 'Équipement' },
-  { value: 'mount', label: 'Monture' },
-  { value: 'vehicle', label: 'Véhicule' },
+// Libellés résolus via les clés partagées `item.category.*` (source unique).
+const CATEGORY_OPTIONS: readonly ItemCategory[] = [
+  'weapon',
+  'armor',
+  'shield',
+  'tool',
+  'pack',
+  'gear',
+  'mount',
+  'vehicle',
 ];
 
 /** Slugify simple : minuscules, ASCII, kebab-case, suffixe court random. */
@@ -93,7 +94,10 @@ export function CustomItemForm({
       const parsed = ItemSchema.safeParse(item);
       if (!parsed.success) {
         throw new Error(
-          `Schéma invalide : ${parsed.error.errors.map((e) => e.message).join(', ')}`,
+          t('sheet.avoir.customForm.invalidSchema').replace(
+            '{errors}',
+            parsed.error.errors.map((e) => e.message).join(', '),
+          ),
         );
       }
       const firestore = getDb();
@@ -128,15 +132,15 @@ export function CustomItemForm({
 
       showToast({
         kind: 'crit',
-        title: 'Objet maison créé',
+        title: t('sheet.avoir.customForm.created'),
         sub: name.trim(),
       });
       await onCreated();
     } catch (err) {
       showToast({
         kind: 'fumble',
-        title: 'Création impossible',
-        sub: err instanceof Error ? err.message : 'Erreur inconnue',
+        title: t('sheet.avoir.customForm.failTitle'),
+        sub: err instanceof Error ? err.message : t('sheet.avoir.unknownError'),
         durationMs: 4000,
       });
     } finally {
@@ -149,7 +153,7 @@ export function CustomItemForm({
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <label className="mb-3 block">
           <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            Nom
+            {t('sheet.avoir.customForm.name')}
           </span>
           <input
             autoFocus
@@ -163,16 +167,16 @@ export function CustomItemForm({
 
         <label className="mb-3 block">
           <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            Catégorie
+            {t('sheet.avoir.customForm.category')}
           </span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as ItemCategory)}
             className="w-full rounded-card-sm border border-white-8 bg-bg-2/60 px-3 py-2 font-serif text-body text-text focus:border-gold-dim focus:outline-none"
           >
-            {CATEGORY_OPTIONS.map(({ value, label }) => (
+            {CATEGORY_OPTIONS.map((value) => (
               <option key={value} value={value}>
-                {label}
+                {t(`item.category.${value}`)}
               </option>
             ))}
           </select>
@@ -180,7 +184,7 @@ export function CustomItemForm({
 
         <label className="mb-3 block">
           <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            Poids (kg)
+            {t('sheet.avoir.customForm.weight')}
           </span>
           <input
             type="number"
@@ -194,12 +198,12 @@ export function CustomItemForm({
 
         <label className="block">
           <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            Description (optionnelle)
+            {t('sheet.avoir.customForm.description')}
           </span>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Notes, propriétés, histoire…"
+            placeholder={t('sheet.avoir.customForm.descPlaceholder')}
             rows={3}
             className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2 font-serif text-body-sm text-text placeholder:text-text-tertiary focus:border-gold-dim focus:outline-none"
           />
@@ -208,7 +212,7 @@ export function CustomItemForm({
 
       <footer className="flex gap-2 border-t border-white-8 px-6 py-4">
         <Button variant="secondary" size="sm" onClick={onCancel} className="flex-1">
-          Annuler
+          {t('sheet.avoir.cancel')}
         </Button>
         <Button
           variant="primary"
@@ -217,7 +221,7 @@ export function CustomItemForm({
           disabled={!canSubmit}
           className="flex-1"
         >
-          {busy ? '…' : 'Créer & ajouter'}
+          {busy ? '…' : t('sheet.avoir.customForm.submit')}
         </Button>
       </footer>
     </div>
