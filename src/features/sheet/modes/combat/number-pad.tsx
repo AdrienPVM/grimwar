@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 
 export type NumberPadIntent = 'damage' | 'heal' | 'temp';
 
@@ -55,8 +56,8 @@ export function NumberPad({
     : isTemp
       ? 'border-amethyst/40 text-amethyst'
       : 'border-crimson/40 text-crimson';
-  const title = isHeal ? 'Soigner' : isTemp ? 'PV temporaires' : 'Dégâts';
-  const commitLabel = isHeal ? 'Soigner' : isTemp ? 'Poser' : 'Appliquer';
+  const title = t(`sheet.combat.numberpad.title.${intent}`);
+  const commitLabel = t(`sheet.combat.numberpad.commit.${intent}`);
 
   return (
     <div
@@ -77,7 +78,7 @@ export function NumberPad({
         </h2>
         <div
           className={cn(
-            'mb-4 flex h-[64px] items-center justify-center rounded-card-sm border bg-bg-2/60 font-display text-[40px] font-bold tracking-[-0.03em]',
+            'mb-4 flex h-[64px] items-center justify-center rounded-card-sm border bg-bg-2/60 font-display text-[40px] font-bold tabular-nums tracking-[-0.03em]',
             accentBorder,
           )}
           aria-live="polite"
@@ -98,7 +99,7 @@ export function NumberPad({
         </div>
         <div className="mt-4 flex gap-2">
           <Button variant="secondary" size="sm" onClick={onCancel} className="flex-1">
-            Annuler
+            {t('sheet.combat.numberpad.cancel')}
           </Button>
           {isHeal && (
             <Button
@@ -107,7 +108,7 @@ export function NumberPad({
               onClick={() => onCommit(Math.max(0, maxApplicable))}
               className="flex-1"
             >
-              Plein ({max})
+              {t('sheet.combat.numberpad.full').replace('{max}', String(max))}
             </Button>
           )}
           <Button

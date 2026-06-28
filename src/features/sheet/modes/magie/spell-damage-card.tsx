@@ -41,7 +41,7 @@ export function SpellDamageCard({
       data-testid="spell-damage-card"
     >
       <p className="mb-2 font-title text-[10px] font-bold uppercase tracking-[0.2em] text-crimson">
-        Dégâts
+        {t('sheet.magie.detail.damageTitle')}
       </p>
       <ul className="flex flex-col gap-2">
         {damage.map((entry, i) => (
@@ -83,7 +83,7 @@ function DamageRow({
     <li className="font-serif text-body-sm text-text-secondary">
       <div className="flex flex-wrap items-baseline gap-2">
         <span
-          className="font-display text-[16px] font-bold text-crimson"
+          className="font-display text-[16px] font-bold tabular-nums text-crimson"
           data-testid="spell-damage-formula"
         >
           {resolved.formula}
@@ -99,14 +99,19 @@ function DamageRow({
       </div>
       {showUpcastPreview ? (
         <p className="mt-1 text-[11px] italic text-text-tertiary">
-          Base au niveau {spell.level} : {baseFormula} (
-          {entry.atHigherLevels?.perLevel ?? '—'} par niveau supérieur)
+          {t('sheet.magie.detail.damageBasePreview')
+            .replace('{level}', String(spell.level))
+            .replace('{formula}', baseFormula)
+            .replace('{perLevel}', entry.atHigherLevels?.perLevel ?? '—')}
         </p>
       ) : null}
       {showCantripPreview && entry.cantripScaling ? (
         <p className="mt-1 text-[11px] italic text-text-tertiary">
-          Progression cantrip : {baseFormula} → {entry.cantripScaling.tier5} (L5) →{' '}
-          {entry.cantripScaling.tier11} (L11) → {entry.cantripScaling.tier17} (L17)
+          {t('sheet.magie.detail.damageCantripPreview')
+            .replace('{base}', baseFormula)
+            .replace('{t5}', entry.cantripScaling.tier5)
+            .replace('{t11}', entry.cantripScaling.tier11)
+            .replace('{t17}', entry.cantripScaling.tier17)}
         </p>
       ) : null}
       {entry.condition ? (

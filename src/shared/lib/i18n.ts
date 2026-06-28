@@ -482,6 +482,15 @@ export type StringKey =
   | 'sheet.combat.hp.band.wounded'
   | 'sheet.combat.hp.band.critical'
   | 'sheet.combat.hp.band.dead'
+  // Pavé numérique de saisie de montant (dégâts / soin / PV temporaires)
+  | 'sheet.combat.numberpad.title.damage'
+  | 'sheet.combat.numberpad.title.heal'
+  | 'sheet.combat.numberpad.title.temp'
+  | 'sheet.combat.numberpad.commit.damage'
+  | 'sheet.combat.numberpad.commit.heal'
+  | 'sheet.combat.numberpad.commit.temp'
+  | 'sheet.combat.numberpad.cancel'
+  | 'sheet.combat.numberpad.full'
   | 'sheet.combat.attacks.cardTitle'
   | 'sheet.combat.attacks.emptyPre'
   | 'sheet.combat.attacks.emptyPost'
@@ -694,6 +703,17 @@ export type StringKey =
   | 'sheet.magie.detail.attackShort'
   | 'sheet.magie.detail.attackLabel'
   | 'sheet.magie.detail.cast'
+  // Section « Dégâts » de la modale détail — titre + aperçus de progression
+  | 'sheet.magie.detail.damageTitle'
+  | 'sheet.magie.detail.damageBasePreview'
+  | 'sheet.magie.detail.damageCantripPreview'
+  // Barre de stats d'incantation (une ligne par classe lanceuse)
+  | 'sheet.magie.stats.classLevelShort'
+  | 'sheet.magie.stats.abilityLabel'
+  | 'sheet.magie.stats.dcLabel'
+  | 'sheet.magie.stats.attackLabel'
+  | 'sheet.magie.stats.preparedLabel'
+  | 'sheet.magie.stats.preparedValue'
   // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
@@ -2873,6 +2893,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.hp.band.wounded': 'Blessé',
     'sheet.combat.hp.band.critical': 'Critique',
     'sheet.combat.hp.band.dead': 'Inconscient',
+    'sheet.combat.numberpad.title.damage': 'Dégâts',
+    'sheet.combat.numberpad.title.heal': 'Soigner',
+    'sheet.combat.numberpad.title.temp': 'PV temporaires',
+    'sheet.combat.numberpad.commit.damage': 'Appliquer',
+    'sheet.combat.numberpad.commit.heal': 'Soigner',
+    'sheet.combat.numberpad.commit.temp': 'Poser',
+    'sheet.combat.numberpad.cancel': 'Annuler',
+    'sheet.combat.numberpad.full': 'Plein ({max})',
     'sheet.combat.attacks.cardTitle': 'Attaques',
     'sheet.combat.attacks.emptyPre': 'Aucune arme équipée. Va dans ',
     'sheet.combat.attacks.emptyPost': ' pour équiper une arme.',
@@ -3103,6 +3131,17 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.detail.attackShort': 'Jet d’att.',
     'sheet.magie.detail.attackLabel': 'Attaque · {spell}',
     'sheet.magie.detail.cast': 'Lancer',
+    'sheet.magie.detail.damageTitle': 'Dégâts',
+    'sheet.magie.detail.damageBasePreview':
+      'Base au niveau {level} : {formula} ({perLevel} par niveau supérieur)',
+    'sheet.magie.detail.damageCantripPreview':
+      'Progression sort mineur : {base} → {t5} (niv. 5) → {t11} (niv. 11) → {t17} (niv. 17)',
+    'sheet.magie.stats.classLevelShort': 'Niv. {n}',
+    'sheet.magie.stats.abilityLabel': 'Caract.',
+    'sheet.magie.stats.dcLabel': 'DD',
+    'sheet.magie.stats.attackLabel': '+ attaque',
+    'sheet.magie.stats.preparedLabel': 'Préparation :',
+    'sheet.magie.stats.preparedValue': '{n} sorts',
     // Plan D1 — modes de résolution des dégâts de sort (modale détail)
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
@@ -5744,6 +5783,14 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.hp.band.wounded': 'Wounded',
     'sheet.combat.hp.band.critical': 'Critical',
     'sheet.combat.hp.band.dead': 'Unconscious',
+    'sheet.combat.numberpad.title.damage': 'Damage',
+    'sheet.combat.numberpad.title.heal': 'Heal',
+    'sheet.combat.numberpad.title.temp': 'Temporary HP',
+    'sheet.combat.numberpad.commit.damage': 'Apply',
+    'sheet.combat.numberpad.commit.heal': 'Heal',
+    'sheet.combat.numberpad.commit.temp': 'Set',
+    'sheet.combat.numberpad.cancel': 'Cancel',
+    'sheet.combat.numberpad.full': 'Full ({max})',
     'sheet.combat.attacks.cardTitle': 'Attacks',
     'sheet.combat.attacks.emptyPre': 'No weapon equipped. Go to ',
     'sheet.combat.attacks.emptyPost': ' to equip a weapon.',
@@ -5954,6 +6001,17 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.detail.attackShort': 'Atk roll',
     'sheet.magie.detail.attackLabel': 'Attack · {spell}',
     'sheet.magie.detail.cast': 'Cast',
+    'sheet.magie.detail.damageTitle': 'Damage',
+    'sheet.magie.detail.damageBasePreview':
+      'Base at level {level}: {formula} ({perLevel} per higher level)',
+    'sheet.magie.detail.damageCantripPreview':
+      'Cantrip scaling: {base} → {t5} (lvl 5) → {t11} (lvl 11) → {t17} (lvl 17)',
+    'sheet.magie.stats.classLevelShort': 'Lvl {n}',
+    'sheet.magie.stats.abilityLabel': 'Ability',
+    'sheet.magie.stats.dcLabel': 'DC',
+    'sheet.magie.stats.attackLabel': '+ attack',
+    'sheet.magie.stats.preparedLabel': 'Preparation:',
+    'sheet.magie.stats.preparedValue': '{n} spells',
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',

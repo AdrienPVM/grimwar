@@ -46,17 +46,20 @@ export function SpellStatsBar({
                 {cls.name}
               </span>
               <span className="font-serif text-[12px] italic text-text-tertiary">
-                Niv. {cls.level}
+                {t('sheet.magie.stats.classLevelShort').replace('{n}', String(cls.level))}
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2 text-center">
-              <Stat label="Caract." value={abilityLabel} small />
-              <Stat label="DD" value={String(dc)} />
-              <Stat label="+ attaque" value={signed(attack)} />
+              <Stat label={t('sheet.magie.stats.abilityLabel')} value={abilityLabel} small />
+              <Stat label={t('sheet.magie.stats.dcLabel')} value={String(dc)} />
+              <Stat label={t('sheet.magie.stats.attackLabel')} value={signed(attack)} />
             </div>
             {prepared !== null && (
               <p className="mt-2 text-center font-ui text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                Préparation : <span className="text-gold-bright">{prepared} sorts</span>
+                {t('sheet.magie.stats.preparedLabel')}{' '}
+                <span className="text-gold-bright">
+                  {t('sheet.magie.stats.preparedValue').replace('{n}', String(prepared))}
+                </span>
               </p>
             )}
           </div>
@@ -81,8 +84,8 @@ function Stat({ label, value, small }: StatProps): JSX.Element {
       <div
         className={
           small
-            ? 'font-display text-[18px] font-black tracking-[-0.02em] text-gold-bright'
-            : 'font-display text-[26px] font-black tracking-[-0.03em] text-gold-bright [text-shadow:0_0_14px_rgba(220,184,108,0.4)]'
+            ? 'font-display text-[18px] font-black tabular-nums tracking-[-0.02em] text-gold-bright'
+            : 'font-display text-[26px] font-black tabular-nums tracking-[-0.03em] text-gold-bright [text-shadow:0_0_14px_rgba(220,184,108,0.4)]'
         }
       >
         {value}

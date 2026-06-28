@@ -241,7 +241,7 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
           >
             <span
               className={cn(
-                'font-display text-[clamp(36px,9vw,52px)] font-black leading-none tracking-[-0.03em]',
+                'font-display text-[clamp(36px,9vw,52px)] font-black leading-none tabular-nums tracking-[-0.03em]',
                 // 0 PV : ton parchemin éteint (le doré « plein de vie » jurerait
                 // avec l'inconscience). Sinon doré vif avec halo léger.
                 band === 'dead'
@@ -251,7 +251,7 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
             >
               {hp.current}
             </span>
-            <span className="font-serif text-[18px] italic text-text-tertiary">/ {hp.max}</span>
+            <span className="font-serif text-[18px] italic tabular-nums text-text-tertiary">/ {hp.max}</span>
           </div>
 
           {/* Contrôles compacts. */}

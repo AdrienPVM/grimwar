@@ -104,7 +104,7 @@ function SlotRow({
           />
         ))}
       </div>
-      <span className="font-display text-[12px] font-bold tracking-[-0.02em] text-text-secondary">
+      <span className="font-display text-[12px] font-bold tabular-nums tracking-[-0.02em] text-text-secondary">
         {current}/{max}
       </span>
     </div>
