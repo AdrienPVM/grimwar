@@ -345,10 +345,10 @@ export function SpellDetailModal({
 
       <div className="flex-1 overflow-y-auto px-6 py-4">
           <dl className="mb-4 grid grid-cols-2 gap-3 font-serif text-body-sm">
-            <Meta label="Temps">{localize(spell.castingTime)}</Meta>
-            <Meta label="Portée">{localize(spell.range)}</Meta>
-            <Meta label="Compos.">{componentsLabel(spell)}</Meta>
-            <Meta label="Durée">{localize(spell.duration)}</Meta>
+            <Meta label={t('spell.metaShort.castingTime')}>{localize(spell.castingTime)}</Meta>
+            <Meta label={t('spell.meta.range')}>{localize(spell.range)}</Meta>
+            <Meta label={t('spell.metaShort.components')}>{componentsLabel(spell)}</Meta>
+            <Meta label={t('spell.meta.duration')}>{localize(spell.duration)}</Meta>
           </dl>
 
           <p className="whitespace-pre-line font-serif text-body text-text-secondary">

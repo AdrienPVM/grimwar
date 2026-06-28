@@ -331,6 +331,8 @@ export type StringKey =
   | 'spell.meta.duration'
   | 'spell.meta.components'
   | 'spell.meta.atHigherLevels'
+  | 'spell.metaShort.castingTime'
+  | 'spell.metaShort.components'
   | 'spell.flag.concentration'
   | 'spell.flag.ritual'
   // Composantes développées + gloses pour novices (UAT post-plan 05)
@@ -2406,6 +2408,9 @@ const STRINGS: Record<Locale, Dict> = {
     'spell.meta.duration': 'Durée',
     'spell.meta.components': 'Composantes',
     'spell.meta.atHigherLevels': 'À niveau supérieur',
+    // Variantes courtes pour la grille compacte de la fiche (mobile).
+    'spell.metaShort.castingTime': 'Temps',
+    'spell.metaShort.components': 'Compos.',
     'spell.flag.concentration': 'Concentration',
     'spell.flag.ritual': 'Rituel',
     // Gloses débutant — expliquent V/S/M et les drapeaux sans jargon D&D
@@ -4970,6 +4975,8 @@ const STRINGS: Record<Locale, Dict> = {
     'spell.meta.duration': 'Duration',
     'spell.meta.components': 'Components',
     'spell.meta.atHigherLevels': 'At higher levels',
+    'spell.metaShort.castingTime': 'Cast.',
+    'spell.metaShort.components': 'Comp.',
     'spell.flag.concentration': 'Concentration',
     'spell.flag.ritual': 'Ritual',
     'spell.component.verbal.label': 'Verbal',
