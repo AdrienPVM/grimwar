@@ -126,7 +126,7 @@ function SlotDot({ filled, readOnly, onConsume, onRestore }: SlotDotProps): JSX.
     <button
       type="button"
       disabled={readOnly}
-      aria-label={filled ? 'Consommer un emplacement (long-press pour restaurer)' : 'Emplacement consommé (long-press pour restaurer)'}
+      aria-label={filled ? 'Consommer un emplacement (appui long pour restaurer)' : 'Emplacement consommé (appui long pour restaurer)'}
       className={cn(
         'h-4 w-4 rounded-full border-[1.5px] transition-all',
         filled

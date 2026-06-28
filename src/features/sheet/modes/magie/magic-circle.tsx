@@ -294,8 +294,8 @@ function SlotDot({
       disabled={disabled}
       aria-label={
         filled
-          ? `Consommer un emplacement de niveau ${level} (long-press pour restaurer)`
-          : `Restaurer un emplacement de niveau ${level} (long-press)`
+          ? `Consommer un emplacement de niveau ${level} (appui long pour restaurer)`
+          : `Restaurer un emplacement de niveau ${level} (appui long)`
       }
       className={cn(
         'absolute z-[5] -translate-x-1/2 -translate-y-1/2 transition-all',

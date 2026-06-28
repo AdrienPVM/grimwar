@@ -183,7 +183,7 @@ function HexPoint({ layout, score, disabled, onTap, onLongPress }: HexPointProps
     <button
       type="button"
       disabled={disabled}
-      aria-label={`Test de ${layout.ability.toUpperCase()} (long-press pour avantage/désavantage)`}
+      aria-label={`Test de ${layout.ability.toUpperCase()} (appui long pour avantage/désavantage)`}
       className={cn(
         'absolute z-[5] flex h-[88px] w-[88px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-soft bg-bg-2/70 backdrop-blur-md transition-all',
         'hover:border-gold-bright hover:bg-gold-bright/10 active:scale-95',

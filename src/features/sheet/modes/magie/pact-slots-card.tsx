@@ -175,8 +175,8 @@ function PactSlotDot({
         disabled={disabled}
         aria-label={
           filled
-            ? `Consommer un emplacement de pacte de niveau ${slotLevel} (long-press pour restaurer)`
-            : `Restaurer un emplacement de pacte de niveau ${slotLevel} (long-press)`
+            ? `Consommer un emplacement de pacte de niveau ${slotLevel} (appui long pour restaurer)`
+            : `Restaurer un emplacement de pacte de niveau ${slotLevel} (appui long)`
         }
         className={cn(
           'inline-flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition-all',
