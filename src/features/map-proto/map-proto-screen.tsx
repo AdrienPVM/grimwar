@@ -585,17 +585,17 @@ export function MapProtoScreen(): JSX.Element {
       <header className="border-b border-gold-dim/30 bg-bg-elev px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-title text-lg font-bold uppercase tracking-[0.12em] text-gold-bright">
-            Prototype carte
+            {t('map.proto.title')}
           </h1>
           <span className="rounded-pill border border-gold-dim/40 bg-gold/10 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
-            PROTOTYPE — Not production
+            {t('map.badge.prototype')}
           </span>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <label
               htmlFor="map-bg-upload"
               className="cursor-pointer rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Importer un fond
+              {t('map.proto.importBg')}
             </label>
             <input
               id="map-bg-upload"
@@ -609,24 +609,24 @@ export function MapProtoScreen(): JSX.Element {
               onClick={() => setShowGrid((v) => !v)}
               className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              {showGrid ? 'Masquer grille' : 'Afficher grille'}
+              {showGrid ? t('map.proto.hideGrid') : t('map.proto.showGrid')}
             </button>
             <button
               type="button"
               onClick={handleReset}
               className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Réinitialiser
+              {t('map.proto.reset')}
             </button>
             <span className="font-mono text-[11px] text-text-tertiary">
-              zoom {Math.round(zoom * 100)} %
+              {t('map.proto.zoomLabel')} {Math.round(zoom * 100)} %
             </span>
           </div>
         </div>
         {/* Bandeau outils fog (CHANTIER E). */}
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
           <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-            Fog of war
+            {t('map.proto.fogSection')}
           </span>
           <button
             type="button"
@@ -634,7 +634,7 @@ export function MapProtoScreen(): JSX.Element {
             aria-pressed={fogEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
           >
-            {fogEnabled ? 'Fog activé' : 'Fog désactivé'}
+            {fogEnabled ? t('map.proto.fogOn') : t('map.proto.fogOff')}
           </button>
           <button
             type="button"
@@ -643,7 +643,7 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!fogEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
           >
-            {viewAsPlayer ? 'Vue joueur' : 'Vue MJ'}
+            {viewAsPlayer ? t('map.proto.viewPlayer') : t('map.proto.viewDm')}
           </button>
           <button
             type="button"
@@ -652,7 +652,7 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!fogEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
           >
-            Pinceau révéler
+            {t('map.proto.brushReveal')}
           </button>
           <button
             type="button"
@@ -661,7 +661,7 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!fogEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
           >
-            Pinceau gomme
+            {t('map.proto.brushMask')}
           </button>
           <button
             type="button"
@@ -669,7 +669,7 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!fogEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Tout révéler
+            {t('map.proto.revealAll')}
           </button>
           <button
             type="button"
@@ -677,13 +677,13 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!fogEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Tout remasquer
+            {t('map.proto.maskAll')}
           </button>
         </div>
         {/* Bandeau outils lumière dynamique (CHANTIER F). */}
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
           <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-            Lumière
+            {t('map.proto.lightSection')}
           </span>
           <button
             type="button"
@@ -691,7 +691,7 @@ export function MapProtoScreen(): JSX.Element {
             aria-pressed={lightingEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
           >
-            {lightingEnabled ? 'Lumière activée' : 'Lumière désactivée'}
+            {lightingEnabled ? t('map.proto.lightOn') : t('map.proto.lightOff')}
           </button>
           <button
             type="button"
@@ -700,21 +700,21 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!lightingEnabled}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
           >
-            Placer torche
+            {t('map.proto.placeTorch')}
           </button>
           {tokens
-            .filter((t) => t.kind === 'pj')
-            .map((t) => (
+            .filter((token) => token.kind === 'pj')
+            .map((token) => (
               <button
-                key={`torch-${t.id}`}
+                key={`torch-${token.id}`}
                 type="button"
-                onClick={() => handleToggleTokenTorch(t.id)}
-                aria-pressed={tokenHasTorch(t.id)}
+                onClick={() => handleToggleTokenTorch(token.id)}
+                aria-pressed={tokenHasTorch(token.id)}
                 disabled={!lightingEnabled}
-                data-testid={`toggle-torch-${t.id}`}
+                data-testid={`toggle-torch-${token.id}`}
                 className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30 disabled:opacity-40"
               >
-                Torche {t.label}
+                {t('map.proto.tokenTorchPrefix')} {token.label}
               </button>
             ))}
           <button
@@ -723,13 +723,13 @@ export function MapProtoScreen(): JSX.Element {
             disabled={!lightingEnabled || lights.length === 0}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Effacer lumières
+            {t('map.proto.clearLights')}
           </button>
         </div>
         {/* Bandeau outils AoE (CHANTIER G). */}
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
           <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-            AoE
+            {t('map.proto.aoeSection')}
           </span>
           {(['sphere', 'cone', 'line', 'cube'] as const).map((shape) => (
             <Tooltip key={`aoe-shape-${shape}`} label={t('map.tip.placeAoe')} decorative>
@@ -740,13 +740,7 @@ export function MapProtoScreen(): JSX.Element {
                 data-testid={`aoe-shape-${shape}`}
                 className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
               >
-                {shape === 'sphere'
-                  ? 'Sphère'
-                  : shape === 'cone'
-                    ? 'Cône'
-                    : shape === 'line'
-                      ? 'Ligne'
-                      : 'Cube'}
+                {t(`map.aoe.${shape}`)}
               </button>
             </Tooltip>
           ))}
@@ -778,13 +772,13 @@ export function MapProtoScreen(): JSX.Element {
             disabled={aoeTemplates.length === 0}
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Effacer AoE
+            {t('map.proto.clearAoe')}
           </button>
         </div>
         {/* Bandeau VTT QoL prototype (CHANTIER H — PROTOTYPE, pending Adrien). */}
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
           <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-            VTT (prototype)
+            {t('map.proto.vttSection')}
           </span>
           <button
             type="button"
@@ -793,7 +787,8 @@ export function MapProtoScreen(): JSX.Element {
             data-testid="toggle-ruler"
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
           >
-            Règle {rulerMode && ruler.anchors.length > 0 ? `(${formatMeters(rulerLengthFeet(ruler))})` : ''}
+            {t('map.proto.ruler')}{' '}
+            {rulerMode && ruler.anchors.length > 0 ? `(${formatMeters(rulerLengthFeet(ruler))})` : ''}
           </button>
           {rulerMode && ruler.anchors.length > 0 && (
             <button
@@ -801,7 +796,7 @@ export function MapProtoScreen(): JSX.Element {
               onClick={handleClearRuler}
               className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Effacer règle
+              {t('map.proto.clearRuler')}
             </button>
           )}
           <button
@@ -811,7 +806,7 @@ export function MapProtoScreen(): JSX.Element {
             data-testid="toggle-grid-snap"
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
           >
-            Aimant grille {gridSnapEnabled ? 'on' : 'off'}
+            {t('map.proto.gridSnap')} {gridSnapEnabled ? t('map.proto.on') : t('map.proto.off')}
           </button>
           <button
             type="button"
@@ -820,18 +815,25 @@ export function MapProtoScreen(): JSX.Element {
             data-testid="toggle-initiative-panel"
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold-bright/30"
           >
-            Initiative {initiativePanelOpen ? '▲' : '▼'}
+            {t('map.proto.initiative')} {initiativePanelOpen ? '▲' : '▼'}
           </button>
         </div>
       </header>
       <main className="flex-1 p-4">
         <p className="mb-3 font-serif text-[12px] text-text-tertiary">
-          Importez une image de fond, faites glisser les tokens à la souris (ou au doigt sur tactile), molette pour zoomer, drag sur le fond pour déplacer la vue.
+          {t('map.proto.intro')}
           {fogEnabled ? (
-            <> Le brouillard est {viewAsPlayer ? 'opaque (vue joueur)' : 'translucide (vue MJ)'}, les PJ révèlent automatiquement autour d&apos;eux ; activez un pinceau pour peindre une zone manuellement.</>
+            <>
+              {t('map.proto.fogIntroPrefix')}
+              {viewAsPlayer
+                ? t('map.proto.fogStateOpaque')
+                : t('map.proto.fogStateTranslucent')}
+              {t('map.proto.fogIntroSuffix')}
+            </>
           ) : null}
           <br />
-          <strong>Aucune persistance</strong> — un rafraîchissement réinitialise tout.
+          <strong>{t('map.proto.noPersistStrong')}</strong>
+          {t('map.proto.noPersistRest')}
         </p>
         <div
           className="relative overflow-hidden rounded-lg border border-gold-dim/30 bg-black/40"
@@ -1017,7 +1019,7 @@ export function MapProtoScreen(): JSX.Element {
           >
             <header className="mb-2 flex flex-wrap items-center gap-2">
               <h2 className="font-title text-[12px] uppercase tracking-[0.16em] text-gold-bright">
-                Initiative
+                {t('map.proto.initiative')}
               </h2>
               <button
                 type="button"
@@ -1025,7 +1027,7 @@ export function MapProtoScreen(): JSX.Element {
                 data-testid="initiative-seed"
                 className="rounded-pill border border-gold-dim/40 px-2.5 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
               >
-                Seed depuis tokens
+                {t('map.proto.initSeed')}
               </button>
               <button
                 type="button"
@@ -1034,7 +1036,7 @@ export function MapProtoScreen(): JSX.Element {
                 data-testid="initiative-next-turn"
                 className="rounded-pill border border-gold-dim/40 px-2.5 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
               >
-                Tour suivant ▶
+                {t('map.proto.initNextTurn')} ▶
               </button>
               <button
                 type="button"
@@ -1042,12 +1044,12 @@ export function MapProtoScreen(): JSX.Element {
                 disabled={initiative.entries.length === 0}
                 className="rounded-pill border border-gold-dim/40 px-2.5 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
               >
-                Réinit
+                {t('map.proto.initReset')}
               </button>
             </header>
             {initiative.entries.length === 0 ? (
               <p className="font-serif text-[12px] text-text-tertiary">
-                Aucune entrée. Cliquez « Seed depuis tokens » pour démarrer.
+                {t('map.proto.initEmpty')}
               </p>
             ) : (
               <ol className="space-y-1.5">
@@ -1066,7 +1068,7 @@ export function MapProtoScreen(): JSX.Element {
                       <span className="w-6 text-text-tertiary">{e.initiative}</span>
                       <span className="flex-1">{e.name}</span>
                       <label className="flex items-center gap-1">
-                        <span className="text-text-tertiary">PV</span>
+                        <span className="text-text-tertiary">{t('map.proto.hp')}</span>
                         <input
                           type="number"
                           value={e.hp}
@@ -1085,7 +1087,7 @@ export function MapProtoScreen(): JSX.Element {
                         <button
                           type="button"
                           onClick={() => handleRemoveInitEntry(e.id)}
-                          aria-label={`Retirer ${e.name}`}
+                          aria-label={`${t('map.proto.removeEntryPrefix')} ${e.name}`}
                           className="rounded-pill border border-gold-dim/30 px-1.5 py-0.5 text-[10px] text-text-tertiary transition-colors duration-200 ease-base hover:bg-gold/5"
                         >
                           ✕

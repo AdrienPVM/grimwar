@@ -27,7 +27,7 @@ test.describe('Map proto — smoke', () => {
 
     await expect(page.getByText('Prototype carte')).toBeVisible();
     await expect(
-      page.getByText('PROTOTYPE — Not production'),
+      page.getByText('Prototype — hors production'),
     ).toBeVisible();
 
     // Les 3 tokens initiaux sont rendus.

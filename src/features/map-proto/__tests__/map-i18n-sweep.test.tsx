@@ -56,6 +56,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
 }));
 
 import { MapImportScreen } from '../map-import-screen';
+import { MapProtoScreen } from '../map-proto-screen';
 import { MapsCloudScreen } from '../maps-cloud-screen';
 import { MapTvScreen } from '../map-tv-screen';
 import { MonsterPickerModal } from '../monster-picker-modal';
@@ -200,5 +201,42 @@ describe('MonsterPickerModal — i18n', () => {
     render(<MonsterPickerModal open onClose={() => {}} onPick={() => {}} />);
     expect(screen.getByText('Add from the bestiary')).toBeInTheDocument();
     expect(screen.getByText('Your bestiary is empty.')).toBeInTheDocument();
+  });
+});
+
+describe('MapProtoScreen — i18n', () => {
+  // Le prototype carte autonome (/map-proto) est local-only : aucun mock requis.
+  it('FR : bandeaux outils + badge localisés', () => {
+    render(<MapProtoScreen />);
+    expect(screen.getByText('Prototype carte')).toBeInTheDocument();
+    expect(screen.getByText('Importer un fond')).toBeInTheDocument();
+    expect(screen.getByText('Réinitialiser')).toBeInTheDocument();
+    // Grille affichée par défaut → le bouton propose de la masquer.
+    expect(screen.getByText('Masquer grille')).toBeInTheDocument();
+    expect(screen.getByText('Vue MJ')).toBeInTheDocument();
+    expect(screen.getByText('Tout révéler')).toBeInTheDocument();
+    expect(screen.getByText('Lumière activée')).toBeInTheDocument();
+    expect(screen.getByText('Placer torche')).toBeInTheDocument();
+    expect(screen.getByText('Effacer AoE')).toBeInTheDocument();
+    expect(screen.getByText('Prototype — hors production')).toBeInTheDocument();
+  });
+
+  it('EN : aucune fuite FR', () => {
+    useLocaleStore.setState({ locale: 'en' });
+    render(<MapProtoScreen />);
+    expect(screen.getByText('Map prototype')).toBeInTheDocument();
+    expect(screen.getByText('Import a background')).toBeInTheDocument();
+    expect(screen.getByText('Reset')).toBeInTheDocument();
+    expect(screen.getByText('Hide grid')).toBeInTheDocument();
+    expect(screen.getByText('GM view')).toBeInTheDocument();
+    expect(screen.getByText('Reveal all')).toBeInTheDocument();
+    expect(screen.getByText('Light on')).toBeInTheDocument();
+    expect(screen.getByText('Place torch')).toBeInTheDocument();
+    expect(screen.getByText('Clear AoE')).toBeInTheDocument();
+    expect(screen.getByText('Prototype — not production')).toBeInTheDocument();
+    // Aucune chaîne FR ne doit fuiter en EN.
+    expect(screen.queryByText('Importer un fond')).not.toBeInTheDocument();
+    expect(screen.queryByText('Réinitialiser')).not.toBeInTheDocument();
+    expect(screen.queryByText('Tout révéler')).not.toBeInTheDocument();
   });
 });

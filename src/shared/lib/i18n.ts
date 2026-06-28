@@ -2443,6 +2443,51 @@ export type StringKey =
   | 'map.aoe.cone'
   | 'map.aoe.line'
   | 'map.aoe.cube'
+  // Prototype carte autonome (/map-proto). Anglicismes FR (Fog/AoE/tokens/Seed)
+  // préservés tels quels — décision terminologique réservée à Adrien.
+  | 'map.proto.title'
+  | 'map.proto.importBg'
+  | 'map.proto.hideGrid'
+  | 'map.proto.showGrid'
+  | 'map.proto.reset'
+  | 'map.proto.zoomLabel'
+  | 'map.proto.fogSection'
+  | 'map.proto.fogOn'
+  | 'map.proto.fogOff'
+  | 'map.proto.viewPlayer'
+  | 'map.proto.viewDm'
+  | 'map.proto.brushReveal'
+  | 'map.proto.brushMask'
+  | 'map.proto.revealAll'
+  | 'map.proto.maskAll'
+  | 'map.proto.lightSection'
+  | 'map.proto.lightOn'
+  | 'map.proto.lightOff'
+  | 'map.proto.placeTorch'
+  | 'map.proto.tokenTorchPrefix'
+  | 'map.proto.clearLights'
+  | 'map.proto.aoeSection'
+  | 'map.proto.clearAoe'
+  | 'map.proto.vttSection'
+  | 'map.proto.ruler'
+  | 'map.proto.clearRuler'
+  | 'map.proto.gridSnap'
+  | 'map.proto.on'
+  | 'map.proto.off'
+  | 'map.proto.initiative'
+  | 'map.proto.intro'
+  | 'map.proto.fogIntroPrefix'
+  | 'map.proto.fogStateOpaque'
+  | 'map.proto.fogStateTranslucent'
+  | 'map.proto.fogIntroSuffix'
+  | 'map.proto.noPersistStrong'
+  | 'map.proto.noPersistRest'
+  | 'map.proto.initSeed'
+  | 'map.proto.initNextTurn'
+  | 'map.proto.initReset'
+  | 'map.proto.initEmpty'
+  | 'map.proto.hp'
+  | 'map.proto.removeEntryPrefix'
   // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
   | 'wizard.tip.rollAbilities'
   | 'wizard.tip.autofillAbilities'
@@ -5526,6 +5571,53 @@ const STRINGS: Record<Locale, Dict> = {
     'map.aoe.cone': 'Cône',
     'map.aoe.line': 'Ligne',
     'map.aoe.cube': 'Cube',
+    // Prototype carte autonome (/map-proto) — FR conservé à l'identique
+    // (anglicismes Fog/AoE/tokens/Seed/drag intacts, terminologie = Adrien).
+    'map.proto.title': 'Prototype carte',
+    'map.proto.importBg': 'Importer un fond',
+    'map.proto.hideGrid': 'Masquer grille',
+    'map.proto.showGrid': 'Afficher grille',
+    'map.proto.reset': 'Réinitialiser',
+    'map.proto.zoomLabel': 'zoom',
+    'map.proto.fogSection': 'Fog of war',
+    'map.proto.fogOn': 'Fog activé',
+    'map.proto.fogOff': 'Fog désactivé',
+    'map.proto.viewPlayer': 'Vue joueur',
+    'map.proto.viewDm': 'Vue MJ',
+    'map.proto.brushReveal': 'Pinceau révéler',
+    'map.proto.brushMask': 'Pinceau gomme',
+    'map.proto.revealAll': 'Tout révéler',
+    'map.proto.maskAll': 'Tout remasquer',
+    'map.proto.lightSection': 'Lumière',
+    'map.proto.lightOn': 'Lumière activée',
+    'map.proto.lightOff': 'Lumière désactivée',
+    'map.proto.placeTorch': 'Placer torche',
+    'map.proto.tokenTorchPrefix': 'Torche',
+    'map.proto.clearLights': 'Effacer lumières',
+    'map.proto.aoeSection': 'AoE',
+    'map.proto.clearAoe': 'Effacer AoE',
+    'map.proto.vttSection': 'VTT (prototype)',
+    'map.proto.ruler': 'Règle',
+    'map.proto.clearRuler': 'Effacer règle',
+    'map.proto.gridSnap': 'Aimant grille',
+    'map.proto.on': 'on',
+    'map.proto.off': 'off',
+    'map.proto.initiative': 'Initiative',
+    'map.proto.intro':
+      'Importez une image de fond, faites glisser les tokens à la souris (ou au doigt sur tactile), molette pour zoomer, drag sur le fond pour déplacer la vue.',
+    'map.proto.fogIntroPrefix': ' Le brouillard est ',
+    'map.proto.fogStateOpaque': 'opaque (vue joueur)',
+    'map.proto.fogStateTranslucent': 'translucide (vue MJ)',
+    'map.proto.fogIntroSuffix':
+      ', les PJ révèlent automatiquement autour d’eux ; activez un pinceau pour peindre une zone manuellement.',
+    'map.proto.noPersistStrong': 'Aucune persistance',
+    'map.proto.noPersistRest': ' — un rafraîchissement réinitialise tout.',
+    'map.proto.initSeed': 'Seed depuis tokens',
+    'map.proto.initNextTurn': 'Tour suivant',
+    'map.proto.initReset': 'Réinit',
+    'map.proto.initEmpty': 'Aucune entrée. Cliquez « Seed depuis tokens » pour démarrer.',
+    'map.proto.hp': 'PV',
+    'map.proto.removeEntryPrefix': 'Retirer',
     // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
     'wizard.tip.rollAbilities': 'Lance les dés à votre place pour générer les six valeurs.',
     'wizard.tip.autofillAbilities': 'Remplit les caractéristiques recommandées pour votre classe.',
@@ -8432,6 +8524,52 @@ const STRINGS: Record<Locale, Dict> = {
     'map.aoe.cone': 'Cone',
     'map.aoe.line': 'Line',
     'map.aoe.cube': 'Cube',
+    // Standalone map prototype (/map-proto)
+    'map.proto.title': 'Map prototype',
+    'map.proto.importBg': 'Import a background',
+    'map.proto.hideGrid': 'Hide grid',
+    'map.proto.showGrid': 'Show grid',
+    'map.proto.reset': 'Reset',
+    'map.proto.zoomLabel': 'zoom',
+    'map.proto.fogSection': 'Fog of war',
+    'map.proto.fogOn': 'Fog on',
+    'map.proto.fogOff': 'Fog off',
+    'map.proto.viewPlayer': 'Player view',
+    'map.proto.viewDm': 'GM view',
+    'map.proto.brushReveal': 'Reveal brush',
+    'map.proto.brushMask': 'Eraser brush',
+    'map.proto.revealAll': 'Reveal all',
+    'map.proto.maskAll': 'Mask all',
+    'map.proto.lightSection': 'Light',
+    'map.proto.lightOn': 'Light on',
+    'map.proto.lightOff': 'Light off',
+    'map.proto.placeTorch': 'Place torch',
+    'map.proto.tokenTorchPrefix': 'Torch',
+    'map.proto.clearLights': 'Clear lights',
+    'map.proto.aoeSection': 'AoE',
+    'map.proto.clearAoe': 'Clear AoE',
+    'map.proto.vttSection': 'VTT (prototype)',
+    'map.proto.ruler': 'Ruler',
+    'map.proto.clearRuler': 'Clear ruler',
+    'map.proto.gridSnap': 'Grid magnet',
+    'map.proto.on': 'on',
+    'map.proto.off': 'off',
+    'map.proto.initiative': 'Initiative',
+    'map.proto.intro':
+      'Import a background image, drag the tokens with the mouse (or finger on touch), wheel to zoom, drag the background to pan the view.',
+    'map.proto.fogIntroPrefix': ' The fog is ',
+    'map.proto.fogStateOpaque': 'opaque (player view)',
+    'map.proto.fogStateTranslucent': 'translucent (GM view)',
+    'map.proto.fogIntroSuffix':
+      ', PCs automatically reveal around themselves; enable a brush to paint an area manually.',
+    'map.proto.noPersistStrong': 'No persistence',
+    'map.proto.noPersistRest': ' — refreshing resets everything.',
+    'map.proto.initSeed': 'Seed from tokens',
+    'map.proto.initNextTurn': 'Next turn',
+    'map.proto.initReset': 'Reset',
+    'map.proto.initEmpty': 'No entries. Click “Seed from tokens” to start.',
+    'map.proto.hp': 'HP',
+    'map.proto.removeEntryPrefix': 'Remove',
     // Explicit tooltips — wizard + level-up
     'wizard.tip.rollAbilities': 'Rolls the dice for you to generate the six scores.',
     'wizard.tip.autofillAbilities': 'Fills in the recommended ability scores for your class.',
