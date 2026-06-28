@@ -28,15 +28,6 @@ import type { AbilityCode } from '@/shared/types/character';
 import { applyReferenceAbilities } from '../reference-builds/builds';
 import { StepIntro } from '../help/help-panel';
 
-const ABILITY_LABEL: Record<AbilityCode, string> = {
-  for: 'Force',
-  dex: 'Dextérité',
-  con: 'Constitution',
-  int: 'Intelligence',
-  sag: 'Sagesse',
-  cha: 'Charisme',
-};
-
 /**
  * Affichage du détail d'un jet 4d6 keep-3 : « 6 5 4 [2] = 15 » avec le dé
  * éliminé entre crochets et grisé. Pure helper rendu sous le NumberInput.
@@ -50,7 +41,7 @@ function RolledBreakdown({ result }: { result: Rolled4d6Result }): JSX.Element {
   return (
     <span className="font-title text-meta tracking-[0.18em] text-text-tertiary">
       {t('wizard.label.rolledBreakdown')} : [
-      <span aria-label="dé éliminé" className="line-through opacity-60">
+      <span aria-label={t('wizard.label.droppedDie')} className="line-through opacity-60">
         {dropped}
       </span>
       ] {kept.join(' ')} = <span className="text-text-secondary">{result.total}</span>
@@ -215,7 +206,7 @@ export function AbilitiesStep(): JSX.Element {
             >
               <div className="flex items-center justify-between">
                 <span className="font-title text-meta uppercase tracking-[0.18em] text-gold-bright">
-                  {ABILITY_LABEL[code]}
+                  {t(`ability.${code}`)}
                   {isRecommended ? (
                     <span
                       className="ml-1 text-gold-bright"
@@ -240,7 +231,7 @@ export function AbilitiesStep(): JSX.Element {
                     value: String(v),
                     label: String(v),
                   }))}
-                  aria-label={ABILITY_LABEL[code]}
+                  aria-label={t(`ability.${code}`)}
                 />
               ) : draft.method === 'point-buy' ? (
                 <>
@@ -249,7 +240,7 @@ export function AbilitiesStep(): JSX.Element {
                     min={POINT_BUY_MIN}
                     max={POINT_BUY_MAX}
                     onValueChange={(v) => setAbility(code, v)}
-                    aria-label={ABILITY_LABEL[code]}
+                    aria-label={t(`ability.${code}`)}
                     decrementLabel={t('wizard.aria.decrement')}
                     incrementLabel={t('wizard.aria.increment')}
                   />
@@ -267,7 +258,7 @@ export function AbilitiesStep(): JSX.Element {
                   <>
                     <div
                       role="status"
-                      aria-label={ABILITY_LABEL[code]}
+                      aria-label={t(`ability.${code}`)}
                       className="rounded-card-sm border border-soft bg-bg-3/40 px-3 py-2 text-center font-title text-body tabular-nums text-text"
                     >
                       {value}
@@ -281,7 +272,7 @@ export function AbilitiesStep(): JSX.Element {
                     min={ROLLED_MIN}
                     max={ROLLED_MAX}
                     onValueChange={(v) => setAbility(code, v)}
-                    aria-label={ABILITY_LABEL[code]}
+                    aria-label={t(`ability.${code}`)}
                     decrementLabel={t('wizard.aria.decrement')}
                     incrementLabel={t('wizard.aria.increment')}
                   />
@@ -292,7 +283,7 @@ export function AbilitiesStep(): JSX.Element {
                   min={3}
                   max={20}
                   onValueChange={(v) => setAbility(code, v)}
-                  aria-label={ABILITY_LABEL[code]}
+                  aria-label={t(`ability.${code}`)}
                   decrementLabel={t('wizard.aria.decrement')}
                   incrementLabel={t('wizard.aria.increment')}
                 />

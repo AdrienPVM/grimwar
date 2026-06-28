@@ -178,6 +178,7 @@ export type StringKey =
   | 'wizard.method.rolled.source.manual'
   | 'wizard.label.rollSource'
   | 'wizard.label.rolledBreakdown'
+  | 'wizard.label.droppedDie'
   | 'wizard.action.rollAbilities'
   | 'wizard.action.reroll'
   | 'wizard.label.pointsRemaining'
@@ -2287,6 +2288,20 @@ export type StringKey =
   | 'radialMenu.tip.close'
   | 'dice.tip.closeHistory'
   | 'dice.history.title'
+  // Modale de jet physique (plan 12.5)
+  | 'dice.physical.header'
+  | 'dice.physical.rollPrompt'
+  | 'dice.physical.withAdvantage'
+  | 'dice.physical.withDisadvantage'
+  | 'dice.physical.kept'
+  | 'dice.physical.faceAria'
+  | 'dice.physical.total'
+  | 'dice.physical.crit'
+  | 'dice.physical.fumble'
+  | 'dice.physical.passTip'
+  | 'dice.physical.pass'
+  | 'dice.physical.validateTip'
+  | 'dice.physical.validate'
   | 'dice.history.closeLabel'
   | 'dice.history.empty'
   | 'dice.history.modeSaveError'
@@ -2479,6 +2494,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.method.rolled.source.manual': 'Je lance avec mes dés (IRL)',
     'wizard.label.rollSource': 'Qui lance les dés ?',
     'wizard.label.rolledBreakdown': 'Détail du jet',
+    'wizard.label.droppedDie': 'dé éliminé',
     'wizard.action.rollAbilities': 'Lancer 4d6 pour les 6 caractéristiques',
     'wizard.action.reroll': 'Relancer',
     'wizard.label.pointsRemaining': 'Points restants',
@@ -5173,6 +5189,20 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.close': 'Ferme le menu.',
     'dice.tip.closeHistory': 'Ferme l’historique des jets.',
     'dice.history.title': 'Historique des jets',
+    // Modale de jet physique (le wording « Passer » est non négociable, plan 12.5)
+    'dice.physical.header': 'Mode physique — saisis tes dés',
+    'dice.physical.rollPrompt': 'Lance {dice}',
+    'dice.physical.withAdvantage': ' · avec avantage',
+    'dice.physical.withDisadvantage': ' · avec désavantage',
+    'dice.physical.kept': 'Gardé',
+    'dice.physical.faceAria': 'Face d{sides} numéro {n}',
+    'dice.physical.total': 'Total',
+    'dice.physical.crit': 'Réussite critique',
+    'dice.physical.fumble': 'Échec critique',
+    'dice.physical.passTip': 'Abandonne ce jet sans rien enregistrer.',
+    'dice.physical.pass': 'Passer',
+    'dice.physical.validateTip': 'Confirme les faces saisies et calcule le total.',
+    'dice.physical.validate': 'Valider',
     'dice.history.closeLabel': 'Fermer l’historique',
     'dice.history.empty':
       'Aucun jet enregistré. Tente une initiative ou un test de caractéristique.',
@@ -5355,6 +5385,7 @@ const STRINGS: Record<Locale, Dict> = {
     'wizard.method.rolled.source.manual': 'I roll my own dice (IRL)',
     'wizard.label.rollSource': 'Who rolls?',
     'wizard.label.rolledBreakdown': 'Roll breakdown',
+    'wizard.label.droppedDie': 'dropped die',
     'wizard.action.rollAbilities': 'Roll 4d6 for all 6 abilities',
     'wizard.action.reroll': 'Reroll',
     'wizard.label.pointsRemaining': 'Points remaining',
@@ -7882,6 +7913,20 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.close': 'Close the menu.',
     'dice.tip.closeHistory': 'Close the roll history.',
     'dice.history.title': 'Roll history',
+    // Physical-roll modal (plan 12.5)
+    'dice.physical.header': 'Physical mode — enter your dice',
+    'dice.physical.rollPrompt': 'Roll {dice}',
+    'dice.physical.withAdvantage': ' · with advantage',
+    'dice.physical.withDisadvantage': ' · with disadvantage',
+    'dice.physical.kept': 'Kept',
+    'dice.physical.faceAria': 'd{sides} face number {n}',
+    'dice.physical.total': 'Total',
+    'dice.physical.crit': 'Critical success',
+    'dice.physical.fumble': 'Critical failure',
+    'dice.physical.passTip': 'Discard this roll without recording anything.',
+    'dice.physical.pass': 'Skip',
+    'dice.physical.validateTip': 'Confirm the entered faces and compute the total.',
+    'dice.physical.validate': 'Confirm',
     'dice.history.closeLabel': 'Close history',
     'dice.history.empty':
       'No rolls recorded yet. Try an initiative or an ability check.',

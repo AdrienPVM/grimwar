@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
+import { t } from '@/shared/lib/i18n';
 import { applyKeep } from '@/shared/lib/dice/roller';
 import type { DiceTerm } from '@/shared/lib/dice/types';
 import {
@@ -105,7 +106,7 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
       <div className="flex w-full max-w-[460px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg sm:max-w-[520px]">
         <header className="border-b border-white-8 px-6 py-4">
           <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-            Mode physique — saisis tes dés
+            {t('dice.physical.header')}
           </p>
           <h2
             id="physical-roll-title"
@@ -114,9 +115,12 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
             {spec.label}
           </h2>
           <p className="mt-1 font-serif text-body-sm italic text-text-secondary">
-            Lance {describeDice(spec.dice, spec.modifier)}
-            {spec.advantage === 'advantage' ? ' · avec avantage' : ''}
-            {spec.advantage === 'disadvantage' ? ' · avec désavantage' : ''}
+            {t('dice.physical.rollPrompt').replace(
+              '{dice}',
+              describeDice(spec.dice, spec.modifier),
+            )}
+            {spec.advantage === 'advantage' ? t('dice.physical.withAdvantage') : ''}
+            {spec.advantage === 'disadvantage' ? t('dice.physical.withDisadvantage') : ''}
           </p>
         </header>
 
@@ -141,7 +145,7 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
                     : ''}
                   {kept && (
                     <span className="ml-2 inline-flex items-center rounded-full border border-gold-dim px-1.5 py-0.5 text-[8px] tracking-[0.1em] text-gold-bright">
-                      Gardé
+                      {t('dice.physical.kept')}
                     </span>
                   )}
                 </span>
@@ -153,7 +157,9 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
                   max={slot.sides}
                   value={face ?? ''}
                   onChange={(e) => setFace(idx, e.target.value)}
-                  aria-label={`Face d${slot.sides} numéro ${idx + 1}`}
+                  aria-label={t('dice.physical.faceAria')
+                    .replace('{sides}', String(slot.sides))
+                    .replace('{n}', String(idx + 1))}
                   className={cn(
                     'w-20 rounded-card-sm border border-white-8 bg-ink/40 px-2 py-1.5 text-center font-display text-[20px] font-bold tabular-nums focus:border-gold-dim focus:outline-none',
                     outOfRange ? 'text-crimson' : 'text-gold-bright',
@@ -166,7 +172,7 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
 
         <div className="border-t border-white-8 bg-ink/20 px-6 py-3">
           <p className="flex items-baseline justify-between font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-            <span>Total</span>
+            <span>{t('dice.physical.total')}</span>
             <span
               className={cn(
                 'font-display text-[32px] font-black tabular-nums tracking-[-0.02em]',
@@ -183,7 +189,7 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
                 crit ? 'text-gold-bright' : 'text-crimson',
               )}
             >
-              {crit ? 'Réussite critique' : 'Échec critique'}
+              {crit ? t('dice.physical.crit') : t('dice.physical.fumble')}
             </p>
           )}
         </div>
@@ -193,18 +199,18 @@ function PhysicalRollDialog({ spec }: DialogProps): JSX.Element {
             variant="ghost"
             size="sm"
             onClick={pass}
-            tooltip="Abandonne ce jet sans rien enregistrer."
+            tooltip={t('dice.physical.passTip')}
           >
-            Passer
+            {t('dice.physical.pass')}
           </Button>
           <Button
             variant="primary"
             size="sm"
             onClick={validate}
             disabled={!allValid}
-            tooltip="Confirme les faces saisies et calcule le total."
+            tooltip={t('dice.physical.validateTip')}
           >
-            Valider
+            {t('dice.physical.validate')}
           </Button>
         </footer>
       </div>
