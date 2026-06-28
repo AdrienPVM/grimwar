@@ -2,7 +2,7 @@ import { useMemo, type JSX } from 'react';
 
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize } from '@/shared/lib/i18n';
+import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import type { LevelUpStep } from '@/shared/lib/level-up/level-up-choices';
 import type {
   LevelUpFlowState,
@@ -59,13 +59,15 @@ export interface AddClassStepProps {
   allClasses: readonly ClassEntity[];
 }
 
-const ABILITY_SHORT_LABELS_FR: Record<AbilityCode, string> = {
-  for: 'FOR',
-  dex: 'DEX',
-  con: 'CON',
-  int: 'INT',
-  sag: 'SAG',
-  cha: 'CHA',
+// Réutilise les abréviations d'ability partagées du catalogue (`ability.short.*`)
+// — une seule source de vérité localisée (FR « For/Dex… », EN « STR/DEX… »).
+const ABILITY_SHORT_LABEL_KEYS: Record<AbilityCode, StringKey> = {
+  for: 'ability.short.for',
+  dex: 'ability.short.dex',
+  con: 'ability.short.con',
+  int: 'ability.short.int',
+  sag: 'ability.short.sag',
+  cha: 'ability.short.cha',
 };
 
 export function AddClassPickerStep({
@@ -90,12 +92,12 @@ export function AddClassPickerStep({
         );
         const blocked = isOwned || !eligibility.eligible;
         const reason = isOwned
-          ? 'Classe déjà possédée'
+          ? t('levelUp.addClass.ownedReason')
           : !eligibility.eligible
             ? eligibility.unmetScores
                 .map(
                   (s) =>
-                    `${ABILITY_SHORT_LABELS_FR[s.ability]} ${s.actual}/${s.minimum}`,
+                    `${t(ABILITY_SHORT_LABEL_KEYS[s.ability])} ${s.actual}/${s.minimum}`,
                 )
                 .join(' · ')
             : '';
@@ -110,11 +112,10 @@ export function AddClassPickerStep({
           id="step-add-class-pick-title"
           className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
         >
-          Classe à ajouter
+          {t('levelUp.addClass.pickTitle')}
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">
-          Choisis la classe que ton personnage souhaite apprendre. Les classes
-          grisées sont indisponibles — survole pour voir la raison.
+          {t('levelUp.addClass.pickIntro')}
         </p>
       </header>
       <ul className="grid gap-2">
@@ -132,7 +133,11 @@ export function AddClassPickerStep({
                   if (blocked) return;
                   dispatch({ type: 'set-add-class-target', classId: def.id });
                 }}
-                title={blocked ? `Indisponible — ${reason}` : undefined}
+                title={
+                  blocked
+                    ? t('levelUp.addClass.blockedTitle').replace('{reason}', reason)
+                    : undefined
+                }
                 className={cn(
                   'flex w-full items-center justify-between rounded-card border px-4 py-3 text-left transition-colors ease-base duration-200',
                   blocked
@@ -201,7 +206,9 @@ export function AddClassSubChoicesStep({
     return getEligibleWeaponMasteryIds(eligibility, items, 'fr').map((it) => ({
       id: it.id,
       name: localize(it.name),
-      summary: it.masteryProperty ? `Maîtrise · ${it.masteryProperty}` : '',
+      summary: it.masteryProperty
+        ? t('levelUp.addClass.weaponMasterySummary').replace('{property}', it.masteryProperty)
+        : '',
     }));
   }, [targetDef, items]);
   const weaponMasteryCount = useMemo(
@@ -233,21 +240,23 @@ export function AddClassSubChoicesStep({
       .map((sp) => ({
         id: sp.id,
         name: localize(sp.name),
-        summary: sp.school ? `École · ${sp.school}` : '',
+        summary: sp.school
+          ? t('levelUp.addClass.spellSchoolSummary').replace('{school}', sp.school)
+          : '',
       }));
   }, [spells]);
 
   if (!targetId) {
     return (
       <p className="font-serif text-body-sm italic text-text-tertiary">
-        Sélectionne d&apos;abord une classe à l&apos;étape précédente.
+        {t('levelUp.addClass.selectFirst')}
       </p>
     );
   }
   if (!targetDef) {
     return (
       <p className="font-serif text-body-sm italic text-crimson">
-        Définition introuvable pour « {targetId} ».
+        {t('levelUp.addClass.defNotFound').replace('{id}', targetId)}
       </p>
     );
   }
@@ -266,12 +275,11 @@ export function AddClassSubChoicesStep({
             id="step-add-class-sub-choices-title"
             className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
           >
-            Sous-choix L1
+            {t('levelUp.addClass.subChoicesTitle')}
           </h3>
         </header>
         <p className="font-serif text-body-sm text-text-secondary">
-          {className} n&apos;a aucun sous-choix imposé au niveau 1 — tu peux
-          valider directement.
+          {t('levelUp.addClass.noSubChoices').replace('{class}', className)}
         </p>
       </section>
     );
@@ -308,16 +316,16 @@ export function AddClassSubChoicesStep({
           id="step-add-class-sub-choices-title"
           className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
         >
-          Sous-choix L1 — {className}
+          {t('levelUp.addClass.subChoicesTitleClass').replace('{class}', className)}
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">
-          Sélectionne les options de niveau 1 imposées par la classe.
+          {t('levelUp.addClass.subChoicesIntro')}
         </p>
       </header>
 
       {requiredKeys.includes('clericDivineOrder') ? (
         <RadioRowGroup
-          legend="Ordre divin"
+          legend={t('levelUp.addClass.divineOrder')}
           options={(targetDef.divineOrders ?? []).map((o) => ({
             id: o.id,
             name: localize(o.name),
@@ -335,7 +343,7 @@ export function AddClassSubChoicesStep({
 
       {requiredKeys.includes('druidPrimalOrder') ? (
         <RadioRowGroup
-          legend="Ordre primordial"
+          legend={t('levelUp.addClass.primalOrder')}
           options={(targetDef.primalOrders ?? []).map((o) => ({
             id: o.id,
             name: localize(o.name),
@@ -353,7 +361,7 @@ export function AddClassSubChoicesStep({
 
       {requiredKeys.includes('fighterFightingStyle') ? (
         <RadioRowGroup
-          legend="Style de combat"
+          legend={t('levelUp.addClass.fightingStyle')}
           options={fightingStyleOptions}
           value={state.addClassSubChoices.fighterFightingStyle ?? null}
           onChange={(id) =>
@@ -367,8 +375,14 @@ export function AddClassSubChoicesStep({
 
       {requiredKeys.includes('weaponMasteries') ? (
         <MultiSelectChooser
-          legend={`Maîtrises d'armes (${weaponMasteryCount})`}
-          helper={`Sélectionne ${weaponMasteryCount} armes éligibles à la maîtrise SRD 5.2.1.`}
+          legend={t('levelUp.addClass.weaponMasteryLegend').replace(
+            '{count}',
+            String(weaponMasteryCount),
+          )}
+          helper={t('levelUp.addClass.weaponMasteryHelper').replace(
+            '{count}',
+            String(weaponMasteryCount),
+          )}
           options={weaponMasteryOptions}
           values={state.addClassSubChoices.weaponMasteries ?? []}
           count={weaponMasteryCount}
@@ -383,8 +397,8 @@ export function AddClassSubChoicesStep({
 
       {requiredKeys.includes('eldritchInvocations') ? (
         <MultiSelectChooser
-          legend="Invocation occulte (1)"
-          helper="Choisis ton invocation occulte initiale. Pact of the Tome / Blade exposeront leurs sous-choix dans une prochaine itération."
+          legend={t('levelUp.addClass.invocationLegend')}
+          helper={t('levelUp.addClass.invocationHelper')}
           options={invocationOptions}
           values={state.addClassSubChoices.eldritchInvocations ?? []}
           count={1}
@@ -399,8 +413,8 @@ export function AddClassSubChoicesStep({
 
       {requiredKeys.includes('wizardSpellbookL1') ? (
         <MultiSelectChooser
-          legend="Sorts du grimoire (6 sorts L1)"
-          helper="Sélectionne 6 sorts L1 du Magicien à inscrire dans ton grimoire de départ."
+          legend={t('levelUp.addClass.spellbookLegend')}
+          helper={t('levelUp.addClass.spellbookHelper')}
           options={wizardSpellbookOptions}
           values={state.addClassSubChoices.wizardSpellbookL1 ?? []}
           count={6}
@@ -419,19 +433,18 @@ export function AddClassSubChoicesStep({
           className="rounded-card border border-amber/40 bg-amber/10 p-3"
         >
           <p className="font-serif text-body-sm text-text">
-            <strong className="font-semibold text-amber">À venir</strong>
-            {' — '}les sous-choix conditionnels (Expertise du Roublard, Pact
-            of the Tome / Blade de l&apos;Occultiste) seront wirés dans une
-            prochaine itération. Confirmer reste bloqué si tu sélectionnes
-            une invocation de pact qui requiert ces sous-choix.
+            <strong className="font-semibold text-amber">
+              {t('levelUp.addClass.upcomingBadge')}
+            </strong>
+            {' — '}
+            {t('levelUp.addClass.upcomingBody')}
           </p>
         </div>
       ) : null}
 
       {missing.length > 0 ? (
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Encore {missing.length} sous-choix à compléter avant de pouvoir
-          confirmer.
+          {t('levelUp.addClass.missingHint').replace('{n}', String(missing.length))}
         </p>
       ) : null}
     </section>

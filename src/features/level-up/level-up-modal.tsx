@@ -5,7 +5,7 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize, t } from '@/shared/lib/i18n';
+import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import {
   addClassChoices,
   levelUpChoices,
@@ -158,7 +158,7 @@ export function LevelUpModal({
     >
       <header className="border-b border-white-8 px-6 py-4 pr-14">
         <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-          {state.mode === 'add-class' ? 'Ajouter une classe' : 'Montée de niveau'}
+          {state.mode === 'add-class' ? t('levelUp.mode.addClass') : t('levelUp.mode.levelUp')}
         </p>
         <h2
           id={titleId}
@@ -166,7 +166,10 @@ export function LevelUpModal({
         >
           {state.mode === 'add-class'
             ? renderAddClassHeading(state, allClasses)
-            : `${localize(classDefinition.name)} — Niveau ${classEntry.level} → ${newClassLevel}`}
+            : t('levelUp.heading.levelUp')
+                .replace('{class}', localize(classDefinition.name))
+                .replace('{from}', String(classEntry.level))
+                .replace('{to}', String(newClassLevel))}
         </h2>
         <StepIndicator stepIdx={state.stepIdx} total={steps.length} />
       </header>
@@ -185,7 +188,7 @@ export function LevelUpModal({
           />
         ) : (
           <p className="font-serif text-body-sm italic text-text-tertiary">
-            Aucun choix à faire — confirme la montée de niveau.
+            {t('levelUp.empty')}
           </p>
         )}
       </div>
@@ -198,7 +201,7 @@ export function LevelUpModal({
             onClick={() => dispatch({ type: 'go-prev' })}
             disabled={state.stepIdx === 0 || isSubmitting}
           >
-            Précédent
+            {t('levelUp.nav.previous')}
           </Button>
           {isLast ? (
             <Button
@@ -208,7 +211,7 @@ export function LevelUpModal({
               disabled={!allFilled || isSubmitting}
               aria-busy={isSubmitting || undefined}
             >
-              {isSubmitting ? 'Application…' : 'Confirmer'}
+              {isSubmitting ? t('levelUp.nav.applying') : t('levelUp.nav.confirm')}
             </Button>
           ) : (
             <Button
@@ -217,7 +220,7 @@ export function LevelUpModal({
               onClick={() => dispatch({ type: 'go-next' })}
               disabled={!isStepFilled(current, state) || isSubmitting}
             >
-              Suivant
+              {t('levelUp.nav.next')}
             </Button>
           )}
         </div>
@@ -239,9 +242,11 @@ function StepIndicator({ stepIdx, total }: { stepIdx: number; total: number }): 
   return (
     <p
       className="mt-2 font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary"
-      aria-label="Progression de la montée de niveau"
+      aria-label={t('levelUp.stepIndicator.aria')}
     >
-      Étape {stepIdx + 1} / {total}
+      {t('levelUp.stepIndicator.label')
+        .replace('{n}', String(stepIdx + 1))
+        .replace('{total}', String(total))}
     </p>
   );
 }
@@ -292,10 +297,10 @@ function renderAddClassHeading(
   state: LevelUpFlowState,
   allClasses: readonly ClassEntity[],
 ): string {
-  if (!state.addClassTargetId) return 'Choisis ta nouvelle classe';
+  if (!state.addClassTargetId) return t('levelUp.heading.addClassPrompt');
   const def = allClasses.find((c) => c.id === state.addClassTargetId);
-  if (!def) return 'Choisis ta nouvelle classe';
-  return `${localize(def.name)} — Niveau 1`;
+  if (!def) return t('levelUp.heading.addClassPrompt');
+  return t('levelUp.heading.addClassTarget').replace('{class}', localize(def.name));
 }
 
 /**
@@ -350,11 +355,10 @@ function HpRollStep({
           id="step-hp-title"
           className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
         >
-          Points de vie
+          {t('levelUp.hp.title')}
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">
-          Choisis comment déterminer ton gain de PV pour ce niveau. La moyenne
-          est l'option recommandée par défaut.
+          {t('levelUp.hp.intro')}
         </p>
       </header>
       <div className="grid gap-3">
@@ -370,8 +374,12 @@ function HpRollStep({
                 : 'border-white-8 bg-glass text-text hover:border-soft',
             )}
           >
-            <span className="font-title text-meta uppercase tracking-[0.16em]">Moyenne</span>
-            <span className="font-serif text-body-sm text-text-secondary">+{averageGain} PV</span>
+            <span className="font-title text-meta uppercase tracking-[0.16em]">
+              {t('levelUp.hp.average')}
+            </span>
+            <span className="font-serif text-body-sm text-text-secondary">
+              {t('levelUp.hp.gain').replace('{n}', String(averageGain))}
+            </span>
           </button>
         </Tooltip>
         <Tooltip label={t('levelUp.tip.hpRoll')} decorative className="w-full">
@@ -392,10 +400,14 @@ function HpRollStep({
             )}
           >
             <span className="font-title text-meta uppercase tracking-[0.16em]">
-              Lancer le dé
+              {t('levelUp.hp.roll')}
             </span>
             <span className="font-serif text-body-sm text-text-secondary">
-              {rolledValue != null ? `+${rolledValue} PV` : `${classDefinition.hitDie} + ${conMod}`}
+              {rolledValue != null
+                ? t('levelUp.hp.gain').replace('{n}', String(rolledValue))
+                : t('levelUp.hp.diePlusMod')
+                    .replace('{die}', classDefinition.hitDie)
+                    .replace('{mod}', String(conMod))}
             </span>
           </button>
         </Tooltip>
@@ -422,23 +434,22 @@ function SubclassStep({
           id="step-subclass-title"
           className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
         >
-          Sous-classe
+          {t('levelUp.subclass.title')}
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">
-          Choisis la voie spécialisée de ton {localize(classDefinition.name)}.
-          Ce choix s'applique dès ce niveau.
+          {t('levelUp.subclass.intro').replace('{class}', localize(classDefinition.name))}
         </p>
       </header>
       {loading ? (
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Chargement des sous-classes…
+          {t('levelUp.subclass.loading')}
         </p>
       ) : candidates.length === 0 ? (
         <p className="font-serif text-body-sm italic text-crimson">
-          Aucune sous-classe disponible pour cette classe.
+          {t('levelUp.subclass.none')}
         </p>
       ) : (
-        <ul role="radiogroup" aria-label="Sous-classes disponibles" className="grid gap-3">
+        <ul role="radiogroup" aria-label={t('levelUp.subclass.listAria')} className="grid gap-3">
           {candidates.map((sc) => {
             const checked = state.subclassId === sc.id;
             return (
@@ -476,13 +487,15 @@ function SubclassStep({
   );
 }
 
-const ABILITY_LABELS: Record<AbilityCode, string> = {
-  for: 'Force',
-  dex: 'Dextérité',
-  con: 'Constitution',
-  int: 'Intelligence',
-  sag: 'Sagesse',
-  cha: 'Charisme',
+// Réutilise les clés d'ability partagées du catalogue (`ability.*`) plutôt que
+// de dupliquer les libellés FR — une seule source de vérité localisée.
+const ABILITY_LABEL_KEYS: Record<AbilityCode, StringKey> = {
+  for: 'ability.for',
+  dex: 'ability.dex',
+  con: 'ability.con',
+  int: 'ability.int',
+  sag: 'ability.sag',
+  cha: 'ability.cha',
 };
 
 function AsiOrFeatStep({
@@ -518,7 +531,7 @@ function AsiOrFeatStep({
     return map;
   }, [candidateFeats, postLevelUpCharacter]);
   const mode = state.asiOrFeat?.kind ?? null;
-  const featLabel = isEpicBoonLevel ? 'Don épique' : 'Don général';
+  const featLabel = isEpicBoonLevel ? t('levelUp.feat.epic') : t('levelUp.feat.general');
 
   // Au toggle « Don », auto-pick le premier feat ÉLIGIBLE pour éviter d'amorcer
   // la sélection sur un feat grisé (cas Wizard L4 sur catégorie `general` avec
@@ -535,21 +548,17 @@ function AsiOrFeatStep({
           id="step-asi-title"
           className="font-ui text-[11px] uppercase tracking-[0.18em] text-text-tertiary"
         >
-          {isEpicBoonLevel
-            ? 'Amélioration de caractéristique ou don épique'
-            : 'Amélioration de caractéristique ou don'}
+          {isEpicBoonLevel ? t('levelUp.asi.titleEpic') : t('levelUp.asi.title')}
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">
-          {isEpicBoonLevel
-            ? 'À ce niveau tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou +1/+1 sur deux), soit prendre un don épique à la place.'
-            : 'Tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou +1/+1 sur deux), soit prendre un don général à la place.'}
+          {isEpicBoonLevel ? t('levelUp.asi.introEpic') : t('levelUp.asi.intro')}
         </p>
       </header>
 
-      <div role="radiogroup" aria-label="Type de bonification" className="flex gap-2">
+      <div role="radiogroup" aria-label={t('levelUp.asi.typeAria')} className="flex gap-2">
         <ToggleChip
           checked={mode === 'asi'}
-          label="Amélioration"
+          label={t('levelUp.asi.improvement')}
           onClick={() =>
             dispatch({
               type: 'set-asi-or-feat',
@@ -562,7 +571,7 @@ function AsiOrFeatStep({
         />
         <ToggleChip
           checked={mode === 'feat'}
-          label="Don"
+          label={t('levelUp.asi.feat')}
           onClick={() =>
             dispatch({
               type: 'set-asi-or-feat',
@@ -608,7 +617,7 @@ function AsiPicker({
     <div className="space-y-3 rounded-card border border-white-8 bg-glass p-4">
       <fieldset className="space-y-2">
         <legend className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-          Mode de répartition
+          {t('levelUp.asi.distributionLegend')}
         </legend>
         <label className="flex items-center gap-2 font-serif text-body-sm text-text">
           <input
@@ -617,7 +626,7 @@ function AsiPicker({
             checked={!isSplit}
             onChange={() => onChange({ kind: 'asi', abilityIncreases: [{ ability: primary, bonus: 2 }] })}
           />
-          +2 sur une caractéristique
+          {t('levelUp.asi.plusTwo')}
         </label>
         <label className="flex items-center gap-2 font-serif text-body-sm text-text">
           <input
@@ -634,11 +643,11 @@ function AsiPicker({
               })
             }
           />
-          +1 sur deux caractéristiques
+          {t('levelUp.asi.plusOneOne')}
         </label>
       </fieldset>
       <label className="block font-serif text-body-sm text-text">
-        Caractéristique principale
+        {t('levelUp.asi.primary')}
         <select
           className="mt-1 block w-full rounded-card-sm border border-white-8 bg-glass-2 px-3 py-2 font-serif text-body-sm text-text"
           value={primary}
@@ -657,16 +666,16 @@ function AsiPicker({
             }
           }}
         >
-          {(Object.keys(ABILITY_LABELS) as AbilityCode[]).map((a) => (
+          {(Object.keys(ABILITY_LABEL_KEYS) as AbilityCode[]).map((a) => (
             <option key={a} value={a}>
-              {ABILITY_LABELS[a]}
+              {t(ABILITY_LABEL_KEYS[a])}
             </option>
           ))}
         </select>
       </label>
       {isSplit && (
         <label className="block font-serif text-body-sm text-text">
-          Caractéristique secondaire
+          {t('levelUp.asi.secondary')}
           <select
             className="mt-1 block w-full rounded-card-sm border border-white-8 bg-glass-2 px-3 py-2 font-serif text-body-sm text-text"
             value={secondary}
@@ -681,9 +690,9 @@ function AsiPicker({
               });
             }}
           >
-            {(Object.keys(ABILITY_LABELS) as AbilityCode[]).map((a) => (
+            {(Object.keys(ABILITY_LABEL_KEYS) as AbilityCode[]).map((a) => (
               <option key={a} value={a}>
-                {ABILITY_LABELS[a]}
+                {t(ABILITY_LABEL_KEYS[a])}
               </option>
             ))}
           </select>
@@ -701,13 +710,15 @@ function AsiPicker({
 function formatPrerequisiteReason(prereq: FeatPrerequisite): string {
   switch (prereq.kind) {
     case 'character-level':
-      return `Niveau ${prereq.minimum}+ requis`;
+      return t('levelUp.prereq.level').replace('{n}', String(prereq.minimum));
     case 'ability-score':
-      return `${ABILITY_LABELS[prereq.ability]} ${prereq.minimum}+ requis`;
+      return t('levelUp.prereq.ability')
+        .replace('{ability}', t(ABILITY_LABEL_KEYS[prereq.ability]))
+        .replace('{n}', String(prereq.minimum));
     case 'spellcasting':
-      return 'Capacité à lancer un sort requise';
+      return t('levelUp.prereq.spellcasting');
     case 'class-feature':
-      return `Aptitude de classe « ${prereq.featureNameEn} » requise`;
+      return t('levelUp.prereq.classFeature').replace('{feature}', prereq.featureNameEn);
   }
 }
 
@@ -733,7 +744,7 @@ function FeatPicker({
         {label}
         {loading ? (
           <p className="mt-1 font-serif text-body-sm italic text-text-tertiary">
-            Chargement des dons…
+            {t('levelUp.feat.loading')}
           </p>
         ) : (
           <select
@@ -742,7 +753,7 @@ function FeatPicker({
             onChange={(e) => onChange({ kind: 'feat', featId: e.target.value })}
           >
             <option value="" disabled>
-              Choisir un don…
+              {t('levelUp.feat.placeholder')}
             </option>
             {feats.map((f) => {
               const availability = availabilityByFeatId.get(f.id);
@@ -755,7 +766,11 @@ function FeatPicker({
                   key={f.id}
                   value={f.id}
                   disabled={blocked}
-                  title={blocked ? `Prérequis non rempli — ${reasons}` : undefined}
+                  title={
+                    blocked
+                      ? t('levelUp.feat.blockedTitle').replace('{reasons}', reasons ?? '')
+                      : undefined
+                  }
                 >
                   {localize(f.name)}
                   {blocked ? ` — ${reasons}` : ''}
@@ -789,8 +804,8 @@ function CantripsStep({
   );
   return (
     <PickList
-      label="Sorts mineurs"
-      help={`Choisis ${count} sort${count > 1 ? 's' : ''} mineur${count > 1 ? 's' : ''} supplémentaire${count > 1 ? 's' : ''}.`}
+      label={t('levelUp.pick.cantripsLabel')}
+      help={t('levelUp.pick.cantripsHelp').replace('{count}', String(count))}
       options={cantrips}
       selected={state.newCantrips}
       max={count}
@@ -825,8 +840,10 @@ function SpellsStep({
   );
   return (
     <PickList
-      label="Sorts"
-      help={`Choisis ${count} sort${count > 1 ? 's' : ''} supplémentaire${count > 1 ? 's' : ''} (niveau ≤ ${maxLevel}).`}
+      label={t('levelUp.pick.spellsLabel')}
+      help={t('levelUp.pick.spellsHelp')
+        .replace('{count}', String(count))
+        .replace('{maxLevel}', String(maxLevel))}
       options={candidates}
       selected={state.newSpellsKnown}
       max={count}
@@ -855,8 +872,8 @@ function InvocationsStep({
   );
   return (
     <PickList
-      label="Manifestations occultes"
-      help={`Choisis ${count} manifestation${count > 1 ? 's' : ''} occulte${count > 1 ? 's' : ''} supplémentaire${count > 1 ? 's' : ''}.`}
+      label={t('levelUp.pick.invocationsLabel')}
+      help={t('levelUp.pick.invocationsHelp').replace('{count}', String(count))}
       options={candidates}
       selected={state.newInvocations}
       max={count}
@@ -906,14 +923,18 @@ function PickList({
         </h3>
         <p className="mt-1 font-serif text-body-sm text-text-secondary">{help}</p>
         <p className="mt-1 font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-          {selected.length} / {max} sélectionné{selected.length > 1 ? 's' : ''}
+          {t('levelUp.pick.selectedCount')
+            .replace('{n}', String(selected.length))
+            .replace('{max}', String(max))}
         </p>
       </header>
       {loading ? (
-        <p className="font-serif text-body-sm italic text-text-tertiary">Chargement…</p>
+        <p className="font-serif text-body-sm italic text-text-tertiary">
+          {t('levelUp.pick.loading')}
+        </p>
       ) : options.length === 0 ? (
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Aucune option disponible pour ce niveau.
+          {t('levelUp.pick.none')}
         </p>
       ) : (
         <ul className="grid gap-2">

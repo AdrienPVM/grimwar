@@ -2503,6 +2503,84 @@ export type StringKey =
   | 'levelUp.tip.addClass'
   | 'levelUp.tip.hpAverage'
   | 'levelUp.tip.hpRoll'
+  // Modale de montée de niveau / ajout de classe (multiclasse)
+  | 'levelUp.mode.levelUp'
+  | 'levelUp.mode.addClass'
+  | 'levelUp.heading.levelUp'
+  | 'levelUp.heading.addClassPrompt'
+  | 'levelUp.heading.addClassTarget'
+  | 'levelUp.stepIndicator.aria'
+  | 'levelUp.stepIndicator.label'
+  | 'levelUp.empty'
+  | 'levelUp.nav.previous'
+  | 'levelUp.nav.next'
+  | 'levelUp.nav.confirm'
+  | 'levelUp.nav.applying'
+  | 'levelUp.hp.title'
+  | 'levelUp.hp.intro'
+  | 'levelUp.hp.average'
+  | 'levelUp.hp.gain'
+  | 'levelUp.hp.roll'
+  | 'levelUp.hp.diePlusMod'
+  | 'levelUp.subclass.title'
+  | 'levelUp.subclass.intro'
+  | 'levelUp.subclass.loading'
+  | 'levelUp.subclass.none'
+  | 'levelUp.subclass.listAria'
+  | 'levelUp.asi.titleEpic'
+  | 'levelUp.asi.title'
+  | 'levelUp.asi.introEpic'
+  | 'levelUp.asi.intro'
+  | 'levelUp.asi.typeAria'
+  | 'levelUp.asi.improvement'
+  | 'levelUp.asi.feat'
+  | 'levelUp.asi.distributionLegend'
+  | 'levelUp.asi.plusTwo'
+  | 'levelUp.asi.plusOneOne'
+  | 'levelUp.asi.primary'
+  | 'levelUp.asi.secondary'
+  | 'levelUp.feat.epic'
+  | 'levelUp.feat.general'
+  | 'levelUp.feat.loading'
+  | 'levelUp.feat.placeholder'
+  | 'levelUp.feat.blockedTitle'
+  | 'levelUp.prereq.level'
+  | 'levelUp.prereq.ability'
+  | 'levelUp.prereq.spellcasting'
+  | 'levelUp.prereq.classFeature'
+  | 'levelUp.pick.cantripsLabel'
+  | 'levelUp.pick.cantripsHelp'
+  | 'levelUp.pick.spellsLabel'
+  | 'levelUp.pick.spellsHelp'
+  | 'levelUp.pick.invocationsLabel'
+  | 'levelUp.pick.invocationsHelp'
+  | 'levelUp.pick.selectedCount'
+  | 'levelUp.pick.loading'
+  | 'levelUp.pick.none'
+  | 'levelUp.addClass.ownedReason'
+  | 'levelUp.addClass.pickTitle'
+  | 'levelUp.addClass.pickIntro'
+  | 'levelUp.addClass.blockedTitle'
+  | 'levelUp.addClass.selectFirst'
+  | 'levelUp.addClass.defNotFound'
+  | 'levelUp.addClass.subChoicesTitle'
+  | 'levelUp.addClass.noSubChoices'
+  | 'levelUp.addClass.subChoicesTitleClass'
+  | 'levelUp.addClass.subChoicesIntro'
+  | 'levelUp.addClass.divineOrder'
+  | 'levelUp.addClass.primalOrder'
+  | 'levelUp.addClass.fightingStyle'
+  | 'levelUp.addClass.weaponMasteryLegend'
+  | 'levelUp.addClass.weaponMasteryHelper'
+  | 'levelUp.addClass.weaponMasterySummary'
+  | 'levelUp.addClass.invocationLegend'
+  | 'levelUp.addClass.invocationHelper'
+  | 'levelUp.addClass.spellbookLegend'
+  | 'levelUp.addClass.spellbookHelper'
+  | 'levelUp.addClass.spellSchoolSummary'
+  | 'levelUp.addClass.upcomingBadge'
+  | 'levelUp.addClass.upcomingBody'
+  | 'levelUp.addClass.missingHint'
   // Infobulles explicites — menu radial, dés, journal, outils MJ
   | 'radialMenu.tip.fab'
   | 'radialMenu.tip.back'
@@ -5633,6 +5711,98 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.tip.addClass': 'Apprend une nouvelle classe en multiclasse.',
     'levelUp.tip.hpAverage': 'Gain de points de vie fixe, sans hasard.',
     'levelUp.tip.hpRoll': 'Gain de points de vie aléatoire, lancé au dé.',
+    // Modale de montée de niveau / ajout de classe (multiclasse)
+    'levelUp.mode.levelUp': 'Montée de niveau',
+    'levelUp.mode.addClass': 'Ajouter une classe',
+    'levelUp.heading.levelUp': '{class} — Niveau {from} → {to}',
+    'levelUp.heading.addClassPrompt': 'Choisis ta nouvelle classe',
+    'levelUp.heading.addClassTarget': '{class} — Niveau 1',
+    'levelUp.stepIndicator.aria': 'Progression de la montée de niveau',
+    'levelUp.stepIndicator.label': 'Étape {n} / {total}',
+    'levelUp.empty': 'Aucun choix à faire — confirme la montée de niveau.',
+    'levelUp.nav.previous': 'Précédent',
+    'levelUp.nav.next': 'Suivant',
+    'levelUp.nav.confirm': 'Confirmer',
+    'levelUp.nav.applying': 'Application…',
+    'levelUp.hp.title': 'Points de vie',
+    'levelUp.hp.intro':
+      "Choisis comment déterminer ton gain de PV pour ce niveau. La moyenne est l'option recommandée par défaut.",
+    'levelUp.hp.average': 'Moyenne',
+    'levelUp.hp.gain': '+{n} PV',
+    'levelUp.hp.roll': 'Lancer le dé',
+    'levelUp.hp.diePlusMod': '{die} + {mod}',
+    'levelUp.subclass.title': 'Sous-classe',
+    'levelUp.subclass.intro':
+      "Choisis la voie spécialisée de ton {class}. Ce choix s'applique dès ce niveau.",
+    'levelUp.subclass.loading': 'Chargement des sous-classes…',
+    'levelUp.subclass.none': 'Aucune sous-classe disponible pour cette classe.',
+    'levelUp.subclass.listAria': 'Sous-classes disponibles',
+    'levelUp.asi.titleEpic': 'Amélioration de caractéristique ou don épique',
+    'levelUp.asi.title': 'Amélioration de caractéristique ou don',
+    'levelUp.asi.introEpic':
+      'À ce niveau tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou +1/+1 sur deux), soit prendre un don épique à la place.',
+    'levelUp.asi.intro':
+      'Tu peux soit répartir 2 points de caractéristique (+2 sur une stat ou +1/+1 sur deux), soit prendre un don général à la place.',
+    'levelUp.asi.typeAria': 'Type de bonification',
+    'levelUp.asi.improvement': 'Amélioration',
+    'levelUp.asi.feat': 'Don',
+    'levelUp.asi.distributionLegend': 'Mode de répartition',
+    'levelUp.asi.plusTwo': '+2 sur une caractéristique',
+    'levelUp.asi.plusOneOne': '+1 sur deux caractéristiques',
+    'levelUp.asi.primary': 'Caractéristique principale',
+    'levelUp.asi.secondary': 'Caractéristique secondaire',
+    'levelUp.feat.epic': 'Don épique',
+    'levelUp.feat.general': 'Don général',
+    'levelUp.feat.loading': 'Chargement des dons…',
+    'levelUp.feat.placeholder': 'Choisir un don…',
+    'levelUp.feat.blockedTitle': 'Prérequis non rempli — {reasons}',
+    'levelUp.prereq.level': 'Niveau {n}+ requis',
+    'levelUp.prereq.ability': '{ability} {n}+ requis',
+    'levelUp.prereq.spellcasting': 'Capacité à lancer un sort requise',
+    'levelUp.prereq.classFeature': 'Aptitude de classe « {feature} » requise',
+    'levelUp.pick.cantripsLabel': 'Sorts mineurs',
+    'levelUp.pick.cantripsHelp': 'Choisis {count} sort(s) mineur(s) supplémentaire(s).',
+    'levelUp.pick.spellsLabel': 'Sorts',
+    'levelUp.pick.spellsHelp': 'Choisis {count} sort(s) supplémentaire(s) (niveau ≤ {maxLevel}).',
+    'levelUp.pick.invocationsLabel': 'Manifestations occultes',
+    'levelUp.pick.invocationsHelp':
+      'Choisis {count} manifestation(s) occulte(s) supplémentaire(s).',
+    'levelUp.pick.selectedCount': '{n} / {max} sélectionné(s)',
+    'levelUp.pick.loading': 'Chargement…',
+    'levelUp.pick.none': 'Aucune option disponible pour ce niveau.',
+    'levelUp.addClass.ownedReason': 'Classe déjà possédée',
+    'levelUp.addClass.pickTitle': 'Classe à ajouter',
+    'levelUp.addClass.pickIntro':
+      'Choisis la classe que ton personnage souhaite apprendre. Les classes grisées sont indisponibles — survole pour voir la raison.',
+    'levelUp.addClass.blockedTitle': 'Indisponible — {reason}',
+    'levelUp.addClass.selectFirst':
+      "Sélectionne d'abord une classe à l'étape précédente.",
+    'levelUp.addClass.defNotFound': 'Définition introuvable pour « {id} ».',
+    'levelUp.addClass.subChoicesTitle': 'Sous-choix L1',
+    'levelUp.addClass.noSubChoices':
+      "{class} n'a aucun sous-choix imposé au niveau 1 — tu peux valider directement.",
+    'levelUp.addClass.subChoicesTitleClass': 'Sous-choix L1 — {class}',
+    'levelUp.addClass.subChoicesIntro':
+      'Sélectionne les options de niveau 1 imposées par la classe.',
+    'levelUp.addClass.divineOrder': 'Ordre divin',
+    'levelUp.addClass.primalOrder': 'Ordre primordial',
+    'levelUp.addClass.fightingStyle': 'Style de combat',
+    'levelUp.addClass.weaponMasteryLegend': "Maîtrises d'armes ({count})",
+    'levelUp.addClass.weaponMasteryHelper':
+      'Sélectionne {count} armes éligibles à la maîtrise SRD 5.2.1.',
+    'levelUp.addClass.weaponMasterySummary': 'Maîtrise · {property}',
+    'levelUp.addClass.invocationLegend': 'Invocation occulte (1)',
+    'levelUp.addClass.invocationHelper':
+      'Choisis ton invocation occulte initiale. Pact of the Tome / Blade exposeront leurs sous-choix dans une prochaine itération.',
+    'levelUp.addClass.spellbookLegend': 'Sorts du grimoire (6 sorts L1)',
+    'levelUp.addClass.spellbookHelper':
+      'Sélectionne 6 sorts L1 du Magicien à inscrire dans ton grimoire de départ.',
+    'levelUp.addClass.spellSchoolSummary': 'École · {school}',
+    'levelUp.addClass.upcomingBadge': 'À venir',
+    'levelUp.addClass.upcomingBody':
+      "les sous-choix conditionnels (Expertise du Roublard, Pact of the Tome / Blade de l'Occultiste) seront câblés dans une prochaine itération. Confirmer reste bloqué si tu sélectionnes une invocation de pact qui requiert ces sous-choix.",
+    'levelUp.addClass.missingHint':
+      'Encore {n} sous-choix à compléter avant de pouvoir confirmer.',
     // Infobulles explicites — menu radial, dés, journal, outils MJ
     'radialMenu.tip.fab': 'Ouvre le menu d’actions de la fiche.',
     'radialMenu.tip.back': 'Revient au menu précédent.',
@@ -8585,6 +8755,97 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.tip.addClass': 'Learns a new class through multiclassing.',
     'levelUp.tip.hpAverage': 'Fixed hit point gain, no randomness.',
     'levelUp.tip.hpRoll': 'Random hit point gain, rolled with the die.',
+    // Level-up / add-class (multiclass) modal
+    'levelUp.mode.levelUp': 'Level up',
+    'levelUp.mode.addClass': 'Add a class',
+    'levelUp.heading.levelUp': '{class} — Level {from} → {to}',
+    'levelUp.heading.addClassPrompt': 'Choose your new class',
+    'levelUp.heading.addClassTarget': '{class} — Level 1',
+    'levelUp.stepIndicator.aria': 'Level up progress',
+    'levelUp.stepIndicator.label': 'Step {n} / {total}',
+    'levelUp.empty': 'No choice to make — confirm the level up.',
+    'levelUp.nav.previous': 'Previous',
+    'levelUp.nav.next': 'Next',
+    'levelUp.nav.confirm': 'Confirm',
+    'levelUp.nav.applying': 'Applying…',
+    'levelUp.hp.title': 'Hit points',
+    'levelUp.hp.intro':
+      'Choose how to determine your HP gain for this level. The average is the recommended default.',
+    'levelUp.hp.average': 'Average',
+    'levelUp.hp.gain': '+{n} HP',
+    'levelUp.hp.roll': 'Roll the die',
+    'levelUp.hp.diePlusMod': '{die} + {mod}',
+    'levelUp.subclass.title': 'Subclass',
+    'levelUp.subclass.intro':
+      'Choose the specialized path of your {class}. This choice applies from this level.',
+    'levelUp.subclass.loading': 'Loading subclasses…',
+    'levelUp.subclass.none': 'No subclass available for this class.',
+    'levelUp.subclass.listAria': 'Available subclasses',
+    'levelUp.asi.titleEpic': 'Ability score improvement or epic boon',
+    'levelUp.asi.title': 'Ability score improvement or feat',
+    'levelUp.asi.introEpic':
+      'At this level you can either distribute 2 ability score points (+2 to one ability or +1/+1 to two), or take an epic boon instead.',
+    'levelUp.asi.intro':
+      'You can either distribute 2 ability score points (+2 to one ability or +1/+1 to two), or take a general feat instead.',
+    'levelUp.asi.typeAria': 'Bonus type',
+    'levelUp.asi.improvement': 'Improvement',
+    'levelUp.asi.feat': 'Feat',
+    'levelUp.asi.distributionLegend': 'Distribution mode',
+    'levelUp.asi.plusTwo': '+2 to one ability',
+    'levelUp.asi.plusOneOne': '+1 to two abilities',
+    'levelUp.asi.primary': 'Primary ability',
+    'levelUp.asi.secondary': 'Secondary ability',
+    'levelUp.feat.epic': 'Epic boon',
+    'levelUp.feat.general': 'General feat',
+    'levelUp.feat.loading': 'Loading feats…',
+    'levelUp.feat.placeholder': 'Choose a feat…',
+    'levelUp.feat.blockedTitle': 'Prerequisite not met — {reasons}',
+    'levelUp.prereq.level': 'Level {n}+ required',
+    'levelUp.prereq.ability': '{ability} {n}+ required',
+    'levelUp.prereq.spellcasting': 'Spellcasting ability required',
+    'levelUp.prereq.classFeature': 'Class feature “{feature}” required',
+    'levelUp.pick.cantripsLabel': 'Cantrips',
+    'levelUp.pick.cantripsHelp': 'Choose {count} additional cantrip(s).',
+    'levelUp.pick.spellsLabel': 'Spells',
+    'levelUp.pick.spellsHelp': 'Choose {count} additional spell(s) (level ≤ {maxLevel}).',
+    'levelUp.pick.invocationsLabel': 'Eldritch invocations',
+    'levelUp.pick.invocationsHelp':
+      'Choose {count} additional eldritch invocation(s).',
+    'levelUp.pick.selectedCount': '{n} / {max} selected',
+    'levelUp.pick.loading': 'Loading…',
+    'levelUp.pick.none': 'No option available for this level.',
+    'levelUp.addClass.ownedReason': 'Class already owned',
+    'levelUp.addClass.pickTitle': 'Class to add',
+    'levelUp.addClass.pickIntro':
+      'Choose the class your character wishes to learn. Greyed-out classes are unavailable — hover to see why.',
+    'levelUp.addClass.blockedTitle': 'Unavailable — {reason}',
+    'levelUp.addClass.selectFirst': 'Select a class at the previous step first.',
+    'levelUp.addClass.defNotFound': 'Definition not found for “{id}”.',
+    'levelUp.addClass.subChoicesTitle': 'Level 1 sub-choices',
+    'levelUp.addClass.noSubChoices':
+      '{class} has no mandatory sub-choice at level 1 — you can confirm directly.',
+    'levelUp.addClass.subChoicesTitleClass': 'Level 1 sub-choices — {class}',
+    'levelUp.addClass.subChoicesIntro':
+      'Select the level 1 options imposed by the class.',
+    'levelUp.addClass.divineOrder': 'Divine order',
+    'levelUp.addClass.primalOrder': 'Primal order',
+    'levelUp.addClass.fightingStyle': 'Fighting style',
+    'levelUp.addClass.weaponMasteryLegend': 'Weapon masteries ({count})',
+    'levelUp.addClass.weaponMasteryHelper':
+      'Select {count} weapons eligible for SRD 5.2.1 mastery.',
+    'levelUp.addClass.weaponMasterySummary': 'Mastery · {property}',
+    'levelUp.addClass.invocationLegend': 'Eldritch invocation (1)',
+    'levelUp.addClass.invocationHelper':
+      'Choose your initial eldritch invocation. Pact of the Tome / Blade will expose their sub-choices in a future iteration.',
+    'levelUp.addClass.spellbookLegend': 'Spellbook spells (6 level 1 spells)',
+    'levelUp.addClass.spellbookHelper':
+      'Select 6 Wizard level 1 spells to inscribe in your starting spellbook.',
+    'levelUp.addClass.spellSchoolSummary': 'School · {school}',
+    'levelUp.addClass.upcomingBadge': 'Coming soon',
+    'levelUp.addClass.upcomingBody':
+      'conditional sub-choices (Rogue Expertise, Warlock Pact of the Tome / Blade) will be wired in a future iteration. Confirm stays blocked if you select a pact invocation that requires these sub-choices.',
+    'levelUp.addClass.missingHint':
+      'Still {n} sub-choice(s) to complete before confirming.',
     // Explicit tooltips — radial menu, dice, journal, DM tools
     'radialMenu.tip.fab': 'Open the character action menu.',
     'radialMenu.tip.back': 'Go back to the previous menu.',
