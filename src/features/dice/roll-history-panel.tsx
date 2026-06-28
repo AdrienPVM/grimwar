@@ -58,7 +58,7 @@ export function RollHistoryPanel({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Historique des jets"
+      aria-label={t('dice.history.title')}
       className="fixed inset-0 z-[70] flex items-end justify-center bg-ink/70 backdrop-blur-xl"
       onClick={onClose}
     >
@@ -74,14 +74,14 @@ export function RollHistoryPanel({
             <div className="flex items-center gap-2">
               <Icon name="i-dice" className="h-4 w-4 text-gold-bright" />
               <h2 className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-text">
-                Historique des jets
+                {t('dice.history.title')}
               </h2>
             </div>
             <Tooltip label={t('dice.tip.closeHistory')} placement="left" decorative>
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Fermer l'historique"
+                aria-label={t('dice.history.closeLabel')}
                 className="rounded-full border border-white-8 px-3 py-1 font-title text-[10px] uppercase tracking-[0.18em] text-text-tertiary transition-colors hover:border-soft hover:text-gold-bright"
               >
                 ✕
@@ -94,8 +94,7 @@ export function RollHistoryPanel({
         <div className="flex-1 overflow-y-auto px-5 py-3">
           {rows.length === 0 ? (
             <p className="py-6 text-center font-serif text-body-sm italic text-text-tertiary">
-              Aucun jet enregistré. Tente une initiative ou un test de
-              caractéristique.
+              {t('dice.history.empty')}
             </p>
           ) : (
             <ul className="flex flex-col gap-1.5">
@@ -154,7 +153,9 @@ function ModeBadge({
 }): JSX.Element {
   return (
     <span
-      aria-label={`Mode ${label === 'P' ? 'physique' : 'digital'}`}
+      aria-label={`${t('account.dice.title')} : ${
+        label === 'P' ? t('account.dice.physical') : t('account.dice.digital')
+      }`}
       className={cn(
         'inline-flex h-6 w-6 items-center justify-center rounded-full border font-title text-[9px] font-bold uppercase tracking-[0.1em]',
         crit
@@ -196,8 +197,8 @@ function DiceModeToggle(): JSX.Element {
     } catch (err) {
       showToast({
         kind: 'fumble',
-        title: 'Mode de dés non sauvegardé',
-        sub: err instanceof Error ? err.message : 'Erreur Firestore',
+        title: t('dice.history.modeSaveError'),
+        sub: err instanceof Error ? err.message : t('dice.history.modeSaveErrorSub'),
         durationMs: 3500,
       });
     }
@@ -206,21 +207,21 @@ function DiceModeToggle(): JSX.Element {
   return (
     <div
       role="radiogroup"
-      aria-label="Mode de dés"
+      aria-label={t('account.dice.title')}
       className="flex items-center justify-between gap-1 rounded-pill border border-white-8 bg-ink/40 px-1 py-1"
     >
       <ToggleOption
         active={diceMode === 'digital'}
         disabled={disabled}
-        label="Digital"
-        hint="L'app lance pour toi."
+        label={t('account.dice.digital')}
+        hint={t('account.dice.digitalHint')}
         onClick={() => void set('digital')}
       />
       <ToggleOption
         active={diceMode === 'physical'}
         disabled={disabled}
-        label="Physique"
-        hint="L'app indique quoi lancer, tu saisis les faces de tes vrais dés."
+        label={t('account.dice.physical')}
+        hint={t('account.dice.physicalHint')}
         onClick={() => void set('physical')}
       />
     </div>

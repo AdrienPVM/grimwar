@@ -1993,6 +1993,11 @@ export type StringKey =
   | 'radialMenu.tip.back'
   | 'radialMenu.tip.close'
   | 'dice.tip.closeHistory'
+  | 'dice.history.title'
+  | 'dice.history.closeLabel'
+  | 'dice.history.empty'
+  | 'dice.history.modeSaveError'
+  | 'dice.history.modeSaveErrorSub'
   | 'dm.tip.advNormal'
   | 'dm.tip.advAdvantage'
   | 'dm.tip.advDisadvantage'
@@ -4568,6 +4573,12 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.back': 'Revient au menu précédent.',
     'radialMenu.tip.close': 'Ferme le menu.',
     'dice.tip.closeHistory': 'Ferme l’historique des jets.',
+    'dice.history.title': 'Historique des jets',
+    'dice.history.closeLabel': 'Fermer l’historique',
+    'dice.history.empty':
+      'Aucun jet enregistré. Tente une initiative ou un test de caractéristique.',
+    'dice.history.modeSaveError': 'Mode de dés non sauvegardé',
+    'dice.history.modeSaveErrorSub': 'Erreur Firestore',
     'dm.tip.advNormal': 'Jet normal : un seul d20.',
     'dm.tip.advAdvantage': 'Avantage : lance deux d20, garde le plus haut.',
     'dm.tip.advDisadvantage': 'Désavantage : lance deux d20, garde le plus bas.',
@@ -6975,6 +6986,12 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.back': 'Go back to the previous menu.',
     'radialMenu.tip.close': 'Close the menu.',
     'dice.tip.closeHistory': 'Close the roll history.',
+    'dice.history.title': 'Roll history',
+    'dice.history.closeLabel': 'Close history',
+    'dice.history.empty':
+      'No rolls recorded yet. Try an initiative or an ability check.',
+    'dice.history.modeSaveError': 'Dice mode not saved',
+    'dice.history.modeSaveErrorSub': 'Firestore error',
     'dm.tip.advNormal': 'Normal roll: a single d20.',
     'dm.tip.advAdvantage': 'Advantage: roll two d20, keep the highest.',
     'dm.tip.advDisadvantage': 'Disadvantage: roll two d20, keep the lowest.',
