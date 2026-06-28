@@ -28,6 +28,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
   const { data: ancestries } = useContent('ancestries');
   const { data: classes } = useContent('classes');
   const { data: backgrounds } = useContent('backgrounds');
+  const { data: subclasses } = useContent('subclasses');
   // Le passage de niveau / l'ajout de classe écrivent la fiche → réservés au
   // propriétaire. En lecture MJ (`!canEdit`, JALON 4A.3) le bouton disparaît :
   // le meneur consulte, il ne fait pas monter le joueur de niveau.
@@ -69,6 +70,30 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
       .join(' / ');
   }, [character.classes, classes, primaryClassName]);
 
+  // Sous-classe (mono-classe uniquement) résolue À L'IDENTIQUE du bundle —
+  // avant, le slug brut était capitalisé (« path-of-the-berserker » → « Path of
+  // the berserker »), ce qui fuitait l'anglais en FR et ne correspondait pas au
+  // nom officiel. `null` si non choisie (niveaux 1-2) ou non résolue → segment omis.
+  const subclassName = useMemo(() => {
+    if (character.classes.length > 1) return null;
+    const subId = character.classes[0]?.subclassId;
+    if (!subId) return null;
+    const sub = subclasses.find((s) => s.id === subId);
+    return sub ? localize(sub.name) : null;
+  }, [character.classes, subclasses]);
+
+  // Segments de la ligne d'identité APRÈS la classe (dorée). Joints par « · »
+  // via filtre — plus de double séparateur « · · » quand la sous-classe manque.
+  // Le niveau n'est ajouté qu'en mono-classe (en multi-classe il est déjà porté
+  // par `classSubtitle` : « Magicien 3 / Roublard 2 »). Localisé (plus de
+  // « Niveau » codé en dur → couvre l'EN).
+  const identityTail = useMemo(() => {
+    if (character.classes.length > 1) return [];
+    return [subclassName, t('sheet.hero.level').replace('{n}', String(character.totalLevel))].filter(
+      (seg): seg is string => Boolean(seg),
+    );
+  }, [character.classes.length, subclassName, character.totalLevel]);
+
   const portraitLetter = character.portrait.value || character.name[0] || '?';
 
   return (
@@ -100,11 +125,9 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
 
       <p className="text-center font-serif text-body italic text-text-secondary">
         <strong className="not-italic font-semibold text-gold-bright">{classSubtitle}</strong>
-        {character.classes.length <= 1 && (
-          <> · {character.classes[0]?.subclassId ? capitalize(character.classes[0].subclassId) : ''}</>
-        )}
-        {character.classes.length <= 1 && ' · '}
-        {character.classes.length <= 1 && `Niveau ${character.totalLevel}`}
+        {identityTail.map((seg) => (
+          <span key={seg}> · {seg}</span>
+        ))}
       </p>
       <p className="mt-1 text-center font-serif text-body-sm italic text-text-tertiary">
         {ancestryName}
@@ -122,9 +145,4 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
       ) : null}
     </section>
   );
-}
-
-function capitalize(s: string): string {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1).replace(/-/g, ' ');
 }

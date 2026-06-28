@@ -384,6 +384,7 @@ export type StringKey =
   | 'sheet.error.title'
   | 'sheet.statusStrip.aria'
   | 'sheet.modeTabs.aria'
+  | 'sheet.hero.level'
   | 'sheet.stat.hp'
   | 'sheet.stat.ac'
   | 'sheet.stat.init'
@@ -2769,6 +2770,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.error.title': 'Erreur de chargement',
     'sheet.statusStrip.aria': 'Statistiques vitales',
     'sheet.modeTabs.aria': 'Sections de la fiche',
+    'sheet.hero.level': 'Niveau {n}',
     'sheet.stat.hp': 'PV',
     'sheet.stat.ac': 'CA',
     'sheet.stat.init': 'Init',
@@ -5640,6 +5642,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.error.title': 'Loading error',
     'sheet.statusStrip.aria': 'Vital statistics',
     'sheet.modeTabs.aria': 'Sheet sections',
+    'sheet.hero.level': 'Level {n}',
     'sheet.stat.hp': 'HP',
     'sheet.stat.ac': 'AC',
     'sheet.stat.init': 'Init',

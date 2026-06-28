@@ -8,6 +8,7 @@ import { HeroCard } from '../hero-card';
 import ancestriesBundle from '../../../../../public/data/ancestries.json';
 import backgroundsBundle from '../../../../../public/data/backgrounds.json';
 import classesBundle from '../../../../../public/data/classes.json';
+import subclassesBundle from '../../../../../public/data/subclasses.json';
 
 /**
  * Carte héros — Cat. 2 (identité) + Cat. 5 (cohérence wizard → fiche).
@@ -24,6 +25,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
     if (type === 'ancestries') return { data: ancestriesBundle, isLoading: false, error: null };
     if (type === 'backgrounds') return { data: backgroundsBundle, isLoading: false, error: null };
     if (type === 'classes') return { data: classesBundle, isLoading: false, error: null };
+    if (type === 'subclasses') return { data: subclassesBundle, isLoading: false, error: null };
     return { data: [], isLoading: false, error: null };
   },
 }));
@@ -121,5 +123,50 @@ describe('<HeroCard> — historique sur la ligne d\'identité', () => {
     expect(screen.queryByText(/custom-unknown/)).toBeNull();
     // L'espèce reste affichée, sans « · » orphelin derrière.
     expect(screen.getByText('Humain')).toBeInTheDocument();
+  });
+});
+
+describe('<HeroCard> — ligne classe · sous-classe · niveau', () => {
+  it('mono-classe sans sous-classe : un seul séparateur (pas de « · · ») + niveau localisé', () => {
+    render(<HeroCard character={buildCharacter()} />);
+    const line = screen.getByText('Clerc').closest('p');
+    expect(line).not.toBeNull();
+    // « Clerc · Niveau 1 » — un seul bullet, plus jamais « Clerc ·  · Niveau 1 ».
+    expect(line!.textContent).toMatch(/Clerc\s*·\s*Niveau 1/);
+    expect(line!.textContent).not.toMatch(/·\s+·/);
+  });
+
+  it('résout le nom de la sous-classe À L\'IDENTIQUE du bundle (pas le slug brut)', () => {
+    render(
+      <HeroCard
+        character={buildCharacter({
+          classes: [
+            {
+              classId: 'barbarian',
+              subclassId: 'path-of-the-berserker',
+              level: 3,
+              clericDivineOrder: null,
+              druidPrimalOrder: null,
+              fighterFightingStyle: null,
+              weaponMasteries: [],
+              expertiseSkills: [],
+              eldritchInvocations: [],
+              wizardSpellbookL1: [],
+            },
+          ],
+          primaryClassId: 'barbarian',
+          totalLevel: 3,
+        })}
+      />,
+    );
+    // Valeur figée du bundle (Cat. 3) : « Voie du Berserker », jamais « Path of the berserker ».
+    const subFr = (subclassesBundle as Array<{ id: string; name: { fr: string } }>).find(
+      (s) => s.id === 'path-of-the-berserker',
+    )!.name.fr;
+    expect(subFr).toBe('Voie du Berserker');
+    const line = screen.getByText('Barbare').closest('p');
+    expect(line).not.toBeNull();
+    expect(line!.textContent).toMatch(/Barbare\s*·\s*Voie du Berserker\s*·\s*Niveau 3/);
+    expect(line!.textContent).not.toMatch(/path-of-the-berserker/);
   });
 });

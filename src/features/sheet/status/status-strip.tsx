@@ -54,7 +54,7 @@ export function StatusStrip({
   return (
     <section
       aria-label={t('sheet.statusStrip.aria')}
-      className="mx-auto mt-6 grid w-full max-w-[420px] grid-cols-2 gap-2 px-4 sm:grid-cols-4 lg:px-2"
+      className="mx-auto mt-6 grid w-full max-w-[420px] grid-cols-2 gap-2 px-4 sm:grid-cols-4 lg:grid-cols-2 lg:px-2"
     >
       <StatusCell
         icon="i-shield"
