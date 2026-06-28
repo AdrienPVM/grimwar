@@ -46,12 +46,12 @@ export function PrimalOrderCard({ character }: PrimalOrderCardProps): JSX.Elemen
 
   const name = localize(orderEntry.name);
   const summary = localize(orderEntry.summary);
-  const ariaLabel = `Ordre primordial : ${name}`;
+  const ariaLabel = t('sheet.essence.primalOrder.aria').replace('{name}', name);
 
   return (
     <Card>
       <CardHeader>
-        <h3>Ordre primordial</h3>
+        <h3>{t('sheet.essence.primalOrder.title')}</h3>
       </CardHeader>
       <Tooltip label={t('sheet.tip.openDetail')} decorative className="w-full">
         <button
@@ -68,7 +68,7 @@ export function PrimalOrderCard({ character }: PrimalOrderCardProps): JSX.Elemen
       <OrderDetailModal
         open={open}
         onClose={() => setOpen(false)}
-        kindLabel="Ordre primordial"
+        kindLabel={t('sheet.essence.primalOrder.title')}
         name={name}
         summary={summary}
       />

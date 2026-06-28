@@ -70,7 +70,7 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
   return (
     <Card>
       <CardHeader>
-        <h3>Compétences</h3>
+        <h3>{t('sheet.essence.skills.title')}</h3>
       </CardHeader>
       <div className="mb-4 flex items-center gap-2 rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2">
         <Icon name="i-search" className="h-4 w-4 text-text-tertiary" />
@@ -78,7 +78,7 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Que veux-tu faire ?"
+          placeholder={t('sheet.essence.skills.searchPlaceholder')}
           className="w-full bg-transparent font-serif text-body-sm text-text outline-none placeholder:italic placeholder:text-text-faint"
         />
       </div>
@@ -86,7 +86,7 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
       <ul className="flex flex-col gap-1.5">
         {filtered.length === 0 ? (
           <li className="py-2 text-center font-serif text-body-sm italic text-text-tertiary">
-            Aucune compétence correspondante.
+            {t('sheet.essence.skills.noMatch')}
           </li>
         ) : (
           filtered.map((skill) => {
@@ -142,7 +142,7 @@ function ProficiencyIndicator({ level }: { level: SkillProf }): JSX.Element {
   if (level === 0) {
     return (
       <span
-        aria-label="Non maîtrisée"
+        aria-label={t('sheet.essence.skills.notProficient')}
         className="h-3 w-3 rounded-full border border-white-8 bg-transparent"
       />
     );
@@ -150,7 +150,7 @@ function ProficiencyIndicator({ level }: { level: SkillProf }): JSX.Element {
   if (level === 1) {
     return (
       <span
-        aria-label="Maîtrise"
+        aria-label={t('sheet.essence.skills.proficient')}
         className="h-3 w-3 rounded-full bg-gold-bright shadow-[0_0_6px_rgba(220,184,108,0.7)]"
       />
     );
@@ -158,7 +158,7 @@ function ProficiencyIndicator({ level }: { level: SkillProf }): JSX.Element {
   // 2 — expertise : losange
   return (
     <span
-      aria-label="Expertise"
+      aria-label={t('sheet.essence.skills.expertise')}
       className="block h-3 w-3 rotate-45 bg-gold-bright shadow-[0_0_8px_rgba(220,184,108,0.9)]"
     />
   );

@@ -6,7 +6,7 @@ import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import type { Character, AbilityCode } from '@/shared/types/character';
 
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
@@ -26,16 +26,16 @@ interface PointLayout {
   /** Pourcentage vertical du centre du bouton dans le carré 1:1. */
   top: string;
   iconName: 'i-for' | 'i-dex' | 'i-con' | 'i-int' | 'i-sag' | 'i-cha';
-  shortLabel: string;
+  shortLabelKey: StringKey;
 }
 
 const HEX_POINTS: readonly PointLayout[] = [
-  { ability: 'int', left: '50%', top: '13.75%', iconName: 'i-int', shortLabel: 'Intel.' },
-  { ability: 'sag', left: '81.25%', top: '31.75%', iconName: 'i-sag', shortLabel: 'Sagesse' },
-  { ability: 'cha', left: '81.25%', top: '68%', iconName: 'i-cha', shortLabel: 'Charisme' },
-  { ability: 'for', left: '50%', top: '86.25%', iconName: 'i-for', shortLabel: 'Force' },
-  { ability: 'con', left: '18.75%', top: '68%', iconName: 'i-con', shortLabel: 'Const.' },
-  { ability: 'dex', left: '18.75%', top: '31.75%', iconName: 'i-dex', shortLabel: 'Dextér.' },
+  { ability: 'int', left: '50%', top: '13.75%', iconName: 'i-int', shortLabelKey: 'sheet.essence.hex.short.int' },
+  { ability: 'sag', left: '81.25%', top: '31.75%', iconName: 'i-sag', shortLabelKey: 'sheet.essence.hex.short.sag' },
+  { ability: 'cha', left: '81.25%', top: '68%', iconName: 'i-cha', shortLabelKey: 'sheet.essence.hex.short.cha' },
+  { ability: 'for', left: '50%', top: '86.25%', iconName: 'i-for', shortLabelKey: 'sheet.essence.hex.short.for' },
+  { ability: 'con', left: '18.75%', top: '68%', iconName: 'i-con', shortLabelKey: 'sheet.essence.hex.short.con' },
+  { ability: 'dex', left: '18.75%', top: '31.75%', iconName: 'i-dex', shortLabelKey: 'sheet.essence.hex.short.dex' },
 ];
 
 /**
@@ -58,7 +58,7 @@ export function Hexagram({ character, readOnly }: HexagramProps): JSX.Element {
     const result = await rollWithFlags({
       character,
       baseMod: mod,
-      label: `Test de ${t(`ability.${ability}`)}`,
+      label: t('sheet.essence.hex.rollLabel').replace('{ability}', t(`ability.${ability}`)),
       advantage,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
@@ -70,7 +70,7 @@ export function Hexagram({ character, readOnly }: HexagramProps): JSX.Element {
   return (
     <Card>
       <CardHeader>
-        <h3>Hexagramme</h3>
+        <h3>{t('sheet.essence.hex.title')}</h3>
       </CardHeader>
 
       <div className="relative mx-auto aspect-square w-full max-w-[460px]">
@@ -145,7 +145,7 @@ export function Hexagram({ character, readOnly }: HexagramProps): JSX.Element {
         {/* Centre : Maîtrise / Proficiency Bonus. */}
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
           <div className="font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            Maîtrise
+            {t('sheet.essence.hex.proficiency')}
           </div>
           <div className="font-display text-[26px] font-black tracking-[-0.02em] text-gold-bright [text-shadow:0_0_18px_rgba(220,184,108,0.5)]">
             +{pb}
@@ -183,7 +183,7 @@ function HexPoint({ layout, score, disabled, onTap, onLongPress }: HexPointProps
     <button
       type="button"
       disabled={disabled}
-      aria-label={`Test de ${layout.ability.toUpperCase()} (appui long pour avantage/désavantage)`}
+      aria-label={t('sheet.essence.hex.pointAria').replace('{ability}', t(`ability.${layout.ability}`))}
       className={cn(
         'absolute z-[5] flex h-[88px] w-[88px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center gap-0.5 rounded-full border border-soft bg-bg-2/70 backdrop-blur-md transition-all',
         'hover:border-gold-bright hover:bg-gold-bright/10 active:scale-95',
@@ -202,7 +202,7 @@ function HexPoint({ layout, score, disabled, onTap, onLongPress }: HexPointProps
         {signed}
       </span>
       <span className="font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
-        {layout.shortLabel}
+        {t(layout.shortLabelKey)}
       </span>
     </button>
   );
@@ -219,7 +219,7 @@ function AdvantageMenu({ target, onPick, onClose }: AdvantageMenuProps): JSX.Ele
     <>
       <button
         type="button"
-        aria-label="Fermer le menu"
+        aria-label={t('sheet.essence.hex.closeMenu')}
         className="absolute inset-0 z-[10] cursor-default bg-ink/40 backdrop-blur-sm"
         onClick={onClose}
       />
@@ -228,9 +228,11 @@ function AdvantageMenu({ target, onPick, onClose }: AdvantageMenuProps): JSX.Ele
         className="absolute z-[11] flex -translate-x-1/2 -translate-y-1/2 flex-col gap-1 rounded-card-sm border border-soft bg-bg-2/95 p-2 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md"
         style={{ left: target.left, top: target.top }}
       >
-        <MenuButton onClick={() => onPick('advantage')}>Avantage</MenuButton>
-        <MenuButton onClick={() => onPick('normal')}>Normal</MenuButton>
-        <MenuButton onClick={() => onPick('disadvantage')}>Désavantage</MenuButton>
+        <MenuButton onClick={() => onPick('advantage')}>{t('sheet.essence.advantage')}</MenuButton>
+        <MenuButton onClick={() => onPick('normal')}>{t('sheet.essence.normal')}</MenuButton>
+        <MenuButton onClick={() => onPick('disadvantage')}>
+          {t('sheet.essence.disadvantage')}
+        </MenuButton>
       </div>
     </>
   );

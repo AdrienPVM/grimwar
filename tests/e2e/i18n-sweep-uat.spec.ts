@@ -5,6 +5,7 @@ import { expect, test } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import {
+  clericL1Protector,
   fighterL1DefenseChainmail,
   seedCharacter,
   warlockL1ArmorOfShadows,
@@ -82,6 +83,31 @@ test.describe('UAT i18n — modes de fiche', () => {
 
     writeFileSync(
       path.join(UAT_DIR, '05-avoir-inventaire-bourse-pleine-page.png'),
+      await page.screenshot({ fullPage: true, animations: 'disabled' }),
+    );
+  });
+
+  test('mode Essence (Clerc) — ordre divin, sauvegardes, compétences, hexagramme', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    const { charId } = await seedCharacter(page, clericL1Protector);
+    await page.goto(`/character/${charId}`);
+    await expect(page.getByText(clericL1Protector.name).first()).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('tab', { name: /^Essence$/i }).click();
+    const panel = page.locator('#sheet-mode-panel-essence');
+    await expect(panel).toBeVisible();
+
+    // Cartes localisées du mode Essence (libellés FR inchangés ; la passe ajoute
+    // la couverture EN + harmonise les aria-labels). On vérifie la présence.
+    await expect(panel.getByRole('heading', { name: 'Sauvegardes' })).toBeVisible();
+    await expect(panel.getByRole('heading', { name: 'Compétences' })).toBeVisible();
+
+    writeFileSync(
+      path.join(UAT_DIR, '06-essence-clerc-pleine-page.png'),
       await page.screenshot({ fullPage: true, animations: 'disabled' }),
     );
   });

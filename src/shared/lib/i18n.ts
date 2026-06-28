@@ -719,6 +719,57 @@ export type StringKey =
   | 'sheet.essence.invocation.pactOfTheTome.rituals'
   | 'sheet.essence.invocation.pactOfTheTome.focus'
   | 'sheet.essence.invocation.pactOfTheTome.deferred'
+  // Abréviations d'aptitude (chips de sauvegarde) — distinctes des noms complets
+  | 'ability.short.for'
+  | 'ability.short.dex'
+  | 'ability.short.con'
+  | 'ability.short.int'
+  | 'ability.short.sag'
+  | 'ability.short.cha'
+  // Mode Essence — cartes d'ordre, en-tête, sauvegardes, compétences, hexagramme
+  | 'sheet.essence.advantage'
+  | 'sheet.essence.normal'
+  | 'sheet.essence.disadvantage'
+  | 'sheet.essence.close'
+  | 'sheet.essence.divineOrder.title'
+  | 'sheet.essence.divineOrder.aria'
+  | 'sheet.essence.primalOrder.title'
+  | 'sheet.essence.primalOrder.aria'
+  | 'sheet.essence.header.aura'
+  | 'sheet.essence.header.inspirationChip'
+  | 'sheet.essence.header.inspirationGranted'
+  | 'sheet.essence.header.inspirationRemoved'
+  | 'sheet.essence.header.inspirationGrantedSub'
+  | 'sheet.essence.header.grantInspirationAria'
+  | 'sheet.essence.header.removeInspirationAria'
+  | 'sheet.essence.header.exhaustion'
+  | 'sheet.essence.header.exhaustionPenalty'
+  | 'sheet.essence.invocations.title'
+  | 'sheet.essence.invocations.kind'
+  | 'sheet.essence.invocations.aria'
+  | 'sheet.essence.saves.title'
+  | 'sheet.essence.saves.rollLabel'
+  | 'sheet.essence.saves.menuTitle'
+  | 'sheet.essence.saves.chipAria'
+  | 'sheet.essence.saves.proficientSuffix'
+  | 'sheet.essence.saves.menuAria'
+  | 'sheet.essence.skills.title'
+  | 'sheet.essence.skills.searchPlaceholder'
+  | 'sheet.essence.skills.noMatch'
+  | 'sheet.essence.skills.notProficient'
+  | 'sheet.essence.skills.proficient'
+  | 'sheet.essence.skills.expertise'
+  | 'sheet.essence.hex.title'
+  | 'sheet.essence.hex.proficiency'
+  | 'sheet.essence.hex.rollLabel'
+  | 'sheet.essence.hex.pointAria'
+  | 'sheet.essence.hex.closeMenu'
+  | 'sheet.essence.hex.short.int'
+  | 'sheet.essence.hex.short.sag'
+  | 'sheet.essence.hex.short.cha'
+  | 'sheet.essence.hex.short.for'
+  | 'sheet.essence.hex.short.con'
+  | 'sheet.essence.hex.short.dex'
   // Combat — badge Weapon Mastery sur les armes équipées (plan 13.9 hotfix UAT)
   | 'sheet.combat.attacks.masteryBadgePrefix'
   | 'sheet.combat.attacks.masteryBadgeAria'
@@ -3098,6 +3149,57 @@ const STRINGS: Record<Locale, Dict> = {
       "Le grimoire sert de focaliseur d'incantation pour vos sorts d'Occultiste.",
     'sheet.essence.invocation.pactOfTheTome.deferred':
       "Choisissez vos 5 sorts avec votre MJ — l'intégration au moteur de sorts est différée à un plan ultérieur.",
+    // Abréviations d'aptitude (chips de sauvegarde)
+    'ability.short.for': 'For',
+    'ability.short.dex': 'Dex',
+    'ability.short.con': 'Con',
+    'ability.short.int': 'Int',
+    'ability.short.sag': 'Sag',
+    'ability.short.cha': 'Cha',
+    // Mode Essence — ordres, en-tête, sauvegardes, compétences, hexagramme
+    'sheet.essence.advantage': 'Avantage',
+    'sheet.essence.normal': 'Normal',
+    'sheet.essence.disadvantage': 'Désavantage',
+    'sheet.essence.close': 'Fermer',
+    'sheet.essence.divineOrder.title': 'Ordre divin',
+    'sheet.essence.divineOrder.aria': 'Ordre divin : {name}',
+    'sheet.essence.primalOrder.title': 'Ordre primordial',
+    'sheet.essence.primalOrder.aria': 'Ordre primordial : {name}',
+    'sheet.essence.header.aura': 'Aura',
+    'sheet.essence.header.inspirationChip': 'Inspiration',
+    'sheet.essence.header.inspirationGranted': 'Inspiration accordée',
+    'sheet.essence.header.inspirationRemoved': 'Inspiration retirée',
+    'sheet.essence.header.inspirationGrantedSub': 'Prochain d20 avec avantage',
+    'sheet.essence.header.grantInspirationAria': 'Accorder l’inspiration',
+    'sheet.essence.header.removeInspirationAria': 'Retirer l’inspiration',
+    'sheet.essence.header.exhaustion': 'Épuisement · niveau {n}',
+    'sheet.essence.header.exhaustionPenalty': '−{n} sur tous les jets de d20.',
+    'sheet.essence.invocations.title': 'Manifestations occultes',
+    'sheet.essence.invocations.kind': 'Manifestation occulte',
+    'sheet.essence.invocations.aria': 'Manifestation occulte : {name}',
+    'sheet.essence.saves.title': 'Sauvegardes',
+    'sheet.essence.saves.rollLabel': 'JS {ability}',
+    'sheet.essence.saves.menuTitle': 'JS {ability}',
+    'sheet.essence.saves.chipAria': 'Jet de sauvegarde {ability}',
+    'sheet.essence.saves.proficientSuffix': ' (maîtrise)',
+    'sheet.essence.saves.menuAria': 'Options pour le jet de sauvegarde {ability}',
+    'sheet.essence.skills.title': 'Compétences',
+    'sheet.essence.skills.searchPlaceholder': 'Que veux-tu faire ?',
+    'sheet.essence.skills.noMatch': 'Aucune compétence correspondante.',
+    'sheet.essence.skills.notProficient': 'Non maîtrisée',
+    'sheet.essence.skills.proficient': 'Maîtrise',
+    'sheet.essence.skills.expertise': 'Expertise',
+    'sheet.essence.hex.title': 'Hexagramme',
+    'sheet.essence.hex.proficiency': 'Maîtrise',
+    'sheet.essence.hex.rollLabel': 'Test de {ability}',
+    'sheet.essence.hex.pointAria': 'Test de {ability} (appui long pour avantage/désavantage)',
+    'sheet.essence.hex.closeMenu': 'Fermer le menu',
+    'sheet.essence.hex.short.int': 'Intel.',
+    'sheet.essence.hex.short.sag': 'Sagesse',
+    'sheet.essence.hex.short.cha': 'Charisme',
+    'sheet.essence.hex.short.for': 'Force',
+    'sheet.essence.hex.short.con': 'Const.',
+    'sheet.essence.hex.short.dex': 'Dextér.',
     // Combat — badge Weapon Mastery (hotfix UAT 2026-05-19)
     'sheet.combat.attacks.masteryBadgePrefix': 'Maîtrise',
     'sheet.combat.attacks.masteryBadgeAria': 'Voir la maîtrise de {weapon}',
@@ -5859,6 +5961,57 @@ const STRINGS: Record<Locale, Dict> = {
       'The book serves as a Spellcasting Focus for your Warlock spells.',
     'sheet.essence.invocation.pactOfTheTome.deferred':
       'Choose your 5 spells with your GM — spell-engine integration is deferred to a later plan.',
+    // Ability abbreviations (saving-throw chips)
+    'ability.short.for': 'STR',
+    'ability.short.dex': 'DEX',
+    'ability.short.con': 'CON',
+    'ability.short.int': 'INT',
+    'ability.short.sag': 'WIS',
+    'ability.short.cha': 'CHA',
+    // Essence mode — orders, header, saves, skills, hexagram
+    'sheet.essence.advantage': 'Advantage',
+    'sheet.essence.normal': 'Normal',
+    'sheet.essence.disadvantage': 'Disadvantage',
+    'sheet.essence.close': 'Close',
+    'sheet.essence.divineOrder.title': 'Divine order',
+    'sheet.essence.divineOrder.aria': 'Divine order: {name}',
+    'sheet.essence.primalOrder.title': 'Primal order',
+    'sheet.essence.primalOrder.aria': 'Primal order: {name}',
+    'sheet.essence.header.aura': 'Aura',
+    'sheet.essence.header.inspirationChip': 'Inspiration',
+    'sheet.essence.header.inspirationGranted': 'Inspiration granted',
+    'sheet.essence.header.inspirationRemoved': 'Inspiration removed',
+    'sheet.essence.header.inspirationGrantedSub': 'Next d20 with advantage',
+    'sheet.essence.header.grantInspirationAria': 'Grant inspiration',
+    'sheet.essence.header.removeInspirationAria': 'Remove inspiration',
+    'sheet.essence.header.exhaustion': 'Exhaustion · level {n}',
+    'sheet.essence.header.exhaustionPenalty': '−{n} on all d20 rolls.',
+    'sheet.essence.invocations.title': 'Eldritch invocations',
+    'sheet.essence.invocations.kind': 'Eldritch invocation',
+    'sheet.essence.invocations.aria': 'Eldritch invocation: {name}',
+    'sheet.essence.saves.title': 'Saving throws',
+    'sheet.essence.saves.rollLabel': 'Save {ability}',
+    'sheet.essence.saves.menuTitle': 'Save {ability}',
+    'sheet.essence.saves.chipAria': 'Saving throw {ability}',
+    'sheet.essence.saves.proficientSuffix': ' (proficient)',
+    'sheet.essence.saves.menuAria': 'Options for the {ability} saving throw',
+    'sheet.essence.skills.title': 'Skills',
+    'sheet.essence.skills.searchPlaceholder': 'What do you want to do?',
+    'sheet.essence.skills.noMatch': 'No matching skill.',
+    'sheet.essence.skills.notProficient': 'Not proficient',
+    'sheet.essence.skills.proficient': 'Proficient',
+    'sheet.essence.skills.expertise': 'Expertise',
+    'sheet.essence.hex.title': 'Hexagram',
+    'sheet.essence.hex.proficiency': 'Proficiency',
+    'sheet.essence.hex.rollLabel': 'Test of {ability}',
+    'sheet.essence.hex.pointAria': 'Test of {ability} (long press for advantage/disadvantage)',
+    'sheet.essence.hex.closeMenu': 'Close menu',
+    'sheet.essence.hex.short.int': 'Int.',
+    'sheet.essence.hex.short.sag': 'Wisdom',
+    'sheet.essence.hex.short.cha': 'Charisma',
+    'sheet.essence.hex.short.for': 'Strength',
+    'sheet.essence.hex.short.con': 'Con.',
+    'sheet.essence.hex.short.dex': 'Dex.',
     'sheet.combat.attacks.masteryBadgePrefix': 'Mastery',
     'sheet.combat.attacks.masteryBadgeAria': 'View {weapon} mastery',
     'nav.aria': 'Main navigation',

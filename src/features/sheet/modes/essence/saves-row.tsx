@@ -4,7 +4,7 @@ import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
 import { abilityModifier, ABILITY_ORDER } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import type { AbilityCode, Character } from '@/shared/types/character';
 import { useState } from 'react';
 
@@ -25,13 +25,13 @@ interface SavesRowProps {
   extraSaveBonus?: number;
 }
 
-const ABILITY_SHORT: Record<AbilityCode, string> = {
-  for: 'For',
-  dex: 'Dex',
-  con: 'Con',
-  int: 'Int',
-  sag: 'Sag',
-  cha: 'Cha',
+const ABILITY_SHORT_KEYS: Record<AbilityCode, StringKey> = {
+  for: 'ability.short.for',
+  dex: 'ability.short.dex',
+  con: 'ability.short.con',
+  int: 'ability.short.int',
+  sag: 'ability.short.sag',
+  cha: 'ability.short.cha',
 };
 
 /**
@@ -59,7 +59,7 @@ export function SavesRow({
     const result = await rollWithFlags({
       character,
       baseMod: mod,
-      label: `JS ${ABILITY_SHORT[ability]}`,
+      label: t('sheet.essence.saves.rollLabel').replace('{ability}', t(ABILITY_SHORT_KEYS[ability])),
       advantage,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
@@ -71,7 +71,7 @@ export function SavesRow({
   return (
     <Card>
       <CardHeader>
-        <h3>Sauvegardes</h3>
+        <h3>{t('sheet.essence.saves.title')}</h3>
       </CardHeader>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {ABILITY_ORDER.map((ability) => (
@@ -134,7 +134,10 @@ function SaveChip({
       <button
         type="button"
         disabled={disabled}
-        aria-label={`Jet de sauvegarde ${t(`ability.${ability}`)}${proficient ? ' (maîtrise)' : ''}`}
+        aria-label={
+          t('sheet.essence.saves.chipAria').replace('{ability}', t(`ability.${ability}`)) +
+          (proficient ? t('sheet.essence.saves.proficientSuffix') : '')
+        }
         className={cn(
           'relative flex w-full flex-col items-center justify-center gap-0.5 rounded-card-sm border bg-bg-2/40 px-2 py-2.5 transition-all',
           proficient
@@ -152,7 +155,7 @@ function SaveChip({
           />
         )}
         <span className="font-title text-[9px] font-bold uppercase tracking-[0.18em] text-text-tertiary">
-          {ABILITY_SHORT[ability]}
+          {t(ABILITY_SHORT_KEYS[ability])}
         </span>
         <span
           className={cn(
@@ -179,39 +182,39 @@ function SaveMenuOverlay({
   return (
     <div
       role="dialog"
-      aria-label={`Options pour le jet de sauvegarde ${t(`ability.${ability}`)}`}
+      aria-label={t('sheet.essence.saves.menuAria').replace('{ability}', t(`ability.${ability}`))}
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6 backdrop-blur-sm"
     >
       <button
         type="button"
-        aria-label="Fermer"
+        aria-label={t('sheet.essence.close')}
         className="absolute inset-0 cursor-default"
         onClick={onClose}
       />
       <div className="relative flex flex-col gap-2 rounded-card border border-soft bg-bg-2/95 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-md">
         <p className="mb-2 text-center font-title text-[10px] font-bold uppercase tracking-[0.2em] text-text-tertiary">
-          JS {t(`ability.${ability}`)}
+          {t('sheet.essence.saves.menuTitle').replace('{ability}', t(`ability.${ability}`))}
         </p>
         <button
           type="button"
           onClick={() => onPick('advantage')}
           className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
         >
-          Avantage
+          {t('sheet.essence.advantage')}
         </button>
         <button
           type="button"
           onClick={() => onPick('normal')}
           className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
         >
-          Normal
+          {t('sheet.essence.normal')}
         </button>
         <button
           type="button"
           onClick={() => onPick('disadvantage')}
           className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
         >
-          Désavantage
+          {t('sheet.essence.disadvantage')}
         </button>
       </div>
     </div>

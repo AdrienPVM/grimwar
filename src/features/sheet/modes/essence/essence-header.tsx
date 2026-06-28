@@ -33,8 +33,10 @@ export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.
     await updateCharacter({ inspiration: next });
     showToast({
       kind: next ? 'info' : 'grim',
-      title: next ? 'Inspiration accordée' : 'Inspiration retirée',
-      sub: next ? 'Prochain d20 avec avantage' : '',
+      title: next
+        ? t('sheet.essence.header.inspirationGranted')
+        : t('sheet.essence.header.inspirationRemoved'),
+      sub: next ? t('sheet.essence.header.inspirationGrantedSub') : '',
       durationMs: 1800,
     });
   }
@@ -45,7 +47,7 @@ export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="font-title text-[10px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-          Aura
+          {t('sheet.essence.header.aura')}
         </span>
         <Tooltip label={t('sheet.tip.toggleInspiration')} decorative>
           <button
@@ -54,7 +56,9 @@ export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.
             onClick={() => void toggleInspiration()}
             aria-pressed={character.inspiration}
             aria-label={
-              character.inspiration ? 'Retirer l\'inspiration' : 'Accorder l\'inspiration'
+              character.inspiration
+                ? t('sheet.essence.header.removeInspirationAria')
+                : t('sheet.essence.header.grantInspirationAria')
             }
             className="disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -70,7 +74,7 @@ export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.
                   character.inspiration ? 'text-ink' : 'text-text-tertiary',
                 )}
               />
-              Inspiration
+              {t('sheet.essence.header.inspirationChip')}
             </Chip>
           </button>
         </Tooltip>
@@ -84,10 +88,10 @@ export function EssenceHeader({ character, readOnly }: EssenceHeaderProps): JSX.
           <Icon name="i-skull" className="h-4 w-4 shrink-0 text-crimson" />
           <div className="flex-1">
             <p className="font-title text-[10px] font-bold uppercase tracking-[0.18em] text-crimson">
-              Épuisement · niveau {character.exhaustion}
+              {t('sheet.essence.header.exhaustion').replace('{n}', String(character.exhaustion))}
             </p>
             <p className="font-serif text-body-sm italic text-text-secondary">
-              −{exhPenalty} sur tous les jets de d20.
+              {t('sheet.essence.header.exhaustionPenalty').replace('{n}', String(exhPenalty))}
             </p>
           </div>
         </div>

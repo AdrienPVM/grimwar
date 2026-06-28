@@ -80,13 +80,13 @@ export function InvocationsCard({ character }: InvocationsCardProps): JSX.Elemen
   return (
     <Card>
       <CardHeader>
-        <h3>Manifestations occultes</h3>
+        <h3>{t('sheet.essence.invocations.title')}</h3>
       </CardHeader>
       <ul className="flex flex-col gap-2">
         {known.map((inv) => {
           const name = localize(inv.name);
           const summary = localize(inv.summary);
-          const ariaLabel = `Manifestation occulte : ${name}`;
+          const ariaLabel = t('sheet.essence.invocations.aria').replace('{name}', name);
           return (
             <li key={inv.id}>
               <Tooltip label={t('sheet.tip.openDetail')} decorative className="w-full">
@@ -112,7 +112,7 @@ export function InvocationsCard({ character }: InvocationsCardProps): JSX.Elemen
       <OrderDetailModal
         open={opened !== null}
         onClose={() => setOpenSlug(null)}
-        kindLabel="Manifestation occulte"
+        kindLabel={t('sheet.essence.invocations.kind')}
         name={opened ? localize(opened.name) : ''}
         summary={opened ? localize(opened.summary) : ''}
         extra={opened ? <InvocationEffectCard slug={opened.id} /> : null}

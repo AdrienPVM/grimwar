@@ -49,12 +49,12 @@ export function DivineOrderCard({ character }: DivineOrderCardProps): JSX.Elemen
 
   const name = localize(orderEntry.name);
   const summary = localize(orderEntry.summary);
-  const ariaLabel = `Ordre divin : ${name}`;
+  const ariaLabel = t('sheet.essence.divineOrder.aria').replace('{name}', name);
 
   return (
     <Card>
       <CardHeader>
-        <h3>Ordre divin</h3>
+        <h3>{t('sheet.essence.divineOrder.title')}</h3>
       </CardHeader>
       <Tooltip label={t('sheet.tip.openDetail')} decorative className="w-full">
         <button
@@ -71,7 +71,7 @@ export function DivineOrderCard({ character }: DivineOrderCardProps): JSX.Elemen
       <OrderDetailModal
         open={open}
         onClose={() => setOpen(false)}
-        kindLabel="Ordre divin"
+        kindLabel={t('sheet.essence.divineOrder.title')}
         name={name}
         summary={summary}
       />
