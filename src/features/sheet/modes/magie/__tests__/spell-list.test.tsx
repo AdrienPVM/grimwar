@@ -704,7 +704,8 @@ describe("<SpellList> — D13e-followup-grant-display : Pacte du grimoire (Warlo
     );
     // Filtre Rituels compté à 1 (l'unique rituel Pacte).
     expect(screen.getByText(/Rituels · 1/)).toBeInTheDocument();
-    // Filtre Tours compté à 1 (le cantrip Pacte).
-    expect(screen.getByText(/Tours · 1/)).toBeInTheDocument();
+    // Filtre Sorts mineurs compté à 1 (le cantrip Pacte). Terme officiel SRD FR
+    // (« Sort mineur »), l'ancien libellé « Tours » était un anglicisme/raccourci.
+    expect(screen.getByText(/Sorts mineurs · 1/)).toBeInTheDocument();
   });
 });

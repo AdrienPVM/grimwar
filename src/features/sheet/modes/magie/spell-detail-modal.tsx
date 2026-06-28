@@ -146,7 +146,11 @@ export function SpellDetailModal({
   async function handleCast(): Promise<void> {
     if (readOnly || busy) return;
     if (!activeClass && !isCantrip && !isAncestryLeveledCast) {
-      showToast({ kind: 'info', title: 'Aucune classe lanceuse', sub: 'Le sort ne peut être lancé.' });
+      showToast({
+        kind: 'info',
+        title: t('sheet.magie.detail.noCasterTitle'),
+        sub: t('sheet.magie.detail.noCasterSub'),
+      });
       return;
     }
     if (ancestryCastBlocked) return;
@@ -179,8 +183,8 @@ export function SpellDetailModal({
         if (!nextSlots) {
           showToast({
             kind: 'fumble',
-            title: 'Plus d\'emplacement',
-            sub: `Aucun emplacement de niv. ${chosenLevel} disponible.`,
+            title: t('sheet.magie.detail.noSlotTitle'),
+            sub: t('sheet.magie.detail.noSlotSub').replace('{n}', String(chosenLevel)),
           });
           return;
         }
@@ -192,8 +196,8 @@ export function SpellDetailModal({
         if (character.currentConcentration && character.currentConcentration.spellId !== spell.id) {
           showToast({
             kind: 'info',
-            title: 'Concentration brisée',
-            sub: 'Le sort précédent prend fin.',
+            title: t('sheet.magie.detail.concBrokenTitle'),
+            sub: t('sheet.magie.detail.concBrokenSub'),
             durationMs: 2400,
           });
         }
@@ -249,7 +253,11 @@ export function SpellDetailModal({
         // choisi de ne pas logger le nombre de dégâts. C'est intentionnel ;
         // pas de rollback de slot, pas de toast de dégâts dupliqué.
         const damage = await dice.rollDamageWithMode(damageFormula, {
-          label: `${spellName}${castLevel === 0 ? '' : ` · niv. ${castLevel}`}`,
+          label: `${spellName}${
+            castLevel === 0
+              ? ''
+              : t('sheet.magie.detail.castLevelSuffix').replace('{n}', String(castLevel))
+          }`,
           characterId: character.id,
           kind: 'damage',
         });
@@ -265,8 +273,14 @@ export function SpellDetailModal({
         showToast({
           kind: 'roll',
           title: spellName,
-          big: castLevel === 0 ? 'Tour' : `Niv. ${castLevel}`,
-          sub: dc !== null ? `DD ${dc} si jet de sauvegarde requis` : 'Lancé',
+          big:
+            castLevel === 0
+              ? t('sheet.magie.detail.castBigCantrip')
+              : t('sheet.magie.slotLevelShort').replace('{n}', String(castLevel)),
+          sub:
+            dc !== null
+              ? t('sheet.magie.detail.castDcHint').replace('{dc}', String(dc))
+              : t('sheet.magie.detail.castDone'),
         });
       }
 
@@ -285,7 +299,7 @@ export function SpellDetailModal({
     const result = await rollWithFlags({
       character,
       baseMod: pb + mod,
-      label: `Attaque · ${localize(spell.name)}`,
+      label: t('sheet.magie.detail.attackLabel').replace('{spell}', localize(spell.name)),
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
@@ -313,10 +327,12 @@ export function SpellDetailModal({
             {localize(spell.name)}
           </h2>
           <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-            {isCantrip ? 'Sort mineur' : `Niveau ${spell.level}`} ·{' '}
-            {t(`school.${spell.school}`)}
-            {spell.concentration && ' · Concentration'}
-            {spell.ritual && ' · Rituel'}
+            {isCantrip
+              ? t('sheet.magie.cantripLabel')
+              : t('sheet.magie.prep.levelLabel').replace('{n}', String(spell.level))}{' '}
+            · {t(`school.${spell.school}`)}
+            {spell.concentration && t('sheet.magie.detail.concSuffix')}
+            {spell.ritual && t('sheet.magie.detail.ritualSuffix')}
           </p>
           {(spellcastingClasses.length > 0 || ancestrySource || pactTomeSource) && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -368,7 +384,7 @@ export function SpellDetailModal({
           {spell.atHigherLevels && (
             <div className="mt-4 rounded-card-sm border border-amethyst/25 bg-amethyst/[0.06] px-4 py-3">
               <p className="mb-1 font-title text-[10px] font-bold uppercase tracking-[0.2em] text-amethyst">
-                À niveau supérieur
+                {t('sheet.magie.detail.atHigherLevels')}
               </p>
               <p className="font-serif text-body-sm text-text-secondary">
                 {localize(spell.atHigherLevels)}
@@ -381,7 +397,7 @@ export function SpellDetailModal({
           {spellcastingClasses.length > 1 && (
             <label className="mb-3 flex flex-col gap-1">
               <span className="font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-                Classe lanceuse
+                {t('sheet.magie.detail.castingClass')}
               </span>
               <select
                 value={activeClassId}
@@ -390,7 +406,9 @@ export function SpellDetailModal({
               >
                 {spellcastingClasses.map((c) => (
                   <option key={c.classId} value={c.classId}>
-                    {c.name} (niv. {c.level})
+                    {t('sheet.magie.detail.classOption')
+                      .replace('{name}', c.name)
+                      .replace('{n}', String(c.level))}
                   </option>
                 ))}
               </select>
@@ -413,11 +431,11 @@ export function SpellDetailModal({
           {!isCantrip && !isAncestryLeveledCast && (
             <div className="mb-3">
               <p className="mb-1 font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-                Emplacement
+                {t('sheet.magie.detail.slotSection')}
               </p>
               {availableSlots.length === 0 ? (
                 <p className="font-serif text-body-sm italic text-crimson">
-                  Aucun emplacement de niveau {minSlotLevel} ou supérieur disponible.
+                  {t('sheet.magie.detail.noSlotAvailable').replace('{n}', String(minSlotLevel))}
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -432,7 +450,7 @@ export function SpellDetailModal({
                             : 'rounded-pill border border-white-8 bg-white/[0.04] px-4 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-secondary hover:border-soft hover:text-gold-bright'
                         }
                       >
-                        Niv. {lvl}
+                        {t('sheet.magie.slotLevelShort').replace('{n}', String(lvl))}
                       </button>
                     </Tooltip>
                   ))}
@@ -443,7 +461,7 @@ export function SpellDetailModal({
 
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={onClose} className="flex-1">
-              Fermer
+              {t('sheet.magie.detail.close')}
             </Button>
             {activeClass && (
               <Button
@@ -454,7 +472,7 @@ export function SpellDetailModal({
                 className="flex-1"
                 tooltip={t('sheet.tip.spellAttackRoll')}
               >
-                Jet d'att.
+                {t('sheet.magie.detail.attackShort')}
               </Button>
             )}
             <Button
@@ -470,7 +488,7 @@ export function SpellDetailModal({
               className="flex-1"
               tooltip={castDisabledHint ?? t('sheet.tip.castSpell')}
             >
-              {busy ? '…' : 'Lancer'}
+              {busy ? '…' : t('sheet.magie.detail.cast')}
             </Button>
           </div>
         </footer>

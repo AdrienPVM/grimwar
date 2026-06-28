@@ -131,10 +131,13 @@ export function WizardSpellbookSections({
 
   return (
     <>
-      <section role="region" aria-label={`Sorts préparés · ${prepared.length}`}>
+      <section
+        role="region"
+        aria-label={t('sheet.magie.preparedHeading').replace('{n}', String(prepared.length))}
+      >
         <Card>
           <CardHeader>
-            <h3>Sorts préparés · {prepared.length}</h3>
+            <h3>{t('sheet.magie.preparedHeading').replace('{n}', String(prepared.length))}</h3>
             {canEdit && (
               <Tooltip label={t('sheet.tip.editPreparation')} decorative>
                 <CardAction
@@ -184,14 +187,17 @@ export function WizardSpellbookSections({
           )}
         </Card>
       </section>
-      <section role="region" aria-label={`Grimoire · ${grimoireOnly.length}`}>
+      <section
+        role="region"
+        aria-label={t('sheet.magie.grimoireHeading').replace('{n}', String(grimoireOnly.length))}
+      >
         <Card>
           <CardHeader>
-            <h3>Grimoire · {grimoireOnly.length}</h3>
+            <h3>{t('sheet.magie.grimoireHeading').replace('{n}', String(grimoireOnly.length))}</h3>
           </CardHeader>
           {grimoireOnly.length === 0 ? (
             <p className="font-serif text-body-sm italic text-text-tertiary">
-              Tous vos sorts inscrits sont préparés aujourd'hui.
+              {t('sheet.magie.grimoireAllPrepared')}
             </p>
           ) : (
             <SpellRows
@@ -275,12 +281,12 @@ function SpellRows({
                   <span>{t(`school.${spell.school}`)}</span>
                   {spell.concentration && (
                     <span className="rounded-full border border-amethyst/40 px-1.5 py-0.5 text-[8px] text-amethyst">
-                      Concentr.
+                      {t('sheet.magie.concentrationShort')}
                     </span>
                   )}
                   {spell.ritual && (
                     <span className="rounded-full border border-teal/40 px-1.5 py-0.5 text-[8px] text-teal">
-                      Rituel
+                      {t('sheet.magie.ritualShort')}
                     </span>
                   )}
                   <SpellDamageChip spell={spell} />

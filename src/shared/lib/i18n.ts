@@ -633,6 +633,65 @@ export type StringKey =
   | 'sheet.magie.prep.prepared'
   | 'sheet.magie.prep.alwaysAvailable'
   | 'sheet.magie.prep.emptyPrepared'
+  // Mode Magie — cartes, cercle/pacte, liste, modale de sort (i18n complète)
+  | 'sheet.magie.restore'
+  | 'sheet.magie.noSlotToConsume'
+  | 'sheet.magie.longPressRestore'
+  | 'sheet.magie.cantripLabel'
+  | 'sheet.magie.cantripsHeading'
+  | 'sheet.magie.slotLevelShort'
+  | 'sheet.magie.concentrationShort'
+  | 'sheet.magie.ritualShort'
+  | 'sheet.magie.searchPlaceholder'
+  | 'sheet.magie.searchLabel'
+  | 'sheet.magie.spellbookTitle'
+  | 'sheet.magie.filterAll'
+  | 'sheet.magie.filterPrepared'
+  | 'sheet.magie.filterCantrips'
+  | 'sheet.magie.filterRituals'
+  | 'sheet.magie.noSpellMatch'
+  | 'sheet.magie.preparedHeading'
+  | 'sheet.magie.grimoireHeading'
+  | 'sheet.magie.grimoireAllPrepared'
+  | 'sheet.magie.pact.title'
+  | 'sheet.magie.pact.consumed'
+  | 'sheet.magie.pact.restored'
+  | 'sheet.magie.pact.shortRestTitle'
+  | 'sheet.magie.pact.shortRestSub'
+  | 'sheet.magie.pact.slotsInfo'
+  | 'sheet.magie.pact.dotConsume'
+  | 'sheet.magie.pact.dotRestore'
+  | 'sheet.magie.circle.title'
+  | 'sheet.magie.circle.noneUnlocked'
+  | 'sheet.magie.circle.slotConsumed'
+  | 'sheet.magie.circle.slotRestored'
+  | 'sheet.magie.circle.longRestTitle'
+  | 'sheet.magie.circle.longRestSub'
+  | 'sheet.magie.circle.centerLabel'
+  | 'sheet.magie.circle.rings'
+  | 'sheet.magie.circle.dotConsume'
+  | 'sheet.magie.circle.dotRestore'
+  | 'sheet.magie.detail.noCasterTitle'
+  | 'sheet.magie.detail.noCasterSub'
+  | 'sheet.magie.detail.noSlotTitle'
+  | 'sheet.magie.detail.noSlotSub'
+  | 'sheet.magie.detail.concBrokenTitle'
+  | 'sheet.magie.detail.concBrokenSub'
+  | 'sheet.magie.detail.castLevelSuffix'
+  | 'sheet.magie.detail.castBigCantrip'
+  | 'sheet.magie.detail.castDcHint'
+  | 'sheet.magie.detail.castDone'
+  | 'sheet.magie.detail.concSuffix'
+  | 'sheet.magie.detail.ritualSuffix'
+  | 'sheet.magie.detail.atHigherLevels'
+  | 'sheet.magie.detail.castingClass'
+  | 'sheet.magie.detail.classOption'
+  | 'sheet.magie.detail.slotSection'
+  | 'sheet.magie.detail.noSlotAvailable'
+  | 'sheet.magie.detail.close'
+  | 'sheet.magie.detail.attackShort'
+  | 'sheet.magie.detail.attackLabel'
+  | 'sheet.magie.detail.cast'
   // Dégâts de sort canoniques (plan D1) — labels de mode de résolution
   | 'spell.damage.resolution.attack-roll'
   | 'spell.damage.resolution.saving-throw'
@@ -2834,6 +2893,70 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.prepared': 'Préparé',
     'sheet.magie.prep.alwaysAvailable': 'Toujours',
     'sheet.magie.prep.emptyPrepared': 'Aucun sort préparé pour le moment.',
+    // Mode Magie — cartes, cercle/pacte, liste, modale de sort
+    'sheet.magie.restore': 'Restaurer',
+    'sheet.magie.noSlotToConsume': 'Plus aucun emplacement à consommer',
+    'sheet.magie.longPressRestore': 'Appui long pour restaurer',
+    'sheet.magie.cantripLabel': 'Sort mineur',
+    'sheet.magie.cantripsHeading': 'Sorts mineurs',
+    'sheet.magie.slotLevelShort': 'Niv. {n}',
+    'sheet.magie.concentrationShort': 'Concentr.',
+    'sheet.magie.ritualShort': 'Rituel',
+    'sheet.magie.searchPlaceholder': 'Rechercher un sort…',
+    'sheet.magie.searchLabel': 'Rechercher un sort',
+    'sheet.magie.spellbookTitle': 'Grimoire',
+    'sheet.magie.filterAll': 'Tous',
+    'sheet.magie.filterPrepared': 'Préparés',
+    'sheet.magie.filterCantrips': 'Sorts mineurs',
+    'sheet.magie.filterRituals': 'Rituels',
+    'sheet.magie.noSpellMatch': 'Aucun sort ne correspond à ces filtres.',
+    'sheet.magie.preparedHeading': 'Sorts préparés · {n}',
+    'sheet.magie.grimoireHeading': 'Grimoire · {n}',
+    'sheet.magie.grimoireAllPrepared': 'Tous vos sorts inscrits sont préparés aujourd’hui.',
+    'sheet.magie.pact.title': 'Magie de pacte',
+    'sheet.magie.pact.consumed': 'Emplacement de pacte consommé',
+    'sheet.magie.pact.restored': 'Emplacement de pacte restauré',
+    'sheet.magie.pact.shortRestTitle': 'Repos court simulé',
+    'sheet.magie.pact.shortRestSub': 'Emplacements de pacte restaurés',
+    'sheet.magie.pact.slotsInfo': 'Emplacements de niveau {n} · récupérés au repos court.',
+    'sheet.magie.pact.dotConsume':
+      'Consommer un emplacement de pacte de niveau {n} (appui long pour restaurer)',
+    'sheet.magie.pact.dotRestore':
+      'Restaurer un emplacement de pacte de niveau {n} (appui long)',
+    'sheet.magie.circle.title': 'Cercle d’invocation',
+    'sheet.magie.circle.noneUnlocked': 'Aucun emplacement de sort débloqué pour le moment.',
+    'sheet.magie.circle.slotConsumed': 'Emplacement niv. {n} consommé',
+    'sheet.magie.circle.slotRestored': 'Emplacement niv. {n} restauré',
+    'sheet.magie.circle.longRestTitle': 'Repos long simulé',
+    'sheet.magie.circle.longRestSub': 'Tous les emplacements restaurés',
+    'sheet.magie.circle.centerLabel': 'Cercle',
+    'sheet.magie.circle.rings': 'anneaux',
+    'sheet.magie.circle.dotConsume':
+      'Consommer un emplacement de niveau {n} (appui long pour restaurer)',
+    'sheet.magie.circle.dotRestore':
+      'Restaurer un emplacement de niveau {n} (appui long)',
+    'sheet.magie.detail.noCasterTitle': 'Aucune classe lanceuse',
+    'sheet.magie.detail.noCasterSub': 'Le sort ne peut être lancé.',
+    'sheet.magie.detail.noSlotTitle': 'Plus d’emplacement',
+    'sheet.magie.detail.noSlotSub': 'Aucun emplacement de niv. {n} disponible.',
+    'sheet.magie.detail.concBrokenTitle': 'Concentration brisée',
+    'sheet.magie.detail.concBrokenSub': 'Le sort précédent prend fin.',
+    'sheet.magie.detail.castLevelSuffix': ' · niv. {n}',
+    'sheet.magie.detail.castBigCantrip': 'Sort mineur',
+    'sheet.magie.detail.castDcHint': 'DD {dc} si jet de sauvegarde requis',
+    'sheet.magie.detail.castDone': 'Lancé',
+    'sheet.magie.detail.concSuffix': ' · Concentration',
+    'sheet.magie.detail.ritualSuffix': ' · Rituel',
+    'sheet.magie.detail.atHigherLevels': 'À niveau supérieur',
+    'sheet.magie.detail.castingClass': 'Classe lanceuse',
+    'sheet.magie.detail.classOption': '{name} (niv. {n})',
+    'sheet.magie.detail.slotSection': 'Emplacement',
+    'sheet.magie.detail.noSlotAvailable':
+      'Aucun emplacement de niveau {n} ou supérieur disponible.',
+    'sheet.magie.detail.close': 'Fermer',
+    'sheet.magie.detail.attackShort': 'Jet d’att.',
+    'sheet.magie.detail.attackLabel': 'Attaque · {spell}',
+    'sheet.magie.detail.cast': 'Lancer',
     // Plan D1 — modes de résolution des dégâts de sort (modale détail)
     'spell.damage.resolution.attack-roll': "Jet d'attaque",
     'spell.damage.resolution.saving-throw': 'Jet de sauvegarde',
@@ -5482,6 +5605,65 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.prepared': 'Prepared',
     'sheet.magie.prep.alwaysAvailable': 'Always',
     'sheet.magie.prep.emptyPrepared': 'No spells prepared yet.',
+    // Magic mode — cards, circle/pact, list, spell modal
+    'sheet.magie.restore': 'Restore',
+    'sheet.magie.noSlotToConsume': 'No slot left to use',
+    'sheet.magie.longPressRestore': 'Long press to restore',
+    'sheet.magie.cantripLabel': 'Cantrip',
+    'sheet.magie.cantripsHeading': 'Cantrips',
+    'sheet.magie.slotLevelShort': 'Lvl {n}',
+    'sheet.magie.concentrationShort': 'Conc.',
+    'sheet.magie.ritualShort': 'Ritual',
+    'sheet.magie.searchPlaceholder': 'Search for a spell…',
+    'sheet.magie.searchLabel': 'Search for a spell',
+    'sheet.magie.spellbookTitle': 'Spellbook',
+    'sheet.magie.filterAll': 'All',
+    'sheet.magie.filterPrepared': 'Prepared',
+    'sheet.magie.filterCantrips': 'Cantrips',
+    'sheet.magie.filterRituals': 'Rituals',
+    'sheet.magie.noSpellMatch': 'No spell matches these filters.',
+    'sheet.magie.preparedHeading': 'Prepared spells · {n}',
+    'sheet.magie.grimoireHeading': 'Spellbook · {n}',
+    'sheet.magie.grimoireAllPrepared': 'All your inscribed spells are prepared today.',
+    'sheet.magie.pact.title': 'Pact magic',
+    'sheet.magie.pact.consumed': 'Pact slot used',
+    'sheet.magie.pact.restored': 'Pact slot restored',
+    'sheet.magie.pact.shortRestTitle': 'Short rest simulated',
+    'sheet.magie.pact.shortRestSub': 'Pact slots restored',
+    'sheet.magie.pact.slotsInfo': 'Level {n} slots · restored on a short rest.',
+    'sheet.magie.pact.dotConsume': 'Use a pact slot of level {n} (long press to restore)',
+    'sheet.magie.pact.dotRestore': 'Restore a pact slot of level {n} (long press)',
+    'sheet.magie.circle.title': 'Summoning circle',
+    'sheet.magie.circle.noneUnlocked': 'No spell slot unlocked yet.',
+    'sheet.magie.circle.slotConsumed': 'Level {n} slot used',
+    'sheet.magie.circle.slotRestored': 'Level {n} slot restored',
+    'sheet.magie.circle.longRestTitle': 'Long rest simulated',
+    'sheet.magie.circle.longRestSub': 'All slots restored',
+    'sheet.magie.circle.centerLabel': 'Circle',
+    'sheet.magie.circle.rings': 'rings',
+    'sheet.magie.circle.dotConsume': 'Use a level {n} slot (long press to restore)',
+    'sheet.magie.circle.dotRestore': 'Restore a level {n} slot (long press)',
+    'sheet.magie.detail.noCasterTitle': 'No casting class',
+    'sheet.magie.detail.noCasterSub': 'The spell cannot be cast.',
+    'sheet.magie.detail.noSlotTitle': 'No slot left',
+    'sheet.magie.detail.noSlotSub': 'No level {n} slot available.',
+    'sheet.magie.detail.concBrokenTitle': 'Concentration broken',
+    'sheet.magie.detail.concBrokenSub': 'The previous spell ends.',
+    'sheet.magie.detail.castLevelSuffix': ' · lvl {n}',
+    'sheet.magie.detail.castBigCantrip': 'Cantrip',
+    'sheet.magie.detail.castDcHint': 'DC {dc} if a save is required',
+    'sheet.magie.detail.castDone': 'Cast',
+    'sheet.magie.detail.concSuffix': ' · Concentration',
+    'sheet.magie.detail.ritualSuffix': ' · Ritual',
+    'sheet.magie.detail.atHigherLevels': 'At higher levels',
+    'sheet.magie.detail.castingClass': 'Casting class',
+    'sheet.magie.detail.classOption': '{name} (lvl {n})',
+    'sheet.magie.detail.slotSection': 'Spell slot',
+    'sheet.magie.detail.noSlotAvailable': 'No spell slot of level {n} or higher available.',
+    'sheet.magie.detail.close': 'Close',
+    'sheet.magie.detail.attackShort': 'Atk roll',
+    'sheet.magie.detail.attackLabel': 'Attack · {spell}',
+    'sheet.magie.detail.cast': 'Cast',
     'spell.damage.resolution.attack-roll': 'Attack roll',
     'spell.damage.resolution.saving-throw': 'Saving throw',
     'spell.damage.resolution.auto': 'Automatic hit',

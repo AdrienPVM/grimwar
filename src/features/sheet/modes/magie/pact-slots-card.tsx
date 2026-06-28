@@ -65,8 +65,8 @@ export function PactSlotsCard({ character, readOnly }: PactSlotsCardProps): JSX.
       if (current <= 0) {
         showToast({
           kind: 'info',
-          title: 'Magie de pacte',
-          sub: 'Plus aucun emplacement à consommer',
+          title: t('sheet.magie.pact.title'),
+          sub: t('sheet.magie.noSlotToConsume'),
         });
       }
       return;
@@ -74,9 +74,9 @@ export function PactSlotsCard({ character, readOnly }: PactSlotsCardProps): JSX.
     await writeCurrent(current - 1);
     showToast({
       kind: 'roll',
-      title: `Emplacement de pacte consommé`,
+      title: t('sheet.magie.pact.consumed'),
       big: `${current - 1}/${max}`,
-      sub: 'Long-press pour restaurer',
+      sub: t('sheet.magie.longPressRestore'),
     });
   }
 
@@ -85,7 +85,7 @@ export function PactSlotsCard({ character, readOnly }: PactSlotsCardProps): JSX.
     await writeCurrent(current + 1);
     showToast({
       kind: 'heal',
-      title: `Emplacement de pacte restauré`,
+      title: t('sheet.magie.pact.restored'),
       big: `${current + 1}/${max}`,
     });
   }
@@ -95,25 +95,25 @@ export function PactSlotsCard({ character, readOnly }: PactSlotsCardProps): JSX.
     await writeCurrent(max);
     showToast({
       kind: 'heal',
-      title: 'Repos court simulé',
-      sub: 'Emplacements de pacte restaurés',
+      title: t('sheet.magie.pact.shortRestTitle'),
+      sub: t('sheet.magie.pact.shortRestSub'),
     });
   }
 
   return (
     <Card>
       <CardHeader>
-        <h3>Magie de pacte</h3>
+        <h3>{t('sheet.magie.pact.title')}</h3>
         <Tooltip label={t('sheet.tip.restorePactSlots')} decorative>
           <CardAction onClick={() => void handleRestoreAll()} disabled={readOnly || current >= max}>
-            Restaurer
+            {t('sheet.magie.restore')}
           </CardAction>
         </Tooltip>
       </CardHeader>
 
       <div className="flex flex-col gap-3">
         <p className="font-serif text-body-sm italic text-text-secondary">
-          Emplacements de niveau {slotLevel} · récupérés au repos court.
+          {t('sheet.magie.pact.slotsInfo').replace('{n}', String(slotLevel))}
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -175,8 +175,8 @@ function PactSlotDot({
         disabled={disabled}
         aria-label={
           filled
-            ? `Consommer un emplacement de pacte de niveau ${slotLevel} (appui long pour restaurer)`
-            : `Restaurer un emplacement de pacte de niveau ${slotLevel} (appui long)`
+            ? t('sheet.magie.pact.dotConsume').replace('{n}', String(slotLevel))
+            : t('sheet.magie.pact.dotRestore').replace('{n}', String(slotLevel))
         }
         className={cn(
           'inline-flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition-all',

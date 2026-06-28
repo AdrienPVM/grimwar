@@ -60,8 +60,8 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
     if (!next) {
       showToast({
         kind: 'info',
-        title: `Niveau ${level}`,
-        sub: 'Plus aucun emplacement à consommer',
+        title: t('sheet.magie.prep.levelLabel').replace('{n}', String(level)),
+        sub: t('sheet.magie.noSlotToConsume'),
       });
       return;
     }
@@ -69,9 +69,9 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
     const after = next[String(level)]!;
     showToast({
       kind: 'roll',
-      title: `Emplacement niv. ${level} consommé`,
+      title: t('sheet.magie.circle.slotConsumed').replace('{n}', String(level)),
       big: `${after.current}/${after.max}`,
-      sub: 'Long-press pour restaurer',
+      sub: t('sheet.magie.longPressRestore'),
     });
   }
 
@@ -83,7 +83,7 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
     const after = next[String(level)]!;
     showToast({
       kind: 'heal',
-      title: `Emplacement niv. ${level} restauré`,
+      title: t('sheet.magie.circle.slotRestored').replace('{n}', String(level)),
       big: `${after.current}/${after.max}`,
     });
   }
@@ -100,8 +100,8 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
     await updateCharacter({ spellSlots: next });
     showToast({
       kind: 'heal',
-      title: 'Repos long simulé',
-      sub: 'Tous les emplacements restaurés',
+      title: t('sheet.magie.circle.longRestTitle'),
+      sub: t('sheet.magie.circle.longRestSub'),
     });
   }
 
@@ -114,10 +114,10 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
     return (
       <Card>
         <CardHeader>
-          <h3>Cercle d'invocation</h3>
+          <h3>{t('sheet.magie.circle.title')}</h3>
         </CardHeader>
         <p className="font-serif text-body-sm italic text-text-tertiary">
-          Aucun emplacement de sort débloqué pour le moment.
+          {t('sheet.magie.circle.noneUnlocked')}
         </p>
       </Card>
     );
@@ -130,10 +130,10 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
   return (
     <Card>
       <CardHeader>
-        <h3>Cercle d'invocation</h3>
+        <h3>{t('sheet.magie.circle.title')}</h3>
         <Tooltip label={t('sheet.tip.restoreAllSlots')} decorative>
           <CardAction onClick={() => void handleRestoreAll()} disabled={readOnly}>
-            Restaurer
+            {t('sheet.magie.restore')}
           </CardAction>
         </Tooltip>
       </CardHeader>
@@ -242,19 +242,21 @@ export function MagicCircle({ character, readOnly }: MagicCircleProps): JSX.Elem
               top: `${((CENTER - ringRadii[i]! - 14) / VIEWBOX) * 100}%`,
             }}
           >
-            Niv. {lvl}
+            {t('sheet.magie.slotLevelShort').replace('{n}', String(lvl))}
           </span>
         ))}
 
         {/* Centre : indicateur "anneaux débloqués" */}
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
           <div className="font-title text-[8px] font-bold uppercase tracking-[0.28em] text-text-tertiary">
-            Cercle
+            {t('sheet.magie.circle.centerLabel')}
           </div>
           <div className="font-display text-[28px] font-black tracking-[-0.02em] text-gold-bright [text-shadow:0_0_18px_rgba(220,184,108,0.5)]">
             {levels.length}
           </div>
-          <div className="font-serif text-[11px] italic text-text-tertiary">anneaux</div>
+          <div className="font-serif text-[11px] italic text-text-tertiary">
+            {t('sheet.magie.circle.rings')}
+          </div>
         </div>
       </div>
     </Card>
@@ -294,8 +296,8 @@ function SlotDot({
       disabled={disabled}
       aria-label={
         filled
-          ? `Consommer un emplacement de niveau ${level} (appui long pour restaurer)`
-          : `Restaurer un emplacement de niveau ${level} (appui long)`
+          ? t('sheet.magie.circle.dotConsume').replace('{n}', String(level))
+          : t('sheet.magie.circle.dotRestore').replace('{n}', String(level))
       }
       className={cn(
         'absolute z-[5] -translate-x-1/2 -translate-y-1/2 transition-all',

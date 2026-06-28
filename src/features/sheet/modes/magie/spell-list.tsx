@@ -173,7 +173,7 @@ export function SpellList({
   return (
     <Card>
       <CardHeader>
-        <h3>GrimWar</h3>
+        <h3>{t('sheet.magie.spellbookTitle')}</h3>
       </CardHeader>
 
       <label className="mb-3 flex items-center gap-2 rounded-card-sm border border-white-8 bg-bg-2/60 px-3 py-2">
@@ -182,26 +182,26 @@ export function SpellList({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un sort…"
+          placeholder={t('sheet.magie.searchPlaceholder')}
           className="w-full bg-transparent font-serif text-body text-text placeholder:text-text-faint focus:outline-none"
-          aria-label="Rechercher un sort"
+          aria-label={t('sheet.magie.searchLabel')}
         />
       </label>
 
       <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
         <Chip active={filter === 'all'} onToggle={() => setFilter('all')}>
-          Tous · {counts.all}
+          {t('sheet.magie.filterAll')} · {counts.all}
         </Chip>
         {hasClassCaster && (
           <Chip active={filter === 'prep'} onToggle={() => setFilter('prep')}>
-            Préparés · {counts.prep}
+            {t('sheet.magie.filterPrepared')} · {counts.prep}
           </Chip>
         )}
         <Chip active={filter === 'cantrip'} onToggle={() => setFilter('cantrip')}>
-          Tours · {counts.cantrip}
+          {t('sheet.magie.filterCantrips')} · {counts.cantrip}
         </Chip>
         <Chip active={filter === 'ritual'} onToggle={() => setFilter('ritual')}>
-          Rituels · {counts.ritual}
+          {t('sheet.magie.filterRituals')} · {counts.ritual}
         </Chip>
       </div>
 
@@ -209,7 +209,9 @@ export function SpellList({
         {grouped.map(([level, items]) => (
           <section key={level}>
             <h4 className="mb-1 font-title text-[10px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-              {level === 0 ? 'Sorts mineurs' : `Niveau ${level}`}
+              {level === 0
+                ? t('sheet.magie.cantripsHeading')
+                : t('sheet.magie.prep.levelLabel').replace('{n}', String(level))}
             </h4>
             <ul className="flex flex-col gap-2">
               {items.map((spell) => {
@@ -249,7 +251,7 @@ export function SpellList({
         ))}
         {grouped.length === 0 && (
           <p className="font-serif text-body-sm italic text-text-tertiary">
-            Aucun sort ne correspond à ces filtres.
+            {t('sheet.magie.noSpellMatch')}
           </p>
         )}
       </div>
@@ -314,12 +316,12 @@ function SpellRow({
           <ComponentChips components={spell.components} />
           {spell.concentration && (
             <span className="rounded-full border border-amethyst/40 px-1.5 py-0.5 text-[8px] text-amethyst">
-              Concentr.
+              {t('sheet.magie.concentrationShort')}
             </span>
           )}
           {spell.ritual && (
             <span className="rounded-full border border-teal/40 px-1.5 py-0.5 text-[8px] text-teal">
-              Rituel
+              {t('sheet.magie.ritualShort')}
             </span>
           )}
           {sourceClassNames.map((name) => (
