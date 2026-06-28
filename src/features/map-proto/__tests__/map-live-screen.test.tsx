@@ -231,6 +231,8 @@ function firePointer(
   );
 }
 
+import { useLocaleStore } from '@/shared/lib/slices/locale-slice';
+
 import { MapLiveScreen } from '../map-live-screen';
 
 beforeEach(async () => {
@@ -257,6 +259,29 @@ beforeEach(async () => {
 
 afterEach(() => {
   vi.clearAllMocks();
+  // La locale est un store global — remise à FR pour ne pas polluer les tests
+  // suivants qui assument le défaut.
+  useLocaleStore.setState({ locale: 'fr' });
+});
+
+describe('MapLiveScreen — i18n (aucune fuite FR en EN)', () => {
+  it('FR : barre d’outils localisée', () => {
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.getByText('Effacer lumières')).toBeInTheDocument();
+    expect(screen.getByText('Effacer AoE')).toBeInTheDocument();
+    expect(screen.getByText('Vue présentation ▸')).toBeInTheDocument();
+  });
+
+  it('EN : barre d’outils en anglais', () => {
+    useLocaleStore.setState({ locale: 'en' });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+    expect(screen.getByText('Clear lights')).toBeInTheDocument();
+    expect(screen.getByText('Clear AoE')).toBeInTheDocument();
+    expect(screen.getByText('Presentation view ▸')).toBeInTheDocument();
+    // Boutons d'ajout de jeton localisés (PJ→PC, PNJ→NPC).
+    expect(screen.getByText('+ PC')).toBeInTheDocument();
+    expect(screen.getByText('+ NPC')).toBeInTheDocument();
+  });
 });
 
 describe('MapLiveScreen', () => {

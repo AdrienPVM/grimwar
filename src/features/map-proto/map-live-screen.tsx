@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Tooltip } from '@/shared/components/tooltip';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import {
   addAoeTemplate,
   addFogPolygon,
@@ -98,13 +98,13 @@ const FOG_DEFAULT_RADIUS = 120;
  */
 const LIGHT_PRESET_FT: Record<
   LightPresetKey,
-  { brightFt: number; dimFt: number; label: string }
+  { brightFt: number; dimFt: number; labelKey: StringKey }
 > = {
-  candle: { brightFt: 5, dimFt: 5, label: 'Bougie' },
-  torch: { brightFt: 20, dimFt: 20, label: 'Torche' },
-  'light-spell': { brightFt: 20, dimFt: 20, label: 'Sort Lumière' },
-  lantern: { brightFt: 30, dimFt: 30, label: 'Lanterne' },
-  sunlight: { brightFt: 60, dimFt: 60, label: 'Lumière du jour' },
+  candle: { brightFt: 5, dimFt: 5, labelKey: 'map.light.candle' },
+  torch: { brightFt: 20, dimFt: 20, labelKey: 'map.light.torch' },
+  'light-spell': { brightFt: 20, dimFt: 20, labelKey: 'map.light.spell' },
+  lantern: { brightFt: 30, dimFt: 30, labelKey: 'map.light.lantern' },
+  sunlight: { brightFt: 60, dimFt: 60, labelKey: 'map.light.sunlight' },
 };
 /** Ordre d'affichage des boutons de lumière (rayon croissant). */
 const LIGHT_PRESET_ORDER: readonly LightPresetKey[] = [
@@ -147,11 +147,11 @@ const AOE_LABEL_FT: Record<AoeTemplate['shape'], number> = {
   line: 60,
   cube: 15,
 };
-const AOE_SHAPE_LABELS_FR: Record<AoeTemplate['shape'], string> = {
-  sphere: 'Sphère',
-  cone: 'Cône',
-  line: 'Ligne',
-  cube: 'Cube',
+const AOE_SHAPE_LABEL_KEYS: Record<AoeTemplate['shape'], StringKey> = {
+  sphere: 'map.aoe.sphere',
+  cone: 'map.aoe.cone',
+  line: 'map.aoe.line',
+  cube: 'map.aoe.cube',
 };
 // Pas de rotation des boutons ±15° (multiple commode de 90° et assez fin).
 const AOE_ROTATE_STEP_DEG = 15;
@@ -160,10 +160,10 @@ const TOKEN_COLORS: Record<MapToken['kind'], string> = {
   pnj: '#f87171',
   marker: '#9ca3af',
 };
-const TOKEN_LABELS: Record<MapToken['kind'], string> = {
-  pj: 'PJ',
-  pnj: 'PNJ',
-  marker: '•',
+const TOKEN_LABELS: Record<MapToken['kind'], StringKey> = {
+  pj: 'map.live.tokenAbbrevPj',
+  pnj: 'map.live.tokenAbbrevPnj',
+  marker: 'map.live.tokenAbbrevMarker',
 };
 
 function randomSlug(prefix: string): string {
@@ -713,7 +713,7 @@ export function MapLiveScreen(): JSX.Element {
           randomSlug('token'),
           {
             kind,
-            label: TOKEN_LABELS[kind],
+            label: t(TOKEN_LABELS[kind]),
             position: { x: CENTER_X, y: CENTER_Y },
             color: TOKEN_COLORS[kind],
             ...(kind !== 'marker' ? { visionRadius: TOKEN_VISION_FT } : {}),
@@ -927,7 +927,7 @@ export function MapLiveScreen(): JSX.Element {
           data-testid="map-live-missing-params"
           className="font-serif text-sm text-text-secondary"
         >
-          URL invalide : il manque `cid` ou `mid`.
+          {t('map.tv.missingParams')}
         </p>
       </main>
     );
@@ -935,7 +935,9 @@ export function MapLiveScreen(): JSX.Element {
   if (!isReady) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
-        <p className="font-serif text-sm text-text-secondary">Chargement…</p>
+        <p className="font-serif text-sm text-text-secondary">
+          {t('map.common.loading')}
+        </p>
       </main>
     );
   }
@@ -946,7 +948,7 @@ export function MapLiveScreen(): JSX.Element {
           data-testid="map-live-signed-out"
           className="font-serif text-sm text-text-secondary"
         >
-          Connexion requise pour gérer la carte.
+          {t('map.live.signedOut')}
         </p>
       </main>
     );
@@ -958,7 +960,8 @@ export function MapLiveScreen(): JSX.Element {
           data-testid="map-live-error"
           className="rounded-md border border-crimson/40 bg-crimson/10 px-3 py-2 font-mono text-[11px] text-crimson"
         >
-          Erreur : {error.message}
+          {t('map.common.errorPrefix')}
+          {error.message}
         </p>
       </main>
     );
@@ -970,7 +973,7 @@ export function MapLiveScreen(): JSX.Element {
           data-testid="map-live-loading"
           className="font-serif text-sm text-text-secondary"
         >
-          Chargement de la carte…
+          {t('map.common.loadingMap')}
         </p>
       </main>
     );
@@ -982,7 +985,7 @@ export function MapLiveScreen(): JSX.Element {
           data-testid="map-live-not-found"
           className="font-serif text-sm text-text-secondary"
         >
-          Carte introuvable.
+          {t('map.tv.notFound')}
         </p>
       </main>
     );
@@ -1033,21 +1036,27 @@ export function MapLiveScreen(): JSX.Element {
             {map.name}
           </h1>
           <span className="rounded-pill border border-gold-dim/40 bg-gold/10 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
-            PROTOTYPE — Firestore live
+            {t('map.live.badge')}
           </span>
         </div>
         <p
           data-testid="map-live-meta"
           className="mt-1 font-mono text-[11px] text-text-tertiary"
         >
-          {cid} / {mid} — {tokens.length} token{tokens.length > 1 ? 's' : ''}
+          {cid} / {mid} — {tokens.length}{' '}
+          {t(
+            tokens.length > 1
+              ? 'map.live.metaTokenPlural'
+              : 'map.live.metaTokenSingular',
+          )}
         </p>
         {writeError && (
           <p
             data-testid="map-live-write-error"
             className="mt-2 rounded-md border border-crimson/40 bg-crimson/10 px-3 py-1.5 font-mono text-[11px] text-crimson"
           >
-            Écriture refusée : {writeError}
+            {t('map.live.writeErrorPrefix')}
+            {writeError}
           </p>
         )}
         {/* D.5 — boutons persistance fog / lights / AoE. */}
@@ -1056,7 +1065,7 @@ export function MapLiveScreen(): JSX.Element {
             data-testid="map-live-fog-count"
             className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
           >
-            Fog ({map.fogPolygons.length})
+            {t('map.live.fogLabel')} ({map.fogPolygons.length})
           </span>
           <button
             type="button"
@@ -1066,7 +1075,7 @@ export function MapLiveScreen(): JSX.Element {
             }}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
-            Reveal au centre
+            {t('map.live.addFogReveal')}
           </button>
           <button
             type="button"
@@ -1076,7 +1085,7 @@ export function MapLiveScreen(): JSX.Element {
             }}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
-            Mask au centre
+            {t('map.live.addFogMask')}
           </button>
           <button
             type="button"
@@ -1087,7 +1096,7 @@ export function MapLiveScreen(): JSX.Element {
             disabled={map.fogPolygons.length === 0}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Effacer fog
+            {t('map.live.clearFog')}
           </button>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
@@ -1095,7 +1104,7 @@ export function MapLiveScreen(): JSX.Element {
             data-testid="map-live-lights-count"
             className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
           >
-            Lumières ({map.lightSources.length})
+            {t('map.live.lightsLabel')} ({map.lightSources.length})
           </span>
           {LIGHT_PRESET_ORDER.map((preset) => {
             const spec = LIGHT_PRESET_FT[preset];
@@ -1117,7 +1126,7 @@ export function MapLiveScreen(): JSX.Element {
                 onClick={() => {
                   void handleAddLight(preset);
                 }}
-                title={`Poser une lumière « ${spec.label} » au centre (rayon ${totalM})`}
+                title={`${t('map.live.lightTooltipPrefix')}${t(spec.labelKey)}${t('map.live.lightTooltipMid')}${totalM})`}
                 className="inline-flex items-center gap-1 rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
               >
                 {/* Pastille de teinte SRD du preset → repère visuel rapide. */}
@@ -1126,7 +1135,7 @@ export function MapLiveScreen(): JSX.Element {
                   style={{ backgroundColor: LIGHT_PRESETS[preset].color }}
                   className="h-2.5 w-2.5 rounded-full border border-white-8"
                 />
-                {spec.label}
+                {t(spec.labelKey)}
               </button>
             );
           })}
@@ -1139,7 +1148,7 @@ export function MapLiveScreen(): JSX.Element {
             disabled={map.lightSources.length === 0}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Effacer lumières
+            {t('map.live.clearLights')}
           </button>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
@@ -1147,7 +1156,7 @@ export function MapLiveScreen(): JSX.Element {
             data-testid="map-live-aoe-count"
             className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
           >
-            AoE ({map.aoeTemplates.length})
+            {t('map.live.aoeLabel')} ({map.aoeTemplates.length})
           </span>
           {(['sphere', 'cone', 'line', 'cube'] as const).map((shape) => (
             <button
@@ -1159,7 +1168,7 @@ export function MapLiveScreen(): JSX.Element {
               }}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              {AOE_SHAPE_LABELS_FR[shape]} {formatMeters(AOE_LABEL_FT[shape])}
+              {t(AOE_SHAPE_LABEL_KEYS[shape])} {formatMeters(AOE_LABEL_FT[shape])}
             </button>
           ))}
           <button
@@ -1171,7 +1180,7 @@ export function MapLiveScreen(): JSX.Element {
             disabled={map.aoeTemplates.length === 0}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Effacer AoE
+            {t('map.live.clearAoe')}
           </button>
           {/* Rotation du gabarit sélectionné — apparaît dès qu'un AoE est saisi.
               Désactivée pour une sphère (orientation sans effet visuel). */}
@@ -1181,7 +1190,7 @@ export function MapLiveScreen(): JSX.Element {
               className="ml-1 inline-flex items-center gap-2 rounded-pill border border-gold-dim/30 bg-gold/5 px-3 py-1"
             >
               <span className="font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
-                {AOE_SHAPE_LABELS_FR[selectedAoe.shape]} ·{' '}
+                {t(AOE_SHAPE_LABEL_KEYS[selectedAoe.shape])} ·{' '}
                 <span data-testid="map-live-aoe-size">
                   {formatMeters(selectedAoeSizeFt)}
                 </span>{' '}
@@ -1259,7 +1268,7 @@ export function MapLiveScreen(): JSX.Element {
                   }}
                   className="rounded-pill border border-crimson/40 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
                 >
-                  Supprimer
+                  {t('map.live.deleteAoe')}
                 </button>
               </Tooltip>
             </span>
@@ -1271,7 +1280,7 @@ export function MapLiveScreen(): JSX.Element {
             data-testid="map-live-tokens-count"
             className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
           >
-            Tokens ({tokens.length})
+            {t('map.live.tokensLabel')} ({tokens.length})
           </span>
           <button
             type="button"
@@ -1281,7 +1290,7 @@ export function MapLiveScreen(): JSX.Element {
             }}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
-            + PJ
+            {t('map.live.addPj')}
           </button>
           <button
             type="button"
@@ -1291,7 +1300,7 @@ export function MapLiveScreen(): JSX.Element {
             }}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
-            + PNJ
+            {t('map.live.addPnj')}
           </button>
           <Tooltip label={t('map.tip.addMonster')} decorative>
             <button
@@ -1300,7 +1309,7 @@ export function MapLiveScreen(): JSX.Element {
               onClick={() => setShowMonsterPicker(true)}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              + Bestiaire
+              {t('map.live.addBestiary')}
             </button>
           </Tooltip>
           <button
@@ -1312,7 +1321,7 @@ export function MapLiveScreen(): JSX.Element {
             disabled={tokens.length === 0}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            Effacer tokens
+            {t('map.live.clearTokens')}
           </button>
         </div>
         {/* Ligne de vue + voile + vue présentation. */}
@@ -1321,7 +1330,7 @@ export function MapLiveScreen(): JSX.Element {
             data-testid="map-live-walls-count"
             className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary"
           >
-            Murs ({(map.walls ?? []).length})
+            {t('map.live.wallsLabel')} ({(map.walls ?? []).length})
           </span>
           <Tooltip label={t('map.tip.toggleGrid')} placement="bottom" decorative>
             <button
@@ -1332,7 +1341,7 @@ export function MapLiveScreen(): JSX.Element {
               }}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Grille : {map.showGrid ? 'ON' : 'OFF'}
+              {t('map.live.gridToggle')} {map.showGrid ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
           <Tooltip
@@ -1351,7 +1360,7 @@ export function MapLiveScreen(): JSX.Element {
               disabled={!map.showGrid}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
             >
-              Aimant : {snapEnabled ? 'ON' : 'OFF'}
+              {t('map.live.snapToggle')} {snapEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
           <Tooltip label={t('map.tip.toggleFog')} placement="bottom" decorative>
@@ -1363,7 +1372,7 @@ export function MapLiveScreen(): JSX.Element {
               }}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Voile : {map.fogEnabled ? 'ON' : 'OFF'}
+              {t('map.live.fogToggleLabel')} {map.fogEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
           <Tooltip label={t('map.tip.toggleLos')} placement="bottom" decorative>
@@ -1375,7 +1384,7 @@ export function MapLiveScreen(): JSX.Element {
               }}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Ligne de vue : {map.losEnabled === true ? 'ON' : 'OFF'}
+              {t('map.live.losToggle')} {map.losEnabled === true ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
           <Tooltip label={t('map.tip.toggleLighting')} placement="bottom" decorative>
@@ -1387,7 +1396,7 @@ export function MapLiveScreen(): JSX.Element {
               }}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
             >
-              Éclairage : {map.lightingEnabled ? 'ON' : 'OFF'}
+              {t('map.live.lightingToggle')} {map.lightingEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
           <button
@@ -1396,13 +1405,13 @@ export function MapLiveScreen(): JSX.Element {
             onClick={() => navigate(`/map-proto/cloud/${cid}/maps/${mid}/tv`)}
             className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
           >
-            Vue présentation ▸
+            {t('map.live.tvView')} ▸
           </button>
         </div>
         {/* Mesure de distance — outil MJ éphémère (clics sur le fond = ancres). */}
         <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-gold-dim/20 pt-3">
           <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-            Mesure
+            {t('map.live.measureLabel')}
           </span>
           <Tooltip label={t('map.tip.toggleMeasure')} placement="bottom" decorative>
             <button
@@ -1412,7 +1421,7 @@ export function MapLiveScreen(): JSX.Element {
               aria-pressed={measureMode}
               className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 aria-pressed:bg-gold/15"
             >
-              Mesure : {measureMode ? 'ON' : 'OFF'}
+              {t('map.live.measureToggle')} {measureMode ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
           {measureMode && (
@@ -1421,7 +1430,8 @@ export function MapLiveScreen(): JSX.Element {
                 data-testid="map-live-ruler-total"
                 className="rounded-pill border border-gold-dim/30 bg-gold/5 px-3 py-1 font-mono text-[11px] text-gold-bright"
               >
-                Distance : {formatMeters(rulerFeet)}
+                {t('map.live.distancePrefix')}
+                {formatMeters(rulerFeet)}
               </span>
               <button
                 type="button"
@@ -1430,10 +1440,10 @@ export function MapLiveScreen(): JSX.Element {
                 disabled={ruler.anchors.length === 0}
                 className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
               >
-                Effacer mesure
+                {t('map.live.clearMeasure')}
               </button>
               <span className="font-serif text-[11px] text-text-tertiary">
-                Cliquez sur la carte pour poser les points.
+                {t('map.live.measureHint')}
               </span>
             </>
           )}

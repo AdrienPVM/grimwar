@@ -2397,6 +2397,52 @@ export type StringKey =
   | 'map.monsterPicker.noMatchBefore'
   | 'map.monsterPicker.noMatchAfter'
   | 'map.monsterPicker.crPrefix'
+  // Écran carte live (map-live-screen) — barre d'outils MJ
+  | 'map.live.signedOut'
+  | 'map.live.badge'
+  | 'map.live.metaTokenSingular'
+  | 'map.live.metaTokenPlural'
+  | 'map.live.writeErrorPrefix'
+  | 'map.live.fogLabel'
+  | 'map.live.addFogReveal'
+  | 'map.live.addFogMask'
+  | 'map.live.clearFog'
+  | 'map.live.lightsLabel'
+  | 'map.live.lightTooltipPrefix'
+  | 'map.live.lightTooltipMid'
+  | 'map.live.clearLights'
+  | 'map.live.aoeLabel'
+  | 'map.live.clearAoe'
+  | 'map.live.deleteAoe'
+  | 'map.live.tokensLabel'
+  | 'map.live.addPj'
+  | 'map.live.addPnj'
+  | 'map.live.addBestiary'
+  | 'map.live.clearTokens'
+  | 'map.live.tokenAbbrevPj'
+  | 'map.live.tokenAbbrevPnj'
+  | 'map.live.tokenAbbrevMarker'
+  | 'map.live.wallsLabel'
+  | 'map.live.gridToggle'
+  | 'map.live.snapToggle'
+  | 'map.live.fogToggleLabel'
+  | 'map.live.losToggle'
+  | 'map.live.lightingToggle'
+  | 'map.live.tvView'
+  | 'map.live.measureLabel'
+  | 'map.live.measureToggle'
+  | 'map.live.distancePrefix'
+  | 'map.live.clearMeasure'
+  | 'map.live.measureHint'
+  | 'map.light.candle'
+  | 'map.light.torch'
+  | 'map.light.spell'
+  | 'map.light.lantern'
+  | 'map.light.sunlight'
+  | 'map.aoe.sphere'
+  | 'map.aoe.cone'
+  | 'map.aoe.line'
+  | 'map.aoe.cube'
   // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
   | 'wizard.tip.rollAbilities'
   | 'wizard.tip.autofillAbilities'
@@ -5434,6 +5480,52 @@ const STRINGS: Record<Locale, Dict> = {
     'map.monsterPicker.noMatchBefore': 'Aucun monstre ne correspond à « ',
     'map.monsterPicker.noMatchAfter': ' ».',
     'map.monsterPicker.crPrefix': 'FP',
+    // Écran carte live (map-live-screen) — barre d'outils MJ
+    'map.live.signedOut': 'Connexion requise pour gérer la carte.',
+    'map.live.badge': 'Prototype — Firestore en direct',
+    'map.live.metaTokenSingular': 'token',
+    'map.live.metaTokenPlural': 'tokens',
+    'map.live.writeErrorPrefix': 'Écriture refusée : ',
+    'map.live.fogLabel': 'Fog',
+    'map.live.addFogReveal': 'Reveal au centre',
+    'map.live.addFogMask': 'Mask au centre',
+    'map.live.clearFog': 'Effacer fog',
+    'map.live.lightsLabel': 'Lumières',
+    'map.live.lightTooltipPrefix': 'Poser une lumière « ',
+    'map.live.lightTooltipMid': ' » au centre (rayon ',
+    'map.live.clearLights': 'Effacer lumières',
+    'map.live.aoeLabel': 'AoE',
+    'map.live.clearAoe': 'Effacer AoE',
+    'map.live.deleteAoe': 'Supprimer',
+    'map.live.tokensLabel': 'Tokens',
+    'map.live.addPj': '+ PJ',
+    'map.live.addPnj': '+ PNJ',
+    'map.live.addBestiary': '+ Bestiaire',
+    'map.live.clearTokens': 'Effacer tokens',
+    'map.live.tokenAbbrevPj': 'PJ',
+    'map.live.tokenAbbrevPnj': 'PNJ',
+    'map.live.tokenAbbrevMarker': '•',
+    'map.live.wallsLabel': 'Murs',
+    'map.live.gridToggle': 'Grille :',
+    'map.live.snapToggle': 'Aimant :',
+    'map.live.fogToggleLabel': 'Voile :',
+    'map.live.losToggle': 'Ligne de vue :',
+    'map.live.lightingToggle': 'Éclairage :',
+    'map.live.tvView': 'Vue présentation',
+    'map.live.measureLabel': 'Mesure',
+    'map.live.measureToggle': 'Mesure :',
+    'map.live.distancePrefix': 'Distance : ',
+    'map.live.clearMeasure': 'Effacer mesure',
+    'map.live.measureHint': 'Cliquez sur la carte pour poser les points.',
+    'map.light.candle': 'Bougie',
+    'map.light.torch': 'Torche',
+    'map.light.spell': 'Sort Lumière',
+    'map.light.lantern': 'Lanterne',
+    'map.light.sunlight': 'Lumière du jour',
+    'map.aoe.sphere': 'Sphère',
+    'map.aoe.cone': 'Cône',
+    'map.aoe.line': 'Ligne',
+    'map.aoe.cube': 'Cube',
     // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
     'wizard.tip.rollAbilities': 'Lance les dés à votre place pour générer les six valeurs.',
     'wizard.tip.autofillAbilities': 'Remplit les caractéristiques recommandées pour votre classe.',
@@ -8294,6 +8386,52 @@ const STRINGS: Record<Locale, Dict> = {
     'map.monsterPicker.noMatchBefore': 'No monster matches "',
     'map.monsterPicker.noMatchAfter': '".',
     'map.monsterPicker.crPrefix': 'CR',
+    // Live map screen (map-live-screen) — GM toolbar
+    'map.live.signedOut': 'Sign in to manage the map.',
+    'map.live.badge': 'Prototype — Firestore live',
+    'map.live.metaTokenSingular': 'token',
+    'map.live.metaTokenPlural': 'tokens',
+    'map.live.writeErrorPrefix': 'Write refused: ',
+    'map.live.fogLabel': 'Fog',
+    'map.live.addFogReveal': 'Reveal at the center',
+    'map.live.addFogMask': 'Mask at the center',
+    'map.live.clearFog': 'Clear fog',
+    'map.live.lightsLabel': 'Lights',
+    'map.live.lightTooltipPrefix': 'Place a "',
+    'map.live.lightTooltipMid': '" light at the center (radius ',
+    'map.live.clearLights': 'Clear lights',
+    'map.live.aoeLabel': 'AoE',
+    'map.live.clearAoe': 'Clear AoE',
+    'map.live.deleteAoe': 'Delete',
+    'map.live.tokensLabel': 'Tokens',
+    'map.live.addPj': '+ PC',
+    'map.live.addPnj': '+ NPC',
+    'map.live.addBestiary': '+ Bestiary',
+    'map.live.clearTokens': 'Clear tokens',
+    'map.live.tokenAbbrevPj': 'PC',
+    'map.live.tokenAbbrevPnj': 'NPC',
+    'map.live.tokenAbbrevMarker': '•',
+    'map.live.wallsLabel': 'Walls',
+    'map.live.gridToggle': 'Grid:',
+    'map.live.snapToggle': 'Magnet:',
+    'map.live.fogToggleLabel': 'Fog:',
+    'map.live.losToggle': 'Line of sight:',
+    'map.live.lightingToggle': 'Lighting:',
+    'map.live.tvView': 'Presentation view',
+    'map.live.measureLabel': 'Measure',
+    'map.live.measureToggle': 'Measure:',
+    'map.live.distancePrefix': 'Distance: ',
+    'map.live.clearMeasure': 'Clear measure',
+    'map.live.measureHint': 'Click on the map to drop points.',
+    'map.light.candle': 'Candle',
+    'map.light.torch': 'Torch',
+    'map.light.spell': 'Light spell',
+    'map.light.lantern': 'Lantern',
+    'map.light.sunlight': 'Daylight',
+    'map.aoe.sphere': 'Sphere',
+    'map.aoe.cone': 'Cone',
+    'map.aoe.line': 'Line',
+    'map.aoe.cube': 'Cube',
     // Explicit tooltips — wizard + level-up
     'wizard.tip.rollAbilities': 'Rolls the dice for you to generate the six scores.',
     'wizard.tip.autofillAbilities': 'Fills in the recommended ability scores for your class.',
