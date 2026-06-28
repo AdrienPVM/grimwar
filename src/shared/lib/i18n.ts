@@ -458,6 +458,14 @@ export type StringKey =
   | 'combat.hud.tip.bonus'
   | 'combat.hud.tip.reaction'
   | 'combat.hud.tip.initiative'
+  | 'combat.hud.label'
+  | 'combat.hud.rollInitiative'
+  | 'combat.hp.tempTip'
+  | 'combat.hp.tempLabel'
+  | 'combat.hp.damageTip'
+  | 'combat.hp.damageLabel'
+  | 'combat.hp.healTip'
+  | 'combat.hp.healLabel'
   | 'combat.hud.tip.inspirationGrant'
   | 'combat.hud.tip.inspirationRemove'
   | 'combat.hud.tip.endTurn'
@@ -2544,6 +2552,14 @@ const STRINGS: Record<Locale, Dict> = {
       'Marque ta réaction comme utilisée ce tour-ci (retape pour annuler).',
     'combat.hud.tip.initiative':
       "Lance ton initiative pour déterminer ta place dans l'ordre du combat.",
+    'combat.hud.label': 'Tableau de bord de combat',
+    'combat.hud.rollInitiative': "Lancer l'initiative",
+    'combat.hp.tempTip': 'Ajouter des PV temporaires (tampon avant les PV)',
+    'combat.hp.tempLabel': 'Ajouter des PV temporaires',
+    'combat.hp.damageTip': 'Subir 1 dégât — appui long pour saisir un montant',
+    'combat.hp.damageLabel': 'Subir 1 dégât (appui long pour saisir un montant)',
+    'combat.hp.healTip': 'Soigner de 1 PV — appui long pour saisir un montant',
+    'combat.hp.healLabel': 'Soigner de 1 PV (appui long pour saisir un montant)',
     'combat.hud.tip.inspirationGrant':
       'Octroie l’Inspiration héroïque : tu pourras la dépenser pour relancer un test.',
     'combat.hud.tip.inspirationRemove': 'Retire l’Inspiration héroïque.',
@@ -5087,6 +5103,14 @@ const STRINGS: Record<Locale, Dict> = {
     'combat.hud.tip.bonus': 'Mark your bonus action as used this turn (tap again to undo).',
     'combat.hud.tip.reaction': 'Mark your reaction as used this turn (tap again to undo).',
     'combat.hud.tip.initiative': 'Roll your initiative to determine your place in combat order.',
+    'combat.hud.label': 'Combat dashboard',
+    'combat.hud.rollInitiative': 'Roll initiative',
+    'combat.hp.tempTip': 'Add temporary HP (a buffer in front of your HP)',
+    'combat.hp.tempLabel': 'Add temporary HP',
+    'combat.hp.damageTip': 'Take 1 damage — long-press to enter an amount',
+    'combat.hp.damageLabel': 'Take 1 damage (long-press to enter an amount)',
+    'combat.hp.healTip': 'Heal 1 HP — long-press to enter an amount',
+    'combat.hp.healLabel': 'Heal 1 HP (long-press to enter an amount)',
     'combat.hud.tip.inspirationGrant':
       'Grant Heroic Inspiration: you can spend it to reroll a check.',
     'combat.hud.tip.inspirationRemove': 'Remove Heroic Inspiration.',

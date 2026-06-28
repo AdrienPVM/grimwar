@@ -197,11 +197,11 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
               </Tooltip>
             ) : (
               !readOnly && (
-                <Tooltip label="Ajouter des PV temporaires (tampon avant les PV)" decorative>
+                <Tooltip label={t('combat.hp.tempTip')} decorative>
                   <button
                     type="button"
                     onClick={() => setPadIntent('temp')}
-                    aria-label="Ajouter des PV temporaires"
+                    aria-label={t('combat.hp.tempLabel')}
                     className="inline-flex items-center gap-1 rounded-pill border border-white-8 bg-white/[0.02] px-3 py-1 font-title text-micro font-bold uppercase text-text-tertiary transition-colors duration-200 ease-base hover:border-amethyst/40 hover:text-amethyst"
                   >
                     + PV temp.
@@ -235,14 +235,10 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
 
           {/* Contrôles compacts. */}
           <div className="flex w-full max-w-[260px] items-center justify-between gap-3">
-            <Tooltip
-              label="Subir 1 dégât — appui long pour saisir un montant"
-              decorative
-              className="flex-1"
-            >
+            <Tooltip label={t('combat.hp.damageTip')} decorative className="flex-1">
               <button
                 type="button"
-                aria-label="Subir 1 dégât (long-press pour saisir un montant)"
+                aria-label={t('combat.hp.damageLabel')}
                 disabled={readOnly}
                 className="h-12 w-full rounded-card-sm border border-crimson/40 bg-crimson/10 font-display text-[24px] font-black text-crimson transition-all duration-200 ease-base hover:border-crimson hover:bg-crimson/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 {...minusHandlers}
@@ -250,14 +246,10 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
                 −
               </button>
             </Tooltip>
-            <Tooltip
-              label="Soigner de 1 PV — appui long pour saisir un montant"
-              decorative
-              className="flex-1"
-            >
+            <Tooltip label={t('combat.hp.healTip')} decorative className="flex-1">
               <button
                 type="button"
-                aria-label="Soigner de 1 PV (long-press pour saisir un montant)"
+                aria-label={t('combat.hp.healLabel')}
                 disabled={readOnly}
                 className="h-12 w-full rounded-card-sm border border-teal/40 bg-teal/10 font-display text-[24px] font-black text-teal transition-all duration-200 ease-base hover:border-teal hover:bg-teal/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 {...plusHandlers}

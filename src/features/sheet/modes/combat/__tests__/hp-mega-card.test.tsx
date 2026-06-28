@@ -116,6 +116,20 @@ describe('<HpMegaCard> — infobulles explicites des contrôles', () => {
     const tips = screen.getAllByRole('tooltip', { hidden: true }).map((el) => el.textContent ?? '');
     expect(tips).toContain('Ajouter des PV temporaires (tampon avant les PV)');
   });
+
+  it('les aria-labels des boutons PV utilisent « appui long » (FR), jamais l’anglicisme « long-press »', () => {
+    render(<HpMegaCard character={buildCharacter({ current: 12, max: 24, temp: 0 })} readOnly={false} />);
+    const minus = screen.getByRole('button', { name: /^Subir 1 dégât/ });
+    const plus = screen.getByRole('button', { name: /^Soigner de 1 PV/ });
+    expect(minus.getAttribute('aria-label')).toBe(
+      'Subir 1 dégât (appui long pour saisir un montant)',
+    );
+    expect(plus.getAttribute('aria-label')).toBe(
+      'Soigner de 1 PV (appui long pour saisir un montant)',
+    );
+    expect(minus.getAttribute('aria-label')).not.toContain('long-press');
+    expect(plus.getAttribute('aria-label')).not.toContain('long-press');
+  });
 });
 
 describe('<HpMegaCard> — anti-régression « barre de vie »', () => {

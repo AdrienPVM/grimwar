@@ -91,7 +91,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
 
   return (
     <section
-      aria-label="Tableau de bord de combat"
+      aria-label={t('combat.hud.label')}
       className="mx-auto mt-3 grid w-full max-w-[420px] grid-cols-[1fr_auto] items-center gap-3 rounded-card border border-white-8 bg-glass px-5 py-4 backdrop-blur-2xl lg:mt-0 lg:max-w-none"
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -131,7 +131,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
             type="button"
             disabled={readOnly}
             onClick={() => void rollInitiative()}
-            aria-label="Lancer l'initiative"
+            aria-label={t('combat.hud.rollInitiative')}
             className="inline-flex items-center gap-1.5 rounded-pill border border-soft bg-gold/10 px-3 py-1.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-gold-bright transition-all hover:bg-gold/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <span aria-hidden="true">🎲</span> Init.&nbsp;
