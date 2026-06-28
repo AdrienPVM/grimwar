@@ -2288,6 +2288,56 @@ export type StringKey =
   | 'map.tip.toggleLighting'
   | 'map.tip.toggleMeasure'
   | 'map.tip.deleteMap'
+  // Écrans carte (map) — communs + cloud + import + TV
+  | 'map.common.loading'
+  | 'map.common.loadingMap'
+  | 'map.common.errorPrefix'
+  | 'map.common.missingCid'
+  | 'map.common.invalidSlug'
+  | 'map.common.nameRequired'
+  | 'map.common.slugLabel'
+  | 'map.common.nameLabel'
+  | 'map.common.deletePrefix'
+  | 'map.badge.prototype'
+  | 'map.tv.missingParams'
+  | 'map.tv.notFound'
+  | 'map.tv.back'
+  | 'map.cloud.signedOut'
+  | 'map.cloud.title'
+  | 'map.cloud.campaignPrefix'
+  | 'map.cloud.importLink'
+  | 'map.cloud.ensureErrorPrefix'
+  | 'map.cloud.createSection'
+  | 'map.cloud.newMap'
+  | 'map.cloud.slugPlaceholder'
+  | 'map.cloud.namePlaceholder'
+  | 'map.cloud.creating'
+  | 'map.cloud.create'
+  | 'map.cloud.loadErrorPrefix'
+  | 'map.cloud.loadingMaps'
+  | 'map.cloud.empty'
+  | 'map.cloud.listAria'
+  | 'map.cloud.delete'
+  | 'map.import.signedOut'
+  | 'map.import.parseFailedPrefix'
+  | 'map.import.back'
+  | 'map.import.title'
+  | 'map.import.badge'
+  | 'map.import.introBefore'
+  | 'map.import.introAfter'
+  | 'map.import.chooseFile'
+  | 'map.import.statDimensions'
+  | 'map.import.statWalls'
+  | 'map.import.statLights'
+  | 'map.import.statImage'
+  | 'map.import.squaresSuffix'
+  | 'map.import.verticesSuffix'
+  | 'map.import.imageIncluded'
+  | 'map.import.imageAbsent'
+  | 'map.import.preview'
+  | 'map.import.saveSection'
+  | 'map.import.submitting'
+  | 'map.import.submit'
   // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
   | 'wizard.tip.rollAbilities'
   | 'wizard.tip.autofillAbilities'
@@ -5209,6 +5259,59 @@ const STRINGS: Record<Locale, Dict> = {
     'map.tip.toggleLighting': 'Afficher ou masquer la teinte des sources lumineuses.',
     'map.tip.toggleMeasure': 'Mesurer une distance en mètres sur la carte.',
     'map.tip.deleteMap': 'Supprimer définitivement cette carte.',
+    // Écrans carte (map) — communs + cloud + import + TV
+    'map.common.loading': 'Chargement…',
+    'map.common.loadingMap': 'Chargement de la carte…',
+    'map.common.errorPrefix': 'Erreur : ',
+    'map.common.missingCid':
+      'URL invalide : il manque l’identifiant de campagne (`cid`).',
+    'map.common.invalidSlug':
+      'Identifiant invalide (slug kebab-case : lettres minuscules, chiffres, tirets).',
+    'map.common.nameRequired': 'Le nom est requis.',
+    'map.common.slugLabel': 'Identifiant (slug)',
+    'map.common.nameLabel': 'Nom',
+    'map.common.deletePrefix': 'Supprimer',
+    'map.badge.prototype': 'Prototype — hors production',
+    'map.tv.missingParams': 'URL invalide : il manque `cid` ou `mid`.',
+    'map.tv.notFound': 'Carte introuvable.',
+    'map.tv.back': 'Retour',
+    'map.cloud.signedOut': 'Connexion requise pour gérer les cartes.',
+    'map.cloud.title': 'Cartes',
+    'map.cloud.campaignPrefix': 'Campagne : ',
+    'map.cloud.importLink': 'Importer une carte .dd2vtt',
+    'map.cloud.ensureErrorPrefix': 'Initialisation campagne : ',
+    'map.cloud.createSection': 'Créer une carte',
+    'map.cloud.newMap': 'Nouvelle carte',
+    'map.cloud.slugPlaceholder': 'donjon-de-l-aube',
+    'map.cloud.namePlaceholder': 'Donjon de l’Aube',
+    'map.cloud.creating': 'Création…',
+    'map.cloud.create': 'Créer',
+    'map.cloud.loadErrorPrefix': 'Erreur de chargement : ',
+    'map.cloud.loadingMaps': 'Chargement des cartes…',
+    'map.cloud.empty': 'Aucune carte pour cette campagne. Créez-en une ci-dessus.',
+    'map.cloud.listAria': 'Liste des cartes',
+    'map.cloud.delete': 'Suppr.',
+    'map.import.signedOut': 'Connexion requise pour importer une carte.',
+    'map.import.parseFailedPrefix': 'Lecture impossible : ',
+    'map.import.back': 'Cartes',
+    'map.import.title': 'Importer une carte',
+    'map.import.badge': '.dd2vtt — Dungeon Alchemist',
+    'map.import.introBefore': 'Sélectionnez un fichier ',
+    'map.import.introAfter':
+      ' exporté par Dungeon Alchemist. Les murs, lumières et la grille sont importés et synchronisés ; l’image de fond reste stockée localement sur cet appareil (la synchronisation multi-appareils arrivera avec Firebase Storage).',
+    'map.import.chooseFile': 'Choisir un fichier .dd2vtt',
+    'map.import.statDimensions': 'Dimensions',
+    'map.import.statWalls': 'Murs',
+    'map.import.statLights': 'Lumières',
+    'map.import.statImage': 'Image',
+    'map.import.squaresSuffix': 'cases',
+    'map.import.verticesSuffix': 'sommets',
+    'map.import.imageIncluded': 'Incluse',
+    'map.import.imageAbsent': 'Absente',
+    'map.import.preview': 'Aperçu',
+    'map.import.saveSection': 'Enregistrer la carte',
+    'map.import.submitting': 'Import…',
+    'map.import.submit': 'Importer',
     // Infobulles explicites — assistant + montée de niveau (wizard / level-up)
     'wizard.tip.rollAbilities': 'Lance les dés à votre place pour générer les six valeurs.',
     'wizard.tip.autofillAbilities': 'Remplit les caractéristiques recommandées pour votre classe.',
@@ -7953,6 +8056,59 @@ const STRINGS: Record<Locale, Dict> = {
     'map.tip.toggleLighting': 'Show or hide the glow of light sources.',
     'map.tip.toggleMeasure': 'Measure a distance in meters on the map.',
     'map.tip.deleteMap': 'Permanently delete this map.',
+    // Map screens — common + cloud + import + TV
+    'map.common.loading': 'Loading…',
+    'map.common.loadingMap': 'Loading the map…',
+    'map.common.errorPrefix': 'Error: ',
+    'map.common.missingCid':
+      'Invalid URL: the campaign identifier (`cid`) is missing.',
+    'map.common.invalidSlug':
+      'Invalid identifier (kebab-case slug: lowercase letters, digits, hyphens).',
+    'map.common.nameRequired': 'A name is required.',
+    'map.common.slugLabel': 'Identifier (slug)',
+    'map.common.nameLabel': 'Name',
+    'map.common.deletePrefix': 'Delete',
+    'map.badge.prototype': 'Prototype — not production',
+    'map.tv.missingParams': 'Invalid URL: `cid` or `mid` is missing.',
+    'map.tv.notFound': 'Map not found.',
+    'map.tv.back': 'Back',
+    'map.cloud.signedOut': 'Sign in to manage maps.',
+    'map.cloud.title': 'Maps',
+    'map.cloud.campaignPrefix': 'Campaign: ',
+    'map.cloud.importLink': 'Import a .dd2vtt map',
+    'map.cloud.ensureErrorPrefix': 'Campaign initialization: ',
+    'map.cloud.createSection': 'Create a map',
+    'map.cloud.newMap': 'New map',
+    'map.cloud.slugPlaceholder': 'dawn-dungeon',
+    'map.cloud.namePlaceholder': 'Dawn Dungeon',
+    'map.cloud.creating': 'Creating…',
+    'map.cloud.create': 'Create',
+    'map.cloud.loadErrorPrefix': 'Loading error: ',
+    'map.cloud.loadingMaps': 'Loading maps…',
+    'map.cloud.empty': 'No maps for this campaign. Create one above.',
+    'map.cloud.listAria': 'Map list',
+    'map.cloud.delete': 'Del.',
+    'map.import.signedOut': 'Sign in to import a map.',
+    'map.import.parseFailedPrefix': 'Could not read file: ',
+    'map.import.back': 'Maps',
+    'map.import.title': 'Import a map',
+    'map.import.badge': '.dd2vtt — Dungeon Alchemist',
+    'map.import.introBefore': 'Select a ',
+    'map.import.introAfter':
+      ' file exported by Dungeon Alchemist. Walls, lights and the grid are imported and synchronized; the background image stays stored locally on this device (cross-device sync will arrive with Firebase Storage).',
+    'map.import.chooseFile': 'Choose a .dd2vtt file',
+    'map.import.statDimensions': 'Dimensions',
+    'map.import.statWalls': 'Walls',
+    'map.import.statLights': 'Lights',
+    'map.import.statImage': 'Image',
+    'map.import.squaresSuffix': 'squares',
+    'map.import.verticesSuffix': 'vertices',
+    'map.import.imageIncluded': 'Included',
+    'map.import.imageAbsent': 'Absent',
+    'map.import.preview': 'Preview',
+    'map.import.saveSection': 'Save the map',
+    'map.import.submitting': 'Importing…',
+    'map.import.submit': 'Import',
     // Explicit tooltips — wizard + level-up
     'wizard.tip.rollAbilities': 'Rolls the dice for you to generate the six scores.',
     'wizard.tip.autofillAbilities': 'Fills in the recommended ability scores for your class.',

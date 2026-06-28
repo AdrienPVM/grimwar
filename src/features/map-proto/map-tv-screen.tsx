@@ -2,6 +2,7 @@ import { type JSX, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { t } from '@/shared/lib/i18n';
 import type { MapToken } from '@/shared/types/map';
 
 import { MapScene } from './map-scene';
@@ -35,20 +36,25 @@ export function MapTvScreen(): JSX.Element {
   if (!cid || !mid) {
     return (
       <Centered testid="map-tv-missing-params">
-        URL invalide : il manque `cid` ou `mid`.
+        {t('map.tv.missingParams')}
       </Centered>
     );
   }
   if (!isReady || isLoading) {
-    return <Centered testid="map-tv-loading">Chargement de la carte…</Centered>;
+    return (
+      <Centered testid="map-tv-loading">{t('map.common.loadingMap')}</Centered>
+    );
   }
   if (error) {
     return (
-      <Centered testid="map-tv-error">Erreur : {error.message}</Centered>
+      <Centered testid="map-tv-error">
+        {t('map.common.errorPrefix')}
+        {error.message}
+      </Centered>
     );
   }
   if (!map) {
-    return <Centered testid="map-tv-not-found">Carte introuvable.</Centered>;
+    return <Centered testid="map-tv-not-found">{t('map.tv.notFound')}</Centered>;
   }
 
   return (
@@ -64,7 +70,7 @@ export function MapTvScreen(): JSX.Element {
           onClick={() => navigate(`/map-proto/cloud/${cid}/maps/${mid}`)}
           className="pointer-events-auto rounded-pill border border-gold-dim/30 bg-black/50 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright/80 transition-colors duration-200 ease-base hover:text-gold-bright"
         >
-          ◂ Retour
+          ◂ {t('map.tv.back')}
         </button>
         <span
           data-testid="map-tv-name"

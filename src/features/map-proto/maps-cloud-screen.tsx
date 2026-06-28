@@ -33,7 +33,7 @@ import { useMapsList } from './use-maps-list';
  *   - PAS de gestion de tokens / fog / lights : tout ça vit dans la carte
  *     une fois ouverte (D.4+).
  *
- * Aucune i18n (`t()`) — convention prototype, comme `map-proto-screen.tsx`.
+ * Chaînes UI passées par `t()` (namespaces `map.common.*` / `map.cloud.*`).
  */
 
 const DEFAULT_GRID_SIZE_PX = 70;
@@ -110,11 +110,11 @@ export function MapsCloudScreen(): JSX.Element {
       const id = form.id.trim();
       const name = form.name.trim();
       if (!id || !SLUG_REGEX.test(id)) {
-        setFormError('Identifiant invalide (slug kebab-case : lettres minuscules, chiffres, tirets).');
+        setFormError(t('map.common.invalidSlug'));
         return;
       }
       if (!name) {
-        setFormError('Le nom est requis.');
+        setFormError(t('map.common.nameRequired'));
         return;
       }
       setFormError(null);
@@ -152,7 +152,7 @@ export function MapsCloudScreen(): JSX.Element {
           data-testid="maps-cloud-missing-cid"
           className="font-serif text-sm text-text-secondary"
         >
-          URL invalide : il manque l&apos;identifiant de campagne (`cid`).
+          {t('map.common.missingCid')}
         </p>
       </main>
     );
@@ -161,7 +161,9 @@ export function MapsCloudScreen(): JSX.Element {
   if (!isReady) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
-        <p className="font-serif text-sm text-text-secondary">Chargement…</p>
+        <p className="font-serif text-sm text-text-secondary">
+          {t('map.common.loading')}
+        </p>
       </main>
     );
   }
@@ -173,7 +175,7 @@ export function MapsCloudScreen(): JSX.Element {
           data-testid="maps-cloud-signed-out"
           className="font-serif text-sm text-text-secondary"
         >
-          Connexion requise pour gérer les cartes.
+          {t('map.cloud.signedOut')}
         </p>
       </main>
     );
@@ -184,41 +186,43 @@ export function MapsCloudScreen(): JSX.Element {
       <header className="mb-6 border-b border-gold-dim/30 pb-4">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
-            Cartes
+            {t('map.cloud.title')}
           </h1>
           <span className="rounded-pill border border-gold-dim/40 bg-gold/10 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
-            PROTOTYPE — Not production
+            {t('map.badge.prototype')}
           </span>
         </div>
         <p
           data-testid="maps-cloud-cid"
           className="mt-2 font-mono text-[11px] text-text-tertiary"
         >
-          Campagne : {cid}
+          {t('map.cloud.campaignPrefix')}
+          {cid}
         </p>
         <Link
           to={`/map-proto/cloud/${cid}/import`}
           data-testid="maps-cloud-import-link"
           className="mt-3 inline-flex items-center gap-2 rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
         >
-          Importer une carte .dd2vtt
+          {t('map.cloud.importLink')}
         </Link>
         {ensureError && (
           <p
             data-testid="maps-cloud-ensure-error"
             className="mt-2 rounded-md border border-crimson/40 bg-crimson/10 px-3 py-1.5 font-mono text-[11px] text-crimson"
           >
-            Initialisation campagne : {ensureError}
+            {t('map.cloud.ensureErrorPrefix')}
+            {ensureError}
           </p>
         )}
       </header>
 
       <section
-        aria-label="Créer une carte"
+        aria-label={t('map.cloud.createSection')}
         className="mb-6 rounded-lg border border-gold-dim/30 bg-bg-elev/80 p-4"
       >
         <h2 className="mb-3 font-title text-[12px] uppercase tracking-[0.16em] text-gold-bright">
-          Nouvelle carte
+          {t('map.cloud.newMap')}
         </h2>
         <form
           onSubmit={handleSubmit}
@@ -227,13 +231,13 @@ export function MapsCloudScreen(): JSX.Element {
         >
           <label className="flex flex-col gap-1">
             <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-              Identifiant (slug)
+              {t('map.common.slugLabel')}
             </span>
             <input
               type="text"
               value={form.id}
               onChange={(e) => setForm((f) => ({ ...f, id: e.target.value }))}
-              placeholder="donjon-de-l-aube"
+              placeholder={t('map.cloud.slugPlaceholder')}
               data-testid="maps-cloud-create-id"
               className="w-56 rounded border border-gold-dim/30 bg-bg px-2 py-1 font-mono text-[12px] text-text focus:border-gold-bright focus:outline-none"
               autoComplete="off"
@@ -242,13 +246,13 @@ export function MapsCloudScreen(): JSX.Element {
           </label>
           <label className="flex flex-col gap-1">
             <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-              Nom
+              {t('map.common.nameLabel')}
             </span>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Donjon de l'Aube"
+              placeholder={t('map.cloud.namePlaceholder')}
               data-testid="maps-cloud-create-name"
               className="w-72 rounded border border-gold-dim/30 bg-bg px-2 py-1 text-[12px] text-text focus:border-gold-bright focus:outline-none"
               autoComplete="off"
@@ -260,7 +264,7 @@ export function MapsCloudScreen(): JSX.Element {
             data-testid="maps-cloud-create-submit"
             className="rounded-pill border border-gold-dim/40 px-3 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
           >
-            {submitting ? 'Création…' : 'Créer'}
+            {submitting ? t('map.cloud.creating') : t('map.cloud.create')}
           </button>
         </form>
         {formError && (
@@ -278,25 +282,26 @@ export function MapsCloudScreen(): JSX.Element {
           data-testid="maps-cloud-list-error"
           className="rounded-md border border-crimson/40 bg-crimson/10 px-3 py-2 font-mono text-[11px] text-crimson"
         >
-          Erreur de chargement : {error.message}
+          {t('map.cloud.loadErrorPrefix')}
+          {error.message}
         </p>
       ) : isLoading ? (
         <p
           data-testid="maps-cloud-list-loading"
           className="font-serif text-[12px] text-text-tertiary"
         >
-          Chargement des cartes…
+          {t('map.cloud.loadingMaps')}
         </p>
       ) : maps.length === 0 ? (
         <p
           data-testid="maps-cloud-empty"
           className="font-serif text-[12px] text-text-tertiary"
         >
-          Aucune carte pour cette campagne. Créez-en une ci-dessus.
+          {t('map.cloud.empty')}
         </p>
       ) : (
         <ul
-          aria-label="Liste des cartes"
+          aria-label={t('map.cloud.listAria')}
           data-testid="maps-cloud-list"
           className="grid grid-cols-1 gap-3 sm:grid-cols-2"
         >
@@ -322,11 +327,11 @@ export function MapsCloudScreen(): JSX.Element {
                   onClick={() => {
                     void handleDelete(m.id);
                   }}
-                  aria-label={`Supprimer ${m.name}`}
+                  aria-label={`${t('map.common.deletePrefix')} ${m.name}`}
                   data-testid={`maps-cloud-delete-${m.id}`}
                   className="ml-2 rounded-pill border border-gold-dim/30 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-crimson/60 hover:text-crimson"
                 >
-                  Suppr.
+                  {t('map.cloud.delete')}
                 </button>
               </Tooltip>
             </li>

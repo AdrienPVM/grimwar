@@ -8,6 +8,7 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { t } from '@/shared/lib/i18n';
 import {
   MAP_BACKGROUND_PRESET,
   optimizeDataUrl,
@@ -33,7 +34,7 @@ import { MAP_VIEWBOX_H, MAP_VIEWBOX_W } from './map-viewport';
  *      (IndexedDB) — Firebase Storage étant parqué, l'image ne se synchronise
  *      pas cross-device mais survit au reload sur l'appareil.
  *
- * Convention prototype : chaînes FR inline (comme `maps-cloud-screen`).
+ * Chaînes UI passées par `t()` (namespaces `map.common.*` / `map.import.*`).
  */
 
 const SLUG_REGEX = /^[a-z0-9-]+$/;
@@ -103,7 +104,7 @@ export function MapImportScreen(): JSX.Element {
         const msg =
           err instanceof Dd2vttParseError
             ? err.message
-            : `Lecture impossible : ${err instanceof Error ? err.message : String(err)}`;
+            : `${t('map.import.parseFailedPrefix')}${err instanceof Error ? err.message : String(err)}`;
         setParseError(msg);
       }
     },
@@ -115,13 +116,11 @@ export function MapImportScreen(): JSX.Element {
     const id = slug.trim();
     const mapName = name.trim();
     if (!id || !SLUG_REGEX.test(id)) {
-      setSubmitError(
-        'Identifiant invalide (slug kebab-case : minuscules, chiffres, tirets).',
-      );
+      setSubmitError(t('map.common.invalidSlug'));
       return;
     }
     if (!mapName) {
-      setSubmitError('Le nom est requis.');
+      setSubmitError(t('map.common.nameRequired'));
       return;
     }
     setSubmitError(null);
@@ -169,7 +168,7 @@ export function MapImportScreen(): JSX.Element {
           data-testid="map-import-missing-cid"
           className="font-serif text-sm text-text-secondary"
         >
-          URL invalide : il manque l&apos;identifiant de campagne (`cid`).
+          {t('map.common.missingCid')}
         </p>
       </main>
     );
@@ -177,7 +176,9 @@ export function MapImportScreen(): JSX.Element {
   if (!isReady) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-bg p-6 text-text">
-        <p className="font-serif text-sm text-text-secondary">Chargement…</p>
+        <p className="font-serif text-sm text-text-secondary">
+          {t('map.common.loading')}
+        </p>
       </main>
     );
   }
@@ -188,7 +189,7 @@ export function MapImportScreen(): JSX.Element {
           data-testid="map-import-signed-out"
           className="font-serif text-sm text-text-secondary"
         >
-          Connexion requise pour importer une carte.
+          {t('map.import.signedOut')}
         </p>
       </main>
     );
@@ -203,21 +204,19 @@ export function MapImportScreen(): JSX.Element {
             onClick={() => navigate(`/map-proto/cloud/${cid}`)}
             className="rounded-pill border border-gold-dim/30 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-gold-bright hover:text-gold-bright"
           >
-            ← Cartes
+            ← {t('map.import.back')}
           </button>
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
-            Importer une carte
+            {t('map.import.title')}
           </h1>
           <span className="rounded-pill border border-gold-dim/40 bg-gold/10 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
-            .dd2vtt — Dungeon Alchemist
+            {t('map.import.badge')}
           </span>
         </div>
         <p className="mt-2 max-w-[70ch] font-serif text-[12px] text-text-tertiary">
-          Sélectionnez un fichier <code className="text-gold-bright">.dd2vtt</code>{' '}
-          exporté par Dungeon Alchemist. Les murs, lumières et la grille sont
-          importés et synchronisés ; l&apos;image de fond reste stockée localement
-          sur cet appareil (la synchro cross-device arrivera avec Firebase
-          Storage).
+          {t('map.import.introBefore')}
+          <code className="text-gold-bright">.dd2vtt</code>
+          {t('map.import.introAfter')}
         </p>
       </header>
 
@@ -232,7 +231,7 @@ export function MapImportScreen(): JSX.Element {
             data-testid="map-import-file"
             className="sr-only"
           />
-          Choisir un fichier .dd2vtt
+          {t('map.import.chooseFile')}
         </label>
         {fileName && (
           <span
@@ -257,29 +256,33 @@ export function MapImportScreen(): JSX.Element {
           <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat
               testid="map-import-stat-size"
-              label="Dimensions"
-              value={`${parsed.mapSizeSquares.x} × ${parsed.mapSizeSquares.y} cases`}
+              label={t('map.import.statDimensions')}
+              value={`${parsed.mapSizeSquares.x} × ${parsed.mapSizeSquares.y} ${t('map.import.squaresSuffix')}`}
             />
             <Stat
               testid="map-import-stat-walls"
-              label="Murs"
-              value={`${parsed.walls.length} (${parsed.wallVertexCount} sommets)`}
+              label={t('map.import.statWalls')}
+              value={`${parsed.walls.length} (${parsed.wallVertexCount} ${t('map.import.verticesSuffix')})`}
             />
             <Stat
               testid="map-import-stat-lights"
-              label="Lumières"
+              label={t('map.import.statLights')}
               value={`${parsed.lights.length}`}
             />
             <Stat
               testid="map-import-stat-image"
-              label="Image"
-              value={parsed.imageDataUrl ? 'Incluse' : 'Absente'}
+              label={t('map.import.statImage')}
+              value={t(
+                parsed.imageDataUrl
+                  ? 'map.import.imageIncluded'
+                  : 'map.import.imageAbsent',
+              )}
             />
           </section>
 
           <section className="mb-6">
             <h2 className="mb-2 font-title text-[11px] uppercase tracking-[0.16em] text-text-tertiary">
-              Aperçu
+              {t('map.import.preview')}
             </h2>
             <div
               className="overflow-hidden rounded-lg border border-gold-dim/30 bg-black/40"
@@ -335,12 +338,12 @@ export function MapImportScreen(): JSX.Element {
 
           <section className="rounded-lg border border-gold-dim/30 bg-bg-elev/80 p-4">
             <h2 className="mb-3 font-title text-[12px] uppercase tracking-[0.16em] text-gold-bright">
-              Enregistrer la carte
+              {t('map.import.saveSection')}
             </h2>
             <div className="flex flex-wrap items-end gap-3">
               <label className="flex flex-col gap-1">
                 <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                  Identifiant (slug)
+                  {t('map.common.slugLabel')}
                 </span>
                 <input
                   type="text"
@@ -354,7 +357,7 @@ export function MapImportScreen(): JSX.Element {
               </label>
               <label className="flex flex-col gap-1">
                 <span className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary">
-                  Nom
+                  {t('map.common.nameLabel')}
                 </span>
                 <input
                   type="text"
@@ -374,7 +377,7 @@ export function MapImportScreen(): JSX.Element {
                 data-testid="map-import-submit"
                 className="rounded-pill border border-gold-dim/40 px-4 py-1.5 font-title text-[11px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10 disabled:opacity-40"
               >
-                {submitting ? 'Import…' : 'Importer'}
+                {submitting ? t('map.import.submitting') : t('map.import.submit')}
               </button>
             </div>
             {submitError && (
