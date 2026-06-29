@@ -55,6 +55,10 @@ import {
   SRD_MAGIC_ITEMS_WANDS,
   SRD_MAGIC_ITEMS_WANDS_COUNTS,
 } from './data/srd-magic-items-wands';
+import {
+  SRD_MAGIC_ITEMS_STAVES,
+  SRD_MAGIC_ITEMS_STAVES_COUNTS,
+} from './data/srd-magic-items-staves';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -102,6 +106,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_RELIQUAT,
     ...SRD_MAGIC_ITEMS_RINGS_RARE,
     ...SRD_MAGIC_ITEMS_WANDS,
+    ...SRD_MAGIC_ITEMS_STAVES,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -219,6 +224,19 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — wands D29.2 attendu 5 uncommon + 7 rare + 1 very rare, trouvé ${SRD_MAGIC_ITEMS_WANDS_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_WANDS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_WANDS_COUNTS.veryRare}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_STAVES_COUNTS.total !== SRD_MAGIC_ITEMS_STAVES.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur staves désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.uncommon !== 1 ||
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.rare !== 5 ||
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.veryRare !== 5 ||
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.legendary !== 1
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — staves D29.3 attendu 1 uncommon + 5 rare + 5 very rare + 1 legendary, trouvé ${SRD_MAGIC_ITEMS_STAVES_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.legendary}.`,
     );
   }
 

@@ -941,13 +941,18 @@
   {
     "id": "baton-d-envoutement",
     "name": {
-      "fr": "Bâton d'envoûtement"
+      "fr": "Bâton d'envoûtement",
+      "en": "Staff of Charming"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Barde, Clerc, Druide, Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Bard, Cleric, Druid, Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Tant que vous tenez ce bâton, vous pouvez utiliser une action pour dépenser l'une de ses 10 charges afin de lancer le sort charme-personne, injonction ou compréhension des langues en utilisant votre propre DD des sorts. Le bâton peut également être utilisé en tant qu'arme magique.\n\nSi vous tenez le bâton et échouez un jet de sauvegarde contre un sort d'enchantement dont vous êtes la cible unique, vous pouvez transformer votre échec au jet de sauvegarde en une réussite. Vous ne pouvez plus utiliser cette propriété du bâton avant la prochaine aube. Si vous réussissez un jet de sauvegarde contre un sort d'enchantement dont vous êtes la cible unique, avec ou sans l'intervention du bâton, vous pouvez utiliser votre réaction pour dépenser 1 charge du bâton et renvoyer le sort à son lanceur originel comme si vous veniez de lancer ce sort.\n\nLe bâton récupère 1d8 + 2 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, le bâton devient une simple arme non magique."
+      "fr": "Ce bâton dispose de 10 charges. Tant que vous tenez ce bâton, vous pouvez recourir à ses propriétés :\n\nIncantation. Vous pouvez dépenser 1 charge du bâton pour lancer charme-personne, compréhension des langues ou injonction en prenant votre DD de sauvegarde des sorts.\n\nRenvoi d'enchantement. Si vous réussissez un JS contre un sort d'Enchantement qui ne cible que vous, vous pouvez jouer votre Réaction pour dépenser 1 charge du bâton, ce qui renvoie le sort sur son incantateur comme si vous aviez lancé le sort.\n\nRésistance aux enchantements. Si vous ratez un jet de sauvegarde contre un sort d'Enchantement qui ne cible que vous, vous pouvez transformer cet échec en réussite. Cette propriété du bâton ne peut plus resservir avant l'aube suivante.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d8 + 2 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton est réduit en poussière.",
+      "en": "This staff has 10 charges. While holding the staff, you can use any of its properties:\n\nCast Spell. You can expend 1 of the staff's charges to cast Charm Person, Command, or Comprehend Languages from it using your spell save DC.\n\nReflect Enchantment. If you succeed on a saving throw against an Enchantment spell that targets only you, you can take a Reaction to expend 1 charge from the staff and turn the spell back on its caster as if you had cast the spell.\n\nResist Enchantment. If you fail a saving throw against an Enchantment spell that targets only you, you can turn your failed save into a successful one. You can't use this property of the staff again until the next dawn.\n\nRegaining Charges. The staff regains 1d8 + 2 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff crumbles to dust and is destroyed."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -955,13 +960,18 @@
   {
     "id": "baton-de-feu",
     "name": {
-      "fr": "Bâton de feu"
+      "fr": "Bâton de feu",
+      "en": "Staff of Fire"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Druide, Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Druid, Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Vous obtenez la résistance aux dégâts de feu tant que vous tenez ce bâton.\n\nLe bâton possède 10 charges. Tant que vous le tenez, vous pouvez utiliser une action pour en dépenser 1 ou plusieurs charges afin de lancer l'un des sorts suivants tout en utilisant votre propre DD des sorts : mains brûlantes (1 de charge), boule de feu (3 charges) ou mur de feu (4 charges).\n\nLe bâton récupère 1d6 + 4 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, le bâton noircit, tombe en cendre et est détruit."
+      "fr": "Vous bénéficiez de la Résistance aux dégâts de feu tant que vous tenez ce bâton.\n\nSorts. Le bâton dispose de 10 charges. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre DD de sauvegarde des sorts. La table indique le nombre de charges à dépenser pour lancer le sort.\n\nmains brûlantes : 1 charge ; boule de feu : 3 charges ; mur de feu : 4 charges.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d6 + 4 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton est réduit en cendres.",
+      "en": "You have Resistance to Fire damage while you hold this staff.\n\nSpells. The staff has 10 charges. While holding the staff, you can cast one of the spells on the following table from it, using your spell save DC. The table indicates how many charges you must expend to cast the spell.\n\nBurning Hands: 1 charge; Fireball: 3 charges; Wall of Fire: 4 charges.\n\nRegaining Charges. The staff regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff crumbles into cinders and is destroyed."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -969,13 +979,15 @@
   {
     "id": "baton-de-fletrissement",
     "name": {
-      "fr": "Bâton de flétrissement"
+      "fr": "Bâton de flétrissement",
+      "en": "Staff of Withering"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Ce bâton possède 3 charges et récupère 1d3 charges dépensées chaque jour à l'aube.\n\nLe bâton peut être utilisé comme un bâton magique. Si l'attaque touche, il inflige les mêmes dégâts qu'un bâton normal, et vous pouvez dépenser 1 charge pour infliger 2d10 dégâts nécrotiques supplémentaires à la cible. En outre, la cible doit réussir un jet de sauvegarde de Constitution DD 15 ou avoir un désavantage pendant 1 heure à tous les jets de caractéristique ou de sauvegarde basés sur la Force ou la Constitution."
+      "fr": "Ce bâton dispose de 3 charges et récupère quotidiennement 1d3 charges dépensées, à l'aube.\n\nIl peut également servir de bâton de combat magique. Une attaque qui touche avec ce bâton inflige les dégâts d'un bâton de combat normal, sachant que vous pouvez dépenser 1 charge pour qu'il inflige 2d10 dégâts nécrotiques supplémentaires à la cible et lui impose un jet de sauvegarde de Constitution DD 15. En cas d'échec, la cible subit le Désavantage pendant 1 heure à tout test de caractéristique et jet de sauvegarde basé sur la Force ou la Constitution.",
+      "en": "This staff has 3 charges and regains 1d3 expended charges daily at dawn.\n\nThe staff can be wielded as a magic Quarterstaff. On a hit, it deals damage as a normal Quarterstaff, and you can expend 1 charge to deal an extra 2d10 Necrotic damage to the target and force it to make a DC 15 Constitution saving throw. On a failed save, the target has Disadvantage for 1 hour on any ability check or saving throw that uses Strength or Constitution."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -983,13 +995,18 @@
   {
     "id": "baton-de-givre",
     "name": {
-      "fr": "Bâton de givre"
+      "fr": "Bâton de givre",
+      "en": "Staff of Frost"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Druide, Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Druid, Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Vous obtenez la résistance aux dégâts de froid tant que vous tenez ce bâton.\n\nLe bâton possède 10 charges. Tant que vous le tenez, vous pouvez utiliser une action pour en dépenser 1 ou plusieurs charges afin de lancer l'un des sorts suivants tout en utilisant votre propre DD des sorts : cône de froid (5 charges), nappe de brouillard (1 charge), tempête de grêle (4 charges) ou mur de glace (4 charges).\n\nLe bâton récupère 1d6 + 4 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, le bâton se change en eau et est détruit."
+      "fr": "Vous bénéficiez de la Résistance aux dégâts de froid tant que vous tenez ce bâton.\n\nSorts. Le bâton dispose de 10 charges. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre DD de sauvegarde des sorts. La table indique le nombre de charges à dépenser pour lancer le sort.\n\ncône de froid : 5 charges ; nappe de brouillard : 1 charge ; tempête de grêle : 4 charges ; mur de glace : 4 charges.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d6 + 4 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton se liquéfie et il est détruit.",
+      "en": "You have Resistance to Cold damage while you hold this staff.\n\nSpells. The staff has 10 charges. While holding the staff, you can cast one of the spells on the following table from it, using your spell save DC. The table indicates how many charges you must expend to cast the spell.\n\nCone of Cold: 5 charges; Fog Cloud: 1 charge; Ice Storm: 4 charges; Wall of Ice: 4 charges.\n\nRegaining Charges. The staff regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff turns to water and is destroyed."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -997,13 +1014,18 @@
   {
     "id": "baton-de-grand-essaim",
     "name": {
-      "fr": "Bâton de grand essaim"
+      "fr": "Bâton du grand essaim",
+      "en": "Staff of Swarming Insects"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Barde, Clerc, Druide, Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Bard, Cleric, Druid, Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Ce bâton possède 10 charges et récupère 1d6 + 4 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, un essaim d'insectes consomme et détruit le bâton, puis disparaît.\n\nSorts. Tant que vous tenez le bâton, vous pouvez l'utiliser, en prenant une action pour dépenser plusieurs de ses charges, afin de lancer l'un des sorts suivants tout en utilisant votre propre DD des sorts : insecte géant (4 charges) ou fléau d'insectes (5 charges).\n\nNuage d'insectes. Tant que vous tenez le bâton, vous pouvez utiliser une action pour dépenser 1 charge et ainsi faire apparaître une nuée d'insectes volants inoffensifs dans un rayon de 9 mètres autour de vous. Les insectes restent pendant 10 minutes, obscurcissant fortement la zone pour toutes les créatures, vous excepté. La nuée se déplace en même temps que vous, et reste centrée sur vous. Un vent d'au moins 15 kilomètres par heure disperse la nuée, mettant un terme à l'effet."
+      "fr": "Ce bâton dispose de 10 charges.\n\nNuage d'insectes. Lorsque vous tenez le bâton, vous pouvez entreprendre l'action Magie et dépenser 1 charge pour faire apparaître un essaim d'insectes volants inoffensifs dans une Émanation de 9 m centrée sur vous. Les insectes persistent pendant 10 minutes, rendant la Visibilité nulle dans la zone pour toutes les créatures autres que vous. Un vent fort (comme celui créé par bourrasque) disperse l'essaim et met fin à l'effet.\n\nSorts. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre DD de sauvegarde des sorts et votre modificateur d'attaque des sorts. La table indique le nombre de charges à dépenser pour lancer le sort.\n\ninsecte géant : 4 charges ; fléau d'insectes : 5 charges.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d6 + 4 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, une nuée d'insectes dévore le bâton et le détruit avant de se disperser.",
+      "en": "This staff has 10 charges.\n\nInsect Cloud. While holding the staff, you can take a Magic action and expend 1 charge to cause a swarm of harmless flying insects to fill a 30-foot Emanation originating from you. The insects remain for 10 minutes, making the area Heavily Obscured for creatures other than you. A strong wind (like that created by Gust of Wind) disperses the swarm and ends the effect.\n\nSpells. While holding the staff, you can cast one of the spells on the following table from it, using your spell save DC and spell attack modifier. The table indicates how many charges you must expend to cast the spell.\n\nGiant Insect: 4 charges; Insect Plague: 5 charges.\n\nRegaining Charges. The staff regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, a swarm of insects consumes and destroys the staff, then disperses."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1011,13 +1033,18 @@
   {
     "id": "baton-de-guerison",
     "name": {
-      "fr": "Bâton de guérison"
+      "fr": "Bâton de guérison",
+      "en": "Staff of Healing"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Barde, Clerc ou Druide",
+      "en": "Requires Attunement by a Bard, Cleric, or Druid"
+    },
     "magicDescription": {
-      "fr": "Ce bâton possède 10 charges. Tant que vous le tenez, vous pouvez utiliser une action pour dépenser 1 ou plusieurs charges afin de lancer l'un des sorts suivants tout en utilisant votre propre DD des sorts et le modificateur de votre caractéristique d'incantation : soins (1 charge par niveau d'emplacement de sort, jusqu'au niveau 4 maximum), restauration partielle (2 charges) ou soins de groupe (5 charges).\n\nLe bâton récupère 1d6 + 4 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, le bâton disparaît pour toujours dans un flash de lumière."
+      "fr": "Ce bâton dispose de 10 charges. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre modificateur de caractéristique d'incantation. La table indique le nombre de charges à dépenser pour lancer le sort.\n\nsoins : 1 charge par niveau de sort (maximum 4 pour un sort du 4e niveau) ; restauration partielle : 2 charges ; soins de groupe : 5 charges.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d6 + 4 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton disparaît dans un éclat de lumière, perdu à jamais.",
+      "en": "This staff has 10 charges. While holding the staff, you can cast one of the spells on the following table from it, using your spellcasting ability modifier. The table indicates how many charges you must expend to cast the spell.\n\nCure Wounds: 1 charge per spell level (maximum 4 for a level 4 spell); Lesser Restoration: 2 charges; Mass Cure Wounds: 5 charges.\n\nRegaining Charges. The staff regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff vanishes in a flash of light, lost forever."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1025,13 +1052,18 @@
   {
     "id": "baton-de-surpuissance",
     "name": {
-      "fr": "Bâton de surpuissance"
+      "fr": "Bâton de surpuissance",
+      "en": "Staff of Power"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Ce bâton peut être utilisé comme un bâton (arme) magique conférant un bonus de +2 aux jets d'attaque et de dégâts effectués avec lui. Tant que vous le tenez, vous gagnez un bonus de +2 à la Classe d'Armure, aux jets de sauvegarde, et aux jets d'attaque avec un sort.\n\nLe bâton possède 20 charges pour les propriétés suivantes. Le bâton récupère 2d8 + 4 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, le bâton conserve son bonus de +2 aux jets d'attaque et de dégâts mais perd toutes ses autres propriétés. Sur un résultat de 20, le bâton récupère 1d8 + 2 charges.\n\nFrappe surpuissante. Lorsque vous touchez lors d'une attaque au corps à corps en utilisant le bâton, vous pouvez dépenser 1 charge pour infliger 1d6 dégâts de force supplémentaires à la cible.\n\nSorts. Tant que vous tenez ce bâton, vous pouvez utiliser une action pour dépenser 1 ou plus de ses charges afin de lancer l'un des sorts suivants depuis le bâton, vous utilisez votre propre DD au jet de sauvegarde des sorts et votre bonus d'attaque avec un sort : cône de froid (5 charges), boule de feu (emplacement de sort niveau 5, 5 charges), globe d'invulnérabilité (6 charges), immobilisation de monstre (5 charges), lévitation (2 charges), éclair (emplacement de sort niveau 5, 5 charges), projectile magique (1 charge), rayon affaiblissant (1 charge) ou mur de force (5 charges).\n\nFrappe vengeresse. Vous pouvez utiliser une action pour briser le bâton contre votre genou ou contre une surface solide, déclenchant alors la frappe vengeresse. Le bâton est détruit et libère la magie qui lui reste en une formidable explosion qui recouvre une zone sphérique de 9 mètres de rayons centrée sur lui.\n\nVous avez 50 % de chance de voyager instantanément vers un plan d'existence aléatoire, échappant alors à l'explosion. Si vous ne parvenez pas à éviter l'effet, vous subissez un montant de dégâts de force égal à 16 x le nombre de charges dans le bâton. Toutes les autres créatures dans la zone doivent effectuer un jet de sauvegarde de Dextérité DD 17. En cas d'échec au jet de sauvegarde, une créature subit un montant de dégâts basé sur la distance entre elle et l'épicentre de l'explosion, comme indiqué sur la table ci-dessous. En cas de jet de sauvegarde réussi, une créature ne subit que la moitié des dégâts prévus.\n\nDistance par rapport à l'origineDégâts3 m ou moins8 x le nombre de charges dans le bâtonPlus de 3 m, jusqu'à 6 m6 x le nombre de charges dans le bâtonPlus de 6 m, jusqu'à 9 m4 x le nombre de charges dans le bâton"
+      "fr": "Ce bâton, qui dispose de 20 charges, peut se manier comme un bâton de combat magique octroyant un bonus de +2 aux jets d'attaque et de dégâts. Tant que vous le tenez, vous recevez un bonus de +2 à la classe d'armure, aux jets de sauvegarde et aux jets d'attaque de sort.\n\nSorts. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre DD de sauvegarde des sorts. La table indique le nombre de charges à dépenser pour lancer le sort.\n\nboule de feu (au 5e niveau) : 5 charges ; cône de froid : 5 charges ; éclair (au 5e niveau) : 5 charges ; globe d'invulnérabilité : 6 charges ; immobilisation de monstre : 5 charges ; lévitation : 2 charges ; mur de force : 5 charges ; projectile magique : 1 charge ; rayon affaiblissant : 1 charge.\n\nRécupération des charges. Le bâton récupère quotidiennement 2d8 + 4 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton conserve son bonus de +2 aux jets d'attaque et de dégâts, mais perd toutes ses autres propriétés. Sur un résultat de 20, il récupère 1d8 + 2 charges.\n\nExplosion vengeresse. Vous pouvez entreprendre l'action Magie pour rompre le bâton sur votre genou ou contre une surface solide. Le bâton se détruit alors en libérant sa magie dans une explosion qui emplit une Émanation de 9 m, dont il est l'origine. Vous avez 50 % de chances d'être propulsé instantanément vers un plan d'existence aléatoire et d'éviter ainsi l'explosion. Si vous n'évitez pas l'effet, vous subissez autant de dégâts de force que 16 fois le nombre de charges que contient le bâton. Chaque autre créature de la zone effectue un jet de sauvegarde de Dextérité DD 17. En cas d'échec, une créature subit autant de dégâts de force que 4 fois le nombre de charges contenues dans le bâton. En cas de réussite, elle ne subit que la moitié de ces dégâts.",
+      "en": "This staff has 20 charges and can be wielded as a magic Quarterstaff that grants a +2 bonus to attack rolls and damage rolls made with it. While holding it, you gain a +2 bonus to Armor Class, saving throws, and spell attack rolls.\n\nSpells. While holding the staff, you can cast one of the spells on the following table from it, using your spell save DC. The table indicates how many charges you must expend to cast the spell.\n\nCone of Cold: 5 charges; Fireball (level 5 version): 5 charges; Globe of Invulnerability: 6 charges; Hold Monster: 5 charges; Levitate: 2 charges; Lightning Bolt (level 5 version): 5 charges; Magic Missile: 1 charge; Ray of Enfeeblement: 1 charge; Wall of Force: 5 charges.\n\nRegaining Charges. The staff regains 2d8 + 4 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff retains its +2 bonus to attack rolls and damage rolls but loses all other properties. On a 20, the staff regains 1d8 + 2 charges.\n\nRetributive Strike. You can take a Magic action to break the staff over your knee or against a solid surface. The staff is destroyed and releases its magic in an explosion that fills a 30-foot Emanation originating from itself. You have a 50 percent chance to instantly travel to a random plane of existence, avoiding the explosion. If you fail to avoid the effect, you take Force damage equal to 16 times the number of charges in the staff. Each other creature in the area makes a DC 17 Dexterity saving throw. On a failed save, a creature takes Force damage equal to 4 times the number of charges in the staff. On a successful save, a creature takes half as much damage."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1039,13 +1071,15 @@
   {
     "id": "baton-de-tonnerre-et-de-foudre",
     "name": {
-      "fr": "Bâton de tonnerre et de foudre"
+      "fr": "Bâton de tonnerre et de foudre",
+      "en": "Staff of Thunder and Lightning"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Ce bâton peut être manié comme un bâton magique qui octroie un bonus de +2 à l'attaque et aux dégâts. Il a également les propriétés supplémentaires suivantes. Quand une de ces propriétés est utilisée, elle ne peut être réutilisée avant la prochaine aube.\n\nFoudre. Lorsque vous touchez avec une attaque au corps à corps en utilisant le bâton, vous pouvez infliger à la cible 2d6 dégâts de foudre supplémentaires.\n\nTonnerre. Lorsque vous touchez avec une attaque au corps à corps en utilisant le bâton, vous pouvez faire que le bâton émette un bruit de tonnerre audible jusqu'à 90 mètres. La cible que vous touchez doit réussir un jet de sauvegarde de Constitution DD 17 ou devenir étourdie jusqu'à la fin de votre prochain tour.\n\nÉclair. Vous pouvez utiliser une action pour faire jaillir un éclair de la pointe du bâton. L'éclair est une ligne de 1,50 mètre de large et de 36 mètres de long. Chaque créature sur cette ligne doit effectuer un jet de sauvegarde de Dextérité DD 17, subissant 9d6 dégâts de foudre en cas d'échec, ou la moitié de ces dégâts en cas de réussite.\n\nCoup de tonnerre. Vous pouvez utiliser une action pour faire éclater depuis le bâton un coup de tonnerre assourdissant, audible jusqu'à 180 mètres. Toute créature dans un rayon de 18 mètres autour de vous (vous excepté) doit alors effectuer un jet de sauvegarde de Constitution DD 17. En cas d'échec, une créature subit 2d6 dégâts de tonnerre et devient assourdie pendant 1 minute. En cas de réussite, une créature ne subit que la moitié de ces dégâts et elle n'est pas assourdie.\n\nFureur de l'orage. Vous pouvez utiliser une action pour utiliser les propriétés d'Éclair et de Coup de tonnerre en même temps. Cela ne dépense pas l'utilisation quotidienne de ces propriétés, uniquement l'utilisation de celle-ci."
+      "fr": "Ce bâton peut se manier comme un bâton de combat magique qui octroie un bonus de +2 aux jets d'attaque et de dégâts. Il dispose en outre des propriétés supplémentaires suivantes. Une fois que l'une de ces propriétés est utilisée, vous ne pouvez plus y recourir avant l'aube suivante.\n\nFoudre. Lorsque vous touchez une cible avec une attaque de corps à corps utilisant le bâton, vous pouvez lui infliger 2d6 dégâts de foudre supplémentaires (pas d'action requise).\n\nTonnerre. Lorsque vous touchez avec une attaque de corps à corps utilisant le bâton, vous pouvez faire produire à celui-ci un éclat de tonnerre audible à 90 m (pas d'action requise). La cible que vous avez touchée doit réussir un jet de sauvegarde de Constitution DD 17 sous peine de subir l'état Étourdi jusqu'à la fin de votre tour suivant.\n\nTonnerre et foudre. Aussitôt après avoir touché une cible avec une attaque de corps à corps utilisant le bâton, vous pouvez entreprendre une action Bonus pour utiliser simultanément les propriétés Foudre et Tonnerre (voir ci-dessus). Cela ne dépense pas l'utilisation quotidienne de ces deux propriétés, seulement celle de « Tonnerre et foudre ».\n\nTrait de foudre. Vous pouvez entreprendre l'action Magie pour faire jaillir la foudre de la pointe du bâton sur une Ligne de 1,50 m de large et 36 m de long. Chaque créature prise dans cette Ligne effectue un jet de sauvegarde de Dextérité DD 17 et subit 9d6 dégâts de foudre en cas d'échec, la moitié en cas de réussite.\n\nCoup de tonnerre. Vous pouvez entreprendre l'action Magie pour que le bâton produise un coup de tonnerre audible à 180 m. Chaque créature dans une Émanation de 18 m centrée sur vous effectue un jet de sauvegarde de Constitution DD 17. En cas d'échec, une créature subit 2d6 dégâts de tonnerre, ainsi que l'état Assourdi pendant 1 minute. En cas de réussite, elle subit uniquement la moitié de ces dégâts.",
+      "en": "This staff can be wielded as a magic Quarterstaff that grants a +2 bonus to attack rolls and damage rolls made with it. It also has the following additional properties. Once one of these properties is used, it can't be used again until the next dawn.\n\nLightning. When you hit with a melee attack using the staff, you can cause the target to take an extra 2d6 Lightning damage (no action required).\n\nThunder. When you hit with a melee attack using the staff, you can cause the staff to emit a crack of thunder audible out to 300 feet (no action required). The target you hit must succeed on a DC 17 Constitution saving throw or have the Stunned condition until the end of your next turn.\n\nThunder and Lightning. Immediately after you hit with a melee attack using the staff, you can take a Bonus Action to use the Lightning and Thunder properties (see above) at the same time. Doing so doesn't expend the daily use of those properties, only the use of this one.\n\nLightning Strike. You can take a Magic action to cause a bolt of lightning to leap from the staff's tip in a Line that is 5 feet wide and 120 feet long. Each creature in that Line makes a DC 17 Dexterity saving throw, taking 9d6 Lightning damage on a failed save or half as much damage on a successful one.\n\nThunderclap. You can take a Magic action to cause the staff to produce a thunderclap audible out to 600 feet. Every creature within a 60-foot Emanation originating from you makes a DC 17 Constitution saving throw. On a failed save, a creature takes 2d6 Thunder damage and has the Deafened condition for 1 minute. On a successful save, a creature takes half as much damage only."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1053,13 +1087,18 @@
   {
     "id": "baton-des-forets",
     "name": {
-      "fr": "Bâton des forêts"
+      "fr": "Bâton des forêts",
+      "en": "Staff of the Woodlands"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Druide",
+      "en": "Requires Attunement by a Druid"
+    },
     "magicDescription": {
-      "fr": "Ce bâton peut être manié comme un bâton magique qui octroie un bonus de +2 à l'attaque et aux dégâts. Lorsque vous le tenez, vous obtenez un bonus de +2 aux jets d'attaque des sorts.\n\nLe bâton possède 10 charges pour les propriétés suivantes. Il récupère 1d6 + 4 charges dépensées chaque jour à l'aube. Lorsque vous dépensez la dernière charge, lancez un d20. Sur un 1, le bâton perd ses propriétés et devient un simple bâton non magique.\n\nSorts. Vous pouvez utiliser une action pour dépenser une ou plusieurs des charges du bâton et jeter l'un des sorts suivants depuis celui-ci, en utilisant le DD de sauvegarde de vos sorts : amitié avec les animaux (1 charge), éveil (5 charges), peau d'écorce (2 charges), localisation d'animaux ou de plantes (2 charges), communication avec les animaux (1 charge), communication avec les plantes (3 charges) ou mur d'épines (6 charges).\n\nVous pouvez également utiliser une action pour lancer le sort passage sans trace depuis le bâton sans utiliser aucune charge.\n\nForme d'arbre. Vous pouvez utiliser une action pour planter une extrémité du bâton dans de la terre fertile et dépenser une charge pour le transformer en un arbre sain. L'arbre fait 18 mètres de haut, son tronc fait 1,50 mètre de diamètre et ses branches s'étalent au sommet sur un rayon de 7,50 mètres. L'arbre apparaît ordinaire mais dégage une faible aura de magie de transmutation s'il est ciblé par détection de la magie. Tout en touchant l'arbre et en utilisant une autre action pour prononcer le mot de commande, vous pouvez faire reprendre au bâton sa forme normale. Toute créature dans l'arbre tombe alors."
+      "fr": "Ce bâton, qui dispose de 6 charges, peut se manier comme un bâton de combat magique octroyant un bonus de +2 aux jets d'attaque et de dégâts. Tant que vous le tenez, vous recevez un bonus de +2 aux jets d'attaque de sort.\n\nSorts. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre DD de sauvegarde des sorts. La table indique le nombre de charges à dépenser pour lancer le sort.\n\namitié avec les animaux : 1 charge ; communication avec les animaux : 1 charge ; communication avec les plantes : 3 charges ; éveil : 5 charges ; localisation d'animaux ou de plantes : 2 charges ; mur d'épines : 6 charges ; passage sans trace : 2 charges ; peau d'écorce : 2 charges.\n\nForme d'arbre. Vous pouvez entreprendre l'action Magie pour planter une extrémité du bâton dans une terre fertile en un espace inoccupé et dépenser 1 charge pour transformer le bâton en un arbre vigoureux. L'arbre mesure 18 m de haut et son tronc 1,50 m de diamètre, la ramure au sommet atteignant 6 m de rayon. L'arbre semble ordinaire, mais dégage une faible aura de magie de Transmutation détectable par le sort détection de la magie. En touchant l'arbre et en entreprenant l'action Magie, vous ramenez le bâton à sa forme normale. Toute créature perchée dans l'arbre tombe lorsque celui-ci redevient un bâton.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d6 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton perd ses propriétés et devient un bâton de combat non magique.",
+      "en": "This staff has 6 charges and can be wielded as a magic Quarterstaff that grants a +2 bonus to attack rolls and damage rolls made with it. While holding it, you have a +2 bonus to spell attack rolls.\n\nSpells. While holding the staff, you can cast one of the spells on the following table from it, using your spell save DC. The table indicates how many charges you must expend to cast the spell.\n\nAnimal Friendship: 1 charge; Awaken: 5 charges; Barkskin: 2 charges; Locate Animals or Plants: 2 charges; Pass without Trace: 2 charges; Speak with Animals: 1 charge; Speak with Plants: 3 charges; Wall of Thorns: 6 charges.\n\nTree Form. You can take a Magic action to plant one end of the staff in earth in an unoccupied space and expend 1 charge to transform the staff into a healthy tree. The tree is 60 feet tall and has a 5-foot-diameter trunk, and its branches at the top spread out in a 20-foot radius. The tree appears ordinary but radiates a faint aura of Transmutation magic that can be discerned with the Detect Magic spell. While touching the tree and using a Magic action, you return the staff to its normal form. Any creature in the tree falls when the tree reverts to a staff.\n\nRegaining Charges. The staff regains 1d6 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff loses its properties and becomes a nonmagical Quarterstaff."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1067,13 +1106,15 @@
   {
     "id": "baton-du-python",
     "name": {
-      "fr": "Bâton du python"
+      "fr": "Bâton du python",
+      "en": "Staff of the Python"
     },
     "category": "gear",
     "rarity": "uncommon",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous pouvez utiliser une action pour prononcer le mot de commande du bâton et le lancer au sol dans un rayon de 3 mètres autour de vous. Le bâton devient un serpent constricteur géant (voir le Manuel des Monstres pour les statistiques) sous votre contrôle et qui agit selon son propre score d'initiative. En utilisant une action bonus pour prononcer de nouveau le mot de commande, le bâton reprend sa forme originale dans l'espace qu'occupait le serpent.\n\nÀ votre tour, vous pouvez mentalement commander le serpent tant qu'il se trouve à 18 mètres ou moins de vous et que vous n'êtes pas incapable d'agir. Vous décidez quelles actions entreprendra le serpent et où il se déplacera lors du prochain tour, ou vous pouvez lui donner un ordre général comme attaquer vos ennemis ou garder un lieu.\n\nSi le serpent tombe à 0 point de vie, il meurt et reprend la forme du bâton, puis celui-ci se brise et le bâton est détruit. Si le serpent reprend la forme du bâton avant de perdre tous ses points de vie, il les récupère tous."
+      "fr": "Au prix de l'action Magie, vous pouvez lancer ce bâton pour qu'il atterrisse en un espace inoccupé dans un rayon de 3 m et s'y transforme en serpent constricteur géant. Le serpent, sous votre contrôle, partage votre rang d'initiative et joue son tour juste après le vôtre.\n\nÀ votre tour, vous pouvez donner un ordre mental au serpent (pas d'action requise) s'il se trouve dans un rayon de 18 m de vous et si vous ne subissez pas l'état Neutralisé. Vous décidez quelle action le serpent entreprend et où il se déplacera à son tour, ou pouvez vous contenter de lui donner une instruction plus générale, comme veiller sur un lieu ou attaquer vos ennemis. En l'absence d'ordres de votre part, le serpent se défend.\n\nPar une action Bonus, vous pouvez ordonner au serpent de reprendre sa forme de bâton dans son espace actuel, après quoi vous ne pouvez plus utiliser la propriété du bâton pendant 1 heure. Si le serpent tombe à 0 point de vie, il meurt et retrouve sa forme de bâton ; le bâton se détruit alors en se brisant. Si le serpent retrouve sa forme de bâton avant d'avoir perdu tous ses points de vie, il les récupère tous.",
+      "en": "As a Magic action, you can throw this staff so that it lands in an unoccupied space within 10 feet of you, causing the staff to become a Giant Constrictor Snake in that space. The snake is under your control and shares your Initiative count, taking its turn immediately after yours.\n\nOn your turn, you can mentally command the snake (no action required) if it is within 60 feet of you and you don't have the Incapacitated condition. You decide what action the snake takes and where it moves during its turn, or you can issue it a general command, such as to attack your enemies or guard a location. Absent commands from you, the snake defends itself.\n\nAs a Bonus Action, you can command the snake to revert to staff form in its current space, and you can't use the staff's property again for 1 hour. If the snake is reduced to 0 Hit Points, it dies and reverts to its staff form; the staff then shatters and is destroyed. If the snake reverts to staff form before losing all its Hit Points, it regains all of them."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1081,13 +1122,18 @@
   {
     "id": "baton-du-thaumaturge",
     "name": {
-      "fr": "Bâton du thaumaturge"
+      "fr": "Bâton du thaumaturge",
+      "en": "Staff of the Magi"
     },
     "category": "gear",
     "rarity": "legendary",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Ce bâton peut être utilisé comme un bâton (arme) magique conférant un bonus de +2 aux jets d'attaque et de dégâts effectués avec lui. Tant que vous le tenez, vous bénéficiez d'un bonus de +2 aux jets d'attaque des sorts.\n\nLe bâton possède 50 charges pour les propriétés suivantes. Il récupère 4d6 + 2 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 20, le bâton récupère 1d12 + 1 charges.\n\nAbsorption de sort. Tant que vous tenez le bâton, vous avez un avantage aux jets de sauvegarde contre les sorts. De plus, vous pouvez utiliser votre réaction lorsqu'une autre créature lance un sort qui ne cible que vous. Dans ce cas, le bâton absorbe la magie du sort, annulant ses effets et récupérant un nombre de charges égal au niveau de sort absorbé. Cependant, si en faisant cela le nombre total de charges du bâton devient supérieur à 50, le bâton explose comme si vous aviez activé sa propriété Frappe vengeresse (voir ci-dessous).\n\nSorts. Tant que vous tenez ce bâton, vous pouvez utiliser une action pour dépenser plusieurs de ses charges afin de lancer l'un des sorts suivants depuis le bâton, vous utilisez votre propre DD au jet de sauvegarde des sorts et votre caractéristique d'incantation : invocation d'élémentaire (7 charges), dissipation de la magie (3 charges), boule de feu (emplacement de sort niveau 7, 7 charges), sphère de feu (2 charges), tempête de grêle (4 charges), invisibilité (2 charges), déblocage (2 charges), éclair (emplacement de sort niveau 7, 7 charges), passe-muraille (5 charges), changement de plan (7 charges), télékinésie (5 charges), mur de feu (4 charges), ou toile d'araignée (2 charges).\n\nVous pouvez également utiliser une action pour lancer l'un des sorts suivants grâce au bâton sans utiliser de charge : verrou magique, détection de la magie, agrandissement/rapetissement, lumière, main de mage ou protection contre le mal et le bien.\n\nFrappe vengeresse. Vous pouvez utiliser une action pour briser le bâton contre votre genou ou contre une surface solide, déclenchant alors la frappe vengeresse. Le bâton est détruit et libère la magie qui lui reste en une formidable explosion qui recouvre une zone sphérique de 9 mètres de rayons centrée sur lui.\n\nVous avez 50 % de chance de voyager instantanément vers un plan d'existence aléatoire, échappant alors à l'explosion. Si vous ne parvenez pas à éviter l'effet, vous subissez un montant de dégâts de force égal à 16 x le nombre de charges dans le bâton. Toutes les autres créatures dans la zone doivent effectuer un jet de sauvegarde de Dextérité DD 17. En cas d'échec au jet de sauvegarde, une créature subit un montant de dégâts basé sur la distance entre elle et l'épicentre de l'explosion, comme indiqué sur la table ci-dessous. En cas de jet de sauvegarde réussi, une créature ne subit que la moitié des dégâts prévus.\n\nDistance par rapport à l'origineDégâts3 m ou moins8 x le nombre de charges dans le bâtonPlus de 3 m, jusqu'à 6 m6 x le nombre de charges dans le bâtonPlus de 6 m, jusqu'à 9 m4 x le nombre de charges dans le bâton"
+      "fr": "Ce bâton, qui dispose de 50 charges, peut se manier comme un bâton de combat magique octroyant un bonus de +2 aux jets d'attaque et de dégâts. Tant que vous le tenez, vous recevez un bonus de +2 aux jets d'attaque de sort.\n\nAbsorption de sort. Tant que vous tenez le bâton, vous avez l'Avantage aux jets de sauvegarde contre les sorts. Vous pouvez en outre jouer votre Réaction lorsqu'une autre créature lance un sort qui ne cible que vous. Dans ce cas, le bâton absorbe la magie du sort, ce qui en annule l'effet ; le bâton reçoit alors un nombre de charges égal au niveau du sort absorbé. Cependant, si cela amène le nombre total de charges du bâton au-dessus de 50, l'objet explose comme si vous aviez activé son Explosion vengeresse (voir ci-après).\n\nSorts. Lorsque vous tenez le bâton, vous pouvez lancer l'un des sorts de la table suivante en prenant votre DD de sauvegarde des sorts. La table indique le nombre de charges à dépenser pour lancer le sort.\n\nverrou magique : 0 charge ; invocation d'élémentaire : 7 charges ; détection de la magie : 0 charge ; dissipation de la magie : 3 charges ; agrandissement/rapetissement : 0 charge ; boule de feu (au 7e niveau) : 7 charges ; sphère de feu : 2 charges ; tempête de grêle : 4 charges ; invisibilité : 2 charges ; déblocage : 2 charges ; lumière : 0 charge ; éclair (au 7e niveau) : 7 charges ; main du mage : 0 charge ; passe-muraille : 5 charges ; changement de plan : 7 charges ; protection contre le mal et le bien : 0 charge ; télékinésie : 5 charges ; mur de feu : 4 charges ; toile d'araignée : 2 charges.\n\nRécupération des charges. Le bâton récupère quotidiennement 4d6 + 2 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 20, le bâton récupère 1d12 + 1 charges.\n\nExplosion vengeresse. Vous pouvez entreprendre l'action Magie pour rompre le bâton sur votre genou ou contre une surface solide. Le bâton se détruit alors en libérant sa magie dans une explosion qui emplit une Émanation de 9 m, dont il est l'origine. Vous avez 50 % de chances d'être propulsé instantanément vers un plan d'existence aléatoire et d'éviter ainsi l'explosion. Si vous n'évitez pas l'effet, vous subissez autant de dégâts de force que 16 fois le nombre de charges que contient le bâton. Chaque autre créature de la zone effectue un jet de sauvegarde de Dextérité DD 17. En cas d'échec, une créature subit des dégâts de force égaux à 6 fois le nombre de charges contenues dans le bâton. En cas de réussite, elle ne subit que la moitié de ces dégâts.",
+      "en": "This staff has 50 charges and can be wielded as a magic Quarterstaff that grants a +2 bonus to attack rolls and damage rolls made with it. While you hold it, you gain a +2 bonus to spell attack rolls.\n\nSpell Absorption. While holding the staff, you have Advantage on saving throws against spells. In addition, you can take a Reaction when another creature casts a spell that targets only you. If you do, the staff absorbs the magic of the spell, canceling its effect and gaining a number of charges equal to the absorbed spell's level. However, if doing so brings the staff's total number of charges above 50, the staff explodes as if you activated its Retributive Strike (see below).\n\nSpells. While holding the staff, you can cast one of the spells on the following table from it, using your spell save DC. The table indicates how many charges you must expend to cast the spell.\n\nArcane Lock: 0 charges; Conjure Elemental: 7 charges; Detect Magic: 0 charges; Dispel Magic: 3 charges; Enlarge/Reduce: 0 charges; Fireball (level 7 version): 7 charges; Flaming Sphere: 2 charges; Ice Storm: 4 charges; Invisibility: 2 charges; Knock: 2 charges; Light: 0 charges; Lightning Bolt (level 7 version): 7 charges; Mage Hand: 0 charges; Passwall: 5 charges; Plane Shift: 7 charges; Protection from Evil and Good: 0 charges; Telekinesis: 5 charges; Wall of Fire: 4 charges; Web: 2 charges.\n\nRegaining Charges. The staff regains 4d6 + 2 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 20, the staff regains 1d12 + 1 charges.\n\nRetributive Strike. You can take a Magic action to break the staff over your knee or against a solid surface. The staff is destroyed and releases its magic in an explosion that fills a 30-foot Emanation originating from itself. You have a 50 percent chance to instantly travel to a random plane of existence, avoiding the explosion. If you fail to avoid the effect, you take Force damage equal to 16 times the number of charges in the staff. Each other creature in the area makes a DC 17 Dexterity saving throw. On a failed save, a creature takes Force damage equal to 6 times the number of charges in the staff. On a successful save, a creature takes half as much damage."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1095,13 +1141,15 @@
   {
     "id": "baton-percussif",
     "name": {
-      "fr": "Bâton percussif"
+      "fr": "Bâton percussif",
+      "en": "Staff of Striking"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Ce bâton peut être utilisé comme une arme magique conférant un bonus de +3 aux jets d'attaque et de dégâts effectués avec lui.\n\nLe bâton possède 10 charges. Lorsque vous touchez lors d'une attaque au corps à corps en l'utilisant, vous pouvez dépenser jusqu'à 3 de ses charges. Pour chaque charge que vous dépensez, la cible subit 1d6 dégâts de force supplémentaires. Le bâton récupère 1d6 + 4 charges dépensées chaque jour à l'aube. Si vous dépensez la dernière charge, lancez un d20. Sur un résultat de 1, le bâton devient un simple bâton (arme) non magique."
+      "fr": "Ce bâton peut se manier comme un bâton de combat magique qui octroie un bonus de +3 aux jets d'attaque et de dégâts.\n\nLe bâton dispose de 10 charges. Lorsque vous touchez avec une attaque de corps à corps par son intermédiaire, vous pouvez dépenser jusqu'à 3 charges. Pour chaque charge dépensée, la cible subit 1d6 dégâts de force supplémentaires.\n\nRécupération des charges. Le bâton récupère quotidiennement 1d6 + 4 charges dépensées, à l'aube. Si vous dépensez la dernière charge, lancez 1d20. Sur un résultat de 1, le bâton devient un bâton de combat non magique.",
+      "en": "This staff can be wielded as a magic Quarterstaff that grants a +3 bonus to attack rolls and damage rolls made with it.\n\nThe staff has 10 charges. When you hit with a melee attack using it, you can expend up to 3 charges. For each charge you expend, the target takes an extra 1d6 Force damage.\n\nRegaining Charges. The staff regains 1d6 + 4 expended charges daily at dawn. If you expend the last charge, roll 1d20. On a 1, the staff becomes a nonmagical Quarterstaff."
     },
     "description": null,
     "source": "srd-5.2.1"
