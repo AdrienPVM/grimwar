@@ -47,6 +47,10 @@ import {
   SRD_MAGIC_ITEMS_RELIQUAT,
   SRD_MAGIC_ITEMS_RELIQUAT_COUNTS,
 } from './data/srd-magic-items-reliquat';
+import {
+  SRD_MAGIC_ITEMS_RINGS_RARE,
+  SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS,
+} from './data/srd-magic-items-rings-rare';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -92,6 +96,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_ARMOR_SHIELDS,
     ...SRD_MAGIC_ITEMS_UTILITY,
     ...SRD_MAGIC_ITEMS_RELIQUAT,
+    ...SRD_MAGIC_ITEMS_RINGS_RARE,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -185,6 +190,18 @@ async function main(): Promise<void> {
   if (SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.common !== 1 || SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.uncommon !== 7) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — reliquat C.7 attendu 1 common + 7 uncommon, trouvé ${SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.common} + ${SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.uncommon}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.total !== SRD_MAGIC_ITEMS_RINGS_RARE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur rings-rare désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.rare !== 9 ||
+    SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.legendary !== 5
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — rings-rare D29.1 attendu 9 rare + 3 very rare + 5 legendary, trouvé ${SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.legendary}.`,
     );
   }
 
