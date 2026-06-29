@@ -31,7 +31,9 @@ export interface SrdMagicItemEntry {
   name: { fr: string; en: string };
   category: 'gear' | 'weapon' | 'armor' | 'shield' | 'tool' | 'pack' | 'mount' | 'vehicle';
   rarity: Rarity;
-  attunement: boolean;
+  // boolean = Harmonisation simple ; objet { fr, en } = harmonisation qualifiée
+  // (« par un incantateur »…), rendue verbatim par l'UI. Calque le schéma Zod.
+  attunement: boolean | { fr: string; en: string };
   magicDescription: { fr: string; en: string };
   description: { fr: string; en?: string } | null;
   source: 'srd-5.2.1';

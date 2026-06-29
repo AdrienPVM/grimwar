@@ -41,7 +41,13 @@ export interface SrdMagicItemEntry {
   name: { fr: string; en: string };
   category: 'gear' | 'weapon' | 'armor' | 'shield' | 'tool' | 'pack' | 'mount' | 'vehicle';
   rarity: Rarity;
-  attunement: boolean;
+  /**
+   * `true`/`false` pour l'Harmonisation simple ; forme objet `{ fr, en }` pour
+   * une harmonisation qualifiée (« par un incantateur », etc.) — l'UI la rend
+   * verbatim via `localize()`. Calque le schéma Zod du bundle
+   * (`z.union([z.boolean(), I18nSchema])`, cf. `src/shared/types/content.ts`).
+   */
+  attunement: boolean | { fr: string; en: string };
   magicDescription: { fr: string; en: string };
   description: { fr: string; en?: string } | null;
   source: 'srd-5.2.1';
