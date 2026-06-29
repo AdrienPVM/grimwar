@@ -1,4 +1,4 @@
-import type { JSX } from 'react';
+import { useEffect, type JSX } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { AuthProvider } from '@/features/auth/auth-provider';
@@ -15,6 +15,7 @@ import { Particles } from '@/shared/components/particles';
 import { SacredGeometry } from '@/shared/components/sacred-geometry';
 import { Splash } from '@/shared/components/splash';
 import { ToastHost } from '@/shared/components/toast-host';
+import { useLocaleStore } from '@/shared/lib/slices/locale-slice';
 
 /**
  * Coquille app : monte le sprite + l'ambiance + l'AuthProvider + le router.
@@ -48,6 +49,16 @@ export function App(): JSX.Element {
 
 function AppShell(): JSX.Element {
   const { isReady } = useAuth();
+  // Abonnement locale au point le plus haut sous le router : `t()`/`localize()`
+  // lisent `useLocaleStore.getState()` sans souscrire, donc seul un re-render
+  // d'un ancêtre repeint l'arbre. En souscrivant ici, tout switch FR/EN
+  // re-render NavShell + AppRoutes (éléments recréés, non mémoïsés) → toutes les
+  // chaînes `t()` se réévaluent. Effet de bord : `<html lang>` correct (a11y/SEO).
+  const locale = useLocaleStore((s) => s.locale);
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   if (!isReady) return <Splash />;
   return (
     <>

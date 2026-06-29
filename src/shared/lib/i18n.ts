@@ -141,6 +141,10 @@ export type StringKey =
   | 'account.dice.physicalHint'
   | 'account.dice.followCampaign'
   | 'account.dice.followCampaignHint'
+  | 'account.locale.title'
+  | 'account.locale.hint'
+  | 'account.locale.fr'
+  | 'account.locale.en'
   | 'account.signOut'
   | 'account.signOutConfirm'
   | 'account.cancel'
@@ -2776,6 +2780,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.dice.followCampaign': 'Suivre le mode de la campagne',
     'account.dice.followCampaignHint':
       'Adopter automatiquement le mode de dés défini par le meneur.',
+    'account.locale.title': 'Langue',
+    'account.locale.hint': 'Choisis la langue de l’interface et du contenu.',
+    'account.locale.fr': 'Français',
+    'account.locale.en': 'Anglais',
     'account.signOut': 'Se déconnecter',
     'account.signOutConfirm': 'Confirmer la déconnexion',
     'account.cancel': 'Annuler',
@@ -6011,6 +6019,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.dice.followCampaign': 'Follow the campaign mode',
     'account.dice.followCampaignHint':
       'Automatically adopt the dice mode set by the DM.',
+    'account.locale.title': 'Language',
+    'account.locale.hint': 'Choose the interface and content language.',
+    'account.locale.fr': 'French',
+    'account.locale.en': 'English',
     'account.signOut': 'Sign out',
     'account.signOutConfirm': 'Confirm sign-out',
     'account.cancel': 'Cancel',

@@ -10,9 +10,11 @@ import { PageContainer } from '@/shared/components/page-container';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import type { DiceMode } from '@/shared/lib/rules/dice-mode';
+import { useLocaleStore, type Locale } from '@/shared/lib/slices/locale-slice';
 import {
   setDiceMode,
   setFollowCampaignDiceMode,
+  setUserLocale,
   useUserSettingsStore,
 } from '@/shared/lib/slices/user-settings-slice';
 
@@ -21,10 +23,14 @@ import {
  * NavShell (jusqu'ici un noop). Profil + préférences de jeu.
  *
  * Pur client : lecture de l'état Auth + écriture des préférences via le chemin
- * EXISTANT `users/{uid}.settings.*` (rule `users/{userId}` autorise déjà le
- * propriétaire — aucune nouvelle security rule). GDPR (export / suppression),
- * gestion d'abonnement et switch de langue restent différés au plan 35 complet
- * (S5) : le switch FR/EN attend le backfill du contenu EN des bundles.
+ * EXISTANT `users/{uid}.settings.*` + `users/{uid}.locale` (rule `users/{userId}`
+ * autorise déjà le propriétaire — aucune nouvelle security rule). GDPR (export /
+ * suppression) et gestion d'abonnement restent différés au plan 35 complet (S5).
+ *
+ * Switch de langue FR/Anglais : livré (les bundles SRD portent `name.en` +
+ * `description.en` à 100 %, les strings UI sont 100 % FR+EN). Seul gap connu —
+ * 180 magic-items du bundle grandfathered AideDD sans `name.en` retombent en FR
+ * via `localize()` (fallback gracieux, jamais de clé brute). Cf. plans/DEBT.md.
  */
 export function AccountScreen(): JSX.Element {
   const { user, isAnonymous } = useAuth();
@@ -138,15 +144,67 @@ const DICE_MODES: readonly { mode: DiceMode; labelKey: 'account.dice.digital' | 
   { mode: 'physical', labelKey: 'account.dice.physical', hintKey: 'account.dice.physicalHint' },
 ];
 
+const LOCALES: readonly { locale: Locale; labelKey: 'account.locale.fr' | 'account.locale.en' }[] = [
+  { locale: 'fr', labelKey: 'account.locale.fr' },
+  { locale: 'en', labelKey: 'account.locale.en' },
+];
+
 function PreferencesCard({ uid }: { uid: string }): JSX.Element {
   const diceMode = useUserSettingsStore((s) => s.diceMode);
   const followCampaign = useUserSettingsStore((s) => s.followCampaignDiceMode);
+  const locale = useLocaleStore((s) => s.locale);
 
   return (
     <Card>
       <CardHeader>
         <h3>{t('account.prefs.title')}</h3>
       </CardHeader>
+
+      <section aria-labelledby="account-locale-title" className="mb-6">
+        <p
+          id="account-locale-title"
+          className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-gold"
+        >
+          {t('account.locale.title')}
+        </p>
+        <p className="mt-1 font-serif text-body-sm text-text-tertiary">
+          {t('account.locale.hint')}
+        </p>
+
+        <div
+          role="radiogroup"
+          aria-label={t('account.locale.title')}
+          className="mt-3 grid grid-cols-2 gap-2"
+        >
+          {LOCALES.map(({ locale: loc, labelKey }) => {
+            const active = locale === loc;
+            return (
+              <button
+                key={loc}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => void setUserLocale(uid, loc)}
+                className={cn(
+                  'rounded-card-sm border p-3 text-center transition-all duration-200 ease-base',
+                  active
+                    ? 'border-gold-dim bg-gradient-to-b from-gold-bright/[0.1] to-gold/[0.02]'
+                    : 'border-white-8 bg-white/[0.02] hover:border-soft',
+                )}
+              >
+                <span
+                  className={cn(
+                    'font-title text-[12px] font-bold uppercase tracking-[0.14em]',
+                    active ? 'text-gold-bright' : 'text-text-secondary',
+                  )}
+                >
+                  {t(labelKey)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <section aria-labelledby="account-dice-title">
         <p

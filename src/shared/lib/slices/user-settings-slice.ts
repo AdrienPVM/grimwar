@@ -24,6 +24,7 @@ import {
   type DiceMode,
   type DiceModeUserSettings,
 } from '@/shared/lib/rules/dice-mode';
+import { useLocaleStore, type Locale } from '@/shared/lib/slices/locale-slice';
 
 interface UserSettingsState extends DiceModeUserSettings {
   hydrated: boolean;
@@ -84,21 +85,50 @@ export async function setFollowCampaignDiceMode(
 }
 
 /**
+ * Setter `users/{uid}.locale` (champ top-level, cf. DATA-MODEL.md) — même
+ * pattern que `setDiceMode` (merge Firestore + maj optimiste). La locale vit
+ * dans `useLocaleStore` (slice dédié, lu par `t()`/`localize()`), pas dans le
+ * store user-settings : on co-localise juste l'écriture ici avec les autres
+ * writes `users/{uid}` pour réutiliser `trackPendingWrite` + le seul listener.
+ * Aucune nouvelle règle : `users/{userId}` autorise déjà l'écriture du
+ * propriétaire (seul `tier` est verrouillé).
+ */
+export async function setUserLocale(uid: string, next: Locale): Promise<void> {
+  useLocaleStore.getState().setLocale(next);
+  const firestore = getDb();
+  const ref = doc(firestore, 'users', uid);
+  await trackPendingWrite(
+    firestore,
+    setDoc(ref, { locale: next }, { merge: true }),
+  );
+}
+
+/**
  * Souscrit aux settings `users/{uid}` au sign-in. À monter une fois (dans
  * auth-provider). Merge avec les défauts si fields absents → lazy migration.
+ *
+ * Hydrate aussi la locale (`users/{uid}.locale`, champ top-level) dans
+ * `useLocaleStore` : un seul listener sur le doc utilisateur sert les deux
+ * stores. Si le champ est absent (utilisateur d'avant le switch FR/EN), on
+ * laisse la locale courante (défaut FR) — pas d'écriture spéculative.
  */
 export function subscribeToUserSettings(uid: string): () => void {
   const ref = doc(getDb(), 'users', uid);
   const unsub = onSnapshot(
     ref,
     (snap) => {
-      const data = snap.data() as { settings?: Partial<DiceModeUserSettings> } | undefined;
+      const data = snap.data() as
+        | { settings?: Partial<DiceModeUserSettings>; locale?: Locale }
+        | undefined;
       const settings = data?.settings ?? {};
       useUserSettingsStore.getState().setFromFirestore({
         diceMode: settings.diceMode ?? DEFAULT_USER_DICE_SETTINGS.diceMode,
         followCampaignDiceMode:
           settings.followCampaignDiceMode ?? DEFAULT_USER_DICE_SETTINGS.followCampaignDiceMode,
       });
+      if (data?.locale === 'fr' || data?.locale === 'en') {
+        useLocaleStore.getState().setLocale(data.locale);
+      }
       useUserSettingsStore.getState().setHydrated(true);
     },
     (err) => {

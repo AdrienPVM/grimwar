@@ -1,9 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useLocaleStore } from '@/shared/lib/slices/locale-slice';
 import {
   setDiceMode,
   setFollowCampaignDiceMode,
+  setUserLocale,
   useUserSettingsStore,
 } from '@/shared/lib/slices/user-settings-slice';
 
@@ -33,7 +35,12 @@ vi.mock('@/features/auth/use-auth', () => ({ useAuth: () => mockAuth }));
 vi.mock('@/shared/lib/slices/user-settings-slice', async (importActual) => {
   const actual =
     await importActual<typeof import('@/shared/lib/slices/user-settings-slice')>();
-  return { ...actual, setDiceMode: vi.fn(), setFollowCampaignDiceMode: vi.fn() };
+  return {
+    ...actual,
+    setDiceMode: vi.fn(),
+    setFollowCampaignDiceMode: vi.fn(),
+    setUserLocale: vi.fn(),
+  };
 });
 
 const SIGNED_USER = {
@@ -47,6 +54,7 @@ const SIGNED_USER = {
 beforeEach(() => {
   vi.clearAllMocks();
   useUserSettingsStore.setState({ diceMode: 'digital', followCampaignDiceMode: false });
+  useLocaleStore.setState({ locale: 'fr' });
   mockAuth.user = SIGNED_USER;
   mockAuth.isAnonymous = false;
 });
@@ -85,6 +93,24 @@ describe('AccountScreen', () => {
     render(<AccountScreen />);
     expect(screen.getByRole('radio', { name: /Physique/ })).toBeDisabled();
     expect(screen.getByRole('radio', { name: /Numérique/ })).toBeDisabled();
+  });
+
+  it('bascule la langue en Anglais → écrit users/{uid}.locale', () => {
+    render(<AccountScreen />);
+    fireEvent.click(screen.getByRole('radio', { name: 'Anglais' }));
+    expect(setUserLocale).toHaveBeenCalledWith('u1', 'en');
+  });
+
+  it('reflète la locale courante du store (FR actif par défaut)', () => {
+    render(<AccountScreen />);
+    expect(screen.getByRole('radio', { name: 'Français' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('radio', { name: 'Anglais' })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
   });
 
   it('déconnexion : confirmation → signOut + retour accueil', async () => {

@@ -691,6 +691,15 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
   - (c) Les deux (création + reconcile rétroactif). Recommandé — (a) seul laisse les fiches existantes cassées.
 - **Risque** : moyen. Touche le chemin de création (toutes nouvelles fiches) + un write rétroactif sur les fiches existantes. À cadrer avec Adrien — hors scope plan 38 (scope creep), flaggé ici.
 
+## D29 — `magic-items.json` : 180 entrées sans `name.en` / `magicDescription.en` (fallback FR gracieux pour l'utilisateur EN)
+
+- **Owner** : plan dédié de cleanup global magic-items (le même que D24 anticipait pour le SRD-sourcing des ≥rare grandfathered). Non-bloquant pour le switcher EN (plan 34).
+- **Découverte** : 2026-06-29, au moment de livrer le switcher de langue FR/Anglais (plan 34). Le switch UI marche, les bundles SRD principaux (sorts/classes/ascendances/dons/conditions/items de base/sous-classes/créatures invoquées) sont 100 % bilingues — mais `magic-items.json` traîne un gap EN.
+- **Mesure exacte** (sur les 257 entrées du bundle, `name` et `magicDescription` étant tous deux `{fr, en?}`) : **180 entrées sans `name.en` ET sans `magicDescription.en`** (les deux gaps sont corrélés sur les mêmes 180 items). Réparties par tag `source` : **169 `srd-5.2.1`**, **10 `basic-rules`**, **1 `aidedd-homebrew`**.
+- **Cause** : ce sont essentiellement les **165 ≥rare grandfathered pass-through** (origine AideDD, taggés `srd-5.2.1` mais **jamais vérifiés contre le SRD EN** — D22 n'a SRD-sourcé que les 75 Common+Uncommon, et seuls ceux-là ont reçu `name.en` + `magicDescription.en` officiels). Ajouter l'EN aux ≥rare exige de les SRD-sourcer d'abord (vérifier qu'ils sont bien dans le SRD CC v5.2.1 EN, puis reprendre `name.en` + `magicDescription.en` depuis `content-sources/extracted/raw/SRD_CC_v5.2.1.txt`) — c'est précisément le **plan ≥rare différé**, pas une simple passe de traduction.
+- **Impact utilisateur (EN)** : **gracieux, jamais cassé.** `localize()` retombe systématiquement sur `value.fr` quand `.en` est absent → l'utilisateur EN voit le **nom français** de ces 180 magic-items (et leur description FR), jamais une clé brute ni un blanc. Cantonné à un seul bundle, sur le contenu le moins central (objets magiques ≥rare). Tout le reste de l'app est EN à 100 %.
+- **Contrainte de résolution (politique de contenu LOCKED)** : l'EN ne peut venir QUE du SRD EN (`SRD_CC_v5.2.1.txt` / PDF) — interdiction d'inventer un nom anglais de mémoire ou de le tirer d'AideDD/PHB. Le `1 aidedd-homebrew` (`potion-de-souffle-enflamme`, cf. D23) n'est PAS dans le SRD → il restera en fallback FR (ou son EN viendra d'un pack custom DM, plan 13.11), jamais d'un EN fabriqué.
+
 ## Conventions de ce registre
 
 - Une dette = un bloc avec ID stable (`D1`, `D2`, …).
