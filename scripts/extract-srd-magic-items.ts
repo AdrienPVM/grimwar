@@ -67,6 +67,10 @@ import {
   SRD_MAGIC_ITEMS_RODS,
   SRD_MAGIC_ITEMS_RODS_COUNTS,
 } from './data/srd-magic-items-rods';
+import {
+  SRD_MAGIC_ITEMS_ARMOR_RARE,
+  SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS,
+} from './data/srd-magic-items-armor-rare';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -117,6 +121,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_STAVES,
     ...SRD_MAGIC_ITEMS_POTIONS_RARE,
     ...SRD_MAGIC_ITEMS_RODS,
+    ...SRD_MAGIC_ITEMS_ARMOR_RARE,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -139,7 +144,16 @@ async function main(): Promise<void> {
     const override = srdById.get(item.id);
     if (override) {
       replacedIds.add(item.id);
-      return toJsonEntry(override);
+      const next = toJsonEntry(override);
+      // Les modules SRD portent le texte + Harmonisation, PAS la couche
+      // mécanique `effects[]` (enrichissement séparé). On la préserve donc
+      // depuis l'entrée existante quand l'override n'en fournit pas — sinon
+      // un re-run de l'extracteur effacerait silencieusement les effects
+      // (régression attrapée par tests/1B-magic-effects-backfill.test.ts).
+      if (item.effects !== undefined && next.effects === undefined) {
+        next.effects = item.effects;
+      }
+      return next;
     }
     return item;
   });
@@ -273,6 +287,18 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — rods D29.5 attendu 1 rare + 3 very rare + 1 legendary + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_RODS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.attuned}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.total !== SRD_MAGIC_ITEMS_ARMOR_RARE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur armor-rare désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.rare !== 6 ||
+    SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.veryRare !== 6 ||
+    SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.legendary !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — armor-rare D29.6 attendu 6 rare + 6 very rare + 2 legendary, trouvé ${SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.legendary}.`,
     );
   }
 
