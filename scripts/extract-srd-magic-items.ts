@@ -59,6 +59,10 @@ import {
   SRD_MAGIC_ITEMS_STAVES,
   SRD_MAGIC_ITEMS_STAVES_COUNTS,
 } from './data/srd-magic-items-staves';
+import {
+  SRD_MAGIC_ITEMS_POTIONS_RARE,
+  SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS,
+} from './data/srd-magic-items-potions-rare';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -107,6 +111,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_RINGS_RARE,
     ...SRD_MAGIC_ITEMS_WANDS,
     ...SRD_MAGIC_ITEMS_STAVES,
+    ...SRD_MAGIC_ITEMS_POTIONS_RARE,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -237,6 +242,18 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — staves D29.3 attendu 1 uncommon + 5 rare + 5 very rare + 1 legendary, trouvé ${SRD_MAGIC_ITEMS_STAVES_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.legendary}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.total !== SRD_MAGIC_ITEMS_POTIONS_RARE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur potions-rare désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.rare !== 7 ||
+    SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.veryRare !== 3
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — potions-rare D29.4 attendu 7 rare + 3 very rare, trouvé ${SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.veryRare}.`,
     );
   }
 
