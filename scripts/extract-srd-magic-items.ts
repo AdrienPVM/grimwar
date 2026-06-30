@@ -63,6 +63,10 @@ import {
   SRD_MAGIC_ITEMS_POTIONS_RARE,
   SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS,
 } from './data/srd-magic-items-potions-rare';
+import {
+  SRD_MAGIC_ITEMS_RODS,
+  SRD_MAGIC_ITEMS_RODS_COUNTS,
+} from './data/srd-magic-items-rods';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -112,6 +116,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_WANDS,
     ...SRD_MAGIC_ITEMS_STAVES,
     ...SRD_MAGIC_ITEMS_POTIONS_RARE,
+    ...SRD_MAGIC_ITEMS_RODS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -254,6 +259,20 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — potions-rare D29.4 attendu 7 rare + 3 very rare, trouvé ${SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.veryRare}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_RODS_COUNTS.total !== SRD_MAGIC_ITEMS_RODS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur rods désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_RODS_COUNTS.rare !== 1 ||
+    SRD_MAGIC_ITEMS_RODS_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_RODS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_RODS_COUNTS.attuned !== 4
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — rods D29.5 attendu 1 rare + 3 very rare + 1 legendary + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_RODS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.attuned}.`,
     );
   }
 
