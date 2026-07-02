@@ -95,6 +95,10 @@ import {
   SRD_MAGIC_ITEMS_BOOKS,
   SRD_MAGIC_ITEMS_BOOKS_COUNTS,
 } from './data/srd-magic-items-books';
+import {
+  SRD_MAGIC_ITEMS_DEVICES,
+  SRD_MAGIC_ITEMS_DEVICES_COUNTS,
+} from './data/srd-magic-items-devices';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -152,6 +156,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_WEAPONS_MISC,
     ...SRD_MAGIC_ITEMS_CLOAKS,
     ...SRD_MAGIC_ITEMS_BOOKS,
+    ...SRD_MAGIC_ITEMS_DEVICES,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -407,6 +412,19 @@ async function main(): Promise<void> {
   if (SRD_MAGIC_ITEMS_BOOKS_COUNTS.veryRare !== 7 || SRD_MAGIC_ITEMS_BOOKS_COUNTS.attuned !== 0) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — books D29.12 attendu 7 very rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_BOOKS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_BOOKS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_DEVICES_COUNTS.total !== SRD_MAGIC_ITEMS_DEVICES.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur devices désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_DEVICES_COUNTS.rare !== 8 ||
+    SRD_MAGIC_ITEMS_DEVICES_COUNTS.veryRare !== 2 ||
+    SRD_MAGIC_ITEMS_DEVICES_COUNTS.attuned !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — devices D29.13 attendu 8 rare + 2 very rare + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_DEVICES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_DEVICES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_DEVICES_COUNTS.attuned}.`,
     );
   }
 
