@@ -83,6 +83,10 @@ import {
   SRD_MAGIC_ITEMS_BLADES,
   SRD_MAGIC_ITEMS_BLADES_COUNTS,
 } from './data/srd-magic-items-blades';
+import {
+  SRD_MAGIC_ITEMS_WEAPONS_MISC,
+  SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS,
+} from './data/srd-magic-items-weapons-misc';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -137,6 +141,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_SWORDS,
     ...SRD_MAGIC_ITEMS_BLUDGEONING,
     ...SRD_MAGIC_ITEMS_BLADES,
+    ...SRD_MAGIC_ITEMS_WEAPONS_MISC,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -356,6 +361,19 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — blades D29.9 attendu 1 rare + 2 very rare + 3 legendary + 5 attuned, trouvé ${SRD_MAGIC_ITEMS_BLADES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_BLADES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_BLADES_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_BLADES_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.total !== SRD_MAGIC_ITEMS_WEAPONS_MISC.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur weapons-misc désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.rare !== 3 ||
+    SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.attuned !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — weapons-misc D29.10 attendu 3 rare + 3 very rare + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.rare} + ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.attuned}.`,
     );
   }
 

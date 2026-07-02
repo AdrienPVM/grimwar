@@ -477,13 +477,15 @@
   {
     "id": "arc-du-serment",
     "name": {
-      "fr": "Arc du serment"
+      "fr": "Arc du serment",
+      "en": "Oathbow"
     },
     "category": "weapon",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Quand vous encochez une flèche à la corde de cet arc, il murmure en elfique : « Prompte défaite à mes ennemis ». Lorsque vous faites une attaque à distance avec cet arc vous pouvez dire en tant que phrase de commande : « Prompte mort à ceux qui m'ont fait du tort ». La cible de votre attaque devient votre ennemi juré jusqu'à ce qu'il meure ou jusqu'à l'aube sept jours plus tard. Vous ne pouvez avoir qu'un seul ennemi juré à la fois. Quand votre ennemi juré meurt, vous pouvez en choisir un nouveau après la prochaine aube.\n\nLorsque vous effectuez une attaque à distance contre votre ennemi juré avec cette arme, vous avez un avantage au jet d'attaque. De plus, votre cible ne bénéficie d'aucun abri s'il n'est pas total, et vous ne souffrez pas de désavantage dû aux tirs à longue portée. Si l'attaque touche, votre ennemi juré subit 3d6 dégâts perforants supplémentaires.\n\nTant que votre ennemi juré est en vie, vous avez un désavantage aux jets d'attaque avec toutes les autres armes."
+      "fr": "Lorsque vous encochez une flèche sur cet arc, il murmure en elfique « Une prompte défaite pour mes ennemis. » Lorsque vous utilisez l'arme pour effectuer une attaque à distance, vous pouvez prononcer ou signer les mots de commande suivants : « Une mort rapide à toi qui m'as fait du tort. » La cible devient votre ennemi désigné et le reste pendant 7 jours, jusqu'à l'aube du dernier jour. Elle ne l'est plus si elle meurt dans l'intervalle. Vous ne pouvez avoir qu'un seul ennemi désigné de ce type à la fois. Lorsque votre ennemi désigné meurt, vous pouvez en désigner un nouveau après l'aube suivante.\n\nLorsque vous effectuez un jet d'attaque à distance avec cette arme contre votre ennemi désigné, vous bénéficiez de l'Avantage sur le jet. De plus, votre cible ne reçoit aucun bénéfice lié à un Abri partiel ou supérieur, et vous ne subissez aucun Désavantage dû à la portée longue. Si l'attaque touche, votre ennemi désigné subit 3d6 dégâts perforants supplémentaires.\n\nTant que votre ennemi désigné est vivant, vous subissez le Désavantage aux jets d'attaque avec toutes les autres armes.",
+      "en": "When you nock an arrow on this bow, it whispers in Elvish, “Swift defeat to my enemies.” When you use this weapon to make a ranged attack, you can utter or sign the following command words: “Swift death to you who have wronged me.” The target of your attack becomes your sworn enemy until it dies or until dawn 7 days later. You can have only one such sworn enemy at a time. When your sworn enemy dies, you can choose a new one after the next dawn.\n\nWhen you make a ranged attack roll with this weapon against your sworn enemy, you have Advantage on the roll. In addition, your target gains no benefit from Half Cover or Three-Quarters Cover, and you suffer no Disadvantage due to long range. If the attack hits, your sworn enemy takes an extra 3d6 Piercing damage.\n\nWhile your sworn enemy lives, you have Disadvantage on attack rolls with all other weapons."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -507,13 +509,15 @@
   {
     "id": "arme-vicieuse",
     "name": {
-      "fr": "Arme vicieuse"
+      "fr": "Arme brutale",
+      "en": "Vicious Weapon"
     },
     "category": "weapon",
     "rarity": "rare",
     "attunement": false,
     "magicDescription": {
-      "fr": "Lorsque vous obtenez un 20 naturel à votre jet d'attaque avec cette arme magique, votre coup critique inflige 7 dégâts supplémentaires du type correspondant à l'arme."
+      "fr": "Cette arme magique inflige 2d6 dégâts supplémentaires à toute créature qu'elle touche. Ces dégâts supplémentaires sont du même type que les dégâts normaux de l'arme.",
+      "en": "This magic weapon deals an extra 2d6 damage to any creature it hits. This extra damage is of the same type as the weapon’s normal damage."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2141,13 +2145,15 @@
   {
     "id": "fer-gele",
     "name": {
-      "fr": "Fer gelé"
+      "fr": "Fer gelé",
+      "en": "Frost Brand"
     },
     "category": "weapon",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Lorsque vous touchez avec une attaque utilisant cette épée magique, la cible subit 1d6 dégâts de froid supplémentaires. En outre, tant que vous tenez l'épée, vous avez la résistance aux dégâts de feu. Dans des températures de congélation, la lame émet en lumière vive dans un rayon de 3 mètres et une lumière faible sur 3 mètres supplémentaires.\n\nLorsque vous dégainez cette arme, vous pouvez éteindre toutes les flammes non magiques dans un rayon de 9 mètres autour de vous. Cette propriété ne peut pas être utilisée plus d'une fois par heure."
+      "fr": "Lorsque votre jet d'attaque touche avec cette arme magique, la cible subit 1d6 dégâts de froid supplémentaires. En outre et tant que vous tenez l'arme, vous bénéficiez de la Résistance aux dégâts de feu.\n\nLorsqu'il gèle, l'arme émet une Lumière vive sur un rayon de 3 m et une Lumière faible sur 3 m de plus.\n\nEn dégainant cette arme, vous pouvez décider d'éteindre toutes les flammes non magiques dans un rayon de 9 m. Une fois utilisée, cette propriété ne peut plus resservir pendant 1 heure.",
+      "en": "When you hit with an attack roll using this magic weapon, the target takes an extra 1d6 Cold damage. In addition, while you hold the weapon, you have Resistance to Fire damage.\n\nIn freezing temperatures, the weapon sheds Bright Light in a 10-foot radius and Dim Light for an additional 10 feet.\n\nWhen you draw this weapon, you can extinguish all nonmagical flames within 30 feet of yourself. Once used, this property can’t be used again for 1 hour."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2211,13 +2217,15 @@
   {
     "id": "fleche-tueuse",
     "name": {
-      "fr": "Flèche tueuse"
+      "fr": "Projectile tueur",
+      "en": "Ammunition of Slaying"
     },
     "category": "weapon",
     "rarity": "very rare",
     "attunement": false,
     "magicDescription": {
-      "fr": "Une flèche tueuse est une arme magique destinée à abattre un type de créature en particulier. Certaines sont plus spécifiques que d'autres ; par exemple, il existe des flèches tueuses de dragons et des flèches tueuses de dragons bleu. Si une créature appartenant au type, à la race ou au groupe associé à la flèche tueuse subit des dégâts de cette flèche, cette créature doit effectuer un jet de sauvegarde de Constitution DD 17, subissant 6d10 dégâts perforants supplémentaires en cas d'échec, ou la moitié de ces dégâts supplémentaires en cas de réussite.\n\nUne fois qu'une flèche tueuse a infligé ses dégâts supplémentaires à une créature, elle devient une simple flèche non magique.\n\nD'autres types de munition magique de ce type existent, comme les carreaux tueurs destinés aux arbalètes, mais les flèches sont les plus répandues."
+      "fr": "Ce projectile magique est conçu pour tuer les créatures d'un type donné, que le MJ choisit ou détermine aléatoirement selon la table ci-après. Si la créature de ce type subit des dégâts du projectile, elle effectue un jet de sauvegarde de Constitution DD 17 et subit 6d10 dégâts de force supplémentaires en cas d'échec, la moitié en cas de réussite.\n\nAprès avoir infligé ces dégâts supplémentaires à une créature, le projectile devient non magique.\n\nType de créature (1d100) : Aberrations 01-10, Artificiels 11-15, Bêtes 16-20, Célestes 21-25, Dragons 26-35, Élémentaires 36-45, Fées 46-55, Fiélons 56-65, Géants 66-70, Humanoïdes 71-75, Monstruosités 76-80, Morts-vivants 81-90, Plantes 91-95, Vases 96-00.",
+      "en": "This magic ammunition is meant to slay creatures of a particular type, which the GM chooses or determines randomly by rolling on the table below. If a creature of that type takes damage from the ammunition, the creature makes a DC 17 Constitution saving throw, taking an extra 6d10 Force damage on a failed save or half as much extra damage on a successful one.\n\nAfter dealing its extra damage to a creature, the ammunition becomes nonmagical.\n\nCreature Type (1d100): Aberrations 01–10, Beasts 11–15, Celestials 16–20, Constructs 21–25, Dragons 26–35, Elementals 36–45, Humanoids 46–50, Fey 51–60, Fiends 61–70, Giants 71–75, Monstrosities 76–80, Oozes 81–85, Plants 86–90, Undead 91–00."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3921,13 +3929,15 @@
   {
     "id": "tueuse-de-dragons",
     "name": {
-      "fr": "Tueuse de dragons"
+      "fr": "Tueuse de dragons",
+      "en": "Dragon Slayer"
     },
     "category": "weapon",
     "rarity": "rare",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous gagnez un bonus de +1 à l'attaque et aux dégâts fait avec cette arme magique.\n\nSi vous touchez un dragon avec cette arme, le dragon subit 3d6 dégâts supplémentaires du type de l'arme. Pour cette arme, le terme « dragon » se réfère à toute créature qui possède le type dragon, y compris les tortues dragons et les wivernes."
+      "fr": "Vous recevez un bonus de +1 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nL'arme inflige 3d6 dégâts supplémentaires du type de l'arme si la cible est un Dragon.",
+      "en": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe weapon deals an extra 3d6 damage of the weapon’s type if the target is a Dragon."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3935,13 +3945,15 @@
   {
     "id": "tueuse-de-geants",
     "name": {
-      "fr": "Tueuse de géants"
+      "fr": "Tueuse de géants",
+      "en": "Giant Slayer"
     },
     "category": "weapon",
     "rarity": "rare",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous gagnez un bonus de +1 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nLorsque vous frappez un géant avec elle, le géant subit 2d6 dégâts supplémentaires du type de l'arme et doit réussir un jet de sauvegarde de Force DD 15 sous peine d'être jeté à terre. Dans le cadre de cette propriété de l'arme, le terme « géant » se réfère à toute créature de type géant, ce qui inclut les ettins et les trolls."
+      "fr": "Vous recevez un bonus de +1 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nQuand vous touchez un Géant avec cette arme, il subit 2d6 dégâts supplémentaires du type associé à l'arme et doit réussir un jet de sauvegarde de Force DD 15 sous peine de subir l'état À terre.",
+      "en": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nWhen you hit a Giant with this weapon, the Giant takes an extra 2d6 damage of the weapon’s type and must succeed on a DC 15 Strength saving throw or have the Prone condition."
     },
     "description": null,
     "source": "srd-5.2.1"
