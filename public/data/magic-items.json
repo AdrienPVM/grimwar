@@ -1765,13 +1765,15 @@
   {
     "id": "cimeterre-de-rapidite",
     "name": {
-      "fr": "Cimeterre de rapidité"
+      "fr": "Cimeterre de célérité",
+      "en": "Scimitar of Speed"
     },
     "category": "weapon",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous gagnez un bonus de +2 aux jets d'attaque et de dégâts effectués avec cette arme magique. De plus, vous pouvez à chacun de vos tours effectuer une attaque avec cette arme en utilisant votre action bonus."
+      "fr": "Vous recevez un bonus de +2 aux jets d'attaque et de dégâts effectués avec cette arme magique. Vous pouvez en outre effectuer une attaque avec ce cimeterre par une action Bonus à chacun de vos tours.",
+      "en": "You gain a +2 bonus to attack rolls and damage rolls made with this magic weapon. In addition, you can make one attack with it as a Bonus Action on each of your turns."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1937,13 +1939,15 @@
   {
     "id": "dague-venimeuse",
     "name": {
-      "fr": "Dague venimeuse"
+      "fr": "Dague venimeuse",
+      "en": "Dagger of Venom"
     },
     "category": "weapon",
     "rarity": "rare",
     "attunement": false,
     "magicDescription": {
-      "fr": "Vous obtenez un bonus de +1 aux jets d'attaque et de dégâts réalisés avec cette arme magique.\n\nVous pouvez utiliser une action pour qu'un épais poison noir recouvre la lame. Le poison reste dessus 1 minute ou jusqu'à ce que vous touchiez une créature lors d'une attaque avec cette arme. Cette créature doit alors réussir un jet de sauvegarde de Constitution DD 15 ou devenir empoisonnée pendant 1 minute et subir 2d10 dégâts de poison. La dague ne peut plus être utilisée de cette façon avant la prochaine aube."
+      "fr": "Vous recevez un bonus de +1 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nPar une action Bonus, vous enduisez magiquement la lame de poison. Le poison persiste 1 minute ou jusqu'à ce qu'une attaque avec cette arme touche une créature. Cette créature doit réussir un jet de sauvegarde de Constitution DD 15 sous peine de subir 2d10 dégâts de poison et l'état Empoisonné pendant 1 minute. L'arme ne peut plus resservir de cette manière avant l'aube suivante.",
+      "en": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon.\n\nYou can take a Bonus Action to magically coat the blade with poison. The poison remains for 1 minute or until an attack using this weapon hits a creature. That creature must succeed on a DC 15 Constitution saving throw or take 2d10 Poison damage and have the Poisoned condition for 1 minute. The weapon can’t be used this way again until the next dawn."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2338,13 +2342,15 @@
   {
     "id": "gardienne",
     "name": {
-      "fr": "Gardienne"
+      "fr": "Gardienne",
+      "en": "Defender"
     },
     "category": "weapon",
     "rarity": "legendary",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous obtenez un bonus de +3 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nLa première fois que vous attaquez avec l'épée au cours de chacun de vos tours, vous pouvez transférer tout ou partie du bonus de l'épée vers votre Classe d'Armure, plutôt que d'utiliser ce bonus sur vos attaques de ce tour. Par exemple, vous pourriez réduire le bonus à votre jet d'attaque et de dégâts à +1 et ainsi gagner un bonus de +2 à votre CA. La modification du bonus reste effective jusqu'au début de votre prochain tour, mais vous devez bien entendu avoir l'épée en main pour bénéficier de son bonus à la CA."
+      "fr": "Vous recevez un bonus de +3 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nLa première fois que vous attaquez avec l'arme à chacun de vos tours, vous pouvez transférer tout ou partie de son bonus à votre classe d'armure. Vous pouvez par exemple réduire le bonus à vos jets d'attaque et de dégâts à +1 afin de recevoir un bonus de +2 à la CA. Les bonus ajustés restent en vigueur jusqu'au début de votre tour suivant, mais vous devez continuer à tenir l'arme pour recevoir le bonus qu'elle octroie à la CA.",
+      "en": "You gain a +3 bonus to attack rolls and damage rolls made with this magic weapon.\n\nThe first time you attack with the weapon on each of your turns, you can transfer some or all of the weapon’s bonus to your Armor Class. For example, you could reduce the bonus to your attack rolls and damage rolls to +1 and gain a +2 bonus to Armor Class. The adjusted bonuses remain in effect until the start of your next turn, although you must hold the weapon to gain a bonus to AC from it."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2608,13 +2614,15 @@
   {
     "id": "lame-porte-bonheur",
     "name": {
-      "fr": "Lame porte-bonheur"
+      "fr": "Lame porte-bonheur",
+      "en": "Luck Blade"
     },
     "category": "weapon",
     "rarity": "legendary",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous gagnez un bonus de +1 aux jets d'attaque et de dégâts effectués avec cette arme magique. Tant que vous portez l'épée sur vous, vous bénéficiez également d'un bonus de +1 aux jets de sauvegarde.\n\nChance. Si vos portez l'épée sur vous, vous pouvez invoquer sa chance (aucune action n'est requise) pour relancer un jet d'attaque, de caractéristique ou de sauvegarde dont le résultat vous déplaît. Vous devez accepter le nouveau résultat. Cette propriété ne peut être réutilisée avant la prochaine aube.\n\nSouhait. L'épée possède 1d4 - 1 charges. Tant que vous la tenez en main, vous pouvez utiliser une action pour dépenser une charge et lancer le sort souhait. Cette propriété ne peut être réutilisée avant la prochaine aube. L'épée perd cette propriété si elle n'a plus de charges."
+      "fr": "Vous recevez un bonus de +1 aux jets d'attaque et de dégâts effectués avec cette arme magique. Tant que l'arme est sur vous, vous recevez en outre un bonus de +1 aux jets de sauvegarde.\n\nChance. Si l'arme est sur vous et si vous ne subissez pas l'état Neutralisé, vous pouvez faire appel à sa chance (pas d'action requise) pour relancer un Test d20 raté. Vous devez garder le deuxième jet. Une fois utilisée, cette propriété ne peut plus resservir avant l'aube suivante.\n\nSouhait. L'arme est dotée de 1d3 charges. En la tenant, vous pouvez dépenser 1 charge et lancer souhait par son intermédiaire. Une fois utilisée, cette propriété ne peut plus resservir avant l'aube suivante. L'arme perd cette propriété quand toutes ses charges ont été dépensées.",
+      "en": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. While the weapon is on your person, you also gain a +1 bonus to saving throws.\n\nLuck. If the weapon is on your person, you can call on its luck (no action required) to reroll one failed D20 Test if you don’t have the Incapacitated condition. You must use the second roll. Once used, this property can’t be used again until the next dawn.\n\nWish. The weapon has 1d3 charges. While holding it, you can expend 1 charge and cast Wish from it. Once used, this property can’t be used again until the next dawn. The weapon loses this property if it has no charges."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3941,13 +3949,18 @@
   {
     "id": "vengeresse-sacree",
     "name": {
-      "fr": "Vengeresse sacrée"
+      "fr": "Vengeresse sacrée",
+      "en": "Holy Avenger"
     },
     "category": "weapon",
     "rarity": "legendary",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Paladin",
+      "en": "Requires Attunement by a Paladin"
+    },
     "magicDescription": {
-      "fr": "Vous obtenez un bonus de +3 à l'attaque et aux dégâts réalisés avec cette arme magique. Lorsque vous touchez un fiélon ou un mort-vivant avec elle, cette créature subit 2d10 dégâts radiants supplémentaires.\n\nTant que vous tenez l'épée dégainée, elle crée une aura dans un rayon de 3 mètres autour de vous. Vous et toutes les créatures qui vous sont amicales dans l'aura ont un avantage aux jets de sauvegarde contre les sorts et autres effets magiques. Si vous avez 17 ou plus niveaux dans la classe de paladin, le rayon de l'aura augmente de 3 mètres."
+      "fr": "Vous recevez un bonus de +3 aux jets d'attaque et de dégâts effectués avec cette arme magique. Quand vous touchez un Fiélon ou un Mort-vivant avec cette arme, la créature subit 2d10 dégâts radiants supplémentaires.\n\nTant que vous tenez l'arme au clair, elle crée une Émanation de 3 m centrée sur vous. Vous-même et toutes les créatures de l'Émanation qui vous sont Amicales bénéficiez de l'Avantage aux jets de sauvegarde contre les sorts et autres effets magiques. Si vous disposez de 17 niveaux ou plus dans la classe de Paladin, la taille de cette Émanation passe à 9 m.",
+      "en": "You gain a +3 bonus to attack rolls and damage rolls made with this magic weapon. When you hit a Fiend or an Undead with it, that creature takes an extra 2d10 Radiant damage.\n\nWhile you hold the drawn weapon, it creates a 10-foot Emanation originating from you. You and all creatures Friendly to you in the Emanation have Advantage on saving throws against spells and other magical effects. If you have 17 or more levels in the Paladin class, the size of the Emanation increases to 30 feet."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3955,13 +3968,15 @@
   {
     "id": "voleuse-des-neuf-vies",
     "name": {
-      "fr": "Voleuse des neuf vies"
+      "fr": "Voleuse de vie",
+      "en": "Nine Lives Stealer"
     },
     "category": "weapon",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous gagnez un bonus de +2 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nL'épée possède 1d8 + 1 charges. Quand vous obtenez un coup critique contre une créature à qui il reste moins de 100 points de vies, celle-ci doit réussir un jet de sauvegarde de Constitution DD 15 ou être tuée instantanément, sa force vitale étant arrachée de son corps (les morts-vivants et les artificiels sont immunisés). L'épée perd 1 charge si la créature est tuée. Elle perd cette propriété une fois toutes les charges épuisées."
+      "fr": "Vous recevez un bonus de +2 aux jets d'attaque et de dégâts effectués avec cette arme magique.\n\nVol de vie. L'arme dispose de 1d8 + 1 charges. Lorsque vous attaquez une créature dotée de moins de 100 points de vie avec cette arme et obtenez un 20 sur le d20 du jet d'attaque, la créature doit réussir un jet de sauvegarde de Constitution DD 15 sous peine de mourir sur-le-champ, l'épée lui arrachant sa force vitale. Les Artificiels et les Morts-vivants réussissent automatiquement ce JS. L'arme perd 1 charge si la créature est tuée. Elle perd cette propriété quand toutes ses charges ont été dépensées.",
+      "en": "You gain a +2 bonus to attack rolls and damage rolls made with this magic weapon.\n\nLife Stealing. The weapon has 1d8 + 1 charges. When you attack a creature that has fewer than 100 Hit Points with this weapon and roll a 20 on the d20 for the attack roll, the creature must succeed on a DC 15 Constitution saving throw or be slain instantly as the sword tears its life force from its body. Constructs and Undead succeed on the save automatically. The weapon loses 1 charge if the creature is slain. When the weapon has no charges remaining, it loses this property."
     },
     "description": null,
     "source": "srd-5.2.1"
