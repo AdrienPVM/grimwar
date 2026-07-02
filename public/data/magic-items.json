@@ -1491,13 +1491,15 @@
   {
     "id": "cape-de-deplacement",
     "name": {
-      "fr": "Cape de déplacement"
+      "fr": "Cape de déplacement",
+      "en": "Cloak of Displacement"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Tant que vous êtes équipé de cette cape, elle projette une illusion de vous proche de là où vous vous trouvez. De fait, les créatures ont un désavantage aux jets d'attaque effectués contre vous. Si vous subissez des dégâts, la propriété de la cape cesse de fonctionner jusqu'au début de votre prochain tour. Cette capacité est annulée si vous être incapable d'agir, entravé, ou incapable de bouger de quelle que manière que ce soit."
+      "fr": "Tant que vous portez cette cape, elle projette magiquement un double illusoire de vous-même qui vous fait apparaître à côté de votre véritable position. Toutes les créatures subissent le Désavantage à leurs jets d'attaque contre vous. Si vous subissez des dégâts, cette propriété cesse de fonctionner jusqu'au début de votre tour suivant. Cette propriété est réprimée quand votre Vitesse tombe à 0 et tant qu'elle le reste.",
+      "en": "While you wear this cloak, it magically projects an illusion that makes you appear to be standing in a place near your actual location, causing any creature to have Disadvantage on attack rolls against you. If you take damage, the property ceases to function until the start of your next turn. This property is suppressed while your Speed is 0."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1505,13 +1507,15 @@
   {
     "id": "cape-de-l-arachnide",
     "name": {
-      "fr": "Cape de l'arachnide"
+      "fr": "Cape de l'arachnide",
+      "en": "Cloak of Arachnida"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Ce vêtement délicat a été tressé à partir de soie noire et de discrets fils d'argent. Tant que vous en êtes équipé, vous gagnez les avantages suivants :\n\n• Vous avez la résistance aux dégâts de poison.\n\n• Vous avez une vitesse d'escalade égale à votre vitesse de déplacement au sol.\n\n• Vous pouvez monter, descendre ou parcourir des surfaces verticales, et même vous déplacer aux plafonds la tête en bas, tout en gardant vos deux mains libres.\n\n• Vous ne pouvez pas être prisonnier de toiles (de toutes sortes), et vous pouvez vous déplacer sur des toiles comme si elles étaient de simples terrains difficiles.\n\n• Vous pouvez utiliser votre action pour lancer le sort toile d'araignée (sauvegarde DD 13). Cette toile créée recouvre une surface deux fois plus grande que ce qui est indiqué dans la description du sort. Une fois qu'elle a été utilisée, cette propriété de la cape ne peut être réutilisée avant la prochaine aube."
+      "fr": "Ce somptueux vêtement en soie noire est brodé de fils d'argent. Tant que vous le portez, vous recevez les bénéfices suivants :\n\nDéplacement arachnéen. Aucune toile d'araignée ne peut vous coincer ; vous pouvez vous déplacer librement à travers toute toile d'araignée comme s'il s'agissait d'un Terrain difficile.\n\nPattes d'araignée. Vous bénéficiez d'une Vitesse d'escalade égale à votre Vitesse et pouvez monter, descendre ou vous déplacer à l'horizontale sur une surface verticale ou encore au plafond, la tête en bas, tout en gardant les mains libres.\n\nRésistance au poison. Vous bénéficiez de la Résistance aux dégâts de poison.\n\nToile d'araignée. Vous pouvez lancer toile d'araignée (DD de sauvegarde 13). La toile d'araignée créée par ce sort remplit le double de la surface normale. Une fois utilisée, cette propriété ne peut plus resservir avant l'aube suivante.",
+      "en": "This fine garment is made of black silk interwoven with faint, silvery threads. While wearing it, you gain the following benefits.\n\nPoison Resistance. You have Resistance to Poison damage.\n\nSpider Climb. You have a Climb Speed equal to your Speed and can move up, down, and across vertical surfaces and along ceilings, while leaving your hands free.\n\nSpider Walk. You can’t be caught in webs of any sort and can move through webs as if they were Difficult Terrain.\n\nWeb. You can cast Web (save DC 13). The web created by the spell fills twice its normal area. Once used, this property can’t be used again until the next dawn."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1519,13 +1523,15 @@
   {
     "id": "cape-de-la-chauve-souris",
     "name": {
-      "fr": "Cape de la chauve-souris"
+      "fr": "Cape de la chauve-souris",
+      "en": "Cloak of the Bat"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Tant que vous êtes équipé de cette cape, vous avez un avantage aux jets de Dextérité (Discrétion). Dans une zone de lumière faible ou de ténèbres, vous pouvez attraper les bords de la cape avec vos deux mains et l'utiliser pour voler avec une vitesse de 12 mètres. Si par malheur vous lâchez les bords de la cape alors que vous êtes en train de voler grâce à elle, ou si vous ne vous trouvez plus dans une zone de lumière faible ou de ténèbres, vous perdez cette vitesse de vol.\n\nTant que vous êtes équipé de cette cape et que vous vous trouvez dans une zone de lumière faible ou de ténèbres, vous pouvez utiliser votre action pour lancer sur vous-même le sort métamorphose afin de vous transformer en chauve-souris. Tant que vous êtes sous la forme d'une chauve-souris, vous conservez vos valeurs d'Intelligence, de Sagesse, et de Charisme. La cape ne peut être réutilisée de cette manière avant la prochaine aube."
+      "fr": "Tant que vous portez cette cape, vous bénéficiez de l'Avantage aux tests de Dextérité (Discrétion). Dans une zone de Lumière faible ou de Ténèbres, vous pouvez saisir les bords de la cape à deux mains et l'utiliser pour recevoir une Vitesse de vol de 12 m. Si vous lâchez les bords de la cape en volant de cette manière, ou si vous n'êtes plus dans une zone de Lumière faible ou de Ténèbres, vous perdez cette Vitesse de vol.\n\nTant que vous portez cette cape dans une zone de Lumière faible ou de ténèbres, vous pouvez lancer métamorphose sur vous-même, qui vous transforme en chauve-souris. Sous cette forme, vous conservez vos valeurs d'Intelligence, de Sagesse et de Charisme. La cape ne peut plus être utilisée de cette manière jusqu'à l'aube suivante.",
+      "en": "While wearing this cloak, you have Advantage on Dexterity (Stealth) checks. In an area of Dim Light or Darkness, you can grip the edges of the cloak and use it to gain a Fly Speed of 40 feet. If you ever fail to grip the cloak’s edges while flying in this way, or if you are no longer in Dim Light or Darkness, you lose this Fly Speed.\n\nWhile wearing the cloak in an area of Dim Light or Darkness, you can cast Polymorph on yourself, shape-shifting into a Bat. While in that form, you retain your Intelligence, Wisdom, and Charisma scores. The cloak can’t be used this way again until the next dawn."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1575,13 +1581,15 @@
   {
     "id": "cape-de-vol",
     "name": {
-      "fr": "Cape de vol"
+      "fr": "Cape de vol",
+      "en": "Wings of Flying"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Lorsque vous portez cette cape, vous pouvez utiliser une action pour prononcer son mot de commande. Cela transforme la cape en une paire d'ailes de chauve-souris ou d'oiseau sur votre dos pendant 1 heure, ou jusqu'à ce que vous répétiez le mot de commande au prix d'une action. Les ailes vous donnent une vitesse de vol de 18 mètres. Quand elles disparaissent, vous ne pouvez plus les réutiliser durant 1d12 heures."
+      "fr": "Tant que vous portez cette cape, vous pouvez entreprendre l'action Magie pour la transformer en paire d'ailes dans votre dos. Elles persistent pendant 1 heure, sauf si vous y mettez fin prématurément au prix de l'action Magie. Ces ailes vous octroient une Vitesse de vol de 18 m. Si vous êtes en l'air lorsqu'elles disparaissent, vous tombez. Après leur disparition, vous ne pouvez plus les déployer pendant 1d12 heures.",
+      "en": "While wearing this cloak, you can take a Magic action to turn the cloak into a pair of wings on your back. The wings lasts for 1 hour or until you end the effect early as a Magic action. The wings give you a Fly Speed of 60 feet. If you are aloft when the wings disappear, you fall. When the wings disappear, you can’t use them again for 1d12 hours."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -1589,13 +1597,15 @@
   {
     "id": "cape-du-prestidigitateur",
     "name": {
-      "fr": "Cape du prestidigitateur"
+      "fr": "Cape du prestidigitateur",
+      "en": "Cape of the Mountebank"
     },
     "category": "gear",
     "rarity": "rare",
     "attunement": false,
     "magicDescription": {
-      "fr": "Cette cape sent légèrement le soufre. Tant que vous en êtes équipé, vous pouvez vous en servir, en utilisant votre action, pour lancer le sort porte dimensionnelle. Cette propriété de la cape ne peut être réutilisée avant la prochaine aube.\n\nLorsque vous disparaissez, vous laissez derrière vous un nuage de fumée, et, à votre arrivée à destination, vous apparaissez également dans un nuage de fumée. La fumée obscurcit légèrement l'endroit que vous quittez et celui où vous apparaissez, et se dissipe à la fin de votre tour suivant. Un vent léger ou plus puissant disperse la fumée."
+      "fr": "Cette cape sent légèrement le soufre. Quand vous la portez, vous pouvez l'utiliser pour lancer porte dimensionnelle au prix de l'action Magie. Cette propriété ne peut plus resservir avant l'aube suivante.\n\nEn vous téléportant avec ce sort, vous laissez derrière vous un nuage de fumée. Cette fumée entraîne une Visibilité réduite dans l'espace que vous venez de quitter jusqu'à la fin de votre tour suivant.",
+      "en": "This cape smells faintly of brimstone. While wearing it, you can use it to cast Dimension Door as a Magic action. This property can’t be used again until the next dawn.\n\nWhen you teleport with that spell, you leave behind a cloud of smoke. The space you left is Lightly Obscured by that smoke until the end of your next turn."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -2700,13 +2710,15 @@
   {
     "id": "manteau-de-resistance-aux-sorts",
     "name": {
-      "fr": "Manteau de résistance aux sorts"
+      "fr": "Manteau de résistance aux sorts",
+      "en": "Mantle of Spell Resistance"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Vous avez un avantage à tous les jets de sauvegarde contre les sorts tant que vous portez cette cape."
+      "fr": "Vous avez l'Avantage aux jets de sauvegarde contre les sorts quand vous portez ce manteau.",
+      "en": "You have Advantage on saving throws against spells while you wear this cloak."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3517,13 +3529,15 @@
   {
     "id": "robe-aux-etoiles",
     "name": {
-      "fr": "Robe aux étoiles"
+      "fr": "Robe aux étoiles",
+      "en": "Robe of Stars"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Cette robe noire ou bleue foncée est brodée de petites étoiles blanches ou argentées. Vous gagnez un bonus de +1 aux jets de sauvegarde tant que vous êtes équipé de cette robe. Six étoiles, situées sur la robe au niveau du torse, sont particulièrement larges. Tant que vous êtes équipé de cette robe, vous pouvez utiliser une action pour prélever l'une de ces étoiles et l'utiliser pour lancer un sort de projectile magique (équivalent à un emplacement de sort de niveau 5). Chaque jour, au crépuscule, 1d6 étoiles prélevées réapparaissent sur la robe.\n\nTant que vous êtes équipé de cette robe, vous pouvez utiliser une action pour entrer dans le plan Astral avec tout ce que vous portez et transportez. Vous y restez jusqu'à ce que vous utilisiez une action pour retourner dans votre plan de départ. Vous réapparaissez dans le dernier endroit que vous avez quitté, ou si cet espace est occupé, dans l'espace inoccupé le plus proche."
+      "fr": "De petites étoiles blanches et argentées sont brodées sur cette robe noire ou bleu nuit. Vous recevez un bonus de +1 aux jets de sauvegarde tant que vous la portez.\n\nSix étoiles, situées sur la face avant de la robe, au niveau du col, sont plus grandes que les autres. Tant que vous portez cette robe, vous pouvez entreprendre l'action Magie pour retirer l'une des étoiles et la dépenser afin de lancer projectile magique au 5e niveau. Chaque jour au crépuscule, 1d6 étoiles ainsi retirées réapparaissent sur la robe.\n\nLorsque vous portez la robe, vous pouvez entreprendre l'action Magie pour entrer dans le Plan Astral avec tout ce que vous portez. Vous y restez jusqu'à ce que vous entrepreniez l'action Magie pour retourner sur le plan d'existence où vous étiez auparavant. Vous réapparaissez dans le dernier espace que vous occupiez ou, si celui-ci n'est plus libre, dans l'espace inoccupé le plus proche.",
+      "en": "This black or dark-blue robe is embroidered with small white or silver stars. You gain a +1 bonus to saving throws while you wear it.\n\nSix stars, located on the robe’s upper-front portion, are particularly large. While wearing this robe, you can take a Magic action to remove one of the stars and expend it to cast the level 5 version of Magic Missile. Daily at dusk, 1d6 removed stars reappear on the robe.\n\nWhile you wear the robe, you can take a Magic action to enter the Astral Plane along with everything you are wearing and carrying. You remain there until you take a Magic action to return to the plane you were on. You reappear in the last space you occupied or, if that space is occupied, the nearest unoccupied space."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3547,13 +3561,18 @@
   {
     "id": "robe-de-l-archimage",
     "name": {
-      "fr": "Robe de l'archimage"
+      "fr": "Robe de l'archimage",
+      "en": "Robe of the Archmagi"
     },
     "category": "gear",
     "rarity": "legendary",
-    "attunement": false,
+    "attunement": {
+      "fr": "Harmonisation requise avec un Ensorceleur, Magicien ou Occultiste",
+      "en": "Requires Attunement by a Sorcerer, Warlock, or Wizard"
+    },
     "magicDescription": {
-      "fr": "Ce vêtement élégant est brodé dans une étoffe raffinée de couleur blanche, grise, ou noire et ornée de runes d'argent. La couleur de la robe correspond à l'alignement pour lequel cet objet a été conçu. Une robe blanche est faite pour un personnage bon, une robe grise pour un neutre, et une robe noire pour un mauvais. Vous ne pouvez pas vous lier à une robe de l'archimage si votre alignement ne lui correspond pas. Vous gagnez les bénéfices suivants tant que vous êtes équipé de cette robe :\n\n• Si vous n'êtes pas équipé d'armure, votre Classe d'Armure de base est 15 + votre modificateur de Dextérité.\n\n• Vous avez un avantage aux jets de sauvegarde effectués contre les sorts et tout autre effet magique.\n\n• Le DD aux jets de sauvegarde de vos sorts et votre bonus d'attaque avec un sort sont chacun augmentés de 2."
+      "fr": "Ce vêtement élégant est fait d'une superbe étoffe ornée de runes.\n\nTant que vous portez cette robe, vous recevez les bénéfices suivants :\n\nArmure. Si vous ne portez pas d'armure, votre classe d'armure de base est égale à 15 + votre modificateur de Dextérité.\n\nMagie de guerre. Votre DD de sauvegarde des sorts et votre bonus d'attaque de sort augmentent chacun de 2.\n\nRésistance à la magie. Vous avez l'Avantage aux jets de sauvegarde contre les sorts et autres effets magiques.",
+      "en": "This elegant garment is made from exquisite cloth and adorned with runes.\n\nYou gain these benefits while wearing the robe.\n\nArmor. If you aren’t wearing armor, your base Armor Class is 15 plus your Dexterity modifier.\n\nMagic Resistance. You have Advantage on saving throws against spells and other magical effects.\n\nWar Mage. Your spell save DC and spell attack bonus each increase by 2."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3561,13 +3580,15 @@
   {
     "id": "robe-de-vision-totale",
     "name": {
-      "fr": "Robe de vision totale"
+      "fr": "Robe de vision totale",
+      "en": "Robe of Eyes"
     },
     "category": "gear",
     "rarity": "rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Cette robe est ornée de motifs en forme d'yeux. Tant que vous êtes équipé de cette robe, vous gagnez les bénéfices suivants :\n\n• La robe vous permet de voir dans toutes les directions, et vous avez un avantage à vos jets de Sagesse (Perception) basés sur la vue.\n\n• Vous avez la vision dans le noir à 36 mètres.\n\n• Vous pouvez voir les créatures et objets invisibles, de même que ceux se trouvant dans le plan éthéré, à 36 mètres.\n\nLes yeux sur la robe ne peuvent être fermés ou détournés. Et même si vous fermez ou détournez vos propres yeux, vous n'êtes jamais considéré comme en train de le faire tant que vous êtes équipé de cette robe.\n\nUn sort de lumière lancé sur la robe ou de lumière du jour lancé à 1,50 mètre de la robe vous aveugle pendant 1 minute. À la fin de chacun de vos tours, vous pouvez effectuer un jet de sauvegarde de Constitution (DD 11 pour le sort lumière ou DD 15 pour le sort lumière du jour), mettant à terme à l'aveuglement en cas de réussite."
+      "fr": "Cette robe est ornée de motifs représentant des yeux. Tant que vous la portez, vous recevez les bénéfices suivants :\n\nSens spéciaux. Vous disposez de la Vision dans le noir et de la Vision lucide sur 36 m.\n\nVision panoramique. La robe vous confère l'Avantage aux tests de Sagesse (Perception) qui reposent sur la vue.\n\nInconvénients. Le sort lumière lancé sur la robe ou le sort lumière du jour lancé dans un rayon de 1,50 m du vêtement vous fait subir l'état Aveuglé pendant 1 minute. À la fin de chacun de vos tours, vous pouvez effectuer un jet de sauvegarde de Constitution (DD 11 pour lumière, DD 15 pour lumière du jour) et mettez fin à cet état en cas de réussite.",
+      "en": "This robe is adorned with eyelike patterns. While you wear the robe, you gain the following benefits:\n\nAll-Around Vision. The robe gives you Advantage on Wisdom (Perception) checks that rely on sight.\n\nSpecial Senses. You have Darkvision and Truesight, both with a range of 120 feet.\n\nDrawbacks. A Light spell cast on the robe or a Daylight spell cast within 5 feet of the robe gives you the Blinded condition for 1 minute. At the end of each of your turns, you make a Constitution saving throw (DC 11 for Light or DC 15 for Daylight), ending the condition on yourself on a success."
     },
     "description": null,
     "source": "srd-5.2.1"
@@ -3575,13 +3596,15 @@
   {
     "id": "robe-prismatique",
     "name": {
-      "fr": "Robe prismatique"
+      "fr": "Robe prismatique",
+      "en": "Robe of Scintillating Colors"
     },
     "category": "gear",
     "rarity": "very rare",
-    "attunement": false,
+    "attunement": true,
     "magicDescription": {
-      "fr": "Cette robe possède 3 charges, et elle récupère 1d3 charges dépensées chaque jour à l'aube. Tant que vous en êtes équipé, vous pouvez utiliser une action et dépenser 1 charge pour que la robe se pare d'une myriade de motifs changeants aux couleurs éblouissantes jusqu'à la fin de votre prochain tour. Pour toute cette durée, la robe émet une lumière vive dans un rayon de 9 mètres et une lumière faible sur 9 mètres supplémentaires. Les créatures qui peuvent vous voir ont un désavantage à leur jet d'attaque effectué contre vous. De plus, toute créature présente dans la zone de lumière vive et qui peut vous voir au moment où le pouvoir de la robe est activé doit réussir un jet de sauvegarde de Sagesse DD 15 sous peine d'être étourdie jusqu'à ce que l'effet prenne fin."
+      "fr": "Cette robe dispose de 3 charges et récupère quotidiennement 1d3 charges dépensées, à l'aube. Lorsque vous la portez, vous pouvez entreprendre l'action Magie et dépenser 1 charge pour y faire apparaître un motif changeant de teintes éblouissantes, jusqu'à la fin de votre tour suivant. Pendant cet intervalle, elle produit une Lumière vive sur un rayon de 9 m et une Lumière faible sur 9 m de plus, et les créatures qui vous voient subissent le Désavantage aux jets d'attaque contre vous. Toute créature dans la zone de Lumière vive, si elle vous voit alors que le pouvoir de la robe est activé, doit réussir un jet de sauvegarde de Sagesse DD 15 sous peine de subir l'état Étourdi jusqu'à ce que l'effet prenne fin.",
+      "en": "This robe has 3 charges, and it regains 1d3 expended charges daily at dawn. While you wear it, you can take a Magic action and expend 1 charge to cause the garment to display a shifting pattern of dazzling hues until the end of your next turn. During this time, the robe sheds Bright Light in a 30-foot radius and Dim Light for an additional 30 feet, and creatures that can see you have Disadvantage on attack rolls against you. Any creature in the Bright Light that can see you when the robe’s power is activated must succeed on a DC 15 Wisdom saving throw or have the Stunned condition until the effect ends."
     },
     "description": null,
     "source": "srd-5.2.1"

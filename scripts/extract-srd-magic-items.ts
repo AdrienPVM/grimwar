@@ -87,6 +87,10 @@ import {
   SRD_MAGIC_ITEMS_WEAPONS_MISC,
   SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS,
 } from './data/srd-magic-items-weapons-misc';
+import {
+  SRD_MAGIC_ITEMS_CLOAKS,
+  SRD_MAGIC_ITEMS_CLOAKS_COUNTS,
+} from './data/srd-magic-items-cloaks';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -142,6 +146,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_BLUDGEONING,
     ...SRD_MAGIC_ITEMS_BLADES,
     ...SRD_MAGIC_ITEMS_WEAPONS_MISC,
+    ...SRD_MAGIC_ITEMS_CLOAKS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -374,6 +379,20 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — weapons-misc D29.10 attendu 3 rare + 3 very rare + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.rare} + ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_CLOAKS_COUNTS.total !== SRD_MAGIC_ITEMS_CLOAKS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur cloaks désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.rare !== 6 ||
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.attuned !== 9
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — cloaks D29.11 attendu 6 rare + 3 very rare + 1 legendary + 9 attuned, trouvé ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.attuned}.`,
     );
   }
 
