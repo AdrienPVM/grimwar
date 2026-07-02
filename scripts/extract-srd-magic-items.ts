@@ -91,6 +91,10 @@ import {
   SRD_MAGIC_ITEMS_CLOAKS,
   SRD_MAGIC_ITEMS_CLOAKS_COUNTS,
 } from './data/srd-magic-items-cloaks';
+import {
+  SRD_MAGIC_ITEMS_BOOKS,
+  SRD_MAGIC_ITEMS_BOOKS_COUNTS,
+} from './data/srd-magic-items-books';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -147,6 +151,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_BLADES,
     ...SRD_MAGIC_ITEMS_WEAPONS_MISC,
     ...SRD_MAGIC_ITEMS_CLOAKS,
+    ...SRD_MAGIC_ITEMS_BOOKS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -393,6 +398,15 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — cloaks D29.11 attendu 6 rare + 3 very rare + 1 legendary + 9 attuned, trouvé ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_BOOKS_COUNTS.total !== SRD_MAGIC_ITEMS_BOOKS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur books désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_BOOKS_COUNTS.veryRare !== 7 || SRD_MAGIC_ITEMS_BOOKS_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — books D29.12 attendu 7 very rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_BOOKS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_BOOKS_COUNTS.attuned}.`,
     );
   }
 
