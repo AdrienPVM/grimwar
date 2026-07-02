@@ -119,6 +119,10 @@ import {
   SRD_MAGIC_ITEMS_CONTAINERS,
   SRD_MAGIC_ITEMS_CONTAINERS_COUNTS,
 } from './data/srd-magic-items-containers';
+import {
+  SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
+  SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS,
+} from './data/srd-magic-items-wondrous-variants';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -182,6 +186,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_IMPLEMENTS,
     ...SRD_MAGIC_ITEMS_PLANAR,
     ...SRD_MAGIC_ITEMS_CONTAINERS,
+    ...SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -517,6 +522,20 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — containers D29.18 attendu 1 uncommon + 4 rare + 5 very rare + 3 attuned, trouvé ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.total !== SRD_MAGIC_ITEMS_WONDROUS_VARIANTS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur wondrous-variants désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.veryRare !== 1 ||
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.artifact !== 1 ||
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.attuned !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — wondrous-variants D29.19 attendu 1 very rare + 1 legendary + 1 artifact + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.artifact} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.attuned}.`,
     );
   }
 
