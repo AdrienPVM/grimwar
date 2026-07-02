@@ -111,6 +111,10 @@ import {
   SRD_MAGIC_ITEMS_IMPLEMENTS,
   SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS,
 } from './data/srd-magic-items-implements';
+import {
+  SRD_MAGIC_ITEMS_PLANAR,
+  SRD_MAGIC_ITEMS_PLANAR_COUNTS,
+} from './data/srd-magic-items-planar';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -172,6 +176,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_WORN,
     ...SRD_MAGIC_ITEMS_CONSUMABLES,
     ...SRD_MAGIC_ITEMS_IMPLEMENTS,
+    ...SRD_MAGIC_ITEMS_PLANAR,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -480,6 +485,19 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — implements D29.16 attendu 6 rare + 3 very rare + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_PLANAR_COUNTS.total !== SRD_MAGIC_ITEMS_PLANAR.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur planar désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_PLANAR_COUNTS.rare !== 2 ||
+    SRD_MAGIC_ITEMS_PLANAR_COUNTS.legendary !== 7 ||
+    SRD_MAGIC_ITEMS_PLANAR_COUNTS.attuned !== 4
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — planar D29.17 attendu 2 rare + 7 legendary + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_PLANAR_COUNTS.rare} + ${SRD_MAGIC_ITEMS_PLANAR_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_PLANAR_COUNTS.attuned}.`,
     );
   }
 
