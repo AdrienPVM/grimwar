@@ -107,6 +107,10 @@ import {
   SRD_MAGIC_ITEMS_CONSUMABLES,
   SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS,
 } from './data/srd-magic-items-consumables';
+import {
+  SRD_MAGIC_ITEMS_IMPLEMENTS,
+  SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS,
+} from './data/srd-magic-items-implements';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -167,6 +171,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_DEVICES,
     ...SRD_MAGIC_ITEMS_WORN,
     ...SRD_MAGIC_ITEMS_CONSUMABLES,
+    ...SRD_MAGIC_ITEMS_IMPLEMENTS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -462,6 +467,19 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — consumables D29.15 attendu 2 rare + 2 very rare + 2 legendary + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.total !== SRD_MAGIC_ITEMS_IMPLEMENTS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur implements désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.rare !== 6 ||
+    SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.attuned !== 4
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — implements D29.16 attendu 6 rare + 3 very rare + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.attuned}.`,
     );
   }
 
