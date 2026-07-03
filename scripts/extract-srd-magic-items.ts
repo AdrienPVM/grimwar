@@ -123,6 +123,10 @@ import {
   SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
   SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS,
 } from './data/srd-magic-items-wondrous-variants';
+import {
+  SRD_MAGIC_ITEMS_IOUN,
+  SRD_MAGIC_ITEMS_IOUN_COUNTS,
+} from './data/srd-magic-items-ioun';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -187,6 +191,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_PLANAR,
     ...SRD_MAGIC_ITEMS_CONTAINERS,
     ...SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
+    ...SRD_MAGIC_ITEMS_IOUN,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -536,6 +541,15 @@ async function main(): Promise<void> {
   ) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — wondrous-variants D29.19 attendu 1 very rare + 1 legendary + 1 artifact + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.artifact} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_IOUN_COUNTS.total !== SRD_MAGIC_ITEMS_IOUN.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur ioun désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_IOUN_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_IOUN_COUNTS.attuned !== 1) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — ioun D29.20 attendu 1 rare + 1 attuned, trouvé ${SRD_MAGIC_ITEMS_IOUN_COUNTS.rare} + ${SRD_MAGIC_ITEMS_IOUN_COUNTS.attuned}.`,
     );
   }
 
