@@ -135,6 +135,10 @@ import {
   SRD_MAGIC_ITEMS_FIGURINE,
   SRD_MAGIC_ITEMS_FIGURINE_COUNTS,
 } from './data/srd-magic-items-figurine';
+import {
+  SRD_MAGIC_ITEMS_DECK,
+  SRD_MAGIC_ITEMS_DECK_COUNTS,
+} from './data/srd-magic-items-deck';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -202,6 +206,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_IOUN,
     ...SRD_MAGIC_ITEMS_BAG_OF_BEANS,
     ...SRD_MAGIC_ITEMS_FIGURINE,
+    ...SRD_MAGIC_ITEMS_DECK,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -578,6 +583,15 @@ async function main(): Promise<void> {
   if (SRD_MAGIC_ITEMS_FIGURINE_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_FIGURINE_COUNTS.attuned !== 0) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — figurine D29.22 attendu 1 rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_FIGURINE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_FIGURINE_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_DECK_COUNTS.total !== SRD_MAGIC_ITEMS_DECK.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur deck désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_DECK_COUNTS.legendary !== 1 || SRD_MAGIC_ITEMS_DECK_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — deck D29.23 attendu 1 legendary + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_DECK_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_DECK_COUNTS.attuned}.`,
     );
   }
 
