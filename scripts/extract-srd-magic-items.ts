@@ -127,6 +127,10 @@ import {
   SRD_MAGIC_ITEMS_IOUN,
   SRD_MAGIC_ITEMS_IOUN_COUNTS,
 } from './data/srd-magic-items-ioun';
+import {
+  SRD_MAGIC_ITEMS_BAG_OF_BEANS,
+  SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS,
+} from './data/srd-magic-items-bag-of-beans';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -192,6 +196,7 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_CONTAINERS,
     ...SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
     ...SRD_MAGIC_ITEMS_IOUN,
+    ...SRD_MAGIC_ITEMS_BAG_OF_BEANS,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -550,6 +555,15 @@ async function main(): Promise<void> {
   if (SRD_MAGIC_ITEMS_IOUN_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_IOUN_COUNTS.attuned !== 1) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — ioun D29.20 attendu 1 rare + 1 attuned, trouvé ${SRD_MAGIC_ITEMS_IOUN_COUNTS.rare} + ${SRD_MAGIC_ITEMS_IOUN_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.total !== SRD_MAGIC_ITEMS_BAG_OF_BEANS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur bag-of-beans désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — bag-of-beans D29.21 attendu 1 rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.attuned}.`,
     );
   }
 
