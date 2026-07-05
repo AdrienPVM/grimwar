@@ -31,17 +31,45 @@ const COPY_FEEDBACK_MS = 1800;
  * évite un side-effect global.
  */
 export function InviteCodeReveal({ code, className }: Props): JSX.Element {
-  const [copied, setCopied] = useState<boolean>(false);
+  // Un seul feedback à la fois : 'code' (code copié) ou 'link' (lien copié).
+  const [feedback, setFeedback] = useState<'code' | 'link' | null>(null);
 
   useEffect(() => {
-    if (!copied) return;
-    const id = window.setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
+    if (!feedback) return;
+    const id = window.setTimeout(() => setFeedback(null), COPY_FEEDBACK_MS);
     return () => window.clearTimeout(id);
-  }, [copied]);
+  }, [feedback]);
 
   async function handleCopy(): Promise<void> {
     const ok = await copyToClipboard(code);
-    if (ok) setCopied(true);
+    if (ok) setFeedback('code');
+  }
+
+  /**
+   * Partage le LIEN d'invitation (décision LOCKED « lien + code 6 chars »).
+   * Web Share API (feuille de partage native mobile) si dispo — sinon repli sur
+   * copie du lien dans le presse-papiers. Le lien préremplit `?code=` sur
+   * `/campaigns/join`, donc le destinataire n'a plus qu'à taper « Rejoindre ».
+   */
+  async function handleShareLink(): Promise<void> {
+    const url = buildInviteLink(code);
+    if (!url) return;
+    if (
+      typeof navigator !== 'undefined' &&
+      typeof navigator.share === 'function'
+    ) {
+      try {
+        await navigator.share({
+          title: t('campaigns.detail.invite.shareTitle'),
+          url,
+        });
+        return;
+      } catch {
+        // Partage annulé/indispo → repli sur copie du lien.
+      }
+    }
+    const ok = await copyToClipboard(url);
+    if (ok) setFeedback('link');
   }
 
   return (
@@ -61,25 +89,50 @@ export function InviteCodeReveal({ code, className }: Props): JSX.Element {
       >
         {code}
       </p>
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        onClick={() => {
-          void handleCopy();
-        }}
-        aria-live="polite"
-        tooltip={t('campaigns.tip.copyInviteCode')}
-      >
-        {copied
-          ? t('campaigns.detail.invite.copied')
-          : t('campaigns.detail.invite.copy')}
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            void handleCopy();
+          }}
+          aria-live="polite"
+          tooltip={t('campaigns.tip.copyInviteCode')}
+        >
+          {feedback === 'code'
+            ? t('campaigns.detail.invite.copied')
+            : t('campaigns.detail.invite.copy')}
+        </Button>
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          onClick={() => {
+            void handleShareLink();
+          }}
+          aria-live="polite"
+          tooltip={t('campaigns.tip.shareInviteLink')}
+        >
+          {feedback === 'link'
+            ? t('campaigns.detail.invite.linkCopied')
+            : t('campaigns.detail.invite.shareLink')}
+        </Button>
+      </div>
       <p className="mx-auto max-w-[36ch] text-center font-serif text-body-sm italic text-text-tertiary">
         {t('campaigns.detail.invite.help')}
       </p>
     </div>
   );
+}
+
+/**
+ * Construit le lien d'invitation partageable : `${origin}/campaigns/join?code=XXXXXX`.
+ * Renvoie `''` hors navigateur (SSR/test sans `window`). Exporté pour test.
+ */
+export function buildInviteLink(code: string): string {
+  if (typeof window === 'undefined') return '';
+  return `${window.location.origin}/campaigns/join?code=${encodeURIComponent(code)}`;
 }
 
 /**

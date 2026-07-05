@@ -1,5 +1,5 @@
 import { useId, useState, type FormEvent, type JSX } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
@@ -37,9 +37,16 @@ const CODE_LENGTH = 6;
  */
 export function JoinByCodeScreen(): JSX.Element {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const titleId = useId();
-  const [rawCode, setRawCode] = useState<string>('');
+  // Lien de partage : `/campaigns/join?code=XXXXXX` (cf. InviteCodeReveal).
+  // On préremplit le champ pour que le destinataire n'ait qu'à taper
+  // « Rejoindre » (pas d'auto-submit : l'action explicite est plus claire, et
+  // l'auth peut ne pas être prête au montage).
+  const [rawCode, setRawCode] = useState<string>(() =>
+    (searchParams.get('code') ?? '').toUpperCase().replace(/\s+/g, ''),
+  );
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);

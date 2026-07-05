@@ -938,6 +938,9 @@ export type StringKey =
   | 'campaigns.detail.invite.codeAria'
   | 'campaigns.detail.invite.copy'
   | 'campaigns.detail.invite.copied'
+  | 'campaigns.detail.invite.shareLink'
+  | 'campaigns.detail.invite.linkCopied'
+  | 'campaigns.detail.invite.shareTitle'
   | 'campaigns.detail.invite.help'
   | 'campaigns.detail.roster.aria'
   | 'campaigns.detail.roster.title'
@@ -2321,6 +2324,7 @@ export type StringKey =
   | 'campaigns.tip.openSettings'
   | 'campaigns.tip.promoteGm'
   | 'campaigns.tip.copyInviteCode'
+  | 'campaigns.tip.shareInviteLink'
   | 'campaigns.tip.linkCharacter'
   | 'campaigns.tip.openOwnSheet'
   | 'campaigns.tip.createCharacter'
@@ -3775,6 +3779,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.codeAria': "Code d'invitation à dicter ou copier",
     'campaigns.detail.invite.copy': 'Copier le code',
     'campaigns.detail.invite.copied': 'Copié !',
+    'campaigns.detail.invite.shareLink': 'Partager le lien',
+    'campaigns.detail.invite.linkCopied': 'Lien copié !',
+    'campaigns.detail.invite.shareTitle': 'Rejoins ma campagne GrimWar',
     'campaigns.detail.invite.help':
       'Toute personne possédant ce code peut rejoindre cette campagne. Partage-le uniquement avec les joueurs invités.',
     'campaigns.detail.roster.aria': 'Membres de la campagne',
@@ -5604,6 +5611,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Modifier le nom, le mode de dés et les variantes 5e de la table.',
     'campaigns.tip.promoteGm': 'Donner à ce joueur les pleins pouvoirs de meneur.',
     'campaigns.tip.copyInviteCode': 'Copier le code d’invitation dans le presse-papiers.',
+    'campaigns.tip.shareInviteLink':
+      'Partager un lien d’invitation — le code y est déjà prérempli.',
     'campaigns.tip.linkCharacter': 'Choisir le personnage que vous jouez ici.',
     'campaigns.tip.openOwnSheet': 'Consulter votre fiche de personnage.',
     'campaigns.tip.createCharacter':
@@ -6994,6 +7003,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.codeAria': 'Invite code to read aloud or copy',
     'campaigns.detail.invite.copy': 'Copy code',
     'campaigns.detail.invite.copied': 'Copied!',
+    'campaigns.detail.invite.shareLink': 'Share link',
+    'campaigns.detail.invite.linkCopied': 'Link copied!',
+    'campaigns.detail.invite.shareTitle': 'Join my GrimWar campaign',
     'campaigns.detail.invite.help':
       'Anyone with this code can join the campaign. Share it only with invited players.',
     'campaigns.detail.roster.aria': 'Campaign members',
@@ -8730,6 +8742,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Edit the table’s name, dice mode and 5e variants.',
     'campaigns.tip.promoteGm': 'Grant this player full game master authority.',
     'campaigns.tip.copyInviteCode': 'Copy the invite code to the clipboard.',
+    'campaigns.tip.shareInviteLink':
+      'Share an invite link — the code is already prefilled.',
     'campaigns.tip.linkCharacter': 'Choose the character you play here.',
     'campaigns.tip.openOwnSheet': 'View your character sheet.',
     'campaigns.tip.createCharacter':

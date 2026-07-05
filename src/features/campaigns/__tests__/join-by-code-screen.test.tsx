@@ -74,6 +74,15 @@ describe('<JoinByCodeScreen>', () => {
     expect(screen.getByRole('button', { name: 'Rejoindre' })).toBeInTheDocument();
   });
 
+  it('préremplit (et normalise en majuscules) le code depuis ?code= du lien partagé', () => {
+    render(
+      <MemoryRouter initialEntries={['/campaigns/join?code=abc234']}>
+        <JoinByCodeScreen />
+      </MemoryRouter>,
+    );
+    expect(screen.getByDisplayValue('ABC234')).toBeInTheDocument();
+  });
+
   it("submit avec moins de 6 chars → erreur lengthInvalid, service jamais appelé", async () => {
     renderScreen();
     fireEvent.change(screen.getByLabelText(/Code d['']invitation/i), {

@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { InviteCodeReveal } from '../invite-code-reveal';
+import { InviteCodeReveal, buildInviteLink } from '../invite-code-reveal';
 
 // ─────────────────────────────────────────────────────────────────────
 // Helpers — on contrôle navigator.clipboard et document.execCommand pour
@@ -35,8 +35,27 @@ function uninstallClipboard(): void {
   });
 }
 
+function installShare(): ReturnType<typeof vi.fn> {
+  const share = vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'share', {
+    value: share,
+    writable: true,
+    configurable: true,
+  });
+  return share;
+}
+
+function uninstallShare(): void {
+  Object.defineProperty(navigator, 'share', {
+    value: undefined,
+    writable: true,
+    configurable: true,
+  });
+}
+
 afterEach(() => {
   uninstallClipboard();
+  uninstallShare();
 });
 
 describe('<InviteCodeReveal>', () => {
@@ -115,5 +134,44 @@ describe('<InviteCodeReveal>', () => {
     } finally {
       document.execCommand = original;
     }
+  });
+
+  it('buildInviteLink construit /campaigns/join?code=CODE sur l’origine courante', () => {
+    expect(buildInviteLink('ABC234')).toBe(
+      `${window.location.origin}/campaigns/join?code=ABC234`,
+    );
+  });
+
+  it('« Partager le lien » avec Web Share API → navigator.share reçoit l’URL, pas de copie', async () => {
+    const share = installShare();
+    const { writeText } = installClipboard();
+    render(<InviteCodeReveal code="ABC234" />);
+    fireEvent.click(screen.getByRole('button', { name: /Partager le lien/i }));
+    await waitFor(() => {
+      expect(share).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: `${window.location.origin}/campaigns/join?code=ABC234`,
+        }),
+      );
+    });
+    expect(writeText).not.toHaveBeenCalled();
+  });
+
+  it('« Partager le lien » sans Web Share API → copie l’URL + « Lien copié ! »', async () => {
+    // navigator.share absent (uninstallShare via afterEach du test précédent, ici
+    // jamais installé) → repli sur la copie presse-papiers.
+    const { writeText } = installClipboard();
+    render(<InviteCodeReveal code="ABC234" />);
+    fireEvent.click(screen.getByRole('button', { name: /Partager le lien/i }));
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith(
+        `${window.location.origin}/campaigns/join?code=ABC234`,
+      );
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /Lien copié/i }),
+      ).toBeInTheDocument();
+    });
   });
 });
