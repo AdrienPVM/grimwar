@@ -21,7 +21,7 @@ interface CampaignCardProps {
  *  - description courte (font-serif italic, troncage 3 lignes au CSS),
  *  - chip rôle (Meneur / Joueur) selon `gmIds.includes(uid)`,
  *  - nombre de MJ + code d'invitation + date de dernière maj,
- *  - bouton « Ouvrir » (disabled V1, plein 4.0.5),
+ *  - bouton « Ouvrir » → navigue vers le détail de la campagne,
  *  - bouton « Quitter » → ouvre confirm modal côté parent.
  */
 export function CampaignCard({ campaign, onLeaveClick }: CampaignCardProps): JSX.Element {

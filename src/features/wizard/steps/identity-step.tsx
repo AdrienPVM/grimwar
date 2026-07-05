@@ -6,26 +6,32 @@ import {
   Select,
   TextInput,
 } from '@/shared/components/form';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { StepIntro } from '../help/help-panel';
 
-const ALIGNMENT_OPTIONS = [
-  { value: 'LB', label: 'Loyal Bon' },
-  { value: 'NB', label: 'Neutre Bon' },
-  { value: 'CB', label: 'Chaotique Bon' },
-  { value: 'LN', label: 'Loyal Neutre' },
-  { value: 'N', label: 'Neutre' },
-  { value: 'CN', label: 'Chaotique Neutre' },
-  { value: 'LM', label: 'Loyal Mauvais' },
-  { value: 'NM', label: 'Neutre Mauvais' },
-  { value: 'CM', label: 'Chaotique Mauvais' },
+// Valeur + clé i18n partagée (mêmes libellés que la fiche/recap via `alignment.*`).
+const ALIGNMENT_VALUES: readonly { value: string; labelKey: StringKey }[] = [
+  { value: 'LB', labelKey: 'alignment.LB' },
+  { value: 'NB', labelKey: 'alignment.NB' },
+  { value: 'CB', labelKey: 'alignment.CB' },
+  { value: 'LN', labelKey: 'alignment.LN' },
+  { value: 'N', labelKey: 'alignment.N' },
+  { value: 'CN', labelKey: 'alignment.CN' },
+  { value: 'LM', labelKey: 'alignment.LM' },
+  { value: 'NM', labelKey: 'alignment.NM' },
+  { value: 'CM', labelKey: 'alignment.CM' },
 ];
 
 export function IdentityStep(): JSX.Element {
   const draft = useWizardStore((s) => s.draft);
   const setField = useWizardStore((s) => s.setField);
+  // Libellés résolus au rendu (i18n-ready) plutôt qu'au chargement du module.
+  const alignmentOptions = ALIGNMENT_VALUES.map(({ value, labelKey }) => ({
+    value,
+    label: t(labelKey),
+  }));
 
   const nameError =
     draft.name.length > 0 && draft.name.trim().length === 0
@@ -77,7 +83,7 @@ export function IdentityStep(): JSX.Element {
             {...fieldProps}
             value={draft.alignment}
             onValueChange={(v) => setField('alignment', v)}
-            options={ALIGNMENT_OPTIONS}
+            options={alignmentOptions}
           />
         )}
       </FormField>

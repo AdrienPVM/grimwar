@@ -7,13 +7,15 @@ interface PartyStripProps {
 }
 
 /**
- * Aperçu compagnons. S1 ne supporte pas encore les campagnes, donc tant que
- * `presentInCampaigns` est vide on affiche un placeholder explicite. La forme
- * S2-ready (avatar, HP bar, rôle) est livrée en plan 16 — on garde le shell de
- * carte pour que le layout Combat soit déjà calibré.
+ * Aperçu compagnons. On lit `homeCampaignId` (posé au LINK d'une fiche à une
+ * campagne, cf. linkCharacterToMembership) — PAS `presentInCampaigns`, qui n'est
+ * jamais renseigné (champ réservé, toujours `[]`) et affichait donc à tort
+ * « aucune campagne » même pour une fiche liée. Tant qu'aucune campagne n'est
+ * liée → placeholder « aucune campagne » ; une fois liée → placeholder « aperçu
+ * bientôt » (la carte compagnons riche — avatar, PV, rôle — reste différée).
  */
 export function PartyStrip({ character }: PartyStripProps): JSX.Element {
-  const hasCampaign = character.presentInCampaigns.length > 0;
+  const hasCampaign = character.homeCampaignId != null;
   return (
     <Card>
       <CardHeader>

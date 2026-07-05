@@ -41,6 +41,16 @@ export type StringKey =
   | 'ability.int'
   | 'ability.sag'
   | 'ability.cha'
+  // Alignements (2 axes : loi/chaos × bien/mal)
+  | 'alignment.LB'
+  | 'alignment.NB'
+  | 'alignment.CB'
+  | 'alignment.LN'
+  | 'alignment.N'
+  | 'alignment.CN'
+  | 'alignment.LM'
+  | 'alignment.NM'
+  | 'alignment.CM'
   // Rareté magique
   | 'rarity.common'
   | 'rarity.uncommon'
@@ -2726,6 +2736,15 @@ const STRINGS: Record<Locale, Dict> = {
     'ability.int': 'Intelligence',
     'ability.sag': 'Sagesse',
     'ability.cha': 'Charisme',
+    'alignment.LB': 'Loyal Bon',
+    'alignment.NB': 'Neutre Bon',
+    'alignment.CB': 'Chaotique Bon',
+    'alignment.LN': 'Loyal Neutre',
+    'alignment.N': 'Neutre',
+    'alignment.CN': 'Chaotique Neutre',
+    'alignment.LM': 'Loyal Mauvais',
+    'alignment.NM': 'Neutre Mauvais',
+    'alignment.CM': 'Chaotique Mauvais',
     // Rarities
     'rarity.common': 'Commun',
     'rarity.uncommon': 'Peu commun',
@@ -6032,6 +6051,15 @@ const STRINGS: Record<Locale, Dict> = {
     'ability.int': 'Intelligence',
     'ability.sag': 'Wisdom',
     'ability.cha': 'Charisma',
+    'alignment.LB': 'Lawful Good',
+    'alignment.NB': 'Neutral Good',
+    'alignment.CB': 'Chaotic Good',
+    'alignment.LN': 'Lawful Neutral',
+    'alignment.N': 'Neutral',
+    'alignment.CN': 'Chaotic Neutral',
+    'alignment.LM': 'Lawful Evil',
+    'alignment.NM': 'Neutral Evil',
+    'alignment.CM': 'Chaotic Evil',
     'rarity.common': 'Common',
     'rarity.uncommon': 'Uncommon',
     'rarity.rare': 'Rare',

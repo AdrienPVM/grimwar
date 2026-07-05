@@ -5,7 +5,7 @@ import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize, t } from '@/shared/lib/i18n';
+import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import { linkCharacterToMembership } from '@/shared/lib/services/campaigns';
 import {
   abilityModifier,
@@ -25,13 +25,25 @@ import { finishCharacterCreation } from '../finish-creation';
 import { submitFromWizard } from '../submit-from-wizard';
 import { StepIntro } from '../help/help-panel';
 
-const ABILITY_LABEL: Record<AbilityCode, string> = {
-  for: 'Force',
-  dex: 'Dextérité',
-  con: 'Constitution',
-  int: 'Intelligence',
-  sag: 'Sagesse',
-  cha: 'Charisme',
+const ABILITY_KEY: Record<AbilityCode, StringKey> = {
+  for: 'ability.for',
+  dex: 'ability.dex',
+  con: 'ability.con',
+  int: 'ability.int',
+  sag: 'ability.sag',
+  cha: 'ability.cha',
+};
+
+const ALIGNMENT_KEY: Record<string, StringKey> = {
+  LB: 'alignment.LB',
+  NB: 'alignment.NB',
+  CB: 'alignment.CB',
+  LN: 'alignment.LN',
+  N: 'alignment.N',
+  CN: 'alignment.CN',
+  LM: 'alignment.LM',
+  NM: 'alignment.NM',
+  CM: 'alignment.CM',
 };
 
 export function RecapStep(): JSX.Element {
@@ -177,7 +189,7 @@ export function RecapStep(): JSX.Element {
             const m = abilityModifier(v);
             return (
               <li key={code} className="flex items-center justify-between gap-2 text-text">
-                <span className="text-text-tertiary">{ABILITY_LABEL[code]}</span>
+                <span className="text-text-tertiary">{t(ABILITY_KEY[code])}</span>
                 <span className="text-text">{v} ({m >= 0 ? `+${m}` : m})</span>
               </li>
             );
@@ -279,16 +291,6 @@ function hpAtLevel1(cls: ClassEntity, conMod: number, _totalLevel: number): numb
 }
 
 function alignmentLabel(a: string): string {
-  const map: Record<string, string> = {
-    LB: 'loyal bon',
-    NB: 'neutre bon',
-    CB: 'chaotique bon',
-    LN: 'loyal neutre',
-    N: 'neutre',
-    CN: 'chaotique neutre',
-    LM: 'loyal mauvais',
-    NM: 'neutre mauvais',
-    CM: 'chaotique mauvais',
-  };
-  return map[a] ?? a;
+  const key = ALIGNMENT_KEY[a];
+  return key ? t(key) : a;
 }
