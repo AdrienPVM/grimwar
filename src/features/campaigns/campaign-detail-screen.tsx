@@ -15,6 +15,7 @@ import type { Campaign, Membership } from '@/shared/types/campaign';
 
 import { CampaignEventFeed } from './campaign-event-feed';
 import { CampaignMemberItem } from './campaign-member-item';
+import { CampaignSettingsModal } from './campaign-settings-modal';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
@@ -70,6 +71,7 @@ export function CampaignDetailScreen(): JSX.Element {
   const { campaign, members, isLoading, error, refresh } = useCampaign(cid);
 
   const [leaveOpen, setLeaveOpen] = useState<boolean>(false);
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [promoteTarget, setPromoteTarget] = useState<PromoteTarget | null>(null);
 
   const isGm = useMemo<boolean>(() => {
@@ -191,6 +193,15 @@ export function CampaignDetailScreen(): JSX.Element {
             </Button>
             {isGm ? (
               <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSettingsOpen(true)}
+                  tooltip={t('campaigns.tip.openSettings')}
+                >
+                  {t('campaigns.detail.settingsCta')}
+                </Button>
                 <Button
                   type="button"
                   variant="secondary"
@@ -353,6 +364,14 @@ export function CampaignDetailScreen(): JSX.Element {
           refresh();
         }}
       />
+
+      {settingsOpen && isGm ? (
+        <CampaignSettingsModal
+          campaign={campaign}
+          onClose={() => setSettingsOpen(false)}
+          onSaved={refresh}
+        />
+      ) : null}
     </>
   );
 }

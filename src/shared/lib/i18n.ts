@@ -953,6 +953,27 @@ export type StringKey =
   | 'campaigns.detail.journalCta'
   | 'campaigns.detail.handoutsCta'
   | 'campaigns.detail.mapsCta'
+  | 'campaigns.detail.settingsCta'
+  // Réglages de campagne (nom / mode de dés / variantes 5e)
+  | 'campaigns.settings.title'
+  | 'campaigns.settings.intro'
+  | 'campaigns.settings.close'
+  | 'campaigns.settings.cancel'
+  | 'campaigns.settings.save'
+  | 'campaigns.settings.saving'
+  | 'campaigns.settings.error.generic'
+  | 'campaigns.settings.dice.title'
+  | 'campaigns.settings.dice.hint'
+  | 'campaigns.settings.variants.title'
+  | 'campaigns.settings.variants.hint'
+  | 'campaigns.settings.variants.featAtLevel1.label'
+  | 'campaigns.settings.variants.featAtLevel1.desc'
+  | 'campaigns.settings.variants.flanking.label'
+  | 'campaigns.settings.variants.flanking.desc'
+  | 'campaigns.settings.variants.slowHealing.label'
+  | 'campaigns.settings.variants.slowHealing.desc'
+  | 'campaigns.settings.variants.grittyRealism.label'
+  | 'campaigns.settings.variants.grittyRealism.desc'
   // Handouts MJ→joueur — plan 27
   | 'handouts.toast.title'
   | 'handouts.screen.back'
@@ -2276,6 +2297,7 @@ export type StringKey =
   | 'campaigns.tip.openSessions'
   | 'campaigns.tip.openEncounters'
   | 'campaigns.tip.openMaps'
+  | 'campaigns.tip.openSettings'
   | 'campaigns.tip.promoteGm'
   | 'campaigns.tip.copyInviteCode'
   | 'campaigns.tip.linkCharacter'
@@ -3903,6 +3925,34 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Documents',
     'campaigns.detail.mapsCta': 'Cartes',
+    'campaigns.detail.settingsCta': 'Réglages',
+    'campaigns.settings.title': 'Réglages de la campagne',
+    'campaigns.settings.intro':
+      'Ajuste le nom, le mode de dés de la table et les règles optionnelles. Ces choix s’appliquent à toute la campagne.',
+    'campaigns.settings.close': 'Fermer les réglages',
+    'campaigns.settings.cancel': 'Annuler',
+    'campaigns.settings.save': 'Enregistrer',
+    'campaigns.settings.saving': 'Enregistrement…',
+    'campaigns.settings.error.generic':
+      'Les réglages n’ont pas pu être enregistrés. Réessaie.',
+    'campaigns.settings.dice.title': 'Mode de dés de la table',
+    'campaigns.settings.dice.hint':
+      'Le mode par défaut de cette table. Chaque joueur peut le suivre ou choisir le sien dans son compte.',
+    'campaigns.settings.variants.title': 'Variantes 5e',
+    'campaigns.settings.variants.hint':
+      'Règles optionnelles appliquées à toute la table. Désactivées par défaut.',
+    'campaigns.settings.variants.featAtLevel1.label': 'Don au niveau 1',
+    'campaigns.settings.variants.featAtLevel1.desc':
+      'Chaque personnage gagne un don supplémentaire à la création.',
+    'campaigns.settings.variants.flanking.label': 'Prise en tenaille',
+    'campaigns.settings.variants.flanking.desc':
+      'Deux adversaires de part et d’autre d’une créature obtiennent l’avantage au corps à corps.',
+    'campaigns.settings.variants.slowHealing.label': 'Guérison naturelle lente',
+    'campaigns.settings.variants.slowHealing.desc':
+      'Un repos long ne rend plus tous les PV : on récupère en dépensant ses dés de vie.',
+    'campaigns.settings.variants.grittyRealism.label': 'Réalisme rugueux',
+    'campaigns.settings.variants.grittyRealism.desc':
+      'Repos court de 8 heures, repos long de 7 jours.',
     // Handouts MJ→joueur — plan 27
     'handouts.toast.title': 'Le MJ vous a transmis un document',
     'handouts.screen.back': 'Retour à la campagne',
@@ -5502,6 +5552,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.openSessions': 'Ouvrir la liste des séances de jeu.',
     'campaigns.tip.openEncounters': 'Ouvrir la liste des rencontres de combat.',
     'campaigns.tip.openMaps': 'Ouvrir le mode carte de la campagne.',
+    'campaigns.tip.openSettings':
+      'Modifier le nom, le mode de dés et les variantes 5e de la table.',
     'campaigns.tip.promoteGm': 'Donner à ce joueur les pleins pouvoirs de meneur.',
     'campaigns.tip.copyInviteCode': 'Copier le code d’invitation dans le presse-papiers.',
     'campaigns.tip.linkCharacter': 'Choisir le personnage que vous jouez ici.',
@@ -7062,6 +7114,34 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Handouts',
     'campaigns.detail.mapsCta': 'Maps',
+    'campaigns.detail.settingsCta': 'Settings',
+    'campaigns.settings.title': 'Campaign settings',
+    'campaigns.settings.intro':
+      'Adjust the name, the table’s dice mode and optional rules. These choices apply to the whole campaign.',
+    'campaigns.settings.close': 'Close settings',
+    'campaigns.settings.cancel': 'Cancel',
+    'campaigns.settings.save': 'Save',
+    'campaigns.settings.saving': 'Saving…',
+    'campaigns.settings.error.generic':
+      'Settings could not be saved. Try again.',
+    'campaigns.settings.dice.title': 'Table dice mode',
+    'campaigns.settings.dice.hint':
+      'The table’s default mode. Each player can follow it or pick their own in their account.',
+    'campaigns.settings.variants.title': '5e variants',
+    'campaigns.settings.variants.hint':
+      'Optional rules applied to the whole table. Off by default.',
+    'campaigns.settings.variants.featAtLevel1.label': 'Feat at level 1',
+    'campaigns.settings.variants.featAtLevel1.desc':
+      'Every character gains one extra feat at creation.',
+    'campaigns.settings.variants.flanking.label': 'Flanking',
+    'campaigns.settings.variants.flanking.desc':
+      'Two foes on opposite sides of a creature gain advantage on melee attacks.',
+    'campaigns.settings.variants.slowHealing.label': 'Slow natural healing',
+    'campaigns.settings.variants.slowHealing.desc':
+      'A long rest no longer restores all HP: you recover by spending hit dice.',
+    'campaigns.settings.variants.grittyRealism.label': 'Gritty realism',
+    'campaigns.settings.variants.grittyRealism.desc':
+      'Short rest is 8 hours, long rest is 7 days.',
     // Handouts DM→player — plan 27
     'handouts.toast.title': 'The DM sent you a handout',
     'handouts.screen.back': 'Back to campaign',
@@ -8570,6 +8650,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.openSessions': 'Open the list of game sessions.',
     'campaigns.tip.openEncounters': 'Open the list of combat encounters.',
     'campaigns.tip.openMaps': 'Open the campaign’s map mode.',
+    'campaigns.tip.openSettings':
+      'Edit the table’s name, dice mode and 5e variants.',
     'campaigns.tip.promoteGm': 'Grant this player full game master authority.',
     'campaigns.tip.copyInviteCode': 'Copy the invite code to the clipboard.',
     'campaigns.tip.linkCharacter': 'Choose the character you play here.',
