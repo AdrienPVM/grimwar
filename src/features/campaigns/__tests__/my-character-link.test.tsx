@@ -51,11 +51,33 @@ function renderSection(currentCharacterId: string | null): void {
 }
 
 describe('<MyCharacterLink>', () => {
-  it('aucune fiche liée → message « Aucun personnage lié » + CTA Lier', () => {
+  it('aucune fiche liée, aucune fiche existante → CTA « Créer un personnage » seul', () => {
+    // 0 fiche : le picker « Lier un existant » serait vide → masqué. Seul le
+    // chemin guidé « Créer un personnage » est proposé.
     renderSection(null);
     expect(screen.getByText(/Aucun personnage lié/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /Lier un personnage/i }),
+      screen.getByRole('button', { name: /Créer un personnage/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Lier un existant/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('clic sur « Créer un personnage » navigue vers /create?campaignId=', () => {
+    renderSection(null);
+    fireEvent.click(screen.getByRole('button', { name: /Créer un personnage/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/create?campaignId=c-1');
+  });
+
+  it('aucune fiche liée mais des fiches existent → « Créer » ET « Lier un existant »', () => {
+    charactersHolder.characters = [{ id: 'char-1', name: 'Aria', totalLevel: 2 }];
+    renderSection(null);
+    expect(
+      screen.getByRole('button', { name: /Créer un personnage/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Lier un existant/i }),
     ).toBeInTheDocument();
   });
 
@@ -102,13 +124,13 @@ describe('<MyCharacterLink>', () => {
     expect(screen.getByText(/introuvable/i)).toBeInTheDocument();
   });
 
-  it('clic sur le CTA ouvre la modale de liaison', () => {
+  it('clic sur « Lier un existant » ouvre la modale de liaison', () => {
     charactersHolder.characters = [
       { id: 'char-9', name: 'Lyra', totalLevel: 4 },
     ];
     renderSection(null);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Lier un personnage/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Lier un existant/i }));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

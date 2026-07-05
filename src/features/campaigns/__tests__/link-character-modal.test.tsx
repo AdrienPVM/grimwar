@@ -13,6 +13,13 @@ vi.mock('@/shared/lib/services/campaigns', () => ({
     linkMock(cid, uid, charId),
 }));
 
+// useNavigate — spy (l'empty state propose « Créer un personnage »).
+const navigateMock = vi.fn();
+vi.mock('react-router-dom', async (importActual) => {
+  const actual = await importActual<typeof import('react-router-dom')>();
+  return { ...actual, useNavigate: () => navigateMock };
+});
+
 import { LinkCharacterModal } from '../link-character-modal';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -96,6 +103,7 @@ afterEach(() => {
   linkMock.mockReset();
   onClose.mockReset();
   onLinked.mockReset();
+  navigateMock.mockReset();
 });
 
 interface RenderOpts {

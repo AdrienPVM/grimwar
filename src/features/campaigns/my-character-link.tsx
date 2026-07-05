@@ -71,28 +71,57 @@ export function MyCharacterLink({
           )}
         </div>
         <div className="flex flex-shrink-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
-          {linked ? (
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(`/character/${linked.id}`)}
-              tooltip={t('campaigns.tip.openOwnSheet')}
-            >
-              {t('campaigns.detail.myCharacter.open')}
-            </Button>
-          ) : null}
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={() => setOpen(true)}
-            tooltip={t('campaigns.tip.linkCharacter')}
-          >
-            {currentCharacterId === null
-              ? t('campaigns.detail.myCharacter.link')
-              : t('campaigns.detail.myCharacter.change')}
-          </Button>
+          {currentCharacterId === null ? (
+            <>
+              {/* Chemin guidé : créer un perso qui se lie tout seul à la campagne
+                  (cf. wizard `?campaignId=`). Évite le détour biblio → retour. */}
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={() => navigate(`/create?campaignId=${campaignId}`)}
+                tooltip={t('campaigns.tip.createCharacter')}
+              >
+                {t('campaigns.detail.myCharacter.create')}
+              </Button>
+              {/* Lier un perso EXISTANT — masqué tant que le joueur n'en a aucun
+                  (le picker serait vide). */}
+              {!isLoading && characters.length > 0 ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setOpen(true)}
+                  tooltip={t('campaigns.tip.linkCharacter')}
+                >
+                  {t('campaigns.detail.myCharacter.linkExisting')}
+                </Button>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {linked ? (
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => navigate(`/character/${linked.id}`)}
+                  tooltip={t('campaigns.tip.openOwnSheet')}
+                >
+                  {t('campaigns.detail.myCharacter.open')}
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setOpen(true)}
+                tooltip={t('campaigns.tip.linkCharacter')}
+              >
+                {t('campaigns.detail.myCharacter.change')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

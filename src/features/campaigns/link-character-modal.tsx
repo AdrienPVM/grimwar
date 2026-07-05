@@ -1,4 +1,5 @@
 import { useId, useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
@@ -47,6 +48,7 @@ export function LinkCharacterModal({
   onClose,
   onLinked,
 }: Props): JSX.Element {
+  const navigate = useNavigate();
   const titleId = useId();
   const [selected, setSelected] = useState<string | null>(currentCharacterId);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -104,9 +106,23 @@ export function LinkCharacterModal({
             {t('campaigns.linkCharacter.loading')}
           </p>
         ) : characters.length === 0 ? (
-          <p className="text-center font-serif text-body-sm italic text-text-secondary">
-            {t('campaigns.linkCharacter.empty')}
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-center font-serif text-body-sm italic text-text-secondary">
+              {t('campaigns.linkCharacter.empty')}
+            </p>
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              onClick={() => {
+                navigate(`/create?campaignId=${campaignId}`);
+                onClose();
+              }}
+              tooltip={t('campaigns.tip.createCharacter')}
+            >
+              {t('campaigns.detail.myCharacter.create')}
+            </Button>
+          </div>
         ) : (
           <ul
             role="radiogroup"

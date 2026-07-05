@@ -1,4 +1,5 @@
 import { useEffect, useMemo, type JSX } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
 import { GlassPanel } from '@/shared/components/glass-panel';
@@ -56,6 +57,11 @@ export function WizardScreen(): JSX.Element {
   const draft = useWizardStore((s) => s.draft);
   const goToStep = useWizardStore((s) => s.goToStep);
   const visitedSteps = useWizardStore((s) => s.visitedSteps);
+
+  // Création « en campagne » (`?campaignId=`) : bannière de réassurance — la
+  // fiche sera liée automatiquement à la fin (cf. RecapStep).
+  const [searchParams] = useSearchParams();
+  const inCampaign = searchParams.get('campaignId') !== null;
 
   const classesContent = useContent('classes');
 
@@ -127,6 +133,12 @@ export function WizardScreen(): JSX.Element {
           <p className="mt-2 font-serif text-body text-text-secondary">
             {t('wizard.subtitle')}
           </p>
+          {inCampaign ? (
+            <p className="mt-3 inline-flex items-center gap-2 rounded-card-sm border border-gold-dim/40 bg-gold/[0.06] px-3 py-2 font-serif text-body-sm text-gold-bright">
+              <span aria-hidden="true">✦</span>
+              {t('wizard.campaignLink.banner')}
+            </p>
+          ) : null}
           <ProgressBar
             steps={visibleSteps.map((m) => m.id)}
             current={currentStep}

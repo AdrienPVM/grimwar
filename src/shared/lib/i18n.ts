@@ -155,6 +155,7 @@ export type StringKey =
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
+  | 'wizard.campaignLink.banner'
   | 'wizard.step.identity.title'
   | 'wizard.step.class.title'
   | 'wizard.step.ancestry.title'
@@ -942,6 +943,8 @@ export type StringKey =
   | 'campaigns.detail.myCharacter.link'
   | 'campaigns.detail.myCharacter.change'
   | 'campaigns.detail.myCharacter.open'
+  | 'campaigns.detail.myCharacter.create'
+  | 'campaigns.detail.myCharacter.linkExisting'
   | 'campaigns.detail.error.title'
   | 'campaigns.detail.error.body'
   | 'campaigns.detail.error.retry'
@@ -2302,6 +2305,7 @@ export type StringKey =
   | 'campaigns.tip.copyInviteCode'
   | 'campaigns.tip.linkCharacter'
   | 'campaigns.tip.openOwnSheet'
+  | 'campaigns.tip.createCharacter'
   | 'campaigns.tip.editNpc'
   | 'campaigns.tip.deleteNpc'
   | 'campaigns.tip.editRelations'
@@ -2816,6 +2820,8 @@ const STRINGS: Record<Locale, Dict> = {
     'home.hub.campaigns.sub': 'Rejoins ou crée une table.',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
+    'wizard.campaignLink.banner':
+      'À la fin, ce personnage rejoindra automatiquement ta campagne.',
     'wizard.subtitle':
       "On t'accompagne pas à pas. Choisis ce qui te parle, on s'occupe des règles.",
     'wizard.step.identity.title': 'Identité',
@@ -3754,6 +3760,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.myCharacter.link': 'Lier un personnage',
     'campaigns.detail.myCharacter.change': 'Changer',
     'campaigns.detail.myCharacter.open': 'Ouvrir ma fiche',
+    'campaigns.detail.myCharacter.create': 'Créer un personnage',
+    'campaigns.detail.myCharacter.linkExisting': 'Lier un existant',
     'campaigns.detail.error.title': 'Lecture impossible',
     'campaigns.detail.error.body':
       'Impossible de charger cette campagne. Vérifie ta connexion et réessaye.',
@@ -5558,6 +5566,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.copyInviteCode': 'Copier le code d’invitation dans le presse-papiers.',
     'campaigns.tip.linkCharacter': 'Choisir le personnage que vous jouez ici.',
     'campaigns.tip.openOwnSheet': 'Consulter votre fiche de personnage.',
+    'campaigns.tip.createCharacter':
+      'Créer un nouveau personnage, lié automatiquement à cette campagne.',
     'campaigns.tip.editNpc': 'Modifier la fiche de ce personnage non-joueur.',
     'campaigns.tip.deleteNpc': 'Supprimer définitivement ce personnage non-joueur.',
     'campaigns.tip.editRelations': 'Modifier les liens avec les personnages joueurs.',
@@ -6084,6 +6094,8 @@ const STRINGS: Record<Locale, Dict> = {
     'home.hub.codex.sub': 'Spells, items, species, classes…',
     'home.hub.campaigns.sub': 'Join or create a table.',
     'wizard.title': 'Create a character',
+    'wizard.campaignLink.banner':
+      'When you finish, this character will automatically join your campaign.',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",
     'wizard.step.identity.title': 'Identity',
@@ -6945,6 +6957,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.myCharacter.link': 'Link a character',
     'campaigns.detail.myCharacter.change': 'Change',
     'campaigns.detail.myCharacter.open': 'Open my sheet',
+    'campaigns.detail.myCharacter.create': 'Create a character',
+    'campaigns.detail.myCharacter.linkExisting': 'Link an existing one',
     'campaigns.detail.error.title': 'Cannot load',
     'campaigns.detail.error.body':
       'Cannot fetch this campaign. Check your connection and try again.',
@@ -8656,6 +8670,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.copyInviteCode': 'Copy the invite code to the clipboard.',
     'campaigns.tip.linkCharacter': 'Choose the character you play here.',
     'campaigns.tip.openOwnSheet': 'View your character sheet.',
+    'campaigns.tip.createCharacter':
+      'Create a new character, automatically linked to this campaign.',
     'campaigns.tip.editNpc': 'Edit this non-player character’s sheet.',
     'campaigns.tip.deleteNpc': 'Permanently delete this non-player character.',
     'campaigns.tip.editRelations': 'Edit the ties with player characters.',

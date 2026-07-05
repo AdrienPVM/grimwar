@@ -1,11 +1,12 @@
 import { useMemo, useState, type JSX, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { Button } from '@/shared/components/button';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
+import { linkCharacterToMembership } from '@/shared/lib/services/campaigns';
 import {
   abilityModifier,
   ABILITY_ORDER,
@@ -20,6 +21,7 @@ import {
 import type { AbilityCode } from '@/shared/types/character';
 import type { ClassEntity } from '@/shared/types/content';
 
+import { finishCharacterCreation } from '../finish-creation';
 import { submitFromWizard } from '../submit-from-wizard';
 import { StepIntro } from '../help/help-panel';
 
@@ -34,6 +36,11 @@ const ABILITY_LABEL: Record<AbilityCode, string> = {
 
 export function RecapStep(): JSX.Element {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Création « en campagne » : le picker / la section « Mon personnage » ouvre
+  // le wizard avec `?campaignId=`. À la fin, on lie la fiche à la membership du
+  // joueur et on le renvoie sur la campagne, plutôt que sur la fiche seule.
+  const campaignId = searchParams.get('campaignId');
   const { user } = useAuth();
   const draft = useWizardStore((s) => s.draft);
   const goToStep = useWizardStore((s) => s.goToStep);
@@ -93,7 +100,16 @@ export function RecapStep(): JSX.Element {
         title: t('wizard.toast.created.title'),
         sub: draft.name,
       });
-      navigate(`/character/${id}`);
+      // Création normale → fiche ; création « en campagne » (`?campaignId=`) →
+      // liaison auto + retour campagne, avec repli sur la fiche si la liaison
+      // échoue (cf. finishCharacterCreation).
+      await finishCharacterCreation({
+        characterId: id,
+        uid: user.uid,
+        campaignId,
+        link: linkCharacterToMembership,
+        navigate,
+      });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : String(err));
     } finally {
