@@ -8,8 +8,29 @@ import {
   signInWithGoogle,
   signOutCurrentUser,
   signUpWithEmail,
+  type User,
 } from '@/shared/lib/firebase';
 import { useAuthStore } from '@/shared/lib/slices/auth-slice';
+
+/**
+ * Pousse le user Firebase dans le store après une LIAISON de compte.
+ *
+ * Le listener global (`onAuthStateChanged`) ne se déclenche PAS de façon fiable
+ * sur un `linkWithCredential`/`linkWithPopup` (l'uid ne change pas) — sans ça, le
+ * store garderait `isAnonymous: true` et l'UI (carte « Sauvegarder ton compte »,
+ * profil) ne refléterait la liaison qu'après un reload. On synchronise donc à la
+ * main l'unique champ qui bouge côté produit : `isAnonymous` (+ e-mail/nom).
+ */
+function pushUserToStore(u: User): void {
+  useAuthStore.getState().setUser({
+    uid: u.uid,
+    displayName: u.displayName,
+    email: u.email,
+    emailVerified: u.emailVerified,
+    photoURL: u.photoURL,
+    isAnonymous: u.isAnonymous,
+  });
+}
 
 /**
  * Hook unique pour les composants : expose l'utilisateur courant + les actions
@@ -46,10 +67,10 @@ export function useAuth(): {
       await signUpWithEmail(email, password);
     }, []),
     linkToGoogle: useCallback(async () => {
-      await linkAnonymousToGoogle();
+      pushUserToStore(await linkAnonymousToGoogle());
     }, []),
     linkToEmail: useCallback(async (email: string, password: string) => {
-      await linkAnonymousToEmail(email, password);
+      pushUserToStore(await linkAnonymousToEmail(email, password));
     }, []),
     signOut: useCallback(async () => {
       await signOutCurrentUser();

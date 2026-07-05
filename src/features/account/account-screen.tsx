@@ -1,4 +1,4 @@
-import { useState, type JSX } from 'react';
+import { useState, type FormEvent, type JSX } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
@@ -9,6 +9,7 @@ import { GlassPanel } from '@/shared/components/glass-panel';
 import { PageContainer } from '@/shared/components/page-container';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { DiceMode } from '@/shared/lib/rules/dice-mode';
 import { useLocaleStore, type Locale } from '@/shared/lib/slices/locale-slice';
 import {
@@ -69,6 +70,7 @@ export function AccountScreen(): JSX.Element {
           photoURL={user.photoURL}
           isAnonymous={isAnonymous}
         />
+        {isAnonymous ? <LinkAccountCard /> : null}
         <PreferencesCard uid={user.uid} />
         <SignOutCard />
       </div>
@@ -277,6 +279,171 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
           />
         </label>
       </section>
+    </Card>
+  );
+}
+
+/**
+ * Traduit un code d'erreur Firebase Auth en message utilisateur. Les codes non
+ * mappés retombent sur un message générique (jamais de code brut à l'écran).
+ * Exporté pour test unitaire (fonction pure).
+ */
+export function linkErrorMessage(err: unknown): string {
+  const code =
+    typeof err === 'object' && err !== null && 'code' in err
+      ? String((err as { code: unknown }).code)
+      : '';
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return t('account.link.error.emailInUse');
+    case 'auth/credential-already-in-use':
+    case 'auth/provider-already-linked':
+      return t('account.link.error.credentialInUse');
+    case 'auth/weak-password':
+      return t('account.link.error.weakPassword');
+    case 'auth/invalid-email':
+      return t('account.link.error.invalidEmail');
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+    case 'auth/popup-blocked':
+      return t('account.link.error.popupClosed');
+    default:
+      return t('account.link.error.generic');
+  }
+}
+
+const MIN_PASSWORD = 6;
+
+/**
+ * Carte « Sauvegarder ton compte » — visible uniquement pour un utilisateur
+ * anonyme. Comble la voie sans issue signalée par l'audit : le profil invitait
+ * à « lier un compte » sans qu'aucune UI ne le permette, exposant à une perte
+ * de données silencieuse (usage principal = un téléphone hors-ligne).
+ *
+ * Deux voies : Google (popup) et e-mail/mot de passe. `useAuth` pousse le user
+ * lié dans le store après succès → la carte se démonte d'elle-même (isAnonymous
+ * bascule) et le profil se met à jour, sans reload.
+ */
+function LinkAccountCard(): JSX.Element {
+  const { linkToGoogle, linkToEmail } = useAuth();
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [busy, setBusy] = useState<'google' | 'email' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleGoogle(): Promise<void> {
+    if (busy) return;
+    setError(null);
+    setBusy('google');
+    try {
+      await linkToGoogle();
+      showToast({ kind: 'info', title: t('account.link.success') });
+    } catch (err) {
+      setError(linkErrorMessage(err));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function handleEmail(e: FormEvent<HTMLFormElement>): Promise<void> {
+    e.preventDefault();
+    if (busy) return;
+    setError(null);
+    if (password.length < MIN_PASSWORD) {
+      setError(t('account.link.error.weakPassword'));
+      return;
+    }
+    setBusy('email');
+    try {
+      await linkToEmail(email.trim(), password);
+      showToast({ kind: 'info', title: t('account.link.success') });
+    } catch (err) {
+      setError(linkErrorMessage(err));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const inputClass = cn(
+    'w-full rounded-card-sm border border-white-8 bg-bg-3/40 px-3 py-2',
+    'font-serif text-body text-text placeholder:text-text-tertiary',
+    'focus:border-gold-bright focus:outline-none focus:ring-1 focus:ring-gold-bright/40',
+    'transition-colors duration-200 ease-base disabled:opacity-50',
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <h3>{t('account.link.title')}</h3>
+      </CardHeader>
+      <p className="font-serif text-body-sm text-text-secondary">
+        {t('account.link.hint')}
+      </p>
+
+      <Button
+        variant="secondary"
+        size="md"
+        onClick={() => void handleGoogle()}
+        disabled={busy !== null}
+        className="mt-4 w-full"
+      >
+        {busy === 'google' ? t('account.link.linking') : t('account.link.google')}
+      </Button>
+
+      <div className="my-4 flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-white-8" />
+        <span className="font-title text-[10px] uppercase tracking-[0.2em] text-text-tertiary">
+          {t('account.link.or')}
+        </span>
+        <span className="h-px flex-1 bg-white-8" />
+      </div>
+
+      <form onSubmit={(e) => void handleEmail(e)} className="flex flex-col gap-3">
+        <label className="flex flex-col gap-1">
+          <span className="font-title text-[10px] font-bold uppercase tracking-[0.2em] text-text-tertiary">
+            {t('account.link.emailLabel')}
+          </span>
+          <input
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t('account.link.emailPlaceholder')}
+            disabled={busy !== null}
+            className={inputClass}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="font-title text-[10px] font-bold uppercase tracking-[0.2em] text-text-tertiary">
+            {t('account.link.passwordLabel')}
+          </span>
+          <input
+            type="password"
+            autoComplete="new-password"
+            required
+            minLength={MIN_PASSWORD}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t('account.link.passwordPlaceholder')}
+            disabled={busy !== null}
+            className={inputClass}
+          />
+        </label>
+
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-card-sm border border-crimson/40 bg-crimson/[0.08] px-3 py-2 font-serif text-body-sm text-crimson"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        <Button type="submit" variant="primary" size="md" disabled={busy !== null}>
+          {busy === 'email' ? t('account.link.linking') : t('account.link.emailCta')}
+        </Button>
+      </form>
     </Card>
   );
 }

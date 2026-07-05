@@ -9,7 +9,7 @@ import {
   useUserSettingsStore,
 } from '@/shared/lib/slices/user-settings-slice';
 
-import { AccountScreen } from '../account-screen';
+import { AccountScreen, linkErrorMessage } from '../account-screen';
 
 /**
  * Écran « Mon compte » (amorce plan 35). Vérifie le profil (signé / anonyme),
@@ -24,10 +24,14 @@ vi.mock('react-router-dom', async (importActual) => {
 });
 
 const signOut = vi.fn(async () => {});
+const linkToGoogle = vi.fn(async () => {});
+const linkToEmail = vi.fn(async () => {});
 const mockAuth = {
   user: null as { uid: string; displayName: string | null; email: string | null; photoURL: string | null; isAnonymous: boolean } | null,
   isAnonymous: false,
   signOut,
+  linkToGoogle,
+  linkToEmail,
 };
 vi.mock('@/features/auth/use-auth', () => ({ useAuth: () => mockAuth }));
 
@@ -126,5 +130,71 @@ describe('AccountScreen', () => {
     mockAuth.user = null;
     render(<AccountScreen />);
     expect(screen.getByRole('heading', { name: 'Mon compte' })).toBeInTheDocument();
+  });
+});
+
+describe('AccountScreen — liaison de compte (invité)', () => {
+  it('utilisateur signé : PAS de carte « Sauvegarder ton compte »', () => {
+    render(<AccountScreen />);
+    expect(
+      screen.queryByRole('heading', { name: /Sauvegarder ton compte/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('invité : carte de liaison visible avec Google + e-mail', () => {
+    mockAuth.user = { ...SIGNED_USER, isAnonymous: true };
+    mockAuth.isAnonymous = true;
+    render(<AccountScreen />);
+    expect(
+      screen.getByRole('heading', { name: /Sauvegarder ton compte/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Continuer avec Google/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Lier avec un e-mail/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('clic « Continuer avec Google » → appelle linkToGoogle', () => {
+    mockAuth.user = { ...SIGNED_USER, isAnonymous: true };
+    mockAuth.isAnonymous = true;
+    render(<AccountScreen />);
+    fireEvent.click(screen.getByRole('button', { name: /Continuer avec Google/i }));
+    expect(linkToGoogle).toHaveBeenCalledOnce();
+  });
+
+  it('form e-mail valide → appelle linkToEmail avec e-mail + mot de passe', () => {
+    mockAuth.user = { ...SIGNED_USER, isAnonymous: true };
+    mockAuth.isAnonymous = true;
+    render(<AccountScreen />);
+    fireEvent.change(screen.getByLabelText(/Adresse e-mail/i), {
+      target: { value: 'nouveau@grimwar.test' },
+    });
+    fireEvent.change(screen.getByLabelText(/Mot de passe/i), {
+      target: { value: 'secret123' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Lier avec un e-mail/i }));
+    expect(linkToEmail).toHaveBeenCalledWith('nouveau@grimwar.test', 'secret123');
+  });
+});
+
+describe('linkErrorMessage', () => {
+  it('mappe les codes Firebase connus', () => {
+    expect(linkErrorMessage({ code: 'auth/email-already-in-use' })).toMatch(
+      /déjà utilisée/i,
+    );
+    expect(linkErrorMessage({ code: 'auth/weak-password' })).toMatch(
+      /6 caractères/i,
+    );
+    expect(linkErrorMessage({ code: 'auth/popup-closed-by-user' })).toMatch(
+      /fenêtre Google/i,
+    );
+  });
+
+  it('code inconnu ou non-objet → message générique', () => {
+    expect(linkErrorMessage({ code: 'auth/unknown' })).toMatch(/n’a pas abouti/i);
+    expect(linkErrorMessage('boom')).toMatch(/n’a pas abouti/i);
+    expect(linkErrorMessage(null)).toMatch(/n’a pas abouti/i);
   });
 });

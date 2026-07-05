@@ -148,6 +148,24 @@ export type StringKey =
   | 'account.signOut'
   | 'account.signOutConfirm'
   | 'account.cancel'
+  // Liaison de compte (invité → Google / e-mail)
+  | 'account.link.title'
+  | 'account.link.hint'
+  | 'account.link.google'
+  | 'account.link.or'
+  | 'account.link.emailLabel'
+  | 'account.link.emailPlaceholder'
+  | 'account.link.passwordLabel'
+  | 'account.link.passwordPlaceholder'
+  | 'account.link.emailCta'
+  | 'account.link.linking'
+  | 'account.link.success'
+  | 'account.link.error.emailInUse'
+  | 'account.link.error.credentialInUse'
+  | 'account.link.error.weakPassword'
+  | 'account.link.error.invalidEmail'
+  | 'account.link.error.popupClosed'
+  | 'account.link.error.generic'
   // Accueil — hub de navigation
   | 'home.hub.title'
   | 'home.hub.codex.sub'
@@ -2814,6 +2832,28 @@ const STRINGS: Record<Locale, Dict> = {
     'account.signOut': 'Se déconnecter',
     'account.signOutConfirm': 'Confirmer la déconnexion',
     'account.cancel': 'Annuler',
+    'account.link.title': 'Sauvegarder ton compte',
+    'account.link.hint':
+      'Tu joues en tant qu’invité : tes personnages et campagnes ne vivent que sur cet appareil. Lie un compte pour les retrouver ailleurs et ne rien perdre.',
+    'account.link.google': 'Continuer avec Google',
+    'account.link.or': 'ou',
+    'account.link.emailLabel': 'Adresse e-mail',
+    'account.link.emailPlaceholder': 'toi@exemple.fr',
+    'account.link.passwordLabel': 'Mot de passe',
+    'account.link.passwordPlaceholder': '6 caractères minimum',
+    'account.link.emailCta': 'Lier avec un e-mail',
+    'account.link.linking': 'Liaison…',
+    'account.link.success': 'Compte lié. Tes données sont désormais sauvegardées.',
+    'account.link.error.emailInUse':
+      'Cette adresse e-mail est déjà utilisée par un autre compte.',
+    'account.link.error.credentialInUse':
+      'Ce compte est déjà lié à un autre profil.',
+    'account.link.error.weakPassword':
+      'Le mot de passe doit contenir au moins 6 caractères.',
+    'account.link.error.invalidEmail': 'Adresse e-mail invalide.',
+    'account.link.error.popupClosed':
+      'La fenêtre Google s’est fermée avant la fin. Réessaie.',
+    'account.link.error.generic': 'La liaison n’a pas abouti. Réessaie.',
     // Accueil — hub de navigation
     'home.hub.title': 'Explorer',
     'home.hub.codex.sub': 'Sorts, objets, espèces, classes…',
@@ -6090,6 +6130,28 @@ const STRINGS: Record<Locale, Dict> = {
     'account.signOut': 'Sign out',
     'account.signOutConfirm': 'Confirm sign-out',
     'account.cancel': 'Cancel',
+    'account.link.title': 'Save your account',
+    'account.link.hint':
+      'You are playing as a guest: your characters and campaigns live only on this device. Link an account to find them elsewhere and lose nothing.',
+    'account.link.google': 'Continue with Google',
+    'account.link.or': 'or',
+    'account.link.emailLabel': 'Email address',
+    'account.link.emailPlaceholder': 'you@example.com',
+    'account.link.passwordLabel': 'Password',
+    'account.link.passwordPlaceholder': '6 characters minimum',
+    'account.link.emailCta': 'Link with email',
+    'account.link.linking': 'Linking…',
+    'account.link.success': 'Account linked. Your data is now saved.',
+    'account.link.error.emailInUse':
+      'This email is already used by another account.',
+    'account.link.error.credentialInUse':
+      'This account is already linked to another profile.',
+    'account.link.error.weakPassword':
+      'Password must be at least 6 characters.',
+    'account.link.error.invalidEmail': 'Invalid email address.',
+    'account.link.error.popupClosed':
+      'The Google window closed before finishing. Try again.',
+    'account.link.error.generic': 'Linking failed. Try again.',
     'home.hub.title': 'Explore',
     'home.hub.codex.sub': 'Spells, items, species, classes…',
     'home.hub.campaigns.sub': 'Join or create a table.',
