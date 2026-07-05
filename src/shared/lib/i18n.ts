@@ -158,6 +158,10 @@ export type StringKey =
   | 'account.signOut'
   | 'account.signOutConfirm'
   | 'account.cancel'
+  // Rappel « sauvegarde ton compte » (bandeau anonyme, hors écran Compte)
+  | 'auth.nudge.title'
+  | 'auth.nudge.body'
+  | 'auth.nudge.cta'
   // Liaison de compte (invité → Google / e-mail)
   | 'account.link.title'
   | 'account.link.hint'
@@ -853,6 +857,7 @@ export type StringKey =
   | 'library.title'
   | 'library.subtitle'
   | 'library.cta.create'
+  | 'library.cta.join'
   | 'library.empty.title'
   | 'library.empty.body'
   | 'library.error.title'
@@ -952,6 +957,8 @@ export type StringKey =
   | 'campaigns.detail.invite.linkCopied'
   | 'campaigns.detail.invite.shareTitle'
   | 'campaigns.detail.invite.help'
+  | 'campaigns.detail.invite.firstStepTitle'
+  | 'campaigns.detail.invite.firstStepBody'
   | 'campaigns.detail.roster.aria'
   | 'campaigns.detail.roster.title'
   | 'campaigns.detail.dmTools.title'
@@ -2855,6 +2862,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.signOut': 'Se déconnecter',
     'account.signOutConfirm': 'Confirmer la déconnexion',
     'account.cancel': 'Annuler',
+    'auth.nudge.title': 'Sauvegarde ton compte',
+    'auth.nudge.body':
+      'Ton compte est provisoire. Lie-le à Google ou à un e-mail pour ne pas perdre tes personnages ni tes campagnes si tu changes d’appareil.',
+    'auth.nudge.cta': 'Sécuriser mon compte',
     'account.link.title': 'Sauvegarder ton compte',
     'account.link.hint':
       'Tu joues en tant qu’invité : tes personnages et campagnes ne vivent que sur cet appareil. Lie un compte pour les retrouver ailleurs et ne rien perdre.',
@@ -3685,6 +3696,7 @@ const STRINGS: Record<Locale, Dict> = {
     'library.title': 'Bibliothèque',
     'library.subtitle': 'Tes héros et héroïnes',
     'library.cta.create': 'Créer un personnage',
+    'library.cta.join': 'Rejoindre une campagne',
     'library.empty.title': 'Aucun héros pour l’instant',
     'library.empty.body':
       "Crée ton premier personnage pour commencer l'aventure. Une fiche, une voix, un nom à graver sur le grimoire.",
@@ -3803,6 +3815,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.shareTitle': 'Rejoins ma campagne GrimWar',
     'campaigns.detail.invite.help':
       'Toute personne possédant ce code peut rejoindre cette campagne. Partage-le uniquement avec les joueurs invités.',
+    'campaigns.detail.invite.firstStepTitle': 'Invite tes joueurs',
+    'campaigns.detail.invite.firstStepBody':
+      'Ta campagne est prête. Partage le lien ou dicte le code autour de la table : chaque joueur rejoint, puis crée ou lie son personnage. Tu les verras apparaître ici dans la compagnie.',
     'campaigns.detail.roster.aria': 'Membres de la campagne',
     'campaigns.detail.roster.title': 'La compagnie',
     'campaigns.detail.dmTools.title': 'Outils du meneur',
@@ -6167,6 +6182,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.signOut': 'Sign out',
     'account.signOutConfirm': 'Confirm sign-out',
     'account.cancel': 'Cancel',
+    'auth.nudge.title': 'Save your account',
+    'auth.nudge.body':
+      'Your account is temporary. Link it to Google or an email so you don’t lose your characters or campaigns if you switch devices.',
+    'auth.nudge.cta': 'Secure my account',
     'account.link.title': 'Save your account',
     'account.link.hint':
       'You are playing as a guest: your characters and campaigns live only on this device. Link an account to find them elsewhere and lose nothing.',
@@ -6925,6 +6944,7 @@ const STRINGS: Record<Locale, Dict> = {
     'library.title': 'Library',
     'library.subtitle': 'Your heroes and heroines',
     'library.cta.create': 'Create a character',
+    'library.cta.join': 'Join a campaign',
     'library.empty.title': 'No heroes yet',
     'library.empty.body':
       'Create your first character to begin the adventure. A sheet, a voice, a name to carve on the grimoire.',
@@ -7036,6 +7056,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.shareTitle': 'Join my GrimWar campaign',
     'campaigns.detail.invite.help':
       'Anyone with this code can join the campaign. Share it only with invited players.',
+    'campaigns.detail.invite.firstStepTitle': 'Invite your players',
+    'campaigns.detail.invite.firstStepBody':
+      'Your campaign is ready. Share the link or read the code aloud around the table: each player joins, then creates or links their character. You will see them appear here in the party.',
     'campaigns.detail.roster.aria': 'Campaign members',
     'campaigns.detail.roster.title': 'The party',
     'campaigns.detail.dmTools.title': 'Game master tools',

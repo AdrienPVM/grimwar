@@ -148,6 +148,16 @@ describe('<LibraryScreen>', () => {
     expect(navigateMock).toHaveBeenCalledWith('/create');
   });
 
+  it("l'empty state offre une voie « Rejoindre une campagne » vers /campaigns/join", () => {
+    // Un nouveau venu invité à une table doit pouvoir rejoindre sans devoir
+    // d'abord créer un personnage — la fiche se crée ensuite dans la campagne.
+    stateHolder.characters = [];
+    renderLibrary();
+    const join = screen.getByRole('button', { name: /Rejoindre une campagne/i });
+    fireEvent.click(join);
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/join');
+  });
+
   it('rend une card par personnage dans la grille', () => {
     stateHolder.characters = [
       mkCharacter({ id: 'c-1', name: 'Aëlys' }),

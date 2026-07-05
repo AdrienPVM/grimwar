@@ -215,7 +215,10 @@ describe('<CreateCampaignModal> via screen', () => {
     expect(createCampaignMock).not.toHaveBeenCalled();
   });
 
-  it('submit avec nom valide → appelle createCampaign + refresh + ferme modale', async () => {
+  it('submit avec nom valide → appelle createCampaign + navigue vers le détail + ferme modale', async () => {
+    // Régression : après création, le MJ est amené sur la campagne fraîchement
+    // créée (`/campaigns/:cid`) plutôt que ramené sur la liste sans repère. Il y
+    // trouve le bloc « Invite tes joueurs » comme prochaine action.
     stateHolder.campaigns = [];
     createCampaignMock.mockResolvedValueOnce({ campaignId: 'new', inviteCode: 'XYZ234' });
     renderScreen();
@@ -232,7 +235,7 @@ describe('<CreateCampaignModal> via screen', () => {
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
-    expect(stateHolder.refresh).toHaveBeenCalled();
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/new');
   });
 
   it('submit avec invite-code-collision-exhausted → message dédié', async () => {

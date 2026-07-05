@@ -1,6 +1,7 @@
 import { useMemo, useState, type JSX } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { AnonymousNudge } from '@/features/auth/anonymous-nudge';
 import { useAuth } from '@/features/auth/use-auth';
 import { QuickNotes } from '@/features/dm-view/quick-notes';
 import { SecretRollButton } from '@/features/dm-view/secret-roll-button';
@@ -88,6 +89,14 @@ export function CampaignDetailScreen(): JSX.Element {
     if (!campaign) return [];
     return buildRoster(campaign, members, user?.uid ?? null);
   }, [campaign, members, user]);
+
+  // Aucun joueur n'a encore rejoint : le roster ne contient que des MJ. Sert à
+  // basculer le bloc invitation en mode « premier pas » (le MJ vient de créer
+  // la campagne et atterrit ici → on l'oriente vers l'invitation des joueurs).
+  const hasPlayers = useMemo<boolean>(
+    () => roster.some((entry) => entry.role === 'member'),
+    [roster],
+  );
 
   // Membership du joueur courant — présente uniquement s'il a rejoint en tant
   // que joueur (doc `members/{uid}`). Un MJ pur (gmIds seul) n'en a pas et ne
@@ -255,15 +264,37 @@ export function CampaignDetailScreen(): JSX.Element {
           ) : null}
         </header>
 
+        {/* Rappel compte anonyme — un joueur qui vient de rejoindre (ou un MJ
+            qui vient de créer) sur un compte invité risque de tout perdre. Le
+            bandeau ne s'affiche que pour les comptes anonymes. */}
+        <AnonymousNudge className="mt-8" />
+
         {isGm ? (
           <section
             className="mt-10"
             aria-label={t('campaigns.detail.invite.aria')}
           >
-            <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
-              {t('campaigns.detail.invite.title')}
-            </h2>
-            <InviteCodeReveal code={campaign.inviteCode} className="mt-4" />
+            {!hasPlayers ? (
+              // Premier pas : la campagne vient d'être créée, aucun joueur n'a
+              // rejoint. On met l'invitation en avant comme prochaine action
+              // évidente, avec un cadre chaleureux plutôt qu'un simple titre.
+              <div className="rounded-card border border-gold-dim/40 bg-gradient-to-b from-gold-bright/[0.06] to-transparent p-6 text-center">
+                <h2 className="font-display text-xl uppercase tracking-[0.18em] text-gold-bright">
+                  {t('campaigns.detail.invite.firstStepTitle')}
+                </h2>
+                <p className="mx-auto mt-3 max-w-[44ch] font-serif text-body-sm italic text-text-secondary">
+                  {t('campaigns.detail.invite.firstStepBody')}
+                </p>
+                <InviteCodeReveal code={campaign.inviteCode} className="mt-5" />
+              </div>
+            ) : (
+              <>
+                <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+                  {t('campaigns.detail.invite.title')}
+                </h2>
+                <InviteCodeReveal code={campaign.inviteCode} className="mt-4" />
+              </>
+            )}
           </section>
         ) : null}
 

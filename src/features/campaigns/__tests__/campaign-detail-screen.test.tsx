@@ -294,6 +294,21 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
   });
 
+  it("campagne sans joueur → bloc invitation en mode « premier pas »", () => {
+    // Un MJ qui vient de créer sa campagne atterrit ici : aucun joueur n'a
+    // rejoint (roster = MJ seul). On lui présente l'invitation comme prochaine
+    // action évidente, avec un cadre chaleureux « Invite tes joueurs ».
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'], inviteCode: 'ABC234' });
+    stateHolder.members = [];
+    renderScreen();
+
+    expect(screen.getByText(/Invite tes joueurs/i)).toBeInTheDocument();
+    // Le titre neutre « Inviter à la table » cède la place au cadre premier pas.
+    expect(screen.queryByText('Inviter à la table')).not.toBeInTheDocument();
+    // Le code reste affiché et copiable dans les deux états.
+    expect(screen.getByText('ABC234')).toBeInTheDocument();
+  });
+
   it('affiche le feed d’activité (JALON 22.3) avec un événement rendu', () => {
     stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
     stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];

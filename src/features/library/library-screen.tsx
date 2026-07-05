@@ -67,14 +67,25 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
           <p className="mx-auto max-w-[36ch] font-serif text-body italic text-text-secondary">
             {t('library.empty.body')}
           </p>
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => navigate('/create')}
-            className="mt-7"
-          >
-            {t('library.cta.create')}
-          </Button>
+          <div className="mt-7 flex flex-col items-stretch gap-3 sm:items-center">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => navigate('/create')}
+            >
+              {t('library.cta.create')}
+            </Button>
+            {/* Un nouveau venu invité à une table n'a pas forcément de perso à
+                créer d'abord : il peut rejoindre la campagne, puis y créer sa
+                fiche (le flux guidé la liera automatiquement). */}
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/campaigns/join')}
+            >
+              {t('library.cta.join')}
+            </Button>
+          </div>
         </GlassPanel>
         <NavHub className="mt-8" />
       </main>

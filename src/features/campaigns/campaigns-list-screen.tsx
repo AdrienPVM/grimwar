@@ -89,7 +89,7 @@ export function CampaignsListScreen(): JSX.Element {
         <CreateCampaignModal
           open={createOpen}
           onClose={() => setCreateOpen(false)}
-          onCreated={() => refresh()}
+          onCreated={(result) => navigate(`/campaigns/${result.campaignId}`)}
         />
       </>
     );
@@ -142,7 +142,7 @@ export function CampaignsListScreen(): JSX.Element {
       <CreateCampaignModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        onCreated={() => refresh()}
+        onCreated={(result) => navigate(`/campaigns/${result.campaignId}`)}
       />
 
       <LeaveCampaignModal
