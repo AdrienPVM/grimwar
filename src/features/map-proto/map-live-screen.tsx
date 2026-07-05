@@ -1032,6 +1032,14 @@ export function MapLiveScreen(): JSX.Element {
     <main className="mx-auto w-full max-w-[1200px] p-4 sm:p-6">
       <header className="mb-4 border-b border-gold-dim/30 pb-3">
         <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            data-testid="map-live-back"
+            onClick={() => navigate(`/map-proto/cloud/${cid}`)}
+            className="rounded-pill border border-gold-dim/30 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-gold-bright hover:text-gold-bright"
+          >
+            ← {t('map.import.back')}
+          </button>
           <h1 className="font-display text-xl uppercase tracking-[0.18em] text-gold-bright">
             {map.name}
           </h1>

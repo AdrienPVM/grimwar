@@ -1,4 +1,5 @@
 import { useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { useCharactersList } from '@/features/library/use-characters-list';
 import { Button } from '@/shared/components/button';
@@ -32,6 +33,7 @@ export function MyCharacterLink({
   currentCharacterId,
   onChanged,
 }: Props): JSX.Element {
+  const navigate = useNavigate();
   const { characters, isLoading } = useCharactersList();
   const [open, setOpen] = useState<boolean>(false);
 
@@ -68,17 +70,30 @@ export function MyCharacterLink({
             </p>
           )}
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => setOpen(true)}
-          tooltip={t('campaigns.tip.linkCharacter')}
-        >
-          {currentCharacterId === null
-            ? t('campaigns.detail.myCharacter.link')
-            : t('campaigns.detail.myCharacter.change')}
-        </Button>
+        <div className="flex flex-shrink-0 flex-wrap items-center justify-center gap-2 sm:justify-end">
+          {linked ? (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/character/${linked.id}`)}
+              tooltip={t('campaigns.tip.openOwnSheet')}
+            >
+              {t('campaigns.detail.myCharacter.open')}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setOpen(true)}
+            tooltip={t('campaigns.tip.linkCharacter')}
+          >
+            {currentCharacterId === null
+              ? t('campaigns.detail.myCharacter.link')
+              : t('campaigns.detail.myCharacter.change')}
+          </Button>
+        </div>
       </div>
 
       {open ? (

@@ -8,9 +8,14 @@ import { t, type StringKey } from '@/shared/lib/i18n';
 
 /**
  * Hub de navigation de l'accueil : cartes glass vers les grands espaces de
- * l'app (Codex, Campagnes, Vue MJ). Remplace les anciens liens texte discrets
- * par des cibles tap généreuses + iconographie, sans voler la vedette au CTA
- * primaire « Créer un personnage » (qui reste un Button au-dessus).
+ * l'app (Codex, Campagnes). Remplace les anciens liens texte discrets par des
+ * cibles tap généreuses + iconographie, sans voler la vedette au CTA primaire
+ * « Créer un personnage » (qui reste un Button au-dessus).
+ *
+ * « Campagnes » EST le point d'entrée meneur (créer une campagne → l'ouvrir →
+ * outils MJ). L'ancienne carte « Vue MJ » pointait vers le prototype `/dm`
+ * (fiches perso du user, sans contexte campagne) — retirée car trompeuse pour
+ * un nouveau meneur : le vrai tableau du meneur vit dans `/campaigns/:cid`.
  *
  * Rendu sur l'accueil peuplé ET l'empty state — un nouveau venu voit donc le
  * Codex (consultable sans personnage) dès le premier écran.
@@ -26,14 +31,13 @@ interface HubEntry {
 const ENTRIES: readonly HubEntry[] = [
   { to: '/codex', icon: 'i-book', titleKey: 'codex.nav.cta', subKey: 'home.hub.codex.sub' },
   { to: '/campaigns', icon: 'i-shield', titleKey: 'campaigns.title', subKey: 'home.hub.campaigns.sub' },
-  { to: '/dm', icon: 'i-eye', titleKey: 'dm.title', subKey: 'home.hub.dm.sub' },
 ];
 
 export function NavHub({ className }: { className?: string }): JSX.Element {
   const navigate = useNavigate();
   return (
     <nav aria-label={t('home.hub.title')} className={cn('w-full', className)}>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {ENTRIES.map((entry) => (
           <button
             key={entry.to}

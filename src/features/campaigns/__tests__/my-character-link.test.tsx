@@ -14,6 +14,13 @@ vi.mock('@/features/library/use-characters-list', () => ({
   useCharactersList: () => ({ ...charactersHolder, error: null }),
 }));
 
+// useNavigate — spy (le composant navigue vers la fiche du perso lié).
+const navigateMock = vi.fn();
+vi.mock('react-router-dom', async (importActual) => {
+  const actual = await importActual<typeof import('react-router-dom')>();
+  return { ...actual, useNavigate: () => navigateMock };
+});
+
 const linkMock = vi.fn();
 vi.mock('@/shared/lib/services/campaigns', () => ({
   linkCharacterToMembership: (cid: string, uid: string, charId: string | null) =>
@@ -29,6 +36,7 @@ afterEach(() => {
   charactersHolder.isLoading = false;
   linkMock.mockReset();
   onChanged.mockReset();
+  navigateMock.mockReset();
 });
 
 function renderSection(currentCharacterId: string | null): void {
@@ -51,7 +59,7 @@ describe('<MyCharacterLink>', () => {
     ).toBeInTheDocument();
   });
 
-  it('fiche liée et trouvée → nom + niveau + CTA Changer', () => {
+  it('fiche liée et trouvée → nom + niveau + CTA Changer + Ouvrir ma fiche', () => {
     charactersHolder.characters = [
       { id: 'char-9', name: 'Lyra du Crépuscule', totalLevel: 4 },
     ];
@@ -59,6 +67,25 @@ describe('<MyCharacterLink>', () => {
     expect(screen.getByText('Lyra du Crépuscule')).toBeInTheDocument();
     expect(screen.getByText(/Niveau 4/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Changer/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Ouvrir ma fiche/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('clic sur « Ouvrir ma fiche » navigue vers /character/:id', () => {
+    charactersHolder.characters = [
+      { id: 'char-9', name: 'Lyra', totalLevel: 4 },
+    ];
+    renderSection('char-9');
+    fireEvent.click(screen.getByRole('button', { name: /Ouvrir ma fiche/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/character/char-9');
+  });
+
+  it('aucune fiche liée → pas de bouton « Ouvrir ma fiche »', () => {
+    renderSection(null);
+    expect(
+      screen.queryByRole('button', { name: /Ouvrir ma fiche/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('fiche liée mais absente de la liste, encore en chargement → « Chargement du personnage »', () => {

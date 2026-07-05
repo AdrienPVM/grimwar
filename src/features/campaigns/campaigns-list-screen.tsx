@@ -20,10 +20,10 @@ import { useMyCampaigns } from './use-my-campaigns';
  * Liste les campagnes auxquelles le user participe (MJ ou joueur), avec :
  *  - empty state guidé (créer / rejoindre par code),
  *  - bouton « Créer une campagne » → ouvre CreateCampaignModal,
- *  - bouton « Rejoindre par code » — disabled en V1 4.0.4, plein en 4.0.5
- *    (la modale `join-by-code-modal.tsx` arrive avec le détail campagne),
- *  - une carte par campagne avec « Ouvrir » (disabled V1 4.0.4 → 4.0.5)
- *    et « Quitter » avec confirmation.
+ *  - bouton « Rejoindre par code » → navigue vers `/campaigns/join`
+ *    (même cible que l'empty state — un joueur déjà dans une campagne peut
+ *    en rejoindre une seconde),
+ *  - une carte par campagne avec « Ouvrir » et « Quitter » (confirmation).
  *
  * État partagé : `useMyCampaigns()` expose `{ campaigns, isLoading, error,
  * refresh }`. Le `refresh` est appelé après create/leave réussis pour ré-aligner
@@ -132,8 +132,7 @@ export function CampaignsListScreen(): JSX.Element {
           <Button
             variant="secondary"
             size="md"
-            disabled
-            title={t('campaigns.cta.joinSoon')}
+            onClick={() => navigate('/campaigns/join')}
           >
             {t('campaigns.cta.join')}
           </Button>

@@ -185,6 +185,13 @@ export function MapsCloudScreen(): JSX.Element {
     <main className="mx-auto w-full max-w-[960px] p-4 sm:p-6">
       <header className="mb-6 border-b border-gold-dim/30 pb-4">
         <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to={`/campaigns/${cid}`}
+            data-testid="maps-cloud-back"
+            className="rounded-pill border border-gold-dim/30 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-gold-bright hover:text-gold-bright"
+          >
+            ← {t('map.common.backToCampaign')}
+          </Link>
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
             {t('map.cloud.title')}
           </h1>

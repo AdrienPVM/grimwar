@@ -14,6 +14,13 @@ vi.mock('@/features/auth/use-auth', () => ({
   useAuth: () => authHolder,
 }));
 
+// useNavigate — spy, en gardant le reste de react-router-dom (MemoryRouter…).
+const navigateMock = vi.fn();
+vi.mock('react-router-dom', async (importActual) => {
+  const actual = await importActual<typeof import('react-router-dom')>();
+  return { ...actual, useNavigate: () => navigateMock };
+});
+
 // useMyCampaigns — driver via holder mutable.
 const stateHolder: {
   campaigns: Campaign[];
@@ -98,6 +105,7 @@ afterEach(() => {
   authHolder.user = { uid: 'uid-1' };
   createCampaignMock.mockReset();
   leaveCampaignMock.mockReset();
+  navigateMock.mockReset();
 });
 
 function renderScreen(): ReturnType<typeof render> {
@@ -159,6 +167,17 @@ describe('<CampaignsListScreen> — liste avec items', () => {
     const opens = screen.getAllByRole('button', { name: /Ouvrir/i });
     expect(opens.length).toBeGreaterThan(0);
     expect(opens[0]).toBeEnabled();
+  });
+
+  it("le bouton 'Rejoindre par code' est actif et navigue vers /campaigns/join (liste peuplée)", () => {
+    // Régression : un joueur déjà dans une campagne pouvait auparavant se
+    // retrouver bloqué (bouton disabled « Bientôt disponible »).
+    stateHolder.campaigns = [mkCampaign({ id: 'c-1' })];
+    renderScreen();
+    const join = screen.getByRole('button', { name: /Rejoindre par code/i });
+    expect(join).toBeEnabled();
+    fireEvent.click(join);
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/join');
   });
 
   it("clic sur 'Quitter' ouvre la modale de confirmation avec le nom de la campagne", () => {

@@ -152,7 +152,6 @@ export type StringKey =
   | 'home.hub.title'
   | 'home.hub.codex.sub'
   | 'home.hub.campaigns.sub'
-  | 'home.hub.dm.sub'
   // Wizard (plan 05)
   | 'wizard.title'
   | 'wizard.subtitle'
@@ -875,7 +874,6 @@ export type StringKey =
   | 'campaigns.error.retry'
   | 'campaigns.cta.create'
   | 'campaigns.cta.join'
-  | 'campaigns.cta.joinSoon'
   | 'campaigns.card.openSoon'
   | 'campaigns.card.open'
   | 'campaigns.card.leave'
@@ -943,6 +941,7 @@ export type StringKey =
   | 'campaigns.detail.myCharacter.levelPrefix'
   | 'campaigns.detail.myCharacter.link'
   | 'campaigns.detail.myCharacter.change'
+  | 'campaigns.detail.myCharacter.open'
   | 'campaigns.detail.error.title'
   | 'campaigns.detail.error.body'
   | 'campaigns.detail.error.retry'
@@ -2280,6 +2279,7 @@ export type StringKey =
   | 'campaigns.tip.promoteGm'
   | 'campaigns.tip.copyInviteCode'
   | 'campaigns.tip.linkCharacter'
+  | 'campaigns.tip.openOwnSheet'
   | 'campaigns.tip.editNpc'
   | 'campaigns.tip.deleteNpc'
   | 'campaigns.tip.editRelations'
@@ -2318,6 +2318,7 @@ export type StringKey =
   | 'map.common.slugLabel'
   | 'map.common.nameLabel'
   | 'map.common.deletePrefix'
+  | 'map.common.backToCampaign'
   | 'map.badge.prototype'
   | 'map.tv.missingParams'
   | 'map.tv.notFound'
@@ -2791,7 +2792,6 @@ const STRINGS: Record<Locale, Dict> = {
     'home.hub.title': 'Explorer',
     'home.hub.codex.sub': 'Sorts, objets, espèces, classes…',
     'home.hub.campaigns.sub': 'Rejoins ou crée une table.',
-    'home.hub.dm.sub': 'Pilote tes rencontres et ton journal.',
     // Wizard (plan 05)
     'wizard.title': 'Créer un personnage',
     'wizard.subtitle':
@@ -3651,7 +3651,6 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.error.retry': 'Réessayer',
     'campaigns.cta.create': 'Créer une campagne',
     'campaigns.cta.join': 'Rejoindre par code',
-    'campaigns.cta.joinSoon': 'Bientôt disponible',
     'campaigns.card.openSoon': 'Ouverture bientôt',
     'campaigns.card.open': 'Ouvrir',
     'campaigns.card.leave': 'Quitter',
@@ -3732,6 +3731,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.myCharacter.levelPrefix': 'Niveau',
     'campaigns.detail.myCharacter.link': 'Lier un personnage',
     'campaigns.detail.myCharacter.change': 'Changer',
+    'campaigns.detail.myCharacter.open': 'Ouvrir ma fiche',
     'campaigns.detail.error.title': 'Lecture impossible',
     'campaigns.detail.error.body':
       'Impossible de charger cette campagne. Vérifie ta connexion et réessaye.',
@@ -5505,6 +5505,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.promoteGm': 'Donner à ce joueur les pleins pouvoirs de meneur.',
     'campaigns.tip.copyInviteCode': 'Copier le code d’invitation dans le presse-papiers.',
     'campaigns.tip.linkCharacter': 'Choisir le personnage que vous jouez ici.',
+    'campaigns.tip.openOwnSheet': 'Consulter votre fiche de personnage.',
     'campaigns.tip.editNpc': 'Modifier la fiche de ce personnage non-joueur.',
     'campaigns.tip.deleteNpc': 'Supprimer définitivement ce personnage non-joueur.',
     'campaigns.tip.editRelations': 'Modifier les liens avec les personnages joueurs.',
@@ -5545,6 +5546,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.common.slugLabel': 'Identifiant (slug)',
     'map.common.nameLabel': 'Nom',
     'map.common.deletePrefix': 'Supprimer',
+    'map.common.backToCampaign': 'Campagne',
     'map.badge.prototype': 'Prototype — hors production',
     'map.tv.missingParams': 'URL invalide : il manque `cid` ou `mid`.',
     'map.tv.notFound': 'Carte introuvable.',
@@ -6029,7 +6031,6 @@ const STRINGS: Record<Locale, Dict> = {
     'home.hub.title': 'Explore',
     'home.hub.codex.sub': 'Spells, items, species, classes…',
     'home.hub.campaigns.sub': 'Join or create a table.',
-    'home.hub.dm.sub': 'Run your encounters and journal.',
     'wizard.title': 'Create a character',
     'wizard.subtitle':
       "We'll walk you through it. Pick what speaks to you — we handle the rules.",
@@ -6816,7 +6817,6 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.error.retry': 'Try again',
     'campaigns.cta.create': 'Create a campaign',
     'campaigns.cta.join': 'Join by code',
-    'campaigns.cta.joinSoon': 'Coming soon',
     'campaigns.card.openSoon': 'Opening soon',
     'campaigns.card.open': 'Open',
     'campaigns.card.leave': 'Leave',
@@ -6892,6 +6892,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.myCharacter.levelPrefix': 'Level',
     'campaigns.detail.myCharacter.link': 'Link a character',
     'campaigns.detail.myCharacter.change': 'Change',
+    'campaigns.detail.myCharacter.open': 'Open my sheet',
     'campaigns.detail.error.title': 'Cannot load',
     'campaigns.detail.error.body':
       'Cannot fetch this campaign. Check your connection and try again.',
@@ -8572,6 +8573,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.promoteGm': 'Grant this player full game master authority.',
     'campaigns.tip.copyInviteCode': 'Copy the invite code to the clipboard.',
     'campaigns.tip.linkCharacter': 'Choose the character you play here.',
+    'campaigns.tip.openOwnSheet': 'View your character sheet.',
     'campaigns.tip.editNpc': 'Edit this non-player character’s sheet.',
     'campaigns.tip.deleteNpc': 'Permanently delete this non-player character.',
     'campaigns.tip.editRelations': 'Edit the ties with player characters.',
@@ -8612,6 +8614,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.common.slugLabel': 'Identifier (slug)',
     'map.common.nameLabel': 'Name',
     'map.common.deletePrefix': 'Delete',
+    'map.common.backToCampaign': 'Campaign',
     'map.badge.prototype': 'Prototype — not production',
     'map.tv.missingParams': 'Invalid URL: `cid` or `mid` is missing.',
     'map.tv.notFound': 'Map not found.',
