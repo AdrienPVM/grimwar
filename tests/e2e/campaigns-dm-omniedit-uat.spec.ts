@@ -103,7 +103,8 @@ test.describe('Plan 26 — omni-edit MJ + audit dm-edit', () => {
           player.getByRole('heading', { name: CAMPAIGN_NAME }),
         ).toBeVisible({ timeout: 15_000 });
 
-        await player.getByRole('button', { name: /Lier un personnage/i }).click();
+        // Le joueur a une fiche seedée → CTA « Lier un existant » (le picker).
+        await player.getByRole('button', { name: /Lier un existant/i }).click();
         await expect(player.getByRole('dialog')).toBeVisible();
         await player.getByRole('radio', { name: new RegExp(fighterL3.name, 'i') }).click();
         await player.getByRole('button', { name: /^Lier$/ }).click();

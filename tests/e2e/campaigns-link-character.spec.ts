@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 
-import { expectModalInViewport, isEmulatorReachable, waitForAppReady } from './fixtures';
+import { isEmulatorReachable, waitForAppReady } from './fixtures';
 
 /**
  * JALON 4A.2 — e2e « Mon personnage » : le joueur lie sa fiche à sa membership.
@@ -17,9 +17,9 @@ import { expectModalInViewport, isEmulatorReachable, waitForAppReady } from './f
  *      désormais un doc `members/{uid}` → la section « Mon personnage » apparaît.
  *   3. Le MJ pur (contexte A, aucun doc member) ne voit PAS la section — il LIT
  *      les fiches des joueurs (rule A2), il ne lie pas la sienne.
- *   4. Le joueur ouvre le picker. N'ayant pas encore de personnage, il voit
- *      l'état vide (« crée-en un depuis ta bibliothèque ») — et la modale
- *      respecte l'invariant viewport (portal vers body, panneau dans l'écran).
+ *   4. Sans personnage, le joueur voit le CHEMIN GUIDÉ : « Créer un personnage »
+ *      (pas de « Lier un existant », le picker serait vide) → clic → wizard en
+ *      contexte campagne (`/create?campaignId=`) avec bannière de liaison auto.
  *
  * Le WRITE du link lui-même est couvert ailleurs (identité des args en unit
  * `link-character-modal.test.tsx`, forme du batch en `services/campaigns.test.ts`,
@@ -44,11 +44,6 @@ function ensureUatDir(): void {
 async function captureFull(page: Page, filename: string): Promise<void> {
   ensureUatDir();
   await page.screenshot({ path: path.join(UAT_DIR, filename), fullPage: true });
-}
-
-async function captureViewport(page: Page, filename: string): Promise<void> {
-  ensureUatDir();
-  await page.screenshot({ path: path.join(UAT_DIR, filename), fullPage: false });
 }
 
 async function newDesktopContext(
@@ -103,30 +98,27 @@ test.describe('JALON 4A.2 — section « Mon personnage » + picker de liaison',
         ).toBeVisible({ timeout: 15_000 });
 
         // Le joueur a un doc member → la section « Mon personnage » est rendue,
-        // sans fiche liée + CTA « Lier un personnage ».
+        // sans fiche liée. Chemin guidé : CTA « Créer un personnage » présent,
+        // « Lier un existant » ABSENT (aucune fiche → picker vide inutile).
         await expect(player.getByText(/Mon personnage/i)).toBeVisible();
         await expect(player.getByText(/Aucun personnage lié/i)).toBeVisible();
-        const linkCta = player.getByRole('button', { name: /Lier un personnage/i });
-        await expect(linkCta).toBeVisible();
+        const createCta = player.getByRole('button', {
+          name: /Créer un personnage/i,
+        });
+        await expect(createCta).toBeVisible();
+        await expect(
+          player.getByRole('button', { name: /Lier un existant/i }),
+        ).toHaveCount(0);
         await captureFull(player, '01-player-detail-mon-personnage.png');
 
-        // ─── Ouvre le picker : pas de fiche → état vide + invariant viewport.
-        await linkCta.click();
-        await expect(player.getByRole('dialog')).toBeVisible();
-        await expectModalInViewport(player);
+        // ─── Le CTA ouvre le wizard EN CONTEXTE CAMPAGNE (?campaignId=) : la
+        // fiche créée s'y liera automatiquement (cf. finishCharacterCreation).
+        await createCta.click();
+        await expect(player).toHaveURL(/\/create\?campaignId=[A-Za-z0-9]/);
         await expect(
-          player.getByText(/Crée-en un depuis ta bibliothèque/i),
+          player.getByText(/rejoindra automatiquement ta campagne/i),
         ).toBeVisible();
-        // Le bouton « Lier » de la modale reste désactivé (rien à lier).
-        await expect(
-          player.getByRole('button', { name: /^Lier$/ }),
-        ).toBeDisabled();
-        await captureFull(player, '02-link-modal-empty.png');
-        await captureViewport(player, '02-link-modal-empty-viewport.png');
-
-        // Ferme proprement.
-        await player.getByRole('button', { name: /Annuler/i }).click();
-        await expect(player.getByRole('dialog')).toHaveCount(0);
+        await captureFull(player, '02-wizard-in-campaign-banner.png');
       } finally {
         await playerCtx.close();
       }
