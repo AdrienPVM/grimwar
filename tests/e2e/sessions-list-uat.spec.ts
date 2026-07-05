@@ -59,7 +59,6 @@ test.describe('UAT 23.2 — captures /campaigns/:cid/sessions', () => {
     await page.getByRole('button', { name: /^Créer$/ }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-    await page.getByRole('button', { name: /Ouvrir/i }).first().click();
     await expect(
       page.getByRole('heading', { name: /La Marche des Cendres/i }),
     ).toBeVisible();

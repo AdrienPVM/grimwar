@@ -74,7 +74,6 @@ test.describe('Plan 26 — omni-edit MJ + audit dm-edit', () => {
       await dm.getByRole('button', { name: /^Créer$/ }).click();
       await expect(dm.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-      await dm.getByRole('button', { name: /Ouvrir/i }).first().click();
       await expect(dm.getByRole('heading', { name: CAMPAIGN_NAME })).toBeVisible();
 
       const cidMatch = /\/campaigns\/([^/]+)$/.exec(dm.url());

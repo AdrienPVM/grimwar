@@ -112,6 +112,11 @@ test.describe('UAT 4.0.4 — captures /campaigns', () => {
       await page.getByRole('button', { name: /^Créer$/ }).click();
       // Attendre la fermeture de la modale.
       await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
+      // Après création, le MJ est amené sur le détail de la campagne créée. On
+      // revient à la liste pour créer la suivante (et, in fine, capturer la
+      // grille peuplée).
+      await page.goto('/campaigns');
+      await waitForAppReady(page);
     }
 
     // Attendre que les 3 cards soient affichées.

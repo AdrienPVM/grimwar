@@ -66,7 +66,6 @@ test.describe('UAT 24.4 — contrôle MJ des PV / états monstres', () => {
     await page.getByRole('button', { name: /^Créer$/ }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-    await page.getByRole('button', { name: /Ouvrir/i }).first().click();
     await page.getByRole('button', { name: /^Rencontres$/ }).click();
     await expect(page).toHaveURL(/\/encounters$/);
 

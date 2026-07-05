@@ -73,7 +73,6 @@ test.describe('JALON 4A.2 — section « Mon personnage » + picker de liaison',
       await dm.getByRole('button', { name: /^Créer$/ }).click();
       await expect(dm.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-      await dm.getByRole('button', { name: /Ouvrir/i }).first().click();
       await expect(dm.getByRole('heading', { name: CAMPAIGN_NAME })).toBeVisible();
 
       // Le MJ pur (gmIds seul, aucun doc member) NE voit PAS « Mon personnage ».

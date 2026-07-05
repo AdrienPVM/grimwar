@@ -97,7 +97,6 @@ test.describe('UAT — autofill rencontre depuis le bestiaire', () => {
     await page.getByLabel(/Nom de la campagne/i).fill('La Forêt hurlante');
     await page.getByRole('button', { name: /^Créer$/ }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
-    await page.getByRole('button', { name: /Ouvrir/i }).first().click();
     await page.getByRole('button', { name: /^Rencontres$/ }).click();
     await expect(page).toHaveURL(/\/campaigns\/[^/]+\/encounters$/);
 

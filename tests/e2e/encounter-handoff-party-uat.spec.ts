@@ -56,7 +56,6 @@ test.describe('UAT 24.4 — hand-off dégâts physiques + vue de groupe', () => 
     await page.getByRole('button', { name: /^Créer$/ }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-    await page.getByRole('button', { name: /Ouvrir/i }).first().click();
     await expect(page).toHaveURL(/\/campaigns\/[^/]+$/);
     const cid = page.url().match(/\/campaigns\/([^/]+)$/)?.[1];
     expect(cid, 'cid extractible de l’URL').toBeTruthy();

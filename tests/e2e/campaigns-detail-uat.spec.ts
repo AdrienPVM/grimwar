@@ -96,12 +96,12 @@ test.describe('UAT 4.0.5 — captures /campaigns detail + join', () => {
     await page.getByRole('button', { name: /^Créer$/ }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-    // Ouvre le détail de la campagne créée.
-    await page.getByRole('button', { name: /Ouvrir/i }).first().click();
+    // Après création, on atterrit directement sur le détail de la campagne.
+    // Aucun joueur n'a rejoint → invitation en mode « premier pas ».
     await expect(
       page.getByRole('heading', { name: /L'Ombre de Caer Dûn/i }),
     ).toBeVisible();
-    await expect(page.getByText(/Inviter à la table/i)).toBeVisible();
+    await expect(page.getByText(/Invite tes joueurs/i)).toBeVisible();
     await captureFull(page, '04-detail-mj-desktop-1440.png');
 
     // ─── 05 — Modale Quitter ouverte (fullPage + viewport).

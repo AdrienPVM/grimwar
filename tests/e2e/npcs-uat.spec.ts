@@ -80,7 +80,6 @@ test.describe('Plan 28 — PNJ récurrents', () => {
       await dm.getByRole('button', { name: /^Créer$/ }).click();
       await expect(dm.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-      await dm.getByRole('button', { name: /Ouvrir/i }).first().click();
       await expect(dm.getByRole('heading', { name: CAMPAIGN_NAME })).toBeVisible();
       const cid = /\/campaigns\/([^/]+)$/.exec(dm.url())?.[1] ?? '';
       expect(cid.length).toBeGreaterThan(0);

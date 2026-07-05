@@ -98,12 +98,13 @@ test.describe('JALON 4.0.6 — roundtrip create → invite → join', () => {
       await dm.getByRole('button', { name: /^Créer$/ }).click();
       await expect(dm.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-      // Ouvre le détail via la carte fraîchement créée.
-      await dm.getByRole('button', { name: /Ouvrir/i }).first().click();
+      // Après création, le MJ est amené directement sur le détail de la campagne
+      // fraîchement créée (plus de retour sur la liste). Aucun joueur n'ayant
+      // encore rejoint, le bloc invitation est en mode « premier pas ».
       await expect(
         dm.getByRole('heading', { name: CAMPAIGN_NAME }),
       ).toBeVisible();
-      await expect(dm.getByText(/Inviter à la table/i)).toBeVisible();
+      await expect(dm.getByText(/Invite tes joueurs/i)).toBeVisible();
 
       // Extraction du code d'invitation rendu par InviteCodeReveal. Le `<p>`
       // dédié porte `aria-label="Code d'invitation à dicter ou copier"`

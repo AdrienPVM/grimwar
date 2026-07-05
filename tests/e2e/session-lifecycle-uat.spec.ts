@@ -53,7 +53,6 @@ test.describe('UAT 23.4 — cycle de vie séance', () => {
     await page.getByRole('button', { name: /^Créer$/ }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-    await page.getByRole('button', { name: /Ouvrir/i }).first().click();
     await page.getByRole('button', { name: /^Séances$/ }).click();
     await page.getByRole('button', { name: /Planifier une séance/i }).click();
     await page.getByLabel(/Titre de la séance/i).fill('Le siège de la citadelle');
