@@ -25,6 +25,11 @@ async function captureFull(page: Page, filename: string): Promise<void> {
   await page.screenshot({ path: path.join(UAT_DIR, filename), fullPage: true });
 }
 
+async function captureViewport(page: Page, filename: string): Promise<void> {
+  ensureUatDir();
+  await page.screenshot({ path: path.join(UAT_DIR, filename), fullPage: false });
+}
+
 test.describe('UAT — polish cycle de vie campagne', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -76,5 +81,41 @@ test.describe('UAT — polish cycle de vie campagne', () => {
     // Mobile 375 — même écran, pour juger l'empilement du bandeau + bloc invite.
     await page.setViewportSize({ width: 375, height: 812 });
     await captureFull(page, '03-detail-campagne-mobile-375.png');
+  });
+
+  test('04-05 — réglages : contrôle d’état + puce « Archivée » sur le détail', async ({
+    page,
+  }) => {
+    const reachable = await isEmulatorReachable();
+    test.skip(!reachable, 'Émulateur Firestore non joignable — captures skippées.');
+
+    await page.goto('/campaigns');
+    await waitForAppReady(page);
+    await page
+      .getByRole('button', { name: /Créer une campagne/i })
+      .first()
+      .click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByLabel(/Nom de la campagne/i).fill('Les Cendres de Valmont');
+    await page.getByRole('button', { name: /^Créer$/ }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
+    await expect(
+      page.getByRole('heading', { name: /Les Cendres de Valmont/i }),
+    ).toBeVisible();
+
+    // Ouvre les réglages MJ et capture le nouveau contrôle d'état.
+    await page.getByRole('button', { name: /Réglages/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByText(/État de la campagne/i)).toBeVisible();
+    await captureViewport(page, '04-reglages-controle-etat.png');
+
+    // Passe la campagne en « Archivée » et enregistre.
+    await page.getByRole('radio', { name: /Archivée/i }).click();
+    await page.getByRole('button', { name: /Enregistrer/i }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
+
+    // La puce « Archivée » apparaît dans l'en-tête du détail.
+    await expect(page.getByText('Archivée')).toBeVisible();
+    await captureFull(page, '05-detail-campagne-archivee.png');
   });
 });
