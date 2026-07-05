@@ -8,6 +8,8 @@ import { GlassPanel } from '@/shared/components/glass-panel';
 import { t } from '@/shared/lib/i18n';
 import type { Campaign } from '@/shared/types/campaign';
 
+import { CampaignStatusChip } from './campaign-status-chip';
+
 interface CampaignCardProps {
   campaign: Campaign;
   onLeaveClick: (campaign: Campaign) => void;
@@ -48,6 +50,7 @@ export function CampaignCard({ campaign, onLeaveClick }: CampaignCardProps): JSX
             ) : (
               <Chip variant="magic">{t('campaigns.card.roleMember')}</Chip>
             )}
+            <CampaignStatusChip status={campaign.status} />
           </div>
         </div>
       </header>

@@ -17,6 +17,7 @@ import type { Campaign, Membership } from '@/shared/types/campaign';
 import { CampaignEventFeed } from './campaign-event-feed';
 import { CampaignMemberItem } from './campaign-member-item';
 import { CampaignSettingsModal } from './campaign-settings-modal';
+import { CampaignStatusChip } from './campaign-status-chip';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
@@ -250,12 +251,13 @@ export function CampaignDetailScreen(): JSX.Element {
           <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
             {campaign.name}
           </h1>
-          <div className="mt-3 flex justify-center">
+          <div className="mt-3 flex justify-center gap-2">
             {isGm ? (
               <Chip variant="gold">{t('campaigns.card.roleGm')}</Chip>
             ) : (
               <Chip variant="magic">{t('campaigns.card.roleMember')}</Chip>
             )}
+            <CampaignStatusChip status={campaign.status} />
           </div>
           {campaign.description ? (
             <p className="mx-auto mt-4 max-w-[60ch] font-serif text-body italic text-text-secondary">

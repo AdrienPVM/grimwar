@@ -72,10 +72,20 @@ describe('<CampaignSettingsModal>', () => {
     );
     expect(screen.getByDisplayValue('Tempête sur Caer Dûn')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Le sel et la pierre.')).toBeInTheDocument();
-    // Le mode physique est actif (2e radio du groupe dés).
-    const radios = screen.getAllByRole('radio');
-    expect(radios[0]).toHaveAttribute('aria-checked', 'false'); // digital
-    expect(radios[1]).toHaveAttribute('aria-checked', 'true'); // physical
+    // Sélection par nom accessible (robuste à l'ordre des radiogroups status/dés).
+    expect(screen.getByRole('radio', { name: /Numérique/i })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+    expect(screen.getByRole('radio', { name: /Physique/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    // L'état par défaut « Active » est présélectionné (mkCampaign → status active).
+    expect(screen.getByRole('radio', { name: /^Active/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     // Don au niveau 1 coché, les 3 autres décochés.
     expect(screen.getByRole('checkbox', { name: 'Don au niveau 1' })).toBeChecked();
     expect(
@@ -83,16 +93,19 @@ describe('<CampaignSettingsModal>', () => {
     ).not.toBeChecked();
   });
 
-  it('bascule une variante + le mode de dés puis enregistre → updateCampaign reçoit le bon patch', async () => {
+  it('bascule une variante + le mode de dés + l’état puis enregistre → updateCampaign reçoit le bon patch', async () => {
     renderModal();
     fireEvent.click(screen.getByRole('checkbox', { name: 'Prise en tenaille' }));
-    // 2e radio = physical
-    fireEvent.click(screen.getAllByRole('radio')[1]!);
+    // Sélection par nom accessible (robuste à l'ordre des radiogroups) : mode de
+    // dés « physique » + état « En pause ».
+    fireEvent.click(screen.getByRole('radio', { name: /Physique/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /En pause/i }));
     fireEvent.click(screen.getByRole('button', { name: /Enregistrer/i }));
     await waitFor(() => {
       expect(updateCampaignMock).toHaveBeenCalledWith('c-1', {
         name: 'Les Compagnons du Crépuscule',
         description: 'Une longue route.',
+        status: 'paused',
         settings: {
           diceMode: 'physical',
           variants: {

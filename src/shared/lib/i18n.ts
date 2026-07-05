@@ -1003,6 +1003,16 @@ export type StringKey =
   | 'campaigns.settings.save'
   | 'campaigns.settings.saving'
   | 'campaigns.settings.error.generic'
+  | 'campaigns.settings.status.title'
+  | 'campaigns.settings.status.hint'
+  | 'campaigns.settings.status.active.label'
+  | 'campaigns.settings.status.active.hint'
+  | 'campaigns.settings.status.paused.label'
+  | 'campaigns.settings.status.paused.hint'
+  | 'campaigns.settings.status.archived.label'
+  | 'campaigns.settings.status.archived.hint'
+  | 'campaigns.status.paused'
+  | 'campaigns.status.archived'
   | 'campaigns.settings.dice.title'
   | 'campaigns.settings.dice.hint'
   | 'campaigns.settings.variants.title'
@@ -4024,6 +4034,19 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.settings.saving': 'Enregistrement…',
     'campaigns.settings.error.generic':
       'Les réglages n’ont pas pu être enregistrés. Réessaie.',
+    'campaigns.settings.status.title': 'État de la campagne',
+    'campaigns.settings.status.hint':
+      'Là où en est ta campagne. Une campagne en pause ou archivée reste consultable, mais signale à la table qu’elle n’est plus active.',
+    'campaigns.settings.status.active.label': 'Active',
+    'campaigns.settings.status.active.hint': 'La campagne est en cours.',
+    'campaigns.settings.status.paused.label': 'En pause',
+    'campaigns.settings.status.paused.hint':
+      'Une trêve entre deux arcs — vous reprendrez plus tard.',
+    'campaigns.settings.status.archived.label': 'Archivée',
+    'campaigns.settings.status.archived.hint':
+      'La campagne est terminée. Elle reste dans tes souvenirs.',
+    'campaigns.status.paused': 'En pause',
+    'campaigns.status.archived': 'Archivée',
     'campaigns.settings.dice.title': 'Mode de dés de la table',
     'campaigns.settings.dice.hint':
       'Le mode par défaut de cette table. Chaque joueur peut le suivre ou choisir le sien dans son compte.',
@@ -7263,6 +7286,19 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.settings.saving': 'Saving…',
     'campaigns.settings.error.generic':
       'Settings could not be saved. Try again.',
+    'campaigns.settings.status.title': 'Campaign status',
+    'campaigns.settings.status.hint':
+      'Where your campaign stands. A paused or archived campaign stays readable, but signals to the table that it is no longer active.',
+    'campaigns.settings.status.active.label': 'Active',
+    'campaigns.settings.status.active.hint': 'The campaign is under way.',
+    'campaigns.settings.status.paused.label': 'Paused',
+    'campaigns.settings.status.paused.hint':
+      'A lull between arcs — you will resume later.',
+    'campaigns.settings.status.archived.label': 'Archived',
+    'campaigns.settings.status.archived.hint':
+      'The campaign is over. It remains among your memories.',
+    'campaigns.status.paused': 'Paused',
+    'campaigns.status.archived': 'Archived',
     'campaigns.settings.dice.title': 'Table dice mode',
     'campaigns.settings.dice.hint':
       'The table’s default mode. Each player can follow it or pick their own in their account.',
