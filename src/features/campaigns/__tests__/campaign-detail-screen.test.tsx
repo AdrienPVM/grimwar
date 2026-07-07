@@ -108,6 +108,32 @@ vi.mock('../party-member-card', () => ({
   ),
 }));
 
+// L'agrégat compagnie (`usePartyAggregate`) ouvre N listeners Firestore ; on le
+// stube pour le test d'écran (sa couverture — calcul, rendu, identité du contenu
+// — vit dans use-party-aggregate.test.ts + party-aggregate-strip.test.tsx). Le
+// holder contrôle l'agrégat renvoyé ; défaut vide → la bande se masque d'elle-même.
+type AggregateShape = {
+  count: number;
+  averageLevel: number | null;
+  minLevel: number | null;
+  maxLevel: number | null;
+  downedCount: number;
+  isLoading: boolean;
+};
+const aggregateHolder: { aggregate: AggregateShape } = {
+  aggregate: {
+    count: 0,
+    averageLevel: null,
+    minLevel: null,
+    maxLevel: null,
+    downedCount: 0,
+    isLoading: false,
+  },
+};
+vi.mock('../use-party-aggregate', () => ({
+  usePartyAggregate: () => aggregateHolder.aggregate,
+}));
+
 import { CampaignDetailScreen, buildRoster } from '../campaign-detail-screen';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -167,6 +193,14 @@ afterEach(() => {
   eventsHolder.events = [];
   eventsHolder.isLoading = false;
   eventsHolder.error = null;
+  aggregateHolder.aggregate = {
+    count: 0,
+    averageLevel: null,
+    minLevel: null,
+    maxLevel: null,
+    downedCount: 0,
+    isLoading: false,
+  };
 });
 
 function renderScreen(cid = 'c-1'): ReturnType<typeof render> {
@@ -294,6 +328,28 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByRole('button', { name: /Quitter la campagne/i })).toBeInTheDocument();
   });
 
+  it('affiche la bande agrégat compagnie (effectif + niveau moyen) au meneur', () => {
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [
+      mkMember({ userId: 'uid-2', role: 'member', characterId: 'char-9' }),
+    ];
+    aggregateHolder.aggregate = {
+      count: 2,
+      averageLevel: 4,
+      minLevel: 3,
+      maxLevel: 5,
+      downedCount: 0,
+      isLoading: false,
+    };
+    renderScreen();
+
+    // Identité du contenu : les libellés ET les valeurs dérivées sont rendus.
+    expect(screen.getByText('Effectif')).toBeInTheDocument();
+    expect(screen.getByText('Niveau moyen')).toBeInTheDocument();
+    expect(screen.getByText('Niveaux')).toBeInTheDocument();
+    expect(screen.getByText('3–5')).toBeInTheDocument();
+  });
+
   it("campagne sans joueur → bloc invitation en mode « premier pas »", () => {
     // Un MJ qui vient de créer sa campagne atterrit ici : aucun joueur n'a
     // rejoint (roster = MJ seul). On lui présente l'invitation comme prochaine
@@ -396,11 +452,25 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
       // membre la déclencherait — le test resterait donc rouge sur la régression.
       mkMember({ userId: 'uid-3', role: 'member', characterId: 'char-3' }),
     ];
+    // Même si un agrégat non vide « existait », il ne doit jamais atteindre un
+    // joueur : la bande compagnie est gardée par `isGm` (les métriques dérivent
+    // de fiches que seul le MJ peut lire).
+    aggregateHolder.aggregate = {
+      count: 2,
+      averageLevel: 4,
+      minLevel: 3,
+      maxLevel: 5,
+      downedCount: 0,
+      isLoading: false,
+    };
     renderScreen();
 
     expect(screen.queryByText(/Inviter à la table/i)).not.toBeInTheDocument();
     expect(screen.queryByText('ABC234')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Promouvoir meneur/i })).not.toBeInTheDocument();
+    // La bande agrégat compagnie est masquée côté joueur (gate isGm).
+    expect(screen.queryByText('Effectif')).not.toBeInTheDocument();
+    expect(screen.queryByText('Niveaux')).not.toBeInTheDocument();
     // Un joueur ne voit JAMAIS la carte live d'un autre membre, même lié (la
     // lecture cross-owner est réservée au MJ) → pas d'affordance d'ouverture.
     expect(

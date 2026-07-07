@@ -21,8 +21,10 @@ import { CampaignStatusChip } from './campaign-status-chip';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
 import { MyCharacterLink } from './my-character-link';
+import { PartyAggregateStrip } from './party-aggregate-strip';
 import { PromoteToGmModal } from './promote-to-gm-modal';
 import { useCampaign } from './use-campaign';
+import { usePartyAggregate, type PartyMemberRef } from './use-party-aggregate';
 import { useHandoutNotifications } from './use-handout-notifications';
 
 interface PromoteTarget {
@@ -98,6 +100,17 @@ export function CampaignDetailScreen(): JSX.Element {
     () => roster.some((entry) => entry.role === 'member'),
     [roster],
   );
+
+  // Fiches liées que le meneur peut lire (rule A2 cross-owner) — source de
+  // l'agrégat « compagnie ». Vide pour un non-MJ : il ne peut pas lire les
+  // fiches d'autrui, donc pas d'abonnements inutiles voués au permission-denied.
+  const partyRefs = useMemo<PartyMemberRef[]>(() => {
+    if (!isGm) return [];
+    return roster
+      .filter((entry) => entry.characterId !== null)
+      .map((entry) => ({ characterId: entry.characterId!, ownerUid: entry.uid }));
+  }, [isGm, roster]);
+  const partyAggregate = usePartyAggregate(partyRefs);
 
   // Membership du joueur courant — présente uniquement s'il a rejoint en tant
   // que joueur (doc `members/{uid}`). Un MJ pur (gmIds seul) n'en a pas et ne
@@ -318,6 +331,9 @@ export function CampaignDetailScreen(): JSX.Element {
           <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
             {t('campaigns.detail.roster.title')}
           </h2>
+          {/* Résumé compagnie (MJ) — effectif / niveau moyen / éventail, au-dessus
+              des cartes. Se masque de lui-même tant qu'aucune fiche n'est chargée. */}
+          {isGm ? <PartyAggregateStrip aggregate={partyAggregate} /> : null}
           <ul className="mt-4 flex flex-col gap-3">
             {roster.map((entry) => (
               <li key={entry.uid}>

@@ -975,6 +975,11 @@ export type StringKey =
   | 'campaigns.detail.party.cardLoading'
   | 'campaigns.detail.party.cardError'
   | 'campaigns.detail.party.cardUnavailable'
+  | 'campaigns.detail.partyAggregate.aria'
+  | 'campaigns.detail.partyAggregate.size'
+  | 'campaigns.detail.partyAggregate.avgLevel'
+  | 'campaigns.detail.partyAggregate.levelRange'
+  | 'campaigns.detail.partyAggregate.downed'
   | 'campaigns.detail.myCharacter.aria'
   | 'campaigns.detail.myCharacter.title'
   | 'campaigns.detail.myCharacter.none'
@@ -3848,6 +3853,11 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.party.cardLoading': 'Chargement…',
     'campaigns.detail.party.cardError': 'Fiche indisponible',
     'campaigns.detail.party.cardUnavailable': 'Personnage introuvable',
+    'campaigns.detail.partyAggregate.aria': 'Résumé de la compagnie pour le meneur',
+    'campaigns.detail.partyAggregate.size': 'Effectif',
+    'campaigns.detail.partyAggregate.avgLevel': 'Niveau moyen',
+    'campaigns.detail.partyAggregate.levelRange': 'Niveaux',
+    'campaigns.detail.partyAggregate.downed': 'À terre',
     'campaigns.detail.myCharacter.aria': 'Mon personnage dans cette campagne',
     'campaigns.detail.myCharacter.title': 'Mon personnage',
     'campaigns.detail.myCharacter.none': 'Aucun personnage lié pour le moment.',
@@ -7106,6 +7116,11 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.party.cardLoading': 'Loading…',
     'campaigns.detail.party.cardError': 'Sheet unavailable',
     'campaigns.detail.party.cardUnavailable': 'Character not found',
+    'campaigns.detail.partyAggregate.aria': 'Party summary for the GM',
+    'campaigns.detail.partyAggregate.size': 'Size',
+    'campaigns.detail.partyAggregate.avgLevel': 'Avg. level',
+    'campaigns.detail.partyAggregate.levelRange': 'Levels',
+    'campaigns.detail.partyAggregate.downed': 'Downed',
     'campaigns.detail.myCharacter.aria': 'My character in this campaign',
     'campaigns.detail.myCharacter.title': 'My character',
     'campaigns.detail.myCharacter.none': 'No character linked yet.',

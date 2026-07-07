@@ -10,6 +10,7 @@ import {
   seedCampaignMembership,
   seedCharacter,
   seedCharacterForUid,
+  tieflingL5Infernal,
 } from './seed-character';
 
 /**
@@ -88,5 +89,50 @@ test.describe('JALON 4A.4 — panneau compagnie MJ (état live des joueurs)', ()
     await expect(region.getByText('7 / 28')).toBeVisible({ timeout: 15_000 });
     await expect(region.getByText('28 / 28')).toHaveCount(0);
     await captureFull(page, '02-compagnie-pv-live.png');
+  });
+
+  test('la bande agrégat résume effectif / niveau moyen / éventail sur les fiches liées', async ({
+    page,
+  }) => {
+    const reachable = await isEmulatorReachable();
+    test.skip(!reachable, 'Émulateur Firestore non joignable — agrégat compagnie skippé.');
+
+    // La page s'authentifie en anon → son UID sera le MJ.
+    await page.goto('/');
+    await waitForAppReady(page);
+    const { uid: gmUid } = await seedCharacter(page, fighterL3);
+
+    // Deux joueurs (UIDs fabriqués) liés à la même campagne, à des niveaux
+    // distincts (3 et 5) pour que l'éventail soit réel et la moyenne non triviale.
+    const cid = `agg-camp-${gmUid}`;
+    const p1Uid = `agg-p1-${gmUid}`;
+    const p2Uid = `agg-p2-${gmUid}`;
+    const p1Char = await seedCharacterForUid(p1Uid, fighterL3); // niveau 3
+    const p2Char = await seedCharacterForUid(p2Uid, tieflingL5Infernal); // niveau 5
+    await seedCampaignMembership({ campaignId: cid, gmUid, playerUid: p1Uid, charId: p1Char });
+    await seedCampaignMembership({ campaignId: cid, gmUid, playerUid: p2Uid, charId: p2Char });
+
+    await page.goto(`/campaigns/${cid}`);
+    await waitForAppReady(page);
+
+    // La bande agrégat (rendue au-dessus des cartes) dérive ses métriques des
+    // DEUX fiches liées, lues en cross-owner via la même rule A2 que les cartes.
+    const region = page.getByRole('region', { name: /Membres de la campagne/i });
+    // Les DEUX cartes de membres doivent d'abord se résoudre (lecture A2).
+    await expect(region.getByText(fighterL3.name)).toBeVisible({ timeout: 15_000 });
+    await expect(region.getByText(tieflingL5Infernal.name)).toBeVisible({ timeout: 15_000 });
+
+    const strip = page.locator('[aria-label="Résumé de la compagnie pour le meneur"]');
+    await expect(strip).toBeVisible({ timeout: 15_000 });
+    await captureFull(page, '03-agregat-compagnie.png');
+    // Effectif 2 · niveau moyen (3+5)/2 = 4 · éventail 3–5 (tiret demi-cadratin).
+    await expect(strip.getByText('Effectif')).toBeVisible();
+    await expect(strip.getByText('Niveaux')).toBeVisible();
+    await expect(strip.getByText('3–5')).toBeVisible({ timeout: 15_000 });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.screenshot({
+      path: path.join(UAT_DIR, '03-agregat-compagnie-mobile.png'),
+      fullPage: false,
+    });
   });
 });
