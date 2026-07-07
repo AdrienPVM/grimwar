@@ -20,8 +20,9 @@ import spellsBundle from '../../../../../../public/data/spells.json';
  * Bundle spells réel injecté (pas de fixture inventée).
  */
 
-const { updateCharacterMock } = vi.hoisted(() => ({
+const { updateCharacterMock, rollWithFlagsMock } = vi.hoisted(() => ({
   updateCharacterMock: vi.fn().mockResolvedValue(undefined),
+  rollWithFlagsMock: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/shared/hooks/use-content', () => ({
@@ -39,18 +40,50 @@ vi.mock('@/features/sheet/use-update-character', () => ({
   }),
 }));
 
+vi.mock('@/features/dice/roll-with-flags', () => ({
+  rollWithFlags: rollWithFlagsMock,
+}));
+
 beforeEach(() => {
   updateCharacterMock.mockClear();
+  rollWithFlagsMock.mockClear();
 });
+
+/**
+ * Entrée de classe Occultiste minimale portant les invocations passées. Sert à
+ * couvrir D13b (Esprit occulte → avantage au jet de Concentration).
+ */
+function warlockClasses(
+  invocations: readonly string[],
+): Character['classes'] {
+  return [
+    {
+      classId: 'warlock',
+      subclassId: null,
+      level: 3,
+      clericDivineOrder: null,
+      druidPrimalOrder: null,
+      fighterFightingStyle: null,
+      weaponMasteries: [],
+      expertiseSkills: [],
+      eldritchInvocations: [...invocations],
+      wizardSpellbookL1: [],
+      pactTomeCantrips: [],
+      pactTomeRituals: [],
+      pactBladeWeapon: null,
+    },
+  ];
+}
 
 function buildCharacter(
   conc: Character['currentConcentration'],
+  classes: Character['classes'] = [],
 ): Character {
   return {
     id: 'co',
     name: 'Co',
     status: 'alive',
-    classes: [],
+    classes,
     totalLevel: 3,
     primaryClassId: 'cleric',
     ancestryId: 'human',
@@ -157,6 +190,37 @@ describe('<ConcentrationCard>', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Rompre la concentration' }));
     expect(updateCharacterMock).toHaveBeenCalledWith({ currentConcentration: null });
+  });
+
+  it('sans invocation → jet de Concentration lancé à avantage « normal »', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConcentrationCard
+        character={buildCharacter({ spellId: 'benediction', slotLevel: 1 })}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Jet de Constitution' }));
+    expect(rollWithFlagsMock).toHaveBeenCalledTimes(1);
+    expect(rollWithFlagsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ advantage: 'normal' }),
+    );
+  });
+
+  it('D13b — Esprit occulte (eldritch-mind) → jet de Concentration à AVANTAGE', async () => {
+    const user = userEvent.setup();
+    render(
+      <ConcentrationCard
+        character={buildCharacter(
+          { spellId: 'benediction', slotLevel: 1 },
+          warlockClasses(['eldritch-mind']),
+        )}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Jet de Constitution' }));
+    expect(rollWithFlagsMock).toHaveBeenCalledTimes(1);
+    expect(rollWithFlagsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ advantage: 'advantage' }),
+    );
   });
 
   it('lecture seule : pas de bouton « Rompre », rappel + sort visibles', () => {

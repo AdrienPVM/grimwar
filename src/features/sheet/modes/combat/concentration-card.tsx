@@ -6,6 +6,7 @@ import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
+import { hasConcentrationAdvantage } from '@/shared/lib/rules/eldritch-invocations';
 import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
@@ -85,16 +86,22 @@ export function ConcentrationCard({
    * `damageRule`, donc le joueur compare lui-même au DD. On ne rompt PAS
    * automatiquement (on ne connaît pas le DD ici) — le bouton « Rompre » reste
    * la décision du joueur. Maître de la sauvegarde Con ⇒ +PB.
+   *
+   * D13b — l'invocation occultiste « Esprit occulte » (Eldritch Mind) donne
+   * l'avantage à ce jet ; `hasConcentrationAdvantage` inspecte les invocations
+   * connues et pilote le drapeau du moteur de dés (au lieu du « normal » codé en
+   * dur qui perdait silencieusement l'aptitude).
    */
   async function rollConcentrationSave(): Promise<void> {
     if (readOnly || isUpdating) return;
     const pb = proficiencyBonus(totalLevel(character.classes));
     const mod = abilityModifier(character.abilities.con) + (character.saves.con ? pb : 0);
+    const advantage = hasConcentrationAdvantage(character.classes) ? 'advantage' : 'normal';
     await rollWithFlags({
       character,
       baseMod: mod,
       label: t('sheet.combat.concentration.rollSave'),
-      advantage: 'normal',
+      advantage,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
