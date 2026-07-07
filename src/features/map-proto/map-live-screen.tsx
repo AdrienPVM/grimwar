@@ -811,9 +811,7 @@ export function MapLiveScreen(): JSX.Element {
       const tokenId = editingTokenId;
       if (!tokenId || !cid || !mid || !user) return;
       if (dataUrl.length > MAX_TOKEN_PORTRAIT_BYTES) {
-        setWriteError(
-          'Portrait trop lourd à synchroniser. Réessaie avec une image plus simple.',
-        );
+        setWriteError(t('map.live.portraitTooHeavy'));
         return;
       }
       try {

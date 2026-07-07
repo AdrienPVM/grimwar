@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { Button } from '@/shared/components/button';
+import { t } from '@/shared/lib/i18n';
 import {
   resolveHitMissGate,
   useUiModalsStore,
@@ -50,7 +51,7 @@ function HitMissDialog({ spec }: DialogProps): JSX.Element {
       <div className="flex w-full max-w-[420px] flex-col overflow-hidden rounded-card border border-soft bg-glass shadow-card-lg">
         <header className="border-b border-white-8 px-6 py-4">
           <p className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
-            Mode physique — résolution attaque
+            {t('dice.hitMiss.eyebrow')}
           </p>
           <h2
             id="hit-miss-title"
@@ -62,7 +63,7 @@ function HitMissDialog({ spec }: DialogProps): JSX.Element {
             <p className="mt-1 font-serif text-body-sm italic text-text-secondary">{spec.hint}</p>
           )}
           <p className="mt-3 font-serif text-body-sm text-text-secondary">
-            Ton total dépasse-t-il la CA de la cible&nbsp;?
+            {t('dice.hitMiss.question')}
           </p>
         </header>
 
@@ -72,18 +73,18 @@ function HitMissDialog({ spec }: DialogProps): JSX.Element {
             size="sm"
             onClick={() => resolveHitMissGate('miss')}
             className="flex-1"
-            tooltip="L'attaque rate : ton total n'atteint pas la cible."
+            tooltip={t('dice.hitMiss.missTip')}
           >
-            Raté
+            {t('dice.hitMiss.miss')}
           </Button>
           <Button
             variant="primary"
             size="sm"
             onClick={() => resolveHitMissGate('hit')}
             className="flex-1"
-            tooltip="L'attaque touche : ton total atteint ou dépasse la cible."
+            tooltip={t('dice.hitMiss.hitTip')}
           >
-            Touché
+            {t('dice.hitMiss.hit')}
           </Button>
         </footer>
       </div>

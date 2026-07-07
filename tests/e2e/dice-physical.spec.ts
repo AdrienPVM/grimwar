@@ -96,7 +96,7 @@ test.describe('Dice physique — gate Touché/Raté apparaît sur face neutre', 
     // savoir si le joueur a touché (pas de CA cible côté S1). Elle DOIT
     // demander manuellement.
     const gateModal = page.getByRole('dialog').filter({
-      hasText: /Mode physique — résolution attaque/i,
+      hasText: /Mode physique — résolution d.attaque/i,
     });
     await expect(
       gateModal,

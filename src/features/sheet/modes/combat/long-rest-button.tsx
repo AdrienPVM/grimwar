@@ -76,10 +76,15 @@ export function LongRestButton({
     await updateCharacter(patch);
 
     const parts: string[] = [];
-    if (summary.hpHealed > 0) parts.push(`+${summary.hpHealed} PV`);
-    if (summary.hitDiceRegained > 0) parts.push(`+${summary.hitDiceRegained} dés`);
-    if (summary.resourcesReset > 0) parts.push(`${summary.resourcesReset} réserves`);
-    if (summary.exhaustionRemoved > 0) parts.push('−1 épuisement');
+    if (summary.hpHealed > 0)
+      parts.push(t('sheet.combat.longRest.hpPart').replace('{n}', String(summary.hpHealed)));
+    if (summary.hitDiceRegained > 0)
+      parts.push(
+        t('sheet.combat.longRest.hitDicePart').replace('{n}', String(summary.hitDiceRegained)),
+      );
+    if (summary.resourcesReset > 0)
+      parts.push(t('sheet.combat.rest.resourcesPart').replace('{n}', String(summary.resourcesReset)));
+    if (summary.exhaustionRemoved > 0) parts.push(t('sheet.combat.longRest.exhaustionPart'));
 
     showToast({
       kind: 'heal',

@@ -439,6 +439,10 @@ export type StringKey =
   | 'sheet.combat.longRest.toastTitle'
   | 'sheet.combat.longRest.grittyNote'
   | 'sheet.combat.longRest.slowHealingNote'
+  | 'sheet.combat.longRest.hpPart'
+  | 'sheet.combat.longRest.hitDicePart'
+  | 'sheet.combat.longRest.exhaustionPart'
+  | 'sheet.combat.rest.resourcesPart'
   | 'sheet.combat.shortRest.button'
   | 'sheet.combat.shortRest.confirm'
   | 'sheet.combat.shortRest.toastTitle'
@@ -2511,6 +2515,7 @@ export type StringKey =
   | 'map.live.metaTokenSingular'
   | 'map.live.metaTokenPlural'
   | 'map.live.writeErrorPrefix'
+  | 'map.live.portraitTooHeavy'
   | 'map.live.fogLabel'
   | 'map.live.addFogReveal'
   | 'map.live.addFogMask'
@@ -2714,6 +2719,12 @@ export type StringKey =
   | 'dice.physical.pass'
   | 'dice.physical.validateTip'
   | 'dice.physical.validate'
+  | 'dice.hitMiss.eyebrow'
+  | 'dice.hitMiss.question'
+  | 'dice.hitMiss.miss'
+  | 'dice.hitMiss.hit'
+  | 'dice.hitMiss.missTip'
+  | 'dice.hitMiss.hitTip'
   | 'dice.history.closeLabel'
   | 'dice.history.empty'
   | 'dice.history.modeSaveError'
@@ -3242,6 +3253,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.longRest.grittyNote': 'Réalisme rugueux : un repos long dure 7 jours.',
     'sheet.combat.longRest.slowHealingNote':
       'Guérison naturelle lente : dépensez vos dés de vie pour récupérer des PV.',
+    'sheet.combat.longRest.hpPart': '+{n} PV',
+    'sheet.combat.longRest.hitDicePart': '+{n} dés de vie',
+    'sheet.combat.longRest.exhaustionPart': '−1 épuisement',
+    'sheet.combat.rest.resourcesPart': '{n} réserves',
     'sheet.combat.shortRest.button': 'Repos court',
     'sheet.combat.shortRest.confirm': 'Confirmer le repos court ?',
     'sheet.combat.shortRest.toastTitle': 'Repos court',
@@ -5853,6 +5868,8 @@ const STRINGS: Record<Locale, Dict> = {
     'map.live.metaTokenSingular': 'token',
     'map.live.metaTokenPlural': 'tokens',
     'map.live.writeErrorPrefix': 'Écriture refusée : ',
+    'map.live.portraitTooHeavy':
+      'Portrait trop lourd à synchroniser. Réessaie avec une image plus simple.',
     'map.live.fogLabel': 'Fog',
     'map.live.addFogReveal': 'Reveal au centre',
     'map.live.addFogMask': 'Mask au centre',
@@ -6071,6 +6088,12 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.physical.pass': 'Passer',
     'dice.physical.validateTip': 'Confirme les faces saisies et calcule le total.',
     'dice.physical.validate': 'Valider',
+    'dice.hitMiss.eyebrow': 'Mode physique — résolution d’attaque',
+    'dice.hitMiss.question': 'Ton total dépasse-t-il la CA de la cible ?',
+    'dice.hitMiss.miss': 'Raté',
+    'dice.hitMiss.hit': 'Touché',
+    'dice.hitMiss.missTip': 'L’attaque rate : ton total n’atteint pas la cible.',
+    'dice.hitMiss.hitTip': 'L’attaque touche : ton total atteint ou dépasse la cible.',
     'dice.history.closeLabel': 'Fermer l’historique',
     'dice.history.empty':
       'Aucun jet enregistré. Tente une initiative ou un test de caractéristique.',
@@ -6569,6 +6592,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.longRest.grittyNote': 'Gritty realism: a long rest takes 7 days.',
     'sheet.combat.longRest.slowHealingNote':
       'Slow natural healing: spend hit dice to recover HP.',
+    'sheet.combat.longRest.hpPart': '+{n} HP',
+    'sheet.combat.longRest.hitDicePart': '+{n} hit dice',
+    'sheet.combat.longRest.exhaustionPart': '−1 exhaustion',
+    'sheet.combat.rest.resourcesPart': '{n} resources',
     'sheet.combat.shortRest.button': 'Short rest',
     'sheet.combat.shortRest.confirm': 'Confirm short rest?',
     'sheet.combat.shortRest.toastTitle': 'Short rest',
@@ -9030,6 +9057,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.live.metaTokenSingular': 'token',
     'map.live.metaTokenPlural': 'tokens',
     'map.live.writeErrorPrefix': 'Write refused: ',
+    'map.live.portraitTooHeavy': 'Portrait too heavy to sync. Try a simpler image.',
     'map.live.fogLabel': 'Fog',
     'map.live.addFogReveal': 'Reveal at the center',
     'map.live.addFogMask': 'Mask at the center',
@@ -9246,6 +9274,12 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.physical.pass': 'Skip',
     'dice.physical.validateTip': 'Confirm the entered faces and compute the total.',
     'dice.physical.validate': 'Confirm',
+    'dice.hitMiss.eyebrow': 'Physical mode — attack resolution',
+    'dice.hitMiss.question': 'Does your total beat the target’s AC?',
+    'dice.hitMiss.miss': 'Miss',
+    'dice.hitMiss.hit': 'Hit',
+    'dice.hitMiss.missTip': 'The attack misses: your total does not reach the target.',
+    'dice.hitMiss.hitTip': 'The attack hits: your total meets or beats the target.',
     'dice.history.closeLabel': 'Close history',
     'dice.history.empty':
       'No rolls recorded yet. Try an initiative or an ability check.',

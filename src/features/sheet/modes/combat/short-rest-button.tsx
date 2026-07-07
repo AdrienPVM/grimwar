@@ -89,7 +89,9 @@ export function ShortRestButton({
 
     await updateCharacter(patch);
 
-    const parts: string[] = [`${summary.resourcesReset} réserves`];
+    const parts: string[] = [
+      t('sheet.combat.rest.resourcesPart').replace('{n}', String(summary.resourcesReset)),
+    ];
     if (summary.pactSlotsRestored) parts.push(t('sheet.combat.shortRest.pactNote'));
 
     showToast({
