@@ -116,7 +116,16 @@ export function applyLongRest(
   const { hitDice, regained } = regainHitDice(character.hitDice, regainTarget);
 
   // ── Réserves de classe : toutes au max ───────────────────────────────────
+  // Un repos long restaure TOUT ce qu'un repos court restaure, plus les réserves
+  // long-rest. On balaie donc d'abord chaque entrée déjà présente vers son max —
+  // ce qui couvre les emplacements de pacte de l'Occultiste (`pact-magic-slots`,
+  // clé bare exclue de `deriveClassResourcePools` : SRD 5.2.1, le pacte recharge
+  // au repos court OU long). Puis on matérialise les réserves consommables
+  // jamais instanciées (clé composite via `pools`).
   const classResources: Character['classResources'] = { ...character.classResources };
+  for (const [key, pool] of Object.entries(character.classResources)) {
+    classResources[key] = { ...pool, current: pool.max };
+  }
   for (const pool of pools) {
     classResources[pool.storageKey] = {
       current: pool.max,

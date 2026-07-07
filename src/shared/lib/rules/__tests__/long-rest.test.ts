@@ -121,6 +121,21 @@ describe('applyLongRest — standard (aucune variante)', () => {
     expect(r.summary.resourcesReset).toBe(1);
   });
 
+  it('restaure les emplacements de pacte de l\'Occultiste (SRD : repos court OU long)', () => {
+    // `pact-magic-slots` est une clé bare, hors `deriveClassResourcePools` (donc
+    // absente de `pools`). Un repos long doit tout de même la recharger — le
+    // pacte se restaure au repos court comme au repos long (SRD 5.2.1).
+    const c = build({
+      classResources: { 'pact-magic-slots': { current: 0, max: 2, restoresOn: 'short' } },
+    });
+    const r = applyLongRest(c, []); // pools vide : Occultiste n'a aucun consommable listé
+    expect(r.patch.classResources!['pact-magic-slots']).toEqual({
+      current: 2,
+      max: 2,
+      restoresOn: 'short',
+    });
+  });
+
   it('restaure tous les emplacements de sort au max', () => {
     const c = build({
       spellSlots: { '1': { current: 0, max: 4 }, '2': { current: 1, max: 3 } },
