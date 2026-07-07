@@ -52,4 +52,26 @@ test.describe('UAT — Mon compte', () => {
     ).toBeVisible();
     await page.screenshot({ path: 'uat-review/account/03-deconnexion-confirm.png', fullPage: true });
   });
+
+  test('carte « Contenu personnalisé » → écran d’import (route jusqu’ici orpheline)', async ({
+    page,
+  }) => {
+    await page.goto('/account');
+    await waitForAppReady(page);
+
+    // La carte est le point d'entrée nav vers /account/content (jusqu'ici
+    // atteignable seulement par URL directe). Elle est tappable, avec un CTA.
+    const card = page.getByRole('button', { name: /Contenu personnalisé/ });
+    await expect(card).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Gérer mes packs')).toBeVisible();
+    await page.screenshot({ path: 'uat-review/01-compte-carte-contenu.png', fullPage: true });
+
+    // Le clic mène bien à l'écran d'import de packs (route désorphelinée).
+    await card.click();
+    await expect(page).toHaveURL(/\/account\/content$/);
+    await expect(
+      page.getByRole('heading', { name: 'Contenu personnalisé' }),
+    ).toBeVisible({ timeout: 10_000 });
+    await page.screenshot({ path: 'uat-review/02-ecran-import-atteint.png', fullPage: true });
+  });
 });

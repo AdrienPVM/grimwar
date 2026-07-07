@@ -131,6 +131,12 @@ describe('AccountScreen', () => {
     render(<AccountScreen />);
     expect(screen.getByRole('heading', { name: 'Mon compte' })).toBeInTheDocument();
   });
+
+  it('carte « Contenu personnalisé » → navigue vers /account/content', () => {
+    render(<AccountScreen />);
+    fireEvent.click(screen.getByRole('button', { name: /Contenu personnalisé/ }));
+    expect(navigate).toHaveBeenCalledWith('/account/content');
+  });
 });
 
 describe('AccountScreen — liaison de compte (invité)', () => {

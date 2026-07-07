@@ -155,6 +155,9 @@ export type StringKey =
   | 'account.locale.hint'
   | 'account.locale.fr'
   | 'account.locale.en'
+  | 'account.content.title'
+  | 'account.content.hint'
+  | 'account.content.cta'
   | 'account.signOut'
   | 'account.signOutConfirm'
   | 'account.cancel'
@@ -2869,6 +2872,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.locale.hint': 'Choisis la langue de l’interface et du contenu.',
     'account.locale.fr': 'Français',
     'account.locale.en': 'Anglais',
+    'account.content.title': 'Contenu personnalisé',
+    'account.content.hint':
+      'Importe des packs de contenu (sorts, classes, objets, monstres…) ou compose les tiens pour les utiliser en jeu.',
+    'account.content.cta': 'Gérer mes packs',
     'account.signOut': 'Se déconnecter',
     'account.signOutConfirm': 'Confirmer la déconnexion',
     'account.cancel': 'Annuler',
@@ -6202,6 +6209,10 @@ const STRINGS: Record<Locale, Dict> = {
     'account.locale.hint': 'Choose the interface and content language.',
     'account.locale.fr': 'French',
     'account.locale.en': 'English',
+    'account.content.title': 'Custom content',
+    'account.content.hint':
+      'Import content packs (spells, classes, items, monsters…) or author your own to use them in play.',
+    'account.content.cta': 'Manage my packs',
     'account.signOut': 'Sign out',
     'account.signOutConfirm': 'Confirm sign-out',
     'account.cancel': 'Cancel',

@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/button';
 import { Card, CardHeader } from '@/shared/components/card';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
+import { Icon } from '@/shared/components/icon';
 import { PageContainer } from '@/shared/components/page-container';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
@@ -72,6 +73,7 @@ export function AccountScreen(): JSX.Element {
         />
         {isAnonymous ? <LinkAccountCard /> : null}
         <PreferencesCard uid={user.uid} />
+        <CustomContentCard />
         <SignOutCard />
       </div>
     </PageContainer>
@@ -280,6 +282,50 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
         </label>
       </section>
     </Card>
+  );
+}
+
+/**
+ * Point d'entrée nav vers l'import de contenu personnalisé (`/account/content`).
+ * L'écran d'import était jusqu'ici orphelin (route déclarée, « accessible par URL
+ * directe en V1, un point d'entrée nav-shell viendra plus tard » — cf. routes.tsx).
+ * Le losange avatar du NavShell mène à `/account` : cette carte est donc l'entrée
+ * nav-shell anticipée. Carte tappable pleine largeur (affordance NavHub) plutôt
+ * qu'un simple lien texte, car la gestion de packs est un espace, pas une action.
+ */
+function CustomContentCard(): JSX.Element {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      onClick={() => navigate('/account/content')}
+      className={cn(
+        'group flex w-full items-center gap-4 rounded-card border border-soft bg-glass p-5 text-left',
+        'transition-all duration-200 ease-base hover:-translate-y-px hover:border-gold-dim/60',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40',
+      )}
+    >
+      <span
+        className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-card-sm border border-white-8 bg-white/[0.04] text-gold-bright transition-colors duration-200 ease-base group-hover:border-gold-dim/60"
+        aria-hidden="true"
+      >
+        <Icon name="i-feather" className="h-5 w-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block font-display text-body font-bold uppercase tracking-[0.14em] text-gold-bright">
+          {t('account.content.title')}
+        </span>
+        <span className="mt-1 block font-serif text-body-sm text-text-tertiary">
+          {t('account.content.hint')}
+        </span>
+      </span>
+      <span
+        className="font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary transition-colors duration-200 ease-base group-hover:text-gold-bright"
+        aria-hidden="true"
+      >
+        {t('account.content.cta')}
+      </span>
+    </button>
   );
 }
 
