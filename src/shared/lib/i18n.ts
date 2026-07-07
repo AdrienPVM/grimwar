@@ -1023,6 +1023,8 @@ export type StringKey =
   | 'campaigns.settings.status.archived.hint'
   | 'campaigns.status.paused'
   | 'campaigns.status.archived'
+  | 'campaigns.detail.statusBanner.paused'
+  | 'campaigns.detail.statusBanner.archived'
   | 'campaigns.settings.dice.title'
   | 'campaigns.settings.dice.hint'
   | 'campaigns.settings.variants.title'
@@ -4069,6 +4071,10 @@ const STRINGS: Record<Locale, Dict> = {
       'La campagne est terminée. Elle reste dans tes souvenirs.',
     'campaigns.status.paused': 'En pause',
     'campaigns.status.archived': 'Archivée',
+    'campaigns.detail.statusBanner.paused':
+      'Cette campagne est en pause — les séances sont suspendues pour le moment.',
+    'campaigns.detail.statusBanner.archived':
+      'Cette campagne est archivée — elle reste consultable en lecture.',
     'campaigns.settings.dice.title': 'Mode de dés de la table',
     'campaigns.settings.dice.hint':
       'Le mode par défaut de cette table. Chaque joueur peut le suivre ou choisir le sien dans son compte.',
@@ -7333,6 +7339,10 @@ const STRINGS: Record<Locale, Dict> = {
       'The campaign is over. It remains among your memories.',
     'campaigns.status.paused': 'Paused',
     'campaigns.status.archived': 'Archived',
+    'campaigns.detail.statusBanner.paused':
+      'This campaign is paused — sessions are on hold for now.',
+    'campaigns.detail.statusBanner.archived':
+      'This campaign is archived — it stays available to read.',
     'campaigns.settings.dice.title': 'Table dice mode',
     'campaigns.settings.dice.hint':
       'The table’s default mode. Each player can follow it or pick their own in their account.',

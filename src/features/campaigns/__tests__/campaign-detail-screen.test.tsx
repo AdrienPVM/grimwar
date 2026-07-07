@@ -438,6 +438,37 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
   });
 });
 
+describe('<CampaignDetailScreen> — bannière d’état de campagne', () => {
+  it('campagne active → aucune bannière d’état', () => {
+    stateHolder.campaign = mkCampaign({ status: 'active' });
+    renderScreen();
+    expect(screen.queryByText(/est en pause/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/est archivée/i)).not.toBeInTheDocument();
+  });
+
+  it('campagne en pause → bannière « en pause » (séances suspendues)', () => {
+    stateHolder.campaign = mkCampaign({ status: 'paused' });
+    renderScreen();
+    expect(screen.getByText(/Cette campagne est en pause/i)).toBeInTheDocument();
+  });
+
+  it('campagne archivée → bannière « archivée » (consultable en lecture)', () => {
+    stateHolder.campaign = mkCampaign({ status: 'archived' });
+    renderScreen();
+    expect(screen.getByText(/Cette campagne est archivée/i)).toBeInTheDocument();
+  });
+
+  it('campagne archivée sans joueur → PAS de célébration « Invite tes joueurs »', () => {
+    // Célébrer l'invitation sur une campagne archivée serait incongru : on
+    // retombe sur le titre neutre « Inviter à la table », pas le cadre premier pas.
+    stateHolder.campaign = mkCampaign({ status: 'archived' });
+    stateHolder.members = [];
+    renderScreen();
+    expect(screen.queryByText(/Invite tes joueurs/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Inviter à la table/i)).toBeInTheDocument();
+  });
+});
+
 describe('<CampaignDetailScreen> — viewer est joueur', () => {
   it("masque le bloc invite + masque le bouton Promouvoir", () => {
     authHolder.user = { uid: 'uid-2' };

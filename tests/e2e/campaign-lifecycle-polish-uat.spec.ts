@@ -114,8 +114,12 @@ test.describe('UAT — polish cycle de vie campagne', () => {
     await page.getByRole('button', { name: /Enregistrer/i }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
-    // La puce « Archivée » apparaît dans l'en-tête du détail.
-    await expect(page.getByText('Archivée')).toBeVisible();
+    // La puce « Archivée » apparaît dans l'en-tête du détail (exact : le mot
+    // « Archivée » figure aussi dans la bannière d'état ci-dessous).
+    await expect(page.getByText('Archivée', { exact: true })).toBeVisible();
+    // La bannière d'état donne un sens fonctionnel à l'archivage (au-delà de la
+    // puce) : la campagne n'est plus « en cours », consultable en lecture.
+    await expect(page.getByText(/Cette campagne est archivée/i)).toBeVisible();
     await captureFull(page, '05-detail-campagne-archivee.png');
   });
 });

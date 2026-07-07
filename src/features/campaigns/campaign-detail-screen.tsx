@@ -279,6 +279,23 @@ export function CampaignDetailScreen(): JSX.Element {
           ) : null}
         </header>
 
+        {/* Bannière d'état — donne un sens fonctionnel au statut (au-delà de la
+            puce) : une campagne en pause / archivée n'est plus « en cours ». Rôle-
+            neutre (le MJ change l'état via les réglages ; le joueur en est informé).
+            Rendue seulement hors état nominal `active`. */}
+        {campaign.status !== 'active' ? (
+          <div
+            role="status"
+            className="mt-6 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 text-center"
+          >
+            <p className="font-serif text-body-sm italic text-text-secondary">
+              {campaign.status === 'archived'
+                ? t('campaigns.detail.statusBanner.archived')
+                : t('campaigns.detail.statusBanner.paused')}
+            </p>
+          </div>
+        ) : null}
+
         {/* Rappel compte anonyme — un joueur qui vient de rejoindre (ou un MJ
             qui vient de créer) sur un compte invité risque de tout perdre. Le
             bandeau ne s'affiche que pour les comptes anonymes. */}
@@ -289,10 +306,12 @@ export function CampaignDetailScreen(): JSX.Element {
             className="mt-10"
             aria-label={t('campaigns.detail.invite.aria')}
           >
-            {!hasPlayers ? (
-              // Premier pas : la campagne vient d'être créée, aucun joueur n'a
-              // rejoint. On met l'invitation en avant comme prochaine action
-              // évidente, avec un cadre chaleureux plutôt qu'un simple titre.
+            {!hasPlayers && campaign.status === 'active' ? (
+              // Premier pas : la campagne ACTIVE vient d'être créée, aucun joueur
+              // n'a rejoint. On met l'invitation en avant comme prochaine action
+              // évidente, avec un cadre chaleureux plutôt qu'un simple titre. On
+              // ne célèbre pas l'invitation sur une campagne en pause / archivée
+              // (l'appel « Invite tes joueurs ! » y serait incongru).
               <div className="rounded-card border border-gold-dim/40 bg-gradient-to-b from-gold-bright/[0.06] to-transparent p-6 text-center">
                 <h2 className="font-display text-xl uppercase tracking-[0.18em] text-gold-bright">
                   {t('campaigns.detail.invite.firstStepTitle')}
