@@ -14,7 +14,7 @@ import { fighterL3, seedCharacter } from './seed-character';
  *
  *   1. Un MJ crée une campagne ; un joueur (UID distinct) seed une fiche, rejoint
  *      par code, lie sa fiche (write owner-only → members.characterId + homeCampaignId).
- *   2. Le MJ ouvre la fiche via « Voir la fiche » → la fiche est EN ÉDITION (bandeau
+ *   2. Le MJ ouvre la fiche via la carte live « La compagnie » → la fiche est EN ÉDITION (bandeau
  *      « Édition MJ », bouton de montée de niveau présent — plus de lecture seule).
  *   3. Le MJ baisse les PV du joueur (tap « Subir 1 dégât ») → write cross-owner
  *      autorisé par `gmCanReadLinkedCharacter` + immuabilité des champs réservés.
@@ -114,7 +114,13 @@ test.describe('Plan 26 — omni-edit MJ + audit dm-edit', () => {
         await dm.reload();
         await waitForAppReady(dm);
         await expect(dm.getByRole('heading', { name: CAMPAIGN_NAME })).toBeVisible();
-        const viewBtn = dm.getByRole('button', { name: /Voir la fiche/i });
+        // La carte live « La compagnie » (plan 27) EST l'affordance d'ouverture :
+        // tout le tap-target porte `aria-label="Ouvrir la fiche de {nom}"` (cf.
+        // dm-view/party-card.tsx). L'ancien bouton isolé « Voir la fiche » a disparu
+        // à la fusion roster ↔ état — d'où ce libellé.
+        const viewBtn = dm.getByRole('button', {
+          name: new RegExp(`Ouvrir la fiche de.*${fighterL3.name}`, 'i'),
+        });
         await expect(viewBtn).toBeVisible({ timeout: 15_000 });
         await viewBtn.click();
 
