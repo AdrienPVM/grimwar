@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
 import {
   fighterL1MasteryDefense,
+  fighterL3,
   readCampaignEvents,
   seedCampaignMembership,
   seedCharacter,
@@ -152,5 +153,71 @@ test.describe('JALON 22.2 — auto-log du diff de fiche (PV) sur fiche liée', (
     expect(payload?.reason).toBe('damage');
     expect(payload?.delta).toBe(-1);
     expect(payload?.after).toBe((payload?.before as number) - 1);
+  });
+});
+
+/**
+ * D27 — garde-fou de la CAUSE RACINE (cf. `plans/DEBT.md > D27`).
+ *
+ * Les deux tests ci-dessus utilisent un preset déjà v2 pour rester
+ * déterministes. Ce test-ci prend au contraire un preset **v1**
+ * (`fighterL3`, sans `ancestrySubChoices` ⇒ seedé en `schemaVersion: 1`) : son
+ * chargement déclenche la migration v1 → v2 (`setDoc` plein fire-and-forget)
+ * dont la cascade de re-render rejouait l'effet `useSyncActiveCampaign` et
+ * laissait `activeCampaignId` transitoirement nul. Avant le fix D27, un jet
+ * tombant dans cette fenêtre était perdu (`writeEvent` no-op). Depuis le fix
+ * (nettoyage de la campagne active au démontage RÉEL uniquement + état
+ * `undefined` = « préserver »), le jet DOIT être journalisé malgré la
+ * migration. C'est l'ancre e2e qui retire à D27 son statut de « contournement
+ * de test ».
+ */
+test.describe('JALON 22 — D27 : auto-log résiste à la migration v1 → v2', () => {
+  test('un jet sur une fiche v1 (migrée au chargement) écrit quand même un event roll', async ({
+    page,
+  }) => {
+    const reachable = await isEmulatorReachable();
+    test.skip(!reachable, 'Émulateur Firestore non joignable — D27 skippé.');
+
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    // Preset v1 → migration v1 → v2 au chargement de la fiche.
+    const { uid, charId } = await seedCharacter(page, fighterL3, {
+      diceMode: 'digital',
+    });
+
+    const cid = `evt-d27-camp-${uid}`;
+    await seedCampaignMembership({
+      campaignId: cid,
+      gmUid: `gm-${uid}`,
+      playerUid: uid,
+      charId,
+    });
+
+    expect(await readCampaignEvents(cid)).toHaveLength(0);
+
+    await page.goto(`/character/${charId}`);
+    await waitForAppReady(page);
+    await expect(
+      page.getByText(new RegExp(fighterL3.name, 'i')).first(),
+    ).toBeVisible({ timeout: 15_000 });
+
+    // Mode Essence → jet de sauvegarde (digital → part immédiatement).
+    await page.locator('#sheet-mode-tab-essence').click();
+    const saveBtn = page.getByRole('button', { name: /Jet de sauvegarde/i }).first();
+    await expect(saveBtn).toBeVisible();
+    await saveBtn.click();
+
+    await expect
+      .poll(async () => (await readCampaignEvents(cid)).length, {
+        timeout: 15_000,
+        message: 'jet perdu pendant la fenêtre de migration (régression D27)',
+      })
+      .toBeGreaterThanOrEqual(1);
+
+    const roll = (await readCampaignEvents(cid)).find((e) => e.kind === 'roll');
+    expect(roll, 'un événement de kind "roll" est attendu malgré la migration').toBeTruthy();
+    expect(roll?.actorUserId).toBe(uid);
+    expect(roll?.actorCharacterId).toBe(charId);
   });
 });

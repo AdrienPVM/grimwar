@@ -19,7 +19,10 @@ export function SheetScreen(): JSX.Element {
   // Contexte de jeu : la campagne d'attache de la fiche devient la campagne
   // active → le pivot de dés journalise les jets dedans (no-op si non liée).
   // Appel avant tout `return` anticipé pour garder l'ordre des hooks stable.
-  useSyncActiveCampaign(character?.homeCampaignId ?? null);
+  // On passe `character?.homeCampaignId` SANS `?? null` : `undefined` (fiche pas
+  // encore chargée / re-sync de migration) doit préserver la campagne active,
+  // pas l'effacer — cf. `plans/DEBT.md > D27`.
+  useSyncActiveCampaign(character?.homeCampaignId);
 
   if (isLoading) return <Splash />;
 

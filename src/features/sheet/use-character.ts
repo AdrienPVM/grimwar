@@ -122,7 +122,18 @@ export function useCharacter(
             );
           }
 
-          if ((needsUpgrade || spellsChanged) && isOwnerRead) {
+          // Ne persiste JAMAIS depuis un snapshot issu du cache local
+          // (`fromCache`). Ce `setDoc` réécrit le document ENTIER : basé sur une
+          // vue cachée périmée, il écraserait des champs écrits concurremment
+          // côté serveur — en particulier `homeCampaignId` (le lien de campagne).
+          // Race observée (cf. `plans/DEBT.md > D27`) : la LibraryScreen met en
+          // cache la fiche à `homeCampaignId=null`, le lien passe à `cid` juste
+          // après, on ouvre la fiche → le listener livre d'abord le snapshot
+          // caché (`null`) et la migration clobberait `cid`. On attend donc la
+          // confirmation serveur (`!fromCache`) : l'affichage upgrade en mémoire
+          // sur le snapshot caché, mais l'écriture n'a lieu que sur l'autorité.
+          const serverConfirmed = !snap.metadata.fromCache;
+          if ((needsUpgrade || spellsChanged) && isOwnerRead && serverConfirmed) {
             // Persiste l'upgrade (v2 + migration sorts) en Firestore —
             // fire-and-forget, on log l'échec sans bloquer l'affichage (la
             // version migrée est déjà en mémoire). One-shot idempotent.
