@@ -199,7 +199,7 @@ describe('applyLevelUp · Fighter L1→L2', () => {
       draft: { classId: 'fighter', newClassLevel: 2, hpRoll: averageRoll },
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['action-surge']).toEqual({
+    expect(next.classResources['fighter:action-surge']).toEqual({
       current: 1,
       max: 1,
       restoresOn: 'short',
@@ -467,7 +467,7 @@ describe('applyLevelUp · Barbarian progression', () => {
       draft: { classId: 'barbarian', newClassLevel: 2, hpRoll: averageRoll },
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['rage']).toEqual({
+    expect(next.classResources['barbarian:rage']).toEqual({
       current: 2,
       max: 2,
       restoresOn: 'long',
@@ -521,12 +521,46 @@ describe('applyLevelUp · Barbarian progression', () => {
       },
       classDefinitions: ALL_CLASSES,
     });
-    expect(barbL3.classResources['rage']).toEqual({
+    expect(barbL3.classResources['barbarian:rage']).toEqual({
       current: 3,
       max: 3,
       restoresOn: 'long',
     });
     expect(barbL3.classes[0]!.subclassId).toBe('berserker');
+  });
+
+  it('level-up préserve la consommation (pas de refill gratuit) sous la clé composite', () => {
+    // Barbare L2 qui a DÉJÀ dépensé une Rage sur deux (état écrit par la carte
+    // « Réserves » sous la clé composite `barbarian:rage`). Monter de niveau
+    // n'est pas un repos : la Rage dépensée doit le rester.
+    const barbL2Consumed = {
+      ...barbarian,
+      classes: [{ ...barbarian.classes[0]!, level: 2 }],
+      totalLevel: 2,
+      classResources: {
+        'barbarian:rage': { current: 1, max: 2, restoresOn: 'long' as const },
+      },
+    };
+    const barbL3 = applyLevelUp({
+      character: barbL2Consumed,
+      draft: {
+        classId: 'barbarian',
+        newClassLevel: 3,
+        hpRoll: averageRoll,
+        subclassId: 'berserker',
+      },
+      classDefinitions: ALL_CLASSES,
+    });
+    // Max 2 → 3 (gain d'une Rage), current 1 + delta 1 = 2. Consommation
+    // préservée, PAS un refill à 3/3.
+    expect(barbL3.classResources['barbarian:rage']).toEqual({
+      current: 2,
+      max: 3,
+      restoresOn: 'long',
+    });
+    // Aucune clé bare fantôme `rage` (le bug historique en créait une que la
+    // carte ne lisait jamais → refill silencieux).
+    expect(barbL3.classResources['rage']).toBeUndefined();
   });
 });
 
@@ -612,7 +646,7 @@ describe('applyLevelUp · Cleric L1→L2', () => {
       draft,
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['channel-divinity']).toEqual({
+    expect(next.classResources['cleric:channel-divinity']).toEqual({
       current: 2,
       max: 2,
       restoresOn: 'short',
@@ -657,7 +691,7 @@ describe('applyLevelUp · Druid L1→L2', () => {
       draft,
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['wild-shape']).toEqual({
+    expect(next.classResources['druid:wild-shape']).toEqual({
       current: 2,
       max: 2,
       restoresOn: 'short',
@@ -702,7 +736,7 @@ describe('applyLevelUp · Monk L1→L2', () => {
       draft,
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['focus-points']).toEqual({
+    expect(next.classResources['monk:focus-points']).toEqual({
       current: 2,
       max: 2,
       restoresOn: 'short',
@@ -772,7 +806,7 @@ describe('applyLevelUp · Paladin L1→L2', () => {
       draft,
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['lay-on-hands']).toEqual({
+    expect(next.classResources['paladin:lay-on-hands']).toEqual({
       current: 10,
       max: 10,
       restoresOn: 'long',
@@ -785,7 +819,7 @@ describe('applyLevelUp · Paladin L1→L2', () => {
       draft,
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['channel-divinity']).toBeUndefined();
+    expect(next.classResources['paladin:channel-divinity']).toBeUndefined();
   });
 
   it('adds 6 + CON-mod HP en moyenne (d10 → 6, CON +2) → +8', () => {
@@ -891,7 +925,7 @@ describe('applyLevelUp · Sorcerer L1→L2', () => {
       draft,
       classDefinitions: ALL_CLASSES,
     });
-    expect(next.classResources['sorcery-points']).toEqual({
+    expect(next.classResources['sorcerer:sorcery-points']).toEqual({
       current: 2,
       max: 2,
       restoresOn: 'long',

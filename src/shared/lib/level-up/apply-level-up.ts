@@ -3,6 +3,10 @@ import { createEmptyClassSubChoices } from '@/shared/types/character';
 import type { ClassEntity } from '@/shared/types/content';
 
 import {
+  CONSUMABLE_RESOURCE_META,
+  resourceStorageKey,
+} from '../rules/class-resources';
+import {
   casterLevel,
   spellSlotsForCasterLevel,
   type CasterClassEntry,
@@ -41,9 +45,11 @@ const MAX_CLASSES_PER_CHARACTER = 4;
  *     valeur courante prend le même delta pour rester cohérente avec un repos
  *     long implicite SRD-friendly
  *   - `hitDice[classId].max` += 1 (même classe)
- *   - `classResources[resourceId]` mis à jour depuis `classResourceProgression`
- *     pour le nouveau niveau (les ressources textuelles type « d6 » sont
- *     ignorées — seuls les compteurs numériques sont matérialisés en pool)
+ *   - `classResources` mis à jour depuis `classResourceProgression` pour le
+ *     nouveau niveau : réserves consommables sous clé COMPOSITE `classId:key`
+ *     (celle que lit la carte + le moteur de repos), consommation en cours
+ *     PRÉSERVÉE (delta de max, pas de refill gratuit) ; clés bare historiques
+ *     pour le pact magic + dés passifs ; textuelles « d6 » ignorées
  *   - ASI : abilities mutées dans les bornes ; total des bonus = 2 exactement
  *   - Feat : pas de transformation directe ici (le feat sera consommé par
  *     un futur moteur d'effets ; JALON 2B.3a expose juste la validation et
@@ -296,24 +302,61 @@ export function applyLevelUp({
     : character.extraProficiencies;
 
   // 7. classResources — applique la progression au nouveau niveau.
+  //
+  // Clé de stockage : les réserves CONSOMMABLES (Rage, Conduit divin, Imposition
+  // des mains…) utilisent la clé COMPOSITE `classId:resourceKey` — exactement
+  // celle que lisent la carte « Réserves » (`currentResourceValue`) et le moteur
+  // de repos (`deriveClassResourcePools`). C'est multiclasse-safe : un Clerc et
+  // un Paladin ont chacun leur `channel-divinity` distinct. Écrire la clé bare
+  // ici (bug historique) rendait la réserve introuvable côté carte → refill
+  // fantôme (le pool retombait sur son max via le fallback) à chaque level-up +
+  // collision multiclasse. Les clés NON consommables (dés passifs numériques
+  // comme `rage-damage`, sous-système de pacte `pact-magic-slots` /
+  // `pact-magic-slot-level`, `arcane-recovery-slot-level`…) gardent leur clé
+  // bare historique — elles sont lues telles quelles par leurs sous-systèmes.
   const nextClassResources: Character['classResources'] = { ...character.classResources };
   const progression = targetDef.classResourceProgression;
   if (progression) {
     for (const [resourceId, table] of Object.entries(progression)) {
       const entry = table[parsed.newClassLevel - 1];
-      if (typeof entry === 'number' && entry > 0) {
-        const restoresOn = inferRestoresOn(resourceId);
-        nextClassResources[resourceId] = {
-          current: entry,
+      // Les valeurs textuelles (« d6 », « 1d6 ») ne donnent pas de pool — elles
+      // décrivent un dé scalable. Pas matérialisées en classResources.
+      if (typeof entry !== 'number') continue;
+
+      const isConsumable = resourceId in CONSUMABLE_RESOURCE_META;
+      const storageKey = isConsumable
+        ? resourceStorageKey(parsed.classId, resourceId)
+        : resourceId;
+
+      if (entry <= 0) {
+        // Ressource désactivée / pas encore débloquée à ce niveau — on retire.
+        delete nextClassResources[storageKey];
+        continue;
+      }
+
+      if (isConsumable) {
+        // `restoresOn` fait autorité depuis la liste blanche (fini l'heuristique).
+        const restoresOn = CONSUMABLE_RESOURCE_META[resourceId]!.restoresOn;
+        // Préserve la consommation en cours : `current` ne remonte que du DELTA
+        // de max (comme le chemin spellSlots ci-dessus), jamais un refill gratuit.
+        // Un level-up n'est pas un repos — une Rage déjà dépensée le reste.
+        const prev = nextClassResources[storageKey];
+        const prevMax = prev?.max ?? 0;
+        const delta = Math.max(0, entry - prevMax);
+        nextClassResources[storageKey] = {
+          current: Math.min((prev?.current ?? 0) + delta, entry),
           max: entry,
           restoresOn,
         };
-      } else if (typeof entry === 'number' && entry === 0) {
-        // Ressource désactivée à ce niveau — on supprime
-        delete nextClassResources[resourceId];
+      } else {
+        // Sous-systèmes à clé bare (pact magic, dés passifs numériques) :
+        // matérialisation pleine (comportement historique inchangé).
+        nextClassResources[storageKey] = {
+          current: entry,
+          max: entry,
+          restoresOn: inferRestoresOn(resourceId),
+        };
       }
-      // Les valeurs textuelles (« d6 », « 1d6 ») ne donnent pas de pool — elles
-      // décrivent un dé scalable. Pas matérialisées en classResources.
     }
   }
 
