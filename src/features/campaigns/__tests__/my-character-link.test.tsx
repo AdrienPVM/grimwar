@@ -51,11 +51,16 @@ function renderSection(currentCharacterId: string | null): void {
 }
 
 describe('<MyCharacterLink>', () => {
-  it('aucune fiche liée, aucune fiche existante → CTA « Créer un personnage » seul', () => {
+  it('aucune fiche liée, aucune fiche existante → cadre « premier pas » + CTA « Créer un personnage » seul', () => {
     // 0 fiche : le picker « Lier un existant » serait vide → masqué. Seul le
-    // chemin guidé « Créer un personnage » est proposé.
+    // chemin guidé « Créer un personnage » est proposé. L'état non lié est
+    // présenté comme un cadre chaleureux d'accueil (miroir du « Invite tes
+    // joueurs » MJ), pas comme un état vide neutre.
     renderSection(null);
-    expect(screen.getByText(/Aucun personnage lié/i)).toBeInTheDocument();
+    expect(screen.getByText('Rejoins l’aventure')).toBeInTheDocument();
+    expect(screen.getByText(/Bienvenue à la table/i)).toBeInTheDocument();
+    // Le titre neutre « Mon personnage » ne s'affiche que sur l'état lié.
+    expect(screen.queryByText('Mon personnage')).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /Créer un personnage/i }),
     ).toBeInTheDocument();

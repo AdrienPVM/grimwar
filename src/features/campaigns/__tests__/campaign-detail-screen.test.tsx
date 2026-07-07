@@ -497,14 +497,16 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     expect(navigateMock).toHaveBeenCalledWith('/campaigns');
   });
 
-  it('affiche la section « Mon personnage » avec le CTA « Créer un personnage » quand aucune fiche liée', () => {
+  it('affiche le cadre « premier pas » joueur + CTA « Créer un personnage » quand aucune fiche liée', () => {
     authHolder.user = { uid: 'uid-2' };
     stateHolder.campaign = mkCampaign({ gmIds: ['uid-1'] });
     stateHolder.members = [mkMember({ userId: 'uid-2', characterId: null })];
     renderScreen();
 
-    expect(screen.getByText(/Mon personnage/i)).toBeInTheDocument();
-    expect(screen.getByText(/Aucun personnage lié/i)).toBeInTheDocument();
+    // Un joueur fraîchement arrivé sans fiche liée voit un cadre d'accueil
+    // chaleureux (miroir du « Invite tes joueurs » MJ), pas un état vide neutre.
+    expect(screen.getByText('Rejoins l’aventure')).toBeInTheDocument();
+    expect(screen.getByText(/Bienvenue à la table/i)).toBeInTheDocument();
     // Chemin guidé : sans fiche existante, on propose de créer (le picker « Lier
     // un existant » serait vide → masqué).
     expect(

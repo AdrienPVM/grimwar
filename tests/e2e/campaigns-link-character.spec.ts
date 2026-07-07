@@ -97,10 +97,12 @@ test.describe('JALON 4A.2 — section « Mon personnage » + picker de liaison',
         ).toBeVisible({ timeout: 15_000 });
 
         // Le joueur a un doc member → la section « Mon personnage » est rendue,
-        // sans fiche liée. Chemin guidé : CTA « Créer un personnage » présent,
-        // « Lier un existant » ABSENT (aucune fiche → picker vide inutile).
-        await expect(player.getByText(/Mon personnage/i)).toBeVisible();
-        await expect(player.getByText(/Aucun personnage lié/i)).toBeVisible();
+        // sans fiche liée. Sans fiche liée, elle prend la forme d'un cadre
+        // d'accueil chaleureux « premier pas » (miroir du « Invite tes joueurs »
+        // MJ), pas d'un état vide neutre. Chemin guidé : CTA « Créer un
+        // personnage » présent, « Lier un existant » ABSENT (picker vide inutile).
+        await expect(player.getByText('Rejoins l’aventure')).toBeVisible();
+        await expect(player.getByText(/Bienvenue à la table/i)).toBeVisible();
         const createCta = player.getByRole('button', {
           name: /Créer un personnage/i,
         });

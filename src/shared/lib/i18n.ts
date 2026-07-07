@@ -991,6 +991,8 @@ export type StringKey =
   | 'campaigns.detail.myCharacter.open'
   | 'campaigns.detail.myCharacter.create'
   | 'campaigns.detail.myCharacter.linkExisting'
+  | 'campaigns.detail.myCharacter.firstStepTitle'
+  | 'campaigns.detail.myCharacter.firstStepBody'
   | 'campaigns.detail.error.title'
   | 'campaigns.detail.error.body'
   | 'campaigns.detail.error.retry'
@@ -3870,6 +3872,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.myCharacter.open': 'Ouvrir ma fiche',
     'campaigns.detail.myCharacter.create': 'Créer un personnage',
     'campaigns.detail.myCharacter.linkExisting': 'Lier un existant',
+    'campaigns.detail.myCharacter.firstStepTitle': 'Rejoins l’aventure',
+    'campaigns.detail.myCharacter.firstStepBody':
+      'Bienvenue à la table. Crée ton personnage ou lie-en un existant pour prendre ta place dans la campagne.',
     'campaigns.detail.error.title': 'Lecture impossible',
     'campaigns.detail.error.body':
       'Impossible de charger cette campagne. Vérifie ta connexion et réessaye.',
@@ -7133,6 +7138,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.myCharacter.open': 'Open my sheet',
     'campaigns.detail.myCharacter.create': 'Create a character',
     'campaigns.detail.myCharacter.linkExisting': 'Link an existing one',
+    'campaigns.detail.myCharacter.firstStepTitle': 'Join the adventure',
+    'campaigns.detail.myCharacter.firstStepBody':
+      'Welcome to the table. Create your character or link an existing one to take your seat in the campaign.',
     'campaigns.detail.error.title': 'Cannot load',
     'campaigns.detail.error.body':
       'Cannot fetch this campaign. Check your connection and try again.',
