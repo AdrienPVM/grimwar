@@ -47,6 +47,98 @@ import {
   SRD_MAGIC_ITEMS_RELIQUAT,
   SRD_MAGIC_ITEMS_RELIQUAT_COUNTS,
 } from './data/srd-magic-items-reliquat';
+import {
+  SRD_MAGIC_ITEMS_RINGS_RARE,
+  SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS,
+} from './data/srd-magic-items-rings-rare';
+import {
+  SRD_MAGIC_ITEMS_WANDS,
+  SRD_MAGIC_ITEMS_WANDS_COUNTS,
+} from './data/srd-magic-items-wands';
+import {
+  SRD_MAGIC_ITEMS_STAVES,
+  SRD_MAGIC_ITEMS_STAVES_COUNTS,
+} from './data/srd-magic-items-staves';
+import {
+  SRD_MAGIC_ITEMS_POTIONS_RARE,
+  SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS,
+} from './data/srd-magic-items-potions-rare';
+import {
+  SRD_MAGIC_ITEMS_RODS,
+  SRD_MAGIC_ITEMS_RODS_COUNTS,
+} from './data/srd-magic-items-rods';
+import {
+  SRD_MAGIC_ITEMS_ARMOR_RARE,
+  SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS,
+} from './data/srd-magic-items-armor-rare';
+import {
+  SRD_MAGIC_ITEMS_SWORDS,
+  SRD_MAGIC_ITEMS_SWORDS_COUNTS,
+} from './data/srd-magic-items-swords';
+import {
+  SRD_MAGIC_ITEMS_BLUDGEONING,
+  SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS,
+} from './data/srd-magic-items-bludgeoning';
+import {
+  SRD_MAGIC_ITEMS_BLADES,
+  SRD_MAGIC_ITEMS_BLADES_COUNTS,
+} from './data/srd-magic-items-blades';
+import {
+  SRD_MAGIC_ITEMS_WEAPONS_MISC,
+  SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS,
+} from './data/srd-magic-items-weapons-misc';
+import {
+  SRD_MAGIC_ITEMS_CLOAKS,
+  SRD_MAGIC_ITEMS_CLOAKS_COUNTS,
+} from './data/srd-magic-items-cloaks';
+import {
+  SRD_MAGIC_ITEMS_BOOKS,
+  SRD_MAGIC_ITEMS_BOOKS_COUNTS,
+} from './data/srd-magic-items-books';
+import {
+  SRD_MAGIC_ITEMS_DEVICES,
+  SRD_MAGIC_ITEMS_DEVICES_COUNTS,
+} from './data/srd-magic-items-devices';
+import {
+  SRD_MAGIC_ITEMS_WORN,
+  SRD_MAGIC_ITEMS_WORN_COUNTS,
+} from './data/srd-magic-items-worn';
+import {
+  SRD_MAGIC_ITEMS_CONSUMABLES,
+  SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS,
+} from './data/srd-magic-items-consumables';
+import {
+  SRD_MAGIC_ITEMS_IMPLEMENTS,
+  SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS,
+} from './data/srd-magic-items-implements';
+import {
+  SRD_MAGIC_ITEMS_PLANAR,
+  SRD_MAGIC_ITEMS_PLANAR_COUNTS,
+} from './data/srd-magic-items-planar';
+import {
+  SRD_MAGIC_ITEMS_CONTAINERS,
+  SRD_MAGIC_ITEMS_CONTAINERS_COUNTS,
+} from './data/srd-magic-items-containers';
+import {
+  SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
+  SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS,
+} from './data/srd-magic-items-wondrous-variants';
+import {
+  SRD_MAGIC_ITEMS_IOUN,
+  SRD_MAGIC_ITEMS_IOUN_COUNTS,
+} from './data/srd-magic-items-ioun';
+import {
+  SRD_MAGIC_ITEMS_BAG_OF_BEANS,
+  SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS,
+} from './data/srd-magic-items-bag-of-beans';
+import {
+  SRD_MAGIC_ITEMS_FIGURINE,
+  SRD_MAGIC_ITEMS_FIGURINE_COUNTS,
+} from './data/srd-magic-items-figurine';
+import {
+  SRD_MAGIC_ITEMS_DECK,
+  SRD_MAGIC_ITEMS_DECK_COUNTS,
+} from './data/srd-magic-items-deck';
 
 const MAGIC_ITEMS_PATH = 'public/data/magic-items.json';
 
@@ -92,6 +184,29 @@ async function main(): Promise<void> {
     ...SRD_MAGIC_ITEMS_ARMOR_SHIELDS,
     ...SRD_MAGIC_ITEMS_UTILITY,
     ...SRD_MAGIC_ITEMS_RELIQUAT,
+    ...SRD_MAGIC_ITEMS_RINGS_RARE,
+    ...SRD_MAGIC_ITEMS_WANDS,
+    ...SRD_MAGIC_ITEMS_STAVES,
+    ...SRD_MAGIC_ITEMS_POTIONS_RARE,
+    ...SRD_MAGIC_ITEMS_RODS,
+    ...SRD_MAGIC_ITEMS_ARMOR_RARE,
+    ...SRD_MAGIC_ITEMS_SWORDS,
+    ...SRD_MAGIC_ITEMS_BLUDGEONING,
+    ...SRD_MAGIC_ITEMS_BLADES,
+    ...SRD_MAGIC_ITEMS_WEAPONS_MISC,
+    ...SRD_MAGIC_ITEMS_CLOAKS,
+    ...SRD_MAGIC_ITEMS_BOOKS,
+    ...SRD_MAGIC_ITEMS_DEVICES,
+    ...SRD_MAGIC_ITEMS_WORN,
+    ...SRD_MAGIC_ITEMS_CONSUMABLES,
+    ...SRD_MAGIC_ITEMS_IMPLEMENTS,
+    ...SRD_MAGIC_ITEMS_PLANAR,
+    ...SRD_MAGIC_ITEMS_CONTAINERS,
+    ...SRD_MAGIC_ITEMS_WONDROUS_VARIANTS,
+    ...SRD_MAGIC_ITEMS_IOUN,
+    ...SRD_MAGIC_ITEMS_BAG_OF_BEANS,
+    ...SRD_MAGIC_ITEMS_FIGURINE,
+    ...SRD_MAGIC_ITEMS_DECK,
   ];
 
   // Garde-fou : aucun slug ne doit être déclaré dans plus d'un module SRD.
@@ -114,7 +229,16 @@ async function main(): Promise<void> {
     const override = srdById.get(item.id);
     if (override) {
       replacedIds.add(item.id);
-      return toJsonEntry(override);
+      const next = toJsonEntry(override);
+      // Les modules SRD portent le texte + Harmonisation, PAS la couche
+      // mécanique `effects[]` (enrichissement séparé). On la préserve donc
+      // depuis l'entrée existante quand l'override n'en fournit pas — sinon
+      // un re-run de l'extracteur effacerait silencieusement les effects
+      // (régression attrapée par tests/1B-magic-effects-backfill.test.ts).
+      if (item.effects !== undefined && next.effects === undefined) {
+        next.effects = item.effects;
+      }
+      return next;
     }
     return item;
   });
@@ -185,6 +309,289 @@ async function main(): Promise<void> {
   if (SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.common !== 1 || SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.uncommon !== 7) {
     throw new Error(
       `[extract-srd-magic-items] PARSE STRICT FAIL — reliquat C.7 attendu 1 common + 7 uncommon, trouvé ${SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.common} + ${SRD_MAGIC_ITEMS_RELIQUAT_COUNTS.uncommon}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.total !== SRD_MAGIC_ITEMS_RINGS_RARE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur rings-rare désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.rare !== 9 ||
+    SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.legendary !== 5
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — rings-rare D29.1 attendu 9 rare + 3 very rare + 5 legendary, trouvé ${SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_RINGS_RARE_COUNTS.legendary}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_WANDS_COUNTS.total !== SRD_MAGIC_ITEMS_WANDS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur wands désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_WANDS_COUNTS.uncommon !== 5 ||
+    SRD_MAGIC_ITEMS_WANDS_COUNTS.rare !== 7 ||
+    SRD_MAGIC_ITEMS_WANDS_COUNTS.veryRare !== 1
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — wands D29.2 attendu 5 uncommon + 7 rare + 1 very rare, trouvé ${SRD_MAGIC_ITEMS_WANDS_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_WANDS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_WANDS_COUNTS.veryRare}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_STAVES_COUNTS.total !== SRD_MAGIC_ITEMS_STAVES.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur staves désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.uncommon !== 1 ||
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.rare !== 5 ||
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.veryRare !== 5 ||
+    SRD_MAGIC_ITEMS_STAVES_COUNTS.legendary !== 1
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — staves D29.3 attendu 1 uncommon + 5 rare + 5 very rare + 1 legendary, trouvé ${SRD_MAGIC_ITEMS_STAVES_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_STAVES_COUNTS.legendary}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.total !== SRD_MAGIC_ITEMS_POTIONS_RARE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur potions-rare désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.rare !== 7 ||
+    SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.veryRare !== 3
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — potions-rare D29.4 attendu 7 rare + 3 very rare, trouvé ${SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_POTIONS_RARE_COUNTS.veryRare}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_RODS_COUNTS.total !== SRD_MAGIC_ITEMS_RODS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur rods désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_RODS_COUNTS.rare !== 1 ||
+    SRD_MAGIC_ITEMS_RODS_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_RODS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_RODS_COUNTS.attuned !== 4
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — rods D29.5 attendu 1 rare + 3 very rare + 1 legendary + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_RODS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_RODS_COUNTS.attuned}.`,
+    );
+  }
+  if (SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.total !== SRD_MAGIC_ITEMS_ARMOR_RARE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur armor-rare désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.rare !== 6 ||
+    SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.veryRare !== 6 ||
+    SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.legendary !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — armor-rare D29.6 attendu 6 rare + 6 very rare + 2 legendary, trouvé ${SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_ARMOR_RARE_COUNTS.legendary}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_SWORDS_COUNTS.total !== SRD_MAGIC_ITEMS_SWORDS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur swords désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_SWORDS_COUNTS.rare !== 4 ||
+    SRD_MAGIC_ITEMS_SWORDS_COUNTS.veryRare !== 2 ||
+    SRD_MAGIC_ITEMS_SWORDS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_SWORDS_COUNTS.attuned !== 7
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — swords D29.7 attendu 4 rare + 2 very rare + 1 legendary + 7 attuned, trouvé ${SRD_MAGIC_ITEMS_SWORDS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_SWORDS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_SWORDS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_SWORDS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.total !== SRD_MAGIC_ITEMS_BLUDGEONING.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur bludgeoning désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.rare !== 4 ||
+    SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.veryRare !== 1 ||
+    SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.attuned !== 5
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — bludgeoning D29.8 attendu 4 rare + 1 very rare + 1 legendary + 5 attuned, trouvé ${SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.rare} + ${SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_BLUDGEONING_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_BLADES_COUNTS.total !== SRD_MAGIC_ITEMS_BLADES.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur blades désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_BLADES_COUNTS.rare !== 1 ||
+    SRD_MAGIC_ITEMS_BLADES_COUNTS.veryRare !== 2 ||
+    SRD_MAGIC_ITEMS_BLADES_COUNTS.legendary !== 3 ||
+    SRD_MAGIC_ITEMS_BLADES_COUNTS.attuned !== 5
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — blades D29.9 attendu 1 rare + 2 very rare + 3 legendary + 5 attuned, trouvé ${SRD_MAGIC_ITEMS_BLADES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_BLADES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_BLADES_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_BLADES_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.total !== SRD_MAGIC_ITEMS_WEAPONS_MISC.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur weapons-misc désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.rare !== 3 ||
+    SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.attuned !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — weapons-misc D29.10 attendu 3 rare + 3 very rare + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.rare} + ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_WEAPONS_MISC_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_CLOAKS_COUNTS.total !== SRD_MAGIC_ITEMS_CLOAKS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur cloaks désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.rare !== 6 ||
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_CLOAKS_COUNTS.attuned !== 9
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — cloaks D29.11 attendu 6 rare + 3 very rare + 1 legendary + 9 attuned, trouvé ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_CLOAKS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_BOOKS_COUNTS.total !== SRD_MAGIC_ITEMS_BOOKS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur books désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_BOOKS_COUNTS.veryRare !== 7 || SRD_MAGIC_ITEMS_BOOKS_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — books D29.12 attendu 7 very rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_BOOKS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_BOOKS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_DEVICES_COUNTS.total !== SRD_MAGIC_ITEMS_DEVICES.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur devices désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_DEVICES_COUNTS.rare !== 8 ||
+    SRD_MAGIC_ITEMS_DEVICES_COUNTS.veryRare !== 2 ||
+    SRD_MAGIC_ITEMS_DEVICES_COUNTS.attuned !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — devices D29.13 attendu 8 rare + 2 very rare + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_DEVICES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_DEVICES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_DEVICES_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_WORN_COUNTS.total !== SRD_MAGIC_ITEMS_WORN.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur worn désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_WORN_COUNTS.rare !== 7 ||
+    SRD_MAGIC_ITEMS_WORN_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_WORN_COUNTS.attuned !== 6
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — worn D29.14 attendu 7 rare + 1 legendary + 6 attuned, trouvé ${SRD_MAGIC_ITEMS_WORN_COUNTS.rare} + ${SRD_MAGIC_ITEMS_WORN_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_WORN_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.total !== SRD_MAGIC_ITEMS_CONSUMABLES.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur consumables désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.rare !== 2 ||
+    SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.veryRare !== 2 ||
+    SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.legendary !== 2 ||
+    SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.attuned !== 0
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — consumables D29.15 attendu 2 rare + 2 very rare + 2 legendary + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_CONSUMABLES_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.total !== SRD_MAGIC_ITEMS_IMPLEMENTS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur implements désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.rare !== 6 ||
+    SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.veryRare !== 3 ||
+    SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.attuned !== 4
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — implements D29.16 attendu 6 rare + 3 very rare + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_IMPLEMENTS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_PLANAR_COUNTS.total !== SRD_MAGIC_ITEMS_PLANAR.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur planar désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_PLANAR_COUNTS.rare !== 2 ||
+    SRD_MAGIC_ITEMS_PLANAR_COUNTS.legendary !== 7 ||
+    SRD_MAGIC_ITEMS_PLANAR_COUNTS.attuned !== 4
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — planar D29.17 attendu 2 rare + 7 legendary + 4 attuned, trouvé ${SRD_MAGIC_ITEMS_PLANAR_COUNTS.rare} + ${SRD_MAGIC_ITEMS_PLANAR_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_PLANAR_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.total !== SRD_MAGIC_ITEMS_CONTAINERS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur containers désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.uncommon !== 1 ||
+    SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.rare !== 4 ||
+    SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.veryRare !== 5 ||
+    SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.attuned !== 3
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — containers D29.18 attendu 1 uncommon + 4 rare + 5 very rare + 3 attuned, trouvé ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.uncommon} + ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_CONTAINERS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.total !== SRD_MAGIC_ITEMS_WONDROUS_VARIANTS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur wondrous-variants désynchronisé');
+  }
+  if (
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.veryRare !== 1 ||
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.legendary !== 1 ||
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.artifact !== 1 ||
+    SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.attuned !== 2
+  ) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — wondrous-variants D29.19 attendu 1 very rare + 1 legendary + 1 artifact + 2 attuned, trouvé ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.veryRare} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.artifact} + ${SRD_MAGIC_ITEMS_WONDROUS_VARIANTS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_IOUN_COUNTS.total !== SRD_MAGIC_ITEMS_IOUN.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur ioun désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_IOUN_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_IOUN_COUNTS.attuned !== 1) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — ioun D29.20 attendu 1 rare + 1 attuned, trouvé ${SRD_MAGIC_ITEMS_IOUN_COUNTS.rare} + ${SRD_MAGIC_ITEMS_IOUN_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.total !== SRD_MAGIC_ITEMS_BAG_OF_BEANS.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur bag-of-beans désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — bag-of-beans D29.21 attendu 1 rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.rare} + ${SRD_MAGIC_ITEMS_BAG_OF_BEANS_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_FIGURINE_COUNTS.total !== SRD_MAGIC_ITEMS_FIGURINE.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur figurine désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_FIGURINE_COUNTS.rare !== 1 || SRD_MAGIC_ITEMS_FIGURINE_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — figurine D29.22 attendu 1 rare + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_FIGURINE_COUNTS.rare} + ${SRD_MAGIC_ITEMS_FIGURINE_COUNTS.attuned}.`,
+    );
+  }
+
+  if (SRD_MAGIC_ITEMS_DECK_COUNTS.total !== SRD_MAGIC_ITEMS_DECK.length) {
+    throw new Error('[extract-srd-magic-items] PARSE STRICT FAIL — compteur deck désynchronisé');
+  }
+  if (SRD_MAGIC_ITEMS_DECK_COUNTS.legendary !== 1 || SRD_MAGIC_ITEMS_DECK_COUNTS.attuned !== 0) {
+    throw new Error(
+      `[extract-srd-magic-items] PARSE STRICT FAIL — deck D29.23 attendu 1 legendary + 0 attuned, trouvé ${SRD_MAGIC_ITEMS_DECK_COUNTS.legendary} + ${SRD_MAGIC_ITEMS_DECK_COUNTS.attuned}.`,
     );
   }
 
