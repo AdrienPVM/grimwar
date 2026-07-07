@@ -93,7 +93,10 @@ export function SessionScreen(): JSX.Element {
   }, [campaign, user]);
 
   const roster = useMemo(
-    () => (campaign ? buildRoster(campaign, members, user?.uid ?? null) : []),
+    () =>
+      campaign
+        ? buildRoster(campaign, members, user?.uid ?? null, user?.displayName ?? null)
+        : [],
     [campaign, members, user],
   );
 

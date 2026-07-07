@@ -1,4 +1,4 @@
-import { useMemo, useState, type JSX } from 'react';
+import { useEffect, useMemo, useState, type JSX } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { AnonymousNudge } from '@/features/auth/anonymous-nudge';
@@ -12,6 +12,7 @@ import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
+import { healOwnMemberIdentity } from '@/shared/lib/services/campaigns';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
 import { CampaignEventFeed } from './campaign-event-feed';
@@ -41,16 +42,18 @@ interface PromoteTarget {
  *   - Bloc invitation (visible uniquement aux MJ — un joueur n'a pas
  *     vocation à diffuser le code, c'est le rôle du meneur)
  *   - Section roster — liste plate de tous les membres (MJ d'abord puis
- *     joueurs). Chaque ligne : libellé UID (tronqué) + chip rôle + bouton
- *     « Promouvoir en MJ » si le viewer est MJ et la cible est joueur.
+ *     joueurs). Chaque ligne : nom d'affichage (ou UID tronqué en repli) + chip
+ *     rôle + bouton « Promouvoir en MJ » si le viewer est MJ et la cible est joueur.
  *   - Bouton « Quitter la campagne » en pied de page → ouvre
  *     LeaveCampaignModal (réutilisé de 4.0.4).
  *
  * Décisions UX V1 :
- *  - Pas de displayName ni d'avatar — les rules Firestore n'autorisent pas la
- *    lecture cross-user de `/users/{uid}`. On affiche l'UID tronqué (8 chars +
- *    ellipsis). Quand un displayName partagé existera (V1.5), un denormalized
- *    `displayName` sur `members/{uid}` couvrira le besoin.
+ *  - Nom d'affichage DÉNORMALISÉ sur `members/{uid}.displayName` (les rules
+ *    interdisent la lecture cross-user de `/users/{uid}`, donc le nom doit vivre
+ *    sur le doc member que le lecteur a déjà le droit de lire). Copié du profil
+ *    Auth au join ; le propriétaire auto-soigne son propre doc au chargement
+ *    (`healOwnMemberIdentity`). Repli UID tronqué tant qu'aucun nom n'est posé
+ *    (compte anonyme, doc legacy). Avatar (`photoURL`) stocké mais non rendu V1.
  *  - Pas de bouton « Kick » V1 — le service expose `kickMember` (4.0.3) mais
  *    aucun consommateur UI n'est mappé. Réservé à 4.0.6+ avec un flux de
  *    confirmation dédié (le kick est destructif et asymétrique de la promotion).
@@ -90,7 +93,7 @@ export function CampaignDetailScreen(): JSX.Element {
 
   const roster = useMemo<RosterEntry[]>(() => {
     if (!campaign) return [];
-    return buildRoster(campaign, members, user?.uid ?? null);
+    return buildRoster(campaign, members, user?.uid ?? null, user?.displayName ?? null);
   }, [campaign, members, user]);
 
   // Aucun joueur n'a encore rejoint : le roster ne contient que des MJ. Sert à
@@ -126,6 +129,28 @@ export function CampaignDetailScreen(): JSX.Element {
     () => (myMembership?.characterId ? [myMembership.characterId] : []),
     [myMembership],
   );
+
+  // Self-heal du nom dénormalisé : si le doc member de l'utilisateur courant
+  // n'a pas (ou plus) le displayName/photoURL de son profil Auth, on le corrige.
+  // Effet légitime (write Firestore, pas un état dérivé). Idempotent et gardé
+  // par un diff pré-calculé côté client — quand l'écriture propage via le
+  // listener, `myMembership` se met à jour, le diff devient faux, l'effet ne
+  // réécrit plus (convergence, pas de boucle). Non couvert : le MJ pur (sans
+  // doc member) — `healOwnMemberIdentity` no-op alors (getDoc absent).
+  useEffect(() => {
+    if (!cid || !user || !myMembership) return;
+    const nameDrift = (myMembership.displayName ?? null) !== (user.displayName ?? null);
+    const photoDrift = (myMembership.photoURL ?? null) !== (user.photoURL ?? null);
+    if (!nameDrift && !photoDrift) return;
+    void healOwnMemberIdentity(cid, user.uid, {
+      displayName: user.displayName ?? null,
+      photoURL: user.photoURL ?? null,
+    });
+  }, [
+    cid,
+    user,
+    myMembership,
+  ]);
 
   if (isLoading) return <Splash />;
 
@@ -447,6 +472,12 @@ export function CampaignDetailScreen(): JSX.Element {
 export interface RosterEntry {
   uid: string;
   label: string;
+  /**
+   * `true` quand `label` est un vrai nom d'affichage (displayName dénormalisé),
+   * `false` quand c'est le repli UID tronqué. Pilote la typographie (serif pour
+   * un nom, mono pour un identifiant technique).
+   */
+  hasName: boolean;
   role: 'gm' | 'member';
   /** L'entrée correspond à l'utilisateur connecté. */
   isSelf: boolean;
@@ -466,44 +497,62 @@ export interface RosterEntry {
  * Le dédoublonnage est nécessaire : `promoteToGm` (4.0.3) garde le doc member
  * et lui passe `role: 'gm'`, donc un MJ peut apparaître DOUBLE (dans `gmIds`
  * ET dans `members`). On garde la priorité gmIds (source de vérité côté rules).
+ *
+ * Libellé : displayName dénormalisé du doc member → repli UID tronqué. Pour LA
+ * ligne de l'utilisateur courant, le nom LIVE de son profil Auth (`myDisplayName`)
+ * prime sur la valeur stockée — ainsi son propre nom s'affiche instantanément,
+ * sans attendre l'écriture de self-heal (qui, elle, sert aux AUTRES membres).
  */
 export function buildRoster(
   campaign: Campaign,
   members: Membership[],
   myUid: string | null,
+  myDisplayName: string | null,
 ): RosterEntry[] {
+  const byUid = new Map<string, Membership>(members.map((m) => [m.userId, m]));
   const seen = new Set<string>();
   const result: RosterEntry[] = [];
+
+  function makeEntry(
+    uid: string,
+    role: 'gm' | 'member',
+    characterId: string | null,
+    storedName: string | null,
+  ): RosterEntry {
+    const isSelf = myUid !== null && uid === myUid;
+    const name = (isSelf ? myDisplayName : null) ?? storedName;
+    const trimmed = name?.trim() ?? '';
+    const hasName = trimmed !== '';
+    return {
+      uid,
+      label: hasName ? trimmed : formatUid(uid),
+      hasName,
+      role,
+      isSelf,
+      characterId,
+    };
+  }
+
   for (const uid of campaign.gmIds) {
     if (seen.has(uid)) continue;
     seen.add(uid);
-    result.push({
-      uid,
-      label: formatUid(uid),
-      role: 'gm',
-      isSelf: myUid !== null && uid === myUid,
-      characterId: null,
-    });
+    // Un MJ promu depuis un doc member porte un displayName → on le récupère.
+    result.push(makeEntry(uid, 'gm', null, byUid.get(uid)?.displayName ?? null));
   }
   for (const m of members) {
     if (seen.has(m.userId)) continue;
     seen.add(m.userId);
-    result.push({
-      uid: m.userId,
-      label: formatUid(m.userId),
-      role: m.role,
-      isSelf: myUid !== null && m.userId === myUid,
-      characterId: m.characterId,
-    });
+    result.push(makeEntry(m.userId, m.role, m.characterId, m.displayName ?? null));
   }
   return result;
 }
 
 /**
- * Tronquage UID — V1 on n'a pas de displayName partagé (cf. décision UI),
- * donc on affiche un préfixe lisible suivi d'une ellipsis pour rappeler que
- * c'est un identifiant technique. Tronqué à 8 chars (assez pour distinguer
- * 99 % des paires d'UIDs Firebase).
+ * Tronquage UID — repli quand un membre n'a pas (encore) de displayName
+ * dénormalisé (compte anonyme, ou doc antérieur au champ pas encore auto-soigné).
+ * On affiche un préfixe lisible suivi d'une ellipsis pour rappeler que c'est un
+ * identifiant technique. Tronqué à 8 chars (assez pour distinguer 99 % des
+ * paires d'UIDs Firebase).
  */
 export function formatUid(uid: string): string {
   if (uid.length <= 10) return uid;

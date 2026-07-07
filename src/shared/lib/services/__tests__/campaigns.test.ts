@@ -163,6 +163,7 @@ import {
   ensureCampaignExists,
   generateInviteCode,
   getCampaign,
+  healOwnMemberIdentity,
   joinByCode,
   kickMember,
   leaveCampaign,
@@ -568,6 +569,80 @@ describe('joinByCode', () => {
     // On laisse remonter — le screen branche le fallback générique sur le catch.
     await expect(joinByCode('ABC234', UID)).rejects.toMatchObject({
       code: 'unavailable',
+    });
+  });
+
+  it('dénormalise displayName + photoURL du profil dans le payload member', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ campaignId: 'camp-X' }),
+    });
+    await joinByCode('ABC234', UID, {
+      displayName: 'Galadriel',
+      photoURL: 'https://example.test/a.png',
+    });
+    const [, payload] = mockSetDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({
+      displayName: 'Galadriel',
+      photoURL: 'https://example.test/a.png',
+    });
+  });
+
+  it('sans profil → displayName/photoURL null (compte anonyme / appelant legacy)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ campaignId: 'camp-X' }),
+    });
+    await joinByCode('ABC234', UID);
+    const [, payload] = mockSetDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ displayName: null, photoURL: null });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// healOwnMemberIdentity — self-heal du displayName dénormalisé
+// ─────────────────────────────────────────────────────────────────────
+
+describe('healOwnMemberIdentity', () => {
+  const profile = { displayName: 'Nouveau', photoURL: 'https://x.test/p.png' };
+
+  it('doc absent (MJ pur) → no-op, aucune écriture', async () => {
+    mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+    await healOwnMemberIdentity(CID, UID, profile);
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+
+  it('déjà synchronisé → no-op (évite la boucle avec le listener)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ displayName: 'Nouveau', photoURL: 'https://x.test/p.png' }),
+    });
+    await healOwnMemberIdentity(CID, UID, profile);
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+
+  it('displayName divergent → updateDoc du seul champ qui change', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ displayName: 'Ancien', photoURL: 'https://x.test/p.png' }),
+    });
+    await healOwnMemberIdentity(CID, UID, profile);
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
+    const [, patch] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(patch).toEqual({ displayName: 'Nouveau' });
+  });
+
+  it('champs absents (doc legacy) → updateDoc pose displayName + photoURL', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({}), // doc antérieur au champ
+    });
+    await healOwnMemberIdentity(CID, UID, profile);
+    expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
+    const [, patch] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(patch).toEqual({
+      displayName: 'Nouveau',
+      photoURL: 'https://x.test/p.png',
     });
   });
 });

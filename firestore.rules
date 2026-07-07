@@ -253,11 +253,18 @@ service cloud.firestore {
 
         // Update:
         //  - MJ peut tout modifier (changer le rôle d'un membre, lier un
-        //    characterId, etc.),
+        //    characterId, etc.) SAUF forger `displayName`/`photoURL` d'autrui :
+        //    ces deux champs sont dénormalisés du profil Auth du MEMBRE lui-même
+        //    et lui appartiennent (self-heal owner-only) — les figer côté MJ
+        //    empêche l'usurpation d'identité affichée dans le roster.
         //  - le user lui-même peut update son propre doc SAUF son rôle
         //    (anti self-promotion). Le characterId reste modifiable par le
-        //    propriétaire (link/unlink de sa fiche).
-        allow update: if isDMOf(campaignId)
+        //    propriétaire (link/unlink de sa fiche), ET displayName/photoURL
+        //    (self-heal du nom copié au join). `.get(k, null)` normalise le cas
+        //    « champ absent » (docs antérieurs) → null == null, pas de blocage.
+        allow update: if (isDMOf(campaignId)
+              && request.resource.data.get('displayName', null) == resource.data.get('displayName', null)
+              && request.resource.data.get('photoURL', null) == resource.data.get('photoURL', null))
           || (isOwner(userId)
               && request.resource.data.role == resource.data.role
               && request.resource.data.userId == resource.data.userId);

@@ -134,6 +134,23 @@ export const MembershipSchema = z.object({
    * peut pourtant amener un perso d'observation/PNJ — décision déférée).
    */
   characterId: z.string().min(1).max(128).nullable(),
+  /**
+   * Nom d'affichage DÉNORMALISÉ, copié du profil Auth du membre au moment du
+   * join (`user.displayName`). Pourquoi dénormaliser plutôt que lire
+   * `users/{uid}.displayName` : les rules Firestore interdisent la lecture
+   * cross-user de `/users/{uid}` (un co-membre / le MJ ne peut pas lire le
+   * profil d'autrui). Le nom doit donc vivre sur un doc que le lecteur a déjà
+   * le droit de lire — ce doc member.
+   *
+   * `null` pour un compte anonyme (pas de displayName) ; ABSENT (`undefined`)
+   * pour un doc antérieur à ce champ → l'UI retombe sur l'UID tronqué et le
+   * propriétaire « auto-soigne » son propre doc au chargement (owner-only
+   * write, cf. `healOwnMemberIdentity`). Les rules interdisent au MJ de forger
+   * ce champ sur le doc d'autrui (anti-usurpation d'identité affichée).
+   */
+  displayName: z.string().max(128).nullable().optional(),
+  /** URL d'avatar dénormalisée (Google/Auth). Stockée mais non rendue en V1. */
+  photoURL: z.string().max(2048).nullable().optional(),
   joinedAt: z.unknown(),
 
   schemaVersion: z.literal(1),

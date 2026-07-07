@@ -156,6 +156,7 @@ function mkEntry(overrides: Partial<RosterEntry> = {}): RosterEntry {
   return {
     uid: 'player-uid',
     label: 'player-u…',
+    hasName: false,
     role: 'member',
     isSelf: false,
     characterId: 'char-aelys',

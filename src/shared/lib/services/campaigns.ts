@@ -405,6 +405,7 @@ export interface JoinByCodeResult {
 export async function joinByCode(
   code: string,
   uid: string,
+  profile?: { displayName: string | null; photoURL: string | null },
 ): Promise<JoinByCodeResult> {
   const firestore = getDb();
 
@@ -421,10 +422,16 @@ export async function joinByCode(
   try {
     await trackPendingWrite(
       firestore,
+      // displayName/photoURL dénormalisés du profil Auth du joignant : c'est le
+      // seul moment où le client a en main le profil de CE user (les rules
+      // interdisent la lecture cross-user de `users/{uid}`). `null` si le profil
+      // n'est pas fourni (compte anonyme, ou appelant legacy).
       setDoc(memberRef, {
         userId: uid,
         role: 'member',
         characterId: null,
+        displayName: profile?.displayName ?? null,
+        photoURL: profile?.photoURL ?? null,
         joinedAt: serverTimestamp(),
         schemaVersion: 1,
       }),
@@ -546,17 +553,55 @@ export async function promoteToGm(
   } else {
     // Cas où on promeut un user qui n'a pas de doc member (DM directement
     // ajouté en gmIds sans passer par invite-code). Crée un doc member
-    // minimal cohérent avec MembershipSchema.
+    // minimal cohérent avec MembershipSchema. displayName/photoURL restent
+    // `null` : le MJ n'a pas le profil Auth de la cible (interdit cross-user),
+    // et les rules lui interdisent de les poser — la cible les auto-soignera
+    // à son prochain passage sur le détail de campagne.
     batch.set(memberRef, {
       userId: targetUid,
       role: 'gm',
       characterId: null,
+      displayName: null,
+      photoURL: null,
       joinedAt: serverTimestamp(),
       schemaVersion: 1,
     });
   }
 
   await trackPendingWrite(firestore, batch.commit());
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Public API — healOwnMemberIdentity (self-heal du displayName dénormalisé)
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Renseigne / met à jour `displayName` + `photoURL` sur le doc member de
+ * l'utilisateur COURANT quand ils diffèrent de son profil Auth. Couvre :
+ *   - les docs member antérieurs à l'ajout du champ (join legacy) ;
+ *   - un membre qui a lié un compte Google APRÈS avoir rejoint en anonyme ;
+ *   - un changement de nom de profil.
+ *
+ * Écriture owner-only, idempotente : `getDoc` d'abord, n'écrit QUE si un champ
+ * diffère (évite une boucle avec le listener temps-réel du roster) et no-op si
+ * le doc n'existe pas (MJ pur, sans doc member). Aucune lecture cross-user —
+ * le membre lit et corrige SON PROPRE doc, ce que les rules autorisent.
+ */
+export async function healOwnMemberIdentity(
+  campaignId: string,
+  uid: string,
+  profile: { displayName: string | null; photoURL: string | null },
+): Promise<void> {
+  const firestore = getDb();
+  const ref = doc(firestore, 'campaigns', campaignId, 'members', uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return; // MJ pur (pas de doc member) — rien à soigner.
+  const cur = snap.data() as { displayName?: string | null; photoURL?: string | null };
+  const patch: { displayName?: string | null; photoURL?: string | null } = {};
+  if ((cur.displayName ?? null) !== profile.displayName) patch.displayName = profile.displayName;
+  if ((cur.photoURL ?? null) !== profile.photoURL) patch.photoURL = profile.photoURL;
+  if (Object.keys(patch).length === 0) return; // déjà synchronisé.
+  await trackPendingWrite(firestore, updateDoc(ref, patch));
 }
 
 // ─────────────────────────────────────────────────────────────────────

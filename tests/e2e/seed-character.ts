@@ -1519,9 +1519,12 @@ export async function seedCampaignMembership(opts: {
   campaignId: string;
   gmUid: string;
   playerUid: string;
-  charId: string;
+  /** `null` = membre sans fiche liée (rendu en ligne compacte plutôt qu'en carte live). */
+  charId: string | null;
+  /** Nom d'affichage dénormalisé sur le doc member (déf. absent = repli UID côté UI). */
+  displayName?: string | null;
 }): Promise<void> {
-  const { campaignId, gmUid, playerUid, charId } = opts;
+  const { campaignId, gmUid, playerUid, charId, displayName } = opts;
   const { db } = getAdmin();
   await db.collection('campaigns').doc(campaignId).set({
     id: campaignId,
@@ -1540,17 +1543,21 @@ export async function seedCampaignMembership(opts: {
       userId: playerUid,
       role: 'member',
       characterId: charId,
+      ...(displayName !== undefined ? { displayName, photoURL: null } : {}),
       joinedAt: FieldValue.serverTimestamp(),
       schemaVersion: 1,
     });
   // `homeCampaignId` est le pointeur que l'écran de fiche lit pour fixer la
-  // campagne active — donc la cible de journalisation des jets.
-  await db
-    .collection('users')
-    .doc(playerUid)
-    .collection('characters')
-    .doc(charId)
-    .set({ homeCampaignId: campaignId }, { merge: true });
+  // campagne active — donc la cible de journalisation des jets. Seulement si une
+  // fiche est liée (un membre sans fiche n'a pas de campagne d'attache à poser).
+  if (charId !== null) {
+    await db
+      .collection('users')
+      .doc(playerUid)
+      .collection('characters')
+      .doc(charId)
+      .set({ homeCampaignId: campaignId }, { merge: true });
+  }
 }
 
 /**

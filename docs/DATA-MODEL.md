@@ -342,10 +342,25 @@ Subcollection nommée `members` (et non `memberships`) — voir
   userId: string,
   role: 'gm' | 'member',
   characterId: string | null,              // PJ du membre, null pour le MJ ou si pas encore choisi
+  displayName: string | null,              // dénormalisé du profil Auth au join (self-heal owner-only) — optionnel/absent sur docs legacy
+  photoURL: string | null,                 // avatar dénormalisé — stocké, non rendu V1
   joinedAt: Timestamp,
   schemaVersion: 1,
 }
 ```
+
+**`displayName` / `photoURL` (ajout additif, pas de bump de `schemaVersion`)** :
+la lecture cross-user de `/users/{uid}` est **interdite** par les rules (un
+co-membre / le MJ ne peut pas lire le profil d'autrui). Le nom d'affichage doit
+donc **vivre sur le doc member** que le lecteur a déjà le droit de lire. Il est
+copié du profil Auth du membre **au moment du join** (`joinByCode`) ; le
+propriétaire **auto-soigne** son propre doc au chargement du détail de campagne
+(`healOwnMemberIdentity`, owner-only) pour couvrir les docs antérieurs au champ
+et les changements de nom. Les rules interdisent au **MJ** de forger
+`displayName`/`photoURL` sur le doc d'autrui (anti-usurpation d'identité dans le
+roster — cf. `firestore.rules > members allow update`). Champs **optionnels**
+(nullable + absent) : les docs antérieurs parsent sans migration et retombent
+sur l'UID tronqué jusqu'au self-heal.
 
 **Champs déférés post-V1** :
 - `characterOwnerId` — redondant tant que les fiches restent player-owned (1 PJ ⇒ 1 owner = userId)

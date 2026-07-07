@@ -2,6 +2,7 @@ import { type JSX } from 'react';
 
 import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
+import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
 import type { RosterEntry } from './campaign-detail-screen';
@@ -71,7 +72,13 @@ export function CampaignMemberItem({
   return (
     <div className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <span className="truncate font-mono text-body tracking-[0.16em] text-text">
+        <span
+          className={cn(
+            'truncate text-body text-text',
+            // Nom réel → serif lisible ; repli UID technique → mono + tracking.
+            entry.hasName ? 'font-serif' : 'font-mono tracking-[0.16em]',
+          )}
+        >
           {entry.label}
         </span>
         {entry.isSelf ? (

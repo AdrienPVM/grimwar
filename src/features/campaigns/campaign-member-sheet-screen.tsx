@@ -12,6 +12,7 @@ import { Button } from '@/shared/components/button';
 import { Chip } from '@/shared/components/chip';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
+import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
@@ -162,8 +163,15 @@ export function CampaignMemberSheetScreen(): JSX.Element {
           <span className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
             {t('campaigns.memberSheet.viewingPrefix')}
           </span>
-          <span className="font-mono text-body-sm tracking-[0.16em] text-text">
-            {formatUid(member.userId)}
+          <span
+            className={cn(
+              'text-body-sm text-text',
+              member.displayName
+                ? 'font-serif'
+                : 'font-mono tracking-[0.16em]',
+            )}
+          >
+            {member.displayName ?? formatUid(member.userId)}
           </span>
           <Chip variant="gold">{t('campaigns.memberSheet.dmEditBadge')}</Chip>
         </div>

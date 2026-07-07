@@ -75,7 +75,10 @@ export function JoinByCodeScreen(): JSX.Element {
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const { campaignId } = await joinByCode(code, user.uid);
+      const { campaignId } = await joinByCode(code, user.uid, {
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+      });
       navigate(`/campaigns/${campaignId}`);
     } catch (err: unknown) {
       if (err instanceof CampaignServiceError) {

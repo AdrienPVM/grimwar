@@ -224,7 +224,7 @@ describe('buildRoster', () => {
       mkMember({ userId: 'uid-p1', role: 'member' }),
       mkMember({ userId: 'uid-p2', role: 'member' }),
     ];
-    const roster = buildRoster(camp, members, 'uid-1');
+    const roster = buildRoster(camp, members, 'uid-1', null);
     expect(roster.map((r) => r.uid)).toEqual([
       'uid-1',
       'uid-gm2',
@@ -240,7 +240,7 @@ describe('buildRoster', () => {
     const camp = mkCampaign({ gmIds: ['uid-1', 'uid-2'] });
     // uid-2 a son doc member avec role=gm (cas après promoteToGm 4.0.3).
     const members = [mkMember({ userId: 'uid-2', role: 'gm' })];
-    const roster = buildRoster(camp, members, 'uid-1');
+    const roster = buildRoster(camp, members, 'uid-1', null);
     expect(roster).toHaveLength(2);
     expect(roster.map((r) => r.uid)).toEqual(['uid-1', 'uid-2']);
   });
@@ -248,15 +248,16 @@ describe('buildRoster', () => {
   it("flag isSelf=true sur l'entrée correspondant à myUid", () => {
     const camp = mkCampaign({ gmIds: ['uid-gm'] });
     const members = [mkMember({ userId: 'uid-me' })];
-    const roster = buildRoster(camp, members, 'uid-me');
+    const roster = buildRoster(camp, members, 'uid-me', null);
     expect(roster.find((r) => r.uid === 'uid-me')?.isSelf).toBe(true);
     expect(roster.find((r) => r.uid === 'uid-gm')?.isSelf).toBe(false);
   });
 
   it("tronque les UIDs longs avec ellipsis", () => {
     const camp = mkCampaign({ gmIds: ['aBcDeFgHiJkLmNoPqRsT'] });
-    const roster = buildRoster(camp, [], null);
+    const roster = buildRoster(camp, [], null, null);
     expect(roster[0]?.label).toBe('aBcDeFgH…');
+    expect(roster[0]?.hasName).toBe(false);
   });
 
   it("propage characterId du membre, null pour les entrées MJ", () => {
@@ -265,10 +266,52 @@ describe('buildRoster', () => {
       mkMember({ userId: 'uid-p1', characterId: 'char-7' }),
       mkMember({ userId: 'uid-p2', characterId: null }),
     ];
-    const roster = buildRoster(camp, members, null);
+    const roster = buildRoster(camp, members, null, null);
     expect(roster.find((r) => r.uid === 'uid-gm')?.characterId).toBeNull();
     expect(roster.find((r) => r.uid === 'uid-p1')?.characterId).toBe('char-7');
     expect(roster.find((r) => r.uid === 'uid-p2')?.characterId).toBeNull();
+  });
+
+  it('libellé = displayName dénormalisé du membre (identité, pas UID)', () => {
+    const camp = mkCampaign({ gmIds: ['uid-gm'] });
+    const members = [mkMember({ userId: 'uid-p1', displayName: 'Galadriel' })];
+    const roster = buildRoster(camp, members, null, null);
+    const p1 = roster.find((r) => r.uid === 'uid-p1');
+    expect(p1?.label).toBe('Galadriel');
+    expect(p1?.hasName).toBe(true);
+  });
+
+  it('displayName null → repli UID tronqué (hasName=false)', () => {
+    const camp = mkCampaign({ gmIds: ['uid-gm'] });
+    const members = [mkMember({ userId: 'aBcDeFgHiJkLmNoPqRsT', displayName: null })];
+    const roster = buildRoster(camp, members, null, null);
+    const p = roster.find((r) => r.uid === 'aBcDeFgHiJkLmNoPqRsT');
+    expect(p?.label).toBe('aBcDeFgH…');
+    expect(p?.hasName).toBe(false);
+  });
+
+  it('ligne de soi : le nom LIVE du profil Auth prime sur la valeur stockée', () => {
+    const camp = mkCampaign({ gmIds: ['uid-gm'] });
+    // Le doc member stocke un ancien nom ; le profil Auth courant en a un neuf.
+    const members = [mkMember({ userId: 'uid-me', displayName: 'Ancien Nom' })];
+    const roster = buildRoster(camp, members, 'uid-me', 'Nouveau Nom');
+    expect(roster.find((r) => r.uid === 'uid-me')?.label).toBe('Nouveau Nom');
+  });
+
+  it('MJ promu depuis un doc member → son displayName remonte sur la ligne gmIds', () => {
+    const camp = mkCampaign({ gmIds: ['uid-gm'] });
+    const members = [mkMember({ userId: 'uid-gm', role: 'gm', displayName: 'Le Meneur' })];
+    const roster = buildRoster(camp, members, null, null);
+    expect(roster).toHaveLength(1);
+    expect(roster[0]?.label).toBe('Le Meneur');
+    expect(roster[0]?.role).toBe('gm');
+  });
+
+  it('displayName vide/espaces → repli UID (pas un libellé blanc)', () => {
+    const camp = mkCampaign({ gmIds: ['uid-gm'] });
+    const members = [mkMember({ userId: 'aBcDeFgHiJkLmNoPqRsT', displayName: '   ' })];
+    const roster = buildRoster(camp, members, null, null);
+    expect(roster.find((r) => r.uid === 'aBcDeFgHiJkLmNoPqRsT')?.label).toBe('aBcDeFgH…');
   });
 });
 

@@ -62,15 +62,18 @@ export function CampaignEventFeed({
   );
   const [detailEvent, setDetailEvent] = useState<GameEvent | null>(null);
 
-  // Options du filtre : un personnage lié par joueur (libellé = nom résolu, sinon
-  // UID tronqué — cohérent avec le roster qui n'a pas non plus de displayName V1).
+  // Options du filtre : un personnage lié par joueur. Libellé en cascade :
+  // nom du PJ résolu → displayName dénormalisé du membre → UID tronqué (repli).
   const playerOptions = useMemo<PlayerFilterOption[]>(
     () =>
       members
         .filter((m) => m.characterId !== null)
         .map((m) => ({
           characterId: m.characterId as string,
-          label: characterNames[m.characterId as string] ?? formatUid(m.userId),
+          label:
+            characterNames[m.characterId as string] ??
+            m.displayName ??
+            formatUid(m.userId),
         })),
     [members, characterNames],
   );

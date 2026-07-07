@@ -1130,6 +1130,90 @@ describeIfEmulator('firestore.rules — campaigns + members (JALON 4.0.2)', () =
     );
   });
 
+  // ── displayName dénormalisé (self-heal owner-only, anti-forge MJ) ──────
+  // Le nom d'affichage est copié du profil Auth du MEMBRE : lui seul l'écrit.
+  // Le MJ, malgré son omni-write sur les autres champs du doc member, ne peut
+  // PAS le forger (anti-usurpation d'identité dans le roster).
+
+  async function seedMemberWithName(name: string, role: 'gm' | 'member'): Promise<void> {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID), makeCampaignDocV4(DM_UID));
+      await setDoc(doc(adminDb, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID), {
+        ...makeMemberDocV4(MEMBER_UID, role),
+        displayName: name,
+        photoURL: null,
+      });
+    });
+  }
+
+  it('ACCEPTE que le propriétaire self-heal son propre displayName', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedMemberWithName('Ancien Nom', 'member');
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID), {
+        displayName: 'Galadriel',
+        photoURL: 'https://example.test/a.png',
+      }),
+    );
+  });
+
+  it('REFUSE qu\'un MJ forge le displayName d\'un autre membre (anti-usurpation)', async () => {
+    // Test porteur : RED contre l'ancienne rule (MJ omni-write), GREEN après
+    // l'ajout de la contrainte `memberIdentityFieldsUnchanged` côté MJ.
+    if (!env) throw new Error('env not initialized');
+    await seedMemberWithName('Le Vrai Bob', 'member');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID), {
+        displayName: 'Nom Falsifié',
+      }),
+    );
+  });
+
+  it('REFUSE qu\'un MJ forge le photoURL d\'un autre membre', async () => {
+    if (!env) throw new Error('env not initialized');
+    await seedMemberWithName('Le Vrai Bob', 'member');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertFails(
+      updateDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID), {
+        photoURL: 'https://evil.test/spoof.png',
+      }),
+    );
+  });
+
+  it('ACCEPTE qu\'un MJ promeut un membre en préservant son displayName (updateDoc partiel)', async () => {
+    // Régression : promoteToGm utilise updateDoc({ role }) → displayName inchangé
+    // → la contrainte anti-forge passe. Garantit que le durcissement ne casse
+    // pas la promotion réelle.
+    if (!env) throw new Error('env not initialized');
+    await seedMemberWithName('Le Vrai Bob', 'member');
+    const db = env.authenticatedContext(DM_UID).firestore();
+    await assertSucceeds(
+      updateDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID), { role: 'gm' }),
+    );
+  });
+
+  it('ACCEPTE self-create d\'un membre avec displayName (join avec nom)', async () => {
+    if (!env) throw new Error('env not initialized');
+    await env.withSecurityRulesDisabled(async (context) => {
+      await setDoc(
+        doc(context.firestore(), 'campaigns', CAMPAIGN_4_0_2_ID),
+        makeCampaignDocV4(DM_UID),
+      );
+    });
+    const db = env.authenticatedContext(MEMBER_UID).firestore();
+    await assertSucceeds(
+      setDoc(doc(db, 'campaigns', CAMPAIGN_4_0_2_ID, 'members', MEMBER_UID), {
+        ...makeMemberDocV4(MEMBER_UID, 'member'),
+        displayName: 'Bob le Rôdeur',
+        photoURL: null,
+      }),
+    );
+  });
+
   it("REFUSE self-create d'un member dans une campagne inexistante (JALON 4.0.6 — code orphelin)", async () => {
     // La rule `members.create` exige `exists(/campaigns/{cid})`. Un code
     // orphelin (campagne supprimée mais doc inviteCodes encore là) ne doit
