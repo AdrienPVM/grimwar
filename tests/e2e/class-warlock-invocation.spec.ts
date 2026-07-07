@@ -62,9 +62,12 @@ test.describe('Class Warlock — render Essence (manifestation occulte + modale)
     await expect(panel, 'Panel Essence doit être rendu.').toBeVisible();
     await takeStepScreenshot(page, testInfo, 'essence-tab');
 
-    // Card « Manifestations occultes » header présent.
+    // Card « Manifestations occultes » header présent. On cible le rôle
+    // heading (le <h3> de la carte) et non `getByText` : un getByText(regex)
+    // matche AUSSI le wrapper CardHeader dont le textContent est identique au
+    // titre → strict-mode violation (2 éléments). Le rôle heading isole le h3.
     await expect(
-      panel.getByText(/^Manifestations occultes$/),
+      panel.getByRole('heading', { name: 'Manifestations occultes' }),
       'Header de la carte Manifestations occultes doit être présent.',
     ).toBeVisible();
 

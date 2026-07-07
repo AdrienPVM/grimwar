@@ -78,24 +78,29 @@ test.describe('UAT — rendu AoE (carte live)', () => {
     });
 
     // 02 — zoom sur la sphère pour juger taille + lisibilité du fill/stroke.
-    const svgBox = await page.getByTestId('map-live-svg').boundingBox();
-    if (svgBox) {
-      const cx = Number(await circle.getAttribute('cx'));
-      const cy = Number(await circle.getAttribute('cy'));
-      const r = Number(await circle.getAttribute('r'));
-      const scale = Math.min(svgBox.width / 1000, svgBox.height / 700);
-      const offX = svgBox.x + (svgBox.width - 1000 * scale) / 2;
-      const offY = svgBox.y + (svgBox.height - 700 * scale) / 2;
-      const px = offX + cx * scale;
-      const py = offY + cy * scale;
-      const half = Math.max(120, r * scale + 40);
+    // On clippe depuis la boundingBox RÉELLE du cercle (pixels rendus) plutôt
+    // que de reconstruire les coordonnées à partir d'un viewBox 1000×700 codé
+    // en dur : la géométrie de la carte dérive désormais de gridSize /
+    // feetPerSquare (batch nuit-carte), donc l'ancien calcul projetait le clip
+    // hors image. Sur mobile (412 px), les panneaux de contrôle empilent la
+    // carte SOUS le pli → il faut d'abord amener le cercle dans le viewport
+    // (un `clip` de `page.screenshot` ne capture QUE le viewport), puis borner
+    // le clip aux dimensions du viewport (« Clipped area is either empty or
+    // outside the resulting image » sinon).
+    await circle.scrollIntoViewIfNeeded();
+    const circleBox = await circle.boundingBox();
+    const viewport = page.viewportSize();
+    if (circleBox && viewport) {
+      const margin = 40;
+      const x = Math.max(0, circleBox.x - margin);
+      const y = Math.max(0, circleBox.y - margin);
       await page.screenshot({
         path: path.join(OUT, '02-aoe-sphere-zoom.png'),
         clip: {
-          x: Math.max(0, px - half),
-          y: Math.max(0, py - half),
-          width: half * 2,
-          height: half * 2,
+          x,
+          y,
+          width: Math.min(viewport.width - x, circleBox.width + margin * 2),
+          height: Math.min(viewport.height - y, circleBox.height + margin * 2),
         },
       });
     }
