@@ -35,6 +35,14 @@ export type PhysicalRollResolution = { rawFaces: number[] } | null;
 interface PendingPhysicalRoll {
   spec: PhysicalRollSpec;
   resolve: (resolution: PhysicalRollResolution) => void;
+  /**
+   * Identifiant monotone unique par requête. Sert de `key` au dialog pour
+   * FORCER le remontage à chaque nouveau prompt — même quand deux prompts
+   * consécutifs partagent label + nombre de dés (ex. un jet d'attaque remplacé
+   * par un jet de sauvegarde, tous deux « 1d20 »). Sans lui, React réconciliait
+   * la même instance et les faces saisies au prompt précédent persistaient.
+   */
+  requestId: number;
 }
 
 export interface HitMissGateSpec {
@@ -64,6 +72,9 @@ export const useUiModalsStore = create<UiModalsState>((set) => ({
   _setHitMissGate: (next) => set({ pendingHitMissGate: next }),
 }));
 
+/** Séquence monotone des requêtes de prompt physique (clé de remontage). */
+let physicalRollSeq = 0;
+
 /**
  * Ouvre `<PhysicalRollModal />` et attend la résolution.
  * Retourne `null` si le joueur appuie sur « Passer ».
@@ -77,7 +88,7 @@ export function requestPhysicalRoll(spec: PhysicalRollSpec): Promise<PhysicalRol
     if (store.pendingPhysicalRoll) {
       store.pendingPhysicalRoll.resolve(null);
     }
-    store._setPhysicalRoll({ spec, resolve });
+    store._setPhysicalRoll({ spec, resolve, requestId: ++physicalRollSeq });
   });
 }
 

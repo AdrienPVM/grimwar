@@ -26,15 +26,19 @@ import {
  *
  * Esc = Passer. Focus initial sur le premier input (a11y).
  *
- * Le composant intérieur `PhysicalRollDialog` est remonté à chaque nouveau
- * `spec` (via `key`) pour réinitialiser l'état (`faces`, focus, etc.) sans
- * effets dépendants. C'est volontaire — pas de fuite d'état entre deux jets
- * consécutifs.
+ * Le composant intérieur `PhysicalRollDialog` est remonté à chaque nouvelle
+ * requête (via `key={requestId}` monotone) pour réinitialiser l'état (`faces`,
+ * focus, etc.) sans effets dépendants. C'est volontaire — pas de fuite d'état
+ * entre deux jets consécutifs, MÊME quand ils partagent label + nombre de dés
+ * (l'ancienne clé `label + dice.length` collait alors et gardait les faces).
  */
 export function PhysicalRollModal(): JSX.Element | null {
   const pending = useUiModalsStore((s) => s.pendingPhysicalRoll);
   if (!pending) return null;
-  return <PhysicalRollDialog key={pending.spec.label + pending.spec.dice.length} spec={pending.spec} />;
+  // `requestId` (monotone) garantit un remontage par requête même quand deux
+  // prompts consécutifs partagent label + nombre de dés → pas de fuite des
+  // faces saisies au prompt précédent.
+  return <PhysicalRollDialog key={pending.requestId} spec={pending.spec} />;
 }
 
 interface DialogProps {
