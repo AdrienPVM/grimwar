@@ -136,7 +136,7 @@ export function ParticipantControlModal({
                 value={Number.isFinite(amount) ? amount : ''}
                 onChange={(e) => setAmount(e.target.valueAsNumber)}
                 aria-label={t('encounters.control.amount')}
-                className="w-full rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2 font-serif text-body tabular-nums text-text outline-none transition-colors focus:border-gold"
+                className="w-full rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2 font-serif text-body tabular-nums text-text outline-none transition-colors duration-200 ease-base focus:border-gold"
               />
             </label>
             <Button

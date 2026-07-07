@@ -181,7 +181,7 @@ export function CampaignDetailScreen(): JSX.Element {
           >
             ← {t('campaigns.detail.back')}
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {/* Journal de campagne — lisible par tout membre (mémoire partagée). */}
             <Button
               type="button"
