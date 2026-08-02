@@ -83,9 +83,15 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
         />
       </div>
 
-      <ul className="flex flex-col gap-1.5">
+      {/*
+        Bento desktop : la liste des 18 compétences occupe une rangée pleine —
+        en 1 colonne elle produisait une bande de 18 lignes très étirées. Deux
+        colonnes à `xl:` la ramènent à 9 lignes, dans la même logique que
+        l'inventaire et la liste de sorts.
+      */}
+      <ul className="flex flex-col gap-1.5 xl:grid xl:grid-cols-2 xl:gap-x-4">
         {filtered.length === 0 ? (
-          <li className="py-2 text-center font-serif text-body-sm italic text-text-tertiary">
+          <li className="py-2 text-center font-serif text-body-sm italic text-text-tertiary xl:col-span-2">
             {t('sheet.essence.skills.noMatch')}
           </li>
         ) : (

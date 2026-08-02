@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/use-auth';
 import { cn } from '../lib/cn';
 import { t } from '../lib/i18n';
+import { parentRouteFor } from '../lib/parent-route';
 
 /**
  * Coquille de navigation persistante — header sticky monté dans App.tsx,
@@ -18,7 +19,12 @@ import { t } from '../lib/i18n';
  *
  * Comportement :
  *   - sur `/` → uniquement la marque centrée à gauche, pas de bouton retour
- *   - sur `/character/:id` et `/create` → bouton « ← Retour » à gauche
+ *   - ailleurs → bouton « ← Retour » qui remonte d'un cran dans la HIÉRARCHIE
+ *     de l'app (`lib/parent-route.ts`), pas systématiquement à la bibliothèque :
+ *     depuis une rencontre il ramène à la liste des rencontres, depuis une
+ *     campagne à la liste des campagnes. L'`aria-label` nomme la destination
+ *     réelle — il annonçait « Retour à la bibliothèque » sur les 15 routes où
+ *     c'était faux.
  *   - avatar (droite) : initiale du user ; tap noop en S1 (placeholder plan 35)
  *   - pas de switcher de perso dédié S1 — retour à library + tap autre card
  *
@@ -35,7 +41,10 @@ export function NavShell(): JSX.Element | null {
   // occupe tout l'écran pour la projection. Cf. `map-tv-screen.tsx`.
   if (/\/tv$/.test(pathname)) return null;
 
-  const showBack = pathname !== '/' && pathname !== '';
+  // Remontée d'un cran dans la HIÉRARCHIE de l'app (et non dans l'historique),
+  // cf. `lib/parent-route.ts`. `null` à la racine → on affiche la marque.
+  const parent = parentRouteFor(pathname);
+  const showBack = parent !== null;
   const avatarLetter =
     (user?.displayName?.[0] ?? user?.email?.[0] ?? 'A').toUpperCase();
 
@@ -50,10 +59,10 @@ export function NavShell(): JSX.Element | null {
       )}
     >
       <div className="flex items-center gap-2">
-        {showBack ? (
+        {parent ? (
           <Link
-            to="/"
-            aria-label={t('nav.back.aria')}
+            to={parent.to}
+            aria-label={t(parent.labelKey)}
             className={cn(
               'inline-flex items-center gap-2 rounded-pill border border-white-8 bg-white/[0.04]',
               'px-3 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.18em] text-gold-bright',

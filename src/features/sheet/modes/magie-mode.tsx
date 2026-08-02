@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 
 import { useContent } from '@/shared/hooks/use-content';
-import { localize } from '@/shared/lib/i18n';
-import { readPactSlotState } from '@/shared/lib/rules/pact-magic';
+import { BENTO_GRID, BentoTile } from '@/shared/components/bento';
+import { localize, t } from '@/shared/lib/i18n';
 import { isPreparedCaster } from '@/shared/lib/rules/spell-preparation';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
@@ -89,13 +89,6 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
     [character, spells],
   );
 
-  // Même source de vérité que <PactSlotsCard> (qui rend `null` sans pacte) —
-  // sert à savoir si le cercle d'invocation a un voisin de rangée à `xl:`.
-  const hasPactSlots = useMemo(
-    () => readPactSlotState(character, classCatalog) !== null,
-    [character, classCatalog],
-  );
-
   const [activeSpell, setActiveSpell] = useState<Spell | null>(null);
 
   // Sorts d'ascendance (plan 13.8) : un perso peut être « lanceur » sans classe
@@ -135,7 +128,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
         className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
       >
         <p className="rounded-card border border-soft bg-glass px-6 py-8 text-center font-serif italic text-text-tertiary">
-          Cette aventurière ne connaît aucun art arcanique. Aucune classe lanceuse de sorts.
+          {t('sheet.magie.noMagic')}
         </p>
       </section>
     );
@@ -146,29 +139,28 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-magie"
       aria-labelledby="sheet-mode-tab-magie"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0 xl:max-w-none xl:grid xl:grid-cols-2 xl:gap-4"
+      className={BENTO_GRID}
     >
       {/*
-        xl: grid 2-col (DEBT D6). La barre de stats et les listes de sorts
-        gardent la pleine largeur ; le cercle d'incantation (plafonné à 380 px
-        par construction) et la carte de pacte se posent côte à côte, ce qui
-        supprime le vide qui s'ouvrait à droite du cercle sur grand écran.
+        Bento (cf. `shared/components/bento.tsx`). Le cercle d'incantation et la
+        carte de pacte occupent chacun une demi-rangée. Sans classe à pacte, la
+        carte de pacte rend `null` : sa tuile se retire, et le remplissage dense
+        de la grille remonte la tuile suivante qui tient dans la demie libre
+        (éditeur de préparation ou sorts d'ascendance). C'est ce qui remplace le
+        `hasPactSlots` dérivé à la main de la version précédente — la primitive
+        rend la compensation inutile.
       */}
       {castingClasses.length > 0 ? (
         <>
-          <div className="xl:col-span-2">
+          <BentoTile span="full">
             <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
-          </div>
-          {/*
-            Le cercle ne se met en demi-largeur QUE s'il a un voisin : sans
-            classe à pacte, `PactSlotsCard` rend `null` et le cercle restait
-            seul sur une demi-rangée, avec un vide à sa droite. On dérive donc
-            la présence du voisin de la même source que la carte elle-même.
-          */}
-          <div className={hasPactSlots ? undefined : 'xl:col-span-2'}>
+          </BentoTile>
+          <BentoTile span="md">
             <MagicCircle character={character} readOnly={readOnly} />
-          </div>
-          <PactSlotsCard character={character} readOnly={readOnly} />
+          </BentoTile>
+          <BentoTile span="md">
+            <PactSlotsCard character={character} readOnly={readOnly} />
+          </BentoTile>
         </>
       ) : null}
       {/*
@@ -181,19 +173,22 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       {castingClasses
         .filter((c) => isPreparedCaster(c.classId) && c.classId !== 'wizard')
         .map((c) => (
-          <PreparationEditor
-            key={c.classId}
-            character={character}
-            classId={c.classId}
-            className={c.name}
-            classLevel={c.level}
-            readOnly={readOnly}
-          />
+          <BentoTile key={c.classId} span="md">
+            <PreparationEditor
+              character={character}
+              classId={c.classId}
+              className={c.name}
+              classLevel={c.level}
+              readOnly={readOnly}
+            />
+          </BentoTile>
         ))}
-      <AncestrySpellsCard
-        character={character}
-        onSpellSelect={(spell) => setActiveSpell(spell)}
-      />
+      <BentoTile span="md">
+        <AncestrySpellsCard
+          character={character}
+          onSpellSelect={(spell) => setActiveSpell(spell)}
+        />
+      </BentoTile>
       {/*
         Plan 13.9 commit 4c — décision Adrien (UAT 4b) : pour le Magicien
         mono-class (cas usuel S1), on rend la séparation visuelle Grimoire /
@@ -201,7 +196,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
         Magicien multi-class, on conserve la <SpellList> générique avec son
         chip « Préparés » comme filtre.
       */}
-      <div className="xl:col-span-2">
+      <BentoTile span="full">
         {isWizardMonoClass(castingClassIds) ? (
           <WizardSpellbookSections
             character={character}
@@ -221,7 +216,7 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
             />
           )
         )}
-      </div>
+      </BentoTile>
       {activeSpell && (
         <SpellDetailModal
           character={character}

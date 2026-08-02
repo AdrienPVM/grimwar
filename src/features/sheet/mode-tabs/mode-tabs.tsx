@@ -78,7 +78,10 @@ export function ModeTabs({ active, onChange }: ModeTabsProps): JSX.Element {
         // z-30 : au-dessus du contenu du mode qui défile, sous le NavShell.
         'sticky top-[56px] z-30 mt-6 border-b border-white-8 bg-bg/85 px-3 py-1.5 backdrop-blur-md sm:top-[60px]',
         'transition-colors duration-150 ease-base',
-        'lg:static lg:z-auto lg:mt-6 lg:border-b-0 lg:bg-transparent lg:px-2 lg:py-0 lg:backdrop-blur-none',
+        // `lg:shrink-0` : dans la colonne flex de la sidebar, les onglets sont
+        // épinglés sous la zone de défilement — sans cette garde, une sidebar
+        // trop courte les comprimerait au lieu de faire défiler l'identité.
+        'lg:static lg:z-auto lg:mt-6 lg:shrink-0 lg:border-b-0 lg:bg-transparent lg:px-2 lg:py-0 lg:backdrop-blur-none',
       )}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}

@@ -110,7 +110,13 @@ function GroupBlock({ label, rows, onItemSelect }: GroupBlockProps): JSX.Element
         largeur de la fiche desktop, une seule colonne de lignes y laissait un
         vide de plusieurs centaines de pixels.
       */}
-      <ul className="grid grid-cols-1 gap-1.5 xl:grid-cols-2">
+      {/*
+        La tuile inventaire occupe une rangée pleine du bento : 2 colonnes dès
+        la tablette, 3 en desktop. Une ligne d'objet est dense (nom + quantité +
+        poids) — à 500 px elle laissait un long couloir vide entre le nom et ses
+        méta.
+      */}
+      <ul className="grid grid-cols-1 gap-1.5 lg:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => (
           <ItemRow key={row.inventory.contentId + ':' + row.inventory.contentScope} row={row} onSelect={onItemSelect} />
         ))}

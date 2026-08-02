@@ -559,6 +559,27 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     expect(screen.queryByText('Activité récente')).not.toBeInTheDocument();
   });
 
+  it('accède aux espaces Séances et Rencontres (pas seulement le meneur)', () => {
+    // Les deux écrans sont lisibles par tout membre (rules 23.1 / 24.1) et ont
+    // chacun un état vide rédigé pour un joueur — mais leur seul point d'entrée
+    // était enfermé dans le bloc MJ, ce qui rendait le suivi de combat
+    // inaccessible aux joueurs. Cf. `plans/UX-AUDIT-2026-08.md > B-2`.
+    authHolder.user = { uid: 'uid-2' };
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Séances/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/c-1/sessions');
+
+    fireEvent.click(screen.getByRole('button', { name: /Rencontres/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/c-1/encounters');
+
+    // En revanche, préparation et administration restent au meneur.
+    expect(screen.queryByRole('button', { name: /^Cartes$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Réglages/i })).not.toBeInTheDocument();
+  });
+
   it('clic retour navigue vers /campaigns', () => {
     authHolder.user = { uid: 'uid-2' };
     stateHolder.campaign = mkCampaign({ gmIds: ['uid-1'] });

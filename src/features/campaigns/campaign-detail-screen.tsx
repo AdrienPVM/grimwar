@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type JSX } from 'react';
+import { useEffect, useMemo, useState, type JSX, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { AnonymousNudge } from '@/features/auth/anonymous-nudge';
@@ -11,7 +11,7 @@ import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import { healOwnMemberIdentity } from '@/shared/lib/services/campaigns';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
@@ -206,82 +206,20 @@ export function CampaignDetailScreen(): JSX.Element {
           >
             ← {t('campaigns.detail.back')}
           </Button>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {/* Journal de campagne — lisible par tout membre (mémoire partagée). */}
+          {/* Réglages seuls restent dans la barre du haut : c'est de
+              l'administration, pas du jeu. Le reste descend sous le titre, en
+              groupes (cf. `plans/UX-AUDIT-2026-08.md > M2`). */}
+          {isGm ? (
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
-              tooltip={t('campaigns.tip.openJournal')}
+              onClick={() => setSettingsOpen(true)}
+              tooltip={t('campaigns.tip.openSettings')}
             >
-              {t('campaigns.detail.journalCta')}
+              {t('campaigns.detail.settingsCta')}
             </Button>
-            {/* Documents — accessible à tout membre (le MJ crée, le joueur
-                consulte ceux qui lui sont destinés). */}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/handouts`)}
-              tooltip={t('campaigns.tip.openHandouts')}
-            >
-              {t('campaigns.detail.handoutsCta')}
-            </Button>
-            {/* PNJ — annuaire accessible à tout membre (le MJ gère, le joueur
-                consulte les PNJ publics). */}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
-              tooltip={t('campaigns.tip.openNpcs')}
-            >
-              {t('campaigns.detail.npcsCta')}
-            </Button>
-            {isGm ? (
-              <>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setSettingsOpen(true)}
-                  tooltip={t('campaigns.tip.openSettings')}
-                >
-                  {t('campaigns.detail.settingsCta')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
-                  tooltip={t('campaigns.tip.openSessions')}
-                >
-                  {t('campaigns.detail.sessionsCta')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
-                  tooltip={t('campaigns.tip.openEncounters')}
-                >
-                  {t('campaigns.detail.encountersCta')}
-                </Button>
-                {/* Cartes — prototype mode carte (import .dd2vtt, fog, LOS, TV).
-                    Réutilise le cid de la campagne réelle. MJ-only. */}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
-                  tooltip={t('campaigns.tip.openMaps')}
-                >
-                  {t('campaigns.detail.mapsCta')}
-                </Button>
-              </>
-            ) : null}
-          </div>
+          ) : null}
         </nav>
 
         <header className="mt-4 text-center">
@@ -303,6 +241,88 @@ export function CampaignDetailScreen(): JSX.Element {
             </p>
           ) : null}
         </header>
+
+        {/*
+          Espaces de la campagne — remplace la barre de 7 boutons identiques qui
+          régnait AU-DESSUS du titre (cf. `plans/UX-AUDIT-2026-08.md > M2`).
+          Trois défauts corrigés d'un coup :
+          (a) les actions passent SOUS le titre — on lit d'abord où on est ;
+          (b) elles sont groupées par nature — « jouer ce soir » d'un côté, la
+              mémoire de la table de l'autre — au lieu de sept puces de même
+              poids qui se replient en pavé illisible sur mobile ;
+          (c) Séances et Rencontres ne sont PLUS réservées au meneur. Les deux
+              écrans étaient déjà écrits pour les joueurs (états vides dédiés
+              `sessions.empty.member` / `encounters.empty.member`) et les rules
+              Firestore les autorisent depuis 23.1 / 24.1 — seul le point
+              d'entrée manquait, ce qui rendait le suivi de combat inaccessible
+              aux joueurs autrement qu'en s'échangeant une URL.
+          « Cartes » reste MJ : c'est un outil de préparation et de projection.
+        */}
+        <nav
+          aria-label={t('campaigns.detail.spaces.aria')}
+          className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2"
+        >
+          <SpaceGroup titleKey="campaigns.detail.spaces.play">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
+              tooltip={t('campaigns.tip.openSessions')}
+            >
+              {t('campaigns.detail.sessionsCta')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
+              tooltip={t('campaigns.tip.openEncounters')}
+            >
+              {t('campaigns.detail.encountersCta')}
+            </Button>
+            {isGm ? (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
+                tooltip={t('campaigns.tip.openMaps')}
+              >
+                {t('campaigns.detail.mapsCta')}
+              </Button>
+            ) : null}
+          </SpaceGroup>
+          <SpaceGroup titleKey="campaigns.detail.spaces.memory">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
+              tooltip={t('campaigns.tip.openJournal')}
+            >
+              {t('campaigns.detail.journalCta')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/handouts`)}
+              tooltip={t('campaigns.tip.openHandouts')}
+            >
+              {t('campaigns.detail.handoutsCta')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
+              tooltip={t('campaigns.tip.openNpcs')}
+            >
+              {t('campaigns.detail.npcsCta')}
+            </Button>
+          </SpaceGroup>
+        </nav>
 
         {/* Bannière d'état — donne un sens fonctionnel au statut (au-delà de la
             puce) : une campagne en pause / archivée n'est plus « en cours ». Rôle-
@@ -557,4 +577,29 @@ export function buildRoster(
 export function formatUid(uid: string): string {
   if (uid.length <= 10) return uid;
   return `${uid.slice(0, 8)}…`;
+}
+
+/**
+ * Groupe d'espaces de la campagne — un intitulé discret suivi de ses entrées.
+ *
+ * L'intitulé porte la hiérarchie que sept boutons identiques ne pouvaient pas
+ * porter : il dit à quoi sert la rangée. Il reste volontairement en méta
+ * (petite capitale, texte tertiaire) pour ne pas rivaliser avec le nom de la
+ * campagne juste au-dessus.
+ */
+function SpaceGroup({
+  titleKey,
+  children,
+}: {
+  titleKey: StringKey;
+  children: ReactNode;
+}): JSX.Element {
+  return (
+    <section className="rounded-card-sm border border-white-8 bg-white/[0.02] px-4 py-3">
+      <h2 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+        {t(titleKey)}
+      </h2>
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">{children}</div>
+    </section>
+  );
 }

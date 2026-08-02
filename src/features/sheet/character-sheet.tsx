@@ -6,6 +6,7 @@ import { computeDisplayedAc } from '@/shared/lib/rules/ac';
 import { computeDisplayedSpeed } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
 
+import { CampaignLink } from './campaign-link';
 import { HeroCard } from './hero/hero-card';
 import { hpStateFor } from './hp-state';
 import { ModeTabs } from './mode-tabs/mode-tabs';
@@ -105,13 +106,52 @@ export function CharacterSheet({
           barre d'onglets, dernier enfant de l'aside, n'aurait aucune portée
           d'épinglage. `lg:block` rétablit la boîte pour la sidebar sticky desktop.
         */}
-        <aside className="sheet-desktop-aside contents lg:block lg:sticky lg:top-2 lg:self-start lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:py-2">
-          <HeroCard character={character} />
-          <StatusStrip
-            character={character}
-            displayedAc={displayedAc}
-            displayedSpeed={displayedSpeed}
-          />
+        {/*
+          Épinglage calé SOUS le NavShell (`sticky top-0`, 60 px à ce palier) et
+          non à 8 px du haut de fenêtre : à 8 px, la sidebar glissait sous le
+          bandeau de navigation dès qu'on faisait défiler la fiche, et sa
+          hauteur maximale (`100vh - 1rem`) ignorait ce décalage — au chargement
+          elle débordait donc de 60 px sous le bas de la fenêtre, ce qui
+          poussait le dernier onglet hors de vue sur un écran de 800 px.
+        */}
+        <aside className="sheet-desktop-aside contents lg:flex lg:flex-col lg:sticky lg:top-[68px] lg:self-start lg:max-h-[calc(100vh-76px)] lg:py-2">
+          {/*
+            Le défilement de la sidebar est confiné à l'identité + les statuts ;
+            les ONGLETS restent épinglés en bas. Avant, l'aside entier scrollait :
+            sur un écran de 900 px de haut, le portrait et la bande de statuts
+            suffisaient à repousser le 5e onglet (« Âme ») hors de la zone
+            visible, et il fallait deviner qu'on pouvait faire défiler la colonne
+            de gauche pour l'atteindre. La navigation ne doit jamais dépendre
+            d'un défilement qu'on ne voit pas.
+            `contents` à <lg : ce conteneur ne produit aucune boîte sur mobile,
+            les enfants remontent dans la grille comme avant.
+          */}
+          <div className="contents lg:block lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+            <HeroCard character={character} />
+            <StatusStrip
+              character={character}
+              displayedAc={displayedAc}
+              displayedSpeed={displayedSpeed}
+            />
+          </div>
+          {/*
+            Raccourci vers la table, épinglé avec les onglets : c'est de la
+            navigation, pas de l'identité — il ne doit pas partir au défilement.
+            Se masque de lui-même si la fiche n'est liée à aucune campagne.
+          */}
+          {/*
+            Cadre mobile (`max-w-[420px] px-4`) porté par le wrapper et non par
+            le lien : sur mobile l'aside est `display: contents`, ce lien devient
+            donc un enfant direct de la grille et hériterait de la pleine largeur
+            de l'écran, sans gouttière. À `lg`, la règle de la sidebar neutralise
+            ce cadre pour qu'il s'aligne sur les onglets.
+          */}
+          <div
+            data-hide-if-empty=""
+            className="mx-auto w-full max-w-[420px] px-4 lg:px-0"
+          >
+            <CampaignLink character={character} className="mt-3 lg:mt-4" />
+          </div>
           <ModeTabs active={mode} onChange={setMode} />
         </aside>
         <div className="sheet-desktop-main lg:min-w-0 lg:pt-2">

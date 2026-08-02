@@ -220,7 +220,7 @@ export function SpellList({
             </h4>
             {/* xl: 2 colonnes de sorts (DEBT D6) — la carte prend toute la
                 largeur de la fiche desktop. */}
-            <ul className="grid grid-cols-1 gap-2 xl:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
               {items.map((spell) => {
                 const src = sourceMap.get(spell.id) ?? {
                   classNames: [],

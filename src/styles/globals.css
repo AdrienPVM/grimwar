@@ -216,18 +216,22 @@ body {
    neutralise ici dans la sidebar (à lg+) pour qu'elles s'alignent et
    remplissent la colonne 300-320px sans dead space.
 
-   Pour les modes (zone main), la responsabilité de la densification est
-   désormais portée par les utilities Tailwind dans chaque `*-mode.tsx`
-   (`lg:max-w-[*]` pour élargir, `xl:grid xl:grid-cols-2` pour densifier
-   combat/essence, `xl:col-span-2` sur les cards focales). Plus de
+   Pour les modes (zone main), la densification est portée par la primitive
+   bento (`shared/components/bento.tsx`) : chaque mode pose `BENTO_GRID` sur sa
+   `<section>` et enveloppe ses cartes dans des `<BentoTile span="…">`. Plus de
    sur-selecteurs CSS hardcodés à `420px` — c'était précisément ce qui
    empêchait la densification (le `> * { max-width: 420px }` global
    re-cappait toute card à 420px quelle que soit l'intention Tailwind).
    =========================================================================== */
 @media (min-width: 1024px) {
   /* aside (sidebar) : neutralise mx-auto + max-w + padding latéraux mobile
-     des enfants pour qu'ils prennent toute la sidebar 300-320px. */
-  .sheet-state .sheet-desktop-aside > * {
+     des enfants pour qu'ils prennent toute la sidebar 300-320px.
+     Deux niveaux : les onglets sont enfants directs (épinglés en bas), tandis
+     que l'identité et les statuts vivent dans le conteneur de défilement
+     intermédiaire — sans le second sélecteur, ils récupéreraient leur padding
+     latéral mobile et se désaligneraient des onglets. */
+  .sheet-state .sheet-desktop-aside > *,
+  .sheet-state .sheet-desktop-aside > div > * {
     max-width: none;
     margin-left: 0;
     margin-right: 0;
@@ -242,4 +246,23 @@ body {
     margin-left: 0;
     margin-right: 0;
   }
+}
+
+/* ===========================================================================
+   BOÎTE VIDE AUTO-SUPPRIMÉE — `data-hide-if-empty` (cf. `components/bento.tsx`).
+
+   28 des cartes de la fiche se masquent elles-mêmes (`return null` quand le
+   personnage n'a pas d'invocations, pas d'objet harmonisé, pas d'emplacement…).
+   Un composant qui rend `null` ne produit aucun nœud DOM — mais le `<div>` de
+   tuile qui l'enveloppe, si : en grille il ouvre une cellule vide, en colonne
+   simple il ouvre un `gap` fantôme. La règle retire donc du flux toute tuile
+   sans enfant élément, à TOUS les paliers (le défaut existe aussi en mobile).
+
+   Non media-scopée volontairement, et générique plutôt que réservée au bento :
+   tout conteneur qui enveloppe une carte susceptible de ne rien rendre porte
+   l'attribut (tuiles de mosaïque, mais aussi le raccourci de campagne épinglé
+   dans la sidebar de fiche).
+   =========================================================================== */
+[data-hide-if-empty]:not(:has(*)) {
+  display: none;
 }

@@ -66,14 +66,23 @@ test.describe('UAT — PV temporaires (mode Combat)', () => {
     // Subir 5 dégâts par taps simples « − » (chaque tap = −1, absorbé d'abord
     // par le tampon temp). On évite le long-press (gesture peu fiable en e2e,
     // couvert unitairement). 5 taps : temp 8 → 3, PV inchangés.
+    //
+    // On attend le résultat de CHAQUE tap avant le suivant. Enchaîner les 5
+    // clics sans attendre laissait la course ouverte : chaque tap déclenche une
+    // écriture Firestore, et sous charge (suite complète) le 5e clic pouvait
+    // partir d'un état pas encore propagé — l'assertion finale tombait alors sur
+    // une valeur intermédiaire. Vu échouer une fois en suite complète, vert en
+    // isolation : exactement la signature d'une course, pas d'un bug produit.
     const minusBtn = panel.getByRole('button', { name: /^Subir 1 dégât/i });
-    for (let i = 0; i < 5; i += 1) {
+    for (const expected of ['+7', '+6', '+5', '+4', '+3']) {
       await minusBtn.click();
+      await expect(panel.getByText(expected)).toBeVisible({ timeout: 10_000 });
     }
 
     // Le tampon temp est tombé à 3 ; les PV restent pleins (les dégâts ont mordu
     // le tampon, pas les PV).
     await expect(panel.getByText('+3')).toBeVisible({ timeout: 10_000 });
+    await expect(panel.getByText('28', { exact: true }).first()).toBeVisible();
     await capture(page, '04-degats-absorbes-par-temp.png');
   });
 });

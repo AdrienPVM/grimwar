@@ -420,6 +420,7 @@ export type StringKey =
   | 'sheet.notFound'
   | 'sheet.notFound.hint'
   | 'sheet.backHome'
+  | 'sheet.campaignLink'
   | 'sheet.error.title'
   | 'sheet.statusStrip.aria'
   | 'sheet.modeTabs.aria'
@@ -687,6 +688,7 @@ export type StringKey =
   | 'sheet.magie.prep.prepared'
   | 'sheet.magie.prep.alwaysAvailable'
   | 'sheet.magie.prep.emptyPrepared'
+  | 'sheet.magie.noMagic'
   // Mode Magie — cartes, cercle/pacte, liste, modale de sort (i18n complète)
   | 'sheet.magie.restore'
   | 'sheet.magie.noSlotToConsume'
@@ -859,6 +861,10 @@ export type StringKey =
   | 'nav.brand.aria'
   | 'nav.back'
   | 'nav.back.aria'
+  | 'nav.back.campaigns'
+  | 'nav.back.account'
+  | 'nav.back.content'
+  | 'nav.back.maps'
   | 'nav.avatar.aria'
   // Library (point d'entrée S1 — plan 13.6)
   | 'library.title'
@@ -1009,6 +1015,9 @@ export type StringKey =
   | 'campaigns.detail.handoutsCta'
   | 'campaigns.detail.mapsCta'
   | 'campaigns.detail.settingsCta'
+  | 'campaigns.detail.spaces.aria'
+  | 'campaigns.detail.spaces.play'
+  | 'campaigns.detail.spaces.memory'
   // Réglages de campagne (nom / mode de dés / variantes 5e)
   | 'campaigns.settings.title'
   | 'campaigns.settings.intro'
@@ -3233,6 +3242,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.notFound': 'Personnage introuvable',
     'sheet.notFound.hint': "Aucune fiche à cet emplacement. Elle a peut-être été supprimée.",
     'sheet.backHome': 'Retour à la bibliothèque',
+    'sheet.campaignLink': 'Ma campagne',
     'sheet.error.title': 'Erreur de chargement',
     'sheet.statusStrip.aria': 'Statistiques vitales',
     'sheet.modeTabs.aria': 'Sections de la fiche',
@@ -3517,6 +3527,11 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.prepared': 'Préparé',
     'sheet.magie.prep.alwaysAvailable': 'Toujours',
     'sheet.magie.prep.emptyPrepared': 'Aucun sort préparé pour le moment.',
+    // Formulation NEUTRE en genre : l'ancienne chaîne était codée en dur et
+    // accordée au féminin (« Cette aventurière ») — elle mégenrait tout
+    // personnage masculin ou non binaire.
+    'sheet.magie.noMagic':
+      'Ce personnage ne pratique aucun art arcanique — aucune classe lanceuse de sorts.',
     // Mode Magie — cartes, cercle/pacte, liste, modale de sort
     'sheet.magie.restore': 'Restaurer',
     'sheet.magie.noSlotToConsume': 'Plus aucun emplacement à consommer',
@@ -3732,6 +3747,12 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.brand.aria': "Retour à l'accueil",
     'nav.back': 'Retour',
     'nav.back.aria': 'Retour à la bibliothèque',
+    // Destinations du bouton Retour contextuel (cf. `lib/parent-route.ts`) :
+    // l'annonce doit nommer la destination RÉELLE, pas la bibliothèque.
+    'nav.back.campaigns': 'Retour à mes campagnes',
+    'nav.back.account': 'Retour au compte',
+    'nav.back.content': 'Retour à mon contenu',
+    'nav.back.maps': 'Retour aux cartes',
     'nav.avatar.aria': 'Compte (à venir)',
     // Library
     'library.title': 'Bibliothèque',
@@ -4064,6 +4085,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.handoutsCta': 'Documents',
     'campaigns.detail.mapsCta': 'Cartes',
     'campaigns.detail.settingsCta': 'Réglages',
+    'campaigns.detail.spaces.aria': 'Espaces de la campagne',
+    'campaigns.detail.spaces.play': 'Jouer',
+    'campaigns.detail.spaces.memory': 'Mémoire de la table',
     'campaigns.settings.title': 'Réglages de la campagne',
     'campaigns.settings.intro':
       'Ajuste le nom, le mode de dés de la table et les règles optionnelles. Ces choix s’appliquent à toute la campagne.',
@@ -6572,6 +6596,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.notFound': 'Character not found',
     'sheet.notFound.hint': "No character at this location. It may have been deleted.",
     'sheet.backHome': 'Back to library',
+    'sheet.campaignLink': 'My campaign',
     'sheet.error.title': 'Loading error',
     'sheet.statusStrip.aria': 'Vital statistics',
     'sheet.modeTabs.aria': 'Sheet sections',
@@ -6840,6 +6865,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.prepared': 'Prepared',
     'sheet.magie.prep.alwaysAvailable': 'Always',
     'sheet.magie.prep.emptyPrepared': 'No spells prepared yet.',
+    'sheet.magie.noMagic':
+      'This character practises no arcane art — no spellcasting class.',
     // Magic mode — cards, circle/pact, list, spell modal
     'sheet.magie.restore': 'Restore',
     'sheet.magie.noSlotToConsume': 'No slot left to use',
@@ -7022,6 +7049,10 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.brand.aria': 'Back to home',
     'nav.back': 'Back',
     'nav.back.aria': 'Back to library',
+    'nav.back.campaigns': 'Back to my campaigns',
+    'nav.back.account': 'Back to account',
+    'nav.back.content': 'Back to my content',
+    'nav.back.maps': 'Back to maps',
     'nav.avatar.aria': 'Account (coming soon)',
     'library.title': 'Library',
     'library.subtitle': 'Your heroes and heroines',
@@ -7344,6 +7375,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.handoutsCta': 'Handouts',
     'campaigns.detail.mapsCta': 'Maps',
     'campaigns.detail.settingsCta': 'Settings',
+    'campaigns.detail.spaces.aria': 'Campaign spaces',
+    'campaigns.detail.spaces.play': 'Play',
+    'campaigns.detail.spaces.memory': 'Table memory',
     'campaigns.settings.title': 'Campaign settings',
     'campaigns.settings.intro':
       'Adjust the name, the table’s dice mode and optional rules. These choices apply to the whole campaign.',

@@ -1,3 +1,4 @@
+import { BENTO_GRID, BentoStack, BentoTile } from '@/shared/components/bento';
 import { computeDisplayedSaveBonus } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
 
@@ -42,40 +43,62 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-essence"
       aria-labelledby="sheet-mode-tab-essence"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[680px] lg:px-0 xl:max-w-none xl:grid xl:grid-cols-2 xl:gap-4"
+      className={BENTO_GRID}
     >
       {/*
-        xl : 2 colonnes. Header + Hexagram + Saves + Skills (la longue
-        liste interactive) gardent toute la largeur ; les cartes Ordre
-        divin / Primal / Invocations se rangent en grille pour profiter
-        de la largeur sans étirer leurs contenus textuels.
+        Bento (cf. `shared/components/bento.tsx`). Ordre : ce qu'on LANCE
+        d'abord (hexagramme, sauvegardes, compétences), la matière de référence
+        ensuite (aptitudes, traits, ordres, langues). L'hexagramme est plafonné
+        à 460 px par construction — une demi-rangée (~500 px en desktop) le
+        cadre au plus juste, là où 2/3 de rangée le laissaient nager dans du
+        vide. Les sauvegardes se posent en face : leur grille interne de 6
+        cases tient confortablement dans la même demie.
       */}
-      <div className="xl:col-span-2">
+      <BentoTile span="full">
         <EssenceHeader character={character} readOnly={readOnly} />
-      </div>
-      <div className="xl:col-span-2">
+      </BentoTile>
+      <BentoTile span="md">
         <Hexagram character={character} readOnly={readOnly} />
-      </div>
-      <div className="xl:col-span-2">
-        <SavesRow
-          character={character}
-          readOnly={readOnly}
-          extraSaveBonus={extraSaveBonus}
-        />
-      </div>
-      <div className="xl:col-span-2">
-        <ClassFeaturesCard character={character} />
-      </div>
-      <AncestryTraitsCard character={character} />
-      <DivineOrderCard character={character} />
-      <PrimalOrderCard character={character} />
-      <InvocationsCard character={character} />
-      <ProficienciesCard character={character} />
-      <LanguagesCard character={character} />
-      <OriginFeatCard character={character} />
-      <div className="xl:col-span-2">
+      </BentoTile>
+      {/*
+        Pile face à l'hexagramme : les sauvegardes seules laissaient une colonne
+        vide de plusieurs centaines de pixels sous elles (la rangée fait la
+        hauteur du carré de l'hexagramme). Maîtrises et langues comblent ce vide.
+        Les sauvegardes sont toujours rendues — la pile n'est donc jamais vide,
+        condition d'emploi de `BentoStack`.
+      */}
+      <BentoTile span="md">
+        <BentoStack>
+          <SavesRow
+            character={character}
+            readOnly={readOnly}
+            extraSaveBonus={extraSaveBonus}
+          />
+          <ProficienciesCard character={character} />
+          <LanguagesCard character={character} />
+        </BentoStack>
+      </BentoTile>
+      <BentoTile span="full">
         <SkillsList character={character} readOnly={readOnly} />
-      </div>
+      </BentoTile>
+      <BentoTile span="lg">
+        <ClassFeaturesCard character={character} />
+      </BentoTile>
+      <BentoTile>
+        <AncestryTraitsCard character={character} />
+      </BentoTile>
+      <BentoTile>
+        <DivineOrderCard character={character} />
+      </BentoTile>
+      <BentoTile>
+        <PrimalOrderCard character={character} />
+      </BentoTile>
+      <BentoTile>
+        <InvocationsCard character={character} />
+      </BentoTile>
+      <BentoTile>
+        <OriginFeatCard character={character} />
+      </BentoTile>
     </section>
   );
 }
