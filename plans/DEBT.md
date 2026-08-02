@@ -150,7 +150,15 @@ Registre dédié aux dettes qui traversent plusieurs plans. Une dette = un propr
 ## D6 — Fiche de personnage non responsive desktop
 
 - **Owner** : **plan 13.14** (`plans/13.14-sheet-responsive-desktop.md`, cadrage acté 2026-05-19 — position roadmap indicative, peut être remontée par Adrien).
-- **Statut** : ouverte. Détectée lors de l'UAT plan 05 du 16 mai 2026, à l'atterrissage sur la fiche après création de personnage. Owner précis posé 2026-05-19.
+- **Statut** : **CODE COMPLET 2026-08-02 — reste l'UAT navigateur d'Adrien** (critère 4, le seul non automatisable). Détectée lors de l'UAT plan 05 du 16 mai 2026. Owner précis posé 2026-05-19.
+- **Livraison 2026-08-02 (dernier lot)** : les 2 modes qui restaient sans densité desktop — **Avoir** et **Magie** — passent en grille 2 colonnes à `xl:`, comme Combat / Essence / Âme livrés antérieurement. C'était le défaut nommé 🔴 **bloquant** par `plans/13.14-RESPONSIVE-AUDIT.md` (« le mode Avoir montre une liste d'inventaire qui ne profite pas du tout de la largeur disponible »).
+  - `avoir-mode.tsx` — barre de poids et inventaire en `xl:col-span-2` ; bourse et harmonisation côte à côte.
+  - `inventory-list.tsx` — les lignes d'objet passent en `grid ... xl:grid-cols-2` (elles s'empilaient sur une seule colonne dans une carte pleine largeur).
+  - `magie-mode.tsx` — barre de stats et listes de sorts en `xl:col-span-2` ; cercle d'incantation (plafonné à 380 px par construction) et carte de pacte côte à côte, ce qui supprime le vide à droite du cercle.
+  - `spell-list.tsx` + `wizard-spellbook-sections.tsx` — lignes de sorts en 2 colonnes à `xl:`.
+  - **Mobile et tablette strictement inchangés** : tout est derrière `xl:` (≥ 1280 px), aucune classe `< lg:` touchée.
+- **Couverture** : `tests/e2e/sheet-responsive-layout.spec.ts` reçoit un test dédié qui asserte le **layout calculé** (`getComputedStyle().gridTemplateColumns`, nombre de pistes) et non la présence d'une classe CSS — 2 colonnes de cartes ET 2 colonnes de lignes, pour Avoir et Magie à 1440 px. Deux personas distincts pour que les listes soient NON VIDES (un guerrier équipé pour l'inventaire — le magicien de référence a un sac vide, l'assertion aurait été vacuously verte ; un magicien L5 pour les sorts). **Rouge avant vert vérifié** : sans le fix, `Expected "grid", Received "flex"`.
+- **Reste à faire** : critère 4 uniquement — UAT navigateur d'Adrien à 1024 / 1440 / 1920 px. Captures fournies dans `uat-review/`.
 - **Cause-racine** : les 5 modes de la fiche (`combat` / `essence` / `magie` / `avoir` / `ame`, plans 06-12) ont été construits **mobile-first** sans pass desktop. À large viewport, le layout mobile s'étire (cards pleine largeur, padding sous-utilisé) au lieu d'exploiter l'espace disponible (2 cols, sticky sidebar, dense par endroit).
 - **Conséquence** : la fiche est utilisable mais ergonomiquement sous-optimale sur écran large. Pas bloquant pour le MJ qui joue sur téléphone (cas nominal), gênant pour les usages annexes (préparation de session sur PC).
 - **Surface impactée (à confirmer après audit)** :

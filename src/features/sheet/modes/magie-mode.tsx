@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { useContent } from '@/shared/hooks/use-content';
 import { localize } from '@/shared/lib/i18n';
+import { readPactSlotState } from '@/shared/lib/rules/pact-magic';
 import { isPreparedCaster } from '@/shared/lib/rules/spell-preparation';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
@@ -88,6 +89,13 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
     [character, spells],
   );
 
+  // Même source de vérité que <PactSlotsCard> (qui rend `null` sans pacte) —
+  // sert à savoir si le cercle d'invocation a un voisin de rangée à `xl:`.
+  const hasPactSlots = useMemo(
+    () => readPactSlotState(character, classCatalog) !== null,
+    [character, classCatalog],
+  );
+
   const [activeSpell, setActiveSpell] = useState<Spell | null>(null);
 
   // Sorts d'ascendance (plan 13.8) : un perso peut être « lanceur » sans classe
@@ -138,12 +146,28 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-magie"
       aria-labelledby="sheet-mode-tab-magie"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0 xl:max-w-none xl:grid xl:grid-cols-2 xl:gap-4"
     >
+      {/*
+        xl: grid 2-col (DEBT D6). La barre de stats et les listes de sorts
+        gardent la pleine largeur ; le cercle d'incantation (plafonné à 380 px
+        par construction) et la carte de pacte se posent côte à côte, ce qui
+        supprime le vide qui s'ouvrait à droite du cercle sur grand écran.
+      */}
       {castingClasses.length > 0 ? (
         <>
-          <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
-          <MagicCircle character={character} readOnly={readOnly} />
+          <div className="xl:col-span-2">
+            <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
+          </div>
+          {/*
+            Le cercle ne se met en demi-largeur QUE s'il a un voisin : sans
+            classe à pacte, `PactSlotsCard` rend `null` et le cercle restait
+            seul sur une demi-rangée, avec un vide à sa droite. On dérive donc
+            la présence du voisin de la même source que la carte elle-même.
+          */}
+          <div className={hasPactSlots ? undefined : 'xl:col-span-2'}>
+            <MagicCircle character={character} readOnly={readOnly} />
+          </div>
           <PactSlotsCard character={character} readOnly={readOnly} />
         </>
       ) : null}
@@ -177,25 +201,27 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
         Magicien multi-class, on conserve la <SpellList> générique avec son
         chip « Préparés » comme filtre.
       */}
-      {isWizardMonoClass(castingClassIds) ? (
-        <WizardSpellbookSections
-          character={character}
-          spells={spells}
-          onSpellSelect={(spell) => setActiveSpell(spell)}
-          readOnly={readOnly}
-        />
-      ) : (
-        (castingClasses.length > 0 || hasAncestrySpells || hasPactTomeSpells) && (
-          <SpellList
+      <div className="xl:col-span-2">
+        {isWizardMonoClass(castingClassIds) ? (
+          <WizardSpellbookSections
             character={character}
             spells={spells}
-            spellcasterClassIds={castingClassIds}
-            ancestrySourceLabels={ancestrySourceLabels}
-            pactTomeSourceLabels={pactTomeSourceLabels}
             onSpellSelect={(spell) => setActiveSpell(spell)}
+            readOnly={readOnly}
           />
-        )
-      )}
+        ) : (
+          (castingClasses.length > 0 || hasAncestrySpells || hasPactTomeSpells) && (
+            <SpellList
+              character={character}
+              spells={spells}
+              spellcasterClassIds={castingClassIds}
+              ancestrySourceLabels={ancestrySourceLabels}
+              pactTomeSourceLabels={pactTomeSourceLabels}
+              onSpellSelect={(spell) => setActiveSpell(spell)}
+            />
+          )
+        )}
+      </div>
       {activeSpell && (
         <SpellDetailModal
           character={character}

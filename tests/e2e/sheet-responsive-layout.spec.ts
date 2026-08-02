@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
-import { seedCharacter, wizardL5DamageD1 } from './seed-character';
+import { fighterL3, seedCharacter, wizardL5DamageD1 } from './seed-character';
 
 /**
  * Plan 13.14 — Tests structuraux responsive de la fiche (DOM bbox, pas
@@ -124,6 +124,59 @@ test.describe('Plan 13.14 — Sheet responsive structural', () => {
           );
         }
       }
+    }
+  });
+
+  test('avoir + magie : densité 2-col à xl+ (listes incluses)', async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.goto('/');
+    await waitForAppReady(page);
+
+    // Deux personas distincts, chacun choisi pour que la liste testée soit
+    // NON VIDE : un guerrier équipé pour l'inventaire (le magicien de référence
+    // a un sac vide → aucune <ul> rendue, l'assertion serait vacuously verte),
+    // un magicien L5 pour la liste de sorts.
+    const { charId: fighterId } = await seedCharacter(page, fighterL3);
+    const { charId: wizardId } = await seedCharacter(page, wizardL5DamageD1);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    // DEBT D6 : Avoir et Magie étaient les 2 derniers modes sans densité
+    // desktop — la carte inventaire et la liste de sorts s'étiraient sur toute
+    // la largeur avec UNE seule colonne de lignes. On asserte le layout calculé
+    // (nombre de pistes de grille), pas la présence d'une classe CSS.
+    for (const mode of [
+      { tab: 'Avoir', panel: 'sheet-mode-panel-avoir', charId: fighterId },
+      { tab: 'Magie', panel: 'sheet-mode-panel-magie', charId: wizardId },
+    ]) {
+      await gotoSheet(page, mode.charId);
+      await page.getByRole('tab', { name: new RegExp(`^${mode.tab}$`, 'i') }).click();
+      await page.waitForTimeout(250);
+
+      const info = await page.evaluate((panelId) => {
+        const section = document.getElementById(panelId);
+        if (!section) return null;
+        // Une <ul> de lignes (inventaire ou sorts) rendue dans ce panneau.
+        const lists = Array.from(section.querySelectorAll('ul'));
+        const listTracks = lists.map(
+          (ul) => getComputedStyle(ul).gridTemplateColumns.split(' ').filter(Boolean).length,
+        );
+        return {
+          display: getComputedStyle(section).display,
+          tracks: getComputedStyle(section).gridTemplateColumns.split(' ').filter(Boolean)
+            .length,
+          maxListTracks: listTracks.length > 0 ? Math.max(...listTracks) : 0,
+        };
+      }, mode.panel);
+
+      expect(info, `${mode.tab}: panneau présent`).not.toBeNull();
+      if (!info) continue;
+      expect(info.display, `${mode.tab}: panneau en grid à 1440`).toBe('grid');
+      expect(info.tracks, `${mode.tab}: 2 colonnes de cartes`).toBe(2);
+      expect(
+        info.maxListTracks,
+        `${mode.tab}: la liste de lignes passe à 2 colonnes`,
+      ).toBe(2);
     }
   });
 

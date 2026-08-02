@@ -41,24 +41,44 @@ export function AvoirMode({ character }: AvoirModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-avoir"
       aria-labelledby="sheet-mode-tab-avoir"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
+      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0 xl:max-w-none xl:grid xl:grid-cols-2 xl:items-start xl:gap-4"
     >
+      {/*
+        xl: grid 2-col (DEBT D6). Poids et bourse se posent côte à côte — ce
+        sont les deux seules cartes TOUJOURS rendues, donc la seule paire qui ne
+        laisse jamais de trou. `AttunementSummary` se masque de lui-même quand
+        rien n'est harmonisé (`attunedCount === 0`) : le mettre en 1 colonne
+        ouvrait une demi-rangée vide à côté de la bourse sur la majorité des
+        fiches. Il prend donc la pleine largeur, comme l'inventaire, qui profite
+        de la largeur pour passer ses lignes en 2 colonnes.
+      */}
       <WeightBar
         weightTotal={derived.weightTotal}
         carryingCapacity={derived.carryingCapacity}
         level={derived.encumbranceLevel}
       />
       <CoinsSection character={character} readOnly={readOnly} />
-      <AttunementSummary
-        resolvedItems={derived.resolvedItems}
-        attunedCount={derived.attunedCount}
-      />
-      <InventoryList
-        resolvedItems={derived.resolvedItems}
-        onItemSelect={setActiveRow}
-        onAddItemClick={() => setShowAddModal(true)}
-        readOnly={readOnly}
-      />
+      {/*
+        Garde explicite au parent : un composant qui rend `null` ne crée PAS de
+        cellule de grille, mais le <div> qui l'enveloppe, si. Sans cette
+        condition, la fiche sans objet harmonisé gagnait une rangée vide.
+      */}
+      {derived.attunedCount > 0 && (
+        <div className="xl:col-span-2">
+          <AttunementSummary
+            resolvedItems={derived.resolvedItems}
+            attunedCount={derived.attunedCount}
+          />
+        </div>
+      )}
+      <div className="xl:col-span-2">
+        <InventoryList
+          resolvedItems={derived.resolvedItems}
+          onItemSelect={setActiveRow}
+          onAddItemClick={() => setShowAddModal(true)}
+          readOnly={readOnly}
+        />
+      </div>
 
       {activeRow && (
         <ItemDetailModal

@@ -218,7 +218,9 @@ export function SpellList({
                 ? t('sheet.magie.cantripsHeading')
                 : t('sheet.magie.prep.levelLabel').replace('{n}', String(level))}
             </h4>
-            <ul className="flex flex-col gap-2">
+            {/* xl: 2 colonnes de sorts (DEBT D6) — la carte prend toute la
+                largeur de la fiche desktop. */}
+            <ul className="grid grid-cols-1 gap-2 xl:grid-cols-2">
               {items.map((spell) => {
                 const src = sourceMap.get(spell.id) ?? {
                   classNames: [],

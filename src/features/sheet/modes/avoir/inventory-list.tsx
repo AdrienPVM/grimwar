@@ -105,7 +105,12 @@ function GroupBlock({ label, rows, onItemSelect }: GroupBlockProps): JSX.Element
       <p className="mb-2 font-title text-[9px] font-bold uppercase tracking-[0.24em] text-text-tertiary">
         {label}
       </p>
-      <ul className="flex flex-col gap-1.5">
+      {/*
+        xl: 2 colonnes de lignes (DEBT D6) — la carte inventaire occupe toute la
+        largeur de la fiche desktop, une seule colonne de lignes y laissait un
+        vide de plusieurs centaines de pixels.
+      */}
+      <ul className="grid grid-cols-1 gap-1.5 xl:grid-cols-2">
         {rows.map((row) => (
           <ItemRow key={row.inventory.contentId + ':' + row.inventory.contentScope} row={row} onSelect={onItemSelect} />
         ))}
