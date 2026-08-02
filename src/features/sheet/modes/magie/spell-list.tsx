@@ -171,7 +171,12 @@ export function SpellList({
   const grouped = useMemo(() => groupByLevel(filtered), [filtered]);
 
   return (
-    <Card>
+    // `data-testid` : ancre de test stable. Le nom d'un sort apparaît AUSSI dans
+    // <PreparationEditor>, dont le disclosure garde son contenu monté même
+    // replié (`grid-rows-[0fr]`) — un locator par texte est donc ambigu et
+    // tombait sur la carte de préparation sous charge. Les e2e ciblent cette
+    // liste-ci explicitement.
+    <Card data-testid="spell-list">
       <CardHeader>
         <h3>{t('sheet.magie.spellbookTitle')}</h3>
       </CardHeader>

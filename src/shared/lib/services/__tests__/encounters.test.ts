@@ -103,6 +103,7 @@ import {
   advanceTurn,
   applyHpDelta,
   applyInitiative,
+  applyInitiativeRolls,
   applyParticipantHpDelta,
   createEncounter,
   endEncounter,
@@ -442,6 +443,53 @@ describe('setParticipants', () => {
   });
 });
 
+// DEBT D31 volet 1 — l'initiative ne doit JAMAIS écraser les PV/états live.
+describe('applyInitiativeRolls', () => {
+  it('relit le serveur avant d écrire : les PV frais survivent au jet', async () => {
+    // Le serveur porte un monstre déjà blessé (3/10) — état arrivé APRÈS le
+    // snapshot que détiendrait la closure UI.
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        participants: [makeParticipant({ instanceId: 'm1', currentHp: 3, maxHp: 10 })],
+      }),
+    });
+
+    await applyInitiativeRolls(CID, EID, [{ instanceId: 'm1', d20: 15, modifier: 2, total: 17 }]);
+
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const written = payload.participants as EncounterParticipant[];
+    expect(written[0]!.currentHp).toBe(3); // PV frais préservés, pas réécrasés
+    expect(written[0]!.initiative).toBe(17); // initiative bien appliquée
+  });
+
+  it('préserve les états live et les participants absents des jets', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        participants: [
+          makeParticipant({ instanceId: 'm1', conditions: ['empoisonne'], initiative: 0 }),
+          // Ajouté côté serveur entre-temps : pas de jet pour lui.
+          makeParticipant({ instanceId: 'm2', currentHp: 4, initiative: 12 }),
+        ],
+      }),
+    });
+
+    await applyInitiativeRolls(CID, EID, [{ instanceId: 'm1', d20: 20, modifier: 0, total: 20 }]);
+
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const written = payload.participants as EncounterParticipant[];
+    const m1 = written.find((p) => p.instanceId === 'm1')!;
+    const m2 = written.find((p) => p.instanceId === 'm2')!;
+    expect(m1.conditions).toEqual(['empoisonne']);
+    expect(m2).toBeDefined(); // non perdu
+    expect(m2.currentHp).toBe(4);
+    expect(m2.initiative).toBe(12); // initiative courante conservée
+  });
+});
+
 // ─────────────────────────────────────────────────────────────────────
 // applyHpDelta / toggleCondition (helpers purs)
 // ─────────────────────────────────────────────────────────────────────
@@ -467,6 +515,38 @@ describe('applyHpDelta', () => {
     expect(participants).toEqual(ps);
     expect(before).toBe(0);
     expect(after).toBe(0);
+  });
+
+  // DEBT D31 volet 2 — les PV temporaires absorbent les dégâts en premier (SRD).
+  it('les dégâts entament les PV temporaires avant les PV réels', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', currentHp: 10, maxHp: 10, tempHp: 5 })];
+    const { participants, before, after, tempBefore, tempAfter } = applyHpDelta(ps, 'm1', -3);
+    expect(tempBefore).toBe(5);
+    expect(tempAfter).toBe(2); // 3 dégâts absorbés par le bouclier
+    expect(before).toBe(10);
+    expect(after).toBe(10); // PV réels intacts
+    expect(participants[0]!.tempHp).toBe(2);
+  });
+
+  it('le reliquat de dégâts passe sur les PV réels quand le bouclier saute', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', currentHp: 10, maxHp: 10, tempHp: 4 })];
+    const { after, tempAfter } = applyHpDelta(ps, 'm1', -9);
+    expect(tempAfter).toBe(0); // bouclier consommé
+    expect(after).toBe(5); // 9 - 4 = 5 dégâts réels
+  });
+
+  it('les soins ne restaurent jamais de PV temporaires', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', currentHp: 2, maxHp: 10, tempHp: 3 })];
+    const { after, tempAfter } = applyHpDelta(ps, 'm1', +5);
+    expect(after).toBe(7);
+    expect(tempAfter).toBe(3); // inchangé
+  });
+
+  it('tempHp à 0 → comportement historique strictement inchangé', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', currentHp: 7, maxHp: 7, tempHp: 0 })];
+    const { after, tempAfter } = applyHpDelta(ps, 'm1', -10);
+    expect(after).toBe(0); // clamp à 0 préservé
+    expect(tempAfter).toBe(0);
   });
 });
 

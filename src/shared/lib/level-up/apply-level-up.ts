@@ -7,7 +7,7 @@ import {
   resourceStorageKey,
 } from '../rules/class-resources';
 import {
-  casterLevel,
+  slotCasterLevel,
   spellSlotsForCasterLevel,
   type CasterClassEntry,
 } from '../rules/multiclass';
@@ -226,7 +226,8 @@ export function applyLevelUp({
       progression: def?.spellcasting?.progression ?? null,
     };
   });
-  const unifiedLevel = casterLevel(casterEntries);
+  // Mono-classe ⇒ table de la classe ; multiclasse ⇒ règle d'addition (D30).
+  const unifiedLevel = slotCasterLevel(casterEntries);
   const slotMap = spellSlotsForCasterLevel(unifiedLevel);
   const nextSpellSlots: Character['spellSlots'] = { ...character.spellSlots };
   for (const lvl of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {

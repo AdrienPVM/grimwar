@@ -4,6 +4,7 @@ import {
   casterLevel,
   maxHp,
   proficiencyBonus,
+  slotCasterLevel,
   spellSlotsForCasterLevel,
   totalLevel,
 } from '../multiclass';
@@ -69,6 +70,93 @@ describe('maxHp', () => {
       conMod: -10,
     });
     expect(hp).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// DEBT D30 — un demi-lanceur MONO-CLASSE suit sa table de classe, pas la règle
+// d'addition multiclasse `floor(niveau/2)`. Valeurs figées contre le SRD 5.2.1 :
+// table Paladin (SRD_CC_v5.2.1.txt L5145-5166) et Rôdeur (L5593-5614), qui sont
+// identiques sur les 20 niveaux. Vérification humaine faite UNE fois ici.
+describe('slotCasterLevel — demi-lanceur mono-classe (D30)', () => {
+  // [niveau de classe, emplacements attendus] repris LIGNE À LIGNE du SRD.
+  const SRD_HALF_CASTER_SLOTS: readonly [number, Record<number, number>][] = [
+    [1, { 1: 2 }],
+    [2, { 1: 2 }],
+    [3, { 1: 3 }],
+    [4, { 1: 3 }],
+    [5, { 1: 4, 2: 2 }],
+    [6, { 1: 4, 2: 2 }],
+    [7, { 1: 4, 2: 3 }],
+    [8, { 1: 4, 2: 3 }],
+    [9, { 1: 4, 2: 3, 3: 2 }],
+    [10, { 1: 4, 2: 3, 3: 2 }],
+    [11, { 1: 4, 2: 3, 3: 3 }],
+    [12, { 1: 4, 2: 3, 3: 3 }],
+    [13, { 1: 4, 2: 3, 3: 3, 4: 1 }],
+    [14, { 1: 4, 2: 3, 3: 3, 4: 1 }],
+    [15, { 1: 4, 2: 3, 3: 3, 4: 2 }],
+    [16, { 1: 4, 2: 3, 3: 3, 4: 2 }],
+    [17, { 1: 4, 2: 3, 3: 3, 4: 3, 5: 1 }],
+    [18, { 1: 4, 2: 3, 3: 3, 4: 3, 5: 1 }],
+    [19, { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 }],
+    [20, { 1: 4, 2: 3, 3: 3, 4: 3, 5: 2 }],
+  ];
+
+  it.each(SRD_HALF_CASTER_SLOTS)(
+    'Paladin/Rôdeur mono-classe niveau %i → table SRD exacte',
+    (level, expected) => {
+      const slots = spellSlotsForCasterLevel(slotCasterLevel([{ level, progression: 'half' }]));
+      for (const lvl of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {
+        expect(slots[lvl]).toBe(expected[lvl] ?? 0);
+      }
+    },
+  );
+
+  it('le demi-lanceur mono-classe a l Incantation dès le niveau 1 (SRD 5.2.1)', () => {
+    // Régression directe de la note erronée de D28 (« demi-lanceurs L1 → {} »,
+    // règle 2014). En 5.2.1 le Paladin niveau 1 a 2 emplacements de niveau 1.
+    expect(slotCasterLevel([{ level: 1, progression: 'half' }])).toBe(1);
+    expect(spellSlotsForCasterLevel(1)[1]).toBe(2);
+  });
+
+  it('full caster mono-classe : inchangé (table unifiée == table de classe)', () => {
+    expect(slotCasterLevel([{ level: 5, progression: 'full' }])).toBe(5);
+    expect(slotCasterLevel([{ level: 20, progression: 'full' }])).toBe(20);
+  });
+
+  it('multiclasse : retombe sur la règle d addition floor()', () => {
+    // 5 magicien (full=5) + 2 paladin (half=1) = 6 — règle multiclasse SRD.
+    expect(
+      slotCasterLevel([
+        { level: 5, progression: 'full' },
+        { level: 2, progression: 'half' },
+      ]),
+    ).toBe(6);
+    // 2 paladin + 2 rôdeur = deux demi-lanceurs ⇒ addition, pas table de classe.
+    expect(
+      slotCasterLevel([
+        { level: 2, progression: 'half' },
+        { level: 2, progression: 'half' },
+      ]),
+    ).toBe(2);
+  });
+
+  it('Occultiste pur reste hors table unifiée', () => {
+    expect(slotCasterLevel([{ level: 10, progression: 'pact' }])).toBe(0);
+  });
+
+  it('demi-lanceur + pact : le pact ne compte pas, la table de classe s applique', () => {
+    // Un seul lanceur de la table unifiée (le paladin) ⇒ sa propre table.
+    expect(
+      slotCasterLevel([
+        { level: 5, progression: 'half' },
+        { level: 3, progression: 'pact' },
+      ]),
+    ).toBe(3);
+  });
+
+  it('non-lanceur pur → 0', () => {
+    expect(slotCasterLevel([{ level: 5, progression: null }])).toBe(0);
   });
 });
 

@@ -55,6 +55,7 @@ const startEncounterMock = vi.fn();
 const advanceTurnMock = vi.fn();
 const endEncounterMock = vi.fn();
 const setParticipantsMock = vi.fn();
+const applyInitiativeRollsMock = vi.fn();
 const applyParticipantHpDeltaMock = vi.fn();
 const setParticipantConditionMock = vi.fn();
 vi.mock('@/shared/lib/services/encounters', async (importActual) => {
@@ -65,6 +66,7 @@ vi.mock('@/shared/lib/services/encounters', async (importActual) => {
     advanceTurn: (...a: unknown[]) => advanceTurnMock(...a),
     endEncounter: (...a: unknown[]) => endEncounterMock(...a),
     setParticipants: (...a: unknown[]) => setParticipantsMock(...a),
+    applyInitiativeRolls: (...a: unknown[]) => applyInitiativeRollsMock(...a),
     applyParticipantHpDelta: (...a: unknown[]) => applyParticipantHpDeltaMock(...a),
     setParticipantCondition: (...a: unknown[]) => setParticipantConditionMock(...a),
   };
@@ -202,6 +204,7 @@ afterEach(() => {
   advanceTurnMock.mockReset();
   endEncounterMock.mockReset();
   setParticipantsMock.mockReset();
+  applyInitiativeRollsMock.mockReset();
   applyParticipantHpDeltaMock.mockReset();
   setParticipantConditionMock.mockReset();
   logEncounterStartMock.mockReset();
@@ -237,17 +240,22 @@ describe('<EncounterScreen> — état planned (MJ)', () => {
     expect(screen.getByText(/Lance l’initiative pour établir l’ordre/i)).toBeInTheDocument();
   });
 
-  it('« Lancer l’initiative » → setParticipants reçoit les participants initiés (init 10)', async () => {
+  // DEBT D31 volet 1 — l'écriture passe par `applyInitiativeRolls` (relecture
+  // serveur), jamais par `setParticipants` depuis la closure : sinon un jet
+  // d'initiative réécrase les PV/états appliqués entre-temps.
+  it('« Lancer l’initiative » → applyInitiativeRolls reçoit les jets (total 10)', async () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter();
-    setParticipantsMock.mockResolvedValueOnce(undefined);
+    applyInitiativeRollsMock.mockResolvedValueOnce([]);
     renderScreen();
     fireEvent.click(screen.getByRole('button', { name: 'Lancer l’initiative' }));
-    await waitFor(() => expect(setParticipantsMock).toHaveBeenCalledTimes(1));
-    const [cid, eid, participants] = setParticipantsMock.mock.calls[0]!;
+    await waitFor(() => expect(applyInitiativeRollsMock).toHaveBeenCalledTimes(1));
+    const [cid, eid, rolls] = applyInitiativeRollsMock.mock.calls[0]!;
     expect(cid).toBe('c-1');
     expect(eid).toBe('e-1');
-    expect((participants as EncounterParticipant[]).every((p) => p.initiative === 10)).toBe(true);
+    expect((rolls as { total: number }[]).every((r) => r.total === 10)).toBe(true);
+    // Le tableau complet n'est plus réécrit depuis la closure UI.
+    expect(setParticipantsMock).not.toHaveBeenCalled();
   });
 
   it('« Démarrer le combat » → startEncounter + loggers + pointeur posé', async () => {

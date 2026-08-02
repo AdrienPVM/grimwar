@@ -1,5 +1,5 @@
 import {
-  casterLevel,
+  slotCasterLevel,
   spellSlotsForCasterLevel,
   type CasterClassEntry,
   type SpellSlotsByLevel,
@@ -46,14 +46,15 @@ export function deriveCasterEntries(
 }
 
 /**
- * Niveau d'incantateur unifié du personnage. 0 si pas de classe lanceuse.
- * Le pact (warlock) est exclu de la table unifiée — voir `casterLevel`.
+ * Niveau à indexer dans la table d'emplacements. 0 si pas de classe lanceuse.
+ * Le pact (warlock) est exclu de la table unifiée — voir `slotCasterLevel`.
+ * Mono-classe ⇒ table de la classe ; multiclasse ⇒ règle d'addition (D30).
  */
 export function characterCasterLevel(
   character: Character,
   classCatalog: readonly ClassEntity[],
 ): number {
-  return casterLevel(deriveCasterEntries(character.classes, classCatalog));
+  return slotCasterLevel(deriveCasterEntries(character.classes, classCatalog));
 }
 
 /**
@@ -75,7 +76,7 @@ export function expectedSpellSlots(
  * Prend `characterClasses` plutôt qu'un `Character` complet pour être appelable
  * AVANT que la fiche n'existe (init à la création, `submit-from-wizard`) comme
  * APRÈS (réconciliation on-load). Le pact (Occultiste) est exclu de la table
- * unifiée — `casterLevel` l'ignore — donc un Occultiste pur reçoit `{}` ici ;
+ * unifiée — `slotCasterLevel` l'ignore — donc un Occultiste pur reçoit `{}` ici ;
  * ses emplacements de pacte restent un chantier dédié.
  *
  * Pourquoi : un caster fraîchement créé doit pouvoir lancer ses sorts à
@@ -85,7 +86,7 @@ export function fullSpellSlots(
   characterClasses: Character['classes'],
   classCatalog: readonly ClassEntity[],
 ): SpellSlotState {
-  const level = casterLevel(deriveCasterEntries(characterClasses, classCatalog));
+  const level = slotCasterLevel(deriveCasterEntries(characterClasses, classCatalog));
   const slotMap = spellSlotsForCasterLevel(level);
   const out: SpellSlotState = {};
   for (const lvl of SLOT_LEVEL_KEYS) {

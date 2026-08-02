@@ -98,7 +98,19 @@ test.describe('UAT visuel D14 — statblocks de créatures invoquées', () => {
 
       // Tap sur le sort cible — ouvre la modale. Le sort apparaît comme item
       // de la SpellList avec son nom FR localisé.
-      await page.getByText(uat.spellNameFr, { exact: false }).first().click();
+      //
+      // Scope OBLIGATOIRE sur la SpellList quand elle existe : chez un lanceur
+      // préparateur (Clerc / Druide / Paladin), <PreparationEditor> rend le même
+      // nom de sort AVANT la liste dans le DOM, et son disclosure garde le
+      // contenu monté même replié (`grid-rows-[0fr]`). Un `getByText().first()`
+      // non scopé y tombait et le clic était intercepté par le paragraphe
+      // d'aide de la carte — 2 tests rouges seulement sous suite complète
+      // (verts en isolation, donc invisibles en run ciblé).
+      // Le Magicien mono-classe n'a pas d'éditeur : il rend
+      // <WizardSpellbookSections> et non la SpellList, d'où le repli sur `page`.
+      const spellList = page.getByTestId('spell-list');
+      const spellScope = (await spellList.count()) > 0 ? spellList : page;
+      await spellScope.getByText(uat.spellNameFr, { exact: false }).first().click();
 
       // La modale est ouverte + le statblock rendu
       const dialog = page.getByRole('dialog');

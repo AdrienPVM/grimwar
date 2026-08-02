@@ -274,6 +274,31 @@ export async function setParticipants(
   );
 }
 
+/**
+ * Applique une volée de jets d'initiative en RELISANT l'état serveur d'abord
+ * (DEBT D31 volet 1). `setParticipants` réécrit le tableau ENTIER : composé
+ * depuis la closure React (dernier snapshot `onSnapshot`), il ré-écrasait les PV
+ * et les états appliqués entre-temps — le MJ blesse un monstre puis relance
+ * l'initiative avant le retour du snapshot, et les dégâts sont annulés.
+ *
+ * On lit donc frais juste avant d'écrire, comme `applyParticipantHpDelta` et
+ * `setParticipantCondition`. `applyInitiative` mappe par `instanceId` et
+ * conserve les participants absents de `rolls` : un participant ajouté côté
+ * serveur entre-temps survit avec son initiative courante au lieu d'être perdu.
+ * Read-then-write non transactionnel, cohérent avec le reste du service
+ * (séquencé par `actionPending` côté UI, suffisant en V1 single-MJ).
+ */
+export async function applyInitiativeRolls(
+  campaignId: string,
+  encounterId: string,
+  rolls: readonly InitiativeRoll[],
+): Promise<EncounterParticipant[]> {
+  const current = await getEncounter(campaignId, encounterId);
+  const participants = applyInitiative(current.participants, rolls);
+  await setParticipants(campaignId, encounterId, participants);
+  return participants;
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Transitions d'état — start / advanceTurn / end
 // ─────────────────────────────────────────────────────────────────────
@@ -394,21 +419,49 @@ export async function endEncounter(
  * liste mise à jour ET la valeur avant/après du participant ciblé (pour le
  * payload `monster-hp-change`). `instanceId` introuvable ⇒ liste inchangée,
  * `before === after`.
+ *
+ * PV temporaires (SRD, DEBT D31 volet 2) : les dégâts entament d'ABORD `tempHp`,
+ * et seul le reliquat descend sur `currentHp` ; les soins ne restaurent JAMAIS
+ * de PV temporaires. `before`/`after` restent les PV RÉELS (contrat inchangé du
+ * payload `monster-hp-change`) — l'évolution des PV temporaires est exposée à
+ * part via `tempBefore`/`tempAfter`, additifs. `tempHp` absent (docs legacy
+ * antérieurs au champ) ⇒ traité comme 0.
  */
 export function applyHpDelta(
   participants: readonly EncounterParticipant[],
   instanceId: string,
   delta: number,
-): { participants: EncounterParticipant[]; before: number; after: number } {
+): {
+  participants: EncounterParticipant[];
+  before: number;
+  after: number;
+  tempBefore: number;
+  tempAfter: number;
+} {
   let before = 0;
   let after = 0;
+  let tempBefore = 0;
+  let tempAfter = 0;
   const updated = participants.map((p) => {
     if (p.instanceId !== instanceId) return p;
     before = p.currentHp;
-    after = Math.max(0, Math.min(p.maxHp, p.currentHp + delta));
-    return { ...p, currentHp: after };
+    tempBefore = p.tempHp ?? 0;
+
+    if (delta < 0) {
+      // Dégâts : le bouclier de PV temporaires absorbe en premier.
+      const damage = -delta;
+      const absorbed = Math.min(tempBefore, damage);
+      tempAfter = tempBefore - absorbed;
+      after = Math.max(0, p.currentHp - (damage - absorbed));
+    } else {
+      // Soins : PV réels uniquement, plafonnés à maxHp.
+      tempAfter = tempBefore;
+      after = Math.min(p.maxHp, p.currentHp + delta);
+    }
+
+    return { ...p, currentHp: after, tempHp: tempAfter };
   });
-  return { participants: updated, before, after };
+  return { participants: updated, before, after, tempBefore, tempAfter };
 }
 
 /**

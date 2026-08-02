@@ -19,13 +19,12 @@ import {
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import {
   advanceTurn,
-  applyInitiative,
+  applyInitiativeRolls,
   applyParticipantHpDelta,
   endEncounter,
   EncounterServiceError,
   rollInitiativeFor,
   setParticipantCondition,
-  setParticipants,
   startEncounter,
 } from '@/shared/lib/services/encounters';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
@@ -183,8 +182,9 @@ export function EncounterScreen(): JSX.Element {
       const rolls = encounter.participants.map((p) =>
         rollInitiativeFor(p.instanceId, modifiers.get(p.instanceId) ?? 0),
       );
-      const sorted = applyInitiative(encounter.participants, rolls);
-      await setParticipants(cid, eid, sorted);
+      // Relit l'état serveur avant d'écrire (DEBT D31 volet 1) : réécrire le
+      // tableau depuis la closure annulerait des PV/états appliqués entre-temps.
+      await applyInitiativeRolls(cid, eid, rolls);
     } catch {
       setActionError(t('encounters.action.error.generic'));
     } finally {
@@ -202,8 +202,7 @@ export function EncounterScreen(): JSX.Element {
         participant.instanceId,
         modifiers.get(participant.instanceId) ?? 0,
       );
-      const sorted = applyInitiative(encounter.participants, [roll]);
-      await setParticipants(cid, eid, sorted);
+      await applyInitiativeRolls(cid, eid, [roll]);
     } catch {
       setActionError(t('encounters.action.error.generic'));
     } finally {
