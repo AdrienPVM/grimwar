@@ -222,7 +222,10 @@ chose : marque, retour, avatar. Il n'indique jamais dans quelle campagne ni sur
 quel personnage on se trouve. Une fois en profondeur (séance, rencontre, PNJ),
 plus rien ne rattache l'écran à sa campagne.
 
-**D-3 🟠 Le Codex est un cul-de-sac à entrée unique.** Cf. J9 / M6.
+**D-3 ~~🟠 Le Codex est un cul-de-sac à entrée unique.~~** Cf. J9 / M6.
+✅ **Corrigé 2026-08-04** (E6) : deux entrées supplémentaires, toutes deux en
+superposition — wedge FAB sur la fiche, bouton sur la rencontre. Le hub de
+l'accueil reste l'entrée de consultation posée.
 
 **D-4 🟠 Aucun signal « ça se passe maintenant ».** Cf. M3. Ni sur l'accueil, ni
 sur la liste des campagnes, ni sur le détail. C'est la lacune la plus structurante
@@ -282,8 +285,8 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 | ~~E3~~ | ~~« Retour » contextuel~~ | 🔴 | S | ✅ **livré 2026-08-03** |
 | ~~E5~~ | ~~Hiérarchiser l'écran de campagne~~ | 🟠 | M | ✅ **livré 2026-08-03** (2 groupes) |
 | ~~E4~~ | ~~Bandeau « En cours » (séance / combat actifs) sur l'accueil~~ | 🟠 | M | ✅ **livré 2026-08-03**. **Aucun index à déployer** : `getActiveSession` / `getActiveEncounter` filtrent sur un seul champ (`where('status','==','active')` + `limit(1)`) ⇒ index automatique. La réserve « index à vérifier » est levée. Reste ouvert : le même bandeau **sur l'écran de campagne** (l'accueil couvre le besoin de reprise ; la campagne le dupliquerait à moindre valeur) |
-| E6 | Accès Codex depuis la fiche et depuis la rencontre | 🟠 | S | Un wedge FAB + un bouton |
-| E7 | Roster accessible depuis la rencontre (fiches des joueurs) | 🟠 | S | |
+| ~~E6~~ | ~~Accès Codex depuis la fiche et depuis la rencontre~~ | 🟠 | S | ✅ **livré 2026-08-04**. Choix : **superposition**, pas navigation vers `/codex` — naviguer perdrait la position de défilement du tracker et le Retour du Codex ramènerait à la bibliothèque. Catégorie d'arrivée contextuelle : États depuis la fiche, bestiaire depuis la rencontre. A nécessité un prérequis : `fix(modal)` « Échap ne ferme que la modale du dessus » (1ʳᵉ imbrication réelle de l'app) |
+| ~~E7~~ | ~~Roster accessible depuis la rencontre (fiches des joueurs)~~ | 🟠 | S | ✅ **livré 2026-08-04**. Le besoin fréquent (PV/CA/états) est servi **dans** la superposition par les cartes live ; la fiche entière reste une navigation. Reste ouvert : le Retour de la fiche d'un membre remonte à la **campagne**, pas au combat d'où l'on vient (`parentRouteFor` est hiérarchique par construction — cf. D-1) |
 | E8 | Campagne d'attache affichée sur la carte de personnage | 🟡 | XS | |
 | E9 | Rediriger ou supprimer `/dm`, `/map-proto`, `/debug-content` | 🟡 | XS | |
 | E10 | Reprise de brouillon de wizard signalée sur l'accueil | 🟡 | S | |
@@ -296,9 +299,16 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 cohérent et peu risqué — **livré le 2026-08-03**, cf. §F. **E4 a suivi le même
 jour** : l'accueil répond désormais à « qu'est-ce qui se passe maintenant ? » et
 mène au combat en cours en un tap, là où il fallait quatre écrans.
-Le lot suivant est E6 + E7 (accès Codex et roster en cours de partie). E13
-(notifications) mérite son propre plan — c'est le seul poste de coût L qui
-change vraiment le produit.
+**E6 + E7 ont suivi le 2026-08-04** : consulter — une règle, l'état du groupe —
+ne demande plus de quitter l'écran de jeu. C'est la fin du lot « accès en cours
+de partie ».
+
+Le lot suivant est le **paquet des 🟡 peu chers** : E8 (campagne d'attache sur
+la carte de personnage, XS), E9 (rediriger `/dm`, `/map-proto`,
+`/debug-content`, XS), E10 (brouillon de wizard signalé sur l'accueil, S),
+E11 (repli « lire la règle », S — cf. D-12), E12 (outils du meneur épinglés,
+S). E13 (notifications) mérite son propre plan — c'est le seul poste de coût L
+qui change vraiment le produit.
 
 ---
 
@@ -334,3 +344,48 @@ change vraiment le produit.
   zéro tuile fantôme, rangée d'en-tête pleine, remplissage dense effectif.
   **Rouge-avant-vert prouvé deux fois** — suppression du `dense` → « trou de 3
   col. » ; suppression de la règle `:has()` → « tuile fantôme ».
+
+---
+
+## G. Ce que le lot du 2026-08-04 livre (E6 + E7)
+
+### G.1 — Consulter sans quitter la partie
+
+- **E6 — le Codex en superposition.** `codex-browser.tsx` extrait le corps du
+  Codex de son écran ; `codex-overlay.tsx` le sert par-dessus la fiche (wedge
+  FAB « Codex », arrivée sur les **États**) et par-dessus la rencontre (bouton
+  de barre, arrivée sur le **bestiaire**). Une seule implémentation des 10
+  navigateurs, deux présentations. Le wedge est au **premier niveau et sans
+  condition de permission** — le ranger sous « Outils » l'aurait fait
+  disparaître en lecture MJ, précisément là où consulter une règle est le
+  besoin.
+- **E7 — la compagnie en superposition.** Cartes live (PV, CA, états) des
+  fiches liées que le MJ a le droit de lire, par-dessus le tracker.
+  « Promouvoir MJ » masqué : administration de table, pas geste de partie.
+
+### G.2 — Le prérequis découvert en route
+
+`fix(modal)` — **Échap ne fermait pas la bonne modale.** Le Codex en
+superposition contient les navigateurs, qui ouvrent leur propre modale de
+détail : première imbrication réelle de l'app. Les deux écoutent `keydown` sur
+`window`, et `stopPropagation` n'empêche pas un autre écouteur de la **même**
+cible de se déclencher — Échap fermait les deux d'un coup.
+
+Le sommet se détermine par l'**ordre du DOM**, pas par une pile d'ordre de
+montage : React commite les effets enfant d'abord, ce qui empilerait une modale
+imbriquée *sous* sa parente. L'ordre du document est exactement l'ordre de
+peinture à `z-index` égal. Rouge-avant-vert prouvé sur les 2 cas.
+
+### G.3 — Déménagement sans changement de comportement
+
+`buildRoster` / `RosterEntry` / `formatUid` quittent `campaign-detail-screen.tsx`
+pour `roster.ts` : **huit fichiers** les importaient depuis un ÉCRAN, ce qui
+faisait dépendre le tracker de combat du hub de campagne et de tout ce qu'il
+tire avec lui.
+
+### G.4 — Ce qui reste ouvert sur ce périmètre
+
+- Depuis la compagnie ouverte en combat, « Voir la fiche » **navigue** ; le
+  Retour de cette fiche remonte à la **campagne**, pas au combat. C'est la
+  conséquence assumée de `parentRouteFor`, hiérarchique par construction
+  (cf. D-1). Le besoin fréquent ne navigue plus, donc le coût est rare.
