@@ -185,6 +185,12 @@ export type StringKey =
   | 'account.link.error.generic'
   // Accueil — hub de navigation
   | 'home.hub.title'
+  | 'home.ongoing.label'
+  | 'home.ongoing.kindEncounter'
+  | 'home.ongoing.kindSession'
+  | 'home.ongoing.round'
+  | 'home.ongoing.sessionNumber'
+  | 'home.ongoing.cta'
   | 'home.hub.codex.sub'
   | 'home.hub.campaigns.sub'
   // Wizard (plan 05)
@@ -2940,6 +2946,12 @@ const STRINGS: Record<Locale, Dict> = {
     'account.link.error.generic': 'La liaison n’a pas abouti. Réessaie.',
     // Accueil — hub de navigation
     'home.hub.title': 'Explorer',
+    'home.ongoing.label': 'En cours',
+    'home.ongoing.kindEncounter': 'Combat',
+    'home.ongoing.kindSession': 'Séance',
+    'home.ongoing.round': 'Manche {n}',
+    'home.ongoing.sessionNumber': 'Séance {n}',
+    'home.ongoing.cta': 'Reprendre',
     'home.hub.codex.sub': 'Sorts, objets, espèces, classes…',
     'home.hub.campaigns.sub': 'Rejoins ou crée une table.',
     // Wizard (plan 05)
@@ -6319,6 +6331,12 @@ const STRINGS: Record<Locale, Dict> = {
       'The Google window closed before finishing. Try again.',
     'account.link.error.generic': 'Linking failed. Try again.',
     'home.hub.title': 'Explore',
+    'home.ongoing.label': 'In progress',
+    'home.ongoing.kindEncounter': 'Combat',
+    'home.ongoing.kindSession': 'Session',
+    'home.ongoing.round': 'Round {n}',
+    'home.ongoing.sessionNumber': 'Session {n}',
+    'home.ongoing.cta': 'Resume',
     'home.hub.codex.sub': 'Spells, items, species, classes…',
     'home.hub.campaigns.sub': 'Join or create a table.',
     'wizard.title': 'Create a character',

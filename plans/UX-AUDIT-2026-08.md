@@ -281,7 +281,7 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 | ~~E2~~ | ~~Lien « ma campagne » sur la fiche~~ | 🔴 | S | ✅ **livré 2026-08-03** |
 | ~~E3~~ | ~~« Retour » contextuel~~ | 🔴 | S | ✅ **livré 2026-08-03** |
 | ~~E5~~ | ~~Hiérarchiser l'écran de campagne~~ | 🟠 | M | ✅ **livré 2026-08-03** (2 groupes) |
-| E4 | Bandeau « En cours » (séance / combat actifs) sur accueil + campagne | 🟠 | M | Requête `status == 'active'` ; **index Firestore à vérifier** |
+| ~~E4~~ | ~~Bandeau « En cours » (séance / combat actifs) sur l'accueil~~ | 🟠 | M | ✅ **livré 2026-08-03**. **Aucun index à déployer** : `getActiveSession` / `getActiveEncounter` filtrent sur un seul champ (`where('status','==','active')` + `limit(1)`) ⇒ index automatique. La réserve « index à vérifier » est levée. Reste ouvert : le même bandeau **sur l'écran de campagne** (l'accueil couvre le besoin de reprise ; la campagne le dupliquerait à moindre valeur) |
 | E6 | Accès Codex depuis la fiche et depuis la rencontre | 🟠 | S | Un wedge FAB + un bouton |
 | E7 | Roster accessible depuis la rencontre (fiches des joueurs) | 🟠 | S | |
 | E8 | Campagne d'attache affichée sur la carte de personnage | 🟡 | XS | |
@@ -293,10 +293,10 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 | E14 | Recherche transverse / palette de commandes | 🟡 | L | |
 
 **Recommandation d'ordre** : E1 → E2 → E3 → E5 formaient un lot « navigation »
-cohérent et peu risqué — **livré le 2026-08-03**, cf. §F. Le lot suivant est
-**E4**, celui qui transforme l'app d'un classeur en compagnon de table : c'est le
-seul correctif restant qui réponde à « qu'est-ce qui se passe maintenant ? ».
-Viennent ensuite E6 + E7 (accès Codex et roster en cours de partie). E13
+cohérent et peu risqué — **livré le 2026-08-03**, cf. §F. **E4 a suivi le même
+jour** : l'accueil répond désormais à « qu'est-ce qui se passe maintenant ? » et
+mène au combat en cours en un tap, là où il fallait quatre écrans.
+Le lot suivant est E6 + E7 (accès Codex et roster en cours de partie). E13
 (notifications) mérite son propre plan — c'est le seul poste de coût L qui
 change vraiment le produit.
 

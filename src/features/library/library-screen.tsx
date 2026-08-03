@@ -8,6 +8,9 @@ import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
 
+import { OngoingPlayCard } from '@/features/campaigns/ongoing-play-card';
+import { useOngoingPlay } from '@/features/campaigns/use-ongoing-play';
+
 import { CharacterCard } from './character-card';
 import { NavHub } from './nav-hub';
 import { useCharactersList } from './use-characters-list';
@@ -35,6 +38,10 @@ interface InnerProps {
 function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   const navigate = useNavigate();
   const { characters, isLoading, error } = useCharactersList();
+  // Sondé ici et non dans <OngoingPlayCard> : l'accueil a deux rendus (peuplé
+  // et vide) qui affichent tous les deux le bandeau, et on ne veut pas deux
+  // sondages. Un joueur sans personnage PEUT être attendu à une table.
+  const { ongoing } = useOngoingPlay();
 
   if (isLoading) return <Splash />;
 
@@ -59,6 +66,7 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   if (characters.length === 0) {
     return (
       <main className="relative z-10 mx-auto flex min-h-[60vh] w-full max-w-[680px] flex-col items-center justify-center px-6 py-12">
+        <OngoingPlayCard ongoing={ongoing} className="mb-8 max-w-[480px]" />
         <GlassPanel className="w-full max-w-[480px] px-7 py-10 text-center">
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
             {t('library.empty.title')}
@@ -94,6 +102,11 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
 
   return (
     <PageContainer width="wide">
+      {/*
+        Au-dessus du titre, et non dans le hub du bas : quand une partie est en
+        cours, « reprendre » est la seule chose que l'utilisateur vient faire.
+      */}
+      <OngoingPlayCard ongoing={ongoing} className="mx-auto mb-6 max-w-[720px]" />
       <header className="text-center">
         <Divider className="mb-4" />
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
