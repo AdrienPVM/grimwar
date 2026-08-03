@@ -2,6 +2,7 @@ import { useMemo, useState, type JSX } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { CodexOverlay } from '@/features/codex/codex-overlay';
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
 import { Chip } from '@/shared/components/chip';
@@ -119,6 +120,8 @@ export function EncounterScreen(): JSX.Element {
   const [dismissedHandoffIds, setDismissedHandoffIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
+  // Codex consultable par-dessus le tracker, sans quitter le combat (E6).
+  const [codexOpen, setCodexOpen] = useState<boolean>(false);
 
   const { data: conditionDefs } = useContent('conditions');
   // Bestiaire (∪ contenu custom) — sert à résoudre la fiche d'un participant lié
@@ -427,7 +430,7 @@ export function EncounterScreen(): JSX.Element {
 
   return (
     <PageContainer width="content">
-      <nav className="flex">
+      <nav className="flex flex-wrap items-center justify-between gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -436,6 +439,21 @@ export function EncounterScreen(): JSX.Element {
           aria-label={t('encounters.detail.back')}
         >
           ← {t('encounters.detail.back')}
+        </Button>
+
+        {/* Consultation en cours de combat (audit UX, E6 / M6) : le Codex
+            s'ouvre PAR-DESSUS le tracker. Naviguer vers `/codex` perdrait la
+            position de défilement, et son bouton Retour ramènerait à la
+            bibliothèque — pas au combat. Ouvre sur le bestiaire : c'est la
+            question qui se pose une rencontre en main. */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setCodexOpen(true)}
+          tooltip={t('encounters.detail.codexTip')}
+        >
+          {t('encounters.detail.codex')}
         </Button>
       </nav>
 
@@ -620,6 +638,12 @@ export function EncounterScreen(): JSX.Element {
           onClose={() => setControlTargetId(null)}
         />
       ) : null}
+
+      <CodexOverlay
+        open={codexOpen}
+        onClose={() => setCodexOpen(false)}
+        initialCategory="monsters"
+      />
     </PageContainer>
   );
 }

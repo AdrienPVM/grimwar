@@ -597,3 +597,38 @@ describe('<EncounterScreen> — erreurs', () => {
     expect(screen.getByText(/Rencontre introuvable/i)).toBeInTheDocument();
   });
 });
+
+/**
+ * Audit UX E6 / scénario M6 — consulter la règle d'un monstre ou d'un état en
+ * plein combat. Avant, le Codex n'avait qu'un point d'entrée (le hub de
+ * l'accueil) : il fallait QUITTER le tracker, donc perdre la position de
+ * défilement, et le Retour du Codex ramenait à la bibliothèque, pas au combat.
+ */
+describe('<EncounterScreen> — Codex en superposition (E6)', () => {
+  it('le bouton Codex ouvre le Codex par-dessus le tracker, sur le bestiaire', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter();
+    renderScreen();
+
+    expect(screen.queryByRole('dialog', { name: 'Le Codex' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Codex' }));
+
+    expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Bestiaire/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    // Le tracker est toujours monté DERRIÈRE : on consulte sans quitter le combat.
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
+  });
+
+  it('le joueur y a droit aussi (contenu SRD, aucune permission requise)', () => {
+    authHolder.user = { uid: 'uid-player' };
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Codex' }));
+    expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+  });
+});

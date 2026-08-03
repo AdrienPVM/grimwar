@@ -46,13 +46,16 @@ import { cn } from '../lib/cn';
  *  - `md` (défaut) : formulaires et modales standard — élargissement doux.
  *  - `lg` : contenu dense (détail de sort, montée de niveau, création de
  *    rencontre) — profite franchement de la largeur sur desktop/TV.
+ *  - `xl` : écran entier emprunté (Codex en superposition) — une liste
+ *    filtrable de 300 sorts a besoin de plus qu'une colonne de lecture.
  */
-type ModalSize = 'sm' | 'md' | 'lg';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZE_CLASS: Record<ModalSize, string> = {
   sm: 'max-w-[440px]',
   md: 'max-w-[480px] sm:max-w-[560px]',
   lg: 'max-w-[480px] sm:max-w-[600px] lg:max-w-[760px]',
+  xl: 'max-w-none sm:max-w-[720px] lg:max-w-[1000px]',
 };
 
 interface Props {

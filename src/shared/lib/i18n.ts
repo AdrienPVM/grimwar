@@ -70,6 +70,9 @@ export type StringKey =
   // Codex — navigateur de contenu SRD (plan 19)
   | 'codex.title'
   | 'codex.subtitle'
+  // Codex en superposition — consultation sans quitter la fiche / la rencontre
+  | 'codex.overlay.subtitle'
+  | 'codex.overlay.close'
   | 'codex.nav.cta'
   | 'codex.loading'
   | 'codex.empty'
@@ -637,6 +640,7 @@ export type StringKey =
   | 'sheet.fab.sorts'
   | 'sheet.fab.outils'
   | 'sheet.fab.lancer'
+  | 'sheet.fab.codex'
   | 'sheet.fab.repos'
   | 'sheet.fab.inspiration'
   | 'sheet.fab.inspirationOn'
@@ -1474,6 +1478,8 @@ export type StringKey =
   | 'encounters.create.error.generic'
   // Encounters — écran de combat (JALON 24.3)
   | 'encounters.detail.back'
+  | 'encounters.detail.codex'
+  | 'encounters.detail.codexTip'
   | 'encounters.detail.round'
   | 'encounters.detail.error.title'
   | 'encounters.detail.error.body'
@@ -2823,6 +2829,8 @@ const STRINGS: Record<Locale, Dict> = {
     // Codex — navigateur de contenu SRD (plan 19)
     'codex.title': 'Le Codex',
     'codex.subtitle': 'Tout le contenu du SRD 5.2.1, à portée de main.',
+    'codex.overlay.subtitle': 'Consulter une règle sans quitter la partie.',
+    'codex.overlay.close': 'Fermer le Codex',
     'codex.nav.cta': 'Le Codex',
     'codex.loading': 'Invocation du contenu…',
     'codex.empty': 'Aucune entrée ne correspond à ta recherche.',
@@ -3485,6 +3493,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.sorts': 'Sorts',
     'sheet.fab.outils': 'Outils',
     'sheet.fab.lancer': 'Lancer',
+    'sheet.fab.codex': 'Codex',
     'sheet.fab.repos': 'Repos',
     'sheet.fab.inspiration': 'Inspiration héroïque',
     'sheet.fab.inspirationOn': 'Octroyée — relancez un test au choix.',
@@ -4462,6 +4471,8 @@ const STRINGS: Record<Locale, Dict> = {
       "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Encounters — écran de combat (JALON 24.3)
     'encounters.detail.back': 'Retour aux rencontres',
+    'encounters.detail.codex': 'Codex',
+    'encounters.detail.codexTip': 'Consulter une règle ou un monstre sans quitter le combat.',
     'encounters.detail.round': 'Round',
     'encounters.detail.error.title': 'Lecture impossible',
     'encounters.detail.error.body':
@@ -6210,6 +6221,8 @@ const STRINGS: Record<Locale, Dict> = {
     // Codex — SRD content browser (plan 19)
     'codex.title': 'The Codex',
     'codex.subtitle': 'All SRD 5.2.1 content, at your fingertips.',
+    'codex.overlay.subtitle': 'Look up a rule without leaving the game.',
+    'codex.overlay.close': 'Close the Codex',
     'codex.nav.cta': 'The Codex',
     'codex.loading': 'Summoning content…',
     'codex.empty': 'No entry matches your search.',
@@ -6837,6 +6850,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.sorts': 'Spells',
     'sheet.fab.outils': 'Tools',
     'sheet.fab.lancer': 'Roll',
+    'sheet.fab.codex': 'Codex',
     'sheet.fab.repos': 'Rest',
     'sheet.fab.inspiration': 'Heroic Inspiration',
     'sheet.fab.inspirationOn': 'Granted — reroll any check.',
@@ -7751,6 +7765,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Creation failed. Check your connection and try again.',
     // Encounters — combat screen (JALON 24.3)
     'encounters.detail.back': 'Back to encounters',
+    'encounters.detail.codex': 'Codex',
+    'encounters.detail.codexTip': 'Look up a rule or a monster without leaving combat.',
     'encounters.detail.round': 'Round',
     'encounters.detail.error.title': 'Unable to load',
     'encounters.detail.error.body':

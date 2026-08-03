@@ -15,9 +15,9 @@ function ids(wedges: readonly Wedge[]): string[] {
 }
 
 describe('buildWedges', () => {
-  it('propriétaire (canEdit + historique) : 5 wedges dans l’ordre du proto', () => {
+  it('propriétaire (canEdit + historique) : 6 wedges dans l’ordre du proto', () => {
     const w = buildWedges({ canEdit: true, showHistory: true });
-    expect(ids(w)).toEqual(['go', 'spells', 'rest', 'roll', 'tools']);
+    expect(ids(w)).toEqual(['go', 'spells', 'rest', 'roll', 'codex', 'tools']);
   });
 
   it('« Aller à » expose exactement les 5 modes de fiche dans l’ordre', () => {
@@ -54,13 +54,34 @@ describe('buildWedges', () => {
     const w = buildWedges({ canEdit: false, showHistory: false });
     expect(ids(w)).not.toContain('tools');
     expect(ids(w)).not.toContain('rest');
-    // Restent : navigation (go), sorts, lancer.
-    expect(ids(w)).toEqual(['go', 'spells', 'roll']);
+    // Restent : navigation (go), sorts, lancer, Codex.
+    expect(ids(w)).toEqual(['go', 'spells', 'roll', 'codex']);
   });
 
   it('« Repos » contient court (short-rest) et long (long-rest)', () => {
     const rest = buildWedges({ canEdit: true, showHistory: true }).find((w) => w.id === 'rest');
     expect(rest?.children?.map((c) => c.action.kind)).toEqual(['short-rest', 'long-rest']);
+  });
+
+  /**
+   * Audit UX E6 — le Codex doit rester atteignable en un geste QUELLE QUE SOIT
+   * la permission : c'est du contenu SRD, que personne n'a besoin d'être
+   * autorisé à lire. Le ranger sous « Outils » l'aurait fait disparaître en
+   * lecture MJ, là où consulter une règle est précisément le besoin.
+   */
+  it('« Codex » est présent au premier niveau dans les 4 combinaisons de permission', () => {
+    for (const canEdit of [true, false]) {
+      for (const showHistory of [true, false]) {
+        const w = buildWedges({ canEdit, showHistory });
+        expect(ids(w)).toContain('codex');
+        expect(w.find((x) => x.id === 'codex')?.action).toEqual({ kind: 'open-codex' });
+      }
+    }
+  });
+
+  it('« Codex » n’est pas rangé sous « Outils »', () => {
+    const tools = buildWedges({ canEdit: true, showHistory: true }).find((w) => w.id === 'tools');
+    expect(tools?.children?.map((c) => c.id)).not.toContain('codex');
   });
 
   it('« Outils » propriétaire : Inspiration puis Historique', () => {

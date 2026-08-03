@@ -24,7 +24,8 @@ export type WedgeAction =
   | { kind: 'short-rest' }
   | { kind: 'long-rest' }
   | { kind: 'toggle-inspiration' }
-  | { kind: 'open-history' };
+  | { kind: 'open-history' }
+  | { kind: 'open-codex' };
 
 export interface Wedge {
   /** Identifiant stable (clés React, sélecteurs de test). */
@@ -63,6 +64,11 @@ const MODE_META: Record<SheetMode, { labelKey: StringKey; icon: IconName }> = {
  *    est différé à la session gestuelle (dérivation des classes lanceuses +
  *    ressenti du cast = périmètre Adrien).
  *  - « Repos » : ssi `canEdit` (mute la fiche).
+ *  - « Codex » : toujours présent, et au PREMIER niveau (audit UX, E6). Pas
+ *    rangé sous « Outils » pour deux raisons : « Outils » disparaît quand ni
+ *    `canEdit` ni `showHistory` ne tiennent, alors que le Codex est du contenu
+ *    SRD que personne n'a besoin d'être autorisé à lire ; et chercher la règle
+ *    d'un état en plein combat doit rester à un seul geste.
  *  - « Outils » : présent ssi au moins un enfant l'est — Inspiration (ssi
  *    `canEdit`) et/ou Historique (ssi `showHistory`).
  */
@@ -117,6 +123,13 @@ export function buildWedges(ctx: WedgeContext): Wedge[] {
     labelKey: 'sheet.fab.lancer',
     icon: 'i-dice',
     action: { kind: 'quick-d20' },
+  });
+
+  wedges.push({
+    id: 'codex',
+    labelKey: 'sheet.fab.codex',
+    icon: 'i-book',
+    action: { kind: 'open-codex' },
   });
 
   const tools: Wedge[] = [];
