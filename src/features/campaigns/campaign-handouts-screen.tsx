@@ -13,7 +13,7 @@ import { t } from '@/shared/lib/i18n';
 import { archiveHandout } from '@/shared/lib/services/handouts';
 import { HANDOUT_RECIPIENTS_ALL, type Handout } from '@/shared/types/handout';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
 import { HandoutCreateModal, type HandoutPlayer } from './handout-create-modal';
 import { HandoutViewerModal } from './handout-viewer-modal';
 import { useCampaign } from './use-campaign';

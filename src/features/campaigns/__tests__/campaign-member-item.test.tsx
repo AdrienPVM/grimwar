@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
-import type { RosterEntry } from '../campaign-detail-screen';
+import type { RosterEntry } from '../roster';
 
 // ─────────────────────────────────────────────────────────────────────
 // Mocks — la carte live abonne `useCharacter` (lecture cross-owner A2) et

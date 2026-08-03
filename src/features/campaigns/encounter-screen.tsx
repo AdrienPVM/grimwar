@@ -42,6 +42,7 @@ import { hpBarColor, hpRatio } from './encounter-hp';
 import { EncounterPartyView } from './encounter-party-view';
 import { ParticipantControlModal } from './participant-control-modal';
 import { resolveInitiativeModifiers } from './resolve-initiative-modifiers';
+import { RosterOverlay } from './roster-overlay';
 import { useCampaign } from './use-campaign';
 import { useCampaignEvents } from './use-campaign-events';
 import { useEncounter } from './use-encounter';
@@ -122,6 +123,8 @@ export function EncounterScreen(): JSX.Element {
   );
   // Codex consultable par-dessus le tracker, sans quitter le combat (E6).
   const [codexOpen, setCodexOpen] = useState<boolean>(false);
+  // La compagnie, consultable par-dessus le tracker (E7).
+  const [rosterOpen, setRosterOpen] = useState<boolean>(false);
 
   const { data: conditionDefs } = useContent('conditions');
   // Bestiaire (∪ contenu custom) — sert à résoudre la fiche d'un participant lié
@@ -446,15 +449,32 @@ export function EncounterScreen(): JSX.Element {
             position de défilement, et son bouton Retour ramènerait à la
             bibliothèque — pas au combat. Ouvre sur le bestiaire : c'est la
             question qui se pose une rencontre en main. */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setCodexOpen(true)}
-          tooltip={t('encounters.detail.codexTip')}
-        >
-          {t('encounters.detail.codex')}
-        </Button>
+        <div className="flex items-center gap-1">
+          {/* E7 / scénario M5 — la fiche d'un joueur coûtait 4 gestes en plein
+              tour de jeu. Le besoin fréquent (PV, CA, états) est servi ici même
+              par les cartes live ; la fiche entière reste une navigation. */}
+          {campaign ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setRosterOpen(true)}
+              tooltip={t('encounters.detail.rosterTip')}
+            >
+              {t('encounters.detail.roster')}
+            </Button>
+          ) : null}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setCodexOpen(true)}
+            tooltip={t('encounters.detail.codexTip')}
+          >
+            {t('encounters.detail.codex')}
+          </Button>
+        </div>
       </nav>
 
       <header className="mt-4 text-center">
@@ -644,6 +664,23 @@ export function EncounterScreen(): JSX.Element {
         onClose={() => setCodexOpen(false)}
         initialCategory="monsters"
       />
+
+      {/* Sans campagne chargée il n'y a pas de roster à montrer — le tracker,
+          lui, reste lisible (il ne dépend que de la rencontre). */}
+      {campaign ? (
+        <RosterOverlay
+          open={rosterOpen}
+          onClose={() => setRosterOpen(false)}
+          campaign={campaign}
+          members={members}
+          viewerIsGm={isGm}
+          myUid={user?.uid ?? null}
+          myDisplayName={user?.displayName ?? null}
+          onViewSheet={(entry) =>
+            navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
+          }
+        />
+      ) : null}
     </PageContainer>
   );
 }

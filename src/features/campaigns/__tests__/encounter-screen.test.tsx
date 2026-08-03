@@ -126,6 +126,19 @@ function mkCampaign(overrides: Partial<Campaign> = {}): Campaign {
   };
 }
 
+function mkMembership(overrides: Partial<Membership> = {}): Membership {
+  return {
+    userId: 'uid-player',
+    role: 'member',
+    characterId: null,
+    displayName: 'Lyralei',
+    photoURL: null,
+    joinedAt: null,
+    schemaVersion: 1,
+    ...overrides,
+  };
+}
+
 function mkParticipant(overrides: Partial<EncounterParticipant> = {}): EncounterParticipant {
   return {
     type: 'player',
@@ -630,5 +643,61 @@ describe('<EncounterScreen> — Codex en superposition (E6)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Codex' }));
     expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+  });
+});
+
+/**
+ * Audit UX E7 / scénario M5 — la fiche d'un joueur en plein combat.
+ *
+ * Avant : rencontre → retour aux rencontres → retour à la campagne → La
+ * compagnie → Voir la fiche. Quatre gestes en plein tour de jeu, et le tracker
+ * perdu en chemin. Le besoin fréquent (« où en est son personnage ? ») se règle
+ * désormais sans quitter l'écran.
+ */
+describe('<EncounterScreen> — la compagnie en superposition (E7)', () => {
+  it('le bouton ouvre la compagnie par-dessus le tracker, sans le démonter', () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership()];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2 });
+    renderScreen();
+
+    expect(screen.queryByRole('dialog', { name: 'La compagnie' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'La compagnie' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'La compagnie' });
+    expect(within(dialog).getByText('Lyralei')).toBeInTheDocument();
+    // Le MJ figure aussi dans la compagnie (il vient de `gmIds`).
+    expect(within(dialog).getByText('Meneur')).toBeInTheDocument();
+    expect(within(dialog).getByText('Joueur')).toBeInTheDocument();
+    // Le combat est toujours là derrière.
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
+  });
+
+  it('« Promouvoir MJ » n’est pas proposé en pleine partie (administration)', () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership()];
+    encounterHolder.encounter = mkEncounter();
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'La compagnie' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'La compagnie' });
+    expect(within(dialog).queryByRole('button', { name: /Promouvoir/ })).not.toBeInTheDocument();
+  });
+
+  it('un joueur voit la compagnie, sans les cartes live des autres (rule A2)', () => {
+    authHolder.user = { uid: 'uid-player' };
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [
+      mkMembership(),
+      mkMembership({ userId: 'uid-other', displayName: 'Brann', characterId: 'char-b' }),
+    ];
+    encounterHolder.encounter = mkEncounter();
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'La compagnie' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'La compagnie' });
+    expect(within(dialog).getByText('Brann')).toBeInTheDocument();
+    // Lecture cross-owner réservée au MJ : pas d'ouverture de fiche pour un joueur.
+    expect(within(dialog).queryByRole('button', { name: /Voir la fiche/ })).not.toBeInTheDocument();
   });
 });

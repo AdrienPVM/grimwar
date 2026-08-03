@@ -5,7 +5,7 @@ import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import { setSessionAttendance } from '@/shared/lib/services/sessions';
 
-import type { RosterEntry } from './campaign-detail-screen';
+import type { RosterEntry } from './roster';
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 

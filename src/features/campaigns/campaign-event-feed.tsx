@@ -6,7 +6,7 @@ import { canViewEvent } from '@/shared/lib/permissions';
 import type { Membership } from '@/shared/types/campaign';
 import type { GameEvent } from '@/shared/types/event';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
 import { EventDetailModal } from './event-detail-modal';
 import { formatEventTime, summarizeEvent } from './event-line';
 import { useCampaignEvents } from './use-campaign-events';

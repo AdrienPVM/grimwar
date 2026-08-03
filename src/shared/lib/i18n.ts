@@ -1479,6 +1479,11 @@ export type StringKey =
   // Encounters — écran de combat (JALON 24.3)
   | 'encounters.detail.back'
   | 'encounters.detail.codex'
+  | 'encounters.detail.roster'
+  | 'encounters.detail.rosterTip'
+  | 'campaigns.roster.overlay.subtitle'
+  | 'campaigns.roster.overlay.close'
+  | 'campaigns.roster.overlay.empty'
   | 'encounters.detail.codexTip'
   | 'encounters.detail.round'
   | 'encounters.detail.error.title'
@@ -4472,6 +4477,11 @@ const STRINGS: Record<Locale, Dict> = {
     // Encounters — écran de combat (JALON 24.3)
     'encounters.detail.back': 'Retour aux rencontres',
     'encounters.detail.codex': 'Codex',
+    'encounters.detail.roster': 'La compagnie',
+    'encounters.detail.rosterTip': 'Voir l’état du groupe sans quitter le combat.',
+    'campaigns.roster.overlay.subtitle': 'L’état du groupe, sans quitter la partie.',
+    'campaigns.roster.overlay.close': 'Fermer la compagnie',
+    'campaigns.roster.overlay.empty': 'Personne à la table pour l’instant.',
     'encounters.detail.codexTip': 'Consulter une règle ou un monstre sans quitter le combat.',
     'encounters.detail.round': 'Round',
     'encounters.detail.error.title': 'Lecture impossible',
@@ -7767,6 +7777,11 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.detail.back': 'Back to encounters',
     'encounters.detail.codex': 'Codex',
     'encounters.detail.codexTip': 'Look up a rule or a monster without leaving combat.',
+    'encounters.detail.roster': 'The party',
+    'encounters.detail.rosterTip': 'See the party’s state without leaving combat.',
+    'campaigns.roster.overlay.subtitle': 'The party’s state, without leaving the game.',
+    'campaigns.roster.overlay.close': 'Close the party',
+    'campaigns.roster.overlay.empty': 'Nobody at the table yet.',
     'encounters.detail.round': 'Round',
     'encounters.detail.error.title': 'Unable to load',
     'encounters.detail.error.body':

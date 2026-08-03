@@ -134,7 +134,8 @@ vi.mock('../use-party-aggregate', () => ({
   usePartyAggregate: () => aggregateHolder.aggregate,
 }));
 
-import { CampaignDetailScreen, buildRoster } from '../campaign-detail-screen';
+import { CampaignDetailScreen } from '../campaign-detail-screen';
+import { buildRoster } from '../roster';
 
 // ─────────────────────────────────────────────────────────────────────
 // Fixtures

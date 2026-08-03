@@ -19,7 +19,7 @@ import {
 } from '@/shared/types/npc-labels';
 import type { NpcAttitude } from '@/shared/types/npc';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
 import { NpcEditModal } from './npc-edit-modal';
 import { NpcPortraitFor } from './npc-portrait';
 import { NpcRelationModal, type NpcRelationPlayer } from './npc-relation-modal';

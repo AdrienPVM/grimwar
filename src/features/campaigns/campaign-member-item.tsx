@@ -5,13 +5,19 @@ import { Chip } from '@/shared/components/chip';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
-import type { RosterEntry } from './campaign-detail-screen';
+import type { RosterEntry } from './roster';
 import { PartyMemberCard } from './party-member-card';
 
 interface CampaignMemberItemProps {
   entry: RosterEntry;
   /** Le spectateur est MJ de la campagne — débloque l'état live + les actions d'autorité. */
   viewerIsGm: boolean;
+  /**
+   * Affiche l'affordance « Promouvoir MJ ». Faux en pleine partie (roster ouvert
+   * depuis une rencontre) : promouvoir quelqu'un relève de l'administration de la
+   * table, pas d'un tour de jeu, et ça n'a rien à faire à côté des PV.
+   */
+  showPromote?: boolean;
   onPromote: () => void;
   onViewSheet: () => void;
 }
@@ -38,10 +44,11 @@ interface CampaignMemberItemProps {
 export function CampaignMemberItem({
   entry,
   viewerIsGm,
+  showPromote = true,
   onPromote,
   onViewSheet,
 }: CampaignMemberItemProps): JSX.Element {
-  const canPromote = viewerIsGm && entry.role === 'member';
+  const canPromote = showPromote && viewerIsGm && entry.role === 'member';
   const showLiveCard = viewerIsGm && entry.characterId !== null;
 
   if (showLiveCard) {

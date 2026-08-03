@@ -23,7 +23,7 @@ import { compileSessionJournal } from '@/features/journal/compile-session-journa
 import { SessionJournalTab } from '@/features/journal/session-journal-tab';
 import { useContent } from '@/shared/hooks/use-content';
 
-import { buildRoster } from './campaign-detail-screen';
+import { buildRoster } from './roster';
 import { SessionAttendanceTab } from './session-attendance-tab';
 import { SessionEventsTab } from './session-events-tab';
 import { SessionNotesTab } from './session-notes-tab';
