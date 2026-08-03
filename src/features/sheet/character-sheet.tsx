@@ -128,12 +128,22 @@ export function CharacterSheet({
           */}
           <div className="contents lg:block lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
             <HeroCard character={character} />
-            <StatusStrip
-              character={character}
-              displayedAc={displayedAc}
-              displayedSpeed={displayedSpeed}
-            />
           </div>
+          {/*
+            CA / initiative / vitesse épinglées AVEC les onglets, hors de la zone
+            qui défile. Elles étaient dedans, derrière le portrait : sur un
+            personnage au nom long (« Velinor du Voile-Mince », deux lignes de
+            titre), la bande de statuts se faisait couper en deux par le bas de
+            la zone de défilement — une CA tranchée à l'horizontale, sans le
+            moindre indice qu'il fallait faire défiler la colonne pour la lire.
+            Ce sont des valeurs de référence qu'on consulte en permanence : c'est
+            le PORTRAIT qui peut partir au défilement, pas elles.
+          */}
+          <StatusStrip
+            character={character}
+            displayedAc={displayedAc}
+            displayedSpeed={displayedSpeed}
+          />
           {/*
             Raccourci vers la table, épinglé avec les onglets : c'est de la
             navigation, pas de l'identité — il ne doit pas partir au défilement.

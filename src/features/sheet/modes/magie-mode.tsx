@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import { useContent } from '@/shared/hooks/use-content';
-import { BENTO_GRID, BentoTile } from '@/shared/components/bento';
+import { BENTO_GRID, BentoCluster, BentoStack, BentoTile } from '@/shared/components/bento';
 import { localize, t } from '@/shared/lib/i18n';
 import { isPreparedCaster } from '@/shared/lib/rules/spell-preparation';
 import type { Character } from '@/shared/types/character';
@@ -142,48 +142,61 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
       className={BENTO_GRID}
     >
       {/*
-        Bento (cf. `shared/components/bento.tsx`). Le cercle d'incantation et la
-        carte de pacte occupent chacun une demi-rangée. Sans classe à pacte, la
-        carte de pacte rend `null` : sa tuile se retire, et le remplissage dense
-        de la grille remonte la tuile suivante qui tient dans la demie libre
-        (éditeur de préparation ou sorts d'ascendance). C'est ce qui remplace le
-        `hasPactSlots` dérivé à la main de la version précédente — la primitive
-        rend la compensation inutile.
+        Bento (cf. `shared/components/bento.tsx`). Le cercle d'incantation prend
+        une demi-rangée, et tout ce qui décrit la magie de la classe (stats,
+        emplacements de pacte, préparation) s'empile dans la demie d'en face —
+        les listes de sorts, elles, gardent la pleine largeur.
       */}
       {castingClasses.length > 0 ? (
-        <>
-          <BentoTile span="full">
-            <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
-          </BentoTile>
-          <BentoTile span="md">
+        /*
+          Le cercle et tout ce qui décrit la magie de la classe forment UN groupe
+          en `auto-fit`, et pas deux demi-tuiles, parce qu'aucun des deux n'est
+          garanti : le cercle se masque quand le personnage n'a pas
+          d'emplacements standard (l'occultiste, dont la magie de pacte vit
+          ailleurs), la carte de pacte et l'éditeur de préparation se masquent
+          chez presque tout le monde. En demi-tuiles, le survivant restait seul
+          au milieu de sa rangée — un demi-écran de vide chez le Magicien comme
+          chez l'occultiste, dans les deux sens. Le groupe fait qu'à deux cartes
+          elles se partagent la rangée, à une seule elle la prend entière.
+          La barre de stats ancre la pile : elle est toujours rendue dans cette
+          branche, et le DD se lit ainsi à côté des emplacements qu'on dépense.
+        */
+        <BentoTile span="full">
+          <BentoCluster>
             <MagicCircle character={character} readOnly={readOnly} />
-          </BentoTile>
-          <BentoTile span="md">
-            <PactSlotsCard character={character} readOnly={readOnly} />
-          </BentoTile>
-        </>
+            <BentoStack>
+              <SpellStatsBar character={character} spellcastingClasses={castingClasses} />
+              <PactSlotsCard character={character} readOnly={readOnly} />
+              {/*
+                Préparation des sorts — un éditeur par classe préparatrice de
+                liste complète (Clerc, Druide, Paladin). Le Magicien prépare
+                depuis son grimoire (`WizardSpellbookSections`) ; les
+                connaisseurs (Barde, Ensorceleur, Rôdeur, Occultiste) n'ont pas
+                d'éditeur.
+              */}
+              {castingClasses
+                .filter((c) => isPreparedCaster(c.classId) && c.classId !== 'wizard')
+                .map((c) => (
+                  <PreparationEditor
+                    key={c.classId}
+                    character={character}
+                    classId={c.classId}
+                    className={c.name}
+                    classLevel={c.level}
+                    readOnly={readOnly}
+                  />
+                ))}
+            </BentoStack>
+          </BentoCluster>
+        </BentoTile>
       ) : null}
       {/*
-        Préparation des sorts — un éditeur par classe préparatrice de liste
-        complète (Clerc, Druide, Paladin). Le Magicien prépare depuis son
-        grimoire (`WizardSpellbookSections`) ; les connaisseurs (Barde,
-        Ensorceleur, Rôdeur, Occultiste) n'ont pas d'éditeur. La carte se
-        masque d'elle-même si rien n'est préparable.
+        Pleine largeur : la carte des sorts d'ascendance suit la rangée du
+        cercle, et la tuile qui vient après elle est une liste pleine largeur —
+        une demi-empreinte la laissait donc systématiquement seule sur sa rangée,
+        l'autre moitié vide. C'est une liste, elle se lit bien en bandeau.
       */}
-      {castingClasses
-        .filter((c) => isPreparedCaster(c.classId) && c.classId !== 'wizard')
-        .map((c) => (
-          <BentoTile key={c.classId} span="md">
-            <PreparationEditor
-              character={character}
-              classId={c.classId}
-              className={c.name}
-              classLevel={c.level}
-              readOnly={readOnly}
-            />
-          </BentoTile>
-        ))}
-      <BentoTile span="md">
+      <BentoTile span="full">
         <AncestrySpellsCard
           character={character}
           onSpellSelect={(spell) => setActiveSpell(spell)}

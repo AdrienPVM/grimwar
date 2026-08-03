@@ -181,15 +181,22 @@ test.describe('Plan 13.14 — Sheet responsive structural', () => {
             );
             // Une tuile dont la carte a rendu `null` doit être RETIRÉE du flux
             // par la règle `:has()` — sinon elle ouvre une cellule fantôme.
+            // Critère « aucun descendant n'a de boîte » et non « aucun enfant » :
+            // une tuile peut envelopper une PILE ou un GROUPE dont toutes les
+            // cartes se sont masquées — le conteneur reste alors un enfant, la
+            // tuile paraît pleine, et le trou est quand même à l'écran.
             const ghostTiles = tiles.filter(
               (el) =>
-                el.children.length === 0 &&
-                getComputedStyle(el).display !== 'none',
+                getComputedStyle(el).display !== 'none' &&
+                el.getBoundingClientRect().height > 0 &&
+                !Array.from(el.querySelectorAll('*')).some(
+                  (d) => d.getBoundingClientRect().height > 0,
+                ),
             ).length;
 
-            // Rangées : `align-items: start` aligne chaque tuile sur la ligne
-            // haute de SA rangée — regrouper par `offsetTop` reconstitue donc
-            // exactement les rangées de la grille.
+            // Rangées : les tuiles d'une même rangée partagent leur arête haute
+            // (la grille est en `items-stretch`, elles partagent même les deux) —
+            // regrouper par `offsetTop` reconstitue donc exactement les rangées.
             const visible = tiles.filter(
               (el) => getComputedStyle(el).display !== 'none',
             );

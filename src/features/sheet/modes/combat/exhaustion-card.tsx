@@ -123,7 +123,15 @@ export function ExhaustionCard({
         </p>
       )}
 
-      {description && (
+      {/*
+        Le texte SRD complet n'est déroulé qu'à partir du 1er niveau d'épuisement.
+        À 0, il n'apprend rien d'actionnable (« vous n'êtes pas épuisé, voici ce
+        qui arriverait ») et pèse 7 lignes : la carte faisait alors 2,5 fois la
+        hauteur de ses voisines de rangée, ce qui étirait toute la rangée du
+        bento. La règle reste consultable dans le Codex, et réapparaît ici dès
+        qu'elle s'applique vraiment.
+      */}
+      {level > 0 && description && (
         <p className="mt-3 font-body text-[12px] leading-relaxed text-text-secondary">
           {description}
         </p>

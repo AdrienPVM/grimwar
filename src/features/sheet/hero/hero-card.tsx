@@ -99,7 +99,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
   return (
     <section
       aria-labelledby="hero-name"
-      className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-4 pt-8 lg:pt-3"
+      className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-4 pt-8 lg:pt-2"
     >
       <HeroEmblem
         hp={character.hp.current}
@@ -109,7 +109,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
 
       <h1
         id="hero-name"
-        className="mt-8 text-center font-display text-2xl font-bold uppercase tracking-[0.18em] text-gold-bright"
+        className="mt-8 text-center font-display text-2xl font-bold uppercase tracking-[0.18em] text-gold-bright lg:mt-4"
       >
         {character.name}
       </h1>
@@ -121,7 +121,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
         </span>
       ) : null}
 
-      <Divider className="my-3" />
+      <Divider className="my-3 lg:my-2" />
 
       <p className="text-center font-serif text-body italic text-text-secondary">
         <strong className="not-italic font-semibold text-gold-bright">{classSubtitle}</strong>
@@ -134,12 +134,12 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
         {backgroundName ? <> · {backgroundName}</> : null}
       </p>
 
-      <Chip variant="gold" className="mt-3">
+      <Chip variant="gold" className="mt-3 lg:mt-2">
         {character.alignment}
       </Chip>
 
       {canEdit ? (
-        <div className="mt-4">
+        <div className="mt-4 lg:mt-3">
           <LevelUpButton character={character} />
         </div>
       ) : null}

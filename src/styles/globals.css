@@ -266,3 +266,17 @@ body {
 [data-hide-if-empty]:not(:has(*)) {
   display: none;
 }
+
+/* Un cran de profondeur : une tuile dont l'unique enfant est lui-même un
+   conteneur `data-hide-if-empty` VIDE (une pile ou un groupe dont toutes les
+   cartes ont rendu `null`). La règle ci-dessus ne l'attrape pas — la tuile a
+   bien un enfant élément, c'est le conteneur, qui n'a lui-même rien dedans.
+   Sans ça, `BentoStack` / `BentoCluster` réintroduisaient exactement la cellule
+   fantôme que la primitive existe pour supprimer.
+   Lecture : « aucun enfant direct qui ne soit un conteneur à masquer » ET
+   « aucun petit-enfant dans ces conteneurs » → on retire du flux. */
+[data-hide-if-empty]:not(:has(> *:not([data-hide-if-empty]))):not(
+    :has(> [data-hide-if-empty] > *)
+  ) {
+  display: none;
+}

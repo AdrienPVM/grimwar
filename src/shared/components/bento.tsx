@@ -37,15 +37,26 @@ import { cn } from '../lib/cn';
  * séquence de lecture — l'ordre de tabulation reste celui du DOM, cohérent, et
  * aucune tuile ne dépend de la précédente pour être comprise.
  *
- * `items-start` : une tuile se dimensionne à son contenu au lieu de s'étirer à
- * la hauteur de la rangée — sinon une carte courte à côté d'une carte longue
- * affiche un grand aplat vide sous son contenu.
+ * `items-stretch` + `[&>*]:h-full` : les tuiles d'une même rangée partagent leur
+ * arête basse. La première version alignait sur le haut (`items-start`), ce qui
+ * laissait chaque rangée se terminer en marches d'escalier — une carte de 200 px
+ * à côté d'une carte de 450 px, et deux décrochements de bordure au milieu de la
+ * mosaïque. C'est précisément ce qui distingue une mosaïque d'une pile mal
+ * rangée : un bento se lit comme un pavage de rectangles alignés, le blanc se
+ * met À L'INTÉRIEUR d'une tuile, jamais entre deux tuiles. Le prix — une carte
+ * courte affiche du vide sous son contenu — est un vide cadré, pas un trou.
+ *
+ * Corollaire pour les modes : deux tuiles qui se font face doivent rester de
+ * hauteurs comparables. Quand ce n'est pas naturel (le cercle d'incantation fait
+ * 3 fois la hauteur de la barre de stats), on empile plusieurs cartes courtes
+ * dans la tuile courte via `BentoStack` plutôt que de laisser l'étirement
+ * fabriquer un aplat.
  */
 
 /** Classes de la grille bento, à poser sur le conteneur du mode (`<section>`). */
 export const BENTO_GRID = cn(
   'mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4',
-  'lg:grid lg:max-w-none lg:grid-cols-6 lg:grid-flow-row-dense lg:items-start lg:gap-4 lg:px-0',
+  'lg:grid lg:max-w-none lg:grid-cols-6 lg:grid-flow-row-dense lg:items-stretch lg:gap-4 lg:px-0',
   'xl:gap-5',
 );
 
@@ -86,7 +97,11 @@ export function BentoTile({
     <div
       data-bento-tile=""
       data-hide-if-empty=""
-      className={cn(SPAN_CLASSES[span], className)}
+      // `lg:[&>*]:h-full` : la tuile est étirée à la hauteur de sa rangée par la
+      // grille, mais la CARTE qu'elle enveloppe garderait sa hauteur naturelle —
+      // on verrait la tuile s'étirer sous une carte qui, elle, s'arrête plus
+      // haut. Le fond de verre doit aller jusqu'à l'arête de la rangée.
+      className={cn(SPAN_CLASSES[span], 'lg:[&>*]:h-full', className)}
     >
       {children}
     </div>
@@ -104,11 +119,10 @@ export function BentoTile({
  * courtes dans la même tuile comble ce vide, ce que le placement dense ne peut
  * pas faire tout seul.
  *
- * CONTRAINTE : au moins un enfant doit être rendu inconditionnellement. La
- * règle `:has()` retire une TUILE vide, mais elle ne traverse pas une pile dont
- * tous les enfants se seraient masqués — la pile resterait un élément, donc la
- * tuile resterait « pleine ». Placer en tête une carte toujours rendue
- * (sauvegardes, réserves…) et n'empiler que des optionnelles derrière.
+ * La pile porte elle-même `data-hide-if-empty` : quand toutes ses cartes ont
+ * rendu `null`, la règle imbriquée de `globals.css` retire la tuile entière.
+ * Sans elle, une pile vide restait un élément — donc une tuile « pleine », donc
+ * la cellule fantôme que la primitive existe pour supprimer.
  */
 export function BentoStack({
   children,
@@ -117,5 +131,56 @@ export function BentoStack({
   children: ReactNode;
   className?: string;
 }): JSX.Element {
-  return <div className={cn('flex flex-col gap-3 lg:gap-4', className)}>{children}</div>;
+  return (
+    <div
+      data-hide-if-empty=""
+      // La DERNIÈRE carte de la pile absorbe la hauteur restante. Sans ça, une
+      // pile plus courte que la tuile qu'elle remplit (le cas du Magicien : une
+      // barre de stats de 200 px dans une tuile de 484 px calée sur le cercle)
+      // laissait un trou de fond de page entre la dernière carte et l'arête de
+      // la rangée — le décrochement qu'on venait justement de supprimer entre
+      // tuiles se réinstallait À L'INTÉRIEUR de la tuile.
+      className={cn(
+        'flex h-full flex-col gap-3 lg:gap-4',
+        'lg:[&>*:last-child]:flex-1',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Groupe d'accessoires en fin de mosaïque — cartes optionnelles dont on ne sait
+ * pas combien seront rendues (ordres, invocations, don d'origine…).
+ *
+ * POURQUOI ce n'est pas une suite de tuiles d'un tiers : une grille CSS ne sait
+ * pas élargir un orphelin sur les pistes restantes. Trois cartes d'un tiers font
+ * une rangée pleine ; UNE seule laisse deux tiers de vide en bas de page — c'est
+ * ce qu'on voyait sous « Manifestations occultes » chez l'occultiste. Le groupe
+ * prend une rangée pleine et répartit ses cartes en `auto-fit` : à une carte
+ * elle occupe toute la largeur, à deux elles font deux moitiés, à trois deux
+ * tiers-et-un. Aucun cas ne laisse de trou.
+ */
+export function BentoCluster({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}): JSX.Element {
+  return (
+    <div
+      data-hide-if-empty=""
+      className={cn(
+        'flex flex-col gap-3',
+        'lg:grid lg:grid-cols-[repeat(auto-fit,minmax(320px,1fr))] lg:items-stretch lg:gap-4',
+        'lg:[&>*]:h-full',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }

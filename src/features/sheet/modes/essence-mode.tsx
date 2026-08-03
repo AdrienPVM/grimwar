@@ -1,4 +1,4 @@
-import { BENTO_GRID, BentoStack, BentoTile } from '@/shared/components/bento';
+import { BENTO_GRID, BentoCluster, BentoStack, BentoTile } from '@/shared/components/bento';
 import { computeDisplayedSaveBonus } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
 
@@ -87,17 +87,20 @@ export function EssenceMode({ character }: EssenceModeProps): JSX.Element {
       <BentoTile>
         <AncestryTraitsCard character={character} />
       </BentoTile>
-      <BentoTile>
-        <DivineOrderCard character={character} />
-      </BentoTile>
-      <BentoTile>
-        <PrimalOrderCard character={character} />
-      </BentoTile>
-      <BentoTile>
-        <InvocationsCard character={character} />
-      </BentoTile>
-      <BentoTile>
-        <OriginFeatCard character={character} />
+      {/*
+        Queue d'accessoires en groupe plutôt qu'en tuiles d'un tiers : combien
+        d'entre elles se rendent dépend entièrement du personnage (un occultiste
+        n'a que les invocations, un clerc que l'ordre divin). En tuiles d'un
+        tiers, la carte solitaire finissait la page avec deux tiers de vide à sa
+        droite ; le groupe la fait occuper toute la largeur.
+      */}
+      <BentoTile span="full">
+        <BentoCluster>
+          <DivineOrderCard character={character} />
+          <PrimalOrderCard character={character} />
+          <InvocationsCard character={character} />
+          <OriginFeatCard character={character} />
+        </BentoCluster>
       </BentoTile>
     </section>
   );

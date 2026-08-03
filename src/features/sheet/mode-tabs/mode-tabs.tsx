@@ -81,7 +81,7 @@ export function ModeTabs({ active, onChange }: ModeTabsProps): JSX.Element {
         // `lg:shrink-0` : dans la colonne flex de la sidebar, les onglets sont
         // épinglés sous la zone de défilement — sans cette garde, une sidebar
         // trop courte les comprimerait au lieu de faire défiler l'identité.
-        'lg:static lg:z-auto lg:mt-6 lg:shrink-0 lg:border-b-0 lg:bg-transparent lg:px-2 lg:py-0 lg:backdrop-blur-none',
+        'lg:static lg:z-auto lg:mt-4 lg:shrink-0 lg:border-b-0 lg:bg-transparent lg:px-2 lg:py-0 lg:backdrop-blur-none',
       )}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}

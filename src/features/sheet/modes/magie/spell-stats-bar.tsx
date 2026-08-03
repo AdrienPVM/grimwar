@@ -27,7 +27,12 @@ export function SpellStatsBar({
   if (spellcastingClasses.length === 0) return null;
   const pb = proficiencyBonus(character.totalLevel);
   return (
-    <div className="flex flex-col gap-3">
+    // `h-full` + `flex-1` : la barre est posée face au cercle d'incantation, qui
+    // fait plus du double de sa hauteur naturelle. Sans propagation de hauteur,
+    // le panneau s'arrêtait à mi-tuile et rouvrait le trou que la mosaïque
+    // venait de fermer ; en la propageant jusqu'aux trois cases, elles
+    // grandissent et le DD se lit d'aussi loin que le cercle.
+    <div className="flex h-full flex-col gap-3">
       {spellcastingClasses.map((cls) => {
         const mod = abilityModifier(character.abilities[cls.ability]);
         const dc = 8 + pb + mod;
@@ -39,7 +44,7 @@ export function SpellStatsBar({
         return (
           <div
             key={cls.classId}
-            className="rounded-card-sm border border-amethyst/25 bg-gradient-to-b from-amethyst/10 to-ink/30 px-4 py-3 backdrop-blur-md"
+            className="flex flex-1 flex-col rounded-card-sm border border-amethyst/25 bg-gradient-to-b from-amethyst/10 to-ink/30 px-4 py-3 backdrop-blur-md"
           >
             <div className="mb-2 flex items-baseline justify-between">
               <span className="font-title text-[10px] font-bold uppercase tracking-[0.22em] text-amethyst">

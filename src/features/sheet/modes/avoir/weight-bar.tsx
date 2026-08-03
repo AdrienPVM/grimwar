@@ -1,4 +1,6 @@
+import { Card, CardHeader } from '@/shared/components/card';
 import { cn } from '@/shared/lib/cn';
+import { t, type StringKey } from '@/shared/lib/i18n';
 
 import type { EncumbranceLevel } from './use-inventory-derived';
 
@@ -8,10 +10,10 @@ interface WeightBarProps {
   level: EncumbranceLevel;
 }
 
-const LEVEL_LABEL: Record<EncumbranceLevel, string> = {
-  normal: 'Charge normale',
-  encumbered: 'Encombré',
-  'heavily-encumbered': 'Fortement encombré',
+const LEVEL_LABEL_KEY: Record<EncumbranceLevel, StringKey> = {
+  normal: 'sheet.avoir.weight.normal',
+  encumbered: 'sheet.avoir.weight.encumbered',
+  'heavily-encumbered': 'sheet.avoir.weight.heavilyEncumbered',
 };
 
 // Rampe sémantique 100% tokens (l'ambre Tailwind par défaut jurait avec l'or
@@ -50,20 +52,20 @@ export function WeightBar({
       : 0;
 
   return (
-    <div className="rounded-card border border-soft bg-glass px-6 py-4 backdrop-blur-xl">
-      <div className="mb-3 flex items-baseline justify-between">
-        <span className="font-title text-[10px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-          Poids transporté
+    // Même gabarit que la bourse (`Card` + `CardHeader` orné) : les deux cartes
+    // se font face dans la première rangée du mode Avoir, et l'ancienne boîte
+    // brute — padding plus serré, titre gris sans fleuron — cassait la
+    // symétrie de la paire.
+    <Card>
+      <CardHeader>
+        <h3>{t('sheet.avoir.weight.title')}</h3>
+      </CardHeader>
+      <p className="mb-3 text-right font-display text-[22px] font-bold">
+        <span className="tracking-[-0.02em] text-gold-bright">{formatWeight(weightTotal)}</span>{' '}
+        <span className="font-serif font-normal italic text-text-tertiary">
+          / {formatWeight(carryingCapacity)} kg
         </span>
-        <span className="font-display text-[22px] font-bold">
-          <span className="text-gold-bright tracking-[-0.02em]">
-            {formatWeight(weightTotal)}
-          </span>{' '}
-          <span className="font-serif italic font-normal text-text-tertiary">
-            / {formatWeight(carryingCapacity)} kg
-          </span>
-        </span>
-      </div>
+      </p>
       <div className="relative h-2 overflow-hidden rounded-full bg-white-8">
         <div
           className={cn(
@@ -79,9 +81,9 @@ export function WeightBar({
           LEVEL_LABEL_CLASS[level],
         )}
       >
-        {LEVEL_LABEL[level]}
+        {t(LEVEL_LABEL_KEY[level])}
       </p>
-    </div>
+    </Card>
   );
 }
 

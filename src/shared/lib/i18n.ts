@@ -1608,6 +1608,10 @@ export type StringKey =
   | 'sheet.avoir.coin.el'
   | 'sheet.avoir.coin.or'
   | 'sheet.avoir.coin.pl'
+  | 'sheet.avoir.weight.title'
+  | 'sheet.avoir.weight.normal'
+  | 'sheet.avoir.weight.encumbered'
+  | 'sheet.avoir.weight.heavilyEncumbered'
   | 'sheet.avoir.coins.title'
   | 'sheet.avoir.coins.purseToast'
   | 'sheet.avoir.coins.updated'
@@ -4602,6 +4606,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.avoir.coin.el': 'Él',
     'sheet.avoir.coin.or': 'Or',
     'sheet.avoir.coin.pl': 'Pl',
+    'sheet.avoir.weight.title': 'Poids transporté',
+    'sheet.avoir.weight.normal': 'Charge normale',
+    'sheet.avoir.weight.encumbered': 'Encombré',
+    'sheet.avoir.weight.heavilyEncumbered': 'Fortement encombré',
     'sheet.avoir.coins.title': 'Bourse',
     'sheet.avoir.coins.purseToast': 'Bourse — {coin}',
     'sheet.avoir.coins.updated': 'Mise à jour',
@@ -7874,6 +7882,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.avoir.coin.el': 'ep',
     'sheet.avoir.coin.or': 'gp',
     'sheet.avoir.coin.pl': 'pp',
+    'sheet.avoir.weight.title': 'Carried weight',
+    'sheet.avoir.weight.normal': 'Normal load',
+    'sheet.avoir.weight.encumbered': 'Encumbered',
+    'sheet.avoir.weight.heavilyEncumbered': 'Heavily encumbered',
     'sheet.avoir.coins.title': 'Purse',
     'sheet.avoir.coins.purseToast': 'Purse — {coin}',
     'sheet.avoir.coins.updated': 'Updated',
