@@ -318,6 +318,18 @@ describe('DetailModal — gabarit responsive (size) + ancrage mobile', () => {
     expect(cls).toContain('lg:max-w-[760px]');
   });
 
+  it('size="xl" : pleine largeur mobile, jusqu’à 1000px sur desktop (Codex)', () => {
+    render(
+      <DetailModal open onClose={() => {}} titleId="t" size="xl">
+        <h2 id="t">Titre</h2>
+      </DetailModal>,
+    );
+    const cls = panelClassName();
+    // Pas de plafond mobile : une liste filtrable a besoin de toute la largeur.
+    expect(cls).toContain('max-w-none');
+    expect(cls).toContain('lg:max-w-[1000px]');
+  });
+
   it('backdrop ancré bottom-sheet sur mobile, recentré dès sm', () => {
     render(
       <DetailModal open onClose={() => {}} titleId="t">
