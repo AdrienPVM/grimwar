@@ -64,9 +64,10 @@ export function CodexOverlay({
         </header>
 
         <div className="mt-4">
-          {/* Remonté à chaque ouverture : la recherche et la catégorie
-              repartent à zéro plutôt que de rouvrir sur la question d'avant. */}
-          {open ? <CodexBrowser initialCategory={initialCategory} /> : null}
+          {/* `DetailModal` démonte son contenu à la fermeture : la recherche et
+              la catégorie repartent donc à zéro à chaque ouverture, plutôt que
+              de rouvrir sur la question d'avant. */}
+          <CodexBrowser initialCategory={initialCategory} />
         </div>
       </div>
     </DetailModal>
