@@ -107,15 +107,18 @@ export function CharacterCard({
           )}
           {/* D-6 : avec plusieurs personnages, rien ne disait lequel appartenait
               à quelle table. Le nom est tronqué plutôt que replié — la pastille
-              ne doit jamais pousser la carte hors de sa colonne de grille. */}
+              ne doit jamais pousser la carte hors de sa colonne de grille.
+              `truncate` va sur le SPAN interne : `text-overflow` ne s'applique
+              pas à un conteneur `inline-flex`, et le nom se faisait couper net,
+              sans points de suspension. */}
           {campaignName ? (
             <Chip
               variant="default"
-              className="max-w-[16ch] truncate"
+              className="max-w-[12rem]"
               title={campaignName}
               aria-label={`${t('library.card.campaign')} ${campaignName}`}
             >
-              {campaignName}
+              <span className="min-w-0 truncate">{campaignName}</span>
             </Chip>
           ) : null}
         </div>

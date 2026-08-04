@@ -287,11 +287,11 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 | ~~E4~~ | ~~Bandeau « En cours » (séance / combat actifs) sur l'accueil~~ | 🟠 | M | ✅ **livré 2026-08-03**. **Aucun index à déployer** : `getActiveSession` / `getActiveEncounter` filtrent sur un seul champ (`where('status','==','active')` + `limit(1)`) ⇒ index automatique. La réserve « index à vérifier » est levée. Reste ouvert : le même bandeau **sur l'écran de campagne** (l'accueil couvre le besoin de reprise ; la campagne le dupliquerait à moindre valeur) |
 | ~~E6~~ | ~~Accès Codex depuis la fiche et depuis la rencontre~~ | 🟠 | S | ✅ **livré 2026-08-04**. Choix : **superposition**, pas navigation vers `/codex` — naviguer perdrait la position de défilement du tracker et le Retour du Codex ramènerait à la bibliothèque. Catégorie d'arrivée : les **États** des deux côtés (cf. §G.3 bis — le bestiaire visé au départ est vide). A nécessité un prérequis : `fix(modal)` « Échap ne ferme que la modale du dessus » (1ʳᵉ imbrication réelle de l'app) |
 | ~~E7~~ | ~~Roster accessible depuis la rencontre (fiches des joueurs)~~ | 🟠 | S | ✅ **livré 2026-08-04**. Le besoin fréquent (PV/CA/états) est servi **dans** la superposition par les cartes live ; la fiche entière reste une navigation. Reste ouvert : le Retour de la fiche d'un membre remonte à la **campagne**, pas au combat d'où l'on vient (`parentRouteFor` est hiérarchique par construction — cf. D-1) |
-| E8 | Campagne d'attache affichée sur la carte de personnage | 🟡 | XS | |
-| E9 | Rediriger ou supprimer `/dm`, `/map-proto`, `/debug-content` | 🟡 | XS | |
-| E10 | Reprise de brouillon de wizard signalée sur l'accueil | 🟡 | S | |
-| E11 | Repli « lire la règle » sur les cartes à texte SRD long | 🟡 | S | |
-| E12 | Outils du meneur remontés / épinglés en séance | 🟡 | S | |
+| ~~E8~~ | ~~Campagne d'attache affichée sur la carte de personnage~~ | 🟡 | XS | ✅ **livré 2026-08-04**. Pastille tronquée à 16 caractères ; les noms sont résolus une fois par l'accueil et distribués, jamais par la carte. `useMyCampaigns` reçoit un `enabled` : l'écran le plus visité ne paie ses deux requêtes que si une fiche est liée |
+| E9 | Rediriger ou supprimer `/dm`, `/map-proto`, `/debug-content` | 🟡 | XS | 🟠 **partiellement livré 2026-08-04** : `/debug-content` supprimé (composant auto-déclaré « à retirer », compteurs dérivés, importé en dur donc dans le bundle d'entrée). **`/dm` et `/map-proto` attendent un arbitrage d'Adrien** — chacune porte un prototype fonctionnel ET une spec e2e vivante (`uat-dm-dashboard.spec.ts`, `map-proto.spec.ts`), les supprimer retire du travail livré |
+| ~~E10~~ | ~~Reprise de brouillon de wizard signalée sur l'accueil~~ | 🟡 | S | ✅ **livré 2026-08-04**. Surtout : le brouillon devient **abandonnable** — jusqu'ici le seul moyen d'en sortir était de le mener au bout ou de vider son stockage local. Critère de détection = le CONTENU (nom, classe, ascendance, historique), pas les étapes visitées |
+| ~~E11~~ | ~~Repli « lire la règle » sur les cartes à texte SRD long~~ | 🟡 | S | ✅ **livré 2026-08-04**. Épuisement passe derrière `ConditionDetailModal`, la modale que la fiche utilise DÉJÀ pour tous les états — pas un dépliant inédit. Cinq cartes d'aperçu alignées sur le `line-clamp-2` de leurs deux sœurs |
+| ~~E12~~ | ~~Outils du meneur remontés / épinglés en séance~~ | 🟡 | S | ✅ **livré 2026-08-04**. Superposition (`DmToolsOverlay`) en séance ET en combat, pas duplication : le bloc-notes est cloisonné par campagne, c'est le même des trois côtés. La section du détail de campagne reste en place |
 | E13 | Notifications in-app (document, tour de jeu, combat) | 🟠 | L | Le plus gros ; à cadrer en plan dédié. Étape 1 peu chère : remonter `useHandoutNotifications` au-dessus des routes plutôt que dans un seul écran |
 | E14 | Recherche transverse / palette de commandes | 🟡 | L | |
 
@@ -303,12 +303,14 @@ mène au combat en cours en un tap, là où il fallait quatre écrans.
 ne demande plus de quitter l'écran de jeu. C'est la fin du lot « accès en cours
 de partie ».
 
-Le lot suivant est le **paquet des 🟡 peu chers** : E8 (campagne d'attache sur
-la carte de personnage, XS), E9 (rediriger `/dm`, `/map-proto`,
-`/debug-content`, XS), E10 (brouillon de wizard signalé sur l'accueil, S),
-E11 (repli « lire la règle », S — cf. D-12), E12 (outils du meneur épinglés,
-S). E13 (notifications) mérite son propre plan — c'est le seul poste de coût L
-qui change vraiment le produit.
+**Le paquet des 🟡 peu chers a suivi le 2026-08-04** (E8, E10, E11, E12, et E9
+pour moitié) — cf. §H.
+
+Restent deux postes, tous deux de coût L et chacun méritant son propre plan :
+**E13** (notifications in-app) — le seul qui change vraiment le produit — et
+**E14** (palette de commandes), dont la moitié « recherche transverse » est
+déjà servie par l'onglet de recherche toutes catégories du Codex livré le même
+jour. Reste ouvert hors backlog : l'arbitrage `/dm` + `/map-proto` de E9.
 
 ---
 
@@ -403,3 +405,51 @@ Aucun des deux n'était visible en test unitaire.
   Retour de cette fiche remonte à la **campagne**, pas au combat. C'est la
   conséquence assumée de `parentRouteFor`, hiérarchique par construction
   (cf. D-1). Le besoin fréquent ne navigue plus, donc le coût est rare.
+
+---
+
+## H. Ce que le lot du 2026-08-04 (2) livre (E8, E10, E11, E12, moitié de E9)
+
+Le paquet des 🟡 peu chers. Rien ici ne touche une rule Firestore, un index, un
+chemin protégé ni un schéma — tout est client.
+
+### H.1 — Savoir où l'on en est
+
+- **E8 — la table sur la carte.** Une pastille porte le nom de la campagne
+  d'attache. La carte ne lit pas Firestore : l'accueil résout les noms une fois
+  et distribue la chaîne, sinon chaque carte de la grille déclencherait son
+  propre couple de requêtes. Une fiche liée à une campagne non résolue (quittée,
+  supprimée) n'affiche **rien** plutôt qu'un identifiant technique.
+- **E10 — le brouillon rendu visible et abandonnable.** Le draft du wizard
+  survivait à la fermeture de l'onglet depuis toujours (`persist`), mais rien ne
+  le disait. Le gain réel n'est pas « reprendre » — c'est **« Abandonner »** :
+  jusqu'ici le seul moyen de sortir d'un brouillon était de le mener au bout ou
+  de vider son stockage local.
+
+### H.2 — Deux idiomes réutilisés plutôt que deux idiomes inventés
+
+- **E11 — Épuisement derrière la modale des états.** Sept lignes de texte SRD
+  déroulées en permanence faisaient de cette carte 2,5 fois la hauteur de ses
+  voisines. Plutôt qu'un dépliant maison, « Lire la règle » ouvre
+  `ConditionDetailModal` — la modale que la fiche utilise **déjà** pour tous les
+  autres états. Un seul geste à apprendre. La règle redevient consultable au
+  niveau 0, où elle avait dû être masquée faute de place.
+- **E12 — les outils du meneur en superposition.** Même choix qu'en E6 : on
+  ouvre par-dessus l'écran de jeu au lieu de dupliquer la section. Le bloc-notes
+  est cloisonné par campagne (`scopeKey`), donc c'est le **même** des trois
+  côtés — le dupliquer en dur inviterait la divergence.
+
+### H.3 — Ce qui reste ouvert sur ce périmètre
+
+- **E9 à moitié.** `/debug-content` est supprimée sans réserve : son composant
+  se déclarait lui-même « à retirer », ses compteurs attendus avaient dérivé
+  (320 sorts contre 339, 330 monstres contre 0), et il était importé **en dur**
+  — donc embarqué dans le bundle d'entrée de tous les utilisateurs.
+  `/dm` et `/map-proto` sont un autre cas : chacune porte un prototype
+  fonctionnel **et** une spec e2e vivante. Les supprimer retire du travail
+  livré ; ce n'est pas une décision d'hygiène, c'est un arbitrage. **En attente
+  d'Adrien.**
+- **Cinq cartes alignées, une laissée.** `giant-ancestry-card` affiche son effet
+  sans troncature et sans modale — mais c'est le texte mécanique qu'on applique
+  au moment de s'en servir, pas un aperçu vers un détail. Le clamper le
+  rendrait moins utile.
