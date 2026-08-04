@@ -1,14 +1,19 @@
 /**
- * Hand-off des dégâts physiques (JALON 24.4, step 7b).
+ * Hand-off des dégâts (JALON 24.4, step 7b — élargi aux dés numériques).
  *
- * En mode physique, un joueur saisit ses dés réels ; l'app journalise un event
- * `roll` (`payload.mode === 'physical'`) avec `rollKind` ∈ {attack, damage}. Le
- * joueur ne cible JAMAIS — c'est le MJ qui choisit sur qui appliquer les dégâts.
+ * Un joueur qui attaque journalise un event `roll` avec `rollKind` ∈
+ * {attack, damage}. Le joueur ne cible JAMAIS — c'est le MJ qui choisit sur qui
+ * appliquer les dégâts.
  *
- * Ce module DÉRIVE (pur, testable) la liste des jets physiques récents à
- * proposer au MJ, à partir du feed d'événements déjà lu par `useCampaignEvents`
- * (visibilité `all`/`dm` côté MJ). Aucun nouvel index ni nouvelle rule : on
- * filtre côté client le feed existant.
+ * Le MODE DE DÉS n'entre pas dans le filtre : physique et numérique produisent
+ * le même payload, et demandent au MJ exactement le même geste. Réserver le
+ * hand-off au mode physique obligeait une table numérique à lire le total dans
+ * le journal puis à le retaper dans la modale de contrôle.
+ *
+ * Ce module DÉRIVE (pur, testable) la liste des jets récents à proposer au MJ,
+ * à partir du feed d'événements déjà lu par `useCampaignEvents` (visibilité
+ * `all`/`dm` côté MJ). Aucun nouvel index ni nouvelle rule : on filtre côté
+ * client le feed existant.
  *
  * Limite de contenu assumée : le `damageTypeLabel` (« tranchants »…) n'est PAS
  * journalisé dans le payload de l'event (il ne vit que dans le toast, cf.
@@ -20,10 +25,10 @@ import { eventCreatedAtToDate } from './event-line';
 import type { GameEvent } from '@/shared/types/event';
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
-/** Fenêtre de pertinence d'un jet physique dans le panneau (5 min, plan step 7b). */
+/** Fenêtre de pertinence d'un jet dans le panneau (5 min, plan step 7b). */
 export const HANDOFF_TTL_MS = 5 * 60 * 1000;
 
-/** Un jet physique récent prêt à être appliqué (damage) ou adjugé (attack). */
+/** Un jet récent prêt à être appliqué (damage) ou adjugé (attack). */
 export interface HandoffRow {
   /** `id` de l'event Firestore — clé de dismiss et de rendu. */
   eventId: string;
@@ -63,9 +68,10 @@ function resolveActorName(
 /**
  * Dérive les lignes de hand-off à partir du feed d'événements.
  *
- * Conserve uniquement les `roll` physiques de type attack/damage, non ignorés
- * localement, et dans la fenêtre de pertinence (`ttlMs`). Un `serverTimestamp()`
- * pas encore résolu (`createdAt` local `null`) est traité comme « tout frais »
+ * Conserve uniquement les `roll` de type attack/damage, non ignorés localement,
+ * et dans la fenêtre de pertinence (`ttlMs`), TOUS MODES DE DÉS CONFONDUS. Un
+ * `serverTimestamp()` pas encore résolu (`createdAt` local `null`) est traité
+ * comme « tout frais »
  * (inclus) — sinon un jet à peine posé clignoterait hors liste avant l'aller-
  * retour serveur. L'ordre du feed (createdAt desc) est préservé.
  */
@@ -82,7 +88,10 @@ export function deriveHandoffRows(
     if (dismissedIds.has(event.id)) continue;
 
     const p = event.payload;
-    if (p.mode !== 'physical') continue;
+    // Le mode de dés N'EST PAS un critère (M1 du lot de malléabilité) : un jet
+    // numérique produit exactement le même payload qu'un jet physique, et le MJ
+    // a le même geste à faire — choisir la cible et appliquer. Filtrer sur
+    // `physical` obligeait la table numérique à retaper le chiffre à la main.
     const rollKind = p.rollKind;
     if (rollKind !== 'attack' && rollKind !== 'damage') continue;
     const total = asNumber(p.total);

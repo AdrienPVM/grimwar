@@ -29,7 +29,7 @@ const encounterHolder: {
 } = { encounter: null, isLoading: false, error: null };
 vi.mock('../use-encounter', () => ({ useEncounter: () => encounterHolder }));
 
-// Feed d'événements — alimente le hand-off des dégâts physiques (step 7b).
+// Feed d'événements — alimente le hand-off des dégâts (step 7b, tous modes).
 const eventsHolder: { events: GameEvent[] } = { events: [] };
 vi.mock('../use-campaign-events', () => ({
   useCampaignEvents: () => ({ events: eventsHolder.events, isLoading: false, error: null }),
@@ -457,7 +457,7 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
   });
 });
 
-describe('<EncounterScreen> — hand-off dégâts physiques (step 7b)', () => {
+describe('<EncounterScreen> — hand-off dégâts (step 7b)', () => {
   it('le MJ voit le panneau de hand-off d’un jet physique récent, acteur résolu', () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
@@ -465,7 +465,7 @@ describe('<EncounterScreen> — hand-off dégâts physiques (step 7b)', () => {
     renderScreen();
     expect(screen.getByText('Dégâts à appliquer')).toBeInTheDocument();
     // Acteur résolu via la fiche liée (characterId char-a → participant Lyralei).
-    const panel = screen.getByRole('region', { name: 'Dégâts physiques à appliquer' });
+    const panel = screen.getByRole('region', { name: 'Dégâts à appliquer' });
     expect(within(panel).getByText('Lyralei')).toBeInTheDocument();
     expect(within(panel).getByText('6 dégâts')).toBeInTheDocument();
   });

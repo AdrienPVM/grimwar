@@ -10,7 +10,14 @@ import { localize, t } from '@/shared/lib/i18n';
 import type { Condition, Monster } from '@/shared/types/content';
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
-import { hpBarColor, hpRatio } from './encounter-hp';
+import {
+  CUSTOM_CONDITION_LABEL_MAX,
+  customConditionLabel,
+  isCustomCondition,
+  toCustomConditionId,
+} from './custom-condition';
+import { hpBarColor, hpRatio, quickHpAmounts } from './encounter-hp';
+import { PARTICIPANT_NOTE_MAX } from '@/shared/lib/services/encounters';
 
 interface ParticipantControlModalProps {
   participant: EncounterParticipant;
@@ -27,13 +34,14 @@ interface ParticipantControlModalProps {
   pending: boolean;
   /** Applique un delta de PV (négatif = dégâts, positif = soin). */
   onApplyHp: (delta: number) => void;
-  /** Pose/retire un état (slug de `conditions.json`). */
+  /** Accorde des PV temporaires (règle SRD : on garde le plus avantageux). */
+  onGrantTempHp: (amount: number) => void;
+  /** Pose/retire un état (slug de `conditions.json`, ou `custom:…` maison). */
   onToggleCondition: (condition: string, action: 'add' | 'remove') => void;
+  /** Écrit la note libre du combattant (« celui-ci porte la clé »). */
+  onSaveNote: (note: string) => void;
   onClose: () => void;
 }
-
-/** Montants rapides proposés (dégâts/soin en un tap). */
-const QUICK_AMOUNTS = [1, 5, 10] as const;
 
 /**
  * Modale de contrôle MJ d'un participant non-joueur (monstre / PNJ) — JALON 24.4
@@ -54,10 +62,14 @@ export function ParticipantControlModal({
   monster = null,
   pending,
   onApplyHp,
+  onGrantTempHp,
   onToggleCondition,
+  onSaveNote,
   onClose,
 }: ParticipantControlModalProps): JSX.Element {
   const [amount, setAmount] = useState<number>(1);
+  const [customCondition, setCustomCondition] = useState<string>('');
+  const [note, setNote] = useState<string>(participant.notes);
   // Fiche de créature ouverte en surcouche (modale imbriquée).
   const [statBlockOpen, setStatBlockOpen] = useState<boolean>(false);
 
@@ -66,9 +78,25 @@ export function ParticipantControlModal({
   const ratio = hpRatio(participant.currentHp, participant.maxHp);
   const hpPercent = Math.round(ratio * 100);
   const activeSet = useMemo(() => new Set(participant.conditions), [participant.conditions]);
+  // Paliers rapides à l'échelle de la créature — pas [1,5,10] pour un dragon.
+  const quickAmounts = useMemo(() => quickHpAmounts(participant.maxHp), [participant.maxHp]);
+  // États maison déjà posés : ils ne sont dans aucun bundle, on les rend à part
+  // pour que le MJ puisse les retirer d'un tap comme un état SRD.
+  const customActive = useMemo(
+    () => participant.conditions.filter(isCustomCondition),
+    [participant.conditions],
+  );
 
   // Montant saisi borné > 0 (un montant ≤ 0 n'a pas de sens pour dégâts/soin).
   const safeAmount = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
+  const noteDirty = note !== participant.notes;
+
+  function addCustomCondition(): void {
+    const id = toCustomConditionId(customCondition);
+    if (id === null || activeSet.has(id)) return;
+    onToggleCondition(id, 'add');
+    setCustomCondition('');
+  }
 
   return (
     <DetailModal
@@ -112,6 +140,9 @@ export function ParticipantControlModal({
             </h3>
             <span className="font-serif text-body tabular-nums text-text">
               {participant.currentHp}/{participant.maxHp}
+              {participant.tempHp > 0 ? (
+                <span className="ml-2 text-teal">+{participant.tempHp}</span>
+              ) : null}
             </span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
@@ -159,11 +190,21 @@ export function ParticipantControlModal({
             >
               + {t('encounters.control.heal')}
             </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => onGrantTempHp(safeAmount)}
+              disabled={pending || safeAmount === 0}
+              className="border-teal/50 text-teal hover:border-teal"
+              tooltip={t('campaigns.tip.grantTempHp')}
+            >
+              {t('encounters.control.tempHp')}
+            </Button>
           </div>
 
           {/* Montants rapides : un tap = dégâts (−) ou soin (+). */}
           <div className="flex flex-wrap items-center gap-2">
-            {QUICK_AMOUNTS.map((q) => (
+            {quickAmounts.map((q) => (
               <Tooltip key={`dmg-${q}`} label={t('campaigns.tip.quickDamage')} decorative>
                 <button
                   type="button"
@@ -175,7 +216,7 @@ export function ParticipantControlModal({
                 </button>
               </Tooltip>
             ))}
-            {QUICK_AMOUNTS.map((q) => (
+            {quickAmounts.map((q) => (
               <Tooltip key={`heal-${q}`} label={t('campaigns.tip.quickHeal')} decorative>
                 <button
                   type="button"
@@ -230,6 +271,85 @@ export function ParticipantControlModal({
               })}
             </div>
           )}
+
+          {/* États maison déjà posés — retirables d'un tap, comme les SRD. */}
+          {customActive.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {customActive.map((id) => (
+                <Tooltip key={id} label={t('campaigns.tip.conditionRemove')} decorative>
+                  <button
+                    type="button"
+                    disabled={pending}
+                    aria-pressed
+                    onClick={() => onToggleCondition(id, 'remove')}
+                    className="rounded-pill border border-crimson bg-crimson/15 px-3 py-1 font-title text-[10px] font-bold uppercase tracking-[0.14em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/25 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {customConditionLabel(id)}
+                  </button>
+                </Tooltip>
+              ))}
+            </div>
+          ) : null}
+
+          {/* Champ « Autre état… » : la table invente ses propres conditions. */}
+          <div className="flex items-end gap-2">
+            <label className="flex flex-1 flex-col gap-1">
+              <span className="font-title text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
+                {t('encounters.control.customCondition')}
+              </span>
+              <input
+                type="text"
+                value={customCondition}
+                maxLength={CUSTOM_CONDITION_LABEL_MAX}
+                placeholder={t('encounters.control.customConditionPlaceholder')}
+                onChange={(e) => setCustomCondition(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomCondition();
+                  }
+                }}
+                aria-label={t('encounters.control.customCondition')}
+                className="w-full rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2 font-serif text-body text-text outline-none transition-colors duration-200 ease-base focus:border-gold"
+              />
+            </label>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={addCustomCondition}
+              disabled={pending || customCondition.trim().length === 0}
+              tooltip={t('campaigns.tip.customCondition')}
+            >
+              {t('encounters.control.customConditionAdd')}
+            </Button>
+          </div>
+        </section>
+
+        {/* ─── Note libre ─────────────────────────────────────────── */}
+        <section className="flex flex-col gap-2">
+          <h3 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            {t('encounters.control.noteTitle')}
+          </h3>
+          <textarea
+            value={note}
+            rows={3}
+            maxLength={PARTICIPANT_NOTE_MAX}
+            placeholder={t('encounters.control.notePlaceholder')}
+            onChange={(e) => setNote(e.target.value)}
+            aria-label={t('encounters.control.noteTitle')}
+            className="w-full resize-y rounded-card-sm border border-white-8 bg-bg-3/60 px-4 py-2 font-serif text-body-sm text-text outline-none transition-colors duration-200 ease-base focus:border-gold"
+          />
+          <div className="flex justify-end">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onSaveNote(note)}
+              disabled={pending || !noteDirty}
+              tooltip={t('campaigns.tip.saveNote')}
+            >
+              {t('encounters.control.noteSave')}
+            </Button>
+          </div>
         </section>
       </div>
 

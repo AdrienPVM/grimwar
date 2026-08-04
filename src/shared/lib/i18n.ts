@@ -1549,6 +1549,13 @@ export type StringKey =
   | 'encounters.control.closeAria'
   | 'encounters.control.viewStatBlock'
   | 'encounters.control.statBlockCloseAria'
+  | 'encounters.control.tempHp'
+  | 'encounters.control.customCondition'
+  | 'encounters.control.customConditionPlaceholder'
+  | 'encounters.control.customConditionAdd'
+  | 'encounters.control.noteTitle'
+  | 'encounters.control.notePlaceholder'
+  | 'encounters.control.noteSave'
   | 'encounters.handoff.title'
   | 'encounters.handoff.help'
   | 'encounters.handoff.aria'
@@ -2403,6 +2410,9 @@ export type StringKey =
   | 'campaigns.tip.applyHeal'
   | 'campaigns.tip.quickDamage'
   | 'campaigns.tip.quickHeal'
+  | 'campaigns.tip.grantTempHp'
+  | 'campaigns.tip.customCondition'
+  | 'campaigns.tip.saveNote'
   | 'campaigns.tip.conditionAdd'
   | 'campaigns.tip.conditionRemove'
   | 'campaigns.tip.rollInit'
@@ -4575,12 +4585,19 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.closeAria': 'Fermer le contrôle',
     'encounters.control.viewStatBlock': 'Voir la fiche de créature',
     'encounters.control.statBlockCloseAria': 'Fermer la fiche de créature',
+    'encounters.control.tempHp': '+ PV temp.',
+    'encounters.control.customCondition': 'Autre état',
+    'encounters.control.customConditionPlaceholder': 'Marqué par le Chasseur…',
+    'encounters.control.customConditionAdd': 'Poser',
+    'encounters.control.noteTitle': 'Note du combattant',
+    'encounters.control.notePlaceholder': 'Celui-ci porte la clé…',
+    'encounters.control.noteSave': 'Enregistrer la note',
     // Encounters — hand-off des dégâts physiques (JALON 24.4, step 7b). Le MJ
     // applique les jets physiques récents des joueurs sur une cible qu'il choisit.
     'encounters.handoff.title': 'Dégâts à appliquer',
     'encounters.handoff.help':
-      'Jets physiques récents des joueurs. Choisis une cible pour appliquer les dégâts.',
-    'encounters.handoff.aria': 'Dégâts physiques à appliquer',
+      'Jets récents des joueurs. Choisis une cible pour appliquer les dégâts.',
+    'encounters.handoff.aria': 'Dégâts à appliquer',
     'encounters.handoff.attackPrefix': 'Att',
     'encounters.handoff.damageSuffix': 'dégâts',
     'encounters.handoff.attackInfo': 'Jet d’attaque — compare à la CA de la cible.',
@@ -5803,6 +5820,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.applyHeal': 'Rendre ce nombre de points de vie.',
     'campaigns.tip.quickDamage': 'Infliger ces dégâts en un toucher.',
     'campaigns.tip.quickHeal': 'Soigner ce montant en un toucher.',
+    'campaigns.tip.grantTempHp': 'Accorder ce montant en points de vie temporaires (on garde le plus avantageux).',
+    'campaigns.tip.customCondition': 'Poser un état inventé par la table.',
+    'campaigns.tip.saveNote': 'Enregistrer cette note sur le combattant.',
     'campaigns.tip.conditionAdd': 'Appliquer cet état à la créature.',
     'campaigns.tip.conditionRemove': 'Retirer cet état de la créature.',
     'campaigns.tip.rollInit': 'Lancer l’initiative de tous les combattants.',
@@ -7895,10 +7915,17 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.closeAria': 'Close control panel',
     'encounters.control.viewStatBlock': 'View stat block',
     'encounters.control.statBlockCloseAria': 'Close stat block',
+    'encounters.control.tempHp': '+ Temp HP',
+    'encounters.control.customCondition': 'Other condition',
+    'encounters.control.customConditionPlaceholder': 'Marked by the Hunter…',
+    'encounters.control.customConditionAdd': 'Apply',
+    'encounters.control.noteTitle': 'Combatant note',
+    'encounters.control.notePlaceholder': 'This one carries the key…',
+    'encounters.control.noteSave': 'Save note',
     'encounters.handoff.title': 'Damage to apply',
     'encounters.handoff.help':
-      'Recent physical rolls from players. Pick a target to apply the damage.',
-    'encounters.handoff.aria': 'Physical damage to apply',
+      'Recent rolls from players. Pick a target to apply the damage.',
+    'encounters.handoff.aria': 'Damage to apply',
     'encounters.handoff.attackPrefix': 'Atk',
     'encounters.handoff.damageSuffix': 'damage',
     'encounters.handoff.attackInfo': 'Attack roll — compare to the target’s AC.',
@@ -9044,6 +9071,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.applyHeal': 'Restore this many hit points.',
     'campaigns.tip.quickDamage': 'Deal this much damage in one tap.',
     'campaigns.tip.quickHeal': 'Heal this amount in one tap.',
+    'campaigns.tip.grantTempHp': 'Grant this amount as temporary hit points (the better value wins).',
+    'campaigns.tip.customCondition': 'Apply a condition invented by the table.',
+    'campaigns.tip.saveNote': 'Save this note on the combatant.',
     'campaigns.tip.conditionAdd': 'Apply this condition to the creature.',
     'campaigns.tip.conditionRemove': 'Remove this condition from the creature.',
     'campaigns.tip.rollInit': 'Roll initiative for every combatant.',

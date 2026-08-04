@@ -465,6 +465,51 @@ export function applyHpDelta(
 }
 
 /**
+ * Accorde des PV temporaires à un participant. Pur.
+ *
+ * Règle SRD : les PV temporaires NE S'ADDITIONNENT PAS — on garde le plus
+ * avantageux des deux (`max(actuel, accordé)`). Un montant ≤ 0 est ignoré :
+ * retirer des PV temporaires se fait en encaissant des dégâts, pas en accordant
+ * un négatif.
+ *
+ * `tempHp` était jusqu'ici CONSOMMÉ correctement par `applyHpDelta` mais aucun
+ * geste ne pouvait l'augmenter (M6 de l'audit de malléabilité).
+ */
+export function grantTempHp(
+  participants: readonly EncounterParticipant[],
+  instanceId: string,
+  amount: number,
+): { participants: EncounterParticipant[]; before: number; after: number } {
+  let before = 0;
+  let after = 0;
+  const updated = participants.map((p) => {
+    if (p.instanceId !== instanceId) return p;
+    before = p.tempHp ?? 0;
+    after = amount > 0 ? Math.max(before, Math.floor(amount)) : before;
+    return { ...p, tempHp: after };
+  });
+  return { participants: updated, before, after };
+}
+
+/**
+ * Écrit la note libre d'un participant (« celui-ci porte la clé »). Pur.
+ * Tronquée à la limite du schéma pour qu'une saisie trop longue ne fasse pas
+ * échouer l'écriture Firestore côté Zod.
+ */
+export function setParticipantNoteIn(
+  participants: readonly EncounterParticipant[],
+  instanceId: string,
+  note: string,
+): EncounterParticipant[] {
+  return participants.map((p) =>
+    p.instanceId === instanceId ? { ...p, notes: note.slice(0, PARTICIPANT_NOTE_MAX) } : p,
+  );
+}
+
+/** Limite du champ `notes` au schéma (`encounterParticipantSchema`). */
+export const PARTICIPANT_NOTE_MAX = 2000;
+
+/**
  * Pose un état (condition) sur/retire d'un participant (step 7). Pur. `add`
  * idempotent (pas de doublon) ; `remove` no-op si absent.
  */
@@ -526,5 +571,36 @@ export async function setParticipantCondition(
 ): Promise<void> {
   const current = await getEncounter(campaignId, encounterId);
   const participants = toggleCondition(current.participants, instanceId, condition, action);
+  await setParticipants(campaignId, encounterId, participants);
+}
+
+/**
+ * Accorde des PV temporaires et persiste (M6). Même motif read-then-write que
+ * `setParticipantCondition`. Renvoie before/after pour le retour utilisateur.
+ */
+export async function grantParticipantTempHp(
+  campaignId: string,
+  encounterId: string,
+  instanceId: string,
+  amount: number,
+): Promise<{ before: number; after: number }> {
+  const current = await getEncounter(campaignId, encounterId);
+  const { participants, before, after } = grantTempHp(current.participants, instanceId, amount);
+  await setParticipants(campaignId, encounterId, participants);
+  return { before, after };
+}
+
+/**
+ * Écrit la note libre d'un participant et persiste (M6). Aucun event : la note
+ * est un aide-mémoire de MJ sur le doc partagé, pas un fait de jeu.
+ */
+export async function setParticipantNote(
+  campaignId: string,
+  encounterId: string,
+  instanceId: string,
+  note: string,
+): Promise<void> {
+  const current = await getEncounter(campaignId, encounterId);
+  const participants = setParticipantNoteIn(current.participants, instanceId, note);
   await setParticipants(campaignId, encounterId, participants);
 }

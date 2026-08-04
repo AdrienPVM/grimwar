@@ -110,10 +110,13 @@ import {
   EncounterServiceError,
   getActiveEncounter,
   getEncounter,
+  grantTempHp,
   listEncounters,
   nextTurn,
+  PARTICIPANT_NOTE_MAX,
   rollInitiativeFor,
   setParticipantCondition,
+  setParticipantNoteIn,
   setParticipants,
   startEncounter,
   toggleCondition,
@@ -547,6 +550,62 @@ describe('applyHpDelta', () => {
     const { after, tempAfter } = applyHpDelta(ps, 'm1', -10);
     expect(after).toBe(0); // clamp à 0 préservé
     expect(tempAfter).toBe(0);
+  });
+});
+
+// M6 — accorder des PV temporaires (le pendant manquant de leur consommation).
+describe('grantTempHp', () => {
+  it('accorde un bouclier à une créature qui n’en avait pas', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', tempHp: 0 })];
+    const { participants, before, after } = grantTempHp(ps, 'm1', 8);
+    expect(before).toBe(0);
+    expect(after).toBe(8);
+    expect(participants[0]!.tempHp).toBe(8);
+  });
+
+  it('SRD : les PV temporaires ne s’additionnent PAS, le meilleur l’emporte', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', tempHp: 10 })];
+    // Un bouclier plus faible ne remplace pas le bouclier en place.
+    expect(grantTempHp(ps, 'm1', 4).after).toBe(10);
+    // Un bouclier plus fort le remplace — sans cumuler à 18.
+    expect(grantTempHp(ps, 'm1', 18).after).toBe(18);
+  });
+
+  it('un montant ≤ 0 ne retire jamais le bouclier existant', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', tempHp: 6 })];
+    expect(grantTempHp(ps, 'm1', 0).after).toBe(6);
+    expect(grantTempHp(ps, 'm1', -5).after).toBe(6);
+  });
+
+  it('n’affecte pas les PV réels', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', currentHp: 4, maxHp: 10, tempHp: 0 })];
+    const { participants } = grantTempHp(ps, 'm1', 7);
+    expect(participants[0]!.currentHp).toBe(4);
+    expect(participants[0]!.maxHp).toBe(10);
+  });
+
+  it('instanceId introuvable → liste inchangée', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', tempHp: 2 })];
+    expect(grantTempHp(ps, 'absent', 9).participants).toEqual(ps);
+  });
+});
+
+// M6 — note libre par combattant.
+describe('setParticipantNoteIn', () => {
+  it('écrit la note sur le bon participant seulement', () => {
+    const ps = [
+      makeParticipant({ instanceId: 'm1', notes: '' }),
+      makeParticipant({ instanceId: 'm2', notes: 'intact' }),
+    ];
+    const next = setParticipantNoteIn(ps, 'm1', 'Porte la clé');
+    expect(next[0]!.notes).toBe('Porte la clé');
+    expect(next[1]!.notes).toBe('intact');
+  });
+
+  it('tronque à la limite du schéma plutôt que de faire échouer l’écriture', () => {
+    const ps = [makeParticipant({ instanceId: 'm1', notes: '' })];
+    const next = setParticipantNoteIn(ps, 'm1', 'x'.repeat(PARTICIPANT_NOTE_MAX + 500));
+    expect(next[0]!.notes).toHaveLength(PARTICIPANT_NOTE_MAX);
   });
 });
 

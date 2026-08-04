@@ -25,8 +25,10 @@ import {
   applyParticipantHpDelta,
   endEncounter,
   EncounterServiceError,
+  grantParticipantTempHp,
   rollInitiativeFor,
   setParticipantCondition,
+  setParticipantNote,
   startEncounter,
 } from '@/shared/lib/services/encounters';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
@@ -37,6 +39,7 @@ import {
   type EncounterStatus,
 } from '@/shared/types/encounter';
 
+import { customConditionLabel } from './custom-condition';
 import { deriveHandoffRows, HANDOFF_TTL_MS } from './encounter-handoff';
 import { EncounterHandoffPanel, type HandoffTarget } from './encounter-handoff-panel';
 import { hpBarColor, hpRatio } from './encounter-hp';
@@ -141,7 +144,10 @@ export function EncounterScreen(): JSX.Element {
   // que le bundle `conditions` n'est pas chargé).
   const conditionLabel = useMemo(() => {
     const byId = new Map(conditionDefs.map((c) => [c.id, localize(c.name)]));
-    return (id: string): string => byId.get(id) ?? capitalizeSlug(id);
+    return (id: string): string =>
+      // Un état maison (M8) porte son libellé verbatim derrière son préfixe :
+      // on le rend tel que le MJ l'a tapé, accents et casse compris.
+      customConditionLabel(id) ?? byId.get(id) ?? capitalizeSlug(id);
   }, [conditionDefs]);
 
   const isGm = useMemo<boolean>(() => {
@@ -341,9 +347,47 @@ export function EncounterScreen(): JSX.Element {
     }
   }
 
-  // ─── Hand-off dégâts physiques (step 7b) — le MJ applique un jet physique
-  // récent d'un joueur sur la cible qu'il choisit (jamais le joueur). Réutilise
-  // le chemin `handleApplyHp` (monster-hp-change), puis retire l'event du panneau.
+  // ─── PV temporaires (M6) — `tempHp` était consommé par `applyHpDelta` mais
+  // aucun geste ne pouvait l'accorder. Pas d'event : le payload
+  // `monster-hp-change` porte les PV RÉELS, qui ne bougent pas ici.
+  async function handleGrantTempHp(
+    participant: EncounterParticipant,
+    amount: number,
+  ): Promise<void> {
+    if (!cid || !eid || actionPending || amount <= 0) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await grantParticipantTempHp(cid, eid, participant.instanceId, amount);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Note de combattant (M6) — aide-mémoire de MJ sur le doc partagé, pas un
+  // fait de jeu : aucun event journalisé.
+  async function handleSaveNote(
+    participant: EncounterParticipant,
+    note: string,
+  ): Promise<void> {
+    if (!cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await setParticipantNote(cid, eid, participant.instanceId, note);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Hand-off dégâts (step 7b, élargi aux dés numériques par M4) — le MJ
+  // applique un jet récent d'un joueur sur la cible qu'il choisit (jamais le
+  // joueur). Réutilise `handleApplyHp` (monster-hp-change), puis retire l'event
+  // du panneau.
   async function handleApplyHandoff(
     eventId: string,
     total: number,
@@ -668,6 +712,8 @@ export function EncounterScreen(): JSX.Element {
           monster={controlTargetMonster}
           pending={actionPending}
           onApplyHp={(delta) => void handleApplyHp(controlTarget, delta)}
+          onGrantTempHp={(amount) => void handleGrantTempHp(controlTarget, amount)}
+          onSaveNote={(note) => void handleSaveNote(controlTarget, note)}
           onToggleCondition={(condition, action) =>
             void handleToggleCondition(controlTarget, condition, action)
           }
