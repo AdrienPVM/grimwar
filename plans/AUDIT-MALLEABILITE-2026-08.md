@@ -169,6 +169,32 @@ Trois lots, à livrer dans l'ordre. Le découpage suit une règle simple : **d'a
 
 ### Lot 1 — « Les réglages mentent, les gestes manquent » (CLIENT-ONLY, livrable immédiatement)
 
+> **État au 2026-08-05 — 11 murs livrés** (commits `178e772` → `d947fa0`, tous locaux, aucun push).
+>
+> | Livré | Mur | Commit |
+> |---|---|---|
+> | ✅ | **M1** — plumbing des réglages de campagne | `178e772` |
+> | ✅ | **M4** — hand-off des dégâts en dés numériques | `fbe9f9f` |
+> | ✅ | **M6** — PV temporaires accordables + note de combattant | `fbe9f9f` |
+> | ✅ | **M8** — états maison (`custom:` + libellé verbatim) | `fbe9f9f` |
+> | ✅ | **M37** — paliers de dégâts dérivés des PV max | `fbe9f9f` |
+> | ✅ | **M9** — retirer un événement du journal | `06437d9` |
+> | ✅ | **M10** — jet secret nommé, journalisé, révélable | `06437d9` |
+> | ✅ | **M15** — maximum de PV éditable | `49e9277` |
+> | ✅ | **M19** — ressusciter un PJ mort hors campagne | `49e9277` |
+> | ✅ | **M29** — export d'un pack de contenu maison | `49e9277` |
+> | ✅ | **M33** — « Vue joueur » sur la carte live | `49e9277` |
+>
+> **Reste du lot 1 :** M2, M3, M5, M7 (tracker éditable) · M11, M12, M13, M14 (cycle de vie) ·
+> M28 (scope d'objet), M30, M31, M32, M34 (carte en amont et côté joueur) ·
+> M39, M40, M41, M42 (PNJ).
+>
+> **Découverte de livraison :** M4 et M37 ont cassé trois specs e2e qui encodaient
+> l'ancien comportement (bouton « −10 » en dur, aria-label « Dégâts physiques à
+> appliquer »). La suite complète les avait rapportées « skipped » — il a fallu
+> les relancer isolément pour voir qu'elles échouaient vraiment. **Un `skipped` en
+> run complet n'est pas une preuve de vert.**
+
 Aucun déploiement de rules, aucun changement de schéma Firestore, aucune décision produit à prendre. Chaque item rend vivant un artefact déjà payé.
 
 | Ordre | Murs | Pourquoi ici |
