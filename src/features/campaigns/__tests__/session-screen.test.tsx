@@ -230,6 +230,27 @@ describe('<SessionScreen> — lecture seule (membre non-MJ)', () => {
   });
 });
 
+// ── E12 — outils du meneur atteignables en séance ─────────────────────────
+describe('<SessionScreen> — outils du meneur', () => {
+  it('le MJ ouvre jet secret + bloc-notes sans quitter la séance', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['gm-uid'] });
+    sessionHolder.session = mkSession({ status: 'active' });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Outils' }));
+    // Identité du contenu, pas seulement présence d'une modale : ce sont bien
+    // les deux outils du détail de campagne qui arrivent ici.
+    expect(screen.getByRole('heading', { name: 'Outils du meneur' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lancer en secret/i })).toBeInTheDocument();
+  });
+
+  it("un membre non-MJ n'a aucun accès aux outils", () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['other-gm'] });
+    sessionHolder.session = mkSession({ status: 'active' });
+    renderScreen();
+    expect(screen.queryByRole('button', { name: 'Outils' })).not.toBeInTheDocument();
+  });
+});
+
 describe('<SessionScreen> — démarrage / clôture (MJ)', () => {
   it('séance planifiée → bouton « Démarrer » ; clic démarre + pose pointeur + logge', async () => {
     campaignHolder.campaign = mkCampaign({ gmIds: ['gm-uid'] });

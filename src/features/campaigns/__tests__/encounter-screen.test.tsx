@@ -703,3 +703,39 @@ describe('<EncounterScreen> — la compagnie en superposition (E7)', () => {
     expect(within(dialog).queryByRole('button', { name: /Voir la fiche/ })).not.toBeInTheDocument();
   });
 });
+
+/**
+ * Audit UX E12 / scénario M8 — jet secret et bloc-notes en plein combat.
+ *
+ * Avant : ils n'existaient qu'en BAS du détail de campagne. Les atteindre
+ * pendant un tour de jeu coûtait de quitter le tracker, de faire défiler un
+ * écran long, puis de refaire le chemin en sens inverse.
+ */
+describe('<EncounterScreen> — outils du meneur en superposition (E12)', () => {
+  it('le MJ ouvre jet secret + bloc-notes sans démonter le tracker', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2 });
+    renderScreen();
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Outils du meneur' }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Outils' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Outils du meneur' });
+    // Identité du contenu : ce sont bien les deux outils du détail de campagne.
+    expect(within(dialog).getByRole('button', { name: 'Lancer en secret' })).toBeInTheDocument();
+    expect(within(dialog).getByText('Notes de séance')).toBeInTheDocument();
+    // Le combat est toujours là derrière.
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
+  });
+
+  it("un joueur n'a aucun accès aux outils (le jet secret ne doit pas fuiter)", () => {
+    authHolder.user = { uid: 'uid-player' };
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2 });
+    renderScreen();
+
+    expect(screen.queryByRole('button', { name: 'Outils' })).not.toBeInTheDocument();
+  });
+});

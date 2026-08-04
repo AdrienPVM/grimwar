@@ -1000,6 +1000,9 @@ export type StringKey =
   | 'campaigns.detail.roster.title'
   | 'campaigns.detail.dmTools.title'
   | 'campaigns.detail.dmTools.aria'
+  // Superposition « Outils du meneur » en séance / en combat (E12)
+  | 'campaigns.dmTools.open'
+  | 'campaigns.dmTools.openTip'
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
   | 'campaigns.detail.roster.viewSheet'
@@ -3942,6 +3945,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.title': 'La compagnie',
     'campaigns.detail.dmTools.title': 'Outils du meneur',
     'campaigns.detail.dmTools.aria': 'Outils du meneur — jet secret et bloc-notes',
+    'campaigns.dmTools.open': 'Outils',
+    'campaigns.dmTools.openTip': 'Jet secret et bloc-notes, sans quitter la table.',
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
     'campaigns.detail.roster.viewSheet': 'Voir la fiche',
@@ -7268,6 +7273,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.roster.title': 'The party',
     'campaigns.detail.dmTools.title': 'Game master tools',
     'campaigns.detail.dmTools.aria': 'Game master tools — secret roll and scratchpad',
+    'campaigns.dmTools.open': 'Tools',
+    'campaigns.dmTools.openTip': 'Secret roll and scratchpad, without leaving the table.',
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
     'campaigns.detail.roster.viewSheet': 'View sheet',

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
 import { CodexOverlay } from '@/features/codex/codex-overlay';
+import { DmToolsOverlay } from '@/features/dm-view/dm-tools-overlay';
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
 import { Chip } from '@/shared/components/chip';
@@ -123,6 +124,7 @@ export function EncounterScreen(): JSX.Element {
   );
   // Codex consultable par-dessus le tracker, sans quitter le combat (E6).
   const [codexOpen, setCodexOpen] = useState<boolean>(false);
+  const [dmToolsOpen, setDmToolsOpen] = useState<boolean>(false);
   // La compagnie, consultable par-dessus le tracker (E7).
   const [rosterOpen, setRosterOpen] = useState<boolean>(false);
 
@@ -473,6 +475,21 @@ export function EncounterScreen(): JSX.Element {
           >
             {t('encounters.detail.codex')}
           </Button>
+
+          {/* E12 / scénario M8 — jet secret et bloc-notes n'existaient qu'en bas
+              du détail de campagne. En plein combat, les atteindre coûtait de
+              quitter le tracker et d'en perdre le défilement. */}
+          {isGm && campaign ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setDmToolsOpen(true)}
+              tooltip={t('campaigns.dmTools.openTip')}
+            >
+              {t('campaigns.dmTools.open')}
+            </Button>
+          ) : null}
         </div>
       </nav>
 
@@ -683,6 +700,14 @@ export function EncounterScreen(): JSX.Element {
           onViewSheet={(entry) =>
             navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
           }
+        />
+      ) : null}
+
+      {isGm && campaign ? (
+        <DmToolsOverlay
+          open={dmToolsOpen}
+          onClose={() => setDmToolsOpen(false)}
+          campaignId={campaign.id}
         />
       ) : null}
     </PageContainer>

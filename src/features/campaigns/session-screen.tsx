@@ -2,6 +2,7 @@ import { useMemo, useState, type JSX } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { DmToolsOverlay } from '@/features/dm-view/dm-tools-overlay';
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
 import { Chip } from '@/shared/components/chip';
@@ -77,6 +78,7 @@ export function SessionScreen(): JSX.Element {
   } = useSession(cid, sid);
 
   const [tab, setTab] = useState<SessionTab>('notes');
+  const [dmToolsOpen, setDmToolsOpen] = useState<boolean>(false);
   const [actionPending, setActionPending] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
@@ -223,7 +225,7 @@ export function SessionScreen(): JSX.Element {
 
   return (
     <PageContainer width="content">
-      <nav className="flex">
+      <nav className="flex items-center justify-between gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -233,6 +235,21 @@ export function SessionScreen(): JSX.Element {
         >
           ← {t('sessions.detail.back')}
         </Button>
+
+        {/* E12 / scénario M8 — c'est en séance qu'on lance un dé sous le
+            paravent et qu'on griffonne une note, pas sur le hub de campagne où
+            ces outils vivaient seuls, tout en bas d'un écran long. */}
+        {isGm && campaign ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setDmToolsOpen(true)}
+            tooltip={t('campaigns.dmTools.openTip')}
+          >
+            {t('campaigns.dmTools.open')}
+          </Button>
+        ) : null}
       </nav>
 
       <header className="mt-4 text-center">
@@ -370,6 +387,14 @@ export function SessionScreen(): JSX.Element {
           />
         ) : null}
       </section>
+
+      {isGm && campaign ? (
+        <DmToolsOverlay
+          open={dmToolsOpen}
+          onClose={() => setDmToolsOpen(false)}
+          campaignId={campaign.id}
+        />
+      ) : null}
     </PageContainer>
   );
 }
