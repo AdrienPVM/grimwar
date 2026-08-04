@@ -54,10 +54,10 @@ interface CodexCategoryTabsProps {
  * DEUX comportements de débordement, pour dix onglets :
  *  - **mobile** : défilement horizontal (idiome d'une barre d'onglets tactile),
  *    avec recentrage automatique de l'onglet actif — indispensable depuis que
- *    le Codex peut s'ouvrir directement sur une catégorie éloignée (États
- *    depuis la fiche, Bestiaire depuis la rencontre) : sans ça, on arrivait sur
- *    la liste des états avec « Sorts · Objets magiques · Équi… » à l'écran et
- *    aucun moyen de savoir quelle catégorie était active.
+ *    le Codex peut s'ouvrir directement sur une catégorie éloignée (les États
+ *    sont le 10ᵉ onglet sur 10) : sans ça, on arrivait sur la liste des états
+ *    avec « Sorts · Objets magiques · Équi… » à l'écran et aucun moyen de
+ *    savoir quelle catégorie était active.
  *  - **à partir de `sm`** : passage à la ligne. Dans la superposition, la
  *    largeur du panneau est plus étroite que la page, et le défilement
  *    horizontal y tronquait le dernier onglet en plein mot contre le bord.
