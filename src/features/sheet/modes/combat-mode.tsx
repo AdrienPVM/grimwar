@@ -1,4 +1,5 @@
 import { BENTO_GRID, BentoStack, BentoTile } from '@/shared/components/bento';
+import { useActiveCampaignVariants } from '@/shared/lib/slices/active-campaign-slice';
 import type { Character } from '@/shared/types/character';
 
 import { AttacksList } from './combat/attacks-list';
@@ -35,6 +36,9 @@ interface CombatModeProps {
  */
 export function CombatMode({ character }: CombatModeProps): JSX.Element {
   const readOnly = useSheetReadOnly(character);
+  // Variantes de la table active (guérison lente, réalisme brutal). Hors
+  // campagne ⇒ `NO_VARIANTS` ⇒ repos SRD standard.
+  const variants = useActiveCampaignVariants();
   const hasSpellSlots = Object.keys(character.spellSlots).length > 0;
   return (
     <section
@@ -107,8 +111,8 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
       */}
       <BentoTile>
         <BentoStack>
-          <ShortRestButton character={character} readOnly={readOnly} />
-          <LongRestButton character={character} readOnly={readOnly} />
+          <ShortRestButton character={character} readOnly={readOnly} variants={variants} />
+          <LongRestButton character={character} readOnly={readOnly} variants={variants} />
         </BentoStack>
       </BentoTile>
       <BentoTile>

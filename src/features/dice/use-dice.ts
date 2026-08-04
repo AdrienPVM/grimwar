@@ -10,6 +10,7 @@ import type {
 } from '@/shared/lib/dice/types';
 import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
+import { activeCampaignDiceSettings } from '@/shared/lib/slices/active-campaign-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   requestHitMissGate,
@@ -121,7 +122,7 @@ async function rollExpression(expr: string, opts: RollDamageOpts): Promise<RollR
 
 function resolveMode(): 'digital' | 'physical' {
   const { diceMode, followCampaignDiceMode } = useUserSettingsStore.getState();
-  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, null);
+  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, activeCampaignDiceSettings());
 }
 
 /**

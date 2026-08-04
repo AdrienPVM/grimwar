@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 
+import { getCampaign } from '@/shared/lib/services/campaigns';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
 /**
@@ -35,6 +36,33 @@ export function useSyncActiveCampaign(homeCampaignId: string | null | undefined)
     const { setActiveCampaign, clearActiveCampaign } = useActiveCampaignStore.getState();
     if (homeCampaignId) setActiveCampaign(homeCampaignId);
     else clearActiveCampaign();
+  }, [homeCampaignId]);
+
+  // Chargement des RÉGLAGES de la table (variantes 5e + mode de dés). Effet
+  // séparé de la pose du pointeur parce qu'il est asynchrone : le pointeur doit
+  // rester synchrone pour l'event-logger, les réglages arrivent après.
+  //
+  // Un échec (permission, campagne supprimée, hors ligne) laisse
+  // `activeCampaignSettings` à `null` : la fiche joue alors en règles standard.
+  // C'est le comportement d'avant ce plumbing — on ne bloque JAMAIS une fiche
+  // parce que sa campagne est illisible.
+  useEffect(() => {
+    if (!homeCampaignId) return;
+    let cancelled = false;
+    void getCampaign(homeCampaignId)
+      .then((campaign) => {
+        if (cancelled) return;
+        // La campagne active a pu changer pendant le fetch — ne pas écraser
+        // les réglages d'une autre table avec une réponse en retard.
+        if (useActiveCampaignStore.getState().activeCampaignId !== homeCampaignId) return;
+        useActiveCampaignStore.getState().setActiveCampaignSettings(campaign.settings);
+      })
+      .catch(() => {
+        /* réglages indisponibles ⇒ règles standard, cf. commentaire ci-dessus */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [homeCampaignId]);
 
   // Nettoyage au démontage réel uniquement — l'écran de fiche est quitté, plus

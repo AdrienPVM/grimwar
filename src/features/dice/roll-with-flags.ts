@@ -2,6 +2,7 @@ import { buildD20Ast, rollAst, applyKeep } from '@/shared/lib/dice/roller';
 import type { Advantage, DiceAst, RollKind, RollResult } from '@/shared/lib/dice/types';
 import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
+import { activeCampaignDiceSettings } from '@/shared/lib/slices/active-campaign-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   requestPhysicalRoll,
@@ -122,10 +123,8 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
 }
 
 function resolveMode(): 'digital' | 'physical' {
-  // S1 : pas de campagne active — `effectiveDiceMode` retourne directement le
-  // mode utilisateur. Plan 14 câblera la campagne via `useActiveCampaign()`.
   const { diceMode, followCampaignDiceMode } = useUserSettingsStore.getState();
-  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, null);
+  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, activeCampaignDiceSettings());
 }
 
 interface BuildPhysicalArgs {

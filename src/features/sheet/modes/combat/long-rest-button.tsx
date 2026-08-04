@@ -16,9 +16,10 @@ interface LongRestButtonProps {
   character: Character;
   readOnly?: boolean;
   /**
-   * Variantes de campagne. Par défaut `NO_VARIANTS` (personnage hors campagne →
-   * règles 5e standard). Quand le plumbing des variantes de campagne vers la
-   * fiche existera, l'écran passera ici les `settings.variants` réels.
+   * Variantes de campagne, passées par `CombatMode` depuis les réglages de la
+   * table active (`useActiveCampaignVariants`). Par défaut `NO_VARIANTS` —
+   * personnage hors campagne, ou réglages pas encore chargés ⇒ règles 5e
+   * standard.
    */
   variants?: CampaignVariants;
 }
