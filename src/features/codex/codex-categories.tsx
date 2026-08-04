@@ -1,4 +1,4 @@
-import type { JSX } from 'react';
+import { useEffect, useRef, type JSX } from 'react';
 
 import { Icon } from '@/shared/components/icon';
 import type { IconName } from '@/shared/design/icons';
@@ -47,25 +47,52 @@ interface CodexCategoryTabsProps {
 }
 
 /**
- * Sélecteur de catégorie : rangée scrollable d'onglets icône + label, bordure
- * basse dorée sur l'actif. `role=tablist` pour l'accessibilité ; chaque onglet
- * pilote le panneau de la catégorie correspondante.
+ * Sélecteur de catégorie : rangée d'onglets icône + label, bordure basse dorée
+ * sur l'actif. `role=tablist` pour l'accessibilité ; chaque onglet pilote le
+ * panneau de la catégorie correspondante.
+ *
+ * DEUX comportements de débordement, pour dix onglets :
+ *  - **mobile** : défilement horizontal (idiome d'une barre d'onglets tactile),
+ *    avec recentrage automatique de l'onglet actif — indispensable depuis que
+ *    le Codex peut s'ouvrir directement sur une catégorie éloignée (États
+ *    depuis la fiche, Bestiaire depuis la rencontre) : sans ça, on arrivait sur
+ *    la liste des états avec « Sorts · Objets magiques · Équi… » à l'écran et
+ *    aucun moyen de savoir quelle catégorie était active.
+ *  - **à partir de `sm`** : passage à la ligne. Dans la superposition, la
+ *    largeur du panneau est plus étroite que la page, et le défilement
+ *    horizontal y tronquait le dernier onglet en plein mot contre le bord.
  */
 export function CodexCategoryTabs({
   active,
   onChange,
 }: CodexCategoryTabsProps): JSX.Element {
+  const navRef = useRef<HTMLElement | null>(null);
+  const activeRef = useRef<HTMLButtonElement | null>(null);
+
+  // Recentre l'onglet actif DANS la rangée. On écrit `scrollLeft` sur le
+  // conteneur plutôt que d'appeler `scrollIntoView`, qui remonterait la chaîne
+  // des ancêtres scrollables et déplacerait la page (ou la modale) derrière.
+  useEffect(() => {
+    const nav = navRef.current;
+    const btn = activeRef.current;
+    if (!nav || !btn) return;
+    const centered = btn.offsetLeft - (nav.clientWidth - btn.clientWidth) / 2;
+    nav.scrollLeft = Math.max(0, centered);
+  }, [active]);
+
   return (
     <nav
+      ref={navRef}
       role="tablist"
       aria-label={t('codex.cat.aria')}
-      className="flex gap-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden"
+      className="flex gap-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-x-visible"
     >
       {CODEX_CATEGORIES.map((category) => {
         const isActive = category.id === active;
         return (
           <button
             key={category.id}
+            ref={isActive ? activeRef : undefined}
             type="button"
             role="tab"
             aria-selected={isActive}

@@ -447,8 +447,7 @@ export function EncounterScreen(): JSX.Element {
         {/* Consultation en cours de combat (audit UX, E6 / M6) : le Codex
             s'ouvre PAR-DESSUS le tracker. Naviguer vers `/codex` perdrait la
             position de défilement, et son bouton Retour ramènerait à la
-            bibliothèque — pas au combat. Ouvre sur le bestiaire : c'est la
-            question qui se pose une rencontre en main. */}
+            bibliothèque — pas au combat. */}
         <div className="flex items-center gap-1">
           {/* E7 / scénario M5 — la fiche d'un joueur coûtait 4 gestes en plein
               tour de jeu. Le besoin fréquent (PV, CA, états) est servi ici même
@@ -659,10 +658,15 @@ export function EncounterScreen(): JSX.Element {
         />
       ) : null}
 
+      {/* Arrivée sur les ÉTATS et non sur le bestiaire : « empoigné », « à
+          terre », « effrayé » sont ce qu'on cherche en plein tour de jeu — et
+          surtout `monsters.json` est vide à ce jour (le sourcing SRD du
+          bestiaire attend son propre plan), donc ouvrir là-dessus donnerait un
+          écran « 0 résultat » à chaque fois. À revoir quand le bundle existe. */}
       <CodexOverlay
         open={codexOpen}
         onClose={() => setCodexOpen(false)}
-        initialCategory="monsters"
+        initialCategory="conditions"
       />
 
       {/* Sans campagne chargée il n'y a pas de roster à montrer — le tracker,

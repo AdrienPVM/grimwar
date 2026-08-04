@@ -618,7 +618,7 @@ describe('<EncounterScreen> — erreurs', () => {
  * défilement, et le Retour du Codex ramenait à la bibliothèque, pas au combat.
  */
 describe('<EncounterScreen> — Codex en superposition (E6)', () => {
-  it('le bouton Codex ouvre le Codex par-dessus le tracker, sur le bestiaire', () => {
+  it('le bouton Codex ouvre le Codex par-dessus le tracker, sur les États', () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter();
     renderScreen();
@@ -627,7 +627,9 @@ describe('<EncounterScreen> — Codex en superposition (E6)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Codex' }));
 
     expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: /Bestiaire/ })).toHaveAttribute(
+    // Les États, et NON le bestiaire : `monsters.json` est vide à ce jour, un
+    // Codex ouvert sur le bestiaire afficherait « 0 résultat » à chaque combat.
+    expect(screen.getByRole('tab', { name: /États/ })).toHaveAttribute(
       'aria-selected',
       'true',
     );
