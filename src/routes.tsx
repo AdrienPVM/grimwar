@@ -1,7 +1,6 @@
 import { lazy, Suspense, type JSX } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-import { DebugContent } from '@/features/debug/debug-content';
 import { Splash } from '@/shared/components/splash';
 
 const LibraryScreen = lazy(async () => {
@@ -192,7 +191,6 @@ export function AppRoutes(): JSX.Element {
         <Route path="/character/:id" element={<SheetScreen />} />
         <Route path="/codex" element={<CodexScreen />} />
         <Route path="/account" element={<AccountScreen />} />
-        <Route path="/debug-content" element={<DebugContent />} />
         <Route path="/map-proto" element={<MapProtoScreen />} />
         <Route path="/map-proto/cloud/:cid" element={<MapsCloudScreen />} />
         <Route path="/map-proto/cloud/:cid/import" element={<MapImportScreen />} />
