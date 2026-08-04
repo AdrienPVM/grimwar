@@ -9,13 +9,16 @@ import type { Item, ItemCategory } from '@/shared/types/content';
 
 import {
   CodexEmpty,
-  CodexField,
   CodexLoading,
-  CodexModalShell,
   CodexResultCount,
   CodexRow,
   CodexSearchField,
 } from '../codex-ui';
+import {
+  ItemCodexDetail,
+  formatItemAc,
+  formatItemDamage,
+} from './item-codex-detail';
 
 type CategoryFilter = ItemCategory | 'all';
 
@@ -30,24 +33,6 @@ const CATEGORY_ORDER: readonly ItemCategory[] = [
   'mount',
   'vehicle',
 ];
-
-function formatCost(item: Item): string | null {
-  if (!item.cost) return null;
-  return `${item.cost.qty} ${item.cost.unit}`;
-}
-
-function formatAc(item: Item): string | null {
-  if (item.acBase === undefined) return null;
-  if (item.acDexMax !== undefined && item.acDexMax !== null) {
-    return `${item.acBase} + DEX (max ${item.acDexMax})`;
-  }
-  return `${item.acBase}`;
-}
-
-function formatDamage(item: Item): string | null {
-  if (!item.damage) return null;
-  return `${item.damage.dice} ${localize(item.damage.typeLabel)}`;
-}
 
 /**
  * Navigateur d'équipement du Codex (plan 19). Recherche par nom + filtre par
@@ -119,12 +104,14 @@ export function ItemBrowser(): JSX.Element {
                 meta={
                   <>
                     <span>{t(`item.category.${item.category}`)}</span>
-                    {formatDamage(item) ? (
-                      <span className="text-crimson">{formatDamage(item)}</span>
+                    {formatItemDamage(item) ? (
+                      <span className="text-crimson">
+                        {formatItemDamage(item)}
+                      </span>
                     ) : null}
-                    {formatAc(item) ? (
+                    {formatItemAc(item) ? (
                       <span className="text-teal">
-                        {t('codex.item.ac')} {formatAc(item)}
+                        {t('codex.item.ac')} {formatItemAc(item)}
                       </span>
                     ) : null}
                   </>
@@ -141,52 +128,7 @@ export function ItemBrowser(): JSX.Element {
         titleId={titleId}
         size="lg"
       >
-        {active ? (
-          <CodexModalShell
-            titleId={titleId}
-            title={localize(active.name)}
-            eyebrow={t(`item.category.${active.category}`)}
-          >
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
-              {active.weight > 0 ? (
-                <CodexField label={t('codex.item.weight')}>
-                  {active.weight} kg
-                </CodexField>
-              ) : null}
-              {formatCost(active) ? (
-                <CodexField label={t('codex.item.cost')}>
-                  {formatCost(active)}
-                </CodexField>
-              ) : null}
-              {formatDamage(active) ? (
-                <CodexField label={t('codex.item.damage')}>
-                  {formatDamage(active)}
-                </CodexField>
-              ) : null}
-              {formatAc(active) ? (
-                <CodexField label={t('codex.item.ac')}>
-                  {formatAc(active)}
-                </CodexField>
-              ) : null}
-            </div>
-
-            {active.properties && active.properties.length > 0 ? (
-              <CodexField label={t('codex.item.properties')}>
-                <div className="flex flex-wrap gap-1.5">
-                  {active.properties.map((prop) => (
-                    <Chip key={prop} variant="default">
-                      {prop}
-                    </Chip>
-                  ))}
-                </div>
-              </CodexField>
-            ) : null}
-
-            {active.description ? (
-              <p className="whitespace-pre-line">{localize(active.description)}</p>
-            ) : null}
-          </CodexModalShell>
-        ) : null}
+        {active ? <ItemCodexDetail item={active} titleId={titleId} /> : null}
       </DetailModal>
     </div>
   );

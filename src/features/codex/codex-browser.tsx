@@ -13,6 +13,7 @@ import {
   FeatBrowser,
   InvocationBrowser,
 } from './browsers/codex-text-browsers';
+import { GlobalSearchBrowser } from './browsers/global-search-browser';
 import { ItemBrowser } from './browsers/item-browser';
 import { MagicItemBrowser } from './browsers/magic-item-browser';
 import { MonsterBrowser } from './browsers/monster-browser';
@@ -80,6 +81,8 @@ function CodexActiveBrowser({
   category: CodexCategoryId;
 }): JSX.Element {
   switch (category) {
+    case 'search':
+      return <GlobalSearchBrowser />;
     case 'spells':
       return <SpellBrowser />;
     case 'magicItems':

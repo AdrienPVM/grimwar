@@ -10,43 +10,18 @@ import type { MagicItem, Rarity } from '@/shared/types/content';
 
 import {
   CodexEmpty,
-  CodexField,
   CodexLoading,
-  CodexModalShell,
   CodexResultCount,
   CodexRow,
   CodexSearchField,
 } from '../codex-ui';
+import {
+  MagicItemCodexDetail,
+  RARITY_COLOR,
+  RARITY_ORDER,
+} from './magic-item-codex-detail';
 
 type RarityFilter = Rarity | 'all';
-
-/** Ordre canonique des raretés (SRD). */
-const RARITY_ORDER: readonly Rarity[] = [
-  'common',
-  'uncommon',
-  'rare',
-  'very rare',
-  'legendary',
-  'artifact',
-];
-
-/** Couleur de rareté (tokens existants), du plus commun au plus rare. */
-const RARITY_COLOR: Record<Rarity, string> = {
-  common: 'text-text-secondary',
-  uncommon: 'text-teal',
-  rare: 'text-gold',
-  'very rare': 'text-amethyst',
-  legendary: 'text-crimson',
-  artifact: 'text-gold-bright',
-};
-
-function attunementText(item: MagicItem): string | null {
-  if (item.attunement === true) return t('codex.item.attunementRequired');
-  if (item.attunement && typeof item.attunement === 'object') {
-    return localize(item.attunement);
-  }
-  return null;
-}
 
 /**
  * Navigateur d'objets magiques du Codex (plan 19). Recherche par nom + filtre
@@ -137,25 +112,7 @@ export function MagicItemBrowser(): JSX.Element {
         size="lg"
       >
         {active ? (
-          <CodexModalShell
-            titleId={titleId}
-            title={localize(active.name)}
-            eyebrow={`${t(`item.category.${active.category}`)} · ${t(
-              `rarity.${active.rarity}`,
-            )}`}
-          >
-            {attunementText(active) ? (
-              <CodexField label={t('codex.item.attunement')}>
-                {attunementText(active)}
-              </CodexField>
-            ) : null}
-            <p className="whitespace-pre-line text-amethyst">
-              {localize(active.magicDescription)}
-            </p>
-            {active.description ? (
-              <p className="whitespace-pre-line">{localize(active.description)}</p>
-            ) : null}
-          </CodexModalShell>
+          <MagicItemCodexDetail item={active} titleId={titleId} />
         ) : null}
       </DetailModal>
     </div>

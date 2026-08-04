@@ -115,7 +115,7 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     // La fiche est TOUJOURS montée derrière — c'est tout l'intérêt.
     await expect(page.getByText(fighterL3.name).first()).toBeAttached();
 
-    // L'onglet d'arrivée (10ᵉ sur 10) doit être VISIBLE, pas juste sélectionné.
+    // L'onglet d'arrivée (11ᵉ sur 11) doit être VISIBLE, pas juste sélectionné.
     await expectActiveTabVisible(page, 'Le Codex');
 
     // Mobile : le ressenti d'ancrage bas (bottom-sheet) ne se lit qu'en viewport.

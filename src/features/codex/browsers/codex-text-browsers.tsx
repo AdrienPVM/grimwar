@@ -22,7 +22,7 @@ function lower(...parts: Array<string | null | undefined>): string {
 }
 
 // ── Dons ─────────────────────────────────────────────────────────────
-function buildFeatEntries(feats: readonly Feat[]): CodexEntry[] {
+export function buildFeatEntries(feats: readonly Feat[]): CodexEntry[] {
   return feats.map((feat): CodexEntry => {
     const name = localize(feat.name);
     const prereq = feat.prerequisite ? localize(feat.prerequisite) : null;
@@ -65,7 +65,7 @@ export function FeatBrowser(): JSX.Element {
 }
 
 // ── États ────────────────────────────────────────────────────────────
-function buildConditionEntries(conditions: readonly Condition[]): CodexEntry[] {
+export function buildConditionEntries(conditions: readonly Condition[]): CodexEntry[] {
   return conditions.map((condition): CodexEntry => {
     const name = localize(condition.name);
     const description = localize(condition.description);
@@ -104,7 +104,7 @@ function invocationPrereq(invocation: Invocation): string | null {
   return parts.length > 0 ? parts.join(' · ') : null;
 }
 
-function buildInvocationEntries(
+export function buildInvocationEntries(
   invocations: readonly Invocation[],
 ): CodexEntry[] {
   return invocations.map((invocation): CodexEntry => {

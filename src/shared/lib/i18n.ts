@@ -79,6 +79,9 @@ export type StringKey =
   | 'codex.result.singular'
   | 'codex.result.plural'
   | 'codex.cat.aria'
+  | 'codex.cat.search'
+  | 'codex.search.all'
+  | 'codex.search.allHint'
   | 'codex.cat.spells'
   | 'codex.cat.feats'
   | 'codex.cat.invocations'
@@ -2842,6 +2845,10 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.result.singular': 'résultat',
     'codex.result.plural': 'résultats',
     'codex.cat.aria': 'Catégories du Codex',
+    'codex.cat.search': 'Recherche',
+    'codex.search.all': 'Rechercher dans tout le Codex…',
+    'codex.search.allHint':
+      'Saisis au moins deux lettres pour chercher dans toutes les catégories à la fois.',
     'codex.cat.spells': 'Sorts',
     'codex.cat.feats': 'Dons',
     'codex.cat.invocations': 'Invocations',
@@ -6239,6 +6246,10 @@ const STRINGS: Record<Locale, Dict> = {
     'codex.result.singular': 'result',
     'codex.result.plural': 'results',
     'codex.cat.aria': 'Codex categories',
+    'codex.cat.search': 'Search',
+    'codex.search.all': 'Search the whole Codex…',
+    'codex.search.allHint':
+      'Type at least two letters to search every category at once.',
     'codex.cat.spells': 'Spells',
     'codex.cat.feats': 'Feats',
     'codex.cat.invocations': 'Invocations',

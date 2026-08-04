@@ -11,6 +11,7 @@ import { t, type StringKey } from '@/shared/lib/i18n';
  * (pas d'onglet « bientôt disponible »). Ordre = ordre d'affichage.
  */
 export type CodexCategoryId =
+  | 'search'
   | 'spells'
   | 'magicItems'
   | 'items'
@@ -29,6 +30,10 @@ interface CodexCategory {
 }
 
 export const CODEX_CATEGORIES: readonly CodexCategory[] = [
+  // En tête : c'est l'onglet de celui qui ne sait pas dans quelle catégorie
+  // chercher — le faire précéder des dix autres serait lui demander de deviner
+  // d'abord ce qu'il cherche.
+  { id: 'search', labelKey: 'codex.cat.search', icon: 'i-search' },
   { id: 'spells', labelKey: 'codex.cat.spells', icon: 'i-spell' },
   { id: 'magicItems', labelKey: 'codex.cat.magicItems', icon: 'i-potion' },
   { id: 'items', labelKey: 'codex.cat.items', icon: 'i-bag' },
@@ -51,7 +56,7 @@ interface CodexCategoryTabsProps {
  * sur l'actif. `role=tablist` pour l'accessibilité ; chaque onglet pilote le
  * panneau de la catégorie correspondante.
  *
- * DEUX comportements de débordement, pour dix onglets :
+ * DEUX comportements de débordement, pour onze onglets :
  *  - **mobile** : défilement horizontal (idiome d'une barre d'onglets tactile),
  *    avec recentrage automatique de l'onglet actif — indispensable depuis que
  *    le Codex peut s'ouvrir directement sur une catégorie éloignée (les États

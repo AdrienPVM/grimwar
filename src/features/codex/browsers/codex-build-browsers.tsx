@@ -77,7 +77,7 @@ function NamedList({
 }
 
 // ── Espèces ──────────────────────────────────────────────────────────
-function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntry[] {
+export function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntry[] {
   return ancestries.map((ancestry): CodexEntry => {
     const name = localize(ancestry.name);
     const sizeLabel = t(`size.${ancestry.size}` as StringKey);
@@ -131,7 +131,7 @@ export function AncestryBrowser(): JSX.Element {
 }
 
 // ── Historiques ──────────────────────────────────────────────────────
-function buildBackgroundEntries(
+export function buildBackgroundEntries(
   backgrounds: readonly Background[],
 ): CodexEntry[] {
   return backgrounds.map((background): CodexEntry => {
@@ -176,7 +176,7 @@ export function BackgroundBrowser(): JSX.Element {
 }
 
 // ── Classes ──────────────────────────────────────────────────────────
-function buildClassEntries(classes: readonly ClassEntity[]): CodexEntry[] {
+export function buildClassEntries(classes: readonly ClassEntity[]): CodexEntry[] {
   return classes.map((cls): CodexEntry => {
     const name = localize(cls.name);
     const primary = cls.primaryAbility
