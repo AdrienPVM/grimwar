@@ -16,6 +16,7 @@ import {
 import { t } from '@/shared/lib/i18n';
 import {
   deletePack,
+  getPack,
   writePack,
 } from '@/shared/lib/services/pack-storage';
 import { showToast } from '@/shared/lib/slices/toast-slice';
@@ -24,6 +25,7 @@ import {
   type CustomContentPackCategory,
 } from '@/shared/types/custom-content-pack';
 
+import { downloadCustomContentPack } from './export-pack';
 import { usePacks, type PackListEntry } from './use-packs';
 
 /**
@@ -121,6 +123,32 @@ export function ImportScreen(): JSX.Element {
       setIsImporting(false);
     }
   }, [local, user, reset]);
+
+  /**
+   * Exporte un pack au format JSON téléchargeable (M29). On relit le pack
+   * complet depuis Firestore : la liste ne porte que `meta` (elle évite
+   * volontairement d'hydrater toutes les entités pour rester légère).
+   */
+  const handleExport = useCallback(
+    async (packId: string) => {
+      if (!user) return;
+      try {
+        const pack = await getPack(user.uid, packId);
+        if (!pack) {
+          showToast({ kind: 'grim', title: t('customContent.toast.error') });
+          return;
+        }
+        downloadCustomContentPack(pack);
+      } catch (err) {
+        showToast({
+          kind: 'grim',
+          title: t('customContent.toast.error'),
+          sub: err instanceof Error ? err.message : String(err),
+        });
+      }
+    },
+    [user],
+  );
 
   const handleDelete = useCallback(
     async (packId: string) => {
@@ -226,6 +254,7 @@ export function ImportScreen(): JSX.Element {
                 key={pack.packId}
                 pack={pack}
                 isDeleting={deletingId === pack.packId}
+                onExport={() => void handleExport(pack.packId)}
                 onDelete={() => void handleDelete(pack.packId)}
               />
             ))}
@@ -429,10 +458,12 @@ function InvalidJsonCard({ onReset }: InvalidJsonCardProps): JSX.Element {
 interface PackRowProps {
   pack: PackListEntry;
   isDeleting: boolean;
+  /** Télécharge le pack au format d'import (M29). */
+  onExport: () => void;
   onDelete: () => void;
 }
 
-function PackRow({ pack, isDeleting, onDelete }: PackRowProps): JSX.Element {
+function PackRow({ pack, isDeleting, onExport, onDelete }: PackRowProps): JSX.Element {
   return (
     <li
       className="flex items-center justify-between gap-4 rounded-card border border-white-8 bg-glass px-4 py-3 backdrop-blur-xl"
@@ -455,6 +486,15 @@ function PackRow({ pack, isDeleting, onDelete }: PackRowProps): JSX.Element {
         >
           {t('customContent.list.edit')}
         </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onExport}
+          data-testid="pack-export"
+          tooltip={t('customContent.list.exportTip')}
+        >
+          {t('customContent.list.export')}
+        </Button>
         <Button
           variant="ghost"
           size="sm"

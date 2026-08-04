@@ -4,7 +4,7 @@ import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
-export type NumberPadIntent = 'damage' | 'heal' | 'temp';
+export type NumberPadIntent = 'damage' | 'heal' | 'temp' | 'max';
 
 interface NumberPadProps {
   /** Mode du tap initial — détermine la couleur du badge "−" ou "+" + le label. */
@@ -48,14 +48,24 @@ export function NumberPad({
 
   const isHeal = intent === 'heal';
   const isTemp = intent === 'temp';
+  const isMax = intent === 'max';
   // Couleur sémantique : soin = teal, PV temp = amethyst (cf. affichage carte),
+  // maximum = doré (c'est une valeur de FICHE, pas un événement de combat),
   // dégâts = crimson.
-  const accentText = isHeal ? 'text-teal' : isTemp ? 'text-amethyst' : 'text-crimson';
+  const accentText = isHeal
+    ? 'text-teal'
+    : isTemp
+      ? 'text-amethyst'
+      : isMax
+        ? 'text-gold-bright'
+        : 'text-crimson';
   const accentBorder = isHeal
     ? 'border-teal/40 text-teal'
     : isTemp
       ? 'border-amethyst/40 text-amethyst'
-      : 'border-crimson/40 text-crimson';
+      : isMax
+        ? 'border-gold/40 text-gold-bright'
+        : 'border-crimson/40 text-crimson';
   const title = t(`sheet.combat.numberpad.title.${intent}`);
   const commitLabel = t(`sheet.combat.numberpad.commit.${intent}`);
 
@@ -112,7 +122,7 @@ export function NumberPad({
             </Button>
           )}
           <Button
-            variant={isHeal || isTemp ? 'primary' : 'danger'}
+            variant={isHeal || isTemp || isMax ? 'primary' : 'danger'}
             size="sm"
             onClick={() => onCommit(clamped)}
             disabled={clamped <= 0}

@@ -555,9 +555,12 @@ export type StringKey =
   | 'sheet.combat.numberpad.title.damage'
   | 'sheet.combat.numberpad.title.heal'
   | 'sheet.combat.numberpad.title.temp'
+  | 'sheet.combat.numberpad.title.max'
   | 'sheet.combat.numberpad.commit.damage'
   | 'sheet.combat.numberpad.commit.heal'
   | 'sheet.combat.numberpad.commit.temp'
+  | 'sheet.combat.numberpad.commit.max'
+  | 'sheet.combat.hp.maxEdit'
   | 'sheet.combat.numberpad.cancel'
   | 'sheet.combat.numberpad.full'
   | 'sheet.combat.attacks.cardTitle'
@@ -1744,6 +1747,8 @@ export type StringKey =
   | 'customContent.list.title'
   | 'customContent.list.empty'
   | 'customContent.list.delete'
+  | 'customContent.list.export'
+  | 'customContent.list.exportTip'
   | 'customContent.list.deleteConfirm'
   | 'customContent.toast.imported'
   | 'customContent.toast.importedSub'
@@ -2467,6 +2472,7 @@ export type StringKey =
   | 'map.tip.toggleGrid'
   | 'map.tip.toggleFog'
   | 'map.tip.toggleLos'
+  | 'map.tip.viewAsPlayer'
   | 'map.tip.toggleLighting'
   | 'map.tip.toggleMeasure'
   | 'map.tip.deleteMap'
@@ -2611,6 +2617,7 @@ export type StringKey =
   | 'map.live.snapToggle'
   | 'map.live.fogToggleLabel'
   | 'map.live.losToggle'
+  | 'map.live.playerViewToggle'
   | 'map.live.lightingToggle'
   | 'map.live.tvView'
   | 'map.live.measureLabel'
@@ -3442,9 +3449,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.numberpad.title.damage': 'Dégâts',
     'sheet.combat.numberpad.title.heal': 'Soigner',
     'sheet.combat.numberpad.title.temp': 'PV temporaires',
+    'sheet.combat.numberpad.title.max': 'Maximum de PV',
     'sheet.combat.numberpad.commit.damage': 'Appliquer',
     'sheet.combat.numberpad.commit.heal': 'Soigner',
     'sheet.combat.numberpad.commit.temp': 'Poser',
+    'sheet.combat.numberpad.commit.max': 'Fixer',
+    'sheet.combat.hp.maxEdit': 'Modifier le maximum de PV (actuellement {n})',
     'sheet.combat.numberpad.cancel': 'Annuler',
     'sheet.combat.numberpad.full': 'Plein ({max})',
     'sheet.combat.attacks.cardTitle': 'Attaques',
@@ -4807,6 +4817,8 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.list.empty':
       'Aucun pack importé pour l’instant.',
     'customContent.list.delete': 'Supprimer',
+    'customContent.list.export': 'Exporter',
+    'customContent.list.exportTip': 'Télécharge ce pack en JSON, réimportable tel quel.',
     'customContent.list.deleteConfirm':
       'Supprimer définitivement ce pack ?',
     'customContent.toast.imported': 'Pack importé',
@@ -5888,6 +5900,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.tip.toggleGrid': 'Afficher ou masquer la grille de la carte.',
     'map.tip.toggleFog': 'Activer ou couper le voile de brouillard.',
     'map.tip.toggleLos': 'Activer ou couper la ligne de vue (occlusion par les murs).',
+    'map.tip.viewAsPlayer': 'Voir la carte comme la table la voit, avant de dévoiler.',
     'map.tip.toggleLighting': 'Afficher ou masquer la teinte des sources lumineuses.',
     'map.tip.toggleMeasure': 'Mesurer une distance en mètres sur la carte.',
     'map.tip.deleteMap': 'Supprimer définitivement cette carte.',
@@ -6040,6 +6053,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.live.snapToggle': 'Aimant :',
     'map.live.fogToggleLabel': 'Voile :',
     'map.live.losToggle': 'Ligne de vue :',
+    'map.live.playerViewToggle': 'Vue joueur :',
     'map.live.lightingToggle': 'Éclairage :',
     'map.live.tvView': 'Vue présentation',
     'map.live.measureLabel': 'Mesure',
@@ -6855,9 +6869,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.numberpad.title.damage': 'Damage',
     'sheet.combat.numberpad.title.heal': 'Heal',
     'sheet.combat.numberpad.title.temp': 'Temporary HP',
+    'sheet.combat.numberpad.title.max': 'Maximum HP',
     'sheet.combat.numberpad.commit.damage': 'Apply',
     'sheet.combat.numberpad.commit.heal': 'Heal',
     'sheet.combat.numberpad.commit.temp': 'Set',
+    'sheet.combat.numberpad.commit.max': 'Set',
+    'sheet.combat.hp.maxEdit': 'Change maximum HP (currently {n})',
     'sheet.combat.numberpad.cancel': 'Cancel',
     'sheet.combat.numberpad.full': 'Full ({max})',
     'sheet.combat.attacks.cardTitle': 'Attacks',
@@ -8131,6 +8148,8 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.list.title': 'My imported packs',
     'customContent.list.empty': 'No packs imported yet.',
     'customContent.list.delete': 'Delete',
+    'customContent.list.export': 'Export',
+    'customContent.list.exportTip': 'Downloads this pack as JSON, re-importable as is.',
     'customContent.list.deleteConfirm': 'Permanently delete this pack?',
     'customContent.toast.imported': 'Pack imported',
     'customContent.toast.importedSub': '{count} entries added',
@@ -9147,6 +9166,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.tip.toggleGrid': 'Show or hide the map grid.',
     'map.tip.toggleFog': 'Turn the fog of war on or off.',
     'map.tip.toggleLos': 'Turn line of sight on or off (walls block vision).',
+    'map.tip.viewAsPlayer': 'See the map as the table sees it, before revealing.',
     'map.tip.toggleLighting': 'Show or hide the glow of light sources.',
     'map.tip.toggleMeasure': 'Measure a distance in meters on the map.',
     'map.tip.deleteMap': 'Permanently delete this map.',
@@ -9298,6 +9318,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.live.snapToggle': 'Magnet:',
     'map.live.fogToggleLabel': 'Fog:',
     'map.live.losToggle': 'Line of sight:',
+    'map.live.playerViewToggle': 'Player view:',
     'map.live.lightingToggle': 'Lighting:',
     'map.live.tvView': 'Presentation view',
     'map.live.measureLabel': 'Measure',

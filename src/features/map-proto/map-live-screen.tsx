@@ -88,6 +88,11 @@ const TOKEN_RADIUS = 22;
 const CENTER_X = VIEWBOX_W / 2;
 const CENTER_Y = VIEWBOX_H / 2;
 const FOG_DEFAULT_RADIUS = 120;
+// Opacité du voile côté MJ : atténuée pour piloter à travers le brouillard.
+const FOG_OPACITY_DM = 0.45;
+// Opacité vue par la table (identique à `map-tv-screen`) — ce que le toggle
+// « Vue joueur » (M33) permet de vérifier AVANT de dévoiler.
+const FOG_OPACITY_PLAYER = 0.92;
 /**
  * Presets de lumière SRD, en PIEDS (rayon vif / faible), convertis en px à
  * l'ÉCHELLE RÉELLE de la carte au moment de la pose (cf. `handleAddLight`) —
@@ -213,6 +218,11 @@ export function MapLiveScreen(): JSX.Element {
   // En mode mesure, les jetons deviennent non-interactifs et un clic sur le
   // fond pose les ancres ; le curseur dessine le segment vivant.
   const [measureMode, setMeasureMode] = useState(false);
+  // « Vue joueur » (M33) — bascule LOCALE de l'opacité du voile sur celle de la
+  // vue TV. Le MJ voit au travers du brouillard par défaut (0.45) pour piloter ;
+  // ce toggle lui montre ce que la table voit réellement AVANT de dévoiler.
+  // Rien n'est persisté : c'est une lunette, pas un réglage de carte.
+  const [viewAsPlayer, setViewAsPlayer] = useState(false);
   const [ruler, setRuler] = useState<Ruler>(EMPTY_RULER);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragStart = useRef<{
@@ -1369,6 +1379,19 @@ export function MapLiveScreen(): JSX.Element {
               {t('map.live.snapToggle')} {snapEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
+          {/* « Vue joueur » (M33) : bascule locale sur l'opacité de voile de la
+              vue TV. Savoir ce que la table voit AVANT de dévoiler. */}
+          <Tooltip label={t('map.tip.viewAsPlayer')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-player-view"
+              aria-pressed={viewAsPlayer}
+              onClick={() => setViewAsPlayer((v) => !v)}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              {t('map.live.playerViewToggle')} {viewAsPlayer ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
           <Tooltip label={t('map.tip.toggleFog')} placement="bottom" decorative>
             <button
               type="button"
@@ -1479,7 +1502,7 @@ export function MapLiveScreen(): JSX.Element {
             tokens={tokens}
             maskId={`fog-live-${mid}`}
             showWalls
-            fogOpacity={0.45}
+            fogOpacity={viewAsPlayer ? FOG_OPACITY_PLAYER : FOG_OPACITY_DM}
             renderAoe={false}
           />
           {/* Couche AoE draggable (live MJ) — rendue SOUS les tokens (décor

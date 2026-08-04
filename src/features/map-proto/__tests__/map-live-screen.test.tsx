@@ -1457,4 +1457,23 @@ describe('MapLiveScreen', () => {
     )!;
     expect(removeCall[3]).toEqual({ imageDataUrl: null });
   });
+  // ── M33 — « Vue joueur » : savoir ce que la table voit AVANT de dévoiler ──
+  it('bascule l’opacité du voile sur celle de la vue TV, et revient', () => {
+    useMapState.map = mkMap({ fogEnabled: true });
+    renderAt('/map-proto/cloud/camp-1/maps/m-1');
+
+    const veil = (): Element =>
+      screen.getByTestId('fog-layer').querySelector('[opacity]')!;
+    // Par défaut le MJ voit AU TRAVERS du brouillard pour piloter.
+    expect(veil().getAttribute('opacity')).toBe('0.45');
+
+    const toggle = screen.getByTestId('map-live-toggle-player-view');
+    fireEvent.click(toggle);
+    // Vue joueur : exactement l'opacité de `map-tv-screen`.
+    expect(veil().getAttribute('opacity')).toBe('0.92');
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(toggle);
+    expect(veil().getAttribute('opacity')).toBe('0.45');
+  });
 });

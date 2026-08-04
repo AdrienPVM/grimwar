@@ -150,6 +150,24 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
     });
   }
 
+  /**
+   * Fixe le MAXIMUM de PV (M15). Un maximum abaissé sous les PV courants les
+   * ramène avec lui — sinon la fiche afficherait « 24 / 18 », état incohérent
+   * que rien d'autre ne rattraperait. Zéro est refusé : un maximum nul n'est
+   * pas une règle, c'est une fiche cassée (la mort passe par les jets de mort).
+   */
+  async function applyMaxHp(nextMax: number): Promise<void> {
+    if (readOnly || nextMax <= 0 || nextMax === hp.max) return;
+    await updateCharacter({
+      hp: { ...hp, max: nextMax, current: Math.min(hp.current, nextMax) },
+    });
+    showToast({
+      kind: 'info',
+      title: t('sheet.combat.numberpad.title.max'),
+      big: String(nextMax),
+    });
+  }
+
   const minusHandlers = useLongPress(
     () => void applyDelta(-1),
     () => !readOnly && setPadIntent('damage'),
@@ -251,7 +269,26 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
             >
               {hp.current}
             </span>
-            <span className="font-serif text-[18px] italic tabular-nums text-text-tertiary">/ {hp.max}</span>
+            {/* Le maximum est ÉDITABLE (M15) : potion de vitalité, don Robuste,
+                « le MJ t'accorde +10 PV max ». `hp.max` n'était jusqu'ici écrit
+                que par la montée de niveau, et le pad était plafonné par lui —
+                aucun chemin ne permettait de le changer. */}
+            {readOnly ? (
+              <span className="font-serif text-[18px] italic tabular-nums text-text-tertiary">
+                / {hp.max}
+              </span>
+            ) : (
+              <Tooltip label={t('sheet.combat.hp.maxEdit').replace('{n}', String(hp.max))} decorative>
+                <button
+                  type="button"
+                  onClick={() => setPadIntent('max')}
+                  aria-label={t('sheet.combat.hp.maxEdit').replace('{n}', String(hp.max))}
+                  className="rounded-pill px-1 font-serif text-[18px] italic tabular-nums text-text-tertiary transition-colors duration-200 ease-base hover:text-gold-bright"
+                >
+                  / {hp.max}
+                </button>
+              </Tooltip>
+            )}
           </div>
 
           {/* Contrôles compacts. */}
@@ -295,6 +332,10 @@ export function HpMegaCard({ character, readOnly }: HpMegaCardProps): JSX.Elemen
             setPadIntent(null);
             if (intent === 'temp') {
               void applyTempHp(amount);
+              return;
+            }
+            if (intent === 'max') {
+              void applyMaxHp(amount);
               return;
             }
             const signed = intent === 'heal' ? amount : -amount;

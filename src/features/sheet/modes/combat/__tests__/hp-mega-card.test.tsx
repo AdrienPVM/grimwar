@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
@@ -13,13 +13,16 @@ import { HpMegaCard } from '../hp-mega-card';
  *     ces assertions échouaient sur l'ancien code à fond dégradé pleine largeur).
  */
 
+const updateCharacterMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 vi.mock('@/features/sheet/use-update-character', () => ({
   useUpdateCharacter: () => ({
-    updateCharacter: vi.fn().mockResolvedValue(undefined),
+    updateCharacter: updateCharacterMock,
     isUpdating: false,
     error: null,
   }),
 }));
+
+beforeEach(() => updateCharacterMock.mockClear());
 
 function buildCharacter(hp: Character['hp']): Character {
   return {
@@ -142,5 +145,58 @@ describe('<HpMegaCard> — anti-régression « barre de vie »', () => {
     expect(widthDriven.length).toBe(0);
     // L'ancien fond était un `bg-gradient-to-r` opacité 40 % derrière le texte.
     expect(container.querySelector('.bg-gradient-to-r')).toBeNull();
+  });
+});
+
+/**
+ * M15 — le maximum de PV s'édite depuis la fiche.
+ *
+ * Le mur d'origine : le « / max » était un `<span>` inerte, `hp.max` n'était
+ * écrit que par la montée de niveau, et le pad numérique était PLAFONNÉ par lui.
+ * Potion de vitalité, don Robuste, « le MJ t'accorde +10 PV max » : inexprimables.
+ */
+describe('<HpMegaCard> — maximum de PV éditable (M15)', () => {
+  function openMaxPad(hp: Character['hp']): void {
+    render(<HpMegaCard character={buildCharacter(hp)} readOnly={false} />);
+    fireEvent.click(screen.getByRole('button', { name: /Modifier le maximum de PV/ }));
+  }
+
+  function typeAmount(digits: string): void {
+    for (const d of digits) {
+      fireEvent.click(screen.getByRole('button', { name: d }));
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Fixer' }));
+  }
+
+  it('fixe un nouveau maximum sans toucher aux PV courants', async () => {
+    openMaxPad({ current: 12, max: 18, temp: 0 });
+    typeAmount('28');
+    await waitFor(() => expect(updateCharacterMock).toHaveBeenCalled());
+    expect(updateCharacterMock.mock.calls[0]![0]).toEqual({
+      hp: { current: 12, max: 28, temp: 0 },
+    });
+  });
+
+  it('un maximum abaissé sous les PV courants les ramène avec lui', async () => {
+    openMaxPad({ current: 24, max: 30, temp: 0 });
+    typeAmount('18');
+    await waitFor(() => expect(updateCharacterMock).toHaveBeenCalled());
+    // Sans ce clamp la fiche afficherait « 24 / 18 ».
+    expect(updateCharacterMock.mock.calls[0]![0]).toEqual({
+      hp: { current: 18, max: 18, temp: 0 },
+    });
+  });
+
+  it('le pad du maximum n’est PAS plafonné par le maximum courant', () => {
+    openMaxPad({ current: 5, max: 10, temp: 0 });
+    for (const d of '45') fireEvent.click(screen.getByRole('button', { name: d }));
+    // L'afficheur du pad montre bien 45, pas un clamp à 10.
+    expect(screen.getByText('45')).toBeInTheDocument();
+  });
+
+  it('en lecture seule, le maximum redevient un simple texte', () => {
+    render(<HpMegaCard character={buildCharacter({ current: 0, max: 20, temp: 0 })} readOnly />);
+    expect(screen.queryByRole('button', { name: /Modifier le maximum de PV/ })).toBeNull();
+    expect(screen.getByText('/ 20')).toBeInTheDocument();
   });
 });
