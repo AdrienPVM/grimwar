@@ -64,6 +64,8 @@ vi.mock('@/features/campaigns/use-my-campaigns', () => ({
   },
 }));
 
+import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
+
 import { LibraryScreen } from '../library-screen';
 
 function mkCharacter(overrides: Partial<Character> = {}): Character {
@@ -137,6 +139,7 @@ function mkCharacter(overrides: Partial<Character> = {}): Character {
 }
 
 afterEach(() => {
+  useWizardStore.getState().reset();
   navigateMock.mockClear();
   myCampaignsEnabledSpy.mockClear();
   campaignsHolder.campaigns = [];
@@ -275,6 +278,50 @@ describe('<LibraryScreen>', () => {
     ];
     renderLibrary();
     expect(myCampaignsEnabledSpy).toHaveBeenCalledWith(true);
+  });
+
+  // ── E10 — brouillon de création signalé sur l'accueil ────────────────────
+  it("n'affiche aucun bandeau de brouillon quand le wizard est vierge", () => {
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    expect(screen.queryByText(/Création commencée/i)).not.toBeInTheDocument();
+  });
+
+  it('signale un brouillon en cours avec son nom et son étape', () => {
+    useWizardStore.getState().setField('name', 'Ombrelame');
+    useWizardStore.getState().goToStep('skills');
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    expect(screen.getByText(/Création commencée/i)).toBeInTheDocument();
+    expect(screen.getByText('Ombrelame')).toBeInTheDocument();
+    expect(screen.getByText(/Étape 6 sur 9 · Compétences/)).toBeInTheDocument();
+  });
+
+  it('signale le brouillon aussi sur un accueil sans aucun personnage', () => {
+    // Cas le plus fréquent : on abandonne sa toute première création. L'accueil
+    // vide donnait alors l'impression qu'aucun travail n'existait.
+    useWizardStore.getState().setField('ancestryId', 'human');
+    stateHolder.characters = [];
+    renderLibrary();
+    expect(screen.getByText(/Création commencée/i)).toBeInTheDocument();
+    expect(screen.getByText(/Héros sans nom/i)).toBeInTheDocument();
+  });
+
+  it('« Abandonner » vide le brouillon et retire le bandeau', () => {
+    useWizardStore.getState().setField('name', 'Ombrelame');
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    fireEvent.click(screen.getByRole('button', { name: /Abandonner le brouillon de Ombrelame/i }));
+    expect(useWizardStore.getState().draft.name).toBe('');
+    expect(screen.queryByText(/Création commencée/i)).not.toBeInTheDocument();
+  });
+
+  it('« Continuer » mène au wizard', () => {
+    useWizardStore.getState().setField('name', 'Ombrelame');
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    const resume = screen.getByRole('link', { name: /Continuer la création de Ombrelame/i });
+    expect(resume).toHaveAttribute('href', '/create');
   });
 
   it('CTA Créer est aussi disponible quand la liste contient des persos', () => {

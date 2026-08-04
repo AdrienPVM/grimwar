@@ -197,6 +197,14 @@ export type StringKey =
   | 'home.ongoing.round'
   | 'home.ongoing.sessionNumber'
   | 'home.ongoing.cta'
+  // Brouillon de création en cours (E10 de l'audit UX)
+  | 'home.draft.label'
+  | 'home.draft.unnamed'
+  | 'home.draft.step'
+  | 'home.draft.resume'
+  | 'home.draft.resumeAria'
+  | 'home.draft.discard'
+  | 'home.draft.discardAria'
   | 'home.hub.codex.sub'
   | 'home.hub.campaigns.sub'
   // Wizard (plan 05)
@@ -2973,6 +2981,13 @@ const STRINGS: Record<Locale, Dict> = {
     'home.ongoing.round': 'Manche {n}',
     'home.ongoing.sessionNumber': 'Séance {n}',
     'home.ongoing.cta': 'Reprendre',
+    'home.draft.label': 'Création commencée',
+    'home.draft.unnamed': 'Héros sans nom',
+    'home.draft.step': 'Étape {n} sur {total} · {step}',
+    'home.draft.resume': 'Continuer',
+    'home.draft.resumeAria': 'Continuer la création de',
+    'home.draft.discard': 'Abandonner',
+    'home.draft.discardAria': 'Abandonner le brouillon de',
     'home.hub.codex.sub': 'Sorts, objets, espèces, classes…',
     'home.hub.campaigns.sub': 'Rejoins ou crée une table.',
     // Wizard (plan 05)
@@ -6373,6 +6388,13 @@ const STRINGS: Record<Locale, Dict> = {
     'home.ongoing.round': 'Round {n}',
     'home.ongoing.sessionNumber': 'Session {n}',
     'home.ongoing.cta': 'Resume',
+    'home.draft.label': 'Creation started',
+    'home.draft.unnamed': 'Unnamed hero',
+    'home.draft.step': 'Step {n} of {total} · {step}',
+    'home.draft.resume': 'Continue',
+    'home.draft.resumeAria': 'Continue the creation of',
+    'home.draft.discard': 'Discard',
+    'home.draft.discardAria': 'Discard the draft of',
     'home.hub.codex.sub': 'Spells, items, species, classes…',
     'home.hub.campaigns.sub': 'Join or create a table.',
     'wizard.title': 'Create a character',

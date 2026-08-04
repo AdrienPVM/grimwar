@@ -11,6 +11,9 @@ import { t } from '@/shared/lib/i18n';
 import { OngoingPlayCard } from '@/features/campaigns/ongoing-play-card';
 import { useMyCampaigns } from '@/features/campaigns/use-my-campaigns';
 import { useOngoingPlay } from '@/features/campaigns/use-ongoing-play';
+import { describeDraftProgress } from '@/features/wizard/draft-progress';
+import { WizardDraftCard } from '@/features/wizard/wizard-draft-card';
+import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { CharacterCard } from './character-card';
 import { NavHub } from './nav-hub';
@@ -55,6 +58,16 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
     return map;
   }, [campaigns]);
 
+  // E10 — le brouillon de wizard survivait à la fermeture de l'onglet sans que
+  // rien ne le dise. Lecture du store local uniquement : aucun coût réseau.
+  const draft = useWizardStore((s) => s.draft);
+  const currentStep = useWizardStore((s) => s.currentStep);
+  const resetDraft = useWizardStore((s) => s.reset);
+  const draftProgress = useMemo(
+    () => describeDraftProgress(draft, currentStep),
+    [draft, currentStep],
+  );
+
   if (isLoading) return <Splash />;
 
   if (error) {
@@ -78,7 +91,14 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   if (characters.length === 0) {
     return (
       <main className="relative z-10 mx-auto flex min-h-[60vh] w-full max-w-[680px] flex-col items-center justify-center px-6 py-12">
-        <OngoingPlayCard ongoing={ongoing} className="mb-8 max-w-[480px]" />
+        <OngoingPlayCard ongoing={ongoing} className="mb-4 max-w-[480px]" />
+        {/* C'est ICI que le bandeau compte le plus : sans personnage terminé,
+            l'accueil vide donnait l'impression qu'aucun travail n'existait. */}
+        <WizardDraftCard
+          progress={draftProgress}
+          onDiscard={resetDraft}
+          className="mb-8 max-w-[480px]"
+        />
         <GlassPanel className="w-full max-w-[480px] px-7 py-10 text-center">
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
             {t('library.empty.title')}
@@ -118,7 +138,12 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
         Au-dessus du titre, et non dans le hub du bas : quand une partie est en
         cours, « reprendre » est la seule chose que l'utilisateur vient faire.
       */}
-      <OngoingPlayCard ongoing={ongoing} className="mx-auto mb-6 max-w-[720px]" />
+      <OngoingPlayCard ongoing={ongoing} className="mx-auto mb-3 max-w-[720px]" />
+      <WizardDraftCard
+        progress={draftProgress}
+        onDiscard={resetDraft}
+        className="mx-auto mb-6 max-w-[720px]"
+      />
       <header className="text-center">
         <Divider className="mb-4" />
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
