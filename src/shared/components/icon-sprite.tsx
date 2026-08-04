@@ -65,9 +65,18 @@ export function IconSprite(): JSX.Element {
           <path d="M12 3L9 12L12 15L15 12L12 3Z" />
           <path d="M12 15V21M9 18H15" />
         </symbol>
+        {/*
+          Bâton — géométrie décalée de +6 en x et +1 en y par rapport au
+          prototype, qui le dessinait collé au bord gauche du viewBox (centre
+          optique x≈6 au lieu de 12). Le décalage ne se voyait pas sur une
+          rangée d'attaques, mais saute aux yeux dès que l'icône est seule dans
+          une pastille ronde (menu d'action « Outils », onglet « Classes » du
+          Codex) : elle y flottait à gauche du disque. Le prototype est corrigé
+          à l'identique.
+        */}
         <symbol id="i-staff" viewBox="0 0 24 24">
-          <path d="M6 3L6 21M3 6L9 6M6 3C6 3 7 5 9 6" />
-          <circle cx="6" cy="3" r="2" />
+          <path d="M12 4L12 22M9 7L15 7M12 4C12 4 13 6 15 7" />
+          <circle cx="12" cy="4" r="2" />
         </symbol>
 
         {/* Magie */}
