@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/use-auth';
 import { campaignIdFromPath } from '@/shared/lib/campaign-route';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
+import { useEncounterNotifications } from './use-encounter-notifications';
 import { useHandoutNotifications } from './use-handout-notifications';
 
 /**
@@ -29,9 +30,11 @@ import { useHandoutNotifications } from './use-handout-notifications';
  * Rendu `null` — c'est un montage d'écouteurs, pas un élément visuel ; les
  * toasts sortent par le `ToastHost` global.
  *
- * Extension prévue (E13 étapes suivantes) : combat démarré, tour du joueur, PNJ
- * révélé. Ils se branchent ICI, sur le même identifiant de campagne, et non dans
- * l'écran qui les concerne — c'est tout l'objet de ce composant.
+ * Écouteurs montés ici, tous sur le même identifiant de campagne :
+ *  - documents transmis par le MJ (`useHandoutNotifications`) ;
+ *  - début de combat et tour du joueur (`useEncounterNotifications`).
+ * Un écouteur de notification n'a rien à faire dans l'écran qu'il concerne :
+ * c'est précisément quand on n'y est PAS qu'il sert.
  */
 export function CampaignNotifications(): JSX.Element | null {
   const { user } = useAuth();
@@ -41,6 +44,7 @@ export function CampaignNotifications(): JSX.Element | null {
   const campaignId = campaignIdFromPath(pathname) ?? activeCampaignId ?? undefined;
 
   useHandoutNotifications(campaignId, user?.uid);
+  useEncounterNotifications(campaignId, user?.uid);
 
   return null;
 }

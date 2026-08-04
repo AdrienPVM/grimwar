@@ -1079,6 +1079,9 @@ export type StringKey =
   | 'campaigns.settings.variants.grittyRealism.desc'
   // Handouts MJ→joueur — plan 27
   | 'handouts.toast.title'
+  | 'encounters.toast.started.title'
+  | 'encounters.toast.yourTurn.title'
+  | 'encounters.toast.yourTurn.sub'
   | 'handouts.screen.back'
   | 'handouts.screen.title'
   | 'handouts.screen.subtitleDm'
@@ -4197,6 +4200,9 @@ const STRINGS: Record<Locale, Dict> = {
       'Repos court de 8 heures, repos long de 7 jours.',
     // Handouts MJ→joueur — plan 27
     'handouts.toast.title': 'Le MJ vous a transmis un document',
+    'encounters.toast.started.title': 'Le combat commence',
+    'encounters.toast.yourTurn.title': 'C’est à vous de jouer',
+    'encounters.toast.yourTurn.sub': 'Round {n} · {name}',
     'handouts.screen.back': 'Retour à la campagne',
     'handouts.screen.title': 'Documents',
     'handouts.screen.subtitleDm': 'Cartes, lettres et indices transmis à la table.',
@@ -7523,6 +7529,9 @@ const STRINGS: Record<Locale, Dict> = {
       'Short rest is 8 hours, long rest is 7 days.',
     // Handouts DM→player — plan 27
     'handouts.toast.title': 'The DM sent you a handout',
+    'encounters.toast.started.title': 'Combat begins',
+    'encounters.toast.yourTurn.title': 'Your turn',
+    'encounters.toast.yourTurn.sub': 'Round {n} · {name}',
     'handouts.screen.back': 'Back to campaign',
     'handouts.screen.title': 'Handouts',
     'handouts.screen.subtitleDm': 'Maps, letters and clues shared with the table.',
