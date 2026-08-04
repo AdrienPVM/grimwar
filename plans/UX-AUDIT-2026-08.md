@@ -292,7 +292,7 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 | ~~E10~~ | ~~Reprise de brouillon de wizard signalée sur l'accueil~~ | 🟡 | S | ✅ **livré 2026-08-04**. Surtout : le brouillon devient **abandonnable** — jusqu'ici le seul moyen d'en sortir était de le mener au bout ou de vider son stockage local. Critère de détection = le CONTENU (nom, classe, ascendance, historique), pas les étapes visitées |
 | ~~E11~~ | ~~Repli « lire la règle » sur les cartes à texte SRD long~~ | 🟡 | S | ✅ **livré 2026-08-04**. Épuisement passe derrière `ConditionDetailModal`, la modale que la fiche utilise DÉJÀ pour tous les états — pas un dépliant inédit. Cinq cartes d'aperçu alignées sur le `line-clamp-2` de leurs deux sœurs |
 | ~~E12~~ | ~~Outils du meneur remontés / épinglés en séance~~ | 🟡 | S | ✅ **livré 2026-08-04**. Superposition (`DmToolsOverlay`) en séance ET en combat, pas duplication : le bloc-notes est cloisonné par campagne, c'est le même des trois côtés. La section du détail de campagne reste en place |
-| E13 | Notifications in-app (document, tour de jeu, combat) | 🟠 | L | Le plus gros ; à cadrer en plan dédié. Étape 1 peu chère : remonter `useHandoutNotifications` au-dessus des routes plutôt que dans un seul écran |
+| E13 | Notifications in-app (document, tour de jeu, combat) | 🟠 | L | 🟢 **étapes 1 et 2 livrées 2026-08-05** — cf. §I. Reste : signal PERSISTANT (le toast dure 6 s ; un joueur qui ne regarde pas son écran rate son tour), PNJ révélé, et le réglage « ne pas me notifier » |
 | E14 | Recherche transverse / palette de commandes | 🟡 | L | |
 
 **Recommandation d'ordre** : E1 → E2 → E3 → E5 formaient un lot « navigation »
@@ -453,3 +453,66 @@ chemin protégé ni un schéma — tout est client.
   sans troncature et sans modale — mais c'est le texte mécanique qu'on applique
   au moment de s'en servir, pas un aperçu vers un détail. Le clamper le
   rendrait moins utile.
+
+---
+
+## I. Ce que le lot du 2026-08-05 livre (E13, étapes 1 et 2)
+
+Client uniquement : **aucune rule, aucun index, aucun schéma**. Les deux lectures
+introduites étaient déjà autorisées (rule 24.1 pour les rencontres, roster pour
+la membership) et `where('status','==','active') + limit(1)` est single-field,
+donc index automatique — la même query que `getActiveEncounter`.
+
+### I.1 — Un écouteur de notification n'a rien à faire dans l'écran qu'il concerne
+
+C'est le fond du défaut D-5. `useHandoutNotifications` faisait déjà le bon
+travail depuis le plan 27, mais monté sur `campaign-detail-screen` : le joueur ne
+recevait le toast que s'il regardait **déjà** le hub de sa campagne. Or c'est
+précisément quand on n'y est PAS qu'une notification sert.
+
+`CampaignNotifications` (monté dans `App.tsx`, au-dessus de `<AppRoutes>`) résout
+la campagne à écouter par l'URL (`/campaigns/:cid/**`,
+`/map-proto/cloud/:cid/**`), à défaut par le pointeur de campagne active posé par
+la fiche du propriétaire. La réunion des deux couvre exactement les surfaces de
+**jeu** ; l'accueil, le Codex et le compte n'en sont pas — on n'y joue pas, et
+écouter sans contexte demanderait de choisir arbitrairement une campagne parmi
+celles du joueur.
+
+### I.2 — Le hook a dû devenir autonome avant de pouvoir être remonté
+
+Le call site désactivait les handouts pour le MJ (`enabled: !isGm`) parce que la
+query `recipients == 'all'` matche aussi pour lui. Au point de montage global on
+ne connaît pas les `gmIds` sans une lecture de plus — et « suis-je MJ » n'était
+de toute façon qu'un **proxy** de la vraie question, « suis-je l'auteur ». Le
+filtre porte donc sur `createdBy`. Conséquence assumée : un co-MJ est notifié des
+documents diffusés par l'autre meneur — de l'information, pas du bruit.
+
+### I.3 — « C'est à vous de jouer »
+
+Le tracker est temps réel depuis le plan 24, mais il ne parle qu'à qui le
+regarde. `turnIndex` est sur le doc de rencontre depuis toujours ; l'app ne s'en
+servait pas. À une table réelle c'est le MJ qui annonce le tour à voix haute.
+
+Seul le joueur dont le personnage participe est notifié. Le pointeur vient de sa
+propre membership (`members/{uid}.characterId`), une lecture unique par
+changement de campagne. Un MJ pur n'a pas de doc member ⇒ pas de `characterId` ⇒
+**aucun listener n'est ouvert** : c'est lui qui fait avancer les tours.
+
+Jamais les deux toasts à la fois : si le combat démarre et que l'initiative place
+le joueur premier, seul « c'est à vous de jouer » sort — il implique l'autre et
+il est le seul actionnable.
+
+### I.4 — Ce qui reste ouvert sur ce périmètre
+
+- **Le toast est éphémère (6 s).** Un joueur qui repose son téléphone rate son
+  tour. Le signal durable — une pastille sur la fiche tant que c'est son tour —
+  est le vrai correctif ; il demande de décider où il vit (bandeau de fiche,
+  barre de navigation) et n'est pas un ajout d'écouteur. **Non fait.**
+- **Ni PNJ révélé, ni séance démarrée.** Le point de montage les accueille sans
+  rien changer d'autre ; c'est du câblage, pas de l'architecture.
+- **Aucun réglage « ne pas me notifier ».** Personne ne peut couper les toasts.
+  Acceptable tant qu'il y en a deux, à revoir au troisième.
+- **Fenêtre de transition.** Changer d'écran au moment exact où le tour arrive
+  peut faire perdre le toast : le premier snapshot du nouveau montage est marqué
+  « vu » sans bruit. C'est le prix à payer pour ne pas re-notifier un tour déjà
+  en cours à chaque navigation — et le tracker, lui, reste juste.
