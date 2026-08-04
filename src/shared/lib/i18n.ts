@@ -894,6 +894,7 @@ export type StringKey =
   | 'library.card.level'
   | 'library.card.aliveLabel'
   | 'library.card.deadLabel'
+  | 'library.card.campaign'
   // DM dashboard — vue MJ prototype 4A pré-V1 (recâblé sur vraies campagnes + members lors du JALON 4A)
   | 'dm.title'
   | 'dm.subtitle'
@@ -3808,6 +3809,7 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.level': 'Niveau',
     'library.card.aliveLabel': 'En vie',
     'library.card.deadLabel': 'Mort.e',
+    'library.card.campaign': 'Campagne',
     // DM dashboard — vue MJ (S1 MVP route /dm)
     'dm.title': 'Tableau du meneur',
     'dm.subtitle': "Vue d'ensemble de la compagnie",
@@ -7131,6 +7133,7 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.level': 'Level',
     'library.card.aliveLabel': 'Alive',
     'library.card.deadLabel': 'Dead',
+    'library.card.campaign': 'Campaign',
     'dm.title': 'DM table',
     'dm.subtitle': 'Party overview',
     'dm.empty.title': 'No heroes to lead',

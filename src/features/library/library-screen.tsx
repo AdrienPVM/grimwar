@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
@@ -9,6 +9,7 @@ import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
 
 import { OngoingPlayCard } from '@/features/campaigns/ongoing-play-card';
+import { useMyCampaigns } from '@/features/campaigns/use-my-campaigns';
 import { useOngoingPlay } from '@/features/campaigns/use-ongoing-play';
 
 import { CharacterCard } from './character-card';
@@ -42,6 +43,17 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   // et vide) qui affichent tous les deux le bandeau, et on ne veut pas deux
   // sondages. Un joueur sans personnage PEUT être attendu à une table.
   const { ongoing } = useOngoingPlay();
+
+  // E8 — la carte de personnage n'indiquait pas sa table. Les campagnes ne sont
+  // sondées que si au moins une fiche est liée : un utilisateur solo ne paie pas
+  // deux requêtes de plus sur l'écran le plus visité de l'app.
+  const anyLinked = characters.some((c) => c.homeCampaignId !== null);
+  const { campaigns } = useMyCampaigns(anyLinked);
+  const campaignNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const campaign of campaigns) map.set(campaign.id, campaign.name);
+    return map;
+  }, [campaigns]);
 
   if (isLoading) return <Splash />;
 
@@ -122,7 +134,15 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
         className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2"
       >
         {characters.map((character) => (
-          <CharacterCard key={character.id} character={character} />
+          <CharacterCard
+            key={character.id}
+            character={character}
+            campaignName={
+              character.homeCampaignId
+                ? (campaignNameById.get(character.homeCampaignId) ?? null)
+                : null
+            }
+          />
         ))}
       </section>
 
