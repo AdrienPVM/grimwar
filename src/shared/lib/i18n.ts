@@ -441,6 +441,9 @@ export type StringKey =
   | 'sheet.notFound.hint'
   | 'sheet.backHome'
   | 'sheet.campaignLink'
+  | 'sheet.turnBanner.label'
+  | 'sheet.turnBanner.sub'
+  | 'sheet.turnBanner.aria'
   | 'sheet.error.title'
   | 'sheet.statusStrip.aria'
   | 'sheet.modeTabs.aria'
@@ -3303,6 +3306,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.notFound.hint': "Aucune fiche à cet emplacement. Elle a peut-être été supprimée.",
     'sheet.backHome': 'Retour à la bibliothèque',
     'sheet.campaignLink': 'Ma campagne',
+    'sheet.turnBanner.label': 'C’est à vous de jouer',
+    'sheet.turnBanner.sub': 'Round {n} · {name}',
+    'sheet.turnBanner.aria': 'Rejoindre le combat en cours, c’est à vous de jouer',
     'sheet.error.title': 'Erreur de chargement',
     'sheet.statusStrip.aria': 'Statistiques vitales',
     'sheet.modeTabs.aria': 'Sections de la fiche',
@@ -6696,6 +6702,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.notFound.hint': "No character at this location. It may have been deleted.",
     'sheet.backHome': 'Back to library',
     'sheet.campaignLink': 'My campaign',
+    'sheet.turnBanner.label': 'Your turn',
+    'sheet.turnBanner.sub': 'Round {n} · {name}',
+    'sheet.turnBanner.aria': 'Join the ongoing combat, it is your turn',
     'sheet.error.title': 'Loading error',
     'sheet.statusStrip.aria': 'Vital statistics',
     'sheet.modeTabs.aria': 'Sheet sections',

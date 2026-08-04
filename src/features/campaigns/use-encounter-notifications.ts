@@ -13,6 +13,7 @@ import {
 
 import { getDb } from '@/shared/lib/firebase';
 import { t } from '@/shared/lib/i18n';
+import { useActiveTurnStore } from '@/shared/lib/slices/active-turn-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import { EncounterSchema, type Encounter } from '@/shared/types/encounter';
 
@@ -62,6 +63,9 @@ export function useEncounterNotifications(
 
   useEffect(() => {
     if (!campaignId || !uid || !enabled) return;
+    // Capture après la garde : le paramètre est un binding mutable, donc le
+    // narrowing ne survivrait pas à l'entrée dans les closures ci-dessous.
+    const campaignIdForStore = campaignId;
     seenTurnRef.current = null;
     seenEncounterRef.current = null;
     loadedRef.current = false;
@@ -75,9 +79,11 @@ export function useEncounterNotifications(
 
       const docSnap = snap.docs[0];
       if (!docSnap) {
-        // Plus aucun combat actif : on repart propre pour le prochain.
+        // Plus aucun combat actif : on repart propre pour le prochain, et le
+        // bandeau de fiche disparaît avec le combat.
         seenEncounterRef.current = null;
         seenTurnRef.current = null;
+        useActiveTurnStore.getState().clearTurn();
         return;
       }
       const parsed = EncounterSchema.safeParse({ ...docSnap.data(), id: docSnap.id });
@@ -93,6 +99,17 @@ export function useEncounterNotifications(
       const turnKey = `${encounter.id}:${encounter.round}:${encounter.turnIndex}`;
       const isNewTurn = seenTurnRef.current !== turnKey;
       seenTurnRef.current = turnKey;
+
+      // L'ÉTAT est publié à chaque snapshot, y compris le premier : le bandeau
+      // de fiche doit être juste dès l'arrivée sur l'écran, même quand le toast
+      // (qui ne parle, lui, que des TRANSITIONS) se tait.
+      useActiveTurnStore.getState().setTurn({
+        campaignId: campaignIdForStore,
+        encounterId: encounter.id,
+        encounterName: encounter.name,
+        round: encounter.round,
+        isMyTurn,
+      });
 
       if (firstLoad) return; // état déjà en cours à l'arrivée : pas une nouveauté
 
@@ -143,6 +160,9 @@ export function useEncounterNotifications(
     return () => {
       cancelled = true;
       unsub?.();
+      // Sortie du contexte de jeu : le bandeau ne doit pas survivre à l'écoute
+      // qui l'alimentait, sinon il afficherait un tour d'une autre campagne.
+      useActiveTurnStore.getState().clearTurn();
     };
   }, [campaignId, uid, enabled]);
 }

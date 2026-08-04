@@ -39,6 +39,8 @@ vi.mock('@/shared/lib/slices/toast-slice', () => ({
   showToast: (...args: unknown[]) => showToast(...args),
 }));
 
+import { useActiveTurnStore } from '@/shared/lib/slices/active-turn-slice';
+
 import { useEncounterNotifications } from '../use-encounter-notifications';
 
 function participant(characterId: string | null, name: string): Record<string, unknown> {
@@ -104,6 +106,7 @@ beforeEach(() => {
   handlers.length = 0;
   showToast.mockReset();
   memberData = { characterId: 'char-me' };
+  useActiveTurnStore.getState().clearTurn();
 });
 
 afterEach(() => {
@@ -158,6 +161,29 @@ describe('useEncounterNotifications', () => {
       }),
     );
     expect(showToast).not.toHaveBeenCalled();
+  });
+
+  it('publie l’ÉTAT du tour dès le premier snapshot, même en se taisant', async () => {
+    // Le toast parle des TRANSITIONS, le bandeau de fiche affiche l'ÉTAT. À
+    // l'arrivée sur un écran en plein combat, le premier ne dit rien — mais le
+    // second doit être juste immédiatement, sinon le joueur ne voit pas que
+    // c'est son tour tant que le MJ n'a pas cliqué.
+    await mount();
+    handlers[0]!(encounterSnap({ turnIndex: 0, round: 2 }));
+    expect(showToast).not.toHaveBeenCalled();
+    expect(useActiveTurnStore.getState().turn).toMatchObject({
+      encounterName: 'Embuscade gobeline',
+      round: 2,
+      isMyTurn: true,
+    });
+  });
+
+  it('efface l’état quand plus aucun combat n’est actif', async () => {
+    await mount();
+    handlers[0]!(encounterSnap({ turnIndex: 0 }));
+    expect(useActiveTurnStore.getState().turn).not.toBeNull();
+    handlers[0]!(emptySnap); // le MJ clôture la rencontre
+    expect(useActiveTurnStore.getState().turn).toBeNull();
   });
 
   it('n’ouvre aucun listener pour un MJ pur (pas de doc member)', async () => {

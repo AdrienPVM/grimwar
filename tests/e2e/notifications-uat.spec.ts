@@ -149,7 +149,16 @@ test.describe('UAT E13 — notifications au joueur, depuis sa fiche', () => {
       await expect(turnToast).toBeVisible({ timeout: 15_000 });
       await expect(turnToast).toContainText(`Round 1 · ${ENCOUNTER_NAME}`);
       await capture(player, '02-toast-cest-a-vous-de-jouer.png', false);
-      await capture(player, '03-toast-cest-a-vous-de-jouer-pleine-page.png', true);
+
+      // ─── Le toast s'efface au bout de 6 s ; le BANDEAU reste tant que le tour
+      // dure. C'est lui qui empêche un joueur qui a reposé son téléphone de
+      // rater son tour — et il mène au combat en un tap.
+      const banner = player.getByRole('link', { name: /Rejoindre le combat en cours/i });
+      await expect(banner).toBeVisible();
+      await expect(banner).toContainText('C’est à vous de jouer');
+      await expect(turnToast).toHaveCount(0, { timeout: 15_000 });
+      await expect(banner).toBeVisible(); // survit à la disparition du toast
+      await capture(player, '03-bandeau-tour-persistant.png', true);
 
       // ─── Le MJ transmet un document à toute la table.
       await dm.goto(`/campaigns/${cid}/handouts`);
@@ -170,6 +179,12 @@ test.describe('UAT E13 — notifications au joueur, depuis sa fiche', () => {
       await expect(handoutToast).toBeVisible({ timeout: 15_000 });
       await expect(handoutToast).toContainText(HANDOUT_TITLE);
       await capture(player, '04-toast-document-transmis.png', false);
+
+      // ─── Le MJ finit le tour du joueur : le bandeau disparaît de lui-même.
+      await dm.goto(`/campaigns/${cid}/encounters/${encounterId}`);
+      await waitForAppReady(dm);
+      await dm.getByRole('button', { name: /Fin du tour/i }).click();
+      await expect(banner).toHaveCount(0, { timeout: 15_000 });
 
       // ─── Le MJ, lui, ne se notifie pas de son propre envoi.
       await expect(

@@ -7,6 +7,7 @@ import { computeDisplayedSpeed } from '@/shared/lib/rules/active-effects';
 import type { Character } from '@/shared/types/character';
 
 import { CampaignLink } from './campaign-link';
+import { TurnBanner } from './turn-banner';
 import { HeroCard } from './hero/hero-card';
 import { hpStateFor } from './hp-state';
 import { ModeTabs } from './mode-tabs/mode-tabs';
@@ -160,6 +161,9 @@ export function CharacterSheet({
             data-hide-if-empty=""
             className="mx-auto w-full max-w-[420px] px-4 lg:px-0"
           >
+            {/* Le tour d'abord : quand c'est à vous de jouer, c'est la seule
+                chose qui compte sur cet écran. */}
+            <TurnBanner className="mt-3 lg:mt-4" />
             <CampaignLink character={character} className="mt-3 lg:mt-4" />
           </div>
           <ModeTabs active={mode} onChange={setMode} />
