@@ -100,7 +100,7 @@ export function InvocationsCard({ character }: InvocationsCardProps): JSX.Elemen
                   <span className="font-display text-[16px] text-gold-bright">
                     {name}
                   </span>
-                  <p className="font-serif text-[13px] text-text-secondary">
+                  <p className="line-clamp-2 font-serif text-[13px] text-text-secondary">
                     {summary}
                   </p>
                 </button>

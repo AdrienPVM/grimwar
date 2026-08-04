@@ -112,9 +112,27 @@ describe('<ExhaustionCard>', () => {
     expect(screen.getByText('Niveau 6 : mort.')).toBeInTheDocument();
   });
 
-  it('affiche le texte officiel de l\'état (conditions.json)', () => {
+  it("garde le texte SRD replié tant qu'on ne le demande pas", () => {
+    // E11 — 7 lignes déroulées en permanence faisaient de cette carte 2,5 fois
+    // la hauteur de ses voisines et étiraient toute la rangée du bento.
     render(<ExhaustionCard character={buildCharacter(2)} />);
+    expect(screen.queryByText(/réduit de 2 fois votre niveau actuel/)).not.toBeInTheDocument();
+  });
+
+  it("« Lire la règle » ouvre le texte officiel de l'état (conditions.json)", async () => {
+    const user = userEvent.setup();
+    render(<ExhaustionCard character={buildCharacter(2)} />);
+    await user.click(screen.getByRole('button', { name: 'Lire la règle' }));
     // Fragment exact du champ description.fr du slug exhaustion.
+    expect(screen.getByText(/réduit de 2 fois votre niveau actuel/)).toBeInTheDocument();
+  });
+
+  it('la règle reste consultable au niveau 0', async () => {
+    // Elle n'y coûte plus sept lignes : la valeur pédagogique revient sans le
+    // prix de mise en page qui l'avait fait masquer.
+    const user = userEvent.setup();
+    render(<ExhaustionCard character={buildCharacter(0)} />);
+    await user.click(screen.getByRole('button', { name: 'Lire la règle' }));
     expect(screen.getByText(/réduit de 2 fois votre niveau actuel/)).toBeInTheDocument();
   });
 
@@ -135,9 +153,16 @@ describe('<ExhaustionCard>', () => {
     expect(screen.getByRole('button', { name: 'Augmenter l’épuisement' })).toBeDisabled();
   });
 
-  it('lecture seule : pas de steppers, jauge visible', () => {
+  it('lecture seule : pas de steppers, jauge visible, règle consultable', () => {
     render(<ExhaustionCard readOnly character={buildCharacter(2)} />);
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Augmenter l’épuisement' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Diminuer l’épuisement' }),
+    ).not.toBeInTheDocument();
+    // Lire la règle n'écrit rien : la lecture seule ne doit pas l'interdire.
+    expect(screen.getByRole('button', { name: 'Lire la règle' })).toBeInTheDocument();
     expect(screen.getByText(/Niveau 2/)).toBeInTheDocument();
   });
 

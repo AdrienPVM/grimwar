@@ -493,6 +493,8 @@ export type StringKey =
   | 'sheet.combat.exhaustion.death'
   | 'sheet.combat.exhaustion.decrease'
   | 'sheet.combat.exhaustion.increase'
+  | 'sheet.combat.exhaustion.readRule'
+  | 'sheet.combat.condition.remove'
   | 'sheet.combat.concentration.title'
   | 'sheet.combat.concentration.cantrip'
   | 'sheet.combat.concentration.castAt'
@@ -3349,6 +3351,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.exhaustion.death': 'Niveau 6 : mort.',
     'sheet.combat.exhaustion.decrease': 'Diminuer l’épuisement',
     'sheet.combat.exhaustion.increase': 'Augmenter l’épuisement',
+    'sheet.combat.exhaustion.readRule': 'Lire la règle',
+    'sheet.combat.condition.remove': 'Retirer cet état',
     'sheet.combat.concentration.title': 'Concentration',
     'sheet.combat.concentration.cantrip': 'Sort mineur',
     'sheet.combat.concentration.castAt': 'Lancé au niveau {n}',
@@ -6735,6 +6739,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.exhaustion.death': 'Level 6: death.',
     'sheet.combat.exhaustion.decrease': 'Decrease exhaustion',
     'sheet.combat.exhaustion.increase': 'Increase exhaustion',
+    'sheet.combat.exhaustion.readRule': 'Read the rule',
+    'sheet.combat.condition.remove': 'Remove this condition',
     'sheet.combat.concentration.title': 'Concentration',
     'sheet.combat.concentration.cantrip': 'Cantrip',
     'sheet.combat.concentration.castAt': 'Cast at level {n}',

@@ -1,13 +1,13 @@
-import { useMemo, type JSX } from 'react';
+import { useState, type JSX } from 'react';
 
 import { Card, CardHeader } from '@/shared/components/card';
-import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
-import { localize, t } from '@/shared/lib/i18n';
+import { t } from '@/shared/lib/i18n';
 import { useLocaleStore } from '@/shared/lib/slices/locale-slice';
 import type { Character } from '@/shared/types/character';
 
 import { useUpdateCharacter } from '../../use-update-character';
+import { ConditionDetailModal } from './condition-detail-modal';
 
 interface ExhaustionCardProps {
   character: Character;
@@ -27,8 +27,8 @@ const MAX_EXHAUSTION = 6;
  *  - steppers −/+ (0..6), écriture via `updateCharacter` (diff auto → events) ;
  *  - résumé chiffré de la pénalité au niveau courant (Tests d20 −2×niv,
  *    Vitesse −1,50 m × niv FR / −5 ft × niv EN) — règle SRD 2024 ;
- *  - texte officiel de l'état (depuis `conditions.json[exhaustion]`) + note de
- *    mort au niveau 6.
+ *  - « Lire la règle » ⇒ texte officiel de l'état dans la MÊME modale que tous
+ *    les autres états de la fiche + note de mort au niveau 6.
  *
  * Lecture seule (PJ mort / lecture MJ) ⇒ steppers masqués (la jauge reste
  * visible). Toujours rendue (même à 0) : l'épuisement est un état que le joueur
@@ -38,16 +38,11 @@ export function ExhaustionCard({
   character,
   readOnly = false,
 }: ExhaustionCardProps): JSX.Element {
-  const { data: conditions } = useContent('conditions');
   const { updateCharacter, isUpdating } = useUpdateCharacter(character);
   const locale = useLocaleStore((s) => s.locale);
+  const [ruleOpen, setRuleOpen] = useState<boolean>(false);
 
   const level = character.exhaustion;
-
-  const description = useMemo(() => {
-    const entry = conditions.find((c) => c.id === 'exhaustion');
-    return entry ? localize(entry.description) : '';
-  }, [conditions]);
 
   async function setLevel(next: number): Promise<void> {
     if (readOnly || isUpdating) return;
@@ -124,18 +119,29 @@ export function ExhaustionCard({
       )}
 
       {/*
-        Le texte SRD complet n'est déroulé qu'à partir du 1er niveau d'épuisement.
-        À 0, il n'apprend rien d'actionnable (« vous n'êtes pas épuisé, voici ce
-        qui arriverait ») et pèse 7 lignes : la carte faisait alors 2,5 fois la
-        hauteur de ses voisines de rangée, ce qui étirait toute la rangée du
-        bento. La règle reste consultable dans le Codex, et réapparaît ici dès
-        qu'elle s'applique vraiment.
+        E11 / D-12 — le texte SRD pèse 7 lignes. Déroulé en permanence, il
+        faisait de cette carte 2,5 fois la hauteur de ses voisines et étirait
+        toute la rangée du bento. Il passe derrière la MÊME modale que les autres
+        états de la fiche (`ConditionDetailModal`) : un seul geste à apprendre,
+        et la règle reste à une tape — y compris au niveau 0, où elle a sa valeur
+        pédagogique sans coûter sept lignes.
       */}
-      {level > 0 && description && (
-        <p className="mt-3 font-body text-[12px] leading-relaxed text-text-secondary">
-          {description}
-        </p>
-      )}
+      <div className="mt-3 flex justify-center">
+        <button
+          type="button"
+          onClick={() => setRuleOpen(true)}
+          aria-haspopup="dialog"
+          className="font-title text-[10px] font-bold uppercase tracking-[0.18em] text-text-tertiary underline decoration-dotted underline-offset-4 transition-colors duration-200 ease-base hover:text-gold-bright focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/40"
+        >
+          {t('sheet.combat.exhaustion.readRule')}
+        </button>
+      </div>
+
+      <ConditionDetailModal
+        conditionId={ruleOpen ? 'exhaustion' : null}
+        onRemove={null}
+        onClose={() => setRuleOpen(false)}
+      />
     </Card>
   );
 }

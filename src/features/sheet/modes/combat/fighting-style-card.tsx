@@ -62,7 +62,7 @@ export function FightingStyleCard({
       >
         <span className="font-display text-[16px] text-gold-bright">{name}</span>
         {summary && (
-          <p className="font-serif text-[13px] text-text-secondary">{summary}</p>
+          <p className="line-clamp-2 font-serif text-[13px] text-text-secondary">{summary}</p>
         )}
       </div>
     </Card>
