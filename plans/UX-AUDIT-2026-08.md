@@ -353,8 +353,8 @@ qui change vraiment le produit.
 
 - **E6 — le Codex en superposition.** `codex-browser.tsx` extrait le corps du
   Codex de son écran ; `codex-overlay.tsx` le sert par-dessus la fiche (wedge
-  FAB « Codex », arrivée sur les **États**) et par-dessus la rencontre (bouton
-  de barre, arrivée sur le **bestiaire**). Une seule implémentation des 10
+  FAB « Codex ») et par-dessus la rencontre (bouton de barre) — les deux
+  arrivant sur les **États**. Une seule implémentation des 10
   navigateurs, deux présentations. Le wedge est au **premier niveau et sans
   condition de permission** — le ranger sous « Outils » l'aurait fait
   disparaître en lecture MJ, précisément là où consulter une règle est le
@@ -382,6 +382,20 @@ peinture à `z-index` égal. Rouge-avant-vert prouvé sur les 2 cas.
 pour `roster.ts` : **huit fichiers** les importaient depuis un ÉCRAN, ce qui
 faisait dépendre le tracker de combat du hub de campagne et de tout ce qu'il
 tire avec lui.
+
+### G.3 bis — Deux défauts trouvés en relisant les captures
+
+Aucun des deux n'était visible en test unitaire.
+
+- **L'onglet actif arrivait hors-champ.** Ouvrir sur le 10ᵉ onglet d'une rangée
+  qui défile horizontalement affichait la liste des états sous « Sorts · Objets
+  magiques · Équi… ». La rangée recentre désormais l'onglet actif, et passe à la
+  ligne à partir de `sm` (dans la superposition, le panneau est plus étroit que
+  la page et le dernier onglet était tronqué en plein mot).
+- **La rencontre ouvrait sur le bestiaire, qui est vide.** `monsters.json`
+  compte **0 entrée** — dette pré-existante, le sourcing SRD du bestiaire
+  attend son plan. Le Codex y affichait « 0 résultat » à chaque combat.
+  Arrivée basculée sur les États. À revoir quand le bundle existe.
 
 ### G.4 — Ce qui reste ouvert sur ce périmètre
 
