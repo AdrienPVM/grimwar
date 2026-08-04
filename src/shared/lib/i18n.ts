@@ -937,6 +937,11 @@ export type StringKey =
   | 'dm.secretRoll.nat20'
   | 'dm.secretRoll.nat1'
   | 'dm.secretRoll.historyAria'
+  | 'dm.secretRoll.aboutLabel'
+  | 'dm.secretRoll.aboutPlaceholder'
+  | 'dm.secretRoll.reveal'
+  | 'dm.secretRoll.revealed'
+  | 'dm.tip.revealSecretRoll'
   // Campaigns — liste « Mes campagnes » + create/leave (JALON 4.0.4)
   | 'campaigns.title'
   | 'campaigns.subtitle'
@@ -1315,6 +1320,9 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.detail.systemActor'
   | 'campaigns.detail.eventFeed.detail.unknownCharacter'
   | 'campaigns.detail.eventFeed.detail.noDetail'
+  | 'campaigns.detail.eventFeed.detail.delete'
+  | 'campaigns.detail.eventFeed.detail.deleteConfirm'
+  | 'campaigns.detail.eventFeed.detail.deleteError'
   | 'campaigns.detail.eventFeed.field.label'
   | 'campaigns.detail.eventFeed.field.total'
   | 'campaigns.detail.eventFeed.field.modifier'
@@ -3883,6 +3891,11 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.secretRoll.nat20': 'Réussite critique',
     'dm.secretRoll.nat1': 'Échec critique',
     'dm.secretRoll.historyAria': 'Derniers jets secrets',
+    'dm.secretRoll.aboutLabel': 'À propos de quoi ?',
+    'dm.secretRoll.aboutPlaceholder': 'Perception du garde…',
+    'dm.secretRoll.reveal': 'Révéler à la table',
+    'dm.secretRoll.revealed': 'Révélé',
+    'dm.tip.revealSecretRoll': 'Rejournalise ce jet en visible par toute la table.',
     // Campaigns — liste « Mes campagnes » + create/leave (JALON 4.0.4)
     'campaigns.title': 'Mes campagnes',
     'campaigns.subtitle': 'Les tables où ton héros prend vie',
@@ -4092,6 +4105,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.detail.systemActor': 'Système',
     'campaigns.detail.eventFeed.detail.unknownCharacter': 'Personnage',
     'campaigns.detail.eventFeed.detail.noDetail': 'Aucun détail supplémentaire.',
+    'campaigns.detail.eventFeed.detail.delete': 'Retirer du journal',
+    'campaigns.detail.eventFeed.detail.deleteConfirm': 'Confirmer le retrait',
+    'campaigns.detail.eventFeed.detail.deleteError': 'Le retrait a échoué.',
     'campaigns.detail.eventFeed.field.label': 'Intitulé',
     'campaigns.detail.eventFeed.field.total': 'Total',
     'campaigns.detail.eventFeed.field.modifier': 'Modificateur',
@@ -7233,6 +7249,11 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.secretRoll.nat20': 'Natural 20',
     'dm.secretRoll.nat1': 'Natural 1',
     'dm.secretRoll.historyAria': 'Recent secret rolls',
+    'dm.secretRoll.aboutLabel': 'About what?',
+    'dm.secretRoll.aboutPlaceholder': 'Guard’s Perception…',
+    'dm.secretRoll.reveal': 'Reveal to the table',
+    'dm.secretRoll.revealed': 'Revealed',
+    'dm.tip.revealSecretRoll': 'Re-logs this roll as visible to the whole table.',
     'campaigns.title': 'My campaigns',
     'campaigns.subtitle': 'The tables where your hero comes to life',
     'campaigns.list.aria': 'Campaign list',
@@ -7435,6 +7456,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.detail.systemActor': 'System',
     'campaigns.detail.eventFeed.detail.unknownCharacter': 'Character',
     'campaigns.detail.eventFeed.detail.noDetail': 'No additional details.',
+    'campaigns.detail.eventFeed.detail.delete': 'Remove from journal',
+    'campaigns.detail.eventFeed.detail.deleteConfirm': 'Confirm removal',
+    'campaigns.detail.eventFeed.detail.deleteError': 'Removal failed.',
     'campaigns.detail.eventFeed.field.label': 'Label',
     'campaigns.detail.eventFeed.field.total': 'Total',
     'campaigns.detail.eventFeed.field.modifier': 'Modifier',

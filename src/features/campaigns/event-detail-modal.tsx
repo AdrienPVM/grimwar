@@ -1,6 +1,7 @@
-import { useId, type JSX } from 'react';
+import { useId, useState, type JSX } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
+import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import type { GameEvent } from '@/shared/types/event';
 
@@ -15,6 +16,11 @@ interface EventDetailModalProps {
   event: GameEvent | null;
   /** Map `characterId → nom` pour étiqueter acteur/cible (cf. useLinkedCharacterNames). */
   characterNames: Record<string, string>;
+  /**
+   * Retire l'événement du journal. Fourni UNIQUEMENT au MJ (`allow delete: if
+   * isDMOf`) — absent ⇒ aucun bouton de retrait n'est rendu.
+   */
+  onDelete?: (event: GameEvent) => void;
   onClose: () => void;
 }
 
@@ -31,6 +37,7 @@ interface EventDetailModalProps {
 export function EventDetailModal({
   event,
   characterNames,
+  onDelete,
   onClose,
 }: EventDetailModalProps): JSX.Element {
   const titleId = useId();
@@ -46,6 +53,7 @@ export function EventDetailModal({
         <EventDetailContent
           event={event}
           characterNames={characterNames}
+          onDelete={onDelete}
           titleId={titleId}
         />
       ) : null}
@@ -85,12 +93,16 @@ function targetLabel(
 function EventDetailContent({
   event,
   characterNames,
+  onDelete,
   titleId,
 }: {
   event: GameEvent;
   characterNames: Record<string, string>;
+  onDelete?: (event: GameEvent) => void;
   titleId: string;
 }): JSX.Element {
+  // Retrait à deux temps : un journal se corrige, mais pas par mégarde.
+  const [confirming, setConfirming] = useState(false);
   const { kindLabel } = summarizeEvent(event);
   const dateTime = formatEventDateTime(event.createdAt);
   const actor = actorLabel(event, characterNames);
@@ -128,6 +140,28 @@ function EventDetailContent({
         <p className="mt-4 font-serif text-body-sm italic text-text-tertiary">
           {t('campaigns.detail.eventFeed.detail.noDetail')}
         </p>
+      ) : null}
+
+      {/* Retrait MJ — la rule `allow delete: if isDMOf` est déployée depuis
+          l'origine, il n'existait simplement aucun appelant (M9). */}
+      {onDelete ? (
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={() => (confirming ? onDelete(event) : setConfirming(true))}
+            className={cn(
+              'rounded-pill border px-3 py-1.5 font-title text-[10px] font-bold uppercase tracking-[0.14em]',
+              'transition-colors duration-200 ease-base',
+              confirming
+                ? 'border-crimson bg-crimson/15 text-crimson hover:bg-crimson/25'
+                : 'border-white-8 bg-white/[0.03] text-text-tertiary hover:border-crimson/60 hover:text-crimson',
+            )}
+          >
+            {confirming
+              ? t('campaigns.detail.eventFeed.detail.deleteConfirm')
+              : t('campaigns.detail.eventFeed.detail.delete')}
+          </button>
+        </div>
       ) : null}
     </div>
   );

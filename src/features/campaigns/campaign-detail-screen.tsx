@@ -428,7 +428,7 @@ export function CampaignDetailScreen(): JSX.Element {
               {t('campaigns.detail.dmTools.title')}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <SecretRollButton />
+              <SecretRollButton campaignId={campaign.id} />
               <QuickNotes scopeKey={campaign.id} />
             </div>
           </section>

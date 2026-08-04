@@ -1,4 +1,12 @@
-import { addDoc, collection, doc, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  increment,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
 
 import { diffCharacterEvents } from '@/shared/lib/character-diff';
 import type { RollKind, RollResult } from '@/shared/lib/dice/types';
@@ -32,16 +40,20 @@ import type { NewGameEvent } from '@/shared/types/event';
  * ne sont volontairement PAS comptés dans `trackPendingWrite` — on ne couple
  * pas l'indicateur de synchro à de la journalisation d'arrière-plan.
  */
-async function writeEvent(input: NewGameEvent): Promise<boolean> {
+async function writeEvent(input: NewGameEvent, campaignIdOverride?: string): Promise<boolean> {
   const { activeCampaignId, activeSessionId, activeEncounterId } =
     useActiveCampaignStore.getState();
-  if (!activeCampaignId) return false; // pas de campagne active → no-op
+  // Le store est renseigné par l'écran de FICHE. Un MJ agissant depuis l'écran
+  // de campagne (jet secret) n'a pas de fiche active : il passe sa campagne
+  // explicitement plutôt que d'aller polluer le pointeur de jeu.
+  const campaignId = campaignIdOverride ?? activeCampaignId;
+  if (!campaignId) return false; // pas de campagne cible → no-op
   const uid = useAuthStore.getState().user?.uid;
   if (!uid) return false; // pas d'utilisateur → écriture impossible (rule actorUserId)
 
   try {
     const db = getDb();
-    await addDoc(collection(db, 'campaigns', activeCampaignId, 'events'), {
+    await addDoc(collection(db, 'campaigns', campaignId, 'events'), {
       kind: input.kind,
       actorUserId: uid,
       actorCharacterId: input.actorCharacterId,
@@ -380,6 +392,71 @@ export async function logMonsterHpChange(
       delta: meta.after - meta.before,
     },
   });
+}
+
+/**
+ * Journalise un jet secret du MJ (kind `dm-secret-roll`, visibilité `dm`).
+ *
+ * Le kind était déclaré au schéma, documenté dans EVENT-LOG.md, et TOUT le côté
+ * lecteur était déjà écrit (`event-line.ts` : résumé + détail). Seul l'écrivain
+ * manquait — le jet vivait dans un `useState` plafonné à cinq entrées, perdu au
+ * démontage de l'écran. Un MJ ne pouvait donc pas retrouver, dix minutes plus
+ * tard, ce qu'il avait lancé derrière son paravent.
+ *
+ * `visibility` est un paramètre plutôt qu'une constante : « Révéler » re-log le
+ * même jet en `'all'` (les events sont immuables — `firestore.rules` : `allow
+ * update: if false`), ce qui est le chemin honnête pour dévoiler après coup.
+ *
+ * `label` est le champ libre « à propos de quoi ? » du MJ (« Perception du
+ * garde »). Vide ⇒ `null`, le lecteur affichera juste le total.
+ */
+export async function logSecretRoll(
+  campaignId: string,
+  meta: {
+    label: string | null;
+    face: number;
+    modifier: number;
+    total: number;
+    advantage: 'normal' | 'advantage' | 'disadvantage';
+    visibility?: 'dm' | 'all';
+  },
+): Promise<boolean> {
+  return writeEvent(
+    {
+      kind: 'dm-secret-roll',
+      actorCharacterId: null,
+      visibility: meta.visibility ?? 'dm',
+      payload: {
+        label: meta.label,
+        keptFaces: [meta.face],
+        rawFaces: [meta.face],
+        modifier: meta.modifier,
+        total: meta.total,
+        crit: meta.face === 20,
+        fumble: meta.face === 1,
+        advantage: meta.advantage,
+      },
+    },
+    campaignId,
+  );
+}
+
+/**
+ * Retire un événement du journal (M9 de l'audit de malléabilité).
+ *
+ * La rule était déployée depuis l'origine (`allow delete: if isDMOf`) sans
+ * aucun appelant : un jet lancé par erreur en pleine scène restait dans le
+ * récit pour toujours. Contrairement aux `log*`, cette fonction N'AVALE PAS ses
+ * erreurs — l'appelant est un geste utilisateur explicite, qui doit savoir si
+ * le retrait a échoué (permission perdue, event déjà supprimé).
+ *
+ * `campaignId` est explicite plutôt que lu dans le store : le MJ retire un
+ * event depuis le feed d'une campagne qu'il consulte, sans forcément y avoir
+ * une fiche active.
+ */
+export async function deleteEvent(campaignId: string, eventId: string): Promise<void> {
+  const db = getDb();
+  await deleteDoc(doc(db, 'campaigns', campaignId, 'events', eventId));
 }
 
 /**
