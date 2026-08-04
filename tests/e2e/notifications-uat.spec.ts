@@ -160,6 +160,14 @@ test.describe('UAT E13 — notifications au joueur, depuis sa fiche', () => {
       await expect(banner).toBeVisible(); // survit à la disparition du toast
       await capture(player, '03-bandeau-tour-persistant.png', true);
 
+      // Sur mobile la colonne latérale passe en `display: contents` : le
+      // bandeau se retrouve dans le flux, au-dessus des onglets de mode. Il doit
+      // y rester lisible sans écraser la carte héros.
+      await player.setViewportSize({ width: 375, height: 812 });
+      await expect(banner).toBeVisible();
+      await capture(player, '04-bandeau-tour-mobile.png', true);
+      await player.setViewportSize({ width: 1440, height: 900 });
+
       // ─── Le MJ transmet un document à toute la table.
       await dm.goto(`/campaigns/${cid}/handouts`);
       await waitForAppReady(dm);
@@ -178,7 +186,7 @@ test.describe('UAT E13 — notifications au joueur, depuis sa fiche', () => {
         .filter({ hasText: 'Le MJ vous a transmis un document' });
       await expect(handoutToast).toBeVisible({ timeout: 15_000 });
       await expect(handoutToast).toContainText(HANDOUT_TITLE);
-      await capture(player, '04-toast-document-transmis.png', false);
+      await capture(player, '05-toast-document-transmis.png', false);
 
       // ─── Le MJ finit le tour du joueur : le bandeau disparaît de lui-même.
       await dm.goto(`/campaigns/${cid}/encounters/${encounterId}`);
