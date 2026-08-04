@@ -20,11 +20,20 @@ import { HANDOUT_RECIPIENTS_ALL, HandoutSchema } from '@/shared/types/handout';
  * présents) est marqué « vu » sans toast — on ne notifie que les ajouts
  * postérieurs.
  *
- * Monté sur le hub de campagne (plan 27 V1). `enabled` doit être `false` pour le
- * MJ : la query `recipients == 'all'` matche aussi pour lui (la rule l'autorise
- * en tant qu'`isDMOf`), donc sans cette garde il recevrait un toast pour ses
- * propres diffusions « toute la table ». Couverture « depuis n'importe quel
- * écran » différée (pas de layout campagne global en V1 ; cf. plan 27 notes).
+ * Monté AU-DESSUS des routes depuis E13/1 (`campaign-notifications.tsx`), plus
+ * dans le seul hub de campagne : le joueur reçoit désormais le toast depuis sa
+ * fiche, c'est-à-dire pendant la partie — le moment où le MJ envoie un document.
+ *
+ * NE PAS SE NOTIFIER SOI-MÊME : la query `recipients == 'all'` matche aussi pour
+ * le MJ (la rule l'autorise en tant qu'`isDMOf`), qui recevrait donc un toast
+ * pour ses propres diffusions « toute la table ». Le filtre porte sur
+ * `createdBy`, pas sur « est-ce que je suis MJ » : au point de montage global on
+ * ne connaît pas les `gmIds` sans une lecture supplémentaire, et l'auteur est la
+ * vraie question. Conséquence assumée : un co-MJ est notifié des documents
+ * diffusés par l'autre MJ — de l'information, pas du bruit.
+ *
+ * `enabled` reste disponible pour couper les deux listeners sans casser l'ordre
+ * des hooks.
  */
 export function useHandoutNotifications(
   campaignId: string | undefined,
@@ -54,6 +63,8 @@ export function useHandoutNotifications(
           if (firstLoad) return; // documents préexistants → pas une nouveauté
           const parsed = HandoutSchema.safeParse({ ...change.doc.data(), id });
           if (!parsed.success || parsed.data.visibility === 'archived') return;
+          if (parsed.data.createdBy === uid) return; // ses propres envois
+
           showToast({
             kind: 'info',
             title: t('handouts.toast.title'),

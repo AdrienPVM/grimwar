@@ -2,6 +2,7 @@ import { useEffect, type JSX } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { AuthProvider } from '@/features/auth/auth-provider';
+import { CampaignNotifications } from '@/features/campaigns/campaign-notifications';
 import { HitMissGateModal } from '@/features/dice/hit-miss-gate-modal';
 import { PhysicalRollModal } from '@/features/dice/physical-roll-modal';
 import { SpellSigilOverlay } from '@/features/dice/spell-sigil-overlay';
@@ -63,6 +64,10 @@ function AppShell(): JSX.Element {
   return (
     <>
       <NavShell />
+      {/* Écouteurs de notification de campagne (E13/1) — au-dessus des routes,
+          donc ils survivent au changement d'écran : le joueur reçoit le toast
+          depuis sa fiche, pas seulement depuis le hub de sa campagne. */}
+      <CampaignNotifications />
       <AppRoutes />
     </>
   );

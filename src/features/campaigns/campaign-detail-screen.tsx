@@ -27,7 +27,6 @@ import { PromoteToGmModal } from './promote-to-gm-modal';
 import { buildRoster, type RosterEntry } from './roster';
 import { useCampaign } from './use-campaign';
 import { usePartyAggregate, type PartyMemberRef } from './use-party-aggregate';
-import { useHandoutNotifications } from './use-handout-notifications';
 
 interface PromoteTarget {
   uid: string;
@@ -87,10 +86,9 @@ export function CampaignDetailScreen(): JSX.Element {
     return campaign.gmIds.includes(user.uid);
   }, [campaign, user]);
 
-  // Toast « le MJ vous a transmis un document » sur tout nouveau handout reçu
-  // (plan 27 step 7-8). Désactivé pour le MJ (cf. `useHandoutNotifications`).
-  // Appelé avant les early-returns pour respecter les règles des hooks.
-  useHandoutNotifications(cid, user?.uid, !isGm);
+  // Les toasts « le MJ vous a transmis un document » ne sont plus montés ici :
+  // `CampaignNotifications` (E13/1) les écoute au-dessus des routes, donc aussi
+  // depuis la fiche du joueur. Les monter des deux côtés doublerait le toast.
 
   const roster = useMemo<RosterEntry[]>(() => {
     if (!campaign) return [];
