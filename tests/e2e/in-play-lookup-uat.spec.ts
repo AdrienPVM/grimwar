@@ -101,7 +101,7 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     await page.getByRole('button', { name: "Ouvrir le menu d'action" }).click();
     const codexWedge = page.getByRole('button', { name: 'Codex', exact: true });
     await expect(codexWedge).toBeVisible();
-    await captureViewport(page, '30-fab-wedge-codex-mobile.png');
+    await captureViewport(page, '03-fab-wedge-codex-mobile.png');
 
     await codexWedge.click();
 
@@ -119,13 +119,13 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     await expectActiveTabVisible(page, 'Le Codex');
 
     // Mobile : le ressenti d'ancrage bas (bottom-sheet) ne se lit qu'en viewport.
-    await captureViewport(page, '31-codex-sur-fiche-mobile-overlay.png');
+    await captureViewport(page, '04-codex-sur-fiche-mobile-overlay.png');
 
     // Desktop : c'est là que se juge la largeur du gabarit `xl`.
     await page.setViewportSize(DESKTOP);
     await expect(codex).toBeVisible();
-    await captureFull(page, '32-codex-sur-fiche-desktop-pleine-page.png');
-    await captureViewport(page, '33-codex-sur-fiche-desktop-overlay.png');
+    await captureFull(page, '05-codex-sur-fiche-desktop-pleine-page.png');
+    await captureViewport(page, '06-codex-sur-fiche-desktop-overlay.png');
   });
 
   test('Échap sur un détail ouvert depuis le Codex ne ferme QUE le détail', async ({
@@ -148,7 +148,7 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     await codex.getByRole('button', { name: /À terre/ }).first().click();
     const dialogs = page.getByRole('dialog');
     await expect(dialogs).toHaveCount(2);
-    await captureViewport(page, '34-detail-etat-sur-codex-desktop.png');
+    await captureViewport(page, '07-detail-etat-sur-codex-desktop.png');
 
     // Le point du fix : Échap ne prend QUE la modale du dessus.
     await page.keyboard.press('Escape');
@@ -207,7 +207,7 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     await page.goto(`/campaigns/${cid}/encounters/${encounterId}`);
     await waitForAppReady(page);
     await expect(page.getByText('Embuscade gobeline')).toBeVisible({ timeout: 15_000 });
-    await captureFull(page, '35-rencontre-barre-outils-desktop.png');
+    await captureFull(page, '08-rencontre-barre-outils-desktop.png');
 
     // ─── Codex, ouvert sur les États (le bestiaire est vide à ce jour).
     await page.getByRole('button', { name: 'Codex', exact: true }).click();
@@ -223,7 +223,7 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     // Le tracker n'a pas été démonté.
     await expect(page.getByText('Gobelin').first()).toBeAttached();
     await expectActiveTabVisible(page, 'Le Codex');
-    await captureViewport(page, '36-codex-sur-rencontre-desktop-overlay.png');
+    await captureViewport(page, '09-codex-sur-rencontre-desktop-overlay.png');
     await page.keyboard.press('Escape');
     await expect(codex).toHaveCount(0);
 
@@ -236,8 +236,11 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
     // L'administration de table n'a rien à faire ici.
     await expect(roster.getByRole('button', { name: /Promouvoir/ })).toHaveCount(0);
 
-    await captureFull(page, '37-compagnie-sur-rencontre-pleine-page.png');
-    await captureViewport(page, '38-compagnie-sur-rencontre-overlay.png');
+    // Une seule capture ici : la modale verrouille le scroll et le document de
+    // la rencontre tient dans le viewport desktop, donc `fullPage` et viewport
+    // rendent une image identique — la double capture « modale » n'apporterait
+    // qu'un doublon à l'octet près dans la galerie d'UAT.
+    await captureFull(page, '10-compagnie-sur-rencontre-overlay.png');
   });
 
   test('mobile 375 — la barre de la rencontre tient, le Codex s’ancre en bas', async ({
@@ -281,11 +284,11 @@ test.describe('UAT — consulter sans quitter la partie (E6 + E7)', () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
-    await captureFull(page, '39-rencontre-barre-mobile-375.png');
+    await captureFull(page, '11-rencontre-barre-mobile-375.png');
 
     await page.getByRole('button', { name: 'Codex', exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'Le Codex' })).toBeVisible();
     await expectActiveTabVisible(page, 'Le Codex');
-    await captureViewport(page, '40-codex-mobile-375-overlay.png');
+    await captureViewport(page, '12-codex-mobile-375-overlay.png');
   });
 });

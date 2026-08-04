@@ -78,7 +78,7 @@ test.describe('UAT — bandeau « En cours » (reprise de table)', () => {
     await expect(page.getByText(/Séance 7/)).toBeVisible();
 
     writeFileSync(
-      path.join(UAT_DIR, '18-en-cours-seance-accueil.png'),
+      path.join(UAT_DIR, '01-en-cours-seance-accueil.png'),
       await page.screenshot({ fullPage: true, animations: 'disabled' }),
     );
 
@@ -130,7 +130,7 @@ test.describe('UAT — bandeau « En cours » (reprise de table)', () => {
     await expect(page.getByText(/Manche 2/)).toBeVisible();
 
     writeFileSync(
-      path.join(UAT_DIR, '19-en-cours-combat-accueil.png'),
+      path.join(UAT_DIR, '02-en-cours-combat-accueil.png'),
       await page.screenshot({ fullPage: true, animations: 'disabled' }),
     );
 
