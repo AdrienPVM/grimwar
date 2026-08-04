@@ -77,7 +77,6 @@ const FILET: Item = {
   cost: { qty: 1, unit: 'gp' },
   weight: 1.5,
   description: { fr: 'Une créature touchée est entravée.', en: '' },
-  damage: null,
   properties: ['Spéciale'],
   source: 'srd-5.2.1',
 };
