@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type JSX } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 
 import { cn } from '../lib/cn';
 import { prefersReducedMotion } from '../lib/prefers-reduced-motion';
@@ -41,15 +41,21 @@ export function RollingNumber({
   const isPlainInteger = /^\d+$/.test(value) && Number.isFinite(final);
 
   const [face, setFace] = useState<string | null>(null);
-  // `settled` pilote la pose finale : le ressort ne doit se jouer qu'une fois,
-  // pas à chaque re-rendu du toast.
   const [settled, setSettled] = useState(false);
-  const startedFor = useRef<string | null>(null);
 
+  /**
+   * Aucun garde par `ref` ici, et c'est délibéré.
+   *
+   * Une première version mémorisait la dernière valeur culbutée dans une `ref`
+   * et sortait tôt si elle n'avait pas changé. C'était redondant — les
+   * dépendances de l'effet dérivent toutes de `value`, donc il ne se rejoue
+   * déjà qu'au changement de total — et surtout NUISIBLE : en `StrictMode`,
+   * React monte, démonte puis remonte chaque effet. Le démontage arrêtait les
+   * minuteurs, et le remontage sortait aussitôt par le garde sans les relancer.
+   * Le total restait alors bloqué à jamais sur une face intermédiaire tirée au
+   * hasard : le joueur lisait « 22 » sous un détail qui totalisait 25.
+   */
   useEffect(() => {
-    if (startedFor.current === value) return;
-    startedFor.current = value;
-
     if (!isPlainInteger || prefersReducedMotion()) {
       setFace(null);
       setSettled(true);
@@ -84,6 +90,7 @@ export function RollingNumber({
       <span className="sr-only">{value}</span>
       <span
         aria-hidden="true"
+        data-testid="toast-total"
         className={cn(
           className,
           'inline-block transition-transform duration-350 ease-spring',

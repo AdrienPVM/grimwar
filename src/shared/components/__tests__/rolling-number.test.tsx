@@ -1,4 +1,5 @@
 import { act, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RollingNumber } from '../rolling-number';
@@ -55,6 +56,29 @@ describe('<RollingNumber />', () => {
       vi.advanceTimersByTime(500);
     });
     expect(visible).toHaveTextContent('18');
+  });
+
+  it('se pose aussi sous StrictMode, qui monte deux fois', () => {
+    // L'app tourne sous `<StrictMode>` : React monte l'effet, le démonte, puis
+    // le remonte. Une version antérieure gardait la dernière valeur culbutée
+    // dans une `ref` et sortait tôt au second montage — sans relancer les
+    // minuteurs que le démontage venait d'arrêter. Le total restait alors figé
+    // À JAMAIS sur une face intermédiaire tirée au hasard, et le joueur lisait
+    // « 22 » au-dessus d'un détail qui totalisait 25. Trouvé sur une capture
+    // d'UAT, pas par un test : les autres cas de ce fichier montent une seule
+    // fois et ne pouvaient pas le voir.
+    render(
+      <StrictMode>
+        <RollingNumber value="25" />
+      </StrictMode>,
+    );
+    const visible = screen.getByText('25', { selector: '.sr-only' })
+      .nextElementSibling;
+
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(visible).toHaveTextContent('25');
   });
 
   it('ne culbute pas un résultat composite', () => {
