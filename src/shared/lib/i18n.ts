@@ -448,6 +448,13 @@ export type StringKey =
   | 'sheet.statusStrip.aria'
   | 'sheet.modeTabs.aria'
   | 'sheet.hero.level'
+  | 'sheet.identity.edit'
+  | 'sheet.identity.title'
+  | 'sheet.identity.name'
+  | 'sheet.identity.nameRequired'
+  | 'sheet.identity.alignment'
+  | 'sheet.identity.save'
+  | 'sheet.identity.cancel'
   | 'sheet.stat.hp'
   | 'sheet.stat.ac'
   | 'sheet.stat.init'
@@ -3581,6 +3588,13 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.statusStrip.aria': 'Statistiques vitales',
     'sheet.modeTabs.aria': 'Sections de la fiche',
     'sheet.hero.level': 'Niveau {n}',
+    'sheet.identity.edit': 'Modifier l’identité',
+    'sheet.identity.title': 'Identité',
+    'sheet.identity.name': 'Nom',
+    'sheet.identity.nameRequired': 'Le nom ne peut pas être vide.',
+    'sheet.identity.alignment': 'Alignement',
+    'sheet.identity.save': 'Enregistrer',
+    'sheet.identity.cancel': 'Annuler',
     'sheet.stat.hp': 'PV',
     'sheet.stat.ac': 'CA',
     'sheet.stat.init': 'Init',
@@ -7289,6 +7303,13 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.statusStrip.aria': 'Vital statistics',
     'sheet.modeTabs.aria': 'Sheet sections',
     'sheet.hero.level': 'Level {n}',
+    'sheet.identity.edit': 'Edit identity',
+    'sheet.identity.title': 'Identity',
+    'sheet.identity.name': 'Name',
+    'sheet.identity.nameRequired': 'The name cannot be empty.',
+    'sheet.identity.alignment': 'Alignment',
+    'sheet.identity.save': 'Save',
+    'sheet.identity.cancel': 'Cancel',
     'sheet.stat.hp': 'HP',
     'sheet.stat.ac': 'AC',
     'sheet.stat.init': 'Init',

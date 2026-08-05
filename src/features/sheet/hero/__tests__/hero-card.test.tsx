@@ -140,6 +140,26 @@ describe('<HeroCard> — historique sur la ligne d\'identité', () => {
   });
 });
 
+describe('<HeroCard> — alignement', () => {
+  it('affiche le LIBELLÉ de l\'alignement, pas le code persisté', () => {
+    renderHero(buildCharacter({ alignment: 'LB' }));
+    // Le champ persiste « LB » ; c'est « Loyal Bon » qui doit être à l'écran.
+    expect(screen.getByText('Loyal Bon')).toBeInTheDocument();
+    expect(screen.queryByText('LB')).toBeNull();
+  });
+
+  it('replie sur la valeur brute quand le code est inconnu (fiche importée)', () => {
+    renderHero(buildCharacter({ alignment: 'XX' }));
+    expect(screen.getByText('XX')).toBeInTheDocument();
+  });
+
+  it('ne propose pas l\'édition de l\'identité sans droit d\'écriture', () => {
+    // Sans PermissionProvider, `canEdit` retombe à false (lecture MJ, fiche morte).
+    renderHero(buildCharacter());
+    expect(screen.queryByRole('button', { name: /Modifier l’identité/ })).toBeNull();
+  });
+});
+
 describe('<HeroCard> — ligne classe · sous-classe · niveau', () => {
   it('mono-classe sans sous-classe : un seul séparateur (pas de « · · ») + niveau localisé', () => {
     renderHero(buildCharacter());
