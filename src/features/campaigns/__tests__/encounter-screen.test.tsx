@@ -58,6 +58,9 @@ const setParticipantsMock = vi.fn();
 const applyInitiativeRollsMock = vi.fn();
 const applyParticipantHpDeltaMock = vi.fn();
 const setParticipantConditionMock = vi.fn();
+const updateParticipantMock = vi.fn();
+const removeParticipantMock = vi.fn();
+const addParticipantMock = vi.fn();
 vi.mock('@/shared/lib/services/encounters', async (importActual) => {
   const actual = await importActual<typeof import('@/shared/lib/services/encounters')>();
   return {
@@ -69,6 +72,9 @@ vi.mock('@/shared/lib/services/encounters', async (importActual) => {
     applyInitiativeRolls: (...a: unknown[]) => applyInitiativeRollsMock(...a),
     applyParticipantHpDelta: (...a: unknown[]) => applyParticipantHpDeltaMock(...a),
     setParticipantCondition: (...a: unknown[]) => setParticipantConditionMock(...a),
+    updateParticipant: (...a: unknown[]) => updateParticipantMock(...a),
+    removeParticipant: (...a: unknown[]) => removeParticipantMock(...a),
+    addParticipant: (...a: unknown[]) => addParticipantMock(...a),
   };
 });
 
@@ -83,13 +89,19 @@ vi.mock('@/shared/lib/event-logger', () => ({
   logMonsterHpChange: (...a: unknown[]) => logMonsterHpChangeMock(...a),
 }));
 
-// Catalogue d'états minimal pour le contrôle MJ (libellés localisés).
+// Catalogue d'états minimal pour le contrôle MJ (libellés localisés). Le mock
+// est TYPÉ PAR CATÉGORIE : l'écran lit aussi `monsters` (modificateur d'init
+// dérivé de la DEX, M3), et lui servir des états produirait des entrées sans
+// `abilities` — une forme que le schéma de contenu interdit.
 vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({
-    data: [
-      { id: 'prone', name: { fr: 'À terre', en: 'Prone' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
-      { id: 'poisoned', name: { fr: 'Empoisonné', en: 'Poisoned' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
-    ],
+  useContent: (type: string) => ({
+    data:
+      type === 'conditions'
+        ? [
+            { id: 'prone', name: { fr: 'À terre', en: 'Prone' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
+            { id: 'poisoned', name: { fr: 'Empoisonné', en: 'Poisoned' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
+          ]
+        : [],
     loading: false,
     error: null,
   }),
@@ -454,6 +466,71 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
     // (source unique : plus de doublon avec une vue de groupe).
     const turnList = screen.getByRole('list', { name: /Ordre d’initiative/ });
     expect(within(turnList).getByText('Empoisonné')).toBeInTheDocument();
+  });
+});
+
+describe('<EncounterScreen> — tracker éditable (M2 / M3)', () => {
+  it('le MJ peut faire entrer un renfort EN PLEIN combat', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 3, turnIndex: 0 });
+    addParticipantMock.mockResolvedValueOnce({ instanceId: 'inst-new' });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter un combattant' }));
+    fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef gobelin' } });
+    fireEvent.change(screen.getByLabelText('PV'), { target: { value: '21' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter au combat' }));
+
+    await waitFor(() =>
+      expect(addParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', {
+        type: 'monster',
+        name: 'Chef gobelin',
+        maxHp: 21,
+        monsterContentId: null,
+      }),
+    );
+  });
+
+  it('le joueur ne voit aucun bouton d’ajout (écriture MJ-only)', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Ajouter un combattant' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renomme un combattant depuis la modale de contrôle', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    updateParticipantMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() =>
+      expect(updateParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob', {
+        name: 'Chef',
+      }),
+    );
+  });
+
+  it('retirer un combattant ferme la modale — elle pointerait dans le vide', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    removeParticipantMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer du combat' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer le retrait' }));
+
+    await waitFor(() =>
+      expect(removeParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob'),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });
 

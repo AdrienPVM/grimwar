@@ -1567,6 +1567,29 @@ export type StringKey =
   | 'encounters.control.noteTitle'
   | 'encounters.control.notePlaceholder'
   | 'encounters.control.noteSave'
+  | 'encounters.control.editTitle'
+  | 'encounters.control.editName'
+  | 'encounters.control.editInitiative'
+  | 'encounters.control.editCurrentHp'
+  | 'encounters.control.editMaxHp'
+  | 'encounters.control.editSave'
+  | 'encounters.control.remove'
+  | 'encounters.control.removeConfirm'
+  | 'encounters.add.open'
+  | 'encounters.add.title'
+  | 'encounters.add.intro'
+  | 'encounters.add.closeAria'
+  | 'encounters.add.nameLabel'
+  | 'encounters.add.namePlaceholder'
+  | 'encounters.add.hpLabel'
+  | 'encounters.add.typeLabel'
+  | 'encounters.add.typeMonster'
+  | 'encounters.add.typeNpc'
+  | 'encounters.add.fromBestiary'
+  | 'encounters.add.submit'
+  | 'encounters.add.cancel'
+  | 'encounters.add.error.name'
+  | 'encounters.add.error.hp'
   | 'encounters.handoff.title'
   | 'encounters.handoff.help'
   | 'encounters.handoff.aria'
@@ -2434,6 +2457,9 @@ export type StringKey =
   | 'campaigns.tip.endCombat'
   | 'campaigns.tip.reroll'
   | 'campaigns.tip.controlParticipant'
+  | 'campaigns.tip.addParticipant'
+  | 'campaigns.tip.editParticipant'
+  | 'campaigns.tip.removeParticipant'
   | 'campaigns.tip.openJournal'
   | 'campaigns.tip.openHandouts'
   | 'campaigns.tip.openNpcs'
@@ -4618,6 +4644,33 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noteTitle': 'Note du combattant',
     'encounters.control.notePlaceholder': 'Celui-ci porte la clé…',
     'encounters.control.noteSave': 'Enregistrer la note',
+    // Encounters — édition d'un combattant en lice (M2/M3 de l'audit de
+    // malléabilité) : renommer, corriger des PV mal tapés, saisir l'initiative
+    // annoncée à voix haute, retirer celui qui prend la fuite.
+    'encounters.control.editTitle': 'Modifier le combattant',
+    'encounters.control.editName': 'Nom',
+    'encounters.control.editInitiative': 'Initiative',
+    'encounters.control.editCurrentHp': 'PV actuels',
+    'encounters.control.editMaxHp': 'PV maximum',
+    'encounters.control.editSave': 'Enregistrer',
+    'encounters.control.remove': 'Retirer du combat',
+    'encounters.control.removeConfirm': 'Confirmer le retrait',
+    'encounters.add.open': 'Ajouter un combattant',
+    'encounters.add.title': 'Nouveau combattant',
+    'encounters.add.intro':
+      'Le renfort arrive en fin d’ordre, initiative à 0. Saisis ou relance la sienne ensuite.',
+    'encounters.add.closeAria': 'Fermer l’ajout de combattant',
+    'encounters.add.nameLabel': 'Nom',
+    'encounters.add.namePlaceholder': 'Chef gobelin…',
+    'encounters.add.hpLabel': 'PV',
+    'encounters.add.typeLabel': 'Type',
+    'encounters.add.typeMonster': 'Monstre',
+    'encounters.add.typeNpc': 'PNJ',
+    'encounters.add.fromBestiary': 'Depuis le bestiaire',
+    'encounters.add.submit': 'Ajouter au combat',
+    'encounters.add.cancel': 'Annuler',
+    'encounters.add.error.name': 'Donne un nom à ce combattant.',
+    'encounters.add.error.hp': 'Indique des PV valides (au moins 1).',
     // Encounters — hand-off des dégâts physiques (JALON 24.4, step 7b). Le MJ
     // applique les jets physiques récents des joueurs sur une cible qu'il choisit.
     'encounters.handoff.title': 'Dégâts à appliquer',
@@ -5859,6 +5912,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.endCombat': 'Clôturer le combat et choisir son issue.',
     'campaigns.tip.reroll': 'Relancer l’initiative de ce combattant.',
     'campaigns.tip.controlParticipant': 'Ajuster ses points de vie et ses états.',
+    'campaigns.tip.addParticipant': 'Faire entrer un combattant dans une rencontre déjà lancée.',
+    'campaigns.tip.editParticipant': 'Corriger son nom, ses points de vie ou son initiative.',
+    'campaigns.tip.removeParticipant': 'Le sortir de la rencontre — il disparaît de l’ordre des tours.',
     'campaigns.tip.openJournal': 'Ouvrir le journal de la campagne.',
     'campaigns.tip.openHandouts': 'Ouvrir les documents partagés avec la table.',
     'campaigns.tip.openNpcs': 'Ouvrir l’annuaire des personnages non-joueurs.',
@@ -7963,6 +8019,30 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noteTitle': 'Combatant note',
     'encounters.control.notePlaceholder': 'This one carries the key…',
     'encounters.control.noteSave': 'Save note',
+    'encounters.control.editTitle': 'Edit combatant',
+    'encounters.control.editName': 'Name',
+    'encounters.control.editInitiative': 'Initiative',
+    'encounters.control.editCurrentHp': 'Current HP',
+    'encounters.control.editMaxHp': 'Max HP',
+    'encounters.control.editSave': 'Save',
+    'encounters.control.remove': 'Remove from combat',
+    'encounters.control.removeConfirm': 'Confirm removal',
+    'encounters.add.open': 'Add a combatant',
+    'encounters.add.title': 'New combatant',
+    'encounters.add.intro':
+      'Reinforcements join at the end of the order, initiative 0. Enter or roll theirs next.',
+    'encounters.add.closeAria': 'Close combatant form',
+    'encounters.add.nameLabel': 'Name',
+    'encounters.add.namePlaceholder': 'Goblin boss…',
+    'encounters.add.hpLabel': 'HP',
+    'encounters.add.typeLabel': 'Type',
+    'encounters.add.typeMonster': 'Monster',
+    'encounters.add.typeNpc': 'NPC',
+    'encounters.add.fromBestiary': 'From the bestiary',
+    'encounters.add.submit': 'Add to combat',
+    'encounters.add.cancel': 'Cancel',
+    'encounters.add.error.name': 'Give this combatant a name.',
+    'encounters.add.error.hp': 'Enter valid HP (at least 1).',
     'encounters.handoff.title': 'Damage to apply',
     'encounters.handoff.help':
       'Recent rolls from players. Pick a target to apply the damage.',
@@ -9125,6 +9205,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.endCombat': 'End combat and choose its outcome.',
     'campaigns.tip.reroll': 'Reroll this combatant’s initiative.',
     'campaigns.tip.controlParticipant': 'Adjust its hit points and conditions.',
+    'campaigns.tip.addParticipant': 'Bring a combatant into an encounter already under way.',
+    'campaigns.tip.editParticipant': 'Fix its name, hit points or initiative.',
+    'campaigns.tip.removeParticipant': 'Take it out of the encounter — it leaves the turn order.',
     'campaigns.tip.openJournal': 'Open the campaign journal.',
     'campaigns.tip.openHandouts': 'Open the documents shared with the table.',
     'campaigns.tip.openNpcs': 'Open the directory of non-player characters.',

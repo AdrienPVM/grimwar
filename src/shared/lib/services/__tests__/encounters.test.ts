@@ -100,6 +100,7 @@ vi.mock('@/shared/lib/dice/roller', () => ({
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
 import {
+  addParticipant,
   advanceTurn,
   applyHpDelta,
   applyInitiative,
@@ -114,12 +115,17 @@ import {
   listEncounters,
   nextTurn,
   PARTICIPANT_NOTE_MAX,
+  patchParticipantIn,
+  removeParticipant,
+  removeParticipantIn,
   rollInitiativeFor,
   setParticipantCondition,
   setParticipantNoteIn,
   setParticipants,
+  sortByInitiative,
   startEncounter,
   toggleCondition,
+  updateParticipant,
 } from '../encounters';
 
 const CID = 'demo-cid';
@@ -684,6 +690,223 @@ describe('setParticipantCondition', () => {
     const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
     const ps = payload.participants as EncounterParticipant[];
     expect(ps[0]!.conditions).toEqual(['poisoned']);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Édition d'un participant — M2 / M3 (audit de malléabilité)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('patchParticipantIn', () => {
+  it('renomme sans toucher au reste (« Gobelin 2 » devient « Chef »)', () => {
+    const list = [makeParticipant({ instanceId: 'm1', name: 'Gobelin 2', currentHp: 4 })];
+    const out = patchParticipantIn(list, 'm1', { name: '  Chef  ' });
+    expect(out[0]!.name).toBe('Chef');
+    expect(out[0]!.currentHp).toBe(4);
+    expect(out[0]!.maxHp).toBe(7);
+  });
+
+  it('corrige des PV mal tapés (7 au lieu de 17) sans écraser les PV courants', () => {
+    const list = [makeParticipant({ instanceId: 'm1', currentHp: 7, maxHp: 7 })];
+    const out = patchParticipantIn(list, 'm1', { maxHp: 17 });
+    expect(out[0]!.maxHp).toBe(17);
+    expect(out[0]!.currentHp).toBe(7);
+  });
+
+  it('reclampe les PV courants quand le maximum descend en dessous', () => {
+    const list = [makeParticipant({ instanceId: 'm1', currentHp: 20, maxHp: 25 })];
+    const out = patchParticipantIn(list, 'm1', { maxHp: 12 });
+    expect(out[0]!.maxHp).toBe(12);
+    expect(out[0]!.currentHp).toBe(12);
+  });
+
+  it('borne le maximum à 1 et les PV courants à 0', () => {
+    const list = [makeParticipant({ instanceId: 'm1' })];
+    const out = patchParticipantIn(list, 'm1', { maxHp: 0, currentHp: -5 });
+    expect(out[0]!.maxHp).toBe(1);
+    expect(out[0]!.currentHp).toBe(0);
+  });
+
+  it('ignore un nom vidé plutôt que de laisser un combattant sans nom', () => {
+    const list = [makeParticipant({ instanceId: 'm1', name: 'Gobelin' })];
+    expect(patchParticipantIn(list, 'm1', { name: '   ' })[0]!.name).toBe('Gobelin');
+  });
+
+  it('accepte une initiative négative (saisie annoncée à voix haute)', () => {
+    const list = [makeParticipant({ instanceId: 'm1', initiative: 12 })];
+    expect(patchParticipantIn(list, 'm1', { initiative: -1 })[0]!.initiative).toBe(-1);
+  });
+
+  it('laisse la liste intacte sur un instanceId inconnu', () => {
+    const list = [makeParticipant({ instanceId: 'm1', name: 'Gobelin' })];
+    expect(patchParticipantIn(list, 'nope', { name: 'Chef' })).toEqual(list);
+  });
+});
+
+describe('sortByInitiative', () => {
+  it('trie par initiative décroissante', () => {
+    const list = [
+      makeParticipant({ instanceId: 'a', initiative: 5 }),
+      makeParticipant({ instanceId: 'b', initiative: 18 }),
+      makeParticipant({ instanceId: 'c', initiative: 11 }),
+    ];
+    const out = sortByInitiative(list, 0);
+    expect(out.participants.map((p) => p.instanceId)).toEqual(['b', 'c', 'a']);
+  });
+
+  it('garde le tour sur le MÊME combattant, pas sur le même index', () => {
+    // `c` joue (index 2). Après tri il passe en tête : le pointeur doit suivre.
+    const list = [
+      makeParticipant({ instanceId: 'a', initiative: 15 }),
+      makeParticipant({ instanceId: 'b', initiative: 10 }),
+      makeParticipant({ instanceId: 'c', initiative: 22 }),
+    ];
+    const out = sortByInitiative(list, 2);
+    expect(out.participants[out.turnIndex]!.instanceId).toBe('c');
+    expect(out.turnIndex).toBe(0);
+  });
+
+  it('conserve l’ordre d’entrée à initiative égale (départage stable)', () => {
+    const list = [
+      makeParticipant({ instanceId: 'a', initiative: 14 }),
+      makeParticipant({ instanceId: 'b', initiative: 14 }),
+    ];
+    expect(sortByInitiative(list, 0).participants.map((p) => p.instanceId)).toEqual(['a', 'b']);
+  });
+});
+
+describe('removeParticipantIn', () => {
+  const trio = (): ReturnType<typeof makeParticipant>[] => [
+    makeParticipant({ instanceId: 'a' }),
+    makeParticipant({ instanceId: 'b' }),
+    makeParticipant({ instanceId: 'c' }),
+  ];
+
+  it('recule le pointeur quand le retrait est AVANT le tour actif', () => {
+    // `c` joue (index 2) ; on retire `a` → `c` est maintenant à l'index 1.
+    const out = removeParticipantIn(trio(), 'a', 2);
+    expect(out.participants.map((p) => p.instanceId)).toEqual(['b', 'c']);
+    expect(out.participants[out.turnIndex]!.instanceId).toBe('c');
+  });
+
+  it('laisse le tour au suivant quand on retire le combattant actif', () => {
+    const out = removeParticipantIn(trio(), 'b', 1);
+    expect(out.turnIndex).toBe(1);
+    expect(out.participants[out.turnIndex]!.instanceId).toBe('c');
+  });
+
+  it('ne bouge pas le pointeur quand le retrait est APRÈS le tour actif', () => {
+    const out = removeParticipantIn(trio(), 'c', 0);
+    expect(out.participants[out.turnIndex]!.instanceId).toBe('a');
+  });
+
+  it('clampe quand le dernier de la liste jouait', () => {
+    const out = removeParticipantIn(trio(), 'c', 2);
+    expect(out.turnIndex).toBe(1);
+    expect(out.participants[out.turnIndex]!.instanceId).toBe('b');
+  });
+
+  it('retombe sur 0 quand la liste se vide', () => {
+    const out = removeParticipantIn([makeParticipant({ instanceId: 'a' })], 'a', 0);
+    expect(out.participants).toEqual([]);
+    expect(out.turnIndex).toBe(0);
+  });
+
+  it('laisse tout en place sur un instanceId inconnu', () => {
+    const out = removeParticipantIn(trio(), 'nope', 1);
+    expect(out.participants).toHaveLength(3);
+    expect(out.turnIndex).toBe(1);
+  });
+});
+
+describe('updateParticipant', () => {
+  it('relit l’état serveur avant d’écrire (les PV appliqués entre-temps survivent)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        turnIndex: 0,
+        // Le serveur a déjà encaissé des dégâts que la closure React ignorait.
+        participants: [makeParticipant({ instanceId: 'm1', name: 'Gobelin', currentHp: 2 })],
+      }),
+    });
+    await updateParticipant(CID, EID, 'm1', { name: 'Chef' });
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps[0]!.name).toBe('Chef');
+    expect(ps[0]!.currentHp).toBe(2);
+    // Sans initiative dans le patch, aucun re-tri : le pointeur n'est pas réécrit.
+    expect(payload.turnIndex).toBeUndefined();
+  });
+
+  it('re-trie et réaligne le tour quand l’initiative change', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        turnIndex: 1,
+        participants: [
+          makeParticipant({ instanceId: 'a', initiative: 20 }),
+          makeParticipant({ instanceId: 'b', initiative: 10 }),
+        ],
+      }),
+    });
+    await updateParticipant(CID, EID, 'b', { initiative: 25 });
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps.map((p) => p.instanceId)).toEqual(['b', 'a']);
+    // `b` jouait et joue toujours, malgré son changement de place.
+    expect(payload.turnIndex).toBe(0);
+  });
+});
+
+describe('addParticipant', () => {
+  it('ajoute le renfort en FIN de liste, initiative à 0', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        turnIndex: 0,
+        participants: [makeParticipant({ instanceId: 'a', initiative: 18 })],
+      }),
+    });
+    const { instanceId } = await addParticipant(CID, EID, {
+      type: 'monster',
+      name: 'Chef gobelin',
+      maxHp: 21,
+    });
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps).toHaveLength(2);
+    expect(ps[1]!.name).toBe('Chef gobelin');
+    expect(ps[1]!.initiative).toBe(0);
+    expect(ps[1]!.currentHp).toBe(21);
+    // Un auto-id, pas `p{index}` : après un retrait, une numérotation
+    // positionnelle rejouerait l'identifiant d'un autre combattant.
+    expect(instanceId).not.toBe(`${EID}-p1`);
+    expect(ps[1]!.instanceId).toBe(instanceId);
+  });
+});
+
+describe('removeParticipant', () => {
+  it('écrit la liste amputée ET le pointeur de tour réaligné', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        turnIndex: 2,
+        participants: [
+          makeParticipant({ instanceId: 'a' }),
+          makeParticipant({ instanceId: 'b' }),
+          makeParticipant({ instanceId: 'c' }),
+        ],
+      }),
+    });
+    await removeParticipant(CID, EID, 'a');
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    const ps = payload.participants as EncounterParticipant[];
+    expect(ps.map((p) => p.instanceId)).toEqual(['b', 'c']);
+    expect(payload.turnIndex).toBe(1);
   });
 });
 

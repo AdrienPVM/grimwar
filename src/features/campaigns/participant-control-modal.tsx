@@ -17,7 +17,11 @@ import {
   toCustomConditionId,
 } from './custom-condition';
 import { hpBarColor, hpRatio, quickHpAmounts } from './encounter-hp';
-import { PARTICIPANT_NOTE_MAX } from '@/shared/lib/services/encounters';
+import {
+  PARTICIPANT_NAME_MAX,
+  PARTICIPANT_NOTE_MAX,
+  type ParticipantPatch,
+} from '@/shared/lib/services/encounters';
 
 interface ParticipantControlModalProps {
   participant: EncounterParticipant;
@@ -40,7 +44,19 @@ interface ParticipantControlModalProps {
   onToggleCondition: (condition: string, action: 'add' | 'remove') => void;
   /** Écrit la note libre du combattant (« celui-ci porte la clé »). */
   onSaveNote: (note: string) => void;
+  /** Corrige nom / initiative / PV du combattant (M2, M3). */
+  onUpdate: (patch: ParticipantPatch) => void;
+  /** Sort le combattant de la rencontre (M2). */
+  onRemove: () => void;
   onClose: () => void;
+}
+
+/** Champs éditables du bloc « Modifier le combattant », en saisie brute. */
+interface EditDraft {
+  name: string;
+  initiative: string;
+  currentHp: string;
+  maxHp: string;
 }
 
 /**
@@ -65,6 +81,8 @@ export function ParticipantControlModal({
   onGrantTempHp,
   onToggleCondition,
   onSaveNote,
+  onUpdate,
+  onRemove,
   onClose,
 }: ParticipantControlModalProps): JSX.Element {
   const [amount, setAmount] = useState<number>(1);
@@ -72,6 +90,13 @@ export function ParticipantControlModal({
   const [note, setNote] = useState<string>(participant.notes);
   // Fiche de créature ouverte en surcouche (modale imbriquée).
   const [statBlockOpen, setStatBlockOpen] = useState<boolean>(false);
+  // Brouillon d'édition (M2/M3). `null` = aucun champ touché : les valeurs
+  // affichées suivent alors le doc EN LIVE (un soin appliqué juste au-dessus se
+  // reflète ici). Dès la première frappe, le brouillon prend la main — sinon le
+  // prochain snapshot écraserait la saisie en cours.
+  const [draft, setDraft] = useState<EditDraft | null>(null);
+  // Retrait en deux temps : un geste irréversible ne part pas au premier tap.
+  const [removeConfirming, setRemoveConfirming] = useState<boolean>(false);
 
   const titleId = `participant-control-${participant.instanceId}`;
   const statBlockTitleId = useId();
@@ -90,6 +115,51 @@ export function ParticipantControlModal({
   // Montant saisi borné > 0 (un montant ≤ 0 n'a pas de sens pour dégâts/soin).
   const safeAmount = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
   const noteDirty = note !== participant.notes;
+
+  // Valeurs live du combattant, forme de saisie.
+  const liveDraft: EditDraft = {
+    name: participant.name,
+    initiative: String(participant.initiative),
+    currentHp: String(participant.currentHp),
+    maxHp: String(participant.maxHp),
+  };
+  const edit = draft ?? liveDraft;
+  const editDirty =
+    draft !== null &&
+    (draft.name !== liveDraft.name ||
+      draft.initiative !== liveDraft.initiative ||
+      draft.currentHp !== liveDraft.currentHp ||
+      draft.maxHp !== liveDraft.maxHp);
+
+  function patchDraft(patch: Partial<EditDraft>): void {
+    setDraft((prev) => ({ ...(prev ?? liveDraft), ...patch }));
+  }
+
+  /**
+   * N'envoie QUE les champs réellement changés : un patch partiel évite
+   * d'écraser une valeur mise à jour côté serveur entre-temps (le service relit
+   * l'état avant d'écrire, mais un champ non transmis ne peut pas régresser).
+   * Une saisie vidée ou illisible est ignorée plutôt que rejetée.
+   */
+  function saveEdit(): void {
+    if (draft === null) return;
+    const patch: ParticipantPatch = {};
+    if (draft.name.trim().length > 0 && draft.name !== liveDraft.name) patch.name = draft.name;
+    if (draft.initiative !== liveDraft.initiative) {
+      const parsed = Number.parseInt(draft.initiative, 10);
+      if (Number.isFinite(parsed)) patch.initiative = parsed;
+    }
+    if (draft.maxHp !== liveDraft.maxHp) {
+      const parsed = Number.parseInt(draft.maxHp, 10);
+      if (Number.isFinite(parsed)) patch.maxHp = parsed;
+    }
+    if (draft.currentHp !== liveDraft.currentHp) {
+      const parsed = Number.parseInt(draft.currentHp, 10);
+      if (Number.isFinite(parsed)) patch.currentHp = parsed;
+    }
+    if (Object.keys(patch).length > 0) onUpdate(patch);
+    setDraft(null);
+  }
 
   function addCustomCondition(): void {
     const id = toCustomConditionId(customCondition);
@@ -351,6 +421,74 @@ export function ParticipantControlModal({
             </Button>
           </div>
         </section>
+
+        {/* ─── Modifier le combattant (M2/M3) ─────────────────────── */}
+        <section className="flex flex-col gap-3 border-t border-white-8 pt-5">
+          <h3 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+            {t('encounters.control.editTitle')}
+          </h3>
+
+          <label className="flex flex-col gap-1">
+            <span className="font-title text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
+              {t('encounters.control.editName')}
+            </span>
+            <input
+              type="text"
+              value={edit.name}
+              maxLength={PARTICIPANT_NAME_MAX}
+              onChange={(e) => patchDraft({ name: e.target.value })}
+              aria-label={t('encounters.control.editName')}
+              className="w-full rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2 font-serif text-body text-text outline-none transition-colors duration-200 ease-base focus:border-gold"
+            />
+          </label>
+
+          <div className="grid grid-cols-3 gap-2">
+            <EditNumberField
+              label={t('encounters.control.editInitiative')}
+              value={edit.initiative}
+              onChange={(v) => patchDraft({ initiative: v })}
+            />
+            <EditNumberField
+              label={t('encounters.control.editCurrentHp')}
+              value={edit.currentHp}
+              min={0}
+              onChange={(v) => patchDraft({ currentHp: v })}
+            />
+            <EditNumberField
+              label={t('encounters.control.editMaxHp')}
+              value={edit.maxHp}
+              min={1}
+              onChange={(v) => patchDraft({ maxHp: v })}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => (removeConfirming ? onRemove() : setRemoveConfirming(true))}
+              disabled={pending}
+              className={cn(
+                'text-crimson',
+                removeConfirming && 'border border-crimson/50 bg-crimson/[0.08]',
+              )}
+              tooltip={t('campaigns.tip.removeParticipant')}
+            >
+              {removeConfirming
+                ? t('encounters.control.removeConfirm')
+                : t('encounters.control.remove')}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={saveEdit}
+              disabled={pending || !editDirty}
+              tooltip={t('campaigns.tip.editParticipant')}
+            >
+              {t('encounters.control.editSave')}
+            </Button>
+          </div>
+        </section>
       </div>
 
       {/* Fiche de créature liée (modale imbriquée, lecture seule). */}
@@ -366,5 +504,37 @@ export function ParticipantControlModal({
         </DetailModal>
       ) : null}
     </DetailModal>
+  );
+}
+
+interface EditNumberFieldProps {
+  label: string;
+  value: string;
+  min?: number;
+  onChange: (value: string) => void;
+}
+
+/**
+ * Champ numérique du bloc d'édition. La valeur reste une CHAÎNE : un `number`
+ * contrôlé rend impossible d'effacer le champ pour retaper (`valueAsNumber`
+ * donne `NaN` sur vide, qui repart aussitôt en `0`). La conversion se fait à
+ * l'enregistrement, où une saisie illisible est simplement ignorée.
+ */
+function EditNumberField({ label, value, min, onChange }: EditNumberFieldProps): JSX.Element {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="font-title text-[10px] uppercase tracking-[0.14em] text-text-tertiary">
+        {label}
+      </span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+        className="w-full rounded-pill border border-white-8 bg-bg-3/60 px-3 py-2 font-serif text-body tabular-nums text-text outline-none transition-colors duration-200 ease-base focus:border-gold"
+      />
+    </label>
   );
 }

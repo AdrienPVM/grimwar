@@ -509,6 +509,198 @@ export function setParticipantNoteIn(
 /** Limite du champ `notes` au schéma (`encounterParticipantSchema`). */
 export const PARTICIPANT_NOTE_MAX = 2000;
 
+// ─────────────────────────────────────────────────────────────────────
+// Édition d'un participant — nom / PV / initiative (M2, M3)
+// ─────────────────────────────────────────────────────────────────────
+
+/** Bornes du schéma `encounterParticipantSchema` reprises côté service. */
+export const PARTICIPANT_NAME_MAX = 120;
+
+/**
+ * Correctif applicable à un participant déjà en lice. Tout champ absent est
+ * laissé tel quel — c'est un patch, pas un remplacement.
+ *
+ * Le mur d'origine (M2 de l'audit de malléabilité) : une fois la rencontre
+ * créée, plus AUCUNE UI ne touchait la liste. Sept PV tapés au lieu de
+ * dix-sept, « Gobelin 2 » qui devient le chef de bande, une initiative annoncée
+ * à voix haute (M3) : tout cela obligeait à refaire la rencontre.
+ */
+export interface ParticipantPatch {
+  name?: string;
+  initiative?: number;
+  currentHp?: number;
+  maxHp?: number;
+}
+
+/** Entier sûr : `NaN`/`Infinity` ⇒ repli, sinon troncature vers zéro. */
+function toInt(value: number, fallback: number): number {
+  return Number.isFinite(value) ? Math.trunc(value) : fallback;
+}
+
+/**
+ * Applique un patch à UN participant. Pur.
+ *
+ * Les bornes sont celles du schéma, appliquées ici pour qu'une saisie
+ * aberrante soit corrigée plutôt que rejetée par Zod à l'écriture : nom non
+ * vide tronqué à 120, `maxHp` ≥ 1, `currentHp` reclampé sur le NOUVEAU maximum
+ * (baisser le max d'un monstre déjà blessé ne doit pas le laisser au-dessus de
+ * son plafond). `instanceId` introuvable ⇒ liste inchangée.
+ */
+export function patchParticipantIn(
+  participants: readonly EncounterParticipant[],
+  instanceId: string,
+  patch: ParticipantPatch,
+): EncounterParticipant[] {
+  return participants.map((p) => {
+    if (p.instanceId !== instanceId) return p;
+
+    const trimmed = patch.name?.trim();
+    const name =
+      trimmed !== undefined && trimmed.length > 0 ? trimmed.slice(0, PARTICIPANT_NAME_MAX) : p.name;
+
+    const maxHp =
+      patch.maxHp !== undefined ? Math.max(1, toInt(patch.maxHp, p.maxHp)) : p.maxHp;
+    const rawCurrent =
+      patch.currentHp !== undefined ? toInt(patch.currentHp, p.currentHp) : p.currentHp;
+    const currentHp = Math.max(0, Math.min(maxHp, rawCurrent));
+
+    const initiative =
+      patch.initiative !== undefined ? toInt(patch.initiative, p.initiative) : p.initiative;
+
+    return { ...p, name, maxHp, currentHp, initiative };
+  });
+}
+
+/**
+ * Re-trie par initiative décroissante SANS perdre le combattant dont c'est le
+ * tour. Pur.
+ *
+ * `applyInitiative` trie déjà, mais il tourne en préparation (`turnIndex` à 0,
+ * sans conséquence). Ici le tri peut survenir en plein combat — corriger une
+ * initiative mal notée au round 3 — et un `turnIndex` positionnel deviendrait
+ * silencieusement faux : le pointeur désignerait un autre combattant. On suit
+ * donc l'`instanceId` actif à travers le tri.
+ *
+ * Départage des ex æquo : `Array.prototype.sort` est stable (ES2019), l'ordre
+ * d'entrée est donc conservé à initiative égale. C'est ce qui fait de l'édition
+ * d'initiative un outil d'arbitrage : le MJ départage en saisissant une valeur.
+ */
+export function sortByInitiative(
+  participants: readonly EncounterParticipant[],
+  turnIndex: number,
+): { participants: EncounterParticipant[]; turnIndex: number } {
+  const activeId = participants[turnIndex]?.instanceId ?? null;
+  const sorted = [...participants].sort((a, b) => b.initiative - a.initiative);
+  const nextIndex = activeId === null ? turnIndex : sorted.findIndex((p) => p.instanceId === activeId);
+  return { participants: sorted, turnIndex: nextIndex >= 0 ? nextIndex : 0 };
+}
+
+/**
+ * Retire un participant et réaligne le pointeur de tour. Pur.
+ *
+ * Trois cas, et ils comptent en plein combat :
+ *   - retrait AVANT le tour actif → l'index recule d'un cran (sinon le tour
+ *     saute au combattant suivant sans qu'on ait rien fait) ;
+ *   - retrait DU combattant actif → l'index ne bouge pas : celui qui le suivait
+ *     prend le tour, ce qui est le comportement attendu quand un monstre meurt
+ *     et qu'on le sort de la liste ;
+ *   - retrait APRÈS → rien à faire.
+ * L'index final est clampé dans la nouvelle liste (retirer le dernier alors
+ * qu'il jouait ramène au premier).
+ */
+export function removeParticipantIn(
+  participants: readonly EncounterParticipant[],
+  instanceId: string,
+  turnIndex: number,
+): { participants: EncounterParticipant[]; turnIndex: number } {
+  const removedIndex = participants.findIndex((p) => p.instanceId === instanceId);
+  if (removedIndex === -1) return { participants: [...participants], turnIndex };
+
+  const next = participants.filter((p) => p.instanceId !== instanceId);
+  if (next.length === 0) return { participants: next, turnIndex: 0 };
+
+  const shifted = removedIndex < turnIndex ? turnIndex - 1 : turnIndex;
+  return { participants: next, turnIndex: Math.max(0, Math.min(next.length - 1, shifted)) };
+}
+
+/**
+ * Édite un participant en place et persiste (M2/M3). Read-then-write, comme
+ * tout le reste du service : réécrire le tableau depuis la closure React
+ * écraserait les PV appliqués entre-temps (DEBT D31 volet 1).
+ *
+ * Une initiative modifiée déclenche un re-tri (le MJ saisit une valeur POUR
+ * qu'elle prenne sa place dans l'ordre), en préservant le tour actif.
+ */
+export async function updateParticipant(
+  campaignId: string,
+  encounterId: string,
+  instanceId: string,
+  patch: ParticipantPatch,
+): Promise<void> {
+  const current = await getEncounter(campaignId, encounterId);
+  const patched = patchParticipantIn(current.participants, instanceId, patch);
+
+  if (patch.initiative === undefined) {
+    await setParticipants(campaignId, encounterId, patched);
+    return;
+  }
+
+  const sorted = sortByInitiative(patched, current.turnIndex);
+  const firestore = getDb();
+  await trackPendingWrite(
+    firestore,
+    updateDoc(encounterRef(campaignId, encounterId), {
+      participants: sorted.participants,
+      turnIndex: sorted.turnIndex,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/**
+ * Ajoute un combattant à une rencontre existante (M2) — le renfort qui arrive
+ * au round 3. Ajouté EN FIN de liste avec une initiative à 0 : il ne s'insère
+ * pas de lui-même dans l'ordre (ce serait déplacer le tour actif sous les pieds
+ * du MJ), le MJ lui saisit ou relance son initiative ensuite.
+ *
+ * L'`instanceId` est un auto-id Firestore et non `p{index}` : après un retrait,
+ * une numérotation positionnelle rejouerait un identifiant déjà porté par un
+ * autre combattant, et les PV atterriraient sur la mauvaise créature.
+ */
+export async function addParticipant(
+  campaignId: string,
+  encounterId: string,
+  input: CreateParticipantInput,
+): Promise<{ instanceId: string }> {
+  const current = await getEncounter(campaignId, encounterId);
+  const participant = buildParticipant(input, doc(encountersCol(campaignId)).id);
+  await setParticipants(campaignId, encounterId, [...current.participants, participant]);
+  return { instanceId: participant.instanceId };
+}
+
+/**
+ * Retire un combattant et persiste (M2) — le gobelin qui prend la fuite.
+ * Réaligne `turnIndex` dans la même écriture : le laisser à sa valeur ferait
+ * pointer le tour actif sur un autre combattant.
+ */
+export async function removeParticipant(
+  campaignId: string,
+  encounterId: string,
+  instanceId: string,
+): Promise<void> {
+  const current = await getEncounter(campaignId, encounterId);
+  const next = removeParticipantIn(current.participants, instanceId, current.turnIndex);
+  const firestore = getDb();
+  await trackPendingWrite(
+    firestore,
+    updateDoc(encounterRef(campaignId, encounterId), {
+      participants: next.participants,
+      turnIndex: next.turnIndex,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
 /**
  * Pose un état (condition) sur/retire d'un participant (step 7). Pur. `add`
  * idempotent (pas de doublon) ; `remove` no-op si absent.

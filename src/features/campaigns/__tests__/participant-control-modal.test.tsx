@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ParticipantPatch } from '@/shared/lib/services/encounters';
 import type { Condition, Monster } from '@/shared/types/content';
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
@@ -90,6 +91,8 @@ function renderModal(
     onGrantTempHp?: (amount: number) => void;
     onToggleCondition?: (condition: string, action: 'add' | 'remove') => void;
     onSaveNote?: (note: string) => void;
+    onUpdate?: (patch: ParticipantPatch) => void;
+    onRemove?: () => void;
     onClose?: () => void;
   } = {},
 ): {
@@ -97,12 +100,16 @@ function renderModal(
   onGrantTempHp: ReturnType<typeof vi.fn>;
   onToggleCondition: ReturnType<typeof vi.fn>;
   onSaveNote: ReturnType<typeof vi.fn>;
+  onUpdate: ReturnType<typeof vi.fn>;
+  onRemove: ReturnType<typeof vi.fn>;
   onClose: ReturnType<typeof vi.fn>;
 } {
   const onApplyHp = vi.fn(over.onApplyHp);
   const onGrantTempHp = vi.fn(over.onGrantTempHp);
   const onToggleCondition = vi.fn(over.onToggleCondition);
   const onSaveNote = vi.fn(over.onSaveNote);
+  const onUpdate = vi.fn(over.onUpdate);
+  const onRemove = vi.fn(over.onRemove);
   const onClose = vi.fn(over.onClose);
   render(
     <ParticipantControlModal
@@ -114,10 +121,20 @@ function renderModal(
       onGrantTempHp={onGrantTempHp}
       onToggleCondition={onToggleCondition}
       onSaveNote={onSaveNote}
+      onUpdate={onUpdate}
+      onRemove={onRemove}
       onClose={onClose}
     />,
   );
-  return { onApplyHp, onGrantTempHp, onToggleCondition, onSaveNote, onClose };
+  return {
+    onApplyHp,
+    onGrantTempHp,
+    onToggleCondition,
+    onSaveNote,
+    onUpdate,
+    onRemove,
+    onClose,
+  };
 }
 
 afterEach(() => {
@@ -275,5 +292,71 @@ describe('<ParticipantControlModal>', () => {
     expect(within(statDialog).getByText(/7 \(2d6\)/)).toBeInTheDocument();
     expect(within(statDialog).getByText(/Fuite agile/)).toBeInTheDocument();
     expect(within(statDialog).getByText(/Cimeterre/)).toBeInTheDocument();
+  });
+
+  // ── Édition du combattant (M2 / M3) ──────────────────────────────────
+  //
+  // Le mur d'origine : une rencontre créée était figée. Ces gestes changent
+  // la feuille de suivi, pas l'état de jeu — d'où l'absence d'event.
+
+  it('les champs d’édition partent des valeurs LIVE du combattant', () => {
+    renderModal({ participant: { name: 'Gobelin 2', initiative: 14, currentHp: 3, maxHp: 7 } });
+    expect(screen.getByLabelText('Nom')).toHaveValue('Gobelin 2');
+    expect(screen.getByLabelText('Initiative')).toHaveValue(14);
+    expect(screen.getByLabelText('PV actuels')).toHaveValue(3);
+    expect(screen.getByLabelText('PV maximum')).toHaveValue(7);
+  });
+
+  it('« Enregistrer » n’envoie QUE les champs réellement modifiés', () => {
+    const { onUpdate } = renderModal({
+      participant: { name: 'Gobelin 2', initiative: 14, currentHp: 3, maxHp: 7 },
+    });
+    fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(onUpdate).toHaveBeenCalledWith({ name: 'Chef' });
+  });
+
+  it('corrige des PV mal tapés (7 → 17) sans toucher au reste', () => {
+    const { onUpdate } = renderModal({ participant: { currentHp: 7, maxHp: 7 } });
+    fireEvent.change(screen.getByLabelText('PV maximum'), { target: { value: '17' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(onUpdate).toHaveBeenCalledWith({ maxHp: 17 });
+  });
+
+  it('saisit l’initiative annoncée à voix haute', () => {
+    const { onUpdate } = renderModal({ participant: { initiative: 0 } });
+    fireEvent.change(screen.getByLabelText('Initiative'), { target: { value: '19' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(onUpdate).toHaveBeenCalledWith({ initiative: 19 });
+  });
+
+  it('« Enregistrer » reste désactivé tant que rien n’a changé', () => {
+    renderModal();
+    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+  });
+
+  it('un champ vidé puis restauré ne produit aucun patch', () => {
+    const { onUpdate } = renderModal({ participant: { maxHp: 7 } });
+    const field = screen.getByLabelText('PV maximum');
+    fireEvent.change(field, { target: { value: '' } });
+    fireEvent.change(field, { target: { value: '7' } });
+    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('un champ vidé et laissé vide est ignoré plutôt que rejeté', () => {
+    const { onUpdate } = renderModal({ participant: { name: 'Gobelin', maxHp: 7 } });
+    fireEvent.change(screen.getByLabelText('PV maximum'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('le retrait se fait en deux temps (un geste irréversible ne part pas au premier tap)', () => {
+    const { onRemove } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer du combat' }));
+    expect(onRemove).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer le retrait' }));
+    expect(onRemove).toHaveBeenCalledTimes(1);
   });
 });

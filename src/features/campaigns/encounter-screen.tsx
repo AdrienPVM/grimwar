@@ -19,17 +19,23 @@ import {
   logTurnStart,
 } from '@/shared/lib/event-logger';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
+import { abilityModifier } from '@/shared/lib/rules/abilities';
 import {
+  addParticipant,
   advanceTurn,
   applyInitiativeRolls,
   applyParticipantHpDelta,
   endEncounter,
   EncounterServiceError,
   grantParticipantTempHp,
+  removeParticipant,
   rollInitiativeFor,
   setParticipantCondition,
   setParticipantNote,
   startEncounter,
+  updateParticipant,
+  type CreateParticipantInput,
+  type ParticipantPatch,
 } from '@/shared/lib/services/encounters';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 import {
@@ -44,6 +50,7 @@ import { deriveHandoffRows, HANDOFF_TTL_MS } from './encounter-handoff';
 import { EncounterHandoffPanel, type HandoffTarget } from './encounter-handoff-panel';
 import { hpBarColor, hpRatio } from './encounter-hp';
 import { EncounterPartyView } from './encounter-party-view';
+import { ParticipantAddModal } from './participant-add-modal';
 import { ParticipantControlModal } from './participant-control-modal';
 import { resolveInitiativeModifiers } from './resolve-initiative-modifiers';
 import { RosterOverlay } from './roster-overlay';
@@ -121,6 +128,8 @@ export function EncounterScreen(): JSX.Element {
   const [rerollingId, setRerollingId] = useState<string | null>(null);
   // instanceId du participant dont la modale de contrôle MJ est ouverte (24.4).
   const [controlTargetId, setControlTargetId] = useState<string | null>(null);
+  // Ajout d'un combattant en cours de rencontre (M2).
+  const [addOpen, setAddOpen] = useState<boolean>(false);
   // eventId des jets physiques déjà appliqués / ignorés par le MJ (step 7b).
   const [dismissedHandoffIds, setDismissedHandoffIds] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -136,6 +145,14 @@ export function EncounterScreen(): JSX.Element {
   // par son `monsterContentId` pour la modale de contrôle MJ. Vide tant qu'aucun
   // pack monstre n'est importé : la fiche n'est alors simplement pas proposée.
   const { data: monsterDefs } = useContent('monsters');
+
+  // Modificateur d'initiative des créatures (M3) : mod de DEX de leur fiche de
+  // bestiaire, indexé par slug. Jusqu'ici tout non-joueur lançait à +0 — un
+  // gobelin (DEX 14) partait donc systématiquement trop bas dans l'ordre.
+  const monsterInitModifiers = useMemo<Map<string, number>>(
+    () => new Map(monsterDefs.map((m) => [m.id, abilityModifier(m.abilities.dex)])),
+    [monsterDefs],
+  );
 
   const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
   const setActiveEncounter = useActiveCampaignStore((s) => s.setActiveEncounter);
@@ -192,7 +209,11 @@ export function EncounterScreen(): JSX.Element {
     setActionPending(true);
     setActionError(null);
     try {
-      const modifiers = await resolveInitiativeModifiers(encounter.participants, linkedMembers);
+      const modifiers = await resolveInitiativeModifiers(
+        encounter.participants,
+        linkedMembers,
+        monsterInitModifiers,
+      );
       const rolls = encounter.participants.map((p) =>
         rollInitiativeFor(p.instanceId, modifiers.get(p.instanceId) ?? 0),
       );
@@ -211,7 +232,11 @@ export function EncounterScreen(): JSX.Element {
     setRerollingId(participant.instanceId);
     setActionError(null);
     try {
-      const modifiers = await resolveInitiativeModifiers([participant], linkedMembers);
+      const modifiers = await resolveInitiativeModifiers(
+        [participant],
+        linkedMembers,
+        monsterInitModifiers,
+      );
       const roll = rollInitiativeFor(
         participant.instanceId,
         modifiers.get(participant.instanceId) ?? 0,
@@ -377,6 +402,56 @@ export function EncounterScreen(): JSX.Element {
     setActionError(null);
     try {
       await setParticipantNote(cid, eid, participant.instanceId, note);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Édition d'un combattant (M2/M3) — nom, PV, initiative. Aucun event : ce
+  // n'est pas un fait de jeu mais une correction de la feuille de suivi (les PV
+  // qui bougent VRAIMENT passent par `handleApplyHp`, qui journalise).
+  async function handleUpdateParticipant(
+    participant: EncounterParticipant,
+    patch: ParticipantPatch,
+  ): Promise<void> {
+    if (!cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await updateParticipant(cid, eid, participant.instanceId, patch);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Retrait d'un combattant (M2) — ferme la modale de contrôle, qui pointe
+  // sur un participant qui n'existe plus.
+  async function handleRemoveParticipant(participant: EncounterParticipant): Promise<void> {
+    if (!cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await removeParticipant(cid, eid, participant.instanceId);
+      setControlTargetId(null);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Renfort (M2) — entre en fin d'ordre, initiative 0 : le MJ la saisit ou
+  // la relance ensuite, sans déplacer le tour actif sous ses pieds.
+  async function handleAddParticipant(input: CreateParticipantInput): Promise<void> {
+    if (!cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await addParticipant(cid, eid, input);
     } catch {
       setActionError(t('encounters.action.error.generic'));
     } finally {
@@ -600,6 +675,18 @@ export function EncounterScreen(): JSX.Element {
                   </Button>
                 </>
               )}
+
+              {/* Le renfort (M2) : disponible en préparation ET en plein combat
+                  — c'est justement au round 3 qu'on en a besoin. */}
+              <Button
+                variant="ghost"
+                size="md"
+                onClick={() => setAddOpen(true)}
+                disabled={actionPending}
+                tooltip={t('campaigns.tip.addParticipant')}
+              >
+                {t('encounters.add.open')}
+              </Button>
             </div>
 
             {endMode && isActive ? (
@@ -717,7 +804,18 @@ export function EncounterScreen(): JSX.Element {
           onToggleCondition={(condition, action) =>
             void handleToggleCondition(controlTarget, condition, action)
           }
+          onUpdate={(patch) => void handleUpdateParticipant(controlTarget, patch)}
+          onRemove={() => void handleRemoveParticipant(controlTarget)}
           onClose={() => setControlTargetId(null)}
+        />
+      ) : null}
+
+      {isGm ? (
+        <ParticipantAddModal
+          open={addOpen}
+          pending={actionPending}
+          onAdd={(input) => void handleAddParticipant(input)}
+          onClose={() => setAddOpen(false)}
         />
       ) : null}
 
