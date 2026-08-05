@@ -9,6 +9,7 @@ import { addItemToInventory } from '@/shared/lib/inventory';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 import type { Item, MagicItem } from '@/shared/types/content';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 
 import { useUpdateCharacter } from '../../use-update-character';
 import { CustomItemForm } from './custom-item-form';
@@ -46,7 +47,7 @@ export function AddItemModal({
   const [qty, setQty] = useState<number>(1);
   const [busy, setBusy] = useState<boolean>(false);
 
-  const normalizedQuery = useMemo(() => normalize(query), [query]);
+  const normalizedQuery = useMemo(() => normalizeForSearch(query), [query]);
 
   const filtered = useMemo(() => {
     const combined: { item: Item | MagicItem; isMagic: boolean }[] = [
@@ -55,7 +56,7 @@ export function AddItemModal({
     ];
     if (!normalizedQuery) return combined.slice(0, 50);
     return combined
-      .filter((entry) => normalize(localize(entry.item.name)).includes(normalizedQuery))
+      .filter((entry) => normalizeForSearch(localize(entry.item.name)).includes(normalizedQuery))
       .slice(0, 50);
   }, [items, magicItems, normalizedQuery]);
 
@@ -255,9 +256,3 @@ export function AddItemModal({
   );
 }
 
-function normalize(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}

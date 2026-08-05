@@ -4,6 +4,7 @@ import { Chip } from '@/shared/components/chip';
 import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { Spell, SpellSchool } from '@/shared/types/content';
 
 import {
@@ -47,12 +48,12 @@ export function SpellBrowser(): JSX.Element {
   }, [spells]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return spells
       .filter((s) => {
         if (level !== 'all' && s.level !== level) return false;
         if (school !== 'all' && s.school !== school) return false;
-        if (q && !localize(s.name).toLocaleLowerCase('fr').includes(q))
+        if (q && !normalizeForSearch(localize(s.name)).includes(q))
           return false;
         return true;
       })

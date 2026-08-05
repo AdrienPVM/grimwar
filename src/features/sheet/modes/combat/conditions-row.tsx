@@ -4,6 +4,7 @@ import { Card, CardHeader } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 
@@ -42,11 +43,14 @@ export function ConditionsRow({ character, readOnly }: ConditionsRowProps): JSX.
   const byId = useMemo(() => new Map(conditions.map((c) => [c.id, c])), [conditions]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // Accents compris : « aveugle » doit proposer « Aveuglé ». Presque tous les
+    // libellés d'état du SRD FR en portent un — sans ça, la quasi-totalité de
+    // la liste est inatteignable à la frappe naturelle.
+    const q = normalizeForSearch(query);
     const candidates = conditions.filter((c) => !activeIds.includes(c.id));
     if (!q) return candidates;
     return candidates.filter(
-      (c) => localize(c.name).toLowerCase().includes(q) || c.id.includes(q),
+      (c) => normalizeForSearch(localize(c.name)).includes(q) || c.id.includes(q),
     );
   }, [conditions, activeIds, query]);
 

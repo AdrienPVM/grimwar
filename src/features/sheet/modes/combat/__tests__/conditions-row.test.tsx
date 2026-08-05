@@ -141,6 +141,24 @@ describe('ConditionsRow — lecture de la règle SRD + retrait depuis la modale'
     expect(within(dialog).queryByRole('button', { name: /Retirer cet état/ })).not.toBeInTheDocument();
   });
 
+  /**
+   * Presque tous les états du SRD FR portent un accent — Aveuglé, Charmé,
+   * Effrayé, Empoisonné, Paralysé, Pétrifié, Étourdi. Une recherche
+   * accent-sensible les rend donc quasiment tous introuvables à la frappe la
+   * plus naturelle, en plein combat, sur un clavier de téléphone.
+   */
+  it('chercher « aveugle » sans accent propose « Aveuglé »', async () => {
+    const user = userEvent.setup();
+    render(<ConditionsRow character={buildCharacter([])} readOnly={false} />);
+
+    await user.click(screen.getByRole('button', { name: '+ État' }));
+    await user.type(screen.getByRole('searchbox'), 'aveugle');
+
+    expect(
+      screen.getByRole('button', { name: blinded.name.fr }),
+    ).toBeInTheDocument();
+  });
+
   it('aucun état actif → message dédié', () => {
     render(<ConditionsRow character={buildCharacter([])} readOnly={false} />);
     expect(screen.getByText('Aucun état actif.')).toBeInTheDocument();

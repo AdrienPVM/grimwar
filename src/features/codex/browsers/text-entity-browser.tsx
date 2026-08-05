@@ -1,6 +1,7 @@
 import { useId, useMemo, useState, type JSX, type ReactNode } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 
 import {
   CodexEmpty,
@@ -26,7 +27,11 @@ export interface CodexEntry {
   eyebrow?: ReactNode;
   /** Sous-titre de la modale (chips). */
   subtitle?: ReactNode;
-  /** Texte minuscule servant au filtrage par recherche. */
+  /**
+   * Texte fouillé par la recherche, en plus du nom. Le browser le normalise
+   * lui-même (casse et accents) : un appelant n'a pas à connaître la forme
+   * attendue, et une seule des deux moitiés normalisée ne comparerait rien.
+   */
   searchText: string;
   /** Corps de la modale détail. */
   body: ReactNode;
@@ -52,13 +57,23 @@ export function TextEntityBrowser({
   const [active, setActive] = useState<CodexEntry | null>(null);
   const titleId = useId();
 
+  // Index normalisé calculé une fois par lot d'entrées, pas à chaque frappe.
+  const index = useMemo(
+    () =>
+      entries.map((entry) => ({
+        entry,
+        haystack: normalizeForSearch(`${entry.name} ${entry.searchText}`),
+      })),
+    [entries],
+  );
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     const list = q
-      ? entries.filter((e) => e.searchText.includes(q))
+      ? index.filter((e) => e.haystack.includes(q)).map((e) => e.entry)
       : entries.slice();
     return list.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-  }, [entries, query]);
+  }, [entries, index, query]);
 
   if (loading) return <CodexLoading />;
 

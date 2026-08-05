@@ -5,6 +5,7 @@ import { useContent } from '@/shared/hooks/use-content';
 import { formatMetersValue } from '@/shared/lib/rules/distance';
 import { getSkill } from '@/shared/lib/rules/skills';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type {
   Ancestry,
   Background,
@@ -21,10 +22,10 @@ import { TextEntityBrowser, type CodexEntry } from './text-entity-browser';
  */
 
 function lower(...parts: Array<string | null | undefined>): string {
-  return parts
-    .filter((p): p is string => Boolean(p))
-    .join(' ')
-    .toLocaleLowerCase('fr');
+  // `normalizeForSearch` et non un simple `toLowerCase` : le `searchText` est
+  // la moitié CONTENU de la comparaison, et une seule des deux moitiés
+  // normalisée ne sert à rien — « epee » ne rencontrerait toujours pas « épée ».
+  return normalizeForSearch(parts.filter((p): p is string => Boolean(p)).join(' '));
 }
 
 /** Traduit une liste de noms de compétences bruités (EN/PDF) → FR, via SKILLS. */

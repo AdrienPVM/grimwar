@@ -4,6 +4,7 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { formatCr } from '@/shared/lib/rules/challenge-rating';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type {
   Ancestry,
   Background,
@@ -96,10 +97,11 @@ interface IndexedHit {
 }
 
 function lower(...parts: Array<string | null | undefined>): string {
-  return parts
-    .filter((part): part is string => Boolean(part))
-    .join(' ')
-    .toLocaleLowerCase('fr');
+  // Normalisation accents comprise : le `searchText` est la moitié CONTENU de
+  // la comparaison, et normaliser la seule requête ne servirait à rien.
+  return normalizeForSearch(
+    parts.filter((part): part is string => Boolean(part)).join(' '),
+  );
 }
 
 /**
@@ -273,7 +275,7 @@ export function GlobalSearchBrowser(): JSX.Element {
 
   const grouped = useMemo(() => {
     if (trimmed.length < MIN_QUERY_LENGTH) return [];
-    const needle = trimmed.toLocaleLowerCase('fr');
+    const needle = normalizeForSearch(trimmed);
     const buckets = new Map<CodexCategoryId, IndexedHit[]>();
     for (const entry of catalog) {
       if (!entry.searchText.includes(needle)) continue;

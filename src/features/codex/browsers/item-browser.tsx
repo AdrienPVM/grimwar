@@ -6,6 +6,7 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { Item, ItemCategory } from '@/shared/types/content';
 
 import {
@@ -54,11 +55,11 @@ export function ItemBrowser(): JSX.Element {
   }, [items]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return items
       .filter((item) => {
         if (category !== 'all' && item.category !== category) return false;
-        if (q && !localize(item.name).toLocaleLowerCase('fr').includes(q))
+        if (q && !normalizeForSearch(localize(item.name)).includes(q))
           return false;
         return true;
       })

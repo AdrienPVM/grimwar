@@ -5,6 +5,7 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import { formatCr } from '@/shared/lib/rules/challenge-rating';
 import type { Monster } from '@/shared/types/content';
 
@@ -43,11 +44,11 @@ export function MonsterBrowser(): JSX.Element {
   }, [monsters]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return monsters
       .filter((m) => {
         if (size !== 'all' && m.size !== size) return false;
-        if (q && !localize(m.name).toLocaleLowerCase('fr').includes(q))
+        if (q && !normalizeForSearch(localize(m.name)).includes(q))
           return false;
         return true;
       })

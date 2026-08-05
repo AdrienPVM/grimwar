@@ -6,6 +6,7 @@ import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import type { Item, MagicItem, ItemCategory } from '@/shared/types/content';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 
 import type { ResolvedInventoryRow } from './use-inventory-derived';
 
@@ -36,13 +37,13 @@ export function InventoryList({
   readOnly,
 }: InventoryListProps): JSX.Element {
   const [query, setQuery] = useState<string>('');
-  const normalizedQuery = normalize(query);
+  const normalizedQuery = normalizeForSearch(query);
 
   const filteredItems = useMemo(() => {
     if (!normalizedQuery) return resolvedItems;
     return resolvedItems.filter((row) => {
       if (!row.content) return row.inventory.contentId.includes(normalizedQuery);
-      const name = normalize(localize(row.content.name));
+      const name = normalizeForSearch(localize(row.content.name));
       return name.includes(normalizedQuery);
     });
   }, [resolvedItems, normalizedQuery]);
@@ -238,9 +239,3 @@ function groupItems(rows: readonly ResolvedInventoryRow[]): readonly CategoryGro
     .sort((a, b) => a.order - b.order);
 }
 
-function normalize(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}

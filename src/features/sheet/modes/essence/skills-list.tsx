@@ -15,6 +15,7 @@ import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
 import { getSkillProficiency, SKILLS, skillModifier } from '@/shared/lib/rules/skills';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { Character, SkillProf } from '@/shared/types/character';
 
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
@@ -43,10 +44,11 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
   const pb = proficiencyBonus(totalLevel(character.classes));
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    // Accents compris : « representation » doit trouver « Représentation ».
+    const q = normalizeForSearch(query);
     if (!q) return SKILLS;
     return SKILLS.filter(
-      (s) => localize(s.name).toLowerCase().includes(q) || s.id.includes(q),
+      (s) => normalizeForSearch(localize(s.name)).includes(q) || s.id.includes(q),
     );
   }, [query]);
 
