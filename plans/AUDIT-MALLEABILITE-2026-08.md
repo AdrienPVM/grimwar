@@ -185,15 +185,44 @@ Trois lots, à livrer dans l'ordre. Le découpage suit une règle simple : **d'a
 > | ✅ | **M29** — export d'un pack de contenu maison | `49e9277` |
 > | ✅ | **M33** — « Vue joueur » sur la carte live | `49e9277` |
 >
-> **Reste du lot 1 :** M2, M3, M5, M7 (tracker éditable) · M11, M12, M13, M14 (cycle de vie) ·
-> M28 (scope d'objet), M30, M31, M32, M34 (carte en amont et côté joueur) ·
-> M39, M40, M41, M42 (PNJ).
+> **Lot 1 bis — 2026-08-05, 4 murs de plus** (commits `315a49d` → `2db1511`, locaux) :
 >
-> **Découverte de livraison :** M4 et M37 ont cassé trois specs e2e qui encodaient
-> l'ancien comportement (bouton « −10 » en dur, aria-label « Dégâts physiques à
-> appliquer »). La suite complète les avait rapportées « skipped » — il a fallu
-> les relancer isolément pour voir qu'elles échouaient vraiment. **Un `skipped` en
-> run complet n'est pas une preuve de vert.**
+> | Livré | Mur | Commit |
+> |---|---|---|
+> | ✅ | **M2** — combattant éditable, renfort, retrait | `315a49d` |
+> | ✅ | **M3** — initiative saisie + mod dérivé de la DEX | `315a49d` |
+> | ✅ | **M7** — tour précédent, abandon, réouverture, renommer/supprimer | `0b05524` |
+> | ✅ | **M5** — dégâts sur un PJ depuis le tracker | `94268c6` |
+>
+> **Reste du lot 1 :** M11, M12, M13, M14 (cycle de vie) · M28 (scope d'objet) ·
+> M30, M31, M32, M34 (carte en amont et côté joueur) · M39, M40, M41, M42 (PNJ).
+>
+> **Découverte de livraison (lot 1) :** M4 et M37 ont cassé trois specs e2e qui
+> encodaient l'ancien comportement (bouton « −10 » en dur, aria-label « Dégâts
+> physiques à appliquer »). La suite complète les avait rapportées « skipped » —
+> il a fallu les relancer isolément pour voir qu'elles échouaient vraiment.
+> **Un `skipped` en run complet n'est pas une preuve de vert.**
+>
+> **Découvertes de livraison (lot 1 bis) :**
+> 1. **Un bouton d'action sur une ligne de liste casse tous les sélecteurs de
+>    cette ligne.** Le « Gérer la rencontre — {nom} » de M7 a rendu ambigu
+>    `getByRole('button', { name: /{nom}/ })` dans **cinq** specs. Corrigé en
+>    ancrant au début (`^{nom}`) plutôt qu'en affaiblissant l'étiquette
+>    accessible — sans le nom, plusieurs boutons « Gérer » seraient
+>    indiscernables au lecteur d'écran.
+> 2. **`fullPage: true` ne capture PAS une modale entière.** Le panneau de
+>    `DetailModal` est en `max-h-[90vh] overflow-y-auto` et le scroll du document
+>    est bloqué : les captures « pleine page » sortaient byte-identiques aux
+>    viewport, tronquées silencieusement. Le helper `captureTallModal` agrandit
+>    temporairement le viewport. À réutiliser pour toute capture de modale.
+> 3. **Deux boutons « Enregistrer » dans la même modale** (la note et les
+>    corrections) — trouvé en écrivant la spec e2e, pas par un test unitaire.
+>    Renommé « Enregistrer les corrections ».
+> 4. **M5 n'a demandé aucun mécanisme neuf** : la voie omni-edit du plan 26
+>    (`PermissionProvider` + `useUpdateCharacter`) porte déjà le routage
+>    cross-owner, le diff journalisé et l'audit `dm-edit`. Un second mur est
+>    tombé au passage — les PV d'un participant joueur étaient un instantané figé
+>    à la création, que rien ne rafraîchissait.
 
 Aucun déploiement de rules, aucun changement de schéma Firestore, aucune décision produit à prendre. Chaque item rend vivant un artefact déjà payé.
 
@@ -201,8 +230,8 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 |---|---|---|
 | 1 | **M1** — plumbing `useActiveCampaignStore` (settings) | **Bloquant amont** : il débloque à lui seul `slowHealing`, l'épuisement débrayable (M55), le mode de dés de table, et sert de socle à M46 et M38. À faire en premier, tout le reste s'y branche. |
 | 2 | **M4, M6, M8, M9, M10, M15, M19, M28, M29, M33, M37** — les XS | Onze correctifs d'une à trente lignes. Le hand-off numérique (M4) et les états libres (M8) changent une séance dès le soir même. |
-| 3 | **M2, M3, M7** — le tracker devient éditable | Le cœur du lot. Ajouter/retirer/renommer un combattant, saisir une initiative, revenir d'un tour : c'est **la** différence entre un tracker de démo et un tracker de table. `firestore.rules:338` autorise déjà tout. |
-| 4 | **M5** — appliquer les dégâts aux PJ depuis le tracker | Complète M4 : la chaîne « le joueur lance → le MJ cible → les PV bougent » devient continue pour les deux modes de dés. |
+| 3 | ✅ **M2, M3, M7** — le tracker devient éditable | Le cœur du lot. Ajouter/retirer/renommer un combattant, saisir une initiative, revenir d'un tour : c'est **la** différence entre un tracker de démo et un tracker de table. `firestore.rules:338` autorise déjà tout. |
+| 4 | ✅ **M5** — appliquer les dégâts aux PJ depuis le tracker | Complète M4 : la chaîne « le joueur lance → le MJ cible → les PV bougent » devient continue pour les deux modes de dés. |
 | 5 | **M11, M12, M13, M14** — cycle de vie (roster, documents, séances, journal) | Tout ce qui rend une campagne **réparable** après une erreur : exclure, rétrograder, corriger un document, renommer une séance, retirer un event parasite. |
 | 6 | **M30, M31, M32, M34** — la carte devient utilisable en amont et côté joueur | Image nue + échelle réglable + zoom + vue joueur. Sans ça, seul un fichier Dungeon Alchemist bien formé produit une carte exploitable. |
 | 7 | **M39, M40, M41, M42** — les PNJ | Portrait, lien bestiaire, recherche, duplication inter-campagnes. Bon marché, très visible en séance. |
