@@ -293,7 +293,7 @@ aucun changement de schéma, aucune Cloud Function, aucun chemin protégé.
 | ~~E11~~ | ~~Repli « lire la règle » sur les cartes à texte SRD long~~ | 🟡 | S | ✅ **livré 2026-08-04**. Épuisement passe derrière `ConditionDetailModal`, la modale que la fiche utilise DÉJÀ pour tous les états — pas un dépliant inédit. Cinq cartes d'aperçu alignées sur le `line-clamp-2` de leurs deux sœurs |
 | ~~E12~~ | ~~Outils du meneur remontés / épinglés en séance~~ | 🟡 | S | ✅ **livré 2026-08-04**. Superposition (`DmToolsOverlay`) en séance ET en combat, pas duplication : le bloc-notes est cloisonné par campagne, c'est le même des trois côtés. La section du détail de campagne reste en place |
 | E13 | Notifications in-app (document, tour de jeu, combat) | 🟠 | L | 🟢 **étapes 1 et 2 livrées 2026-08-05** — cf. §I. Reste : signal PERSISTANT (le toast dure 6 s ; un joueur qui ne regarde pas son écran rate son tour), PNJ révélé, et le réglage « ne pas me notifier » |
-| E14 | Recherche transverse / palette de commandes | 🟡 | L | |
+| ~~E14~~ | ~~Recherche transverse / palette de commandes~~ | 🟡 | L | ✅ **livré 2026-08-05** — cf. §J. Palette ⌘K montée au-dessus des routes : personnages, campagnes, destinations, Codex. Les dix bundles ne se chargent qu'au-delà de deux frappes. **Découverte en relisant les captures** : la recherche existante ne classait rien — « entrave » répondait « Embruns prismatiques » (le corps de texte d'une entrée pesait autant que le NOM d'une autre, tri final alphabétique) |
 
 **Recommandation d'ordre** : E1 → E2 → E3 → E5 formaient un lot « navigation »
 cohérent et peu risqué — **livré le 2026-08-03**, cf. §F. **E4 a suivi le même
@@ -516,3 +516,65 @@ il est le seul actionnable.
   peut faire perdre le toast : le premier snapshot du nouveau montage est marqué
   « vu » sans bruit. C'est le prix à payer pour ne pas re-notifier un tour déjà
   en cours à chaque navigation — et le tracker, lui, reste juste.
+
+
+---
+
+## J. Ce que le lot du 2026-08-05 (2) livre (E14, et la fin de E13)
+
+### J.1 — Chercher sans savoir de quel genre est ce qu'on cherche
+
+⌘K / Ctrl+K, ou le bouton du bandeau, ouvre un champ unique qui atteint un
+personnage, une campagne, un écran, ou n'importe quelle entrée du Codex.
+Jusqu'ici chaque chose se cherchait là où elle vivait : il fallait donc d'abord
+SAVOIR de quel genre était ce qu'on cherchait pour choisir par où entrer. En
+pleine partie, la question n'arrive jamais rangée.
+
+Trois partis pris :
+
+- **Le Codex ne se charge qu'au-delà de deux frappes.** Ses dix bundles sont le
+  plus gros chargement de l'app ; les monter sur chaque écran pour le cas où
+  quelqu'un ouvrirait la palette serait payer partout ce qui sert parfois. Un
+  test le garde (« fermée, elle ne charge RIEN »).
+- **Un résultat s'ouvre sur la MÊME fiche que dans le Codex.** L'index et les
+  modales sont extraits en commun ; deux implémentations divergeraient au
+  premier bundle ajouté.
+- **Une règle consultée depuis la palette se pose PAR-DESSUS elle** — on lit
+  sans perdre ni sa fiche ni sa recherche.
+
+### J.2 — Une recherche qui trouve tout mais ne classe rien ne répond pas
+
+Le défaut n'a pas été trouvé par un test mais en regardant une capture :
+chercher « entrave » répondait « Embruns prismatiques ». Le classement est
+désormais nom exact → début de nom → début de mot → nom → description. La
+palette mêle les catégories (on y pose une question, on veut la réponse en
+tête) ; la page du Codex garde ses groupes (on y parcourt).
+
+Corollaire du même lot : **la recherche cessait de fonctionner sans accents**
+sur neuf sites. Presque tous les libellés d'état du SRD FR en portent un —
+Aveuglé, Charmé, Effrayé, Empoisonné, Paralysé, Pétrifié, Étourdi — donc la
+liste était quasiment inatteignable à la frappe naturelle. Piège : normaliser
+la seule requête ne compare rien, le texte indexé devait l'être aussi.
+
+### J.3 — La fin de E13 : les notifications deviennent silenciables
+
+Le réglage encode une distinction qui manquait au code : un toast de jet de dés
+est une RÉPONSE à un geste du joueur, une notification est une INTERRUPTION
+décidée par quelqu'un d'autre. Seules les secondes passent par `notifyPlayer` et
+se coupent. Le bandeau « c'est à toi » de la fiche, lui, reste : il n'interrompt
+rien, et le taire rendrait le joueur aveugle à son tour.
+
+### J.4 — Ce qui reste ouvert sur ce périmètre
+
+- **PNJ révélé et séance démarrée** ne sont toujours pas notifiés. C'est du
+  câblage, mais chaque écouteur ajouté est un `onSnapshot` permanent sur toutes
+  les surfaces de jeu : à peser, pas à empiler par symétrie. **Non fait.**
+- **La palette ne se souvient de rien.** Ni recherches récentes, ni personnages
+  les plus ouverts. Un classement par usage demanderait de compter les
+  ouvertures quelque part.
+- **Aucune action dans la palette**, seulement des destinations et des lectures.
+  « Lancer 1d20 », « repos court » y auraient leur place ; ça demande de décider
+  ce qui est sûr à déclencher sans confirmation depuis un champ de recherche.
+- `uat-review/account/` : la spec `account-uat.spec.ts` écrit dans un
+  SOUS-DOSSIER, contre la règle du dossier plat. À rapatrier au prochain lot qui
+  la touche.
