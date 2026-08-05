@@ -1579,6 +1579,11 @@ export type StringKey =
   | 'encounters.control.noteTitle'
   | 'encounters.control.notePlaceholder'
   | 'encounters.control.noteSave'
+  | 'encounters.playerControl.badge'
+  | 'encounters.playerControl.help'
+  | 'encounters.playerControl.loading'
+  | 'encounters.playerControl.unreadable'
+  | 'encounters.playerControl.open'
   | 'encounters.control.editTitle'
   | 'encounters.control.editName'
   | 'encounters.control.editInitiative'
@@ -4677,6 +4682,15 @@ const STRINGS: Record<Locale, Dict> = {
     // Encounters — édition d'un combattant en lice (M2/M3 de l'audit de
     // malléabilité) : renommer, corriger des PV mal tapés, saisir l'initiative
     // annoncée à voix haute, retirer celui qui prend la fuite.
+    // Encounters — contrôle des PV d'un PJ depuis le tracker (M5). L'écriture
+    // emprunte la voie omni-edit MJ, journalisée comme telle.
+    'encounters.playerControl.badge': 'Fiche du joueur',
+    'encounters.playerControl.help':
+      'Les points de vie sont appliqués sur sa fiche, et l’édition est journalisée.',
+    'encounters.playerControl.loading': 'Lecture de la fiche…',
+    'encounters.playerControl.unreadable':
+      'Fiche illisible : le joueur l’a peut-être déliée de la campagne.',
+    'encounters.playerControl.open': 'Points de vie',
     'encounters.control.editTitle': 'Modifier le combattant',
     'encounters.control.editName': 'Nom',
     'encounters.control.editInitiative': 'Initiative',
@@ -8066,6 +8080,13 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.noteTitle': 'Combatant note',
     'encounters.control.notePlaceholder': 'This one carries the key…',
     'encounters.control.noteSave': 'Save note',
+    'encounters.playerControl.badge': 'Player sheet',
+    'encounters.playerControl.help':
+      'Hit points are applied to their sheet, and the edit is logged.',
+    'encounters.playerControl.loading': 'Reading the sheet…',
+    'encounters.playerControl.unreadable':
+      'Sheet unreadable: the player may have unlinked it from the campaign.',
+    'encounters.playerControl.open': 'Hit points',
     'encounters.control.editTitle': 'Edit combatant',
     'encounters.control.editName': 'Name',
     'encounters.control.editInitiative': 'Initiative',

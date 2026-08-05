@@ -113,6 +113,29 @@ vi.mock('@/shared/hooks/use-content', () => ({
 
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
 
+// Le contrôle de PV d'un PJ (M5) tire toute la pile de fiche (`useCharacter`
+// temps-réel + omni-edit). Ici on ne teste que le CÂBLAGE : quelle modale
+// s'ouvre, sur quelle fiche, et ce que le tracker fait du retour. Le contenu de
+// la modale a son propre test (`player-control-modal.test.tsx`).
+vi.mock('../player-control-modal', () => ({
+  PlayerControlModal: ({
+    characterId,
+    ownerUid,
+    onApplied,
+  }: {
+    characterId: string;
+    ownerUid: string;
+    onApplied: (currentHp: number, maxHp: number) => void;
+  }) => (
+    <div data-testid="player-control">
+      {characterId}@{ownerUid}
+      <button type="button" onClick={() => onApplied(9, 20)}>
+        STUB_APPLY
+      </button>
+    </div>
+  ),
+}));
+
 import { EncounterScreen } from '../encounter-screen';
 import { t } from '@/shared/lib/i18n';
 import { EncounterServiceError } from '@/shared/lib/services/encounters';
@@ -389,16 +412,29 @@ describe('<EncounterScreen> — état active (MJ)', () => {
 });
 
 describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
-  it('le MJ voit « PV / États » sur la carte monstre, PAS sur la carte joueur', () => {
+  it('le MJ voit « PV / États » sur la carte monstre', () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
     renderScreen();
-    // Un seul bouton de contrôle (le monstre), pas deux.
     expect(
       screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }),
     ).toBeInTheDocument();
+    // La modale de monstre ne s'ouvre jamais sur un PJ : ses PV vivent sur sa
+    // fiche, et c'est un autre contrôle (M5).
     expect(
       screen.queryByRole('button', { name: /PV \/ États — Lyralei/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('un PJ dont la fiche n’est pas joignable n’offre aucun contrôle', () => {
+    campaignHolder.campaign = mkCampaign();
+    // Aucun membre lié : `characterId` du participant ne résout sur aucun
+    // propriétaire, donc il n'y a nulle part où écrire.
+    campaignHolder.members = [];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: /Points de vie — Lyralei/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -471,6 +507,48 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
     // (source unique : plus de doublon avec une vue de groupe).
     const turnList = screen.getByRole('list', { name: /Ordre d’initiative/ });
     expect(within(turnList).getByText('Empoisonné')).toBeInTheDocument();
+  });
+});
+
+describe('<EncounterScreen> — dégâts sur un PJ depuis le tracker (M5)', () => {
+  it('un PJ dont la fiche est liée ouvre le contrôle de PV', () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership({ characterId: 'char-a' })];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Points de vie — Lyralei/ }));
+    expect(screen.getByTestId('player-control')).toHaveTextContent('char-a@uid-player');
+  });
+
+  it('les PV appliqués sur la fiche se reflètent sur la carte du tracker', async () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership({ characterId: 'char-a' })];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    updateParticipantMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Points de vie — Lyralei/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'STUB_APPLY' }));
+
+    // Les PV du participant joueur étaient un instantané figé à la création :
+    // la carte affichait 20/20 pendant que le PJ agonisait.
+    await waitFor(() =>
+      expect(updateParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-a', {
+        currentHp: 9,
+        maxHp: 20,
+      }),
+    );
+  });
+
+  it('le joueur ne voit aucun contrôle de PV, même sur sa propre carte', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    campaignHolder.members = [mkMembership({ characterId: 'char-a' })];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: /Points de vie — Lyralei/ }),
+    ).not.toBeInTheDocument();
   });
 });
 

@@ -54,6 +54,7 @@ import { hpBarColor, hpRatio } from './encounter-hp';
 import { EncounterPartyView } from './encounter-party-view';
 import { ParticipantAddModal } from './participant-add-modal';
 import { ParticipantControlModal } from './participant-control-modal';
+import { PlayerControlModal } from './player-control-modal';
 import { resolveInitiativeModifiers } from './resolve-initiative-modifiers';
 import { RosterOverlay } from './roster-overlay';
 import { useCampaign } from './use-campaign';
@@ -497,6 +498,26 @@ export function EncounterScreen(): JSX.Element {
     }
   }
 
+  // ─── Reflet des PV d'un PJ sur la rencontre (M5) — les PV d'un participant
+  // joueur sont un INSTANTANÉ figé à la création, que rien ne rafraîchissait :
+  // la carte du tracker affichait 24/24 pendant que le PJ agonisait. La fiche
+  // reste la source de vérité ; on ne recopie ici que pour que la table voie
+  // juste. Aucun event : `useUpdateCharacter` a déjà journalisé le vrai
+  // changement (`hp-change` + audit `dm-edit`).
+  async function handleMirrorPlayerHp(
+    participant: EncounterParticipant,
+    currentHp: number,
+    maxHp: number,
+  ): Promise<void> {
+    if (!cid || !eid) return;
+    try {
+      await updateParticipant(cid, eid, participant.instanceId, { currentHp, maxHp });
+    } catch {
+      // Le reflet a échoué mais les PV réels sont posés : on ne remonte pas une
+      // erreur qui laisserait croire que les dégâts n'ont pas été appliqués.
+    }
+  }
+
   // ─── Renfort (M2) — entre en fin d'ordre, initiative 0 : le MJ la saisit ou
   // la relance ensuite, sans déplacer le tour actif sous ses pieds.
   async function handleAddParticipant(input: CreateParticipantInput): Promise<void> {
@@ -582,6 +603,21 @@ export function EncounterScreen(): JSX.Element {
   const controlTarget =
     controlTargetId !== null
       ? (encounter.participants.find((p) => p.instanceId === controlTargetId) ?? null)
+      : null;
+
+  // Propriétaire de la fiche d'un participant joueur (M5) — sans lui, aucune
+  // écriture n'est possible (le doc vit sous `users/{ownerUid}`) : le contrôle
+  // n'est alors pas proposé.
+  const ownerOfCharacter = (characterId: string | null): string | null =>
+    characterId === null
+      ? null
+      : (linkedMembers.find((m) => m.characterId === characterId)?.userId ?? null);
+
+  // Cible de contrôle joueur — distincte de `controlTarget` : les PV d'un PJ
+  // vivent sur SA fiche, pas sur le participant (qui n'en porte qu'un reflet).
+  const playerControlTarget =
+    controlTarget?.type === 'player' && ownerOfCharacter(controlTarget.characterId) !== null
+      ? controlTarget
       : null;
 
   // Fiche de créature liée à la cible de contrôle (si autofill depuis le
@@ -874,9 +910,19 @@ export function EncounterScreen(): JSX.Element {
                 canReroll={canRoll}
                 rerolling={rerollingId === participant.instanceId}
                 onReroll={() => handleReroll(participant)}
-                // Contrôle MJ (step 7) : monstres / PNJ uniquement, MJ uniquement.
-                // Le PJ se gère sur sa propre fiche.
-                canControl={isGm && participant.type !== 'player'}
+                // Contrôle MJ (step 7). Un PJ y donne accès aussi (M5), à
+                // condition que sa fiche soit joignable — sinon il n'y a rien
+                // à écrire.
+                canControl={
+                  isGm &&
+                  (participant.type !== 'player' ||
+                    ownerOfCharacter(participant.characterId) !== null)
+                }
+                controlLabel={
+                  participant.type === 'player'
+                    ? t('encounters.playerControl.open')
+                    : t('encounters.control.open')
+                }
                 onControl={() => setControlTargetId(participant.instanceId)}
                 resolveConditionLabel={conditionLabel}
               />
@@ -901,7 +947,21 @@ export function EncounterScreen(): JSX.Element {
         </>
       )}
 
-      {isGm && controlTarget ? (
+      {/* Un PJ ciblé ouvre SA fiche, pas la modale de monstre : les PV d'un
+          personnage joueur n'ont qu'un reflet sur la rencontre (M5). */}
+      {isGm && playerControlTarget ? (
+        <PlayerControlModal
+          characterId={playerControlTarget.characterId as string}
+          ownerUid={ownerOfCharacter(playerControlTarget.characterId) as string}
+          fallbackName={playerControlTarget.name}
+          onApplied={(currentHp, maxHp) =>
+            void handleMirrorPlayerHp(playerControlTarget, currentHp, maxHp)
+          }
+          onClose={() => setControlTargetId(null)}
+        />
+      ) : null}
+
+      {isGm && controlTarget && !playerControlTarget ? (
         <ParticipantControlModal
           participant={controlTarget}
           conditions={conditionDefs}
@@ -992,8 +1052,10 @@ interface ParticipantCardProps {
   canReroll: boolean;
   rerolling: boolean;
   onReroll: () => void;
-  /** Le MJ peut ouvrir la modale de contrôle (monstres / PNJ uniquement). */
+  /** Le MJ peut ouvrir la modale de contrôle. */
   canControl: boolean;
+  /** Libellé du bouton — un PJ mène à sa fiche, pas à la modale de monstre. */
+  controlLabel: string;
   onControl: () => void;
   resolveConditionLabel: (id: string) => string;
 }
@@ -1006,6 +1068,7 @@ function ParticipantCard({
   rerolling,
   onReroll,
   canControl,
+  controlLabel,
   onControl,
   resolveConditionLabel,
 }: ParticipantCardProps): JSX.Element {
@@ -1107,10 +1170,10 @@ function ParticipantCard({
           variant="secondary"
           size="sm"
           onClick={onControl}
-          aria-label={`${t('encounters.control.open')} — ${participant.name}`}
+          aria-label={`${controlLabel} — ${participant.name}`}
           tooltip={t('campaigns.tip.controlParticipant')}
         >
-          {t('encounters.control.open')}
+          {controlLabel}
         </Button>
       ) : null}
     </li>
