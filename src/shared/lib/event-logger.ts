@@ -14,7 +14,7 @@ import { getDb } from '@/shared/lib/firebase';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 import { useAuthStore } from '@/shared/lib/slices/auth-slice';
 import type { Character } from '@/shared/types/character';
-import type { NewGameEvent } from '@/shared/types/event';
+import type { EventVisibility, NewGameEvent } from '@/shared/types/event';
 
 /**
  * Point d'entrée UNIQUE du journal d'événements (docs/EVENT-LOG.md).
@@ -77,11 +77,14 @@ async function writeEvent(input: NewGameEvent, campaignIdOverride?: string): Pro
  * le total et les flags crit/fumble/avantage — le compilateur de journal
  * (plan 25) distingue les tables physiques pour la couleur narrative.
  */
-export async function logRoll(result: RollResult): Promise<void> {
+export async function logRoll(
+  result: RollResult,
+  visibility: EventVisibility = 'all',
+): Promise<void> {
   const written = await writeEvent({
     kind: 'roll',
     actorCharacterId: result.characterId || null,
-    visibility: 'all',
+    visibility,
     payload: {
       label: result.label,
       rollKind: result.kind,
@@ -463,8 +466,11 @@ export async function deleteEvent(campaignId: string, eventId: string): Promise<
  * Back-compat : le pivot de dés (plan 12 / 12.5) appelle ce nom depuis quatre
  * call sites. C'était un stub no-op ; il délègue maintenant au vrai `logRoll`.
  */
-export async function logRollIfCampaign(result: RollResult): Promise<void> {
-  await logRoll(result);
+export async function logRollIfCampaign(
+  result: RollResult,
+  visibility: EventVisibility = 'all',
+): Promise<void> {
+  await logRoll(result, visibility);
 }
 
 /**

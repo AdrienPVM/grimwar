@@ -76,6 +76,7 @@ export function SavesRow({
       baseMod: mod,
       label: t('sheet.essence.saves.rollLabel').replace('{ability}', t(ABILITY_SHORT_KEYS[ability])),
       advantage: options.advantage,
+      discreet: options.discreet,
       useInspiration: options.useInspiration,
       bonus: options.bonus,
       consumeInspiration: async () => {

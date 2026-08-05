@@ -27,6 +27,13 @@ export interface RollOptions {
   readonly advantage: Advantage;
   readonly useInspiration: boolean;
   readonly bonus: number;
+  /**
+   * Jet DISCRET (M43) : journalisé en visibilité `self` au lieu de `all`.
+   * Le joueur voit son jet, la table ne le voit pas passer. La visibilité
+   * était codée en dur à l'écriture dans tous les loggers — `'self'` était
+   * déclaré au schéma, géré en lecture, et jamais écrit.
+   */
+  readonly discreet: boolean;
 }
 
 interface RollOptionsMenuProps {
@@ -52,9 +59,10 @@ export function RollOptionsMenu({
 }: RollOptionsMenuProps): JSX.Element {
   const [useInspiration, setUseInspiration] = useState<boolean>(false);
   const [bonus, setBonus] = useState<number>(0);
+  const [discreet, setDiscreet] = useState<boolean>(false);
 
   const pick = (advantage: Advantage): void =>
-    onPick({ advantage, useInspiration, bonus });
+    onPick({ advantage, useInspiration, bonus, discreet });
 
   return (
     <div
@@ -121,6 +129,27 @@ export function RollOptionsMenu({
           </button>
         )}
 
+        <button
+          type="button"
+          role="switch"
+          aria-checked={discreet}
+          onClick={() => setDiscreet((v) => !v)}
+          data-testid="roll-options-discreet"
+          className={cn(
+            'flex items-center justify-between gap-3 rounded-card-sm border px-3 py-2 text-left transition-colors duration-200 ease-base',
+            discreet
+              ? 'border-gold-bright bg-gold-bright/10 text-gold-bright'
+              : 'border-white-8 bg-white/[0.03] text-text-secondary hover:border-gold-dim',
+          )}
+        >
+          <span className="font-title text-[10px] font-bold uppercase tracking-[0.16em]">
+            {t('dice.options.discreet')}
+          </span>
+          <span aria-hidden className="font-display text-[14px]">
+            {discreet ? '◆' : '◇'}
+          </span>
+        </button>
+
         {(['advantage', 'normal', 'disadvantage'] as const).map((mode) => (
           <button
             key={mode}
@@ -146,6 +175,12 @@ export function RollOptionsMenu({
             {t('dice.options.inspirationNote')}
           </p>
         )}
+
+        {discreet && (
+          <p className="text-center font-serif text-[11px] italic text-text-faint">
+            {t('dice.options.discreetNote')}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -159,4 +194,5 @@ export const NORMAL_ROLL: RollOptions = {
   advantage: 'normal',
   useInspiration: false,
   bonus: 0,
+  discreet: false,
 };

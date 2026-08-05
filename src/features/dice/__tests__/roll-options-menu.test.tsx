@@ -30,6 +30,7 @@ describe('RollOptionsMenu', () => {
       advantage: 'normal',
       useInspiration: false,
       bonus: 0,
+      discreet: false,
     });
   });
 
@@ -96,6 +97,27 @@ describe('RollOptionsMenu', () => {
       advantage: 'normal',
       useInspiration: false,
       bonus: 0,
+      discreet: false,
     });
+  });
+});
+
+describe('RollOptionsMenu — jet discret (M43)', () => {
+  it('remonte `discreet: true` une fois l’interrupteur activé', () => {
+    const onPick = vi.fn();
+    render(
+      <RollOptionsMenu
+        title="Discrétion"
+        ariaLabel="Options du jet"
+        hasInspiration={false}
+        onPick={onPick}
+        onClose={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('roll-options-discreet'));
+    fireEvent.click(screen.getByTestId('roll-options-normal'));
+    expect(onPick).toHaveBeenCalledWith(
+      expect.objectContaining({ discreet: true }),
+    );
   });
 });

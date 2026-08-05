@@ -61,6 +61,12 @@ export interface RollWithFlagsArgs {
    * S'ajoute au modificateur dérivé sans rien persister sur la fiche.
    */
   bonus?: number;
+  /**
+   * Jet DISCRET (M43) : l'événement part en visibilité `self` — le joueur voit
+   * son jet, la table ne le voit pas passer. Le plateau et l'historique local
+   * sont inchangés : c'est la JOURNALISATION qui est discrète, pas le jet.
+   */
+  discreet?: boolean;
   /** Persiste `inspiration: false` quand l'inspiration est consommée. */
   consumeInspiration?: () => Promise<void> | void;
   /** Si `true`, n'émet PAS le toast par défaut. Utilisé par `rollAttackDamage`
@@ -83,6 +89,7 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     advantage = 'normal',
     useInspiration = false,
     bonus = 0,
+    discreet = false,
     consumeInspiration,
     silent = false,
     skillId,
@@ -112,7 +119,7 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     // d20 au moment où il roule, pas seulement lire son total après coup.
     presentRollOnTray(result);
     if (!silent) emitD20Toast(result, effectiveMod);
-    await logRollIfCampaign(result);
+    await logRollIfCampaign(result, discreet ? 'self' : 'all');
     void persistRollHistory(result);
     return result;
   }
@@ -140,7 +147,7 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     await consumeInspiration();
   }
   if (!silent) emitD20Toast(result, effectiveMod);
-  await logRollIfCampaign(result);
+  await logRollIfCampaign(result, discreet ? 'self' : 'all');
   void persistRollHistory(result);
   return result;
 }

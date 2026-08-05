@@ -91,6 +91,7 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
       // skillId (slug machine) → stats.skillUses[skillId] côté event-logger (22.2).
       skillId,
       advantage: options.advantage,
+      discreet: options.discreet,
       useInspiration: options.useInspiration,
       bonus: options.bonus,
       consumeInspiration: async () => {

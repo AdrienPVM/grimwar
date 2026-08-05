@@ -317,6 +317,7 @@ export function SpellDetailModal({
       baseMod: pb + mod,
       label: t('sheet.magie.detail.attackLabel').replace('{spell}', localize(spell.name)),
       advantage: options.advantage,
+      discreet: options.discreet,
       useInspiration: options.useInspiration,
       bonus: options.bonus,
       consumeInspiration: async () => {

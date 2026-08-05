@@ -105,6 +105,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
       label: t('sheet.combat.hud.initiativeLabel'),
       kind: 'init',
       advantage: options.advantage,
+      discreet: options.discreet,
       useInspiration: options.useInspiration,
       bonus: options.bonus,
       consumeInspiration: async () => {

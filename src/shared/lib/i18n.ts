@@ -3042,6 +3042,8 @@ export type StringKey =
   // jets de mort et attaques de sort (M21/M22/M23)
   | 'dice.options.bonus'
   | 'dice.options.bonusAria'
+  | 'dice.options.discreet'
+  | 'dice.options.discreetNote'
   | 'dice.options.useInspiration'
   | 'dice.options.inspirationNote'
   | 'dice.options.title'
@@ -6819,6 +6821,9 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.tip.closeHistory': 'Ferme l’historique des jets.',
     'dice.history.title': 'Historique des jets',
     'dice.options.bonus': 'Bonus ponctuel',
+    'dice.options.discreet': 'Jet discret',
+    'dice.options.discreetNote':
+      'Le jet part dans ton journal seul — la table ne le voit pas passer.',
     'dice.options.bonusAria': 'Bonus ponctuel appliqué à ce jet',
     'dice.options.useInspiration': 'Dépenser l’inspiration',
     'dice.options.inspirationNote':
@@ -10393,6 +10398,9 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.tip.closeHistory': 'Close the roll history.',
     'dice.history.title': 'Roll history',
     'dice.options.bonus': 'One-off bonus',
+    'dice.options.discreet': 'Discreet roll',
+    'dice.options.discreetNote':
+      'The roll goes to your own log only — the table will not see it.',
     'dice.options.bonusAria': 'One-off bonus applied to this roll',
     'dice.options.useInspiration': 'Spend inspiration',
     'dice.options.inspirationNote':

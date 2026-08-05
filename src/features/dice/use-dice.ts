@@ -54,6 +54,8 @@ export interface RollD20Opts extends CharacterCtx {
   useInspiration?: boolean;
   /** Bonus ponctuel du moment (Bénédiction, faveur du MJ). */
   bonus?: number;
+  /** Jet discret (M43) : journalisé en visibilité `self`. */
+  discreet?: boolean;
   silent?: boolean;
 }
 
@@ -103,6 +105,7 @@ async function rollD20Plus(modifier: number, opts: RollD20Opts): Promise<RollRes
     advantage: opts.advantage,
     useInspiration: opts.useInspiration,
     bonus: opts.bonus,
+    discreet: opts.discreet,
     consumeInspiration: opts.consumeInspiration,
     silent: opts.silent,
   };

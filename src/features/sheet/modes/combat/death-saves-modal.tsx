@@ -70,6 +70,7 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
       label: t('sheet.combat.death.rollLabel'),
       kind: 'death-save',
       advantage: options.advantage,
+      discreet: options.discreet,
       useInspiration: options.useInspiration,
       bonus: options.bonus,
       silent: true,
