@@ -44,6 +44,23 @@ async function captureViewport(page: Page, name: string): Promise<void> {
   writeFileSync(path.join(UAT_DIR, name), await page.screenshot({ animations: 'disabled' }));
 }
 
+/**
+ * Capture le contenu EXHAUSTIF d'une modale.
+ *
+ * `fullPage: true` ne suffit pas ici : le panneau de `DetailModal` est en
+ * `max-h-[90vh] overflow-y-auto` et le scroll de la page est bloqué pendant
+ * qu'une modale est ouverte — Playwright étend le viewport à la hauteur du
+ * `<html>`, pas à celle d'un conteneur scrollé indépendamment, et rendrait donc
+ * une capture tronquée *silencieusement* (elle sortait byte-identique à la
+ * viewport). On agrandit temporairement le viewport : `90vh` suit, la modale
+ * tient sans scroll interne, et on restaure ensuite.
+ */
+async function captureTallModal(page: Page, name: string): Promise<void> {
+  await page.setViewportSize({ width: DESKTOP.width, height: 2200 });
+  writeFileSync(path.join(UAT_DIR, name), await page.screenshot({ animations: 'disabled' }));
+  await page.setViewportSize({ ...DESKTOP });
+}
+
 async function createCampaign(page: Page, name: string): Promise<string> {
   await page.goto('/campaigns');
   await waitForAppReady(page);
@@ -117,7 +134,7 @@ test.describe('UAT — le tracker devient éditable et réparable', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByLabel('Initiative')).toHaveValue('15');
     await captureViewport(page, '02-modale-modifier-combattant.png');
-    await captureFull(page, '02b-modale-modifier-combattant-pleine-page.png');
+    await captureTallModal(page, '02b-modale-modifier-combattant-entiere.png');
 
     // ─── 03 — Renommé, PV corrigés, initiative saisie : « Gobelin 2 » devient le chef.
     await dialog.getByLabel('Nom').fill('Chef gobelin');
@@ -152,7 +169,7 @@ test.describe('UAT — le tracker devient éditable et réparable', () => {
     // des cartes restées derrière l'overlay.
     await addDialog.getByLabel('PV', { exact: true }).fill('59');
     await captureViewport(page, '06-modale-ajout-combattant.png');
-    await captureFull(page, '06b-modale-ajout-combattant-pleine-page.png');
+    await captureTallModal(page, '06b-modale-ajout-combattant-entiere.png');
 
     await page.getByRole('button', { name: 'Ajouter au combat' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -266,7 +283,7 @@ test.describe('UAT — le tracker devient éditable et réparable', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText('28/28')).toBeVisible({ timeout: 15_000 });
     await captureViewport(page, '13-modale-pv-joueur.png');
-    await captureFull(page, '13b-modale-pv-joueur-pleine-page.png');
+    await captureTallModal(page, '13b-modale-pv-joueur-entiere.png');
 
     // ─── 14 — 22 dégâts appliqués : la fiche encaisse, le tracker cesse de mentir.
     await dialog.getByLabel('Montant').fill('22');
