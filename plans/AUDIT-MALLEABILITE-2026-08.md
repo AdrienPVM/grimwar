@@ -306,6 +306,48 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 > | ✅ | **M20** — formule de dés libre | `c233214` |
 > | ✅ | **M16** (partie `speed`/`initiative`) — cellules éditables | `1d4e944` |
 > | ✅ | **M24** — maximum de réserve accordé et éditable | `1d4e944` |
+> **Lot 2 (suite) — 2026-08-06, 7 murs de plus** (commits `4978be8` → `1e20b54`,
+> locaux). La rangée 1 (« la fiche devient pilotable ») est CLOSE, la rangée 2
+> aussi.
+>
+> | Livré | Mur | Commit |
+> |---|---|---|
+> | ✅ | **M18** — nom et alignement éditables après la création | `4978be8` |
+> | ✅ | **M17** — compétences, sauvegardes, langues, maîtrises d'équipement | `7ce87f0` |
+> | ✅ | **M25** — classe accordée hors prérequis par le meneur | `8142932` |
+> | ✅ | **M26** — sort appris en jeu, préparable, plafond qui avertit | `53e6095` |
+> | ✅ | **M27** — objet maison forgé pour de vrai (dégâts compris) | `833a9f9` |
+> | ✅ | **M49** — relancer un jet depuis l'historique | `76970bc` |
+> | ✅ | **M43** — jet discret (visibilité `self` enfin écrite) | `9c3dced` |
+>
+> **Découvertes de livraison :**
+>
+> 1. **La fiche affichait le CODE d'alignement, pas son libellé.** Un joueur
+>    lisait « LB » là où il attendait « Loyal Bon ». Le champ persiste un code
+>    depuis toujours ; personne ne le traduisait à l'affichage. Trouvé en
+>    branchant l'édition, vu rouge avant vert.
+> 2. **Deux résolveurs jetaient en silence ce qu'on venait de leur donner.**
+>    Une maîtrise libre (« Armure de plates naine ») ne passe pas la
+>    normalisation, qui ne connaît que le vocabulaire SRD anglais ; une langue
+>    hors des 16 du registre non plus. Les deux disparaissaient de la fiche
+>    juste après avoir été saisies. Conservées littérales désormais.
+> 3. **M26 en cachait un second.** Ajouter un sort ne suffisait pas : le pool
+>    de préparation ne retenait que `s.classes.includes(classId)`, donc le sort
+>    ajouté aurait été visible et MORT. Le plafond, lui, cesse de refuser — il
+>    est dérivé du contenu, pas invariant de données.
+> 4. **M27 ne pouvait pas fonctionner du tout.** Le formulaire écrivait sous un
+>    chemin à CINQ segments que `doc()` refuse : la création levait. Même cause
+>    que M28, même remède (les packs). Et il ne collectait pas les dégâts, donc
+>    toute arme forgée serait restée injouable.
+> 5. **Troisième occurrence du piège « une affordance ajoutée casse ce qui
+>    désignait la carte ».** Le bouton d'édition s'appelait « Maîtrises »,
+>    comme le titre de sa carte et comme ses trois frères : quatre commandes
+>    distinctes annoncées à l'identique au lecteur d'écran. Attrapé par une
+>    spec e2e existante (`sheet-fidelity-uat`), pas par la nouvelle.
+>
+> **Reste du lot 2 :** M44, M45, M46, M55 (rangée 3) · M50 à M54 (rangée 4) ·
+> M16 partie CA (`acOverride`) et M38 plafond réglable, tous deux schéma.
+
 > | ⚠ | **M38** — moitié client livrée (`1d4e944`) : harmonisation offerte sur tout objet magique, plafond qui AVERTIT au lieu de refuser. Le plafond **réglable par campagne** demande un champ `settings.attunementCap` → **schéma, arbitrage Adrien**. |
 >
 > **Découvertes de livraison :**
