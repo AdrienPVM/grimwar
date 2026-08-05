@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import type { Npc } from '@/shared/types/npc';
 
-import { collectNpcFacets, EMPTY_NPC_FILTER, filterNpcs } from '../npc-filter';
+import {
+  collectNpcFacets,
+  EMPTY_NPC_FILTER,
+  filterNpcs,
+  sortNpcs,
+} from '../npc-filter';
 
 function npc(overrides: Partial<Npc>): Npc {
   return {
@@ -61,12 +66,102 @@ describe('filterNpcs', () => {
   });
 
   it('combine les filtres en ET logique', () => {
-    const r = filterNpcs(LIST, { role: 'merchant', tag: 'recurring', location: 'Valombre' });
+    const r = filterNpcs(LIST, {
+      ...EMPTY_NPC_FILTER,
+      role: 'merchant',
+      tag: 'recurring',
+      location: 'Valombre',
+    });
     expect(r.map((n) => n.id)).toEqual(['a']);
   });
 
   it('renvoie vide si aucun PNJ ne satisfait tous les critères', () => {
-    const r = filterNpcs(LIST, { role: 'enemy', tag: 'magic', location: null });
+    const r = filterNpcs(LIST, { ...EMPTY_NPC_FILTER, role: 'enemy', tag: 'magic' });
     expect(r).toHaveLength(0);
+  });
+});
+
+describe('filterNpcs — recherche texte (M41)', () => {
+  const SEARCHABLE: Npc[] = [
+    npc({
+      id: 'aldric',
+      name: 'Aldric',
+      location: 'Valombre',
+      shortDescription: 'Marchand bourru.',
+      tags: ['receleur'],
+      dmNotes: 'Il trahira au chapitre 3.',
+    }),
+    npc({ id: 'belric', name: 'Belric', location: 'Donjon' }),
+    npc({ id: 'elyas', name: 'Frère Élyas', location: 'Temple' }),
+  ];
+
+  it('retrouve un PNJ par son nom', () => {
+    const r = filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: 'aldric' });
+    expect(r.map((n) => n.id)).toEqual(['aldric']);
+  });
+
+  it('ignore les accents — « elyas » trouve « Frère Élyas »', () => {
+    const r = filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: 'elyas' });
+    expect(r.map((n) => n.id)).toEqual(['elyas']);
+  });
+
+  it('cherche aussi dans le lieu, l’accroche et les étiquettes', () => {
+    expect(
+      filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: 'donjon' }).map((n) => n.id),
+    ).toEqual(['belric']);
+    expect(
+      filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: 'bourru' }).map((n) => n.id),
+    ).toEqual(['aldric']);
+    expect(
+      filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: 'receleur' }).map((n) => n.id),
+    ).toEqual(['aldric']);
+  });
+
+  it('NE cherche PAS dans les notes MJ — l’annuaire est lu par les joueurs', () => {
+    const r = filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: 'trahira' });
+    expect(r).toHaveLength(0);
+  });
+
+  it('une requête vide ou blanche laisse la liste intacte', () => {
+    expect(filterNpcs(SEARCHABLE, { ...EMPTY_NPC_FILTER, query: '   ' })).toHaveLength(3);
+  });
+
+  it('se combine en ET avec les facettes', () => {
+    const r = filterNpcs(SEARCHABLE, {
+      ...EMPTY_NPC_FILTER,
+      query: 'ric',
+      location: 'Donjon',
+    });
+    expect(r.map((n) => n.id)).toEqual(['belric']);
+  });
+});
+
+describe('sortNpcs', () => {
+  const LIST_SORT: Npc[] = [
+    npc({ id: 'c', name: 'Zorg' }),
+    npc({ id: 'a', name: 'Élyas' }),
+    npc({ id: 'b', name: 'aldric' }),
+  ];
+
+  it('« ordre de rencontre » préserve l’ordre reçu du service', () => {
+    expect(sortNpcs(LIST_SORT, 'introduction').map((n) => n.id)).toEqual([
+      'c',
+      'a',
+      'b',
+    ]);
+  });
+
+  it('« alphabétique » respecte l’alphabet français (É se range avec E)', () => {
+    expect(sortNpcs(LIST_SORT, 'alpha').map((n) => n.name)).toEqual([
+      'aldric',
+      'Élyas',
+      'Zorg',
+    ]);
+  });
+
+  it('ne mute pas la liste reçue', () => {
+    const input = [...LIST_SORT];
+    sortNpcs(input, 'alpha');
+    expect(input.map((n) => n.id)).toEqual(['c', 'a', 'b']);
   });
 });

@@ -10,6 +10,7 @@ import { PageContainer } from '@/shared/components/page-container';
 import { Splash } from '@/shared/components/splash';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { matchesSearch } from '@/shared/lib/search-normalize';
 import {
   archiveHandout,
   deleteHandout,
@@ -49,6 +50,7 @@ export function CampaignHandoutsScreen(): JSX.Element {
   const { handouts, isLoading, error, refresh } = useHandouts(cid, isDM);
 
   const [createOpen, setCreateOpen] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>('');
   const [editing, setEditing] = useState<Handout | null>(null);
   const [viewing, setViewing] = useState<Handout | null>(null);
   // Suppression confirmée en deux temps, par document — même patron que le
@@ -72,13 +74,24 @@ export function CampaignHandoutsScreen(): JSX.Element {
     [players],
   );
 
+  // Recherche texte (M41). Les documents n'avaient AUCUN outil — ni tag, ni
+  // recherche, ni tri : retrouver « la lettre du baron » à la séance 12
+  // supposait de tout parcourir. On balaie titre et corps, les deux étant déjà
+  // lisibles par le destinataire — la recherche n'ouvre donc rien de nouveau.
+  const searched = useMemo(
+    () =>
+      handouts.filter((h) =>
+        matchesSearch(`${h.title} ${h.content.text ?? ''}`, search),
+      ),
+    [handouts, search],
+  );
   const active = useMemo(
-    () => handouts.filter((h) => h.visibility !== 'archived'),
-    [handouts],
+    () => searched.filter((h) => h.visibility !== 'archived'),
+    [searched],
   );
   const archived = useMemo(
-    () => handouts.filter((h) => h.visibility === 'archived'),
-    [handouts],
+    () => searched.filter((h) => h.visibility === 'archived'),
+    [searched],
   );
 
   if (campaignLoading) return <Splash />;
@@ -240,6 +253,20 @@ export function CampaignHandoutsScreen(): JSX.Element {
           </p>
         </header>
 
+        {handouts.length > 2 ? (
+          <div className="mt-6">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('handouts.search.placeholder')}
+              aria-label={t('handouts.search.aria')}
+              data-testid="handout-search"
+              className="w-full rounded-pill border border-white-8 bg-ink/40 px-4 py-2 font-serif text-body text-text outline-none transition-colors duration-200 ease-base placeholder:italic placeholder:text-text-faint focus:border-gold"
+            />
+          </div>
+        ) : null}
+
         {error ? (
           <p className="mt-10 text-center font-serif text-body-sm text-crimson">
             {t('handouts.screen.loadError')}
@@ -249,8 +276,15 @@ export function CampaignHandoutsScreen(): JSX.Element {
             …
           </p>
         ) : active.length === 0 && archived.length === 0 ? (
-          <p className="mt-10 text-center font-serif text-body italic text-text-tertiary">
-            {isDM ? t('handouts.screen.empty.dm') : t('handouts.screen.empty.player')}
+          <p
+            data-testid="handouts-empty"
+            className="mt-10 text-center font-serif text-body italic text-text-tertiary"
+          >
+            {search.trim() !== ''
+              ? t('handouts.search.noMatch')
+              : isDM
+                ? t('handouts.screen.empty.dm')
+                : t('handouts.screen.empty.player')}
           </p>
         ) : (
           <div className="mt-8 flex flex-col gap-8">

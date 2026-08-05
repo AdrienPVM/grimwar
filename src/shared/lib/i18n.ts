@@ -1127,6 +1127,9 @@ export type StringKey =
   | 'handouts.screen.subtitleDm'
   | 'handouts.screen.subtitlePlayer'
   | 'handouts.screen.newCta'
+  | 'handouts.search.placeholder'
+  | 'handouts.search.aria'
+  | 'handouts.search.noMatch'
   | 'handouts.screen.empty.dm'
   | 'handouts.screen.empty.player'
   | 'handouts.screen.activeHeading'
@@ -1214,6 +1217,21 @@ export type StringKey =
   | 'npcs.detail.notFound'
   | 'npcs.detail.edit'
   | 'npcs.detail.delete'
+  | 'npcs.detail.duplicate'
+  | 'npcs.duplicate.title'
+  | 'npcs.duplicate.intro'
+  | 'npcs.duplicate.helper'
+  | 'npcs.duplicate.noTarget'
+  | 'npcs.duplicate.confirm'
+  | 'npcs.duplicate.busy'
+  | 'npcs.duplicate.cancel'
+  | 'npcs.duplicate.error'
+  | 'npcs.duplicate.doneToast'
+  | 'npcs.search.placeholder'
+  | 'npcs.search.aria'
+  | 'npcs.sort.aria'
+  | 'npcs.sort.introduction'
+  | 'npcs.sort.alpha'
   | 'npcs.detail.secretBadge'
   | 'npcs.detail.publicHeading'
   | 'npcs.detail.relationsHeading'
@@ -2571,6 +2589,7 @@ export type StringKey =
   | 'campaigns.tip.createCharacter'
   | 'campaigns.tip.editNpc'
   | 'campaigns.tip.deleteNpc'
+  | 'campaigns.tip.duplicateNpc'
   | 'campaigns.tip.editRelations'
   | 'campaigns.tip.archiveHandout'
   | 'campaigns.tip.startSession'
@@ -4441,6 +4460,9 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.screen.subtitleDm': 'Cartes, lettres et indices transmis à la table.',
     'handouts.screen.subtitlePlayer': 'Les documents que le MJ vous a transmis.',
     'handouts.screen.newCta': 'Nouveau document',
+    'handouts.search.placeholder': 'Chercher un titre, un mot du texte…',
+    'handouts.search.aria': 'Chercher parmi les documents',
+    'handouts.search.noMatch': 'Aucun document ne correspond à cette recherche.',
     'handouts.screen.empty.dm': 'Aucun document transmis pour le moment.',
     'handouts.screen.empty.player': "Le MJ ne vous a transmis aucun document.",
     'handouts.screen.activeHeading': 'Actifs',
@@ -4534,6 +4556,24 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.detail.notFound': 'Ce PNJ est introuvable.',
     'npcs.detail.edit': 'Modifier',
     'npcs.detail.delete': 'Supprimer',
+    'npcs.detail.duplicate': 'Dupliquer',
+    'npcs.duplicate.title': 'Dupliquer vers une autre campagne',
+    'npcs.duplicate.intro':
+      'Choisis la table qui recevra une copie de ce personnage non-joueur.',
+    'npcs.duplicate.helper':
+      "La copie arrive en secret, sans ses relations : celles-ci désignent des personnages de cette campagne-ci, qui n'existent pas là-bas.",
+    'npcs.duplicate.noTarget':
+      "Tu ne mènes aucune autre campagne pour l'instant.",
+    'npcs.duplicate.confirm': 'Dupliquer',
+    'npcs.duplicate.busy': 'Duplication…',
+    'npcs.duplicate.cancel': 'Annuler',
+    'npcs.duplicate.error': "La duplication n'a pas abouti. Réessaie.",
+    'npcs.duplicate.doneToast': 'Personnage dupliqué',
+    'npcs.search.placeholder': 'Chercher un nom, un lieu, une étiquette…',
+    'npcs.search.aria': 'Chercher parmi les personnages non-joueurs',
+    'npcs.sort.aria': 'Ordre de la liste',
+    'npcs.sort.introduction': 'Ordre de rencontre',
+    'npcs.sort.alpha': 'Alphabétique',
     'npcs.detail.secretBadge': 'Secret',
     'npcs.detail.publicHeading': 'Description',
     'npcs.detail.relationsHeading': 'Relations',
@@ -6178,6 +6218,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Créer un nouveau personnage, lié automatiquement à cette campagne.',
     'campaigns.tip.editNpc': 'Modifier la fiche de ce personnage non-joueur.',
     'campaigns.tip.deleteNpc': 'Supprimer définitivement ce personnage non-joueur.',
+    'campaigns.tip.duplicateNpc':
+      'Recopier ce personnage non-joueur dans une autre campagne que tu mènes.',
     'campaigns.tip.editRelations': 'Modifier les liens avec les personnages joueurs.',
     'campaigns.tip.archiveHandout': 'Archiver ce document et le masquer aux joueurs.',
     'campaigns.tip.startSession': 'Démarrer la séance et journaliser le jeu.',
@@ -7987,6 +8029,9 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.screen.subtitleDm': 'Maps, letters and clues shared with the table.',
     'handouts.screen.subtitlePlayer': 'Handouts the DM has shared with you.',
     'handouts.screen.newCta': 'New handout',
+    'handouts.search.placeholder': 'Search a title, a word from the text…',
+    'handouts.search.aria': 'Search handouts',
+    'handouts.search.noMatch': 'No handout matches this search.',
     'handouts.screen.empty.dm': 'No handout shared yet.',
     'handouts.screen.empty.player': 'The DM has not shared any handout with you.',
     'handouts.screen.activeHeading': 'Active',
@@ -8079,6 +8124,23 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.detail.notFound': 'This NPC could not be found.',
     'npcs.detail.edit': 'Edit',
     'npcs.detail.delete': 'Delete',
+    'npcs.detail.duplicate': 'Duplicate',
+    'npcs.duplicate.title': 'Duplicate into another campaign',
+    'npcs.duplicate.intro':
+      'Pick the table that will receive a copy of this non-player character.',
+    'npcs.duplicate.helper':
+      'The copy arrives secret and without its relationships: those point at characters from this campaign, which do not exist over there.',
+    'npcs.duplicate.noTarget': 'You do not run any other campaign yet.',
+    'npcs.duplicate.confirm': 'Duplicate',
+    'npcs.duplicate.busy': 'Duplicating…',
+    'npcs.duplicate.cancel': 'Cancel',
+    'npcs.duplicate.error': 'The duplication did not go through. Try again.',
+    'npcs.duplicate.doneToast': 'Character duplicated',
+    'npcs.search.placeholder': 'Search a name, a place, a tag…',
+    'npcs.search.aria': 'Search non-player characters',
+    'npcs.sort.aria': 'List order',
+    'npcs.sort.introduction': 'Order met',
+    'npcs.sort.alpha': 'Alphabetical',
     'npcs.detail.secretBadge': 'Secret',
     'npcs.detail.publicHeading': 'Description',
     'npcs.detail.relationsHeading': 'Relationships',
@@ -9626,6 +9688,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Create a new character, automatically linked to this campaign.',
     'campaigns.tip.editNpc': 'Edit this non-player character’s sheet.',
     'campaigns.tip.deleteNpc': 'Permanently delete this non-player character.',
+    'campaigns.tip.duplicateNpc':
+      'Copy this non-player character into another campaign you run.',
     'campaigns.tip.editRelations': 'Edit the ties with player characters.',
     'campaigns.tip.archiveHandout': 'Archive this document and hide it from players.',
     'campaigns.tip.startSession': 'Start the session and log play.',
