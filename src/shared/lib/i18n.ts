@@ -1505,6 +1505,24 @@ export type StringKey =
   | 'sessions.action.ending'
   | 'sessions.action.error.anotherActive'
   | 'sessions.action.error.generic'
+  // Cycle de vie d'une séance (M13) — renommer, annuler, rouvrir
+  | 'sessions.edit.cta'
+  | 'sessions.edit.title'
+  | 'sessions.edit.close'
+  | 'sessions.edit.save'
+  | 'sessions.edit.saving'
+  | 'sessions.edit.number.label'
+  | 'sessions.edit.number.helper'
+  | 'sessions.edit.error.number'
+  | 'sessions.edit.error.generic'
+  | 'sessions.action.cancel'
+  | 'sessions.action.cancelConfirm'
+  | 'sessions.action.cancelNotice'
+  | 'sessions.action.reopen'
+  | 'sessions.action.reopening'
+  | 'campaigns.tip.editSession'
+  | 'campaigns.tip.cancelSession'
+  | 'campaigns.tip.reopenSession'
   // Rencontres de combat — JALON 24.2 (liste + création)
   | 'encounters.back'
   | 'encounters.title'
@@ -4640,6 +4658,29 @@ const STRINGS: Record<Locale, Dict> = {
       'Une autre séance est déjà en cours. Clos-la avant d’en démarrer une nouvelle.',
     'sessions.action.error.generic':
       "L'action n'a pas abouti. Vérifie ta connexion et réessaye.",
+    // Cycle de vie d'une séance (M13)
+    'sessions.edit.cta': 'Modifier la séance',
+    'sessions.edit.title': 'Modifier la séance',
+    'sessions.edit.close': 'Fermer la fenêtre de modification',
+    'sessions.edit.save': 'Enregistrer',
+    'sessions.edit.saving': 'Enregistrement…',
+    'sessions.edit.number.label': 'Numéro de séance',
+    'sessions.edit.number.helper':
+      'Attribué automatiquement, mais modifiable — une campagne reprise en cours de route peut démarrer à la séance 42.',
+    'sessions.edit.error.number': 'Le numéro doit être un entier supérieur à 0.',
+    'sessions.edit.error.generic':
+      "L'enregistrement n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'sessions.action.cancel': 'Annuler la séance',
+    'sessions.action.cancelConfirm': 'Confirmer l’annulation',
+    'sessions.action.cancelNotice':
+      'Une séance annulée sort du récit de campagne : elle n’est ni à venir, ni terminée. Tu pourras la rouvrir.',
+    'sessions.action.reopen': 'Rouvrir la séance',
+    'sessions.action.reopening': 'Réouverture…',
+    'campaigns.tip.editSession': 'Corriger le titre, le numéro ou la date.',
+    'campaigns.tip.cancelSession':
+      'Marquer cette séance comme n’ayant pas eu lieu, sans la clore.',
+    'campaigns.tip.reopenSession':
+      'Revenir sur une clôture ou une annulation erronée.',
     // Rencontres de combat — JALON 24.2
     'encounters.back': 'Retour à la campagne',
     'encounters.title': 'Rencontres',
@@ -8096,6 +8137,28 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.action.error.anotherActive':
       'Another session is already active. End it before starting a new one.',
     'sessions.action.error.generic': 'The action failed. Check your connection and try again.',
+    // Session lifecycle (M13)
+    'sessions.edit.cta': 'Edit session',
+    'sessions.edit.title': 'Edit session',
+    'sessions.edit.close': 'Close edit dialog',
+    'sessions.edit.save': 'Save',
+    'sessions.edit.saving': 'Saving…',
+    'sessions.edit.number.label': 'Session number',
+    'sessions.edit.number.helper':
+      'Assigned automatically, but editable — a campaign picked up mid-run can start at session 42.',
+    'sessions.edit.error.number': 'The number must be an integer greater than 0.',
+    'sessions.edit.error.generic':
+      'Saving failed. Check your connection and try again.',
+    'sessions.action.cancel': 'Cancel session',
+    'sessions.action.cancelConfirm': 'Confirm cancellation',
+    'sessions.action.cancelNotice':
+      'A cancelled session drops out of the campaign story: neither upcoming nor completed. You can reopen it.',
+    'sessions.action.reopen': 'Reopen session',
+    'sessions.action.reopening': 'Reopening…',
+    'campaigns.tip.editSession': 'Correct the title, number or date.',
+    'campaigns.tip.cancelSession':
+      'Mark this session as never held, without closing it.',
+    'campaigns.tip.reopenSession': 'Undo a wrong closure or cancellation.',
     // Combat encounters — JALON 24.2
     'encounters.back': 'Back to campaign',
     'encounters.title': 'Encounters',

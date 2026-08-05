@@ -31,6 +31,9 @@ const updateNotesMock = vi.fn().mockResolvedValue(undefined);
 const setAttendanceMock = vi.fn().mockResolvedValue(undefined);
 const startSessionMock = vi.fn().mockResolvedValue(undefined);
 const endSessionMock = vi.fn().mockResolvedValue(undefined);
+const cancelSessionMock = vi.fn().mockResolvedValue(undefined);
+const reopenSessionMock = vi.fn().mockResolvedValue(undefined);
+const updateSessionMetaMock = vi.fn().mockResolvedValue(undefined);
 vi.mock('@/shared/lib/services/sessions', () => {
   class FakeSessionError extends Error {
     readonly kind: string;
@@ -45,6 +48,9 @@ vi.mock('@/shared/lib/services/sessions', () => {
     setSessionAttendance: (...args: unknown[]) => setAttendanceMock(...args),
     startSession: (...args: unknown[]) => startSessionMock(...args),
     endSession: (...args: unknown[]) => endSessionMock(...args),
+    cancelSession: (...args: unknown[]) => cancelSessionMock(...args),
+    reopenSession: (...args: unknown[]) => reopenSessionMock(...args),
+    updateSessionMeta: (...args: unknown[]) => updateSessionMetaMock(...args),
     SessionServiceError: FakeSessionError,
   };
 });
@@ -142,6 +148,9 @@ afterEach(() => {
   setAttendanceMock.mockClear();
   startSessionMock.mockClear().mockResolvedValue(undefined);
   endSessionMock.mockClear().mockResolvedValue(undefined);
+  cancelSessionMock.mockClear().mockResolvedValue(undefined);
+  reopenSessionMock.mockClear().mockResolvedValue(undefined);
+  updateSessionMetaMock.mockClear().mockResolvedValue(undefined);
   logStartMock.mockClear();
   logEndMock.mockClear();
   setActiveCampaignMock.mockClear();
@@ -292,6 +301,119 @@ describe('<SessionScreen> — démarrage / clôture (MJ)', () => {
     renderScreen();
     expect(screen.queryByRole('button', { name: /Démarrer la séance/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Clore la séance/i })).not.toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// M13 — la barre d'actions ne disparaît plus une fois la séance close
+// ─────────────────────────────────────────────────────────────────────
+
+describe('<SessionScreen> — cycle de vie (M13)', () => {
+  it('séance TERMINÉE → « Rouvrir » ; clic rouvre et repose le pointeur', async () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession({ status: 'completed' });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir la séance' }));
+    await waitFor(() => expect(reopenSessionMock).toHaveBeenCalledWith('c-1', 's-1'));
+    // La séance redevient active → le pointeur de campagne la désigne à nouveau.
+    expect(setActiveCampaignMock).toHaveBeenCalledWith('c-1', 's-1');
+  });
+
+  it('séance ANNULÉE → « Rouvrir » sans reposer le pointeur (elle repart planifiée)', async () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession({ status: 'cancelled' });
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir la séance' }));
+    await waitFor(() => expect(reopenSessionMock).toHaveBeenCalled());
+    expect(setActiveCampaignMock).not.toHaveBeenCalled();
+  });
+
+  it('rouvrir pendant qu’une autre séance tourne → message dédié', async () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession({ status: 'completed' });
+    // La classe DU MOCK, pas une jumelle locale : l'écran branche sur
+    // `instanceof SessionServiceError`, qu'une classe homonyme ne satisfait pas.
+    reopenSessionMock.mockRejectedValueOnce(
+      new FakeSessionError('another-session-active', 'x'),
+    );
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir la séance' }));
+    await waitFor(() => {
+      expect(screen.getByText(/Une autre séance est déjà en cours/i)).toBeInTheDocument();
+    });
+  });
+
+  it('annuler exige une confirmation, et libère le pointeur si la séance tournait', async () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession({ status: 'active' });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Annuler la séance' }));
+    expect(cancelSessionMock).not.toHaveBeenCalled();
+    expect(
+      screen.getByText(/Une séance annulée sort du récit de campagne/i),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’annulation' }));
+    await waitFor(() => expect(cancelSessionMock).toHaveBeenCalledWith('c-1', 's-1'));
+    // Les événements suivants ne doivent pas être tagués d'une séance annulée.
+    expect(setActiveCampaignMock).toHaveBeenCalledWith('c-1', null);
+  });
+
+  it('une séance TERMINÉE ne propose plus d’annulation', () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession({ status: 'completed' });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Annuler la séance' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('« Modifier la séance » préremplit titre et numéro, et enregistre', async () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession({ status: 'completed', number: 3 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier la séance' }));
+    const titleField = screen.getByDisplayValue('L’embuscade de la passe');
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument();
+
+    fireEvent.change(titleField, { target: { value: 'Le siège de Corvus' } });
+    fireEvent.change(screen.getByDisplayValue('3'), { target: { value: '42' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+
+    await waitFor(() =>
+      expect(updateSessionMetaMock).toHaveBeenCalledWith(
+        'c-1',
+        's-1',
+        expect.objectContaining({ title: 'Le siège de Corvus', number: 42 }),
+      ),
+    );
+  });
+
+  it('numéro invalide → refus explicite, aucune écriture', async () => {
+    campaignHolder.campaign = mkCampaign();
+    sessionHolder.session = mkSession();
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier la séance' }));
+    fireEvent.change(screen.getByDisplayValue('3'), { target: { value: '0' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    await waitFor(() => {
+      expect(screen.getByText(/entier supérieur à 0/i)).toBeInTheDocument();
+    });
+    expect(updateSessionMetaMock).not.toHaveBeenCalled();
+  });
+
+  it('membre non-MJ → aucun geste de cycle de vie', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['other-gm'] });
+    sessionHolder.session = mkSession({ status: 'completed' });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Rouvrir la séance' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Modifier la séance' }),
+    ).not.toBeInTheDocument();
   });
 });
 

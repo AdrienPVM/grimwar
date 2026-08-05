@@ -326,6 +326,111 @@ export async function updateSessionJournal(
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// M13 — une séance se renomme, s'annule et se rouvre
+// ─────────────────────────────────────────────────────────────────────
+
+export interface UpdateSessionMetaPatch {
+  title?: string;
+  plannedDate?: Date | null;
+  /**
+   * Numéro de séance. Auto-attribué (max + 1) à la création, mais surchargeable :
+   * une campagne reprise d'une autre table démarre « à la séance 42 », et la
+   * numérotation read-then-write peut produire deux « Séance 3 » si deux meneurs
+   * créent en même temps.
+   */
+  number?: number;
+}
+
+/**
+ * Corrige les métadonnées d'une séance (M13). Le service ne patchait que notes,
+ * présence et journal : un titre mal tapé était définitif.
+ */
+export async function updateSessionMeta(
+  campaignId: string,
+  sessionId: string,
+  patch: UpdateSessionMetaPatch,
+): Promise<void> {
+  const payload: Record<string, unknown> = {};
+  if (patch.title !== undefined) payload.title = patch.title;
+  if (patch.plannedDate !== undefined) payload.plannedDate = patch.plannedDate;
+  if (patch.number !== undefined) payload.number = patch.number;
+  if (Object.keys(payload).length === 0) return;
+  payload.updatedAt = serverTimestamp();
+  await trackPendingWrite(
+    getDb(),
+    updateDoc(sessionRef(campaignId, sessionId), payload),
+  );
+}
+
+/**
+ * Annule une séance (`cancelled`). Le statut est dans l'enum depuis l'origine et
+ * la liste lui associe DÉJÀ une pastille rouge — aucun code ne l'écrivait. Une
+ * séance qui ne s'est pas tenue n'est ni « planifiée » (elle n'arrivera pas) ni
+ * « terminée » (elle n'a pas eu lieu) : la clôturer en `completed` mentirait au
+ * journal de campagne, qui compile les séances terminées.
+ *
+ * `endedAt` reste `null` : rien ne s'est terminé.
+ */
+export async function cancelSession(
+  campaignId: string,
+  sessionId: string,
+): Promise<void> {
+  await trackPendingWrite(
+    getDb(),
+    updateDoc(sessionRef(campaignId, sessionId), {
+      status: 'cancelled',
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/**
+ * Rouvre une séance close par erreur (M13). La cible dépend de l'état terminal
+ * d'où l'on revient — on restaure ce qui précédait, pas un état arbitraire :
+ *   - `completed` → `active` (la partie continue, `endedAt` effacé) ;
+ *   - `cancelled` → `planned` (elle n'avait jamais commencé).
+ *
+ * Le garde-fou « une seule séance active » de `startSession` s'applique aussi
+ * ici : rouvrir une séance terminée pendant qu'une autre tourne produirait DEUX
+ * séances actives, et `getActiveSession` (qui suppose 0 ou 1 résultat) en
+ * désignerait une au hasard. Refus explicite en `another-session-active`.
+ */
+export async function reopenSession(
+  campaignId: string,
+  sessionId: string,
+): Promise<void> {
+  const session = await getSession(campaignId, sessionId);
+  if (session.status === 'planned' || session.status === 'active') return; // déjà ouverte
+
+  if (session.status === 'cancelled') {
+    await trackPendingWrite(
+      getDb(),
+      updateDoc(sessionRef(campaignId, sessionId), {
+        status: 'planned',
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    return;
+  }
+
+  const active = await getActiveSession(campaignId);
+  if (active && active.id !== sessionId) {
+    throw new SessionServiceError(
+      'another-session-active',
+      `Campaign ${campaignId} already has an active session (${active.id})`,
+    );
+  }
+  await trackPendingWrite(
+    getDb(),
+    updateDoc(sessionRef(campaignId, sessionId), {
+      status: 'active',
+      endedAt: null,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
 /**
  * Remplace la liste de présence (UIDs des membres présents). L'onglet Présence
  * (23.3) coche/décoche puis pousse la liste complète.
