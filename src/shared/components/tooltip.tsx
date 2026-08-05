@@ -2,6 +2,7 @@ import {
   Children,
   cloneElement,
   useCallback,
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -10,6 +11,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactElement,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { cn } from '../lib/cn';
 
@@ -31,6 +33,24 @@ import { cn } from '../lib/cn';
  * - ARIA : par défaut l'infobulle DÉCRIT la cible (`aria-describedby`). Pour un
  *   bouton purement iconographique sans texte visible, `nameTrigger` fait de
  *   l'infobulle le NOM accessible (`aria-labelledby`) — une seule source de vérité.
+ *
+ * **Rendu en portail `position: fixed`** (et non plus `absolute` chez la cible).
+ * Deux défauts réels l'imposent, tous deux constatés en UAT :
+ *
+ *  1. *Débordement horizontal du document.* Une bulle `absolute` reste dans le
+ *     flux de mise en page même fermée (elle n'est qu'`opacity: 0`). Ancrée près
+ *     du bord droit, elle élargissait `document.body` — mesuré 466 px de contenu
+ *     pour un viewport de 412 px sur `/create`. `overflow-x: clip` masquait la
+ *     barre de défilement mais PAS le décalage : la capture pleine page montrait
+ *     une bande vide à droite, et le contenu réel se retrouvait tronqué.
+ *     Un élément `fixed` ne participe pas au débordement défilable du document.
+ *  2. *Rognage par un parent.* Une bulle `absolute` se fait couper par le premier
+ *     ancêtre `overflow-hidden` (cartes, rangées de filtres). Le portail vers
+ *     `<body>` la sort de toute chaîne de rognage.
+ *
+ * Le portail impose de positionner à la main : on mesure la cible et la bulle à
+ * l'ouverture, puis on borne dans le viewport. La position se recalcule au
+ * défilement et au redimensionnement tant que la bulle est ouverte.
  */
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
@@ -63,12 +83,74 @@ interface TooltipProps {
   children: ReactElement<TriggerAria>;
 }
 
-const PLACEMENT_CLASSES: Record<TooltipPlacement, string> = {
-  top: 'bottom-full left-1/2 -translate-x-1/2 mb-2 origin-bottom',
-  bottom: 'top-full left-1/2 -translate-x-1/2 mt-2 origin-top',
-  left: 'right-full top-1/2 -translate-y-1/2 mr-2 origin-right',
-  right: 'left-full top-1/2 -translate-y-1/2 ml-2 origin-left',
+/** L'origine du `scale` reste du côté de la cible : la bulle « sort » d'elle. */
+const PLACEMENT_ORIGIN: Record<TooltipPlacement, string> = {
+  top: 'origin-bottom',
+  bottom: 'origin-top',
+  left: 'origin-right',
+  right: 'origin-left',
 };
+
+/** Écart entre la cible et la bulle. */
+const GAP_PX = 8;
+/** Marge minimale conservée entre la bulle et le bord du viewport. */
+const VIEWPORT_MARGIN_PX = 8;
+
+type Coords = { readonly top: number; readonly left: number };
+
+/**
+ * Position en coordonnées viewport (`position: fixed`), bornée aux bords.
+ *
+ * On mesure la bulle via `offsetWidth`/`offsetHeight` et NON via
+ * `getBoundingClientRect()` : au repos la bulle porte `scale-95`, et un rect
+ * tient compte de la transformation — on sous-estimerait la taille de 5 % et la
+ * bulle finirait décentrée à l'ouverture.
+ */
+function computeCoords(
+  trigger: DOMRect,
+  bubbleWidth: number,
+  bubbleHeight: number,
+  placement: TooltipPlacement,
+  viewportWidth: number,
+  viewportHeight: number,
+): Coords {
+  let top: number;
+  let left: number;
+
+  switch (placement) {
+    case 'bottom':
+      top = trigger.bottom + GAP_PX;
+      left = trigger.left + trigger.width / 2 - bubbleWidth / 2;
+      break;
+    case 'left':
+      top = trigger.top + trigger.height / 2 - bubbleHeight / 2;
+      left = trigger.left - bubbleWidth - GAP_PX;
+      break;
+    case 'right':
+      top = trigger.top + trigger.height / 2 - bubbleHeight / 2;
+      left = trigger.right + GAP_PX;
+      break;
+    case 'top':
+    default:
+      top = trigger.top - bubbleHeight - GAP_PX;
+      left = trigger.left + trigger.width / 2 - bubbleWidth / 2;
+      break;
+  }
+
+  // Bornage : la bulle reste entièrement visible. `Math.max` en dernier pour
+  // qu'une bulle plus large que le viewport se cale au bord gauche plutôt que
+  // de partir en négatif à droite.
+  left = Math.max(
+    VIEWPORT_MARGIN_PX,
+    Math.min(left, viewportWidth - bubbleWidth - VIEWPORT_MARGIN_PX),
+  );
+  top = Math.max(
+    VIEWPORT_MARGIN_PX,
+    Math.min(top, viewportHeight - bubbleHeight - VIEWPORT_MARGIN_PX),
+  );
+
+  return { top, left };
+}
 
 /** Concatène un id existant avec le nôtre sans écraser l'existant. */
 function mergeIds(existing: string | undefined, id: string): string {
@@ -86,27 +168,43 @@ export function Tooltip({
   const id = useId();
   const [open, setOpen] = useState(false);
   const bubbleRef = useRef<HTMLSpanElement>(null);
-  // Décalage horizontal correctif pour garder la bulle dans le viewport (pas de
-  // dépendance type floating-ui : on mesure et on recale au moment de l'ouverture).
-  const [shiftX, setShiftX] = useState(0);
+  const wrapperRef = useRef<HTMLSpanElement>(null);
+  const [coords, setCoords] = useState<Coords | null>(null);
 
-  // Mesure APRÈS layout, AVANT peinture (pas de flash) : si la bulle déborde un
-  // bord du viewport, on la repousse vers l'intérieur via `marginLeft` (qui ne
-  // rentre pas en conflit avec les `transform` de placement/scale de Tailwind).
+  const reposition = useCallback(() => {
+    const bubble = bubbleRef.current;
+    const wrapper = wrapperRef.current;
+    if (!bubble || !wrapper) return;
+    setCoords(
+      computeCoords(
+        wrapper.getBoundingClientRect(),
+        bubble.offsetWidth,
+        bubble.offsetHeight,
+        placement,
+        window.innerWidth,
+        window.innerHeight,
+      ),
+    );
+  }, [placement]);
+
+  // Mesure APRÈS layout, AVANT peinture : la bulle est déjà à sa place au
+  // premier rendu visible, jamais positionnée puis corrigée sous l'œil.
   useLayoutEffect(() => {
-    if (!open) {
-      setShiftX(0);
-      return;
-    }
-    const el = bubbleRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const margin = 8;
-    const vw = window.innerWidth;
-    if (rect.left < margin) setShiftX(margin - rect.left);
-    else if (rect.right > vw - margin) setShiftX(vw - margin - rect.right);
-    else setShiftX(0);
-  }, [open]);
+    if (open) reposition();
+  }, [open, reposition]);
+
+  // Tant que la bulle est ouverte, elle suit sa cible : un `fixed` ne défile pas
+  // avec la page, il resterait collé au viewport pendant que la cible s'en va.
+  useEffect(() => {
+    if (!open) return undefined;
+    const onMove = (): void => reposition();
+    window.addEventListener('scroll', onMove, true);
+    window.addEventListener('resize', onMove);
+    return () => {
+      window.removeEventListener('scroll', onMove, true);
+      window.removeEventListener('resize', onMove);
+    };
+  }, [open, reposition]);
 
   const show = useCallback(() => {
     setOpen(true);
@@ -144,8 +242,48 @@ export function Tooltip({
 
   const trigger = cloneElement(child, ariaPatch);
 
+  const bubble = (
+    <span
+      ref={bubbleRef}
+      role="tooltip"
+      id={id}
+      // Tant qu'aucune mesure n'a eu lieu, la bulle attend hors écran plutôt
+      // qu'en 0,0 — sinon un coin haut-gauche translucide clignote au tout
+      // premier survol, avant que `useLayoutEffect` ne la place.
+      style={
+        coords
+          ? { top: `${coords.top}px`, left: `${coords.left}px` }
+          : { top: '0px', left: '-9999px' }
+      }
+      // Décorative → toujours hors de l'arbre d'accessibilité (le nom vit sur
+      // la cible). Sinon hors arbre quand fermée, SAUF si l'infobulle sert de
+      // nom (labelledby lit le texte quelle que soit la visibilité).
+      aria-hidden={decorative ? true : nameTrigger ? undefined : !open}
+      className={cn(
+        // `w-max` : la bulle se dimensionne à son contenu (borné par max-w),
+        // sinon une cible étroite (− / +) clampe la largeur en « shrink-to-fit »
+        // et le texte s'empile sur trop de lignes.
+        // Plafond responsive : ~22rem sur écran large (texte plus aéré, moins
+        // d'empilement), mais jamais plus que la largeur du viewport moins une
+        // marge (1.5rem de chaque côté) — sur mobile la bulle s'élargit donc
+        // jusqu'au bord utile au lieu de se clamper trop tôt. `computeCoords`
+        // borne ensuite la position aux bords du viewport.
+        'pointer-events-none fixed z-50 w-max max-w-[min(22rem,calc(100vw_-_3rem))] whitespace-normal text-balance',
+        'rounded-card-sm border border-gold-dim/40 bg-[#1a1410]/95 px-2.5 py-1.5',
+        'text-center font-sans text-body-sm font-medium normal-case tracking-normal text-text',
+        'shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm',
+        'transition-[opacity,transform] duration-150 ease-base motion-reduce:transition-none',
+        PLACEMENT_ORIGIN[placement],
+        open ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
+      )}
+    >
+      {label}
+    </span>
+  );
+
   return (
     <span
+      ref={wrapperRef}
       className={cn('relative inline-flex', className)}
       onPointerEnter={handlePointerEnter}
       onPointerLeave={hide}
@@ -154,35 +292,9 @@ export function Tooltip({
       onKeyDown={handleKeyDown}
     >
       {trigger}
-      <span
-        ref={bubbleRef}
-        role="tooltip"
-        id={id}
-        style={shiftX !== 0 ? { marginLeft: `${shiftX}px` } : undefined}
-        // Décorative → toujours hors de l'arbre d'accessibilité (le nom vit sur
-        // la cible). Sinon hors arbre quand fermée, SAUF si l'infobulle sert de
-        // nom (labelledby lit le texte quelle que soit la visibilité).
-        aria-hidden={decorative ? true : nameTrigger ? undefined : !open}
-        className={cn(
-          // `w-max` : la bulle se dimensionne à son contenu (borné par max-w),
-          // sinon une cible étroite (− / +) clampe la largeur en « shrink-to-fit »
-          // et le texte s'empile sur trop de lignes.
-          // Plafond responsive : ~22rem sur écran large (texte plus aéré, moins
-          // d'empilement), mais jamais plus que la largeur du viewport moins une
-          // marge (1.5rem de chaque côté) — sur mobile la bulle s'élargit donc
-          // jusqu'au bord utile au lieu de se clamper trop tôt. Le recalage
-          // horizontal (`shiftX`) garde ensuite la bulle dans le viewport.
-          'pointer-events-none absolute z-50 w-max max-w-[min(22rem,calc(100vw_-_3rem))] whitespace-normal text-balance',
-          'rounded-card-sm border border-gold-dim/40 bg-[#1a1410]/95 px-2.5 py-1.5',
-          'text-center font-sans text-body-sm font-medium normal-case tracking-normal text-text',
-          'shadow-[0_8px_24px_rgba(0,0,0,0.45)] backdrop-blur-sm',
-          'transition-[opacity,transform] duration-150 ease-base motion-reduce:transition-none',
-          PLACEMENT_CLASSES[placement],
-          open ? 'scale-100 opacity-100' : 'scale-95 opacity-0',
-        )}
-      >
-        {label}
-      </span>
+      {typeof document === 'undefined'
+        ? bubble
+        : createPortal(bubble, document.body)}
     </span>
   );
 }

@@ -899,7 +899,13 @@ export function EncounterScreen(): JSX.Element {
           </h2>
           <ul
             aria-label={t('encounters.turnOrder.aria')}
-            className="mt-4 flex gap-3 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-x-visible"
+            // `mt-2 py-2` et non `mt-4 pb-2` : `overflow-x: auto` fait
+            // recalculer `overflow-y` en `auto` par la spec, ce qui rogne
+            // l'anneau du participant dont c'est le tour. On déplace la moitié
+            // de la marge haute dans le rembourrage — le contenu ne bouge pas
+            // (8 + 8 = les 16 px d'avant) et l'anneau a sa place des deux côtés.
+            // Même famille de correctif que `<ScrollRow>` (cf. sa doc).
+            className="mt-2 flex gap-3 overflow-x-auto py-2 lg:flex-wrap lg:overflow-x-visible"
           >
             {encounter.participants.map((participant, idx) => (
               <ParticipantCard

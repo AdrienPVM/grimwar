@@ -3,6 +3,7 @@ import { useId } from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import type { Item, ItemCategory } from '@/shared/types/content';
@@ -74,7 +75,7 @@ export function ItemBrowser(): JSX.Element {
         placeholder={t('codex.search.items')}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={category === 'all'} onToggle={() => setCategory('all')}>
           {t('codex.item.allCategories')}
         </Chip>
@@ -88,7 +89,7 @@ export function ItemBrowser(): JSX.Element {
             {t(`item.category.${c}`)}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
       <CodexResultCount count={filtered.length} />
 

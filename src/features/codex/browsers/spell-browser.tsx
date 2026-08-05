@@ -1,6 +1,7 @@
 import { useMemo, useState, type JSX } from 'react';
 
 import { Chip } from '@/shared/components/chip';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import type { Spell, SpellSchool } from '@/shared/types/content';
@@ -82,7 +83,7 @@ export function SpellBrowser(): JSX.Element {
         placeholder={t('codex.search.spells')}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={level === 'all'} onToggle={() => setLevel('all')}>
           {t('codex.spell.allLevels')}
         </Chip>
@@ -96,9 +97,9 @@ export function SpellBrowser(): JSX.Element {
             {lvl === 0 ? t('spell.level.cantrip') : `${t('spell.level.prefix')} ${lvl}`}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={school === 'all'} onToggle={() => setSchool('all')}>
           {t('codex.spell.allSchools')}
         </Chip>
@@ -113,7 +114,7 @@ export function SpellBrowser(): JSX.Element {
             {t(`school.${sc}`)}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
       <CodexResultCount count={filtered.length} />
 

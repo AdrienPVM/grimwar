@@ -4,6 +4,7 @@ import { Card, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
 import { Icon } from '@/shared/components/icon';
 import { Tooltip } from '@/shared/components/tooltip';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
@@ -193,7 +194,7 @@ export function SpellList({
         />
       </label>
 
-      <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow className="mb-3">
         <Chip active={filter === 'all'} onToggle={() => setFilter('all')}>
           {t('sheet.magie.filterAll')} · {counts.all}
         </Chip>
@@ -208,7 +209,7 @@ export function SpellList({
         <Chip active={filter === 'ritual'} onToggle={() => setFilter('ritual')}>
           {t('sheet.magie.filterRituals')} · {counts.ritual}
         </Chip>
-      </div>
+      </ScrollRow>
 
       <div className="flex flex-col gap-3">
         {grouped.map(([level, items]) => (

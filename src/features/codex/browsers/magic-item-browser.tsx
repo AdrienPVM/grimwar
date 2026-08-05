@@ -3,6 +3,7 @@ import { useId } from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { cn } from '@/shared/lib/cn';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
@@ -64,7 +65,7 @@ export function MagicItemBrowser(): JSX.Element {
         placeholder={t('codex.search.magicItems')}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={rarity === 'all'} onToggle={() => setRarity('all')}>
           {t('codex.item.allRarities')}
         </Chip>
@@ -78,7 +79,7 @@ export function MagicItemBrowser(): JSX.Element {
             {t(`rarity.${r}`)}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
       <CodexResultCount count={filtered.length} />
 

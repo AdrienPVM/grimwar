@@ -90,7 +90,11 @@ export function CodexCategoryTabs({
       ref={navRef}
       role="tablist"
       aria-label={t('codex.cat.aria')}
-      className="flex gap-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-x-visible"
+      // `-my-2 py-2` : `overflow-x: auto` force la spec à recalculer `overflow-y`
+      // en `auto`, ce qui rognait le halo `drop-shadow` de 8 px de l'onglet actif
+      // en haut et en bas. Le rembourrage lui laisse la place, la marge négative
+      // annule le décalage. Même correctif que `<ScrollRow>` (cf. sa doc).
+      className="-my-2 flex gap-1 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-x-visible"
     >
       {CODEX_CATEGORIES.map((category) => {
         const isActive = category.id === active;

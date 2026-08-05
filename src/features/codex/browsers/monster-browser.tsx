@@ -2,6 +2,7 @@ import { useId, useMemo, useState, type JSX } from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
 import { formatCr } from '@/shared/lib/rules/challenge-rating';
@@ -64,7 +65,7 @@ export function MonsterBrowser(): JSX.Element {
       />
 
       {presentSizes.length > 0 ? (
-        <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+        <ScrollRow>
           <Chip active={size === 'all'} onToggle={() => setSize('all')}>
             {t('codex.monster.allSizes')}
           </Chip>
@@ -78,7 +79,7 @@ export function MonsterBrowser(): JSX.Element {
               {t(`size.${s}` as 'size.medium')}
             </Chip>
           ))}
-        </div>
+        </ScrollRow>
       ) : null}
 
       <CodexResultCount count={filtered.length} />
