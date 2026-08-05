@@ -170,7 +170,7 @@ test.describe('Plan 28 — PNJ récurrents', () => {
         await expect(dm.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
         // La rencontre apparaît ; on l'ouvre → Le Masque est participant.
-        await dm.getByRole('button', { name: new RegExp(ENCOUNTER_NAME) }).click();
+        await dm.getByRole('button', { name: new RegExp(`^${ENCOUNTER_NAME}`) }).click();
         await expect(dm.getByText(VILLAIN).first()).toBeVisible({ timeout: 10_000 });
         await captureFull(dm, '06-combat-pnj-participant.png');
       } finally {

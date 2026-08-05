@@ -93,7 +93,9 @@ test.describe('UAT 24 (step 12) — combat complet bout en bout', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
     // ─── 01 — Rencontre préparée (3 gobelins).
-    await page.getByRole('button', { name: /guet-apens du tunnel/i }).click();
+    // Ancré au début : la ligne s'appelle « Le guet-apens du tunnel … », le bouton
+    // de gestion « Gérer la rencontre — Le guet-apens du tunnel » (M7).
+    await page.getByRole('button', { name: /^Le guet-apens du tunnel/i }).click();
     await expect(page).toHaveURL(/\/encounters\/[^/]+$/);
     await expect(page.getByRole('button', { name: 'Lancer l’initiative' })).toBeVisible();
     await captureFull(page, '01-rencontre-creee.png');

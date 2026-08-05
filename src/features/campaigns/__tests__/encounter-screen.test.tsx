@@ -664,7 +664,7 @@ describe('<EncounterScreen> — tracker éditable (M2 / M3)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
     fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
 
     await waitFor(() =>
       expect(updateParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob', {

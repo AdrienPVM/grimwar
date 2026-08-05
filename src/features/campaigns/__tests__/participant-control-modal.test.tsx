@@ -312,27 +312,27 @@ describe('<ParticipantControlModal>', () => {
       participant: { name: 'Gobelin 2', initiative: 14, currentHp: 3, maxHp: 7 },
     });
     fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
     expect(onUpdate).toHaveBeenCalledWith({ name: 'Chef' });
   });
 
   it('corrige des PV mal tapés (7 → 17) sans toucher au reste', () => {
     const { onUpdate } = renderModal({ participant: { currentHp: 7, maxHp: 7 } });
     fireEvent.change(screen.getByLabelText('PV maximum'), { target: { value: '17' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
     expect(onUpdate).toHaveBeenCalledWith({ maxHp: 17 });
   });
 
   it('saisit l’initiative annoncée à voix haute', () => {
     const { onUpdate } = renderModal({ participant: { initiative: 0 } });
     fireEvent.change(screen.getByLabelText('Initiative'), { target: { value: '19' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
     expect(onUpdate).toHaveBeenCalledWith({ initiative: 19 });
   });
 
   it('« Enregistrer » reste désactivé tant que rien n’a changé', () => {
     renderModal();
-    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Enregistrer les corrections' })).toBeDisabled();
   });
 
   it('un champ vidé puis restauré ne produit aucun patch', () => {
@@ -340,14 +340,14 @@ describe('<ParticipantControlModal>', () => {
     const field = screen.getByLabelText('PV maximum');
     fireEvent.change(field, { target: { value: '' } });
     fireEvent.change(field, { target: { value: '7' } });
-    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Enregistrer les corrections' })).toBeDisabled();
     expect(onUpdate).not.toHaveBeenCalled();
   });
 
   it('un champ vidé et laissé vide est ignoré plutôt que rejeté', () => {
     const { onUpdate } = renderModal({ participant: { name: 'Gobelin', maxHp: 7 } });
     fireEvent.change(screen.getByLabelText('PV maximum'), { target: { value: '' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
     expect(onUpdate).not.toHaveBeenCalled();
   });
 

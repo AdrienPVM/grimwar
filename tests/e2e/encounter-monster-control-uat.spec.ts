@@ -83,7 +83,8 @@ test.describe('UAT 24.4 — contrôle MJ des PV / états monstres', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
     // ─── Tracker → init → démarrer.
-    await page.getByRole('button', { name: /Patrouille gobeline/i }).click();
+    // Ancré au début : le bouton « Gérer la rencontre — … » porte aussi le nom (M7).
+    await page.getByRole('button', { name: /^Patrouille gobeline/i }).click();
     await expect(page).toHaveURL(/\/encounters\/[^/]+$/);
     await page.getByRole('button', { name: 'Lancer l’initiative' }).click();
     await page.getByRole('button', { name: 'Démarrer le combat' }).click();

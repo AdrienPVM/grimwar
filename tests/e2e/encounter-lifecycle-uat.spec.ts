@@ -70,7 +70,8 @@ test.describe('UAT 24.3 — cycle de vie rencontre de combat', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
     // ─── Ouvre le tracker.
-    await page.getByRole('button', { name: /embuscade des gobelins/i }).click();
+    // Ancré au début : le bouton « Gérer la rencontre — … » porte aussi le nom (M7).
+    await page.getByRole('button', { name: /^L.embuscade des gobelins/i }).click();
     await expect(page).toHaveURL(/\/encounters\/[^/]+$/);
 
     // ─── 01 — Préparée : contrôles d'initiative + démarrage.
