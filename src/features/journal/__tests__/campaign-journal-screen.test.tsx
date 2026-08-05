@@ -155,4 +155,88 @@ describe('CampaignJournalScreen', () => {
     expect(screen.getByText(/chargement du journal a échoué/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Réessayer/ })).toBeInTheDocument();
   });
+
+  // ── M14 — exporter UNE séance pour le joueur absent ──────────────────────
+
+  it('« Exporter cette séance » n’apparaît qu’au dépliage, et pas sans journal', () => {
+    sessionsHolder.sessions = [
+      mkSession({
+        number: 4,
+        title: 'La crypte',
+        status: 'completed',
+        journalCompiled: '## Exploration\n\n- A.',
+      }),
+      mkSession({ number: 5, title: 'Muette', status: 'completed', journalCompiled: null }),
+    ];
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Exporter cette séance' }),
+    ).not.toBeInTheDocument();
+
+    // Séance sans journal dépliée → toujours pas d'export (rien à exporter).
+    fireEvent.click(screen.getByRole('button', { name: /Muette/ }));
+    expect(
+      screen.queryByRole('button', { name: 'Exporter cette séance' }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /La crypte/ }));
+    expect(
+      screen.getByRole('button', { name: 'Exporter cette séance' }),
+    ).toBeInTheDocument();
+  });
+
+  it('exporte UNIQUEMENT la séance dépliée, sous un nom de fichier qui la nomme', async () => {
+    sessionsHolder.sessions = [
+      mkSession({
+        number: 1,
+        title: 'Le départ',
+        status: 'completed',
+        journalCompiled: '## Exploration\n\n- Première.',
+      }),
+      mkSession({
+        number: 2,
+        title: 'La crypte',
+        status: 'completed',
+        journalCompiled: '## Exploration\n\n- Deuxième.',
+      }),
+    ];
+    // Typé `(blob: Blob)` : sans paramètre déclaré, `mock.calls[0]` est un tuple
+    // vide et l'accès à l'argument ne compile pas.
+    const createUrl = vi.fn((_blob: Blob) => 'blob:mock');
+    Object.defineProperty(URL, 'createObjectURL', { value: createUrl, configurable: true });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: vi.fn(), configurable: true });
+    let downloadName = '';
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        downloadName = this.download;
+      });
+
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /La crypte/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Exporter cette séance' }));
+
+    expect(clickSpy).toHaveBeenCalledOnce();
+    // Le nom porte le numéro de séance — sinon deux exports s'écraseraient dans
+    // le dossier de téléchargement.
+    expect(downloadName).toMatch(/seance-2-journal\.md$/);
+
+    // Le Blob ne contient QUE la séance 2. `Blob.text()` n'existe pas sous
+    // jsdom — on relit par `FileReader`, qui lui est implémenté.
+    const blob = createUrl.mock.calls[0]![0];
+    expect(blob).toBeInstanceOf(Blob);
+    const content = await readBlob(blob);
+    expect(content).toContain('Deuxième.');
+    expect(content).not.toContain('Première.');
+  });
 });
+
+/** Lit un Blob en texte — `Blob.text()` n'est pas implémenté par jsdom. */
+function readBlob(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(blob);
+  });
+}

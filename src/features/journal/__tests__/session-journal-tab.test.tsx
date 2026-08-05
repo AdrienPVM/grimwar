@@ -188,3 +188,71 @@ describe('SessionJournalTab — confirmation de re-compilation (step 7)', () => 
     expect(await screen.findByText('Re-compilé.')).toBeInTheDocument();
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// M14 — cadrer ce que le récit embarque
+// ─────────────────────────────────────────────────────────────────────
+
+describe('SessionJournalTab — cadrage du récit (M14)', () => {
+  it('par défaut, TOUT est embarqué : aucune régression de compilation', async () => {
+    compileMock.mockResolvedValue('## Exploration\n\n- x');
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={null} canEdit />);
+    await user.click(screen.getByRole('button', { name: 'Compiler le journal' }));
+    await waitFor(() => expect(compileMock).toHaveBeenCalledOnce());
+    expect(compileMock.mock.calls[0]![0]).toMatchObject({
+      options: { excludedKinds: [], includeDmOnly: true },
+    });
+  });
+
+  it('décocher les jets et les PV de monstre les exclut du récit', async () => {
+    compileMock.mockResolvedValue('## Exploration\n\n- x');
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={null} canEdit />);
+
+    await user.click(screen.getByLabelText('Les jets de dés'));
+    await user.click(screen.getByLabelText('Les points de vie des monstres'));
+    await user.click(screen.getByRole('button', { name: 'Compiler le journal' }));
+
+    await waitFor(() => expect(compileMock).toHaveBeenCalledOnce());
+    const { options } = compileMock.mock.calls[0]![0] as {
+      options: { excludedKinds: string[]; includeDmOnly: boolean };
+    };
+    expect(options.excludedKinds).toEqual(['roll', 'monster-hp-change']);
+    expect(options.includeDmOnly).toBe(true);
+  });
+
+  it('décocher les coulisses du meneur retire les événements « dm »', async () => {
+    compileMock.mockResolvedValue('## Exploration\n\n- x');
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={null} canEdit />);
+
+    await user.click(screen.getByLabelText('Les coulisses du meneur'));
+    await user.click(screen.getByRole('button', { name: 'Compiler le journal' }));
+
+    await waitFor(() => expect(compileMock).toHaveBeenCalledOnce());
+    expect(compileMock.mock.calls[0]![0]).toMatchObject({
+      options: { excludedKinds: [], includeDmOnly: false },
+    });
+  });
+
+  it('le cadrage est aussi offert à la RE-compilation, pas seulement à la première', async () => {
+    compileMock.mockResolvedValue('## Exploration\n\n- Re-compilé.');
+    const user = userEvent.setup();
+    render(<SessionJournalTab {...baseProps} journalCompiled={'## A\n\n- x'} canEdit />);
+
+    await user.click(screen.getByRole('button', { name: 'Re-compiler depuis les événements' }));
+    await user.click(screen.getByLabelText('Les jets de dés'));
+    await user.click(screen.getByRole('button', { name: 'Re-compiler et écraser' }));
+
+    await waitFor(() => expect(compileMock).toHaveBeenCalledOnce());
+    expect(compileMock.mock.calls[0]![0]).toMatchObject({
+      options: { excludedKinds: ['roll'] },
+    });
+  });
+
+  it('un joueur ne voit aucune case de cadrage (la compilation est MJ-only)', () => {
+    render(<SessionJournalTab {...baseProps} journalCompiled={null} canEdit={false} />);
+    expect(screen.queryByLabelText('Les jets de dés')).not.toBeInTheDocument();
+  });
+});

@@ -49,21 +49,41 @@ export function CampaignJournalScreen(): JSX.Element {
 
   const backToCampaign = (): void => navigate(cid ? `/campaigns/${cid}` : '/campaigns');
 
+  /** Télécharge un Markdown sous le nom donné. Chemin commun aux deux exports. */
+  function downloadMarkdown(markdown: string, filename: string): void {
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }
+
   function handleExport(): void {
     if (!campaign) return;
     const md = buildJournalExport(campaign.name, completed, {
       sessionPrefix: t('journal.aggregate.sessionNumberPrefix'),
       notCompiled: t('journal.aggregate.notCompiled'),
     });
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = journalExportFilename(campaign.name);
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    downloadMarkdown(md, journalExportFilename(campaign.name));
+  }
+
+  /**
+   * Exporte UNE séance (M14). Cas d'usage : le joueur absent samedi veut lire ce
+   * qu'il a manqué, pas les 41 séances précédentes. On réutilise
+   * `buildJournalExport` avec une liste d'un seul élément — le format reste
+   * identique, donc lisible côté destinataire comme n'importe quel export.
+   */
+  function handleExportSession(session: Session): void {
+    if (!campaign) return;
+    const md = buildJournalExport(campaign.name, [session], {
+      sessionPrefix: t('journal.aggregate.sessionNumberPrefix'),
+      notCompiled: t('journal.aggregate.notCompiled'),
+    });
+    downloadMarkdown(md, journalExportFilename(`${campaign.name} seance ${session.number}`));
   }
 
   if (campaignLoading || sessionsLoading) return <Splash />;
@@ -177,6 +197,18 @@ export function CampaignJournalScreen(): JSX.Element {
                           {t('journal.aggregate.notCompiled')}
                         </p>
                       )}
+                      {hasJournal ? (
+                        <div className="mt-5 flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleExportSession(session)}
+                            tooltip={t('journal.tip.exportSession')}
+                          >
+                            {t('journal.aggregate.exportSession')}
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
                 </GlassPanel>

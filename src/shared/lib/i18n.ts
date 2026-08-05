@@ -1498,6 +1498,12 @@ export type StringKey =
   | 'sessions.journal.recompileConfirmTitle'
   | 'sessions.journal.recompileConfirmBody'
   | 'sessions.journal.recompileConfirm'
+  // Cadrage du récit compilé (M14) — ce que le journal embarque
+  | 'sessions.journal.scope.legend'
+  | 'sessions.journal.scope.rolls'
+  | 'sessions.journal.scope.monsterHp'
+  | 'sessions.journal.scope.dmOnly'
+  | 'sessions.journal.scope.help'
   // Démarrage / clôture de séance — JALON 23.4
   | 'sessions.action.start'
   | 'sessions.action.end'
@@ -1725,6 +1731,7 @@ export type StringKey =
   | 'journal.aggregate.subtitle'
   | 'journal.aggregate.back'
   | 'journal.aggregate.export'
+  | 'journal.aggregate.exportSession'
   | 'journal.aggregate.empty'
   | 'journal.aggregate.sessionNumberPrefix'
   | 'journal.aggregate.notCompiled'
@@ -2921,6 +2928,7 @@ export type StringKey =
   | 'dm.tip.advDisadvantage'
   | 'dm.tip.secretRoll'
   | 'journal.tip.export'
+  | 'journal.tip.exportSession'
   | 'journal.tip.compile'
   | 'journal.tip.edit'
   | 'journal.tip.recompile';
@@ -4650,6 +4658,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.journal.recompileConfirmBody':
       'Cela réécrit le journal à partir des événements et écrase toute édition manuelle. Les événements restent la source de vérité.',
     'sessions.journal.recompileConfirm': 'Re-compiler et écraser',
+    'sessions.journal.scope.legend': 'Ce que le récit embarque',
+    'sessions.journal.scope.rolls': 'Les jets de dés',
+    'sessions.journal.scope.monsterHp': 'Les points de vie des monstres',
+    'sessions.journal.scope.dmOnly': 'Les coulisses du meneur',
+    'sessions.journal.scope.help':
+      'Décoché, ce type d’événement n’apparaît pas dans le récit. Rien n’est perdu : les événements restent la source de vérité, tu peux re-compiler autrement.',
     'sessions.action.start': 'Démarrer la séance',
     'sessions.action.end': 'Clore la séance',
     'sessions.action.starting': 'Démarrage…',
@@ -4918,6 +4932,7 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.aggregate.subtitle': 'Le récit compilé de vos séances, dans l’ordre.',
     'journal.aggregate.back': 'Retour à la campagne',
     'journal.aggregate.export': 'Exporter (.md)',
+    'journal.aggregate.exportSession': 'Exporter cette séance',
     'journal.aggregate.empty':
       'Aucune séance terminée pour l’instant. Le journal de campagne se remplira à mesure que vous clôturez des séances.',
     'journal.aggregate.sessionNumberPrefix': 'Séance ',
@@ -6508,6 +6523,8 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.tip.advDisadvantage': 'Désavantage : lance deux d20, garde le plus bas.',
     'dm.tip.secretRoll': 'Lance le d20 secret avec le modificateur.',
     'journal.tip.export': 'Télécharge le journal complet en fichier Markdown.',
+    'journal.tip.exportSession':
+      'Télécharge cette seule séance — de quoi la transmettre à un joueur absent.',
     'journal.tip.compile': 'Génère le récit de la séance à partir des événements.',
     'journal.tip.edit': 'Modifie le récit à la main.',
     'journal.tip.recompile': 'Régénère le récit depuis les événements.',
@@ -8130,6 +8147,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.journal.recompileConfirmBody':
       'This rewrites the journal from events and overwrites any manual edit. Events remain the source of truth.',
     'sessions.journal.recompileConfirm': 'Recompile and overwrite',
+    'sessions.journal.scope.legend': 'What the story carries',
+    'sessions.journal.scope.rolls': 'Dice rolls',
+    'sessions.journal.scope.monsterHp': 'Monster hit points',
+    'sessions.journal.scope.dmOnly': 'Behind the screen',
+    'sessions.journal.scope.help':
+      'Unchecked, that kind of event stays out of the story. Nothing is lost: events remain the source of truth, you can recompile differently.',
     'sessions.action.start': 'Start session',
     'sessions.action.end': 'End session',
     'sessions.action.starting': 'Starting…',
@@ -8384,6 +8407,7 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.aggregate.subtitle': 'The compiled tale of your sessions, in order.',
     'journal.aggregate.back': 'Back to campaign',
     'journal.aggregate.export': 'Export (.md)',
+    'journal.aggregate.exportSession': 'Export this session',
     'journal.aggregate.empty':
       'No completed sessions yet. The campaign journal fills in as you end sessions.',
     'journal.aggregate.sessionNumberPrefix': 'Session ',
@@ -9897,6 +9921,8 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.tip.advDisadvantage': 'Disadvantage: roll two d20, keep the lowest.',
     'dm.tip.secretRoll': 'Roll the secret d20 with the modifier.',
     'journal.tip.export': 'Download the full journal as a Markdown file.',
+    'journal.tip.exportSession':
+      'Download this session alone — enough to pass on to an absent player.',
     'journal.tip.compile': 'Generate the session narrative from the events.',
     'journal.tip.edit': 'Edit the narrative by hand.',
     'journal.tip.recompile': 'Regenerate the narrative from the events.',
