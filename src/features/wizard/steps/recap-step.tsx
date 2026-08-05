@@ -105,6 +105,10 @@ export function RecapStep(): JSX.Element {
         background,
         items: items.data,
         spells: spells.data,
+        // Une classe maison peut donner un équipement de départ maison : sans
+        // sa provenance, l'objet part en inventaire marqué SRD et devient
+        // « introuvable » dès la première ouverture de la fiche.
+        itemScopeOf: items.scopeOf,
       });
       reset();
       showToast({

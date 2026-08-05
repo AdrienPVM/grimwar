@@ -1,5 +1,6 @@
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
+import type { ContentEntryScope } from '@/shared/hooks/use-content';
 import { addItemToInventory } from '@/shared/lib/inventory';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { maxHp, totalLevel } from '@/shared/lib/rules/multiclass';
@@ -50,6 +51,12 @@ export interface SubmitFromWizardInput {
   background: Background;
   items: Item[];
   spells: Spell[];
+  /**
+   * Provenance d'un id d'objet. L'équipement de départ vient de la classe ou de
+   * l'historique — donc d'un pack maison quand la classe elle-même en vient.
+   * Absent (tests, appels legacy) → tout est réputé SRD, l'ancien comportement.
+   */
+  itemScopeOf?: (id: string) => ContentEntryScope;
 }
 
 export interface SubmitFromWizardResult {
@@ -114,6 +121,21 @@ export function generateCharacterId(name: string): string {
       .slice(0, 32) || 'pj';
   const suffix = Math.random().toString(36).slice(2, 8);
   return `${slug}-${suffix}`;
+}
+
+/**
+ * Ajoute un objet d'équipement de départ en respectant sa provenance réelle.
+ * Sans résolveur, tout est réputé SRD — c'est le cas de 100 % des parties qui
+ * n'utilisent aucun pack, et l'exact comportement d'avant.
+ */
+async function addStartingItem(
+  shape: Parameters<typeof addItemToInventory>[0],
+  itemId: string,
+  qty: number,
+  scopeOf: ((id: string) => ContentEntryScope) | undefined,
+): Promise<void> {
+  const { scope, scopeId } = scopeOf?.(itemId) ?? { scope: 'public' as const };
+  await addItemToInventory(shape, itemId, scope, { qty }, scopeId);
 }
 
 export async function buildCharacterFromWizard(
@@ -261,7 +283,7 @@ export async function buildCharacterFromWizard(
     const option = cls.startingEquipment.options[choice.optionIndex];
     if (!option) continue;
     for (const ref of option.items) {
-      await addItemToInventory(inventoryShape, ref.itemId, 'public', { qty: ref.qty });
+      await addStartingItem(inventoryShape, ref.itemId, ref.qty, input.itemScopeOf);
     }
     if (option.coins) {
       const k = coinKey[option.coins.unit];
@@ -271,7 +293,7 @@ export async function buildCharacterFromWizard(
 
   // Grants background
   for (const ref of background.equipment) {
-    await addItemToInventory(inventoryShape, ref.itemId, 'public', { qty: ref.qty });
+    await addStartingItem(inventoryShape, ref.itemId, ref.qty, input.itemScopeOf);
   }
   if (background.startingCoins) {
     const k = coinKey[background.startingCoins.unit];

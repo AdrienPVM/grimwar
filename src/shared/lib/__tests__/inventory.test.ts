@@ -6,6 +6,7 @@ import {
   type CharacterInventoryShape,
 } from '../inventory';
 import * as loaderModule from '../content-loader';
+import * as packsModule from '../load-user-packs-entries';
 
 const fakeMagicItem = {
   id: 'amulette-de-protection-physique',
@@ -116,5 +117,64 @@ describe('inventory — strict items DB', () => {
     );
     const item = character.inventory.items[0];
     expect(item?.contentSource).toBe('campaign-abc');
+  });
+});
+
+/**
+ * Un objet venu d'un pack maison doit être ajoutable À SA VRAIE PORTÉE. Le
+ * chemin `user` visait `users/{uid}/customContent/{type}/{id}` — cinq segments,
+ * refusés par `doc()` : la branche LEVAIT au lieu de résoudre. Personne ne s'en
+ * apercevait faute d'appelant ; l'ajout d'objet en portée réelle en est le premier.
+ */
+describe('inventory — portée « user » (contenu de pack)', () => {
+  const packBow = {
+    id: 'arc-du-guetteur',
+    name: { fr: 'Arc du guetteur' },
+    category: 'weapon' as const,
+    weight: 1,
+    cost: { quantity: 25, unit: 'gp' as const },
+    description: { fr: 'Arc maison.' },
+    properties: [],
+    source: 'homebrew' as const,
+  };
+
+  beforeEach(() => {
+    vi.spyOn(loaderModule, 'loadPublicContent').mockResolvedValue([] as never);
+    vi.spyOn(packsModule, 'loadUserPacksEntries').mockImplementation(
+      async (type) => (type === 'items' ? ([packBow] as never) : ([] as never)),
+    );
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('résout un objet de pack au lieu de lever sur un chemin invalide', async () => {
+    await expect(
+      ensureContentExists('arc-du-guetteur', 'user', 'user-1'),
+    ).resolves.toMatchObject({ id: 'arc-du-guetteur' });
+  });
+
+  it('rejette clairement un id absent des packs', async () => {
+    await expect(
+      ensureContentExists('arc-inconnu', 'user', 'user-1'),
+    ).rejects.toThrow(/introuvable dans user\/user-1/);
+  });
+
+  it('persiste la portée et sa source dans la ligne d’inventaire', async () => {
+    const character = emptyCharacter();
+    await addItemToInventory(
+      character,
+      'arc-du-guetteur',
+      'user',
+      { qty: 2 },
+      'user-1',
+    );
+    expect(character.inventory.items[0]).toMatchObject({
+      contentId: 'arc-du-guetteur',
+      contentScope: 'user',
+      contentSource: 'user-1',
+      qty: 2,
+    });
   });
 });

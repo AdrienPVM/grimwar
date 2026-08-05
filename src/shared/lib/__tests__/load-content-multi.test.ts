@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as ContentLoader from '../content-loader';
-import { loadContentMulti } from '../load-content-multi';
+import {
+  loadContentMulti,
+  loadContentMultiScoped,
+} from '../load-content-multi';
 import * as PacksEntries from '../load-user-packs-entries';
 import type { Item } from '../../types/content';
 
@@ -123,5 +126,52 @@ describe('loadContentMulti', () => {
     });
 
     expect(result.map((i) => i.id)).toEqual(['sword', 'pack-bow']);
+  });
+});
+
+/**
+ * La provenance de chaque entrée, telle qu'un écran qui PERSISTE une référence
+ * doit la lire. `loadContentMulti` l'écrase en ne rendant que les entités —
+ * c'était la cause du mur « l'objet du pack devient introuvable ».
+ */
+describe('loadContentMultiScoped — provenance conservée', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([]);
+  });
+
+  it('marque « public » une entrée SRD et « user » une entrée de pack', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée'),
+    ]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([
+      fakeItem('homebrew-bow', 'arc maison'),
+    ] as never);
+
+    const result = await loadContentMultiScoped('items', { userId: 'user-1' });
+
+    expect(
+      result.map((r) => [(r.entity as { id: string }).id, r.scope, r.scopeId]),
+    ).toEqual([
+      ['sword', 'public', undefined],
+      ['homebrew-bow', 'user', 'user-1'],
+    ]);
+  });
+
+  it('donne au pack qui écrase un id SRD la provenance du pack', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée'),
+    ]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([
+      fakeItem('sword', 'épée maison'),
+    ] as never);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const result = await loadContentMultiScoped('items', { userId: 'user-1' });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.scope).toBe('user');
+    expect(result[0]!.scopeId).toBe('user-1');
+    warn.mockRestore();
   });
 });
