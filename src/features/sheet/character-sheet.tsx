@@ -23,6 +23,13 @@ import { useSheetMode, type SheetMode } from './use-sheet-mode';
 
 interface ModeProps {
   character: Character;
+  /**
+   * Bascule de mode, offerte à TOUS les modes même si seul Combat s'en sert
+   * aujourd'hui : une carte qui renvoie vers l'écran où l'action se fait
+   * réellement est un motif appelé à se répéter, et un type commun évite de
+   * rouvrir cette table à chaque fois.
+   */
+  onOpenMode: (mode: SheetMode) => void;
 }
 
 const MODE_COMPONENTS: Record<SheetMode, (props: ModeProps) => JSX.Element> = {
@@ -170,7 +177,7 @@ export function CharacterSheet({
           <ModeTabs active={mode} onChange={setMode} />
         </aside>
         <div className="sheet-desktop-main lg:min-w-0 lg:pt-2">
-          <ActiveMode character={character} />
+          <ActiveMode character={character} onOpenMode={setMode} />
         </div>
       </div>
       {/*

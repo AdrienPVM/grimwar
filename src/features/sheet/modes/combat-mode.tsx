@@ -18,10 +18,18 @@ import { LongRestButton } from './combat/long-rest-button';
 import { PartyStrip } from './combat/party-strip';
 import { ShortRestButton } from './combat/short-rest-button';
 import { SlotsCompact } from './combat/slots-compact';
+import { TurnOptionsCard } from './combat/turn-options-card';
 import { useSheetReadOnly } from '../permissions-context';
+import type { SheetMode } from '../use-sheet-mode';
 
 interface CombatModeProps {
   character: Character;
+  /**
+   * Bascule de mode de fiche. Le mode Combat en a besoin pour renvoyer vers la
+   * Magie depuis la carte « En dehors de ton action » — la mécanique
+   * d'incantation vit là-bas et n'a aucune raison d'être dupliquée ici.
+   */
+  onOpenMode: (mode: SheetMode) => void;
 }
 
 /**
@@ -34,7 +42,7 @@ interface CombatModeProps {
  * via `disabled` côté props ET via la règle CSS `[data-readonly="true"]` sur
  * <main>, double rideau pour empêcher les patches Firestore.
  */
-export function CombatMode({ character }: CombatModeProps): JSX.Element {
+export function CombatMode({ character, onOpenMode }: CombatModeProps): JSX.Element {
   const readOnly = useSheetReadOnly(character);
   // Variantes de la table active (guérison lente, réalisme brutal). Hors
   // campagne ⇒ `NO_VARIANTS` ⇒ repos SRD standard.
@@ -67,6 +75,15 @@ export function CombatMode({ character }: CombatModeProps): JSX.Element {
       </BentoTile>
       <BentoTile span="lg">
         <AttacksList character={character} readOnly={readOnly} />
+      </BentoTile>
+      {/*
+        Juste APRÈS les attaques, et c'est le seul endroit qui marche : la liste
+        d'attaques couvre l'évidence (« je frappe »), cette carte couvre ce qui
+        reste — l'action Bonus et la Réaction. Les lire dans cet ordre, c'est
+        parcourir son tour dans l'ordre où on le joue.
+      */}
+      <BentoTile span="sm">
+        <TurnOptionsCard character={character} onOpenMagie={() => onOpenMode('magie')} />
       </BentoTile>
       {/*
         La bande de compagnons remonte AVANT les accessoires, et ce n'est pas un

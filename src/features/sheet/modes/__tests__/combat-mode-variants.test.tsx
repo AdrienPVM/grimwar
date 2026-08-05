@@ -96,7 +96,7 @@ function buildCharacter(): Character {
 function renderCombat(): void {
   render(
     <PermissionProvider value={ownerCtx}>
-      <CombatMode character={buildCharacter()} />
+      <CombatMode character={buildCharacter()} onOpenMode={() => undefined} />
     </PermissionProvider>,
   );
 }

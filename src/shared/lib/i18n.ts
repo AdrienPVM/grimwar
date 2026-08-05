@@ -898,6 +898,12 @@ export type StringKey =
   | 'nav.back.content'
   | 'nav.back.maps'
   | 'nav.avatar.aria'
+  | 'sheet.turnOptions.title'
+  | 'sheet.turnOptions.hint'
+  | 'sheet.turnOptions.bonus'
+  | 'sheet.turnOptions.bonus.empty'
+  | 'sheet.turnOptions.reaction'
+  | 'sheet.turnOptions.opportunityAttack'
   | 'account.haptics.title'
   | 'account.haptics.hint'
   | 'nav.tabs.aria'
@@ -4058,6 +4064,15 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.back.maps': 'Retour aux cartes',
     'nav.avatar.aria': 'Compte (à venir)',
     // Barre de navigation basse (mobile) / rail de destinations (desktop).
+    // Terminologie reprise telle quelle du SRD FR 5.2.1 : « action Bonus »,
+    // « Réaction », « attaque d'Opportunité » (majuscules du terme de jeu).
+    'sheet.turnOptions.title': 'En dehors de ton action',
+    'sheet.turnOptions.hint':
+      'Ce qui ne coûte pas ton action, et qu’on oublie une campagne entière.',
+    'sheet.turnOptions.bonus': 'Action Bonus',
+    'sheet.turnOptions.bonus.empty': 'Aucun sort d’action Bonus connu.',
+    'sheet.turnOptions.reaction': 'Réaction',
+    'sheet.turnOptions.opportunityAttack': 'Attaque d’Opportunité',
     'account.haptics.title': 'Retour haptique',
     'account.haptics.hint':
       "Vibration courte sur les jets et leurs issues. Réglage propre à cet appareil.",
@@ -7666,6 +7681,12 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.back.content': 'Back to my content',
     'nav.back.maps': 'Back to maps',
     'nav.avatar.aria': 'Account (coming soon)',
+    'sheet.turnOptions.title': 'Outside your action',
+    'sheet.turnOptions.hint': "What doesn't cost your action, and gets forgotten all campaign long.",
+    'sheet.turnOptions.bonus': 'Bonus Action',
+    'sheet.turnOptions.bonus.empty': 'No known Bonus Action spell.',
+    'sheet.turnOptions.reaction': 'Reaction',
+    'sheet.turnOptions.opportunityAttack': 'Opportunity Attack',
     'account.haptics.title': 'Haptic feedback',
     'account.haptics.hint': 'Short vibration on rolls and their outcomes. Applies to this device only.',
     'nav.tabs.aria': 'Main areas',
