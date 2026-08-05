@@ -10,7 +10,7 @@ import {
 
 import { getDb } from '@/shared/lib/firebase';
 import { t } from '@/shared/lib/i18n';
-import { showToast } from '@/shared/lib/slices/toast-slice';
+import { notifyPlayer } from '@/shared/lib/notifications';
 import { HANDOUT_RECIPIENTS_ALL, HandoutSchema } from '@/shared/types/handout';
 
 /**
@@ -65,7 +65,7 @@ export function useHandoutNotifications(
           if (!parsed.success || parsed.data.visibility === 'archived') return;
           if (parsed.data.createdBy === uid) return; // ses propres envois
 
-          showToast({
+          notifyPlayer({
             kind: 'info',
             title: t('handouts.toast.title'),
             sub: parsed.data.title,

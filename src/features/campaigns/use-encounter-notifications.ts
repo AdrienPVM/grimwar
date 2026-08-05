@@ -14,7 +14,7 @@ import {
 import { getDb } from '@/shared/lib/firebase';
 import { t } from '@/shared/lib/i18n';
 import { useActiveTurnStore } from '@/shared/lib/slices/active-turn-slice';
-import { showToast } from '@/shared/lib/slices/toast-slice';
+import { notifyPlayer } from '@/shared/lib/notifications';
 import { EncounterSchema, type Encounter } from '@/shared/types/encounter';
 
 /**
@@ -114,7 +114,7 @@ export function useEncounterNotifications(
       if (firstLoad) return; // état déjà en cours à l'arrivée : pas une nouveauté
 
       if (isMyTurn && isNewTurn) {
-        showToast({
+        notifyPlayer({
           kind: 'info',
           title: t('encounters.toast.yourTurn.title'),
           sub: t('encounters.toast.yourTurn.sub')
@@ -125,7 +125,7 @@ export function useEncounterNotifications(
         return; // « à vous de jouer » implique « le combat commence »
       }
       if (isNewEncounter && iAmIn) {
-        showToast({
+        notifyPlayer({
           kind: 'info',
           title: t('encounters.toast.started.title'),
           sub: encounter.name,

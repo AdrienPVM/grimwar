@@ -161,6 +161,8 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
   const haptics = useDevicePrefsStore((s) => s.haptics);
   const setHaptics = useDevicePrefsStore((s) => s.setHaptics);
   const dice3d = useDevicePrefsStore((s) => s.dice3d);
+  const gameNotifications = useDevicePrefsStore((s) => s.gameNotifications);
+  const setGameNotifications = useDevicePrefsStore((s) => s.setGameNotifications);
   const setDice3d = useDevicePrefsStore((s) => s.setDice3d);
 
   return (
@@ -307,6 +309,27 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
             checked={haptics}
             onChange={(e) => setHaptics(e.target.checked)}
             aria-label={t('account.haptics.title')}
+            className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
+          />
+        </label>
+
+        {/* Ne coupe que les ANNONCES, pas le bandeau « à toi de jouer » de la
+            fiche : celui-ci n'interrompt rien, et le taire rendrait le joueur
+            aveugle à son tour au lieu de le laisser tranquille. */}
+        <label className="mt-3 flex items-start justify-between gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] p-3">
+          <span className="min-w-0">
+            <span className="block font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              {t('account.notifications.title')}
+            </span>
+            <span className="mt-0.5 block font-serif text-[12px] text-text-tertiary">
+              {t('account.notifications.hint')}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={gameNotifications}
+            onChange={(e) => setGameNotifications(e.target.checked)}
+            aria-label={t('account.notifications.title')}
             className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
           />
         </label>

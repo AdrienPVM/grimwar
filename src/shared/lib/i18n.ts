@@ -912,6 +912,8 @@ export type StringKey =
   | 'sheet.switcher.hint'
   | 'sheet.switcher.level'
   | 'account.dice3d.title'
+  | 'account.notifications.title'
+  | 'account.notifications.hint'
   | 'account.dice3d.hint'
   // Palette de commandes (⌘K)
   | 'palette.open'
@@ -4113,6 +4115,9 @@ const STRINGS: Record<Locale, Dict> = {
     'account.dice3d.title': 'Dés en relief',
     'account.dice3d.hint':
       'Les dés numériques tombent en trois dimensions et se posent sur leur face. Décoratif : le résultat est le même sans.',
+    'account.notifications.title': 'Notifications de partie',
+    'account.notifications.hint':
+      'Document du meneur, début de combat, ton tour. Coupe les annonces sans masquer le bandeau « à toi de jouer » de la fiche. Réglage propre à cet appareil.',
     'account.haptics.title': 'Retour haptique',
     'account.haptics.hint':
       "Vibration courte sur les jets et leurs issues. Réglage propre à cet appareil.",
@@ -7760,6 +7765,9 @@ const STRINGS: Record<Locale, Dict> = {
     'account.dice3d.title': 'Three-dimensional dice',
     'account.dice3d.hint':
       'Digital dice tumble in three dimensions and settle on their face. Decorative: the result is the same without it.',
+    'account.notifications.title': 'Game notifications',
+    'account.notifications.hint':
+      'Handout from the GM, combat start, your turn. Silences the announcements without hiding the sheet’s “your turn” banner. Applies to this device only.',
     'account.haptics.title': 'Haptic feedback',
     'account.haptics.hint': 'Short vibration on rolls and their outcomes. Applies to this device only.',
     'palette.open': 'Search everywhere',

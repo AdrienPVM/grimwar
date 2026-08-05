@@ -31,6 +31,18 @@ interface DevicePrefsState {
    */
   dice3d: boolean;
   setDice3d: (v: boolean) => void;
+  /**
+   * Recevoir les notifications de partie (document du MJ, début de combat,
+   * « c'est à toi »). Défaut : activé.
+   *
+   * Réglage d'APPAREIL comme les deux précédents : le joueur qui pose son
+   * téléphone à côté d'un écran de télé où tourne déjà la carte ne veut pas
+   * couper les notifications de sa tablette. Et ça ne coupe QUE les toasts :
+   * le bandeau « c'est à toi » de la fiche reste, parce qu'il n'interrompt
+   * rien — c'est de l'état affiché, pas une sonnerie.
+   */
+  gameNotifications: boolean;
+  setGameNotifications: (v: boolean) => void;
 }
 
 export const useDevicePrefsStore = create<DevicePrefsState>()(
@@ -40,13 +52,19 @@ export const useDevicePrefsStore = create<DevicePrefsState>()(
       setHaptics: (v) => set({ haptics: v }),
       dice3d: true,
       setDice3d: (v) => set({ dice3d: v }),
+      gameNotifications: true,
+      setGameNotifications: (v) => set({ gameNotifications: v }),
     }),
     {
       name: 'grimwar.device-prefs',
       storage: createSafeJSONStorage<DevicePrefsState>(),
       // Les setters ne se persistent pas : seul l'état sérialisable voyage.
       partialize: (s) =>
-        ({ haptics: s.haptics, dice3d: s.dice3d }) as DevicePrefsState,
+        ({
+          haptics: s.haptics,
+          dice3d: s.dice3d,
+          gameNotifications: s.gameNotifications,
+        }) as DevicePrefsState,
     },
   ),
 );
