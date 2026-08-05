@@ -9,6 +9,7 @@ import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
 import { useFieldLocked, usePermissionContext } from '../permissions-context';
+import { CharacterSwitcher } from './character-switcher';
 import { HeroEmblem } from './hero-emblem';
 
 interface HeroCardProps {
@@ -111,7 +112,12 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
         id="hero-name"
         className="mt-8 text-center font-display text-2xl font-bold uppercase tracking-[0.18em] text-gold-bright lg:mt-4"
       >
-        {character.name}
+        {/* Le nom devient la porte vers les autres fiches — c'est l'endroit où
+            l'on s'attend à pouvoir changer de personnage. Le composant se
+            replie sur un simple texte s'il n'y a rien vers quoi basculer. */}
+        <CharacterSwitcher currentId={character.id}>
+          {character.name}
+        </CharacterSwitcher>
       </h1>
 
       {nameLocked ? (

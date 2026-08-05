@@ -1,9 +1,23 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
 import { HeroCard } from '../hero-card';
+
+/**
+ * La carte héros porte désormais la bascule entre personnages, qui navigue :
+ * elle exige donc un routeur. Sur la fiche réelle il y en a toujours un — c'est
+ * le harnais de test qui était plus pauvre que la réalité.
+ */
+function renderHero(character: Character): void {
+  render(
+    <MemoryRouter>
+      <HeroCard character={character} />
+    </MemoryRouter>,
+  );
+}
 
 import ancestriesBundle from '../../../../../public/data/ancestries.json';
 import backgroundsBundle from '../../../../../public/data/backgrounds.json';
@@ -107,19 +121,19 @@ const acolyteName = (backgroundsBundle as Array<{ id: string; name: { fr: string
 
 describe('<HeroCard> — historique sur la ligne d\'identité', () => {
   it('affiche le nom de l\'historique À L\'IDENTIQUE du bundle, après l\'espèce', () => {
-    render(<HeroCard character={buildCharacter()} />);
+    renderHero(buildCharacter());
     expect(acolyteName).toBe('Acolyte');
     // « Humain · Acolyte » : espèce + historique sur la même ligne.
     expect(screen.getByText(/Humain\s*·\s*Acolyte/)).toBeInTheDocument();
   });
 
   it('résout un autre historique (cohérence data-driven, pas codé en dur)', () => {
-    render(<HeroCard character={buildCharacter({ backgroundId: 'soldier' })} />);
+    renderHero(buildCharacter({ backgroundId: 'soldier' }));
     expect(screen.getByText(/Humain\s*·\s*Soldat/)).toBeInTheDocument();
   });
 
   it('omet le segment historique (pas de slug brut) si l\'id ne résout pas', () => {
-    render(<HeroCard character={buildCharacter({ backgroundId: 'custom-unknown' })} />);
+    renderHero(buildCharacter({ backgroundId: 'custom-unknown' }));
     expect(screen.queryByText(/custom-unknown/)).toBeNull();
     // L'espèce reste affichée, sans « · » orphelin derrière.
     expect(screen.getByText('Humain')).toBeInTheDocument();
@@ -128,7 +142,7 @@ describe('<HeroCard> — historique sur la ligne d\'identité', () => {
 
 describe('<HeroCard> — ligne classe · sous-classe · niveau', () => {
   it('mono-classe sans sous-classe : un seul séparateur (pas de « · · ») + niveau localisé', () => {
-    render(<HeroCard character={buildCharacter()} />);
+    renderHero(buildCharacter());
     const line = screen.getByText('Clerc').closest('p');
     expect(line).not.toBeNull();
     // « Clerc · Niveau 1 » — un seul bullet, plus jamais « Clerc ·  · Niveau 1 ».
@@ -137,9 +151,8 @@ describe('<HeroCard> — ligne classe · sous-classe · niveau', () => {
   });
 
   it('résout le nom de la sous-classe À L\'IDENTIQUE du bundle (pas le slug brut)', () => {
-    render(
-      <HeroCard
-        character={buildCharacter({
+    renderHero(
+      buildCharacter({
           classes: [
             {
               classId: 'barbarian',
@@ -154,10 +167,9 @@ describe('<HeroCard> — ligne classe · sous-classe · niveau', () => {
               wizardSpellbookL1: [],
             },
           ],
-          primaryClassId: 'barbarian',
-          totalLevel: 3,
-        })}
-      />,
+        primaryClassId: 'barbarian',
+        totalLevel: 3,
+      }),
     );
     // Valeur figée du bundle (Cat. 3) : « Voie du Berserker », jamais « Path of the berserker ».
     const subFr = (subclassesBundle as Array<{ id: string; name: { fr: string } }>).find(
