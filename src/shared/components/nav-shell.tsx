@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/use-auth';
 import { cn } from '../lib/cn';
 import { t } from '../lib/i18n';
 import { parentRouteFor } from '../lib/parent-route';
+import { openCommandPalette } from '../lib/slices/command-palette-slice';
 import { BOTTOM_NAV_TABS, isTabActive } from './bottom-nav';
 import { Icon } from './icon';
 
@@ -137,6 +138,35 @@ export function NavShell(): JSX.Element | null {
           );
         })}
       </div>
+
+      {/*
+        Entrée de la palette de commandes (⌘K). Posée à gauche du losange plutôt
+        que dans la barre basse : les trois espaces du pouce sont des
+        DESTINATIONS, la recherche est un OUTIL — et elle doit rester au même
+        endroit sur les 23 routes, y compris celles où la barre basse s'efface.
+        Le raccourci est affiché à partir de `sm` seulement : un téléphone n'a
+        pas de touche ⌘, l'annoncer y serait du bruit.
+      */}
+      <button
+        type="button"
+        onClick={openCommandPalette}
+        aria-label={t('palette.open')}
+        aria-keyshortcuts="Meta+K Control+K"
+        className={cn(
+          'ml-auto mr-2 inline-flex items-center gap-2 rounded-pill border border-white-8 bg-white/[0.04]',
+          'h-[38px] px-3 text-text-tertiary',
+          'transition-all duration-200 ease-base hover:border-soft hover:text-gold-bright active:scale-[0.96]',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/50',
+        )}
+      >
+        <Icon name="i-search" className="h-4 w-4" />
+        <span
+          aria-hidden="true"
+          className="hidden font-ui text-[10px] uppercase tracking-[0.16em] sm:inline"
+        >
+          ⌘K
+        </span>
+      </button>
 
       <button
         type="button"

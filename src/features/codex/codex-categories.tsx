@@ -23,7 +23,7 @@ export type CodexCategoryId =
   | 'invocations'
   | 'conditions';
 
-interface CodexCategory {
+export interface CodexCategory {
   id: CodexCategoryId;
   labelKey: StringKey;
   icon: IconName;

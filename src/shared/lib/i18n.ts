@@ -913,6 +913,31 @@ export type StringKey =
   | 'sheet.switcher.level'
   | 'account.dice3d.title'
   | 'account.dice3d.hint'
+  // Palette de commandes (⌘K)
+  | 'palette.open'
+  | 'palette.title'
+  | 'palette.placeholder'
+  | 'palette.hint'
+  | 'palette.close'
+  | 'palette.empty'
+  | 'palette.loading'
+  | 'palette.group.characters'
+  | 'palette.group.campaigns'
+  | 'palette.group.destinations'
+  | 'palette.group.codex'
+  | 'palette.nav.home'
+  | 'palette.nav.campaigns'
+  | 'palette.nav.codex'
+  | 'palette.nav.account'
+  | 'palette.nav.create'
+  | 'palette.nav.join'
+  | 'palette.nav.packs'
+  | 'palette.keys.move'
+  | 'palette.keys.select'
+  | 'palette.keys.close'
+  | 'palette.character.level'
+  | 'palette.campaign.gm'
+  | 'palette.campaign.player'
   | 'nav.tabs.aria'
   | 'nav.tab.characters'
   | 'nav.tab.campaigns'
@@ -4091,6 +4116,31 @@ const STRINGS: Record<Locale, Dict> = {
     'account.haptics.title': 'Retour haptique',
     'account.haptics.hint':
       "Vibration courte sur les jets et leurs issues. Réglage propre à cet appareil.",
+    // Palette de commandes (⌘K)
+    'palette.open': 'Rechercher partout',
+    'palette.title': 'Rechercher',
+    'palette.placeholder': 'Un personnage, une campagne, une règle…',
+    'palette.hint': 'Cherche un personnage, une campagne, un écran, ou n’importe quelle entrée du Codex.',
+    'palette.close': 'Fermer la recherche',
+    'palette.empty': 'Rien ne correspond à ta recherche.',
+    'palette.loading': 'Le Codex se charge…',
+    'palette.group.characters': 'Personnages',
+    'palette.group.campaigns': 'Campagnes',
+    'palette.group.destinations': 'Aller à',
+    'palette.group.codex': 'Le Codex',
+    'palette.nav.home': 'Mes personnages',
+    'palette.nav.campaigns': 'Mes campagnes',
+    'palette.nav.codex': 'Le Codex',
+    'palette.nav.account': 'Mon compte',
+    'palette.nav.create': 'Créer un personnage',
+    'palette.nav.join': 'Rejoindre une campagne',
+    'palette.nav.packs': 'Mes packs de contenu',
+    'palette.keys.move': 'naviguer',
+    'palette.keys.select': 'ouvrir',
+    'palette.keys.close': 'fermer',
+    'palette.character.level': 'niv.',
+    'palette.campaign.gm': 'Tu es MJ',
+    'palette.campaign.player': 'Tu y joues',
     'nav.tabs.aria': 'Espaces principaux',
     'nav.tab.characters': 'Personnages',
     'nav.tab.campaigns': 'Campagnes',
@@ -7712,6 +7762,30 @@ const STRINGS: Record<Locale, Dict> = {
       'Digital dice tumble in three dimensions and settle on their face. Decorative: the result is the same without it.',
     'account.haptics.title': 'Haptic feedback',
     'account.haptics.hint': 'Short vibration on rolls and their outcomes. Applies to this device only.',
+    'palette.open': 'Search everywhere',
+    'palette.title': 'Search',
+    'palette.placeholder': 'A character, a campaign, a rule…',
+    'palette.hint': 'Search a character, a campaign, a screen, or any Codex entry.',
+    'palette.close': 'Close search',
+    'palette.empty': 'Nothing matches your search.',
+    'palette.loading': 'Loading the Codex…',
+    'palette.group.characters': 'Characters',
+    'palette.group.campaigns': 'Campaigns',
+    'palette.group.destinations': 'Go to',
+    'palette.group.codex': 'The Codex',
+    'palette.nav.home': 'My characters',
+    'palette.nav.campaigns': 'My campaigns',
+    'palette.nav.codex': 'The Codex',
+    'palette.nav.account': 'My account',
+    'palette.nav.create': 'Create a character',
+    'palette.nav.join': 'Join a campaign',
+    'palette.nav.packs': 'My content packs',
+    'palette.keys.move': 'move',
+    'palette.keys.select': 'open',
+    'palette.keys.close': 'close',
+    'palette.character.level': 'lvl',
+    'palette.campaign.gm': 'You are GM',
+    'palette.campaign.player': 'You play here',
     'nav.tabs.aria': 'Main areas',
     'nav.tab.characters': 'Characters',
     'nav.tab.campaigns': 'Campaigns',

@@ -7,6 +7,7 @@ import { HitMissGateModal } from '@/features/dice/hit-miss-gate-modal';
 import { PhysicalRollModal } from '@/features/dice/physical-roll-modal';
 import { SpellSigilOverlay } from '@/features/dice/spell-sigil-overlay';
 import { useAuth } from '@/features/auth/use-auth';
+import { CommandPalette } from '@/features/search/command-palette';
 import { AppRoutes } from '@/routes';
 import { Aurora } from '@/shared/components/aurora';
 import { BottomNav } from '@/shared/components/bottom-nav';
@@ -104,6 +105,9 @@ function AppShell(): JSX.Element {
           donc ils survivent au changement d'écran : le joueur reçoit le toast
           depuis sa fiche, pas seulement depuis le hub de sa campagne. */}
       <CampaignNotifications />
+      {/* Palette de commandes (⌘K) — hors du `Routes` pour répondre sur les 23
+          routes, mais DANS le router : elle navigue elle-même. */}
+      <CommandPalette />
       <RouteViewport>
           <AppRoutes />
       </RouteViewport>
