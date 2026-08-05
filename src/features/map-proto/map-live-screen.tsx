@@ -46,6 +46,7 @@ import {
   MapSettingsModal,
   type MapSettingsPatch,
 } from './map-settings-modal';
+import { MapZoomControls } from './map-zoom-controls';
 import { monsterToTokenInput } from './monster-token';
 import { MonsterPickerModal } from './monster-picker-modal';
 import {
@@ -60,6 +61,7 @@ import {
 import { TokenEditModal } from './token-edit-modal';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
+import { useMapTransform } from './use-map-transform';
 
 /**
  * Vue live de carte côté MJ (CHANTIER D phase 2, tracer D.4).
@@ -231,6 +233,9 @@ export function MapLiveScreen(): JSX.Element {
   const [viewAsPlayer, setViewAsPlayer] = useState(false);
   const [ruler, setRuler] = useState<Ruler>(EMPTY_RULER);
   const svgRef = useRef<SVGSVGElement>(null);
+  // Cadrage local (zoom + panoramique). Non persisté : chacun cadre son écran,
+  // personne ne recadre celui des autres — comme l'aimant et la règle.
+  const view = useMapTransform(svgRef);
   const dragStart = useRef<{
     pointerX: number;
     pointerY: number;
@@ -1468,6 +1473,7 @@ export function MapLiveScreen(): JSX.Element {
               {t('map.live.lightingToggle')} {map.lightingEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
+          <MapZoomControls view={view} testidPrefix="map-live" />
           <button
             type="button"
             data-testid="map-live-open-tv"
@@ -1525,13 +1531,25 @@ export function MapLiveScreen(): JSX.Element {
       >
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
+          viewBox={view.viewBox}
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full touch-none select-none"
-          style={measureMode ? { cursor: 'crosshair' } : undefined}
+          style={
+            measureMode
+              ? { cursor: 'crosshair' }
+              : view.isPanning
+                ? { cursor: 'grabbing' }
+                : undefined
+          }
           data-testid="map-live-svg"
-          onPointerDown={measureMode ? handleMeasurePointerDown : undefined}
-          onPointerMove={measureMode ? handleMeasurePointerMove : undefined}
+          // Jetons et AoE arrêtent la propagation au pointerdown : ce handler ne
+          // reçoit que le FOND, donc glisser le décor ne déplace jamais un jeton.
+          onPointerDown={
+            measureMode ? handleMeasurePointerDown : view.beginPan
+          }
+          onPointerMove={measureMode ? handleMeasurePointerMove : view.movePan}
+          onPointerUp={measureMode ? undefined : view.endPan}
+          onPointerLeave={measureMode ? undefined : view.endPan}
         >
           {/* Décor partagé : image, grille, murs (debug MJ), fog (voile
               atténué côté MJ pour qu'il voie au travers) + LOS, lumières. Les

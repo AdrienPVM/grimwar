@@ -77,12 +77,17 @@ function renderRoute(path: string, routePath: string, element: JSX.Element): voi
   );
 }
 
+// Sans mock d'autorité, le lecteur n'est meneur d'aucune campagne : l'écran rend
+// donc sa variante JOUEUR (lecture seule, M34). C'est le comportement attendu —
+// la variante meneur est couverte par `maps-cloud-screen.test.tsx`.
 describe('MapsCloudScreen — i18n', () => {
   it('FR : titre + état vide + badge localisés', () => {
     renderRoute('/map-proto/cloud/camp-1', '/map-proto/cloud/:cid', <MapsCloudScreen />);
     expect(screen.getByText('Cartes')).toBeInTheDocument();
     expect(
-      screen.getByText('Aucune carte pour cette campagne. Créez-en une ci-dessus.'),
+      screen.getByText(
+        "Le meneur n'a pas encore préparé de carte pour cette campagne.",
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Prototype — hors production')).toBeInTheDocument();
   });
@@ -92,7 +97,9 @@ describe('MapsCloudScreen — i18n', () => {
     renderRoute('/map-proto/cloud/camp-1', '/map-proto/cloud/:cid', <MapsCloudScreen />);
     expect(screen.getByText('Maps')).toBeInTheDocument();
     expect(
-      screen.getByText('No maps for this campaign. Create one above.'),
+      screen.getByText(
+        'The GM has not prepared a map for this campaign yet.',
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Prototype — not production')).toBeInTheDocument();
   });

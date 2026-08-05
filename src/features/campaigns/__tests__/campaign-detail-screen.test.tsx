@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -392,6 +398,26 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByText('Niveau moyen')).toBeInTheDocument();
     expect(screen.getByText('Niveaux')).toBeInTheDocument();
     expect(screen.getByText('3–5')).toBeInTheDocument();
+  });
+
+  it('le JOUEUR a sa propre porte vers la carte, le MENEUR garde la sienne', () => {
+    // M34 : les rules autorisent la lecture des cartes et des jetons par tout
+    // membre depuis le plan 29 — seule l'entrée manquait, ce qui obligeait à
+    // s'échanger une URL. Les deux publics n'ont pas le même libellé : le
+    // joueur « voit », le meneur « ouvre » (il édite).
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-gm'] });
+    stateHolder.members = [mkMember({ userId: 'uid-1', role: 'member' })];
+    renderScreen();
+    expect(
+      screen.getByRole('button', { name: /Voir la carte/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Cartes$/i })).toBeNull();
+
+    cleanup();
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    renderScreen();
+    expect(screen.getByRole('button', { name: /^Cartes$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Voir la carte/i })).toBeNull();
   });
 
   it("campagne sans joueur → bloc invitation en mode « premier pas »", () => {

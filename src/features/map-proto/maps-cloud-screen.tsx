@@ -11,6 +11,7 @@ import {
   type CreateMapInput,
 } from '@/shared/lib/services/maps';
 
+import { useIsMapGm } from './use-is-map-gm';
 import { useMapsList } from './use-maps-list';
 
 /**
@@ -78,6 +79,9 @@ export function MapsCloudScreen(): JSX.Element {
   // Une fois la campagne créée, on passe le `cid` réel et le listener
   // démarre proprement.
   const { maps, isLoading, error } = useMapsList(ensureDone ? cid : undefined);
+  // Même gate que la liste : interroger `gmIds` avant que la campagne stub soit
+  // posée retournerait « pas meneur » et masquerait la création au MJ.
+  const { isGm } = useIsMapGm(ensureDone ? cid : undefined);
 
   // Crée la campagne stub si absente, dès qu'un utilisateur signé-in arrive.
   useEffect(() => {
@@ -206,13 +210,23 @@ export function MapsCloudScreen(): JSX.Element {
           {t('map.cloud.campaignPrefix')}
           {cid}
         </p>
-        <Link
-          to={`/map-proto/cloud/${cid}/import`}
-          data-testid="maps-cloud-import-link"
-          className="mt-3 inline-flex items-center gap-2 rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
-        >
-          {t('map.cloud.importLink')}
-        </Link>
+        {isGm && (
+          <Link
+            to={`/map-proto/cloud/${cid}/import`}
+            data-testid="maps-cloud-import-link"
+            className="mt-3 inline-flex items-center gap-2 rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+          >
+            {t('map.cloud.importLink')}
+          </Link>
+        )}
+        {!isGm && (
+          <p
+            data-testid="maps-cloud-member-intro"
+            className="mt-3 max-w-[70ch] font-serif text-[12px] text-text-tertiary"
+          >
+            {t('map.cloud.memberIntro')}
+          </p>
+        )}
         {ensureError && (
           <p
             data-testid="maps-cloud-ensure-error"
@@ -224,6 +238,13 @@ export function MapsCloudScreen(): JSX.Element {
         )}
       </header>
 
+      {/*
+        Création, import et suppression sont des gestes de MENEUR. Un joueur
+        arrive ici par « Voir la carte » (M34) et ne doit voir qu'une liste de
+        consultation — les rules refuseraient l'écriture de toute façon, mais un
+        bouton qui échoue est un mensonge d'interface.
+      */}
+      {isGm && (
       <section
         aria-label={t('map.cloud.createSection')}
         className="mb-6 rounded-lg border border-gold-dim/30 bg-bg-elev/80 p-4"
@@ -283,6 +304,7 @@ export function MapsCloudScreen(): JSX.Element {
           </p>
         )}
       </section>
+      )}
 
       {error ? (
         <p
@@ -304,7 +326,7 @@ export function MapsCloudScreen(): JSX.Element {
           data-testid="maps-cloud-empty"
           className="font-serif text-[12px] text-text-tertiary"
         >
-          {t('map.cloud.empty')}
+          {t(isGm ? 'map.cloud.empty' : 'map.cloud.emptyMember')}
         </p>
       ) : (
         <ul
@@ -318,8 +340,15 @@ export function MapsCloudScreen(): JSX.Element {
               data-testid={`maps-cloud-card-${m.id}`}
               className="flex items-start justify-between rounded-md border border-gold-dim/30 bg-bg-elev/60 p-3"
             >
+              {/* Le joueur va en vue présentation (lecture seule) ; le meneur
+                  garde la console d'édition. Deux destinations, une seule
+                  carte. */}
               <Link
-                to={`/map-proto/cloud/${cid}/maps/${m.id}`}
+                to={
+                  isGm
+                    ? `/map-proto/cloud/${cid}/maps/${m.id}`
+                    : `/map-proto/cloud/${cid}/maps/${m.id}/tv`
+                }
                 data-testid={`maps-cloud-open-${m.id}`}
                 className="min-w-0 flex-1"
               >
@@ -328,19 +357,21 @@ export function MapsCloudScreen(): JSX.Element {
                   {m.id}
                 </p>
               </Link>
-              <Tooltip label={t('map.tip.deleteMap')} placement="left" decorative>
-                <button
-                  type="button"
-                  onClick={() => {
-                    void handleDelete(m.id);
-                  }}
-                  aria-label={`${t('map.common.deletePrefix')} ${m.name}`}
-                  data-testid={`maps-cloud-delete-${m.id}`}
-                  className="ml-2 rounded-pill border border-gold-dim/30 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-crimson/60 hover:text-crimson"
-                >
-                  {t('map.cloud.delete')}
-                </button>
-              </Tooltip>
+              {isGm && (
+                <Tooltip label={t('map.tip.deleteMap')} placement="left" decorative>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleDelete(m.id);
+                    }}
+                    aria-label={`${t('map.common.deletePrefix')} ${m.name}`}
+                    data-testid={`maps-cloud-delete-${m.id}`}
+                    className="ml-2 rounded-pill border border-gold-dim/30 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-crimson/60 hover:text-crimson"
+                  >
+                    {t('map.cloud.delete')}
+                  </button>
+                </Tooltip>
+              )}
             </li>
           ))}
         </ul>

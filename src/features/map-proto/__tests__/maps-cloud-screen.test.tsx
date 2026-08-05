@@ -36,8 +36,10 @@ vi.mock('@/features/map-proto/use-maps-list', () => ({
 }));
 
 const mockEnsureCampaignExists = vi.fn();
+const mockGetCampaign = vi.fn();
 vi.mock('@/shared/lib/services/campaigns', () => ({
   ensureCampaignExists: (...args: unknown[]) => mockEnsureCampaignExists(...args),
+  getCampaign: (...args: unknown[]) => mockGetCampaign(...args),
 }));
 
 const mockCreateMap = vi.fn();
@@ -92,6 +94,9 @@ beforeEach(() => {
   mapsListState.isLoading = false;
   mapsListState.error = null;
   mockEnsureCampaignExists.mockReset().mockResolvedValue(false);
+  // Par défaut l'utilisateur est MENEUR de la campagne — la console d'édition
+  // n'apparaît que pour lui depuis M34 (les joueurs y arrivent en lecture seule).
+  mockGetCampaign.mockReset().mockResolvedValue({ gmIds: ['user-alice'] });
   mockCreateMap.mockReset().mockResolvedValue('m-1');
   mockDeleteMap.mockReset().mockResolvedValue(undefined);
 });
@@ -144,9 +149,7 @@ describe('MapsCloudScreen', () => {
 
   it('creates a map with valid form input', async () => {
     renderAt('/map-proto/cloud/camp-1');
-    await waitFor(() => {
-      expect(mockEnsureCampaignExists).toHaveBeenCalled();
-    });
+    await screen.findByTestId('maps-cloud-create-id');
     const idInput = screen.getByTestId('maps-cloud-create-id') as HTMLInputElement;
     const nameInput = screen.getByTestId('maps-cloud-create-name') as HTMLInputElement;
     fireEvent.change(idInput, { target: { value: 'foret-noire' } });
@@ -175,9 +178,7 @@ describe('MapsCloudScreen', () => {
 
   it('rejects invalid slug before calling createMap', async () => {
     renderAt('/map-proto/cloud/camp-1');
-    await waitFor(() => {
-      expect(mockEnsureCampaignExists).toHaveBeenCalled();
-    });
+    await screen.findByTestId('maps-cloud-create-id');
     fireEvent.change(screen.getByTestId('maps-cloud-create-id'), {
       target: { value: 'Bad Slug!' },
     });
@@ -191,9 +192,7 @@ describe('MapsCloudScreen', () => {
 
   it('rejects empty name', async () => {
     renderAt('/map-proto/cloud/camp-1');
-    await waitFor(() => {
-      expect(mockEnsureCampaignExists).toHaveBeenCalled();
-    });
+    await screen.findByTestId('maps-cloud-create-id');
     fireEvent.change(screen.getByTestId('maps-cloud-create-id'), {
       target: { value: 'ok-slug' },
     });
@@ -205,9 +204,7 @@ describe('MapsCloudScreen', () => {
   it('surfaces createMap errors in formError', async () => {
     mockCreateMap.mockRejectedValueOnce(new Error('permission-denied'));
     renderAt('/map-proto/cloud/camp-1');
-    await waitFor(() => {
-      expect(mockEnsureCampaignExists).toHaveBeenCalled();
-    });
+    await screen.findByTestId('maps-cloud-create-id');
     fireEvent.change(screen.getByTestId('maps-cloud-create-id'), {
       target: { value: 'ok-slug' },
     });
@@ -225,7 +222,9 @@ describe('MapsCloudScreen', () => {
   it('calls deleteMap when delete button is clicked', async () => {
     mapsListState.maps = [mkMap('donjon-de-l-aube', "Donjon de l'Aube")];
     renderAt('/map-proto/cloud/camp-1');
-    fireEvent.click(screen.getByTestId('maps-cloud-delete-donjon-de-l-aube'));
+    fireEvent.click(
+      await screen.findByTestId('maps-cloud-delete-donjon-de-l-aube'),
+    );
     await waitFor(() => {
       expect(mockDeleteMap).toHaveBeenCalledWith('camp-1', 'donjon-de-l-aube');
     });
@@ -248,7 +247,7 @@ describe('MapsCloudScreen', () => {
     });
   });
 
-  it('disables submit until ensureCampaignExists settles', async () => {
+  it('n\u2019expose la console d\u2019\u00e9dition qu\u2019une fois la campagne r\u00e9solue', async () => {
     const resolver: { fn: ((v: boolean) => void) | null } = { fn: null };
     mockEnsureCampaignExists.mockImplementationOnce(
       () =>
@@ -257,11 +256,42 @@ describe('MapsCloudScreen', () => {
         }),
     );
     renderAt('/map-proto/cloud/camp-1');
-    const submit = screen.getByTestId('maps-cloud-create-submit') as HTMLButtonElement;
-    expect(submit.disabled).toBe(true);
+    // Tant qu\u2019on ignore si l\u2019utilisateur est meneur, on ne propose aucun
+    // geste d\u2019\u00e9criture \u2014 un bouton qui \u00e9choue est un mensonge d\u2019interface.
+    expect(screen.queryByTestId('maps-cloud-create-submit')).toBeNull();
     resolver.fn?.(true);
+    const submit = (await screen.findByTestId(
+      'maps-cloud-create-submit',
+    )) as HTMLButtonElement;
+    expect(submit.disabled).toBe(false);
+  });
+
+  it('un JOUEUR ne voit ni cr\u00e9ation, ni import, ni suppression', async () => {
+    mockGetCampaign.mockResolvedValue({ gmIds: ['user-gm'] });
+    mapsListState.maps = [mkMap('donjon-de-l-aube', "Donjon de l'Aube")];
+    renderAt('/map-proto/cloud/camp-1');
+    await screen.findByTestId('maps-cloud-member-intro');
+    expect(screen.queryByTestId('maps-cloud-create-form')).toBeNull();
+    expect(screen.queryByTestId('maps-cloud-import-link')).toBeNull();
+    expect(screen.queryByTestId('maps-cloud-delete-donjon-de-l-aube')).toBeNull();
+  });
+
+  it('la carte envoie le JOUEUR en vue pr\u00e9sentation, le MENEUR en \u00e9dition', async () => {
+    mapsListState.maps = [mkMap('donjon-de-l-aube', "Donjon de l'Aube")];
+    renderAt('/map-proto/cloud/camp-1');
+    expect(
+      (await screen.findByTestId('maps-cloud-open-donjon-de-l-aube')).getAttribute(
+        'href',
+      ),
+    ).toBe('/map-proto/cloud/camp-1/maps/donjon-de-l-aube');
+
+    mockGetCampaign.mockResolvedValue({ gmIds: ['user-gm'] });
+    renderAt('/map-proto/cloud/camp-1');
     await waitFor(() => {
-      expect(submit.disabled).toBe(false);
+      const links = screen.getAllByTestId('maps-cloud-open-donjon-de-l-aube');
+      expect(links[links.length - 1]!.getAttribute('href')).toBe(
+        '/map-proto/cloud/camp-1/maps/donjon-de-l-aube/tv',
+      );
     });
   });
 });

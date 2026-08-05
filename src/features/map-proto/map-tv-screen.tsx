@@ -1,4 +1,4 @@
-import { type JSX, type ReactNode } from 'react';
+import { useRef, type JSX, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
@@ -6,9 +6,10 @@ import { t } from '@/shared/lib/i18n';
 import type { MapToken } from '@/shared/types/map';
 
 import { MapScene } from './map-scene';
-import { MAP_VIEWBOX_H, MAP_VIEWBOX_W } from './map-viewport';
+import { MapZoomControls } from './map-zoom-controls';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
+import { useMapTransform } from './use-map-transform';
 
 /**
  * Vue présentation / TV (capacité titre du plan 33). Route
@@ -33,6 +34,10 @@ export function MapTvScreen(): JSX.Element {
   const { isReady } = useAuth();
   const { map, tokens, isLoading, error } = useMap(cid, mid);
   const { localImageUrl } = useMapImage(cid, mid);
+  const svgRef = useRef<SVGSVGElement>(null);
+  // Cadrage local — c'est ici qu'il compte le plus : sur un téléphone de joueur,
+  // un donjon entier rend les jetons illisibles.
+  const view = useMapTransform(svgRef);
   if (!cid || !mid) {
     return (
       <Centered testid="map-tv-missing-params">
@@ -62,16 +67,22 @@ export function MapTvScreen(): JSX.Element {
       data-testid="map-tv-root"
       className="relative flex h-screen w-screen items-center justify-center overflow-hidden bg-black"
     >
-      {/* Bandeau discret : nom + retour. Ne gêne pas la projection. */}
-      <div className="pointer-events-none absolute left-0 top-0 z-10 flex w-full items-center justify-between p-3">
+      {/* Bandeau discret : nom + retour + cadrage. Ne gêne pas la projection.
+          Le retour pointe la LISTE des cartes, pas la vue live : cet écran est
+          désormais la porte d'entrée des joueurs, qui n'ont pas accès à la vue
+          MJ (`firestore.rules:349` réserve l'écriture au meneur). */}
+      <div className="pointer-events-none absolute left-0 top-0 z-10 flex w-full flex-wrap items-center justify-between gap-2 p-3">
         <button
           type="button"
           data-testid="map-tv-back"
-          onClick={() => navigate(`/map-proto/cloud/${cid}/maps/${mid}`)}
+          onClick={() => navigate(`/map-proto/cloud/${cid}`)}
           className="pointer-events-auto rounded-pill border border-gold-dim/30 bg-black/50 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright/80 transition-colors duration-200 ease-base hover:text-gold-bright"
         >
           ◂ {t('map.tv.back')}
         </button>
+        <div className="pointer-events-auto">
+          <MapZoomControls view={view} testidPrefix="map-tv" tone="overlay" />
+        </div>
         <span
           data-testid="map-tv-name"
           className="rounded-pill bg-black/50 px-3 py-1 font-display text-[13px] uppercase tracking-[0.18em] text-gold-bright/90"
@@ -81,10 +92,16 @@ export function MapTvScreen(): JSX.Element {
       </div>
 
       <svg
-        viewBox={`0 0 ${MAP_VIEWBOX_W} ${MAP_VIEWBOX_H}`}
+        ref={svgRef}
+        viewBox={view.viewBox}
         preserveAspectRatio="xMidYMid meet"
-        className="h-full w-full"
+        className="h-full w-full touch-none select-none"
+        style={view.isPanning ? { cursor: 'grabbing' } : { cursor: 'grab' }}
         data-testid="map-tv-svg"
+        onPointerDown={view.beginPan}
+        onPointerMove={view.movePan}
+        onPointerUp={view.endPan}
+        onPointerLeave={view.endPan}
       >
         <MapScene
           map={map}

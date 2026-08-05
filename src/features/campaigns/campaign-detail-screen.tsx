@@ -291,17 +291,28 @@ export function CampaignDetailScreen(): JSX.Element {
             >
               {t('campaigns.detail.encountersCta')}
             </Button>
-            {isGm ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
-                tooltip={t('campaigns.tip.openMaps')}
-              >
-                {t('campaigns.detail.mapsCta')}
-              </Button>
-            ) : null}
+            {/*
+              « Cartes » n'est plus réservé au meneur (M34). Les rules
+              autorisent la LECTURE des cartes et des jetons par tout membre
+              depuis le plan 29 (`firestore.rules:348,366`) et la vue
+              présentation est 100 % en lecture seule — seule la porte
+              d'entrée manquait, ce qui obligeait à s'échanger une URL. Le
+              joueur atterrit sur la liste, qui l'envoie en vue présentation ;
+              l'écran d'édition reste MJ.
+            */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
+              tooltip={t(isGm ? 'campaigns.tip.openMaps' : 'campaigns.tip.viewMaps')}
+            >
+              {t(
+                isGm
+                  ? 'campaigns.detail.mapsCta'
+                  : 'campaigns.detail.mapsPlayerCta',
+              )}
+            </Button>
           </SpaceGroup>
           <SpaceGroup titleKey="campaigns.detail.spaces.memory">
             <Button

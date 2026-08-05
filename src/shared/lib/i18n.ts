@@ -1080,6 +1080,7 @@ export type StringKey =
   | 'campaigns.detail.journalCta'
   | 'campaigns.detail.handoutsCta'
   | 'campaigns.detail.mapsCta'
+  | 'campaigns.detail.mapsPlayerCta'
   | 'campaigns.detail.settingsCta'
   | 'campaigns.detail.spaces.aria'
   | 'campaigns.detail.spaces.play'
@@ -2553,6 +2554,7 @@ export type StringKey =
   | 'campaigns.tip.openSessions'
   | 'campaigns.tip.openEncounters'
   | 'campaigns.tip.openMaps'
+  | 'campaigns.tip.viewMaps'
   | 'campaigns.tip.openSettings'
   | 'campaigns.tip.promoteGm'
   | 'campaigns.tip.copyInviteCode'
@@ -2621,6 +2623,11 @@ export type StringKey =
   | 'map.cloud.loadErrorPrefix'
   | 'map.cloud.loadingMaps'
   | 'map.cloud.empty'
+  | 'map.cloud.emptyMember'
+  | 'map.cloud.memberIntro'
+  | 'map.zoom.inAria'
+  | 'map.zoom.outAria'
+  | 'map.zoom.reset'
   | 'map.cloud.listAria'
   | 'map.cloud.delete'
   | 'map.import.signedOut'
@@ -4368,6 +4375,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Documents',
     'campaigns.detail.mapsCta': 'Cartes',
+    'campaigns.detail.mapsPlayerCta': 'Voir la carte',
     'campaigns.detail.settingsCta': 'Réglages',
     'campaigns.detail.spaces.aria': 'Espaces de la campagne',
     'campaigns.detail.spaces.play': 'Jouer',
@@ -6143,6 +6151,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.openSessions': 'Ouvrir la liste des séances de jeu.',
     'campaigns.tip.openEncounters': 'Ouvrir la liste des rencontres de combat.',
     'campaigns.tip.openMaps': 'Ouvrir le mode carte de la campagne.',
+    'campaigns.tip.viewMaps':
+      'Voir les cartes de la campagne, telles que le meneur les projette.',
     'campaigns.tip.openSettings':
       'Modifier le nom, le mode de dés et les variantes 5e de la table.',
     'campaigns.tip.promoteGm': 'Donner à ce joueur les pleins pouvoirs de meneur.',
@@ -6219,6 +6229,13 @@ const STRINGS: Record<Locale, Dict> = {
     'map.cloud.loadErrorPrefix': 'Erreur de chargement : ',
     'map.cloud.loadingMaps': 'Chargement des cartes…',
     'map.cloud.empty': 'Aucune carte pour cette campagne. Créez-en une ci-dessus.',
+    'map.cloud.emptyMember':
+      "Le meneur n'a pas encore préparé de carte pour cette campagne.",
+    'map.cloud.memberIntro':
+      'Ces cartes sont en lecture seule : tu vois exactement ce que le meneur projette sur la table.',
+    'map.zoom.inAria': 'Zoomer sur la carte',
+    'map.zoom.outAria': 'Dézoomer la carte',
+    'map.zoom.reset': 'Recadrer',
     'map.cloud.listAria': 'Liste des cartes',
     'map.cloud.delete': 'Suppr.',
     'map.import.signedOut': 'Connexion requise pour importer une carte.',
@@ -7898,6 +7915,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Handouts',
     'campaigns.detail.mapsCta': 'Maps',
+    'campaigns.detail.mapsPlayerCta': 'View the map',
     'campaigns.detail.settingsCta': 'Settings',
     'campaigns.detail.spaces.aria': 'Campaign spaces',
     'campaigns.detail.spaces.play': 'Play',
@@ -9575,6 +9593,8 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.openSessions': 'Open the list of game sessions.',
     'campaigns.tip.openEncounters': 'Open the list of combat encounters.',
     'campaigns.tip.openMaps': 'Open the campaign’s map mode.',
+    'campaigns.tip.viewMaps':
+      'View the campaign maps, exactly as the GM projects them.',
     'campaigns.tip.openSettings':
       'Edit the table’s name, dice mode and 5e variants.',
     'campaigns.tip.promoteGm': 'Grant this player full game master authority.',
@@ -9651,6 +9671,13 @@ const STRINGS: Record<Locale, Dict> = {
     'map.cloud.loadErrorPrefix': 'Loading error: ',
     'map.cloud.loadingMaps': 'Loading maps…',
     'map.cloud.empty': 'No maps for this campaign. Create one above.',
+    'map.cloud.emptyMember':
+      'The GM has not prepared a map for this campaign yet.',
+    'map.cloud.memberIntro':
+      'These maps are read-only: you see exactly what the GM projects on the table.',
+    'map.zoom.inAria': 'Zoom in on the map',
+    'map.zoom.outAria': 'Zoom out of the map',
+    'map.zoom.reset': 'Reframe',
     'map.cloud.listAria': 'Map list',
     'map.cloud.delete': 'Del.',
     'map.import.signedOut': 'Sign in to import a map.',
