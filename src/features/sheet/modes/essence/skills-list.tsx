@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
 
+import {
+  NORMAL_ROLL,
+  RollOptionsMenu,
+  type RollOptions,
+} from '@/features/dice/roll-options-menu';
+import { useLongPress } from '@/shared/hooks/use-long-press';
+
 import { Card, CardHeader } from '@/shared/components/card';
 import { Icon } from '@/shared/components/icon';
 import { Tooltip } from '@/shared/components/tooltip';
@@ -30,6 +37,8 @@ interface SkillsListProps {
  */
 export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Element {
   const [query, setQuery] = useState<string>('');
+  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const menuSkill = menuFor ? (SKILLS.find((sk) => sk.id === menuFor) ?? null) : null;
   const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
 
@@ -41,7 +50,10 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
     );
   }, [query]);
 
-  async function rollSkill(skillId: string): Promise<void> {
+  async function rollSkill(
+    skillId: string,
+    options: RollOptions = NORMAL_ROLL,
+  ): Promise<void> {
     if (readOnly) return;
     const skill = SKILLS.find((s) => s.id === skillId);
     if (!skill) return;
@@ -60,6 +72,9 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
       label: localize(skill.name),
       // skillId (slug machine) → stats.skillUses[skillId] côté event-logger (22.2).
       skillId,
+      advantage: options.advantage,
+      useInspiration: options.useInspiration,
+      bonus: options.bonus,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
@@ -104,43 +119,97 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
               profBonus: pb,
               proficiencyLevel: profLevel,
             });
-            const signed = mod >= 0 ? `+${mod}` : `${mod}`;
             return (
-              <li key={skill.id}>
-                <Tooltip label={t('sheet.tip.rollSkill')} decorative className="w-full">
-                  <button
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => void rollSkill(skill.id)}
-                    className={cn(
-                      'flex w-full items-center gap-3 rounded-card-sm border border-white-8 bg-bg-2/30 px-3 py-2 text-left transition-all',
-                      'hover:border-soft hover:bg-white/[0.04] active:scale-[0.99]',
-                      'disabled:cursor-not-allowed disabled:opacity-50',
-                    )}
-                  >
-                    <ProficiencyIndicator level={profLevel} />
-                    <span className="flex-1 truncate font-serif text-body text-text">
-                      {localize(skill.name)}
-                    </span>
-                    <span className="rounded-pill border border-white-8 bg-white/[0.04] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
-                      {skill.ability.toUpperCase()}
-                    </span>
-                    <span
-                      className={cn(
-                        'min-w-[40px] text-right font-display text-[16px] font-black tracking-[-0.02em]',
-                        mod >= 0 ? 'text-gold-bright' : 'text-crimson',
-                      )}
-                    >
-                      {signed}
-                    </span>
-                  </button>
-                </Tooltip>
-              </li>
+              <SkillRow
+                key={skill.id}
+                label={localize(skill.name)}
+                ability={skill.ability}
+                profLevel={profLevel}
+                mod={mod}
+                disabled={readOnly}
+                onTap={() => void rollSkill(skill.id)}
+                onLongPress={() => setMenuFor(skill.id)}
+              />
             );
           })
         )}
       </ul>
+
+      {menuSkill && (
+        <RollOptionsMenu
+          title={localize(menuSkill.name)}
+          ariaLabel={t('dice.options.aria').replace(
+            '{label}',
+            localize(menuSkill.name),
+          )}
+          hasInspiration={character.inspiration}
+          onPick={(options) => {
+            const target = menuSkill.id;
+            setMenuFor(null);
+            void rollSkill(target, options);
+          }}
+          onClose={() => setMenuFor(null)}
+        />
+      )}
     </Card>
+  );
+}
+
+/**
+ * Une ligne de compétence. Extraite en composant parce que `useLongPress` est un
+ * hook : l'appeler dans le `.map()` d'une liste FILTRÉE ferait varier le nombre
+ * de hooks d'un rendu à l'autre dès que la recherche change.
+ */
+function SkillRow({
+  label,
+  ability,
+  profLevel,
+  mod,
+  disabled,
+  onTap,
+  onLongPress,
+}: {
+  readonly label: string;
+  readonly ability: string;
+  readonly profLevel: SkillProf;
+  readonly mod: number;
+  readonly disabled: boolean;
+  readonly onTap: () => void;
+  readonly onLongPress: () => void;
+}): JSX.Element {
+  const handlers = useLongPress(onTap, onLongPress);
+  const signed = mod >= 0 ? `+${mod}` : `${mod}`;
+  return (
+    <li>
+      <Tooltip label={t('sheet.tip.rollSkill')} decorative className="w-full">
+        <button
+          type="button"
+          disabled={disabled}
+          {...handlers}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-card-sm border border-white-8 bg-bg-2/30 px-3 py-2 text-left transition-all',
+            'hover:border-soft hover:bg-white/[0.04] active:scale-[0.99]',
+            'disabled:cursor-not-allowed disabled:opacity-50',
+          )}
+        >
+          <ProficiencyIndicator level={profLevel} />
+          <span className="flex-1 truncate font-serif text-body text-text">
+            {label}
+          </span>
+          <span className="rounded-pill border border-white-8 bg-white/[0.04] px-2 py-0.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary">
+            {ability.toUpperCase()}
+          </span>
+          <span
+            className={cn(
+              'min-w-[40px] text-right font-display text-[16px] font-black tracking-[-0.02em]',
+              mod >= 0 ? 'text-gold-bright' : 'text-crimson',
+            )}
+          >
+            {signed}
+          </span>
+        </button>
+      </Tooltip>
+    </li>
   );
 }
 

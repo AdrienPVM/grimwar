@@ -1,4 +1,12 @@
+import { useState } from 'react';
+
+import {
+  NORMAL_ROLL,
+  RollOptionsMenu,
+  type RollOptions,
+} from '@/features/dice/roll-options-menu';
 import { useDice } from '@/features/dice/use-dice';
+import { useLongPress } from '@/shared/hooks/use-long-press';
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
@@ -29,12 +37,27 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
   const { isDM } = usePermissionContext();
   const dice = useDice();
 
+  const [optionsMenu, setOptionsMenu] = useState<boolean>(false);
+  // Un jet de mort peut se faire avec avantage (Chanceux, aide magique) : le
+  // seul geste disponible jusqu'ici était un jet strictement normal.
+  //
+  // Ces deux hooks sont DÉCLARÉS AVANT le `return null` de non-affichage : la
+  // modale rend `null` tant que le personnage n'est ni mourant ni mort, et un
+  // hook posé après cette sortie changerait l'ordre des hooks au moment où il
+  // tombe à 0 PV — exactement le rendu où ça compte.
+  const deathHandlers = useLongPress(
+    () => void rollDeathSave(),
+    () => setOptionsMenu(true),
+  );
+
   const isDead = character.status === 'dead';
   const isDying = character.hp.current <= 0 && !isDead;
 
   if (!isDying && !isDead) return null;
 
-  async function rollDeathSave(): Promise<void> {
+  async function rollDeathSave(
+    options: RollOptions = NORMAL_ROLL,
+  ): Promise<void> {
     // Jet de mort : silent → on émet le toast détaillé en fonction de l'outcome
     // (succès / échec / revive / stabilisé / mort confirmée), pas le toast d20
     // générique du pivot.
@@ -46,6 +69,9 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
       character,
       label: t('sheet.combat.death.rollLabel'),
       kind: 'death-save',
+      advantage: options.advantage,
+      useInspiration: options.useInspiration,
+      bonus: options.bonus,
       silent: true,
     });
     if (!roll) return;
@@ -160,11 +186,27 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
         {!isDead && (
           <button
             type="button"
-            onClick={() => void rollDeathSave()}
+            {...deathHandlers}
             className="mb-3 w-full rounded-[14px] border border-crimson bg-gradient-to-b from-crimson to-[#b73838] py-4 font-display text-[16px] font-extrabold uppercase tracking-[0.2em] text-white shadow-[0_4px_20px_rgba(232,90,90,0.4)] transition-all hover:-translate-y-px hover:shadow-[0_8px_28px_rgba(232,90,90,0.5)] active:scale-[0.97]"
           >
             {t('sheet.combat.death.rollButton')}
           </button>
+        )}
+
+        {optionsMenu && (
+          <RollOptionsMenu
+            title={t('sheet.combat.death.rollLabel')}
+            ariaLabel={t('dice.options.aria').replace(
+              '{label}',
+              t('sheet.combat.death.rollLabel'),
+            )}
+            hasInspiration={character.inspiration}
+            onPick={(options) => {
+              setOptionsMenu(false);
+              void rollDeathSave(options);
+            }}
+            onClose={() => setOptionsMenu(false)}
+          />
         )}
 
         {isDead && isDM && (

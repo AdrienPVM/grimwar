@@ -9,7 +9,11 @@ import type { AbilityCode, Character } from '@/shared/types/character';
 import { useState } from 'react';
 
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
-import type { Advantage } from '@/shared/lib/dice/types';
+import {
+  NORMAL_ROLL,
+  RollOptionsMenu,
+  type RollOptions,
+} from '@/features/dice/roll-options-menu';
 
 import { useUpdateCharacter } from '../../use-update-character';
 
@@ -48,7 +52,10 @@ export function SavesRow({
   const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
 
-  async function performSave(ability: AbilityCode, advantage: Advantage): Promise<void> {
+  async function performSave(
+    ability: AbilityCode,
+    options: RollOptions,
+  ): Promise<void> {
     if (readOnly) return;
     const proficient = character.saves[ability];
     const mod =
@@ -60,7 +67,9 @@ export function SavesRow({
       character,
       baseMod: mod,
       label: t('sheet.essence.saves.rollLabel').replace('{ability}', t(ABILITY_SHORT_KEYS[ability])),
-      advantage,
+      advantage: options.advantage,
+      useInspiration: options.useInspiration,
+      bonus: options.bonus,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
@@ -83,19 +92,27 @@ export function SavesRow({
             profBonus={pb}
             extraBonus={extraSaveBonus}
             disabled={readOnly}
-            onTap={() => void performSave(ability, 'normal')}
+            onTap={() => void performSave(ability, NORMAL_ROLL)}
             onLongPress={() => setMenuFor(ability)}
           />
         ))}
       </div>
 
       {menuFor && (
-        <SaveMenuOverlay
-          ability={menuFor}
-          onPick={(adv) => {
+        <RollOptionsMenu
+          title={t('sheet.essence.saves.menuTitle').replace(
+            '{ability}',
+            t(`ability.${menuFor}`),
+          )}
+          ariaLabel={t('sheet.essence.saves.menuAria').replace(
+            '{ability}',
+            t(`ability.${menuFor}`),
+          )}
+          hasInspiration={character.inspiration}
+          onPick={(options) => {
             const target = menuFor;
             setMenuFor(null);
-            void performSave(target, adv);
+            void performSave(target, options);
           }}
           onClose={() => setMenuFor(null)}
         />
@@ -167,56 +184,5 @@ function SaveChip({
         </span>
       </button>
     </Tooltip>
-  );
-}
-
-function SaveMenuOverlay({
-  ability,
-  onPick,
-  onClose,
-}: {
-  ability: AbilityCode;
-  onPick: (advantage: Advantage) => void;
-  onClose: () => void;
-}): JSX.Element {
-  return (
-    <div
-      role="dialog"
-      aria-label={t('sheet.essence.saves.menuAria').replace('{ability}', t(`ability.${ability}`))}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6 backdrop-blur-sm"
-    >
-      <button
-        type="button"
-        aria-label={t('sheet.essence.close')}
-        className="absolute inset-0 cursor-default"
-        onClick={onClose}
-      />
-      <div className="relative flex flex-col gap-2 rounded-card border border-soft bg-bg-2/95 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-md">
-        <p className="mb-2 text-center font-title text-[10px] font-bold uppercase tracking-[0.2em] text-text-tertiary">
-          {t('sheet.essence.saves.menuTitle').replace('{ability}', t(`ability.${ability}`))}
-        </p>
-        <button
-          type="button"
-          onClick={() => onPick('advantage')}
-          className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
-        >
-          {t('sheet.essence.advantage')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onPick('normal')}
-          className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
-        >
-          {t('sheet.essence.normal')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onPick('disadvantage')}
-          className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
-        >
-          {t('sheet.essence.disadvantage')}
-        </button>
-      </div>
-    </div>
   );
 }

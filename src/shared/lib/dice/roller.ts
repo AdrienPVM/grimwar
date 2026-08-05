@@ -74,12 +74,22 @@ export function rollAst(ast: DiceAst, opts: RollerOptions): RollResult {
   const perTerm = ast.terms.map(rollTerm);
   const rawFaces = perTerm.flatMap((t) => t.rawFaces);
   const keptFaces = perTerm.flatMap((t) => t.keptFaces);
-  const sum = keptFaces.reduce((a, b) => a + b, 0);
+  // Somme SIGNÉE : un terme `sign: -1` (Fardeau, `1d20-1d4`) se retranche.
+  // `keptFaces` reste la liste brute des dés retenus — c'est l'affichage du
+  // détail du jet, où l'on veut voir « le d4 a fait 3 », pas « −3 ».
+  const sum = perTerm.reduce(
+    (acc, t) =>
+      acc + (t.term.sign === -1 ? -1 : 1) * t.keptFaces.reduce((a, b) => a + b, 0),
+    0,
+  );
   const total = sum + ast.modifier;
 
   let crit = false;
   let fumble = false;
   for (const t of perTerm) {
+    // Un d20 RETRANCHÉ n'est pas le dé d'attaque : un 20 dessus n'est pas un
+    // coup critique, c'est une grosse pénalité. On ne lit que les termes ajoutés.
+    if (t.term.sign === -1) continue;
     if (t.term.sides === 20 && t.keptFaces.length === 1) {
       const face = t.keptFaces[0]!;
       if (face === 20) crit = true;

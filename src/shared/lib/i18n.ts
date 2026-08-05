@@ -2957,6 +2957,25 @@ export type StringKey =
   | 'radialMenu.tip.close'
   | 'dice.tip.closeHistory'
   | 'dice.history.title'
+  // Menu d'options de jet — partagé par sauvegardes, compétences, initiative,
+  // jets de mort et attaques de sort (M21/M22/M23)
+  | 'dice.options.bonus'
+  | 'dice.options.bonusAria'
+  | 'dice.options.useInspiration'
+  | 'dice.options.inspirationNote'
+  | 'dice.options.title'
+  | 'dice.options.aria'
+  // Jet libre — une formule tapée à la main (M20)
+  | 'dice.free.title'
+  | 'dice.free.aria'
+  | 'dice.free.label'
+  | 'dice.free.placeholder'
+  | 'dice.free.hint'
+  | 'dice.free.invalid'
+  | 'dice.free.submit'
+  | 'dice.free.cancel'
+  | 'dice.free.rollLabel'
+  | 'sheet.fab.freeRoll'
   // Modale de jet physique (plan 12.5)
   | 'dice.physical.header'
   | 'dice.physical.rollPrompt'
@@ -6621,6 +6640,23 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.close': 'Ferme le menu.',
     'dice.tip.closeHistory': 'Ferme l’historique des jets.',
     'dice.history.title': 'Historique des jets',
+    'dice.options.bonus': 'Bonus ponctuel',
+    'dice.options.bonusAria': 'Bonus ponctuel appliqué à ce jet',
+    'dice.options.useInspiration': 'Dépenser l’inspiration',
+    'dice.options.inspirationNote':
+      'L’inspiration impose l’avantage et sera dépensée.',
+    'dice.options.title': 'Comment lancer',
+    'dice.options.aria': 'Options du jet {label}',
+    'dice.free.title': 'Jet libre',
+    'dice.free.aria': 'Lancer une formule de dés libre',
+    'dice.free.label': 'Formule',
+    'dice.free.placeholder': '2d10+3',
+    'dice.free.hint': 'Exemples : 4d6 · 2d10+3 · 1d20-1d4 · 2d20kh1',
+    'dice.free.invalid': 'Formule illisible.',
+    'dice.free.submit': 'Lancer',
+    'dice.free.cancel': 'Annuler',
+    'dice.free.rollLabel': 'Jet libre',
+    'sheet.fab.freeRoll': 'Jet libre',
     // Modale de jet physique (le wording « Passer » est non négociable, plan 12.5)
     'dice.physical.header': 'Mode physique — saisis tes dés',
     'dice.physical.rollPrompt': 'Lance {dice}',
@@ -10088,6 +10124,23 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.close': 'Close the menu.',
     'dice.tip.closeHistory': 'Close the roll history.',
     'dice.history.title': 'Roll history',
+    'dice.options.bonus': 'One-off bonus',
+    'dice.options.bonusAria': 'One-off bonus applied to this roll',
+    'dice.options.useInspiration': 'Spend inspiration',
+    'dice.options.inspirationNote':
+      'Inspiration grants advantage and will be spent.',
+    'dice.options.title': 'How to roll',
+    'dice.options.aria': 'Options for the {label} roll',
+    'dice.free.title': 'Free roll',
+    'dice.free.aria': 'Roll a free dice formula',
+    'dice.free.label': 'Formula',
+    'dice.free.placeholder': '2d10+3',
+    'dice.free.hint': 'Examples: 4d6 · 2d10+3 · 1d20-1d4 · 2d20kh1',
+    'dice.free.invalid': 'Unreadable formula.',
+    'dice.free.submit': 'Roll',
+    'dice.free.cancel': 'Cancel',
+    'dice.free.rollLabel': 'Free roll',
+    'sheet.fab.freeRoll': 'Free roll',
     // Physical-roll modal (plan 12.5)
     'dice.physical.header': 'Physical mode — enter your dice',
     'dice.physical.rollPrompt': 'Roll {dice}',

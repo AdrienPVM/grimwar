@@ -15,9 +15,26 @@ function ids(wedges: readonly Wedge[]): string[] {
 }
 
 describe('buildWedges', () => {
-  it('propriétaire (canEdit + historique) : 6 wedges dans l’ordre du proto', () => {
+  it('propriétaire (canEdit + historique) : 7 wedges dans l’ordre du proto', () => {
     const w = buildWedges({ canEdit: true, showHistory: true });
-    expect(ids(w)).toEqual(['go', 'spells', 'rest', 'roll', 'codex', 'tools']);
+    expect(ids(w)).toEqual([
+      'go',
+      'spells',
+      'rest',
+      'roll',
+      'free-roll',
+      'codex',
+      'tools',
+    ]);
+  });
+
+  it('« Jet libre » est toujours offert et ouvre la saisie de formule', () => {
+    // Le seul jet libre de l'app était un d20 nu, alors que le parseur savait
+    // déjà lire `2d10+3` ou `1d20-1d4`.
+    const w = buildWedges({ canEdit: false, showHistory: false });
+    expect(w.find((x) => x.id === 'free-roll')?.action).toEqual({
+      kind: 'free-roll',
+    });
   });
 
   it('« Aller à » expose exactement les 5 modes de fiche dans l’ordre', () => {
@@ -55,7 +72,7 @@ describe('buildWedges', () => {
     expect(ids(w)).not.toContain('tools');
     expect(ids(w)).not.toContain('rest');
     // Restent : navigation (go), sorts, lancer, Codex.
-    expect(ids(w)).toEqual(['go', 'spells', 'roll', 'codex']);
+    expect(ids(w)).toEqual(['go', 'spells', 'roll', 'free-roll', 'codex']);
   });
 
   it('« Repos » contient court (short-rest) et long (long-rest)', () => {

@@ -49,6 +49,10 @@ export interface RollD20Opts extends CharacterCtx {
   label: string;
   kind?: RollKind;
   advantage?: Advantage;
+  /** Dépenser l'inspiration héroïque sur ce jet (défaut `false`). */
+  useInspiration?: boolean;
+  /** Bonus ponctuel du moment (Bénédiction, faveur du MJ). */
+  bonus?: number;
   silent?: boolean;
 }
 
@@ -96,6 +100,8 @@ async function rollD20Plus(modifier: number, opts: RollD20Opts): Promise<RollRes
     label: opts.label,
     kind: opts.kind ?? 'check',
     advantage: opts.advantage,
+    useInspiration: opts.useInspiration,
+    bonus: opts.bonus,
     consumeInspiration: opts.consumeInspiration,
     silent: opts.silent,
   };

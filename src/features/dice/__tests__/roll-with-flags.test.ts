@@ -43,13 +43,14 @@ describe('rollWithFlags', () => {
     expect(r.dice).toEqual([{ count: 1, sides: 20 }]);
   });
 
-  it('force advantage quand inspiration est true et la consomme', async () => {
+  it('donne avantage et consomme QUAND le joueur dépense son inspiration', async () => {
     const consume = vi.fn(async () => {});
     const r = unwrap(await rollWithFlags({
       character: { id: 'c1', inspiration: true, exhaustion: 0 },
       baseMod: 3,
       label: 'Test',
       advantage: 'normal',
+      useInspiration: true,
       consumeInspiration: consume,
     }));
     expect(r.advantage).toBe('advantage');
@@ -57,14 +58,63 @@ describe('rollWithFlags', () => {
     expect(consume).toHaveBeenCalledOnce();
   });
 
-  it('inspiration override désavantage explicite', async () => {
+  it('GARDE l’inspiration tant qu’on ne la dépense pas', async () => {
+    // Le pivot la consommait dès qu'elle existait : impossible de la réserver
+    // au jet qui compte.
+    const consume = vi.fn(async () => {});
+    const r = unwrap(await rollWithFlags({
+      character: { id: 'c1', inspiration: true, exhaustion: 0 },
+      baseMod: 3,
+      label: 'Test',
+      consumeInspiration: consume,
+    }));
+    expect(r.advantage).toBe('normal');
+    expect(consume).not.toHaveBeenCalled();
+  });
+
+  it('ne consomme rien si le joueur la dépense sans en avoir', async () => {
+    const consume = vi.fn(async () => {});
+    const r = unwrap(await rollWithFlags({
+      character: { id: 'c1', inspiration: false, exhaustion: 0 },
+      baseMod: 0,
+      label: 'Test',
+      useInspiration: true,
+      consumeInspiration: consume,
+    }));
+    expect(r.advantage).toBe('normal');
+    expect(consume).not.toHaveBeenCalled();
+  });
+
+  it('respecte un désavantage explicite malgré une inspiration disponible', async () => {
+    // L'ancien pivot écrasait ce choix en silence.
     const r = unwrap(await rollWithFlags({
       character: { id: 'c1', inspiration: true, exhaustion: 0 },
       baseMod: 0,
       label: 'Test',
       advantage: 'disadvantage',
     }));
-    expect(r.advantage).toBe('advantage');
+    expect(r.advantage).toBe('disadvantage');
+  });
+
+  it('ajoute le bonus ponctuel au modificateur, sans rien persister', async () => {
+    const r = unwrap(await rollWithFlags({
+      character: { id: 'c1', inspiration: false, exhaustion: 0 },
+      baseMod: 3,
+      bonus: 2,
+      label: 'Test',
+    }));
+    expect(r.modifier).toBe(5);
+  });
+
+  it('combine bonus ponctuel et pénalité d’épuisement', async () => {
+    const r = unwrap(await rollWithFlags({
+      character: { id: 'c1', inspiration: false, exhaustion: 2 },
+      baseMod: 3,
+      bonus: 1,
+      label: 'Test',
+    }));
+    // 3 − (2 × 2) + 1 = 0
+    expect(r.modifier).toBe(0);
   });
 
   it('respecte désavantage explicite sans inspiration', async () => {

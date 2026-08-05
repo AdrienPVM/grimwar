@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 
 import { CodexOverlay } from '@/features/codex/codex-overlay';
+import { FreeRollModal } from '@/features/dice/free-roll-modal';
+import { useDice } from '@/features/dice/use-dice';
 import { RollHistoryPanel } from '@/features/dice/roll-history-panel';
 import { usePermissionContext } from '@/features/sheet/permissions-context';
 import { type SheetMode } from '@/features/sheet/use-sheet-mode';
@@ -43,6 +45,8 @@ export function RadialFab({ character, setMode, showHistory }: RadialFabProps): 
   const [submenuId, setSubmenuId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
   const [codexOpen, setCodexOpen] = useState<boolean>(false);
+  const [freeRollOpen, setFreeRollOpen] = useState<boolean>(false);
+  const dice = useDice();
 
   const wedges = useMemo(
     () => buildWedges({ canEdit, showHistory }),
@@ -53,6 +57,7 @@ export function RadialFab({ character, setMode, showHistory }: RadialFabProps): 
     setMode,
     openHistory: () => setHistoryOpen(true),
     openCodex: () => setCodexOpen(true),
+    openFreeRoll: () => setFreeRollOpen(true),
   });
 
   const submenu = submenuId
@@ -122,6 +127,23 @@ export function RadialFab({ character, setMode, showHistory }: RadialFabProps): 
         onClose={() => setCodexOpen(false)}
         initialCategory="conditions"
       />
+
+      {freeRollOpen && (
+        <FreeRollModal
+          onClose={() => setFreeRollOpen(false)}
+          onSubmit={(expression) => {
+            setFreeRollOpen(false);
+            // `rollExpression` est mode-aware : en dés physiques, il prompte la
+            // saisie des faces au lieu de tirer. Le jet libre en hérite sans
+            // rien réimplémenter.
+            void dice.rollExpression(expression, {
+              label: t('dice.free.rollLabel'),
+              characterId: character.id,
+              kind: 'custom',
+            });
+          }}
+        />
+      )}
     </>
   );
 }

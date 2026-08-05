@@ -25,6 +25,7 @@ export type WedgeAction =
   | { kind: 'long-rest' }
   | { kind: 'toggle-inspiration' }
   | { kind: 'open-history' }
+  | { kind: 'free-roll' }
   | { kind: 'open-codex' };
 
 export interface Wedge {
@@ -123,6 +124,13 @@ export function buildWedges(ctx: WedgeContext): Wedge[] {
     labelKey: 'sheet.fab.lancer',
     icon: 'i-dice',
     action: { kind: 'quick-d20' },
+  });
+
+  wedges.push({
+    id: 'free-roll',
+    labelKey: 'sheet.fab.freeRoll',
+    icon: 'i-dice',
+    action: { kind: 'free-roll' },
   });
 
   wedges.push({

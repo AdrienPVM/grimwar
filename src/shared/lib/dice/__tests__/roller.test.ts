@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { parseDiceExpression } from '../parser';
 import { applyKeep, buildD20Ast, rollAst, rollDieCrypto, rollTerm } from '../roller';
@@ -163,5 +163,53 @@ describe('buildD20Ast', () => {
       terms: [{ count: 2, sides: 20, kl: 1 }],
       modifier: -1,
     });
+  });
+});
+
+/**
+ * Somme signée. Un terme `sign: -1` (Fardeau, `1d20-1d4`) se RETRANCHE : sans
+ * ça, la pénalité s'ajouterait au jet — l'inverse exact de la règle.
+ */
+describe('rollAst — termes soustractifs', () => {
+  it('retranche le terme signé du total', () => {
+    // d20 forcé à 20 puis d4 forcé à 4 → 20 - 4 + 2 = 18.
+    const faces = [20, 4];
+    let i = 0;
+    vi.spyOn(crypto, 'getRandomValues').mockImplementation(((
+      buf: Uint32Array,
+    ) => {
+      // `rollDieCrypto` fait `(v % sides) + 1` : on vise face-1.
+      const sides = i === 0 ? 20 : 4;
+      buf[0] = (faces[i]! - 1) % sides;
+      i += 1;
+      return buf;
+    }) as typeof crypto.getRandomValues);
+
+    const result = rollAst(
+      { terms: [{ count: 1, sides: 20 }, { count: 1, sides: 4, sign: -1 }], modifier: 2 },
+      { kind: 'check', label: 'Fardeau', characterId: 'c1' },
+    );
+
+    expect(result.keptFaces).toEqual([20, 4]);
+    expect(result.total).toBe(18);
+    vi.restoreAllMocks();
+  });
+
+  it('ne lit pas un 20 sur un d20 RETRANCHÉ comme un critique', () => {
+    vi.spyOn(crypto, 'getRandomValues').mockImplementation(((
+      buf: Uint32Array,
+    ) => {
+      buf[0] = 19; // (19 % 20) + 1 = 20
+      return buf;
+    }) as typeof crypto.getRandomValues);
+
+    const result = rollAst(
+      { terms: [{ count: 1, sides: 20, sign: -1 }], modifier: 0 },
+      { kind: 'attack', label: 'pénalité', characterId: 'c1' },
+    );
+
+    expect(result.total).toBe(-20);
+    expect(result.crit).toBe(false);
+    vi.restoreAllMocks();
   });
 });

@@ -147,6 +147,7 @@ describe('rollWithFlags — mode physique', () => {
       character: { id: 'c1', inspiration: true, exhaustion: 0 },
       baseMod: 0,
       label: 'Test',
+      useInspiration: true,
       consumeInspiration: consume,
     });
     await answer;
@@ -155,13 +156,14 @@ describe('rollWithFlags — mode physique', () => {
     expect(consume).not.toHaveBeenCalled();
   });
 
-  it('inspiration consommée seulement après validation', async () => {
+  it('inspiration dépensée seulement après validation', async () => {
     const consume = vi.fn(async () => {});
     const answer = answerNextPrompt({ rawFaces: [10, 18] });
     const rPromise = rollWithFlags({
       character: { id: 'c1', inspiration: true, exhaustion: 0 },
       baseMod: 0,
       label: 'Test',
+      useInspiration: true,
       consumeInspiration: consume,
     });
     await answer;
