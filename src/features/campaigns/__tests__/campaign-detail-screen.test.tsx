@@ -8,6 +8,7 @@ import {
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { t } from '@/shared/lib/i18n';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -252,6 +253,30 @@ describe('buildRoster', () => {
     expect(roster.map((r) => r.uid)).toEqual(['uid-1', 'uid-2']);
   });
 
+  it('un MENEUR qui joue un PJ apparaît AVEC sa fiche liée (M67a)', () => {
+    // Le meneur fondateur n'a pas de doc member — son appartenance vient de
+    // `gmIds[]`. Dès qu'il en pose un pour jouer, sa ligne doit porter sa fiche
+    // comme celle de n'importe qui, sans quoi le roster ment sur la table.
+    const camp = mkCampaign({ gmIds: ['uid-1'] });
+    const members = [
+      mkMember({ userId: 'uid-1', role: 'gm', characterId: 'char-mj' }),
+      mkMember({ userId: 'uid-2', role: 'member', characterId: 'char-2' }),
+    ];
+    const roster = buildRoster(camp, members, 'uid-1', null);
+    expect(roster).toHaveLength(2);
+    expect(roster[0]).toMatchObject({
+      uid: 'uid-1',
+      role: 'gm',
+      characterId: 'char-mj',
+    });
+  });
+
+  it('un MENEUR sans doc member n’a toujours aucune fiche liée', () => {
+    const camp = mkCampaign({ gmIds: ['uid-1'] });
+    const roster = buildRoster(camp, [], 'uid-1', null);
+    expect(roster[0]?.characterId).toBeNull();
+  });
+
   it("flag isSelf=true sur l'entrée correspondant à myUid", () => {
     const camp = mkCampaign({ gmIds: ['uid-gm'] });
     const members = [mkMember({ userId: 'uid-me' })];
@@ -398,6 +423,19 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByText('Niveau moyen')).toBeInTheDocument();
     expect(screen.getByText('Niveaux')).toBeInTheDocument();
     expect(screen.getByText('3–5')).toBeInTheDocument();
+  });
+
+  it('le MENEUR voit « Mon personnage » alors qu’il n’a aucun doc member (M67a)', () => {
+    // Avant : la section n'était rendue que si `members[]` contenait le
+    // lecteur. Un MJ fondateur n'en fait jamais partie — il ne pouvait donc
+    // pas jouer un PJ à sa propre table, alors qu'un co-MJ promu depuis un
+    // joueur, si. Asymétrie non voulue, corrigée sans toucher aux rules.
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [];
+    renderScreen();
+    expect(
+      screen.getByText(t('campaigns.detail.myCharacter.firstStepTitle')),
+    ).toBeInTheDocument();
   });
 
   it('le JOUEUR a sa propre porte vers la carte, le MENEUR garde la sienne', () => {

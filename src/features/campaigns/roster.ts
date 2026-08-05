@@ -23,9 +23,10 @@ export interface RosterEntry {
   /** L'entrée correspond à l'utilisateur connecté. */
   isSelf: boolean;
   /**
-   * Fiche liée du joueur (`members/{uid}.characterId`), ou `null`. Sert au MJ à
-   * ouvrir la fiche en lecture seule (4A.3). Les entrées MJ (issues de `gmIds`)
-   * n'ont jamais de fiche liée par cette UI → toujours `null`.
+   * Fiche liée (`members/{uid}.characterId`), ou `null`. Sert au MJ à ouvrir la
+   * fiche en lecture seule (4A.3). Un MENEUR peut désormais en avoir une (M67a,
+   * il joue un PJ à sa propre table) : on la lit sur son doc member quand il en
+   * a un, sans quoi sa ligne de roster resterait vide alors que sa fiche existe.
    */
   characterId: string | null;
 }
@@ -78,7 +79,12 @@ export function buildRoster(
     if (seen.has(uid)) continue;
     seen.add(uid);
     // Un MJ promu depuis un doc member porte un displayName → on le récupère.
-    result.push(makeEntry(uid, 'gm', null, byUid.get(uid)?.displayName ?? null));
+    // Idem pour sa fiche liée : un meneur qui joue un PJ (M67a) doit apparaître
+    // avec, comme n'importe qui à la table.
+    const gmDoc = byUid.get(uid);
+    result.push(
+      makeEntry(uid, 'gm', gmDoc?.characterId ?? null, gmDoc?.displayName ?? null),
+    );
   }
   for (const m of members) {
     if (seen.has(m.userId)) continue;

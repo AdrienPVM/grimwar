@@ -892,15 +892,40 @@ export async function updateCampaign(
  *
  * Appelé par l'UI campaign-detail (picker « lier un personnage », à venir).
  */
+export interface LinkCharacterOptions {
+  /**
+   * Rôle à poser si le doc `members/{uid}` n'existe pas encore. Sert au MENEUR
+   * FONDATEUR : son appartenance est portée par `gmIds[]`, donc il n'a JAMAIS
+   * de doc member — alors qu'un co-MJ promu depuis un joueur, si. Cette
+   * asymétrie n'était pas voulue : elle privait le seul MJ fondateur de
+   * « Mon personnage », donc de la possibilité de jouer un PJ à sa propre
+   * table. La rule `create` l'autorise déjà (`isOwner(userId)`), il ne
+   * manquait qu'un appelant. Absent → comportement d'origine (update strict).
+   */
+  readonly createRole?: 'gm' | 'member';
+  /** Nom/photo dénormalisés du profil Auth, posés à la création du doc. */
+  readonly displayName?: string | null;
+  readonly photoURL?: string | null;
+}
+
 export async function linkCharacterToMembership(
   campaignId: string,
   uid: string,
   characterId: string | null,
+  options: LinkCharacterOptions = {},
 ): Promise<void> {
   const firestore = getDb();
   const memberRef = doc(firestore, 'campaigns', campaignId, 'members', uid);
 
+  // Le doc peut manquer (meneur fondateur). On ne le lit QUE si l'appelant
+  // nous a donné de quoi le créer — sinon on garde le chemin d'origine, sans
+  // lecture supplémentaire.
+  const needsCreate =
+    options.createRole !== undefined && !(await getDoc(memberRef)).exists();
+
   if (characterId === null) {
+    // Délier sans doc member = rien à faire : il n'y a aucun lien à retirer.
+    if (needsCreate) return;
     await trackPendingWrite(
       firestore,
       updateDoc(memberRef, { characterId: null }),
@@ -910,7 +935,19 @@ export async function linkCharacterToMembership(
 
   const characterRef = doc(firestore, 'users', uid, 'characters', characterId);
   const batch = writeBatch(firestore);
-  batch.update(memberRef, { characterId });
+  if (needsCreate) {
+    batch.set(memberRef, {
+      userId: uid,
+      role: options.createRole,
+      characterId,
+      displayName: options.displayName ?? null,
+      photoURL: options.photoURL ?? null,
+      joinedAt: serverTimestamp(),
+      schemaVersion: 1,
+    });
+  } else {
+    batch.update(memberRef, { characterId });
+  }
   batch.update(characterRef, {
     homeCampaignId: campaignId,
     updatedAt: serverTimestamp(),

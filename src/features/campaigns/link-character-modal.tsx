@@ -22,6 +22,13 @@ interface Props {
   onClose: () => void;
   /** Appelé après un link/unlink réussi — le parent rafraîchit le détail campagne. */
   onLinked: () => void;
+  /**
+   * Rôle à poser si `members/{uid}` n'existe pas encore (meneur fondateur, qui
+   * n'a pas de doc member — son appartenance vient de `gmIds[]`).
+   */
+  createRole?: 'gm' | 'member';
+  displayName?: string | null;
+  photoURL?: string | null;
 }
 
 /**
@@ -47,6 +54,9 @@ export function LinkCharacterModal({
   charactersLoading,
   onClose,
   onLinked,
+  createRole,
+  displayName = null,
+  photoURL = null,
 }: Props): JSX.Element {
   const navigate = useNavigate();
   const titleId = useId();
@@ -68,7 +78,11 @@ export function LinkCharacterModal({
     setSubmitting(true);
     setError(null);
     try {
-      await linkCharacterToMembership(campaignId, uid, selected);
+      await linkCharacterToMembership(campaignId, uid, selected, {
+        createRole,
+        displayName,
+        photoURL,
+      });
       onLinked();
       onClose();
     } catch {

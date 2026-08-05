@@ -410,12 +410,24 @@ export function CampaignDetailScreen(): JSX.Element {
           </section>
         ) : null}
 
-        {myMembership ? (
+        {/*
+          « Mon personnage » s'affiche aussi pour le MENEUR (M67a). Son doc
+          `members/{uid}` n'existe pas — son appartenance vient de `gmIds[]` —
+          ce qui le privait de la section, alors qu'un co-MJ promu depuis un
+          joueur y avait droit. Asymétrie non intentionnelle : rien n'interdit
+          au meneur de jouer un PJ à sa propre table, et la rule `create`
+          l'autorise déjà (`isOwner(userId)`). Le doc se pose au moment du lien,
+          pas à l'affichage — aucune écriture silencieuse au simple passage.
+        */}
+        {myMembership || (isGm && user) ? (
           <MyCharacterLink
             campaignId={campaign.id}
-            uid={myMembership.userId}
-            currentCharacterId={myMembership.characterId}
+            uid={myMembership?.userId ?? (user?.uid as string)}
+            currentCharacterId={myMembership?.characterId ?? null}
             onChanged={refresh}
+            createRole={myMembership ? undefined : 'gm'}
+            displayName={user?.displayName ?? null}
+            photoURL={user?.photoURL ?? null}
           />
         ) : null}
 
