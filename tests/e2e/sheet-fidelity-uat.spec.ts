@@ -116,9 +116,14 @@ test.describe('UAT — fidélité fiche L1 (Perception passive / Maîtrises / La
     await expect(panel).toBeVisible();
 
     // Carte Langues : Commun (ascendance) + Elfique (bonus Roublard) — le fix.
-    await expect(panel.getByText('Langues')).toBeVisible();
-    await expect(panel.getByText('Commun')).toBeVisible();
-    await expect(panel.getByText('Elfique')).toBeVisible();
+    // On vise le TITRE de carte et non un texte libre : `getByText` fait une
+    // recherche de sous-chaîne insensible à la casse, et la description de
+    // l'Argot des voleurs contient « …diverses langues auprès des
+    // communautés… ». Deux correspondances, violation du mode strict — la
+    // spec échouait sur un mot du contenu SRD, pas sur un défaut de la fiche.
+    await expect(panel.getByRole('heading', { name: /Langues/ })).toBeVisible();
+    await expect(panel.getByRole('listitem').filter({ hasText: /^Commun$/ })).toBeVisible();
+    await expect(panel.getByRole('listitem').filter({ hasText: /^Elfique$/ })).toBeVisible();
 
     // Carte Maîtrises : la variante finesse/légère + outils de voleur.
     await expect(

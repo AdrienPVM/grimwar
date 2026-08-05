@@ -31,11 +31,20 @@ const ENTER_LIFT_PX = 10;
  * est déjà en place et `window.scrollY` a pu être écrasé par un document plus
  * court — on mémoriserait alors une position fausse.
  *
- * Limite assumée : sur retour vers un écran dont le contenu arrive en asynchrone
- * (une liste Firestore pas encore résolue), le document est encore court et le
- * navigateur borne la position restaurée à sa hauteur du moment. Le retour est
- * alors partiel, jamais pire que l'état d'avant (qui remontait en haut à tous
- * les coups).
+ * La restauration INSISTE, et ce n'est pas du zèle : un seul `scrollTo` au
+ * moment du rendu ne marche jamais en pratique. Au retour, l'écran est monté
+ * mais son contenu arrive encore (cache Dexie, `onSnapshot` Firestore) — le
+ * document fait quelques centaines de pixels, et le navigateur borne la
+ * position demandée à cette hauteur, c'est-à-dire à zéro. Mesuré : la première
+ * version rendait 0 au lieu de 1200. On réessaie donc image par image jusqu'à
+ * atteindre la cible ou expirer.
+ *
+ * Deux gardes autour de cette insistance :
+ *   - `history.scrollRestoration = 'manual'` — sinon le navigateur applique SA
+ *     propre restauration et les deux se marchent dessus.
+ *   - toute intervention de l'utilisateur (molette, doigt, clavier) annule la
+ *     poursuite. Se battre contre quelqu'un qui a déjà repris la main est pire
+ *     que de ne rien restaurer du tout.
  *
  * ── ENTRÉE ──
  * Animée en API Web Animations plutôt qu'en classe CSS rejouée : pas de remontage
@@ -51,6 +60,61 @@ const ENTER_LIFT_PX = 10;
  * `prefers-reduced-motion` supprime l'entrée ; la restauration du défilement,
  * elle, est une fonction et non une décoration — elle reste active.
  */
+/** Fenêtre pendant laquelle on réessaie d'atteindre la position mémorisée. */
+const RESTORE_WINDOW_MS = 900;
+/** Tolérance : à deux pixels près, on considère la position atteinte. */
+const RESTORE_EPSILON_PX = 2;
+
+/**
+ * Pose la position de défilement et la MAINTIENT le temps que le contenu de
+ * l'écran arrive. Retourne la fonction d'annulation.
+ */
+function restoreScroll(target: number): () => void {
+  if (typeof window === 'undefined') return () => undefined;
+
+  // Le navigateur applique sinon sa propre restauration en concurrence de la
+  // nôtre, et le résultat dépend de qui écrit en dernier.
+  if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+
+  window.scrollTo(0, target);
+  if (target <= 0 || typeof window.requestAnimationFrame !== 'function') {
+    return () => undefined;
+  }
+
+  let cancelled = false;
+  let frame = 0;
+  let elapsed = 0;
+
+  const cancel = (): void => {
+    if (cancelled) return;
+    cancelled = true;
+    window.cancelAnimationFrame(frame);
+    window.removeEventListener('wheel', cancel);
+    window.removeEventListener('touchstart', cancel);
+    window.removeEventListener('keydown', cancel);
+  };
+
+  const attempt = (): void => {
+    if (cancelled) return;
+    window.scrollTo(0, target);
+    if (Math.abs(window.scrollY - target) <= RESTORE_EPSILON_PX) return cancel();
+    // ~16 ms par image : compter les images plutôt que lire l'horloge garde la
+    // fonction testable sans horloge simulée.
+    elapsed += 16;
+    if (elapsed >= RESTORE_WINDOW_MS) return cancel();
+    frame = window.requestAnimationFrame(attempt);
+  };
+
+  // Reprendre la main annule la poursuite : se battre contre quelqu'un qui
+  // défile déjà est pire que de ne rien restaurer.
+  window.addEventListener('wheel', cancel, { passive: true, once: true });
+  window.addEventListener('touchstart', cancel, { passive: true, once: true });
+  window.addEventListener('keydown', cancel, { once: true });
+
+  frame = window.requestAnimationFrame(attempt);
+  return cancel;
+}
+
 export function useRouteMotion(ref: RefObject<HTMLElement>): void {
   const location = useLocation();
   const navigationType = useNavigationType();
@@ -75,13 +139,15 @@ export function useRouteMotion(ref: RefObject<HTMLElement>): void {
     previousKey.current = location.key;
 
     const target = navigationType === 'POP' ? (positions.current.get(location.key) ?? 0) : 0;
-    window.scrollTo(0, target);
+    const stopRestoring = restoreScroll(target);
     currentScroll.current = target;
 
     const element = ref.current;
     // `animate` est absent de jsdom : les tests unitaires rendent l'arbre sans
     // animation plutôt que d'exploser.
-    if (!element || typeof element.animate !== 'function' || prefersReducedMotion()) return;
+    if (!element || typeof element.animate !== 'function' || prefersReducedMotion()) {
+      return stopRestoring;
+    }
 
     const animation = element.animate(
       [
@@ -96,6 +162,7 @@ export function useRouteMotion(ref: RefObject<HTMLElement>): void {
     const release = (): void => animation.cancel();
     animation.addEventListener('finish', release);
     return () => {
+      stopRestoring();
       animation.removeEventListener('finish', release);
       animation.cancel();
     };
