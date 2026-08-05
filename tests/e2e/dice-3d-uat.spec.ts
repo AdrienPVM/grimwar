@@ -103,7 +103,7 @@ test.describe('UAT — dés en relief', () => {
     const tray = page.getByTestId('dice-tray');
     await expect(tray).toBeVisible();
     await freezeTray(page);
-    await uatShot(page, '01-un-d20-pose', { viewport: true });
+    await uatShot(page, '03-un-d20-pose', { viewport: true });
 
     // Le dé affiché porte EXACTEMENT la face que le moteur a tirée : on la lit
     // dans le DOM plutôt que de faire confiance à l'image.
@@ -153,7 +153,7 @@ test.describe('UAT — dés en relief', () => {
       String(sum),
     );
 
-    await uatShot(page, '02-les-six-solides', { viewport: true });
+    await uatShot(page, '04-les-six-solides', { viewport: true });
   });
 
   test('l’avantage montre les deux dés, celui qu’on écarte en retrait', async ({
@@ -180,7 +180,7 @@ test.describe('UAT — dés en relief', () => {
     expect(kept.filter((k) => k === 'false')).toHaveLength(1);
 
     await freezeTray(page);
-    await uatShot(page, '03-avantage-deux-d20', { viewport: true });
+    await uatShot(page, '05-avantage-deux-d20', { viewport: true });
   });
 
   test('le réglage de Compte éteint et rallume les dés en relief', async ({
@@ -191,7 +191,7 @@ test.describe('UAT — dés en relief', () => {
     const toggle = page.getByRole('checkbox', { name: 'Dés en relief' });
     await expect(toggle).toBeChecked();
     await toggle.uncheck();
-    await uatShot(page, '04-reglage-des-en-relief');
+    await uatShot(page, '06-reglage-des-en-relief');
 
     const { charId } = await seedCharacter(page, rogueL1Expertise);
     await page.goto(`/character/${charId}`);

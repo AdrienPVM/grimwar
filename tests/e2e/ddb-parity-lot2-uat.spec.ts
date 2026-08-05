@@ -35,6 +35,46 @@ test.describe('UAT — ossature de chargement et bascule de personnage', () => {
     test.skip(!ok, 'Firestore emulator unreachable. Run `pnpm e2e:emulators`.');
   });
 
+  test('un filtre actif du Codex porte son anneau entier', async ({ page }) => {
+    // Bug d'UAT : l'anneau `ring-1` d'un chip actif était coupé net en haut et
+    // en bas. Cause : poser `overflow-x: auto` fait recalculer l'autre axe par
+    // la spec, et la rangée se mettait à rogner verticalement.
+    await page.goto('/codex');
+    await waitForAppReady(page);
+    await page.getByRole('tab', { name: /Sorts/i }).click();
+
+    const chip = page.getByRole('button', { name: /^Niveau 1$/i }).first();
+    await chip.click();
+    // L'anneau vit HORS de la boîte : sa présence se vérifie en constatant que
+    // la rangée réserve de la place au-dessus et en dessous du chip.
+    const room = await chip.evaluate((el) => {
+      const row = el.parentElement!;
+      const rowBox = row.getBoundingClientRect();
+      const chipBox = el.getBoundingClientRect();
+      return {
+        top: chipBox.top - rowBox.top,
+        bottom: rowBox.bottom - chipBox.bottom,
+      };
+    });
+    expect(room.top).toBeGreaterThanOrEqual(2);
+    expect(room.bottom).toBeGreaterThanOrEqual(2);
+    await uatShot(page, '01-codex-filtre-actif-anneau-entier');
+  });
+
+  test('l’assistant ne laisse plus de bande vide à droite', async ({ page }) => {
+    // Bug d'UAT : la capture pleine page montrait une bande vide à droite.
+    // 466 px de contenu défilable pour un viewport de 412 px, à cause d'une
+    // infobulle fermée mais toujours dans le flux.
+    await page.goto('/create');
+    await waitForAppReady(page);
+    const width = await page.evaluate(() => ({
+      client: document.documentElement.clientWidth,
+      scrollable: document.body.scrollWidth,
+    }));
+    expect(width.scrollable).toBeLessThanOrEqual(width.client + 1);
+    await uatShot(page, '02-assistant-sans-bande-vide');
+  });
+
   test('le Codex montre la silhouette de ses rangées pendant qu’il charge', async ({
     page,
   }) => {
@@ -52,7 +92,7 @@ test.describe('UAT — ossature de chargement et bascule de personnage', () => {
     await expect(
       page.getByText('Invocation du contenu…', { exact: true }),
     ).toHaveCount(1);
-    await uatShot(page, '05-ossature-codex', { viewport: true });
+    await uatShot(page, '07-ossature-codex', { viewport: true });
   });
 
   test('le nom du personnage ouvre les autres fiches', async ({ page }) => {
@@ -68,12 +108,12 @@ test.describe('UAT — ossature de chargement et bascule de personnage', () => {
 
     const trigger = page.getByTestId('character-switcher-trigger');
     await expect(trigger).toBeVisible();
-    await uatShot(page, '06-nom-devenu-bascule');
+    await uatShot(page, '08-nom-devenu-bascule');
 
     await trigger.click();
     const options = page.getByTestId('character-switcher-option');
     await expect(options).toHaveCount(1);
-    await uatShot(page, '07-choix-de-personnage', { viewport: true });
+    await uatShot(page, '09-choix-de-personnage', { viewport: true });
 
     await options.first().click();
     // On arrive bien sur l'AUTRE fiche.
