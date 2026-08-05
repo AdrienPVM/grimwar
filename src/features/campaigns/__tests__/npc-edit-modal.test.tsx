@@ -152,3 +152,86 @@ describe('NpcEditModal — édition', () => {
     expect(logNpcIntroduced).not.toHaveBeenCalled();
   });
 });
+
+describe('NpcEditModal — portrait photo (M39)', () => {
+  it('un PNJ sans photo reste au médaillon à la lettre', async () => {
+    renderModal(null);
+    fireEvent.change(screen.getByPlaceholderText(t('npcs.edit.field.namePlaceholder')), {
+      target: { value: 'Belric' },
+    });
+    fireEvent.change(
+      screen.getByPlaceholderText(t('npcs.edit.field.portraitPlaceholder')),
+      { target: { value: 'B' } },
+    );
+    fireEvent.click(screen.getByRole('button', { name: t('npcs.edit.save') }));
+    await waitFor(() => expect(createNpc).toHaveBeenCalledTimes(1));
+    const [, , input] = createNpc.mock.calls[0] as [string, string, Record<string, unknown>];
+    expect(input.portrait).toEqual({ type: 'letter', value: 'B' });
+  });
+
+  it('une photo déjà posée revient telle quelle à la réouverture, et se retire', async () => {
+    const dataUrl = 'data:image/webp;base64,AAAA';
+    renderModal(existingNpc({ portrait: { type: 'image', value: dataUrl } }));
+    expect(
+      (screen.getByTestId('npc-portrait-preview') as HTMLImageElement).src,
+    ).toBe(dataUrl);
+    // Le champ glyphe est neutralisé tant qu'une photo existe — deux portraits
+    // concurrents seraient un piège.
+    expect(
+      (
+        screen.getByPlaceholderText(
+          t('npcs.edit.field.portraitPlaceholder'),
+        ) as HTMLInputElement
+      ).disabled,
+    ).toBe(true);
+
+    fireEvent.click(screen.getByTestId('npc-portrait-remove'));
+    fireEvent.click(screen.getByRole('button', { name: t('npcs.edit.save') }));
+    await waitFor(() => expect(updateNpc).toHaveBeenCalledTimes(1));
+    const [, , input] = updateNpc.mock.calls[0] as [string, string, Record<string, unknown>];
+    expect(input.portrait).toEqual({ type: 'letter', value: '' });
+  });
+});
+
+describe('NpcEditModal — lien bestiaire (M40)', () => {
+  it('éditer un PNJ lié à un monstre NE PERD PAS le lien', async () => {
+    // Régression : `handleSave` reconstruisait `combatStats` depuis les seuls
+    // CR/CA/PV/notes. Renommer un PNJ le déliait donc silencieusement de son
+    // monstre — alors que `relationships`, lui, était bien préservé.
+    renderModal(
+      existingNpc({
+        combatStats: { monsterContentId: 'bugbear', cr: 1, ac: 16, hp: 27 },
+      }),
+    );
+    fireEvent.change(screen.getByDisplayValue('Aldric'), {
+      target: { value: 'Aldric le Sombre' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: t('npcs.edit.save') }));
+
+    await waitFor(() => expect(updateNpc).toHaveBeenCalledTimes(1));
+    const [, , input] = updateNpc.mock.calls[0] as [string, string, Record<string, unknown>];
+    expect(input.combatStats).toMatchObject({
+      monsterContentId: 'bugbear',
+      cr: 1,
+      ac: 16,
+      hp: 27,
+    });
+  });
+
+  it('« Délier » retire le lien sans effacer les chiffres déjà joués', async () => {
+    renderModal(
+      existingNpc({
+        combatStats: { monsterContentId: 'bugbear', cr: 1, ac: 16, hp: 27 },
+      }),
+    );
+    fireEvent.click(screen.getByTestId('npc-unlink-monster'));
+    fireEvent.click(screen.getByRole('button', { name: t('npcs.edit.save') }));
+
+    await waitFor(() => expect(updateNpc).toHaveBeenCalledTimes(1));
+    const [, , input] = updateNpc.mock.calls[0] as [string, string, Record<string, unknown>];
+    expect(input.combatStats).toMatchObject({ cr: 1, ac: 16, hp: 27 });
+    expect(
+      (input.combatStats as Record<string, unknown>).monsterContentId,
+    ).toBeUndefined();
+  });
+});

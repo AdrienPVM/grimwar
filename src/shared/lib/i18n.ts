@@ -1262,13 +1262,20 @@ export type StringKey =
   | 'npcs.edit.field.tagsPlaceholder'
   | 'npcs.edit.field.visibility'
   | 'npcs.edit.field.visibilityHelper'
-  | 'npcs.edit.imageDeferred'
+  | 'npcs.edit.portraitImageAdd'
+  | 'npcs.edit.portraitImageReplace'
+  | 'npcs.edit.portraitImageRemove'
+  | 'npcs.edit.portraitImageBusy'
+  | 'npcs.edit.portraitImageError'
+  | 'npcs.edit.portraitImageAlt'
   | 'npcs.edit.combat.enable'
   | 'npcs.edit.combat.cr'
   | 'npcs.edit.combat.ac'
   | 'npcs.edit.combat.hp'
   | 'npcs.edit.combat.notes'
-  | 'npcs.edit.combat.monsterDeferred'
+  | 'npcs.edit.combat.linkMonster'
+  | 'npcs.edit.combat.unlinkMonster'
+  | 'npcs.edit.combat.linkMonsterHelper'
   | 'npcs.edit.cancel'
   | 'npcs.edit.save'
   | 'npcs.edit.saving'
@@ -4578,15 +4585,21 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.edit.field.visibility': 'Visibilité',
     'npcs.edit.field.visibilityHelper':
       'Un PNJ secret reste totalement invisible des joueurs.',
-    'npcs.edit.imageDeferred':
-      'Le portrait en image arrivera bientôt — pour l’instant, une lettre ou un emoji.',
+    'npcs.edit.portraitImageAdd': 'Ajouter une photo',
+    'npcs.edit.portraitImageReplace': 'Remplacer la photo',
+    'npcs.edit.portraitImageRemove': 'Retirer la photo',
+    'npcs.edit.portraitImageBusy': 'Optimisation…',
+    'npcs.edit.portraitImageError': "Cette image n'a pas pu être lue.",
+    'npcs.edit.portraitImageAlt': 'Portrait de',
     'npcs.edit.combat.enable': 'PNJ combattant',
     'npcs.edit.combat.cr': 'FP',
     'npcs.edit.combat.ac': 'CA',
     'npcs.edit.combat.hp': 'PV',
     'npcs.edit.combat.notes': 'Notes de combat',
-    'npcs.edit.combat.monsterDeferred':
-      'Le lien vers un monstre du bestiaire (remplissage auto) arrivera avec le bestiaire SRD.',
+    'npcs.edit.combat.linkMonster': 'Lier un monstre',
+    'npcs.edit.combat.unlinkMonster': 'Délier',
+    'npcs.edit.combat.linkMonsterHelper':
+      'Le monstre lié remplit FP, CA et PV — qui restent modifiables — et donne au tracker son bloc complet.',
     'npcs.edit.cancel': 'Annuler',
     'npcs.edit.save': 'Enregistrer',
     'npcs.edit.saving': 'Enregistrement…',
@@ -8114,15 +8127,21 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.edit.field.tagsPlaceholder': 'recurring, faction-x',
     'npcs.edit.field.visibility': 'Visibility',
     'npcs.edit.field.visibilityHelper': 'A secret NPC stays fully invisible to players.',
-    'npcs.edit.imageDeferred':
-      'Image portraits are coming soon — for now, a letter or an emoji.',
+    'npcs.edit.portraitImageAdd': 'Add a photo',
+    'npcs.edit.portraitImageReplace': 'Replace the photo',
+    'npcs.edit.portraitImageRemove': 'Remove the photo',
+    'npcs.edit.portraitImageBusy': 'Optimising…',
+    'npcs.edit.portraitImageError': 'This image could not be read.',
+    'npcs.edit.portraitImageAlt': 'Portrait of',
     'npcs.edit.combat.enable': 'Combatant NPC',
     'npcs.edit.combat.cr': 'CR',
     'npcs.edit.combat.ac': 'AC',
     'npcs.edit.combat.hp': 'HP',
     'npcs.edit.combat.notes': 'Combat notes',
-    'npcs.edit.combat.monsterDeferred':
-      'Linking to a bestiary monster (auto-fill) will arrive with the SRD bestiary.',
+    'npcs.edit.combat.linkMonster': 'Link a monster',
+    'npcs.edit.combat.unlinkMonster': 'Unlink',
+    'npcs.edit.combat.linkMonsterHelper':
+      'The linked monster fills in CR, AC and HP — all still editable — and gives the tracker its full stat block.',
     'npcs.edit.cancel': 'Cancel',
     'npcs.edit.save': 'Save',
     'npcs.edit.saving': 'Saving…',

@@ -1,10 +1,23 @@
-import { useEffect, useId, useState, type JSX } from 'react';
+import {
+  useEffect,
+  useId,
+  useState,
+  type ChangeEvent,
+  type JSX,
+} from 'react';
 
+import { MonsterPickerModal } from '@/features/map-proto/monster-picker-modal';
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { logNpcIntroduced } from '@/shared/lib/event-logger';
-import { t } from '@/shared/lib/i18n';
+import { t, localize } from '@/shared/lib/i18n';
+import {
+  ImageOptimizeError,
+  optimizeImageFile,
+  PORTRAIT_PRESET,
+} from '@/shared/lib/image-optimize';
 import { createNpc, updateNpc, type NpcWriteInput } from '@/shared/lib/services/npcs';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
@@ -36,6 +49,8 @@ interface FormState {
   role: NpcRole;
   location: string;
   portraitGlyph: string;
+  /** Data URL du portrait photo, ou `null` = médaillon à la lettre. */
+  portraitImage: string | null;
   shortDescription: string;
   publicDescription: string;
   dmNotes: string;
@@ -46,6 +61,15 @@ interface FormState {
   ac: string;
   hp: string;
   combatNotes: string;
+  /**
+   * Monstre du bestiaire lié. AVANT ce champ, `handleSave` reconstruisait
+   * `combatStats` à partir des seuls CR/CA/PV/notes et PERDAIT silencieusement
+   * un `monsterContentId` existant à chaque enregistrement — alors que
+   * `relationships`, lui, était bien préservé.
+   */
+  monsterContentId: string | undefined;
+  /** Nom affichable du monstre lié (confort d'affichage, non persisté). */
+  monsterLabel: string | null;
 }
 
 function initialState(npc: Npc | null): FormState {
@@ -53,7 +77,8 @@ function initialState(npc: Npc | null): FormState {
     name: npc?.name ?? '',
     role: npc?.role ?? 'merchant',
     location: npc?.location ?? '',
-    portraitGlyph: npc?.portrait.value ?? '',
+    portraitGlyph: npc?.portrait.type === 'image' ? '' : (npc?.portrait.value ?? ''),
+    portraitImage: npc?.portrait.type === 'image' ? npc.portrait.value : null,
     shortDescription: npc?.shortDescription ?? '',
     publicDescription: npc?.publicDescription ?? '',
     dmNotes: npc?.dmNotes ?? '',
@@ -64,6 +89,8 @@ function initialState(npc: Npc | null): FormState {
     ac: npc?.combatStats?.ac !== undefined ? String(npc.combatStats.ac) : '',
     hp: npc?.combatStats?.hp !== undefined ? String(npc.combatStats.hp) : '',
     combatNotes: npc?.combatStats?.notes ?? '',
+    monsterContentId: npc?.combatStats?.monsterContentId,
+    monsterLabel: null,
   };
 }
 
@@ -117,6 +144,20 @@ export function NpcEditModal({
   const [form, setForm] = useState<FormState>(() => initialState(npc));
   const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<'name' | 'save' | null>(null);
+  const [portraitBusy, setPortraitBusy] = useState<boolean>(false);
+  const [portraitError, setPortraitError] = useState<string | null>(null);
+  const [monsterPickerOpen, setMonsterPickerOpen] = useState<boolean>(false);
+  // Le lien persisté ne stocke qu'un slug ; on résout son nom pour l'afficher.
+  // Repli sur le slug si le pack qui le portait n'est plus installé.
+  const { data: monsters } = useContent('monsters');
+  const linkedMonsterLabel =
+    form.monsterLabel ??
+    (form.monsterContentId !== undefined
+      ? (() => {
+          const found = monsters.find((m) => m.id === form.monsterContentId);
+          return found ? localize(found.name) : form.monsterContentId;
+        })()
+      : null);
 
   // Reseed à chaque (ré)ouverture ou changement de PNJ cible — la modale reste
   // montée entre deux ouvertures, donc on resynchronise l'état du formulaire.
@@ -125,6 +166,8 @@ export function NpcEditModal({
       setForm(initialState(npc));
       setError(null);
       setSaving(false);
+      setPortraitError(null);
+      setPortraitBusy(false);
     }
   }, [open, npc]);
 
@@ -132,6 +175,33 @@ export function NpcEditModal({
 
   function patch(next: Partial<FormState>): void {
     setForm((prev) => ({ ...prev, ...next }));
+  }
+
+  /**
+   * Portrait photo (M39). Le preset PORTRAIT vise ~32 Ko — minuscule face à la
+   * limite de 1 Mio d'un document Firestore, et déjà utilisé par les jetons de
+   * carte. Rien de neuf côté schéma : `npcPortraitSchema` accepte `'image'`
+   * depuis l'origine, c'est le formulaire qui forçait `'letter'`.
+   */
+  async function handlePortraitFile(
+    e: ChangeEvent<HTMLInputElement>,
+  ): Promise<void> {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPortraitError(null);
+    setPortraitBusy(true);
+    try {
+      const optimized = await optimizeImageFile(file, PORTRAIT_PRESET);
+      patch({ portraitImage: optimized.dataUrl });
+    } catch (err) {
+      setPortraitError(
+        err instanceof ImageOptimizeError
+          ? err.message
+          : t('npcs.edit.portraitImageError'),
+      );
+    } finally {
+      setPortraitBusy(false);
+    }
   }
 
   async function handleSave(): Promise<void> {
@@ -145,6 +215,9 @@ export function NpcEditModal({
 
     const combatStats: NpcCombatStats | null = form.isCombatant
       ? {
+          // Le lien bestiaire survit à l'enregistrement (M40) : sans cette
+          // ligne, éditer le nom d'un PNJ le déliait de son monstre.
+          monsterContentId: form.monsterContentId,
           cr: parseFloatOrUndef(form.cr),
           ac: parseIntOrUndef(form.ac),
           hp: parseIntOrUndef(form.hp),
@@ -159,7 +232,13 @@ export function NpcEditModal({
       shortDescription: form.shortDescription.trim(),
       publicDescription: form.publicDescription.trim(),
       dmNotes: form.dmNotes.trim(),
-      portrait: { type: 'letter', value: form.portraitGlyph.trim() },
+      // Un vrai visage quand il y en a un (M39), sinon le médaillon à la lettre.
+      // L'image est stockée INLINE en base64 optimisé (~32 Ko), comme les
+      // portraits de jetons — aucun Firebase Storage requis.
+      portrait:
+        form.portraitImage !== null
+          ? { type: 'image', value: form.portraitImage }
+          : { type: 'letter', value: form.portraitGlyph.trim() },
       combatStats,
       relationships: npc?.relationships ?? [],
       tags: parseTags(form.tags),
@@ -236,16 +315,56 @@ export function NpcEditModal({
               type="text"
               value={form.portraitGlyph}
               maxLength={2}
+              disabled={form.portraitImage !== null}
               onChange={(e) => patch({ portraitGlyph: e.target.value })}
               placeholder={t('npcs.edit.field.portraitPlaceholder')}
-              className={INPUT_CLASS}
+              className={cn(INPUT_CLASS, form.portraitImage !== null && 'opacity-40')}
             />
           </Field>
         </div>
 
-        <p className="-mt-2 font-serif text-meta italic text-text-tertiary">
-          {t('npcs.edit.imageDeferred')}
-        </p>
+        {/* Portrait photo (M39) — un vrai visage plutôt qu'une lettre dorée. */}
+        <div className="-mt-2 flex flex-wrap items-center gap-4">
+          {form.portraitImage !== null ? (
+            <img
+              src={form.portraitImage}
+              alt={`${t('npcs.edit.portraitImageAlt')} ${form.name}`}
+              data-testid="npc-portrait-preview"
+              className="h-16 w-16 shrink-0 rounded-full border-2 border-gold/60 object-cover"
+            />
+          ) : null}
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-pill border border-gold-dim/50 px-4 py-2 font-title text-[11px] uppercase tracking-[0.18em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10">
+            <input
+              type="file"
+              accept="image/*"
+              data-testid="npc-portrait-input"
+              onChange={(e) => {
+                void handlePortraitFile(e);
+              }}
+              className="sr-only"
+            />
+            {portraitBusy
+              ? t('npcs.edit.portraitImageBusy')
+              : form.portraitImage !== null
+                ? t('npcs.edit.portraitImageReplace')
+                : t('npcs.edit.portraitImageAdd')}
+          </label>
+          {form.portraitImage !== null ? (
+            <button
+              type="button"
+              data-testid="npc-portrait-remove"
+              onClick={() => patch({ portraitImage: null })}
+              className="rounded-pill border border-crimson/40 px-4 py-2 font-title text-[10px] uppercase tracking-[0.18em] text-crimson transition-colors duration-200 ease-base hover:bg-crimson/[0.08]"
+            >
+              {t('npcs.edit.portraitImageRemove')}
+            </button>
+          ) : null}
+        </div>
+        {portraitError !== null ? (
+          <p role="alert" className="-mt-2 font-serif text-body-sm text-crimson">
+            {portraitError}
+          </p>
+        ) : null}
 
         <Field label={t('npcs.edit.field.shortDescription')}>
           <input
@@ -354,9 +473,43 @@ export function NpcEditModal({
                   className={INPUT_CLASS}
                 />
               </Field>
-              <p className="font-serif text-meta italic text-text-tertiary">
-                {t('npcs.edit.combat.monsterDeferred')}
-              </p>
+              {/* Lien bestiaire (M40). `monsterContentId` existait au schéma,
+                  était affiché en lecture seule sur le détail, mais AUCUNE UI
+                  ne le renseignait — et l'enregistrement le perdait. */}
+              <div className="flex flex-col gap-2 border-t border-white-8 pt-3">
+                {form.monsterContentId !== undefined ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span
+                      data-testid="npc-linked-monster"
+                      className="rounded-pill border border-gold-dim/40 bg-gold/10 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright"
+                    >
+                      {linkedMonsterLabel}
+                    </span>
+                    <button
+                      type="button"
+                      data-testid="npc-unlink-monster"
+                      onClick={() =>
+                        patch({ monsterContentId: undefined, monsterLabel: null })
+                      }
+                      className="font-title text-[10px] uppercase tracking-[0.16em] text-text-tertiary underline decoration-dotted transition-colors duration-200 ease-base hover:text-crimson"
+                    >
+                      {t('npcs.edit.combat.unlinkMonster')}
+                    </button>
+                  </div>
+                ) : null}
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setMonsterPickerOpen(true)}
+                  >
+                    {t('npcs.edit.combat.linkMonster')}
+                  </Button>
+                </div>
+                <p className="font-serif text-meta italic text-text-tertiary">
+                  {t('npcs.edit.combat.linkMonsterHelper')}
+                </p>
+              </div>
             </>
           ) : null}
         </div>
@@ -381,6 +534,24 @@ export function NpcEditModal({
           </Button>
         </div>
       </div>
+
+      {/* Le choix PRÉREMPLIT CR/CA/PV sans les verrouiller : le MJ reste libre
+          de jouer un gobelours à 60 PV. C'est le lien qui compte, pas les
+          chiffres — il permet au tracker de retrouver le bloc complet. */}
+      <MonsterPickerModal
+        open={monsterPickerOpen}
+        onClose={() => setMonsterPickerOpen(false)}
+        onPick={(monster) => {
+          patch({
+            monsterContentId: monster.id,
+            monsterLabel: localize(monster.name),
+            cr: String(monster.cr),
+            ac: String(monster.ac),
+            hp: String(monster.hp.avg),
+          });
+          setMonsterPickerOpen(false);
+        }}
+      />
     </DetailModal>
   );
 }

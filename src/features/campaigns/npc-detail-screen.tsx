@@ -10,7 +10,8 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { Divider } from '@/shared/components/divider';
 import { PageContainer } from '@/shared/components/page-container';
 import { Splash } from '@/shared/components/splash';
-import { t } from '@/shared/lib/i18n';
+import { useContent } from '@/shared/hooks/use-content';
+import { localize, t } from '@/shared/lib/i18n';
 import { deleteNpc } from '@/shared/lib/services/npcs';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
@@ -40,6 +41,14 @@ export function NpcDetailScreen(): JSX.Element {
   const { campaign, members, isLoading: campaignLoading } = useCampaign(cid);
   const { npc, isLoading, notFound, refresh } = useNpc(cid, npcId);
   const characterNames = useLinkedCharacterNames(members);
+  // Bestiaire chargé pour résoudre le NOM du monstre lié (SRD + packs custom).
+  const { data: monsters } = useContent('monsters');
+  const monsterLabel = useMemo<string | null>(() => {
+    const id = npc?.combatStats?.monsterContentId;
+    if (!id) return null;
+    const found = monsters.find((m) => m.id === id);
+    return found ? localize(found.name) : null;
+  }, [monsters, npc]);
 
   const isDM = useMemo<boolean>(
     () => !!campaign && !!user && campaign.gmIds.includes(user.uid),
@@ -240,7 +249,12 @@ export function NpcDetailScreen(): JSX.Element {
                   {npc.combatStats.monsterContentId ? (
                     <StatRow
                       label={t('npcs.detail.combat.monster')}
-                      value={npc.combatStats.monsterContentId}
+                      // Le NOM de la créature, pas son slug : « Gobelours »
+                      // dit quelque chose à la table, « bugbear » non. Repli
+                      // sur le slug si le bestiaire ne connaît pas l'entrée
+                      // (pack désinstallé) — mieux vaut un identifiant brut
+                      // qu'un champ vide qui laisserait croire au délien.
+                      value={monsterLabel ?? npc.combatStats.monsterContentId}
                     />
                   ) : null}
                 </dl>
