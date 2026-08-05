@@ -5,6 +5,8 @@ import { useAuth } from '@/features/auth/use-auth';
 import { cn } from '../lib/cn';
 import { t } from '../lib/i18n';
 import { parentRouteFor } from '../lib/parent-route';
+import { BOTTOM_NAV_TABS, isTabActive } from './bottom-nav';
+import { Icon } from './icon';
 
 /**
  * Coquille de navigation persistante — header sticky monté dans App.tsx,
@@ -89,13 +91,52 @@ export function NavShell(): JSX.Element | null {
       </div>
 
       {showBack && (
-        <div className="hidden sm:flex items-center gap-3 font-display text-[15px] font-bold uppercase tracking-[0.22em] text-gold opacity-80">
+        // L'écho de marque tient le centre du bandeau des tablettes jusqu'à
+        // `lg`, où le rail de destinations prend sa place — deux blocs centrés
+        // ne peuvent pas cohabiter, et la marque est déjà lisible à gauche
+        // depuis l'accueil.
+        <div className="hidden sm:flex lg:hidden items-center gap-3 font-display text-[15px] font-bold uppercase tracking-[0.22em] text-gold opacity-80">
           <span aria-hidden="true" className="text-[18px] drop-shadow-[0_0_6px_var(--gold-glow)]">
             ⚔
           </span>
           <span>{t('splash.brand')}</span>
         </div>
       )}
+
+      {/*
+        Rail de destinations desktop — le pendant de la barre basse mobile
+        (`bottom-nav.tsx`), qui se masque elle-même à `lg+`. Mêmes entrées, même
+        source (`BOTTOM_NAV_TABS`) : ajouter un espace se fait à un seul endroit.
+        Sur desktop la barre basse n'a pas de sens (la souris ne « fatigue » pas
+        en haut d'écran, et 60 px de hauteur permanente coûtent du contenu), mais
+        les destinations doivent rester à un clic sans repasser par l'accueil.
+      */}
+      <div className="hidden lg:flex items-center gap-1">
+        {BOTTOM_NAV_TABS.map((tab) => {
+          const active = isTabActive(tab, pathname);
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              aria-current={active ? 'page' : undefined}
+              className={cn(
+                'flex items-center gap-2 rounded-pill border px-3 py-1.5',
+                'font-title text-[11px] font-bold uppercase tracking-[0.16em]',
+                'transition-all duration-200 ease-base',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-bright/50',
+                // La bordure existe dans les deux états (transparente au repos)
+                // pour que l'entrée active ne pousse pas ses voisines d'un pixel.
+                active
+                  ? 'border-soft bg-gold-bright/10 text-gold-bright'
+                  : 'border-transparent text-text-tertiary hover:bg-white/[0.04] hover:text-text-secondary',
+              )}
+            >
+              <Icon name={tab.icon} className="h-4 w-4" />
+              <span>{t(tab.labelKey)}</span>
+            </Link>
+          );
+        })}
+      </div>
 
       <button
         type="button"

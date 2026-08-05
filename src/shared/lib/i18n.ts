@@ -898,6 +898,10 @@ export type StringKey =
   | 'nav.back.content'
   | 'nav.back.maps'
   | 'nav.avatar.aria'
+  | 'nav.tabs.aria'
+  | 'nav.tab.characters'
+  | 'nav.tab.campaigns'
+  | 'nav.tab.codex'
   // Library (point d'entrée S1 — plan 13.6)
   | 'library.title'
   | 'library.subtitle'
@@ -4051,6 +4055,11 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.back.content': 'Retour à mon contenu',
     'nav.back.maps': 'Retour aux cartes',
     'nav.avatar.aria': 'Compte (à venir)',
+    // Barre de navigation basse (mobile) / rail de destinations (desktop).
+    'nav.tabs.aria': 'Espaces principaux',
+    'nav.tab.characters': 'Personnages',
+    'nav.tab.campaigns': 'Campagnes',
+    'nav.tab.codex': 'Codex',
     // Library
     'library.title': 'Bibliothèque',
     'library.subtitle': 'Tes héros et héroïnes',
@@ -7652,6 +7661,10 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.back.content': 'Back to my content',
     'nav.back.maps': 'Back to maps',
     'nav.avatar.aria': 'Account (coming soon)',
+    'nav.tabs.aria': 'Main areas',
+    'nav.tab.characters': 'Characters',
+    'nav.tab.campaigns': 'Campaigns',
+    'nav.tab.codex': 'Codex',
     'library.title': 'Library',
     'library.subtitle': 'Your heroes and heroines',
     'library.cta.create': 'Create a character',
