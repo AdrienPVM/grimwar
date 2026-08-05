@@ -18,6 +18,16 @@ export function feetToMeters(feet: number): number {
 }
 
 /**
+ * Mètres → pieds SRD, l'inverse exact de `feetToMeters`. Nécessaire dès qu'on
+ * laisse l'utilisateur SAISIR une distance : il la tape en mètres (« 12 m sous
+ * Hâte »), la fiche la garde en pieds comme tout le reste du contenu SRD.
+ * Arrondi à l'entier — un déplacement en pieds fractionnaires n'existe pas.
+ */
+export function metersToFeet(meters: number): number {
+  return Math.round((meters / 1.5) * 5);
+}
+
+/**
  * Valeur en mètres formatée à la française, SANS unité : un entier reste nu
  * (`30 ft → "9"`), une valeur fractionnaire prend une décimale et la virgule
  * décimale française (`35 ft → "10,5"`). L'unité « m » est ajoutée par l'appelant

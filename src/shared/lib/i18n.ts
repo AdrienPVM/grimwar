@@ -452,6 +452,8 @@ export type StringKey =
   | 'sheet.stat.ac'
   | 'sheet.stat.init'
   | 'sheet.stat.speed'
+  | 'sheet.stat.editInit'
+  | 'sheet.stat.editSpeed'
   | 'sheet.stat.passivePerception'
   | 'sheet.combat.hitDice.title'
   | 'sheet.combat.hitDice.spend'
@@ -479,6 +481,7 @@ export type StringKey =
   | 'sheet.combat.resources.restore'
   | 'sheet.combat.resources.spendLabel'
   | 'sheet.combat.resources.restoreLabel'
+  | 'sheet.combat.resources.editMaxLabel'
   | 'sheet.combat.resources.restoresShort'
   | 'sheet.combat.resources.restoresLong'
   | 'sheet.combat.resources.rage'
@@ -3536,6 +3539,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.ac': 'CA',
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Vit.',
+    'sheet.stat.editInit': 'Modifier l’initiative',
+    'sheet.stat.editSpeed': 'Modifier la vitesse (en mètres)',
     'sheet.stat.passivePerception': 'Perc. passive',
     'sheet.combat.hitDice.title': 'Dés de vie',
     'sheet.combat.hitDice.spend': 'Repos court',
@@ -3565,6 +3570,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.resources.restore': 'Récupérer',
     'sheet.combat.resources.spendLabel': 'Dépenser un point de {resource}',
     'sheet.combat.resources.restoreLabel': 'Récupérer un point de {resource}',
+    'sheet.combat.resources.editMaxLabel': 'Modifier le maximum de {resource}',
     'sheet.combat.resources.restoresShort': 'Repos court',
     'sheet.combat.resources.restoresLong': 'Repos long',
     'sheet.combat.resources.rage': 'Rage',
@@ -7188,6 +7194,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.stat.ac': 'AC',
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Spd',
+    'sheet.stat.editInit': 'Edit initiative',
+    'sheet.stat.editSpeed': 'Edit speed (in meters)',
     'sheet.stat.passivePerception': 'Pass. perc.',
     'sheet.combat.hitDice.title': 'Hit Dice',
     'sheet.combat.hitDice.spend': 'Short rest',
@@ -7217,6 +7225,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.resources.restore': 'Restore',
     'sheet.combat.resources.spendLabel': 'Spend one {resource}',
     'sheet.combat.resources.restoreLabel': 'Restore one {resource}',
+    'sheet.combat.resources.editMaxLabel': 'Edit the maximum for {resource}',
     'sheet.combat.resources.restoresShort': 'Short rest',
     'sheet.combat.resources.restoresLong': 'Long rest',
     'sheet.combat.resources.rage': 'Rage',

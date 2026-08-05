@@ -57,6 +57,17 @@ function classEntry(classId: string, level: number): Character['classes'][number
   } as Character['classes'][number];
 }
 
+/** Barbare 3 (3 Rages dérivées), avec `classResources` optionnellement posées. */
+function barbarian3(
+  classResources: Character['classResources'] = {},
+): Character {
+  return buildCharacter({
+    classes: [classEntry('barbarian', 3)],
+    totalLevel: 3,
+    classResources,
+  });
+}
+
 function buildCharacter(overrides: Partial<Character> = {}): Character {
   return {
     id: 'cr',
@@ -183,5 +194,62 @@ describe('<ClassResourcesCard>', () => {
   it('aucun anglicisme dans les libellés rendus', () => {
     const { container } = render(<ClassResourcesCard character={buildCharacter()} />);
     expectNoForbiddenEnglish(container.textContent ?? '', 'class-resources-card');
+  });
+
+  /**
+   * M24 — le maximum était RÉIMPOSÉ à chaque écriture depuis la progression de
+   * classe : « le pacte lui donne une Rage de plus » disparaissait à la première
+   * dépense.
+   */
+  describe('maximum éditable', () => {
+    it('écrit le maximum saisi', async () => {
+      const user = userEvent.setup();
+      render(<ClassResourcesCard character={barbarian3()} />);
+      await user.click(screen.getByTestId('resource-max-barbarian:rage'));
+      const input = screen.getByTestId('resource-max-input-barbarian:rage');
+      await user.clear(input);
+      await user.type(input, '4');
+      await user.tab();
+      expect(updateCharacterMock).toHaveBeenCalledWith({
+        classResources: expect.objectContaining({
+          'barbarian:rage': expect.objectContaining({ max: 4 }),
+        }),
+      });
+    });
+
+    it('rabat la valeur courante si on baisse le plafond sous elle', async () => {
+      const user = userEvent.setup();
+      render(<ClassResourcesCard character={barbarian3()} />);
+      await user.click(screen.getByTestId('resource-max-barbarian:rage'));
+      const input = screen.getByTestId('resource-max-input-barbarian:rage');
+      await user.clear(input);
+      await user.type(input, '1');
+      await user.tab();
+      expect(updateCharacterMock).toHaveBeenCalledWith({
+        classResources: expect.objectContaining({
+          'barbarian:rage': expect.objectContaining({ current: 1, max: 1 }),
+        }),
+      });
+    });
+
+    it('conserve le maximum accordé quand on dépense ensuite', async () => {
+      // Le cœur du mur : `− ` réécrivait `max: <dérivé>` et effaçait l'accordé.
+      const user = userEvent.setup();
+      render(
+        <ClassResourcesCard
+          character={barbarian3({
+            'barbarian:rage': { current: 4, max: 4, restoresOn: 'long' },
+          })}
+        />,
+      );
+      await user.click(
+        screen.getByRole('button', { name: /Dépenser|Utiliser/i }),
+      );
+      expect(updateCharacterMock).toHaveBeenCalledWith({
+        classResources: expect.objectContaining({
+          'barbarian:rage': expect.objectContaining({ current: 3, max: 4 }),
+        }),
+      });
+    });
   });
 });

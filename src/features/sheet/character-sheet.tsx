@@ -144,6 +144,7 @@ export function CharacterSheet({
             character={character}
             displayedAc={displayedAc}
             displayedSpeed={displayedSpeed}
+            readOnly={readOnly}
           />
           {/*
             Raccourci vers la table, épinglé avec les onglets : c'est de la
