@@ -13,12 +13,16 @@ interface CampaignMemberItemProps {
   /** Le spectateur est MJ de la campagne — débloque l'état live + les actions d'autorité. */
   viewerIsGm: boolean;
   /**
-   * Affiche l'affordance « Promouvoir MJ ». Faux en pleine partie (roster ouvert
-   * depuis une rencontre) : promouvoir quelqu'un relève de l'administration de la
-   * table, pas d'un tour de jeu, et ça n'a rien à faire à côté des PV.
+   * Affiche les affordances d'autorité (promouvoir / rétrograder / exclure).
+   * Faux en pleine partie (roster ouvert depuis une rencontre) : administrer la
+   * table ne relève pas d'un tour de jeu, et ça n'a rien à faire à côté des PV.
    */
   showPromote?: boolean;
   onPromote: () => void;
+  /** Rétrograder un co-meneur en joueur (M11). Absent → affordance masquée. */
+  onDemote?: () => void;
+  /** Exclure un joueur de la campagne (M11). Absent → affordance masquée. */
+  onKick?: () => void;
   onViewSheet: () => void;
 }
 
@@ -46,9 +50,22 @@ export function CampaignMemberItem({
   viewerIsGm,
   showPromote = true,
   onPromote,
+  onDemote,
+  onKick,
   onViewSheet,
 }: CampaignMemberItemProps): JSX.Element {
-  const canPromote = showPromote && viewerIsGm && entry.role === 'member';
+  const authority = showPromote && viewerIsGm;
+  const canPromote = authority && entry.role === 'member';
+  // Rétrograder : jamais sur SOI. Un meneur qui veut passer la main dispose du
+  // bouton « Quitter la campagne » en pied d'écran ; un bouton d'auto-révocation
+  // au milieu d'une liste d'actions sur les AUTRES serait un piège au pouce.
+  const canDemote =
+    authority && entry.role === 'gm' && !entry.isSelf && onDemote !== undefined;
+  // Exclure : jamais un meneur. Le kick supprime le doc `members/{uid}` — un MJ
+  // reste MJ par `gmIds`, donc l'exclure ainsi ne lui retirerait RIEN tout en
+  // donnant l'illusion du contraire. Il faut le rétrograder d'abord.
+  const canKick =
+    authority && entry.role === 'member' && !entry.isSelf && onKick !== undefined;
   const showLiveCard = viewerIsGm && entry.characterId !== null;
 
   if (showLiveCard) {
@@ -59,17 +76,30 @@ export function CampaignMemberItem({
           ownerUid={entry.uid}
           onOpen={onViewSheet}
         />
-        {canPromote ? (
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onPromote}
-              tooltip={t('campaigns.tip.promoteGm')}
-            >
-              {t('campaigns.detail.roster.promote')}
-            </Button>
+        {canPromote || canKick ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {canPromote ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onPromote}
+                tooltip={t('campaigns.tip.promoteGm')}
+              >
+                {t('campaigns.detail.roster.promote')}
+              </Button>
+            ) : null}
+            {canKick ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onKick}
+                tooltip={t('campaigns.tip.kickMember')}
+              >
+                {t('campaigns.detail.roster.kick')}
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -109,6 +139,28 @@ export function CampaignMemberItem({
             tooltip={t('campaigns.tip.promoteGm')}
           >
             {t('campaigns.detail.roster.promote')}
+          </Button>
+        ) : null}
+        {canDemote ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onDemote}
+            tooltip={t('campaigns.tip.demoteGm')}
+          >
+            {t('campaigns.detail.roster.demote')}
+          </Button>
+        ) : null}
+        {canKick ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onKick}
+            tooltip={t('campaigns.tip.kickMember')}
+          >
+            {t('campaigns.detail.roster.kick')}
           </Button>
         ) : null}
       </div>

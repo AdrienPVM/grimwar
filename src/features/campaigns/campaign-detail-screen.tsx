@@ -21,6 +21,7 @@ import { CampaignSettingsModal } from './campaign-settings-modal';
 import { CampaignStatusChip } from './campaign-status-chip';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
+import { MemberActionModal, type MemberAction } from './member-action-modal';
 import { MyCharacterLink } from './my-character-link';
 import { PartyAggregateStrip } from './party-aggregate-strip';
 import { PromoteToGmModal } from './promote-to-gm-modal';
@@ -31,6 +32,11 @@ import { usePartyAggregate, type PartyMemberRef } from './use-party-aggregate';
 interface PromoteTarget {
   uid: string;
   label: string;
+}
+
+/** Cible d'un geste d'autorité destructif — rétrogradation ou exclusion (M11). */
+interface MemberActionTarget extends PromoteTarget {
+  action: MemberAction;
 }
 
 /**
@@ -54,9 +60,13 @@ interface PromoteTarget {
  *    Auth au join ; le propriétaire auto-soigne son propre doc au chargement
  *    (`healOwnMemberIdentity`). Repli UID tronqué tant qu'aucun nom n'est posé
  *    (compte anonyme, doc legacy). Avatar (`photoURL`) stocké mais non rendu V1.
- *  - Pas de bouton « Kick » V1 — le service expose `kickMember` (4.0.3) mais
- *    aucun consommateur UI n'est mappé. Réservé à 4.0.6+ avec un flux de
- *    confirmation dédié (le kick est destructif et asymétrique de la promotion).
+ *  - Trois gestes d'autorité sur le roster (M11, audit de malléabilité) :
+ *    promouvoir (4.0.3), rétrograder et exclure. Les deux derniers passent par
+ *    `MemberActionModal` — ils sont destructifs et asymétriques de la promotion,
+ *    donc confirmés et rendus en `danger`. `kickMember` existait depuis 4.0.3
+ *    sans aucun appelant ; `demoteGm` manquait alors que la modale de promotion
+ *    promettait la révocation. La rule `allow delete: if isDMOf` (members) et
+ *    l'invariant `gmIds.size() >= 1` (campaign) couvraient déjà les deux.
  *  - Section « Mon personnage » (JALON 4A.2) : visible pour le joueur (user qui
  *    possède un doc `members/{uid}`). Il y lie/délie sa fiche via le picker
  *    `MyCharacterLink` → `linkCharacterToMembership` (write owner-only). C'est la
@@ -80,6 +90,7 @@ export function CampaignDetailScreen(): JSX.Element {
   const [leaveOpen, setLeaveOpen] = useState<boolean>(false);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [promoteTarget, setPromoteTarget] = useState<PromoteTarget | null>(null);
+  const [actionTarget, setActionTarget] = useState<MemberActionTarget | null>(null);
 
   const isGm = useMemo<boolean>(() => {
     if (!campaign || !user) return false;
@@ -363,14 +374,26 @@ export function CampaignDetailScreen(): JSX.Element {
                 <p className="mx-auto mt-3 max-w-[44ch] font-serif text-body-sm italic text-text-secondary">
                   {t('campaigns.detail.invite.firstStepBody')}
                 </p>
-                <InviteCodeReveal code={campaign.inviteCode} className="mt-5" />
+                <InviteCodeReveal
+                  code={campaign.inviteCode}
+                  campaignId={campaign.id}
+                  uid={user?.uid}
+                  onRotated={refresh}
+                  className="mt-5"
+                />
               </div>
             ) : (
               <>
                 <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
                   {t('campaigns.detail.invite.title')}
                 </h2>
-                <InviteCodeReveal code={campaign.inviteCode} className="mt-4" />
+                <InviteCodeReveal
+                  code={campaign.inviteCode}
+                  campaignId={campaign.id}
+                  uid={user?.uid}
+                  onRotated={refresh}
+                  className="mt-4"
+                />
               </>
             )}
           </section>
@@ -405,6 +428,20 @@ export function CampaignDetailScreen(): JSX.Element {
                   viewerIsGm={isGm}
                   onPromote={() =>
                     setPromoteTarget({ uid: entry.uid, label: entry.label })
+                  }
+                  onDemote={() =>
+                    setActionTarget({
+                      uid: entry.uid,
+                      label: entry.label,
+                      action: 'demote',
+                    })
+                  }
+                  onKick={() =>
+                    setActionTarget({
+                      uid: entry.uid,
+                      label: entry.label,
+                      action: 'kick',
+                    })
                   }
                   onViewSheet={() =>
                     navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
@@ -473,6 +510,17 @@ export function CampaignDetailScreen(): JSX.Element {
         targetLabel={promoteTarget?.label ?? null}
         onClose={() => setPromoteTarget(null)}
         onPromoted={() => {
+          refresh();
+        }}
+      />
+
+      <MemberActionModal
+        action={actionTarget?.action ?? null}
+        campaignId={campaign.id}
+        targetUid={actionTarget?.uid ?? null}
+        targetLabel={actionTarget?.label ?? null}
+        onClose={() => setActionTarget(null)}
+        onDone={() => {
           refresh();
         }}
       />

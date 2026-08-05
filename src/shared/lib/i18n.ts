@@ -1007,6 +1007,14 @@ export type StringKey =
   | 'campaigns.detail.invite.help'
   | 'campaigns.detail.invite.firstStepTitle'
   | 'campaigns.detail.invite.firstStepBody'
+  // Rotation du code d'invitation (M11) — révocation d'un code diffusé
+  | 'campaigns.detail.invite.rotate'
+  | 'campaigns.detail.invite.rotateConfirm'
+  | 'campaigns.detail.invite.rotateCancel'
+  | 'campaigns.detail.invite.rotating'
+  | 'campaigns.detail.invite.rotateWarning'
+  | 'campaigns.detail.invite.rotateError'
+  | 'campaigns.detail.invite.rotated'
   | 'campaigns.detail.roster.aria'
   | 'campaigns.detail.roster.title'
   | 'campaigns.detail.dmTools.title'
@@ -1016,7 +1024,27 @@ export type StringKey =
   | 'campaigns.dmTools.openTip'
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
+  | 'campaigns.detail.roster.demote'
+  | 'campaigns.detail.roster.kick'
   | 'campaigns.detail.roster.viewSheet'
+  // Modale d'autorité sur un membre — rétrogradation et exclusion (M11)
+  | 'campaigns.memberAction.close'
+  | 'campaigns.memberAction.cancel'
+  | 'campaigns.memberAction.demote.title'
+  | 'campaigns.memberAction.demote.confirmPrefix'
+  | 'campaigns.memberAction.demote.confirmSuffix'
+  | 'campaigns.memberAction.demote.notice'
+  | 'campaigns.memberAction.demote.confirm'
+  | 'campaigns.memberAction.demote.submitting'
+  | 'campaigns.memberAction.kick.title'
+  | 'campaigns.memberAction.kick.confirmPrefix'
+  | 'campaigns.memberAction.kick.confirmSuffix'
+  | 'campaigns.memberAction.kick.notice'
+  | 'campaigns.memberAction.kick.confirm'
+  | 'campaigns.memberAction.kick.submitting'
+  | 'campaigns.memberAction.error.notFound'
+  | 'campaigns.memberAction.error.lastGm'
+  | 'campaigns.memberAction.error.generic'
   | 'campaigns.detail.party.aria'
   | 'campaigns.detail.party.title'
   | 'campaigns.detail.party.empty'
@@ -2504,6 +2532,9 @@ export type StringKey =
   | 'campaigns.tip.handoffTarget'
   | 'campaigns.tip.removeMonsterRow'
   | 'campaigns.tip.fromBestiary'
+  | 'campaigns.tip.demoteGm'
+  | 'campaigns.tip.kickMember'
+  | 'campaigns.tip.rotateInviteCode'
   // Infobulles explicites — carte (map)
   | 'map.tip.placeAoe'
   | 'map.tip.rotateAoeCcw'
@@ -4030,6 +4061,15 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.firstStepTitle': 'Invite tes joueurs',
     'campaigns.detail.invite.firstStepBody':
       'Ta campagne est prête. Partage le lien ou dicte le code autour de la table : chaque joueur rejoint, puis crée ou lie son personnage. Tu les verras apparaître ici dans la compagnie.',
+    'campaigns.detail.invite.rotate': 'Régénérer le code',
+    'campaigns.detail.invite.rotateConfirm': 'Confirmer la régénération',
+    'campaigns.detail.invite.rotateCancel': 'Garder le code actuel',
+    'campaigns.detail.invite.rotating': 'Régénération en cours…',
+    'campaigns.detail.invite.rotateWarning':
+      'Le code actuel cessera immédiatement de fonctionner, ainsi que les liens déjà partagés. Les membres déjà inscrits ne sont pas affectés.',
+    'campaigns.detail.invite.rotateError':
+      "La régénération n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'campaigns.detail.invite.rotated': 'Nouveau code en place.',
     'campaigns.detail.roster.aria': 'Membres de la campagne',
     'campaigns.detail.roster.title': 'La compagnie',
     'campaigns.detail.dmTools.title': 'Outils du meneur',
@@ -4038,7 +4078,32 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.dmTools.openTip': 'Jet secret et bloc-notes, sans quitter la table.',
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
+    'campaigns.detail.roster.demote': 'Rétrograder',
+    'campaigns.detail.roster.kick': 'Exclure',
     'campaigns.detail.roster.viewSheet': 'Voir la fiche',
+    'campaigns.memberAction.close': 'Fermer la confirmation',
+    'campaigns.memberAction.cancel': 'Annuler',
+    'campaigns.memberAction.demote.title': 'Rétrograder ce meneur',
+    'campaigns.memberAction.demote.confirmPrefix':
+      'Retirer les droits de meneur à',
+    'campaigns.memberAction.demote.confirmSuffix': '?',
+    'campaigns.memberAction.demote.notice':
+      'Il redevient joueur et garde sa place à la table : il perd seulement l’autorité sur la campagne. La rétrogradation est réversible — tu peux le repromouvoir à tout moment.',
+    'campaigns.memberAction.demote.confirm': 'Rétrograder',
+    'campaigns.memberAction.demote.submitting': 'Rétrogradation en cours…',
+    'campaigns.memberAction.kick.title': 'Exclure ce membre',
+    'campaigns.memberAction.kick.confirmPrefix': 'Retirer de la campagne',
+    'campaigns.memberAction.kick.confirmSuffix': '?',
+    'campaigns.memberAction.kick.notice':
+      'Il perd l’accès à la campagne, à ses séances et à son journal. Sa fiche de personnage lui appartient et reste intacte dans sa bibliothèque. Il peut revenir avec le code d’invitation.',
+    'campaigns.memberAction.kick.confirm': 'Confirmer l’exclusion',
+    'campaigns.memberAction.kick.submitting': 'Exclusion en cours…',
+    'campaigns.memberAction.error.notFound':
+      "Cette campagne n'existe plus côté serveur.",
+    'campaigns.memberAction.error.lastGm':
+      'Impossible : une campagne doit toujours garder au moins un meneur. Promeus un autre membre d’abord.',
+    'campaigns.memberAction.error.generic':
+      "L'opération n'a pas abouti. Vérifie ta connexion et réessaye.",
     'campaigns.detail.party.aria': 'État de combat de la compagnie en temps réel',
     'campaigns.detail.party.title': 'État de la compagnie',
     'campaigns.detail.party.empty': 'Aucun joueur n’a encore lié de personnage.',
@@ -5989,6 +6054,12 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.handoffTarget': 'Appliquer les dégâts à cette créature.',
     'campaigns.tip.removeMonsterRow': 'Retirer ce monstre de la rencontre.',
     'campaigns.tip.fromBestiary': 'Préremplir un monstre depuis le bestiaire.',
+    'campaigns.tip.demoteGm':
+      'Lui retirer l’autorité de meneur. Il reste joueur à la table.',
+    'campaigns.tip.kickMember':
+      'Retirer ce joueur de la campagne. Sa fiche lui reste acquise.',
+    'campaigns.tip.rotateInviteCode':
+      'Révoquer le code actuel et en générer un nouveau.',
     // Infobulles explicites — carte (map)
     'map.tip.placeAoe': 'Choisir cette forme de zone d’effet à poser.',
     'map.tip.rotateAoeCcw': 'Pivoter la zone de 15° vers la gauche.',
@@ -7446,6 +7517,15 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.firstStepTitle': 'Invite your players',
     'campaigns.detail.invite.firstStepBody':
       'Your campaign is ready. Share the link or read the code aloud around the table: each player joins, then creates or links their character. You will see them appear here in the party.',
+    'campaigns.detail.invite.rotate': 'Regenerate code',
+    'campaigns.detail.invite.rotateConfirm': 'Confirm regeneration',
+    'campaigns.detail.invite.rotateCancel': 'Keep current code',
+    'campaigns.detail.invite.rotating': 'Regenerating…',
+    'campaigns.detail.invite.rotateWarning':
+      'The current code stops working immediately, along with any links already shared. Members who already joined are unaffected.',
+    'campaigns.detail.invite.rotateError':
+      'Regeneration failed. Check your connection and try again.',
+    'campaigns.detail.invite.rotated': 'New code in place.',
     'campaigns.detail.roster.aria': 'Campaign members',
     'campaigns.detail.roster.title': 'The party',
     'campaigns.detail.dmTools.title': 'Game master tools',
@@ -7454,7 +7534,30 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.dmTools.openTip': 'Secret roll and scratchpad, without leaving the table.',
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
+    'campaigns.detail.roster.demote': 'Demote',
+    'campaigns.detail.roster.kick': 'Remove',
     'campaigns.detail.roster.viewSheet': 'View sheet',
+    'campaigns.memberAction.close': 'Close confirmation',
+    'campaigns.memberAction.cancel': 'Cancel',
+    'campaigns.memberAction.demote.title': 'Demote this GM',
+    'campaigns.memberAction.demote.confirmPrefix': 'Revoke GM rights from',
+    'campaigns.memberAction.demote.confirmSuffix': '?',
+    'campaigns.memberAction.demote.notice':
+      'They become a player again and keep their seat at the table: they only lose authority over the campaign. Demotion is reversible — you can promote them again at any time.',
+    'campaigns.memberAction.demote.confirm': 'Demote',
+    'campaigns.memberAction.demote.submitting': 'Demoting…',
+    'campaigns.memberAction.kick.title': 'Remove this member',
+    'campaigns.memberAction.kick.confirmPrefix': 'Remove from the campaign',
+    'campaigns.memberAction.kick.confirmSuffix': '?',
+    'campaigns.memberAction.kick.notice':
+      'They lose access to the campaign, its sessions and its journal. Their character sheet belongs to them and stays intact in their library. They can come back with the invite code.',
+    'campaigns.memberAction.kick.confirm': 'Confirm removal',
+    'campaigns.memberAction.kick.submitting': 'Removing…',
+    'campaigns.memberAction.error.notFound': 'This campaign no longer exists.',
+    'campaigns.memberAction.error.lastGm':
+      'Not possible: a campaign must always keep at least one GM. Promote another member first.',
+    'campaigns.memberAction.error.generic':
+      'The operation failed. Check your connection and try again.',
     'campaigns.detail.party.aria': 'Live party combat status',
     'campaigns.detail.party.title': 'Party status',
     'campaigns.detail.party.empty': 'No player has linked a character yet.',
@@ -9306,6 +9409,12 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.handoffTarget': 'Apply the damage to this creature.',
     'campaigns.tip.removeMonsterRow': 'Remove this monster from the encounter.',
     'campaigns.tip.fromBestiary': 'Prefill a monster from the bestiary.',
+    'campaigns.tip.demoteGm':
+      'Revoke their GM authority. They stay a player at the table.',
+    'campaigns.tip.kickMember':
+      'Remove this player from the campaign. Their sheet stays theirs.',
+    'campaigns.tip.rotateInviteCode':
+      'Revoke the current code and generate a new one.',
     // Explicit tooltips — map
     'map.tip.placeAoe': 'Pick this area-of-effect shape to place.',
     'map.tip.rotateAoeCcw': 'Rotate the area 15° counter-clockwise.',

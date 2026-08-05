@@ -166,7 +166,13 @@ function mkEntry(overrides: Partial<RosterEntry> = {}): RosterEntry {
 
 function renderItem(
   entry: RosterEntry,
-  opts: { viewerIsGm?: boolean; onPromote?: () => void; onViewSheet?: () => void } = {},
+  opts: {
+    viewerIsGm?: boolean;
+    onPromote?: () => void;
+    onDemote?: () => void;
+    onKick?: () => void;
+    onViewSheet?: () => void;
+  } = {},
 ): ReturnType<typeof render> {
   return render(
     <MemoryRouter>
@@ -174,6 +180,8 @@ function renderItem(
         entry={entry}
         viewerIsGm={opts.viewerIsGm ?? true}
         onPromote={opts.onPromote ?? vi.fn()}
+        onDemote={opts.onDemote}
+        onKick={opts.onKick}
         onViewSheet={opts.onViewSheet ?? vi.fn()}
       />
     </MemoryRouter>,
@@ -344,5 +352,103 @@ describe('<CampaignMemberItem> — ligne compacte', () => {
   it('marqueur (toi) sur l’entrée du spectateur', () => {
     renderItem(mkEntry({ characterId: null, isSelf: true }));
     expect(screen.getByText('(toi)')).toBeInTheDocument();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Gestes d'autorité destructifs — rétrograder / exclure (M11)
+//
+// Le gating n'est pas cosmétique : « Exclure » sur un MENEUR supprimerait son
+// doc `members/{uid}` sans le retirer de `gmIds` — il resterait meneur, avec
+// l'illusion inverse. Ces cas doivent être verrouillés par test.
+// ─────────────────────────────────────────────────────────────────────
+
+describe('<CampaignMemberItem> — rétrograder / exclure (M11)', () => {
+  it('meneur (pas soi) → « Rétrograder » présent, clic délégué', () => {
+    const onDemote = vi.fn();
+    renderItem(mkEntry({ role: 'gm', characterId: null, label: 'gm-uid…' }), {
+      onDemote,
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Rétrograder/i }));
+    expect(onDemote).toHaveBeenCalledTimes(1);
+  });
+
+  it('meneur = SOI → jamais de « Rétrograder » (auto-révocation au pouce)', () => {
+    renderItem(
+      mkEntry({ role: 'gm', characterId: null, isSelf: true, label: 'gm-uid…' }),
+      { onDemote: vi.fn() },
+    );
+    expect(
+      screen.queryByRole('button', { name: /Rétrograder/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('joueur → « Exclure » présent, clic délégué', () => {
+    const onKick = vi.fn();
+    renderItem(mkEntry({ characterId: null }), { onKick });
+    fireEvent.click(screen.getByRole('button', { name: /^Exclure$/i }));
+    expect(onKick).toHaveBeenCalledTimes(1);
+  });
+
+  it('MENEUR → jamais d’« Exclure » (le kick ne retire pas de gmIds)', () => {
+    renderItem(mkEntry({ role: 'gm', characterId: null, label: 'gm-uid…' }), {
+      onKick: vi.fn(),
+      onDemote: vi.fn(),
+    });
+    expect(
+      screen.queryByRole('button', { name: /^Exclure$/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Rétrograder/i })).toBeInTheDocument();
+  });
+
+  it('joueur = SOI → ni « Exclure » ni « Promouvoir » sur sa propre ligne', () => {
+    renderItem(mkEntry({ characterId: null, isSelf: true }), { onKick: vi.fn() });
+    expect(
+      screen.queryByRole('button', { name: /^Exclure$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('spectateur NON-MJ → aucune affordance destructive', () => {
+    renderItem(mkEntry({ characterId: null }), {
+      viewerIsGm: false,
+      onKick: vi.fn(),
+      onDemote: vi.fn(),
+    });
+    expect(
+      screen.queryByRole('button', { name: /^Exclure$/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Rétrograder/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('carte live d’un joueur lié → « Exclure » disponible sous la carte', () => {
+    const onKick = vi.fn();
+    charByKey.set('char-aelys', { character: mkCharacter(), isLoading: false, error: null });
+    renderItem(mkEntry(), { onKick });
+    fireEvent.click(screen.getByRole('button', { name: /^Exclure$/i }));
+    expect(onKick).toHaveBeenCalledTimes(1);
+  });
+
+  it('roster en pleine partie (showPromote=false) → aucun geste d’administration', () => {
+    render(
+      <MemoryRouter>
+        <CampaignMemberItem
+          entry={mkEntry({ characterId: null })}
+          viewerIsGm
+          showPromote={false}
+          onPromote={vi.fn()}
+          onDemote={vi.fn()}
+          onKick={vi.fn()}
+          onViewSheet={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.queryByRole('button', { name: /^Exclure$/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Promouvoir meneur/i }),
+    ).not.toBeInTheDocument();
   });
 });
