@@ -1,5 +1,6 @@
 import { cn } from '../lib/cn';
 import { useToastStore, type ToastEntry } from '../lib/slices/toast-slice';
+import { RollingNumber } from './rolling-number';
 
 /**
  * Couche de rendu globale des toasts — montée une fois dans <App />.
@@ -53,7 +54,7 @@ function ToastBubble({ toast }: ToastBubbleProps): JSX.Element {
             (toast.kind === 'roll' || toast.kind === 'info') && 'text-gold-bright [text-shadow:0_0_24px_var(--gold-glow)]',
           )}
         >
-          {toast.big}
+          <RollingNumber value={toast.big} />
         </strong>
       )}
       {toast.sub && (

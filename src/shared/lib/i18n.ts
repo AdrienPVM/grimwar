@@ -898,6 +898,8 @@ export type StringKey =
   | 'nav.back.content'
   | 'nav.back.maps'
   | 'nav.avatar.aria'
+  | 'account.haptics.title'
+  | 'account.haptics.hint'
   | 'nav.tabs.aria'
   | 'nav.tab.characters'
   | 'nav.tab.campaigns'
@@ -4056,6 +4058,9 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.back.maps': 'Retour aux cartes',
     'nav.avatar.aria': 'Compte (à venir)',
     // Barre de navigation basse (mobile) / rail de destinations (desktop).
+    'account.haptics.title': 'Retour haptique',
+    'account.haptics.hint':
+      "Vibration courte sur les jets et leurs issues. Réglage propre à cet appareil.",
     'nav.tabs.aria': 'Espaces principaux',
     'nav.tab.characters': 'Personnages',
     'nav.tab.campaigns': 'Campagnes',
@@ -7661,6 +7666,8 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.back.content': 'Back to my content',
     'nav.back.maps': 'Back to maps',
     'nav.avatar.aria': 'Account (coming soon)',
+    'account.haptics.title': 'Haptic feedback',
+    'account.haptics.hint': 'Short vibration on rolls and their outcomes. Applies to this device only.',
     'nav.tabs.aria': 'Main areas',
     'nav.tab.characters': 'Characters',
     'nav.tab.campaigns': 'Campaigns',

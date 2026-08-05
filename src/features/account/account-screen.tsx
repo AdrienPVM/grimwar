@@ -10,6 +10,7 @@ import { Icon } from '@/shared/components/icon';
 import { PageContainer } from '@/shared/components/page-container';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { useDevicePrefsStore } from '@/shared/lib/slices/device-prefs-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { DiceMode } from '@/shared/lib/rules/dice-mode';
 import { useLocaleStore, type Locale } from '@/shared/lib/slices/locale-slice';
@@ -157,6 +158,8 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
   const diceMode = useUserSettingsStore((s) => s.diceMode);
   const followCampaign = useUserSettingsStore((s) => s.followCampaignDiceMode);
   const locale = useLocaleStore((s) => s.locale);
+  const haptics = useDevicePrefsStore((s) => s.haptics);
+  const setHaptics = useDevicePrefsStore((s) => s.setHaptics);
 
   return (
     <Card>
@@ -277,6 +280,31 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
             checked={followCampaign}
             onChange={(e) => void setFollowCampaignDiceMode(uid, e.target.checked)}
             aria-label={t('account.dice.followCampaign')}
+            className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
+          />
+        </label>
+
+        {/*
+          Réglage d'APPAREIL et non de compte : il vit dans `localStorage`, pas
+          dans `users/{uid}` (cf. `slices/device-prefs-slice.ts`). Un joueur qui
+          coupe la vibration de son téléphone à la table ne veut pas couper
+          quoi que ce soit sur son portable — et l'un des deux n'a de toute
+          façon pas de moteur de vibration.
+        */}
+        <label className="mt-3 flex items-start justify-between gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] p-3">
+          <span className="min-w-0">
+            <span className="block font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              {t('account.haptics.title')}
+            </span>
+            <span className="mt-0.5 block font-serif text-[12px] text-text-tertiary">
+              {t('account.haptics.hint')}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={haptics}
+            onChange={(e) => setHaptics(e.target.checked)}
+            aria-label={t('account.haptics.title')}
             className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
           />
         </label>
