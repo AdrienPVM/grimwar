@@ -73,6 +73,17 @@ function slugFromImageFilename(filename: string): string {
     .slice(0, 48);
 }
 
+/**
+ * Poids lisible d'une chaîne base64 (1 caractère = 1 octet). Passe en Mo au-delà
+ * du millier de Ko — un « 21 340 Ko » ne se lit pas.
+ */
+function formatBytes(bytes: number): string {
+  const ko = bytes / 1024;
+  return ko >= 1000
+    ? `${(ko / 1024).toFixed(1).replace('.', ',')} Mo`
+    : `${Math.round(ko)} Ko`;
+}
+
 /** Dérive un slug raisonnable depuis un nom de fichier. */
 function slugFromFilename(filename: string): string {
   return filename
@@ -93,6 +104,8 @@ export function MapImportScreen(): JSX.Element {
   const [parsed, setParsed] = useState<ParsedDd2vtt | null>(null);
   const [image, setImage] = useState<OptimizedImage | null>(null);
   const [imageBusy, setImageBusy] = useState<boolean>(false);
+  /** Poids de l'image AVANT réduction — sert à montrer ce qu'on a économisé. */
+  const [sourceImageBytes, setSourceImageBytes] = useState<number>(0);
   const [fileName, setFileName] = useState<string>('');
   const [slug, setSlug] = useState<string>('');
   const [name, setName] = useState<string>('');
@@ -129,10 +142,32 @@ export function MapImportScreen(): JSX.Element {
       setParseError(null);
       setSubmitError(null);
       setParsed(null);
+      setSourceImageBytes(0);
+      setImageBusy(true);
       try {
         const text = await file.text();
         const result = parseDd2vtt(text);
-        setParsed(result);
+
+        // RÉDUCTION À LA SÉLECTION, pas à l'enregistrement. Un export
+        // Dungeondraft réel embarque une image de 8320 × 5760 px (~20 Mo de
+        // base64, ~190 Mo une fois décodée en RVBA). L'ancien chemin la gardait
+        // BRUTE dans l'état React, la donnait telle quelle à l'aperçu — donc un
+        // second décodage plein format — et ne la réduisait qu'au clic sur
+        // « Importer ». Sur un téléphone, la page mourait avant le clic.
+        // On réduit donc une seule fois, tout de suite : l'état ne retient plus
+        // qu'un webp d'environ 1,4 Mo, l'aperçu montre ce qui sera réellement
+        // enregistré, et le poids affiché est le vrai.
+        if (result.imageDataUrl) {
+          setSourceImageBytes(result.imageDataUrl.length);
+          const optimized = await optimizeDataUrl(
+            result.imageDataUrl,
+            MAP_BACKGROUND_PRESET,
+          );
+          setParsed({ ...result, imageDataUrl: optimized.dataUrl });
+        } else {
+          setParsed(result);
+        }
+
         setFileName(file.name);
         setSlug(slugFromFilename(file.name));
         setName(slugFromFilename(file.name).replace(/-/g, ' ') || file.name);
@@ -142,6 +177,8 @@ export function MapImportScreen(): JSX.Element {
             ? err.message
             : `${t('map.import.parseFailedPrefix')}${err instanceof Error ? err.message : String(err)}`;
         setParseError(msg);
+      } finally {
+        setImageBusy(false);
       }
     },
     [],
@@ -251,24 +288,25 @@ export function MapImportScreen(): JSX.Element {
         // Voile OFF à l'import : le MJ voit le donjon entier d'emblée (meilleure
         // première impression). Il l'active en jeu — la LOS est déjà prête.
         fogEnabled: false,
-        lightingEnabled: parsed.lights.length > 0,
+        // Éclairage allumé SEULEMENT si la carte y gagne. Trois des cinq exports
+        // réels testés ne portent aucune lumière ; et tous déclarent
+        // `baked_lighting`, l'image étant déjà éclairée à l'export. Poser notre
+        // couche par-dessus assombrit une carte qui n'en a pas besoin. Les
+        // sources sont importées quand même — le MJ allume s'il le veut.
+        lightingEnabled: parsed.lights.length > 0 && !parsed.bakedLighting,
         fogPolygons: [],
         lightSources: [...parsed.lights],
         aoeTemplates: [],
         walls: [...parsed.walls],
-        losEnabled: true,
+        // Sans mur, la ligne de vue ne bloque rien : l'interrupteur afficherait
+        // « ON » en ne commandant rien. Les cartes d'extérieur exportées par
+        // Dungeondraft sont dans ce cas.
+        losEnabled: parsed.walls.length > 0,
       };
       await createMap(cid, id, input, user.uid);
       if (parsed.imageDataUrl) {
-        // Le `.dd2vtt` embarque l'image de fond en PNG base64 BRUT (souvent
-        // plusieurs Mo). On la ré-encode/réduit avant de l'entreposer en
-        // IndexedDB (preset « fond de carte » : aspect préservé, webp, dimension
-        // plafonnée) — même exigence d'empreinte minimale que les portraits.
-        const optimized = await optimizeDataUrl(
-          parsed.imageDataUrl,
-          MAP_BACKGROUND_PRESET,
-        );
-        await saveMapImage(cid, id, optimized.dataUrl);
+        // Déjà réduite à la sélection (cf. `handleFile`) — on entrepose tel quel.
+        await saveMapImage(cid, id, parsed.imageDataUrl);
       }
       navigate(`/map-proto/cloud/${cid}/maps/${id}`);
     } catch (err) {
@@ -387,7 +425,11 @@ export function MapImportScreen(): JSX.Element {
                 data-testid="map-import-file"
                 className="sr-only"
               />
-              {t('map.import.chooseFile')}
+              {/* La réduction d'un fond de 20 Mo prend un instant : sans ce
+                  libellé, l'écran paraît figé entre le choix et l'aperçu. */}
+              {imageBusy
+                ? t('map.import.imageProcessing')
+                : t('map.import.chooseFile')}
             </>
           ) : (
             <>
@@ -512,14 +554,19 @@ export function MapImportScreen(): JSX.Element {
               label={t('map.import.statLights')}
               value={`${parsed.lights.length}`}
             />
+            {/* Le poids AVANT → APRÈS, plutôt qu'un « Incluse » qui ne dit rien :
+                c'est le chiffre qui explique pourquoi l'import prend un instant,
+                et il rend visible ce que la réduction a évité d'entreposer. */}
             <Stat
               testid="map-import-stat-image"
               label={t('map.import.statImage')}
-              value={t(
+              value={
                 parsed.imageDataUrl
-                  ? 'map.import.imageIncluded'
-                  : 'map.import.imageAbsent',
-              )}
+                  ? sourceImageBytes > 0
+                    ? `${formatBytes(sourceImageBytes)} → ${formatBytes(parsed.imageDataUrl.length)}`
+                    : t('map.import.imageIncluded')
+                  : t('map.import.imageAbsent')
+              }
             />
           </section>
 

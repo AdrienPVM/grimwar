@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { expect, test, type Page } from '@playwright/test';
@@ -24,6 +24,9 @@ import { takeStepScreenshot } from './helpers/screenshot';
  *
  * Sans émulateur, la spec se skip proprement (message visible).
  */
+
+/** Vrai export Dungeondraft sous CC0 — cf. `assets/README.md`. */
+const REAL_EXPORT = path.join('tests', 'e2e', 'assets', 'felder-house.dd2vtt');
 
 /** Dungeon synthétique : pièce rectangulaire + cloison + pilier + 2 lumières + porte. */
 function syntheticDd2vtt(): string {
@@ -78,9 +81,9 @@ function syntheticDd2vtt(): string {
   });
 }
 
-/** Écrit une capture pleine page dans la galerie UAT (gitignored). */
+/** Écrit une capture pleine page dans la galerie UAT (gitignored, à plat). */
 async function uatShot(page: Page, name: string): Promise<void> {
-  const dir = path.join('uat-review', 'plan-svg-map');
+  const dir = 'uat-review';
   mkdirSync(dir, { recursive: true });
   await page.screenshot({
     path: path.join(dir, `${name}.png`),
@@ -134,9 +137,9 @@ test.describe('Mode carte — import .dd2vtt + LOS + vue présentation', () => {
     // 3 polylignes line_of_sight + 1 porte fermée = 4 murs.
     await expect(page.getByTestId('map-import-stat-walls')).toContainText('4');
     await expect(page.getByTestId('map-import-stat-lights')).toContainText('2');
-    await expect(page.getByTestId('map-import-stat-image')).toContainText(
-      'Incluse',
-    );
+    // Poids AVANT → APRÈS : l'image est réduite dès la sélection, plus à
+    // l'enregistrement. Le « → » prouve que la réduction a bien eu lieu.
+    await expect(page.getByTestId('map-import-stat-image')).toContainText('→');
     await expect(page.getByTestId('map-import-preview')).toBeVisible();
     await expect(page.getByTestId('map-import-walls')).toBeVisible();
 
@@ -204,5 +207,74 @@ test.describe('Mode carte — import .dd2vtt + LOS + vue présentation', () => {
 
     await takeStepScreenshot(page, testInfo, 'vue-tv');
     await uatShot(page, '04-vue-tv');
+  });
+
+  /**
+   * Le même parcours, mais avec un VRAI export Dungeondraft (CC0, cf.
+   * `assets/README.md`) : 105 murs, 46 portes, 14 lampes, éclairage déjà appliqué
+   * à l'image. Le donjon synthétique ci-dessus prouve que le chemin fonctionne ;
+   * celui-ci prouve qu'il tient la réalité — c'est là que se sont révélés le
+   * fond brut affiché tel quel et l'éclairage superposé à une image déjà éclairée.
+   */
+  test('importe un vrai export Dungeondraft et respecte son éclairage', async ({
+    page,
+  }, testInfo) => {
+    const stamp = Date.now().toString(36);
+    const cid = `dd2vtt-reel-${stamp}`;
+    const slug = `felder-house-${stamp}`;
+
+    await page.goto(`/map-proto/cloud/${cid}/import`);
+    await waitForAppReady(page);
+    await page.waitForFunction(
+      () => {
+        const w = window as Window & { __e2eAuthUid?: string | null };
+        return typeof w.__e2eAuthUid === 'string' && w.__e2eAuthUid.length > 0;
+      },
+      null,
+      { timeout: 10_000 },
+    );
+
+    await page.getByTestId('map-import-file').setInputFiles({
+      name: `${slug}.dd2vtt`,
+      mimeType: 'application/json',
+      buffer: readFileSync(REAL_EXPORT),
+    });
+
+    // Vérité du contenu : les valeurs exactes du fichier, pas « quelque chose ».
+    await expect(page.getByTestId('map-import-stat-size')).toContainText(
+      '65 × 45 cases',
+      { timeout: 20_000 },
+    );
+    await expect(page.getByTestId('map-import-stat-walls')).toContainText('105');
+    await expect(page.getByTestId('map-import-stat-lights')).toContainText('14');
+    await expect(page.getByTestId('map-import-preview')).toBeVisible();
+
+    await uatShot(page, '05-import-reel-apercu');
+
+    await expect(page.getByTestId('map-import-submit')).toBeEnabled({
+      timeout: 10_000,
+    });
+    await page.getByTestId('map-import-submit').click();
+
+    await expect(page).toHaveURL(
+      new RegExp(`/map-proto/cloud/${cid}/maps/${slug}$`),
+      { timeout: 20_000 },
+    );
+    await waitForAppReady(page);
+
+    await expect(page.getByTestId('map-live-walls-count')).toContainText(
+      '(105)',
+      { timeout: 15_000 },
+    );
+    // La ligne de vue a de quoi mordre : 105 murs.
+    await expect(page.getByTestId('map-live-toggle-los')).toContainText('ON');
+    // ...mais l'éclairage reste ÉTEINT : `environment.baked_lighting` dit que
+    // l'image est déjà éclairée. L'allumer assombrirait la carte sans raison.
+    await expect(page.getByTestId('map-live-toggle-lighting')).toContainText(
+      'OFF',
+    );
+
+    await takeStepScreenshot(page, testInfo, 'live-reelle');
+    await uatShot(page, '06-live-reelle');
   });
 });

@@ -4,6 +4,7 @@ import {
   Dd2vttParseError,
   normalizeDd2vttColor,
   parseDd2vtt,
+  sniffImageMime,
 } from '../dd2vtt';
 import { MAP_VIEWBOX_H, MAP_VIEWBOX_W } from '../map-viewport';
 
@@ -142,9 +143,10 @@ describe('parseDd2vtt — lumières', () => {
     expect(parsed.lights).toHaveLength(1);
     const light = parsed.lights[0]!;
     expect(light.position).toEqual({ x: 500, y: 300 });
-    // range 2 cases × échelle moyenne 100 = 200 px ; moitié = 100
-    expect(light.brightRadius).toBe(100);
-    expect(light.dimRadius).toBe(100);
+    // `range` = portée de lumière VIVE : 2 cases × échelle moyenne 100 = 200 px.
+    // La lumière FAIBLE porte au double, comme toute source du SRD.
+    expect(light.brightRadius).toBe(200);
+    expect(light.dimRadius).toBe(400);
     expect(light.color).toBe('#ff8800');
     expect(light.preset).toBeNull();
   });
@@ -196,6 +198,88 @@ describe('parseDd2vtt — erreurs', () => {
         }),
       ),
     ).toThrow(Dd2vttParseError);
+  });
+});
+
+describe('parseDd2vtt — map_origin (export partiel)', () => {
+  it("soustrait l'origine des coordonnées de murs", () => {
+    // Cadre exporté à partir de la case (4,2) : un mur déclaré en (4,2)→(6,2)
+    // est au COIN de la carte, pas au milieu.
+    const parsed = parseDd2vtt(
+      makeDd2vtt({
+        resolution: {
+          map_origin: { x: 4, y: 2 },
+          map_size: { x: 10, y: 7 },
+          pixels_per_grid: 100,
+        },
+        line_of_sight: [
+          [
+            { x: 4, y: 2 },
+            { x: 6, y: 2 },
+          ],
+        ],
+      }),
+    );
+    expect(parsed.walls[0]!.points).toEqual([
+      { x: 0, y: 0 },
+      { x: 200, y: 0 },
+    ]);
+  });
+
+  it("soustrait l'origine des positions de lumière", () => {
+    const parsed = parseDd2vtt(
+      makeDd2vtt({
+        resolution: {
+          map_origin: { x: 4, y: 2 },
+          map_size: { x: 10, y: 7 },
+          pixels_per_grid: 100,
+        },
+        lights: [{ position: { x: 9, y: 5 }, range: 1 }],
+      }),
+    );
+    expect(parsed.lights[0]!.position).toEqual({ x: 500, y: 300 });
+  });
+
+  it('traite une origine absente comme nulle', () => {
+    const parsed = parseDd2vtt(
+      makeDd2vtt({
+        resolution: { map_size: { x: 10, y: 7 }, pixels_per_grid: 100 },
+      }),
+    );
+    expect(parsed.walls[0]!.points[0]).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe('parseDd2vtt — environment.baked_lighting', () => {
+  it('remonte un éclairage déjà appliqué à l’image', () => {
+    const parsed = parseDd2vtt(
+      makeDd2vtt({ environment: { baked_lighting: true } }),
+    );
+    expect(parsed.bakedLighting).toBe(true);
+  });
+
+  it('vaut false sans bloc environment', () => {
+    expect(parseDd2vtt(makeDd2vtt()).bakedLighting).toBe(false);
+  });
+});
+
+describe('sniffImageMime', () => {
+  it('reconnaît un PNG à son préfixe base64', () => {
+    expect(sniffImageMime('iVBORw0KGgoAAAANS')).toBe('image/png');
+  });
+  it('reconnaît un WEBP (le format alternatif de la spec)', () => {
+    expect(sniffImageMime('UklGRiIAAABXRUJQ')).toBe('image/webp');
+  });
+  it('reconnaît un JPEG', () => {
+    expect(sniffImageMime('/9j/4AAQSkZJRg')).toBe('image/jpeg');
+  });
+  it('retombe sur PNG, le défaut historique du format', () => {
+    expect(sniffImageMime('ZZZZ')).toBe('image/png');
+  });
+
+  it("étiquette le data URL d'après le contenu réel", () => {
+    const parsed = parseDd2vtt(makeDd2vtt({ image: 'UklGRiIAAABXRUJQ' }));
+    expect(parsed.imageDataUrl).toBe('data:image/webp;base64,UklGRiIAAABXRUJQ');
   });
 });
 
