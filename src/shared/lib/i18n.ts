@@ -906,6 +906,8 @@ export type StringKey =
   | 'sheet.turnOptions.opportunityAttack'
   | 'account.haptics.title'
   | 'account.haptics.hint'
+  | 'account.dice3d.title'
+  | 'account.dice3d.hint'
   | 'nav.tabs.aria'
   | 'nav.tab.characters'
   | 'nav.tab.campaigns'
@@ -4073,6 +4075,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.turnOptions.bonus.empty': 'Aucun sort d’action Bonus connu.',
     'sheet.turnOptions.reaction': 'Réaction',
     'sheet.turnOptions.opportunityAttack': 'Attaque d’Opportunité',
+    'account.dice3d.title': 'Dés en relief',
+    'account.dice3d.hint':
+      'Les dés numériques tombent en trois dimensions et se posent sur leur face. Décoratif : le résultat est le même sans.',
     'account.haptics.title': 'Retour haptique',
     'account.haptics.hint':
       "Vibration courte sur les jets et leurs issues. Réglage propre à cet appareil.",
@@ -7687,6 +7692,9 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.turnOptions.bonus.empty': 'No known Bonus Action spell.',
     'sheet.turnOptions.reaction': 'Reaction',
     'sheet.turnOptions.opportunityAttack': 'Opportunity Attack',
+    'account.dice3d.title': 'Three-dimensional dice',
+    'account.dice3d.hint':
+      'Digital dice tumble in three dimensions and settle on their face. Decorative: the result is the same without it.',
     'account.haptics.title': 'Haptic feedback',
     'account.haptics.hint': 'Short vibration on rolls and their outcomes. Applies to this device only.',
     'nav.tabs.aria': 'Main areas',

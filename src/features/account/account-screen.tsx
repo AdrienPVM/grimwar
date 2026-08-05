@@ -160,6 +160,8 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
   const locale = useLocaleStore((s) => s.locale);
   const haptics = useDevicePrefsStore((s) => s.haptics);
   const setHaptics = useDevicePrefsStore((s) => s.setHaptics);
+  const dice3d = useDevicePrefsStore((s) => s.dice3d);
+  const setDice3d = useDevicePrefsStore((s) => s.setDice3d);
 
   return (
     <Card>
@@ -305,6 +307,26 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
             checked={haptics}
             onChange={(e) => setHaptics(e.target.checked)}
             aria-label={t('account.haptics.title')}
+            className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
+          />
+        </label>
+
+        {/* Réglage d'appareil au même titre que l'haptique : la culbute 3D se
+            sent sur un vieux téléphone alors qu'elle ne coûte rien ailleurs. */}
+        <label className="mt-3 flex items-start justify-between gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] p-3">
+          <span className="min-w-0">
+            <span className="block font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              {t('account.dice3d.title')}
+            </span>
+            <span className="mt-0.5 block font-serif text-[12px] text-text-tertiary">
+              {t('account.dice3d.hint')}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={dice3d}
+            onChange={(e) => setDice3d(e.target.checked)}
+            aria-label={t('account.dice3d.title')}
             className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
           />
         </label>

@@ -186,6 +186,132 @@ body {
 }
 
 /* ===========================================================================
+   Dés 3D — un vrai solide qui culbute et se pose sur la face tirée.
+
+   Trois couches emboîtées, chacune avec UNE responsabilité (cf. `die-3d.tsx`) :
+     .die3d-drop   — la chute : le dé arrive de haut, grossit, rebondit un peu.
+     .die3d-tumble — la culbute : N tours autour d'un axe tiré au sort, qui
+                     s'achève sur l'identité. C'est la clé de la justesse : la
+                     rotation de POSE vit sur la couche interne, donc au repos la
+                     composition vaut exactement la pose et le dé s'arrête
+                     forcément sur le bon chiffre.
+     .die3d-solid  — le solide : porte la pose et empile les faces en 3D.
+
+   La culbute part de `--die-spin-from` (même axe que l'arrivée) : CSS
+   n'interpole l'angle d'un `rotate3d` que si les deux extrémités partagent
+   l'axe. Sans ça, l'animation prendrait le plus court chemin et le dé ne
+   tournerait pas.
+   =========================================================================== */
+.die3d-drop {
+  animation: die3dDrop var(--t-spring) both;
+  transform-style: preserve-3d;
+}
+/* `scale3d` et JAMAIS `scale` : dans un sous-arbre `preserve-3d`, un `scale()`
+   n'agit que sur x et y. La profondeur reste à l'échelle 1 et le solide se
+   trouve écrasé le long de l'axe de la caméra pendant toute sa chute — ses
+   faces se disloquent. Le défaut ne se voit pas à l'arrêt (l'échelle y vaut 1),
+   seulement en vol, là où on le prend pour un effet de flou. */
+@keyframes die3dDrop {
+  0% { opacity: 0; transform: translate3d(0, -90px, 0) scale3d(0.45, 0.45, 0.45); }
+  55% { opacity: 1; }
+  70% { transform: translate3d(0, 6px, 0) scale3d(1.06, 1.06, 1.06); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale3d(1, 1, 1); }
+}
+
+.die3d-tumble {
+  animation: die3dTumble cubic-bezier(0.17, 0.78, 0.28, 1) both;
+  transform-style: preserve-3d;
+}
+@keyframes die3dTumble {
+  from { transform: var(--die-spin-from); }
+  to { transform: rotate3d(var(--die-spin-axis), 0deg); }
+}
+
+.die3d-solid {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+/* Chaque face est un `<div>` DÉCOUPÉ, posé par `matrix3d` au centre du solide.
+   PAS un `<svg>` : Chromium rastérise mal le SVG dans un contexte
+   `preserve-3d` et le solide en ressort troué (cf. `die-3d.tsx`).
+
+   L'enveloppe porte l'arête dorée — elle est découpée sur le polygone PLEIN, et
+   la facette qu'elle contient est découpée un poil plus petit ; la différence
+   forme le liseré. Une `border` ne suivrait pas le `clip-path`.
+
+   `--facet-light` (0 = tranche, 1 = de face) est posé par le composant depuis la
+   géométrie ; la feuille de style décide seule des TEINTES. Sans ce dégradé,
+   toutes les facettes se remplissent pareil et le solide se lit comme une tache
+   sombre — constaté sur la première capture. */
+.die3d-face {
+  --facet-light: 0.6;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  backface-visibility: hidden;
+  background: rgb(220 184 108 / calc(0.4 + 0.6 * var(--facet-light)));
+}
+
+.die3d-facet {
+  position: absolute;
+  inset: 0;
+  /* La facette la plus sombre reste NETTEMENT plus claire que le fond de l'app,
+     sinon le solide se découpe mal sur les écrans très sombres. */
+  background: rgb(
+    calc(52 + 96 * var(--facet-light)) calc(38 + 74 * var(--facet-light))
+      calc(74 + 92 * var(--facet-light))
+  );
+}
+/* La face tirée s'allume : c'est elle qu'on lit une fois le dé posé. */
+.die3d-face:has(.die3d-facet--lit) {
+  background: var(--gold-bright, #f0d9a8);
+}
+.die3d-facet--lit {
+  background: rgb(96 68 28);
+}
+
+.die3d-pip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: rgb(238 228 245 / calc(0.2 + 0.72 * var(--facet-light)));
+  font-family: 'Cinzel', Georgia, serif;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.die3d-pip--lit {
+  color: var(--gold-bright, #f0d9a8);
+}
+
+/* Vie du plateau : plein régime pendant la lecture, puis effacement. La durée
+   est alignée sur `TRAY_LIFETIME_MS` (cf. `dice-tray-overlay.tsx`) — les dés
+   sont démontés au moment précis où ils achèvent de disparaître. */
+.dice-tray-life {
+  animation: die3dTrayLife 2.2s var(--t) forwards;
+}
+@keyframes die3dTrayLife {
+  0%, 82% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Mouvement réduit : le dé se pose sans chuter ni tourner. Le résultat est
+   identique — seule la mise en scène disparaît. */
+@media (prefers-reduced-motion: reduce) {
+  .die3d-drop {
+    animation: die3dAppear 0.2s ease-out both;
+  }
+  .die3d-tumble {
+    animation: none;
+    transform: none;
+  }
+  @keyframes die3dAppear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* ===========================================================================
    Death modal — fade-in + scale spring, ambiance crimson. Sheet en read-only
    quand `data-readonly="true"` est porté par <main>.
    =========================================================================== */

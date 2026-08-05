@@ -3,6 +3,7 @@ import type { Advantage, DiceAst, RollKind, RollResult } from '@/shared/lib/dice
 import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
 import { activeCampaignDiceSettings } from '@/shared/lib/slices/active-campaign-slice';
+import { presentRollOnTray } from '@/shared/lib/slices/dice-tray-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   requestPhysicalRoll,
@@ -106,6 +107,10 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     if (spendsInspiration && consumeInspiration) {
       await consumeInspiration();
     }
+    // Les dés tombent même sur un sous-jet `silent` : une attaque enchaînée sur
+    // ses dégâts n'émet qu'un toast combiné, mais le joueur doit voir rouler le
+    // d20 au moment où il roule, pas seulement lire son total après coup.
+    presentRollOnTray(result);
     if (!silent) emitD20Toast(result, effectiveMod);
     await logRollIfCampaign(result);
     void persistRollHistory(result);

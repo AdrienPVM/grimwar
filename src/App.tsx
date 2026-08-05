@@ -17,6 +17,7 @@ import { Particles } from '@/shared/components/particles';
 import { SacredGeometry } from '@/shared/components/sacred-geometry';
 import { Splash } from '@/shared/components/splash';
 import { useRouteMotion } from '@/shared/hooks/use-route-motion';
+import { DiceTrayOverlay } from '@/features/dice/dice-tray-overlay';
 import { ToastHost } from '@/shared/components/toast-host';
 import {
   BOTTOM_NAV_SPACER_CLASS,
@@ -46,6 +47,9 @@ export function App(): JSX.Element {
       {/* Sceaux de sort (plan 38) — singleton décoratif, au-dessus de la fiche
           mais sous les modales de saisie et les toasts. */}
       <SpellSigilOverlay />
+      {/* Plateau de dés 3D — sous le toast dans le DOM pour rester derrière lui
+          en cas de recouvrement : le résultat chiffré prime sur la mise en scène. */}
+      <DiceTrayOverlay />
       <ToastHost />
       {/* Bannière offline globale (jalon 1D). Rendue après le ToastHost pour
           être au-dessus dans le DOM, et au-dessus de tout via z-[120]. */}

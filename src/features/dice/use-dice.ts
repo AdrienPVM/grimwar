@@ -11,6 +11,7 @@ import type {
 import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
 import { activeCampaignDiceSettings } from '@/shared/lib/slices/active-campaign-slice';
+import { presentRollOnTray } from '@/shared/lib/slices/dice-tray-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   requestHitMissGate,
@@ -157,6 +158,10 @@ async function rollDamageWithMode(
       characterId: opts.characterId,
     });
     const result: RollResult = { ...raw, total: Math.max(0, raw.total) };
+    // Idem `rollWithFlags` : les dés de dégâts tombent même en sous-jet
+    // silencieux, sinon les 8d6 d'une boule de feu n'existeraient jamais à
+    // l'écran — seul leur total apparaîtrait.
+    presentRollOnTray(result);
     if (!opts.silent) emitDamageToast(result, opts.crit === true);
     await logRollIfCampaign(result);
     void persistRollHistory(result);
