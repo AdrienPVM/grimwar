@@ -69,9 +69,16 @@ export function PreparationEditor({
     return unlocked.length > 0 ? Math.max(...unlocked) : 0;
   }, [character, classCatalog]);
 
+  // M26 — les sorts appris hors liste de classe (parchemin, faveur) rejoignent
+  // le pool : sans ça, un sort ajouté resterait impossible à préparer.
+  const offListIds = useMemo(
+    () => character.knownSpells[classId] ?? [],
+    [character.knownSpells, classId],
+  );
+
   const candidates = useMemo(
-    () => candidatePreparableSpells(spells, classId, maxLevel),
-    [spells, classId, maxLevel],
+    () => candidatePreparableSpells(spells, classId, maxLevel, offListIds),
+    [spells, classId, maxLevel, offListIds],
   );
 
   const prepared = useMemo(
@@ -81,6 +88,7 @@ export function PreparationEditor({
   const preparedSet = useMemo(() => new Set(prepared), [prepared]);
   const count = prepared.length;
   const atCap = count >= cap;
+  const overCap = count > cap;
 
   const grouped = useMemo(() => groupByLevel(candidates), [candidates]);
 
@@ -90,10 +98,9 @@ export function PreparationEditor({
 
   async function toggle(spell: Spell): Promise<void> {
     if (readOnly || isUpdating) return;
-    const isPrepared = preparedSet.has(spell.id);
-    // Ajout bloqué au plafond (les lignes décochées sont désactivées de toute
-    // façon — double barrière logique).
-    if (!isPrepared && atCap) return;
+    // M26 — le plafond avertit, il ne refuse plus : c'est une valeur dérivée du
+    // contenu, pas un invariant de données, et une table qui accorde un sort de
+    // plus n'avait aucun recours.
     const next = togglePrepared(prepared, spell.id, cap);
     await updateCharacter({
       preparedSpells: { ...character.preparedSpells, [classId]: next },
@@ -112,7 +119,7 @@ export function PreparationEditor({
         <span
           className={cn(
             'font-title text-[11px] font-bold uppercase tracking-[0.16em]',
-            atCap ? 'text-gold-bright' : 'text-text-tertiary',
+            overCap ? 'text-crimson' : atCap ? 'text-gold-bright' : 'text-text-tertiary',
           )}
         >
           {t('sheet.magie.prep.count')
@@ -138,6 +145,12 @@ export function PreparationEditor({
         {t('sheet.magie.prep.hint')}
       </p>
 
+      {overCap ? (
+        <p role="status" className="mt-2 font-body text-[12px] leading-relaxed text-crimson">
+          {t('sheet.magie.prep.overCap').replace('{cap}', String(cap))}
+        </p>
+      ) : null}
+
       {/* Disclosure : hauteur animée via grid-rows (contenu toujours monté). */}
       <div
         className={cn(
@@ -155,7 +168,9 @@ export function PreparationEditor({
                 <ul className="flex flex-col gap-2">
                   {items.map((spell) => {
                     const isPrepared = preparedSet.has(spell.id);
-                    const blocked = !isPrepared && atCap;
+                    // Le plafond n'éteint plus les lignes : il se voit au
+                    // compteur, qui passe au rouge dès qu'on le dépasse.
+                    const blocked = false;
                     return (
                       <li key={spell.id}>
                         <button

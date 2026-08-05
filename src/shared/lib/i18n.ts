@@ -722,6 +722,15 @@ export type StringKey =
   | 'sheet.magie.prep.edit'
   | 'sheet.magie.prep.done'
   | 'sheet.magie.prep.hint'
+  | 'sheet.magie.prep.overCap'
+  | 'sheet.magie.addSpell.action'
+  | 'sheet.magie.addSpell.title'
+  | 'sheet.magie.addSpell.classAria'
+  | 'sheet.magie.addSpell.searchPlaceholder'
+  | 'sheet.magie.addSpell.searchLabel'
+  | 'sheet.magie.addSpell.hint'
+  | 'sheet.magie.addSpell.already'
+  | 'sheet.magie.addSpell.cantrip'
   | 'sheet.magie.prep.hintWizard'
   | 'sheet.magie.prep.levelLabel'
   | 'sheet.magie.prep.prepared'
@@ -3890,6 +3899,17 @@ const STRINGS: Record<Locale, Dict> = {
     // pour cantrip (cf. règle terminologique du projet).
     'sheet.magie.prep.titleFor': 'Préparation · {class}',
     'sheet.magie.prep.count': '{n} / {cap} préparés',
+    'sheet.magie.prep.overCap':
+      'Tu dépasses le plafond de {cap} sorts préparés. À la table de l’arbitrer.',
+    'sheet.magie.addSpell.action': 'Ajouter un sort',
+    'sheet.magie.addSpell.title': 'Ajouter un sort',
+    'sheet.magie.addSpell.classAria': 'Classe qui apprend le sort',
+    'sheet.magie.addSpell.searchPlaceholder': 'Chercher un sort…',
+    'sheet.magie.addSpell.searchLabel': 'Chercher un sort à ajouter',
+    'sheet.magie.addSpell.hint':
+      'Tape au moins deux lettres. Tous les sorts sont proposés, y compris hors de ta liste de classe.',
+    'sheet.magie.addSpell.already': 'Déjà connu',
+    'sheet.magie.addSpell.cantrip': 'Sort mineur',
     'sheet.magie.prep.edit': 'Modifier',
     'sheet.magie.prep.done': 'Terminer',
     'sheet.magie.prep.hint':
@@ -7609,6 +7629,17 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.pactTome.sourceLabel': 'Pact of the Tome',
     'sheet.magie.prep.titleFor': 'Preparation · {class}',
     'sheet.magie.prep.count': '{n} / {cap} prepared',
+    'sheet.magie.prep.overCap':
+      'You are over the cap of {cap} prepared spells. Your table decides.',
+    'sheet.magie.addSpell.action': 'Add a spell',
+    'sheet.magie.addSpell.title': 'Add a spell',
+    'sheet.magie.addSpell.classAria': 'Class learning the spell',
+    'sheet.magie.addSpell.searchPlaceholder': 'Search a spell…',
+    'sheet.magie.addSpell.searchLabel': 'Search a spell to add',
+    'sheet.magie.addSpell.hint':
+      'Type at least two letters. Every spell is offered, including outside your class list.',
+    'sheet.magie.addSpell.already': 'Already known',
+    'sheet.magie.addSpell.cantrip': 'Cantrip',
     'sheet.magie.prep.edit': 'Edit',
     'sheet.magie.prep.done': 'Done',
     'sheet.magie.prep.hint':

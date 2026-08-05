@@ -118,8 +118,14 @@ describe('togglePrepared', () => {
     expect(togglePrepared(['a', 'b'], 'a', 4)).toEqual(['b']);
   });
 
-  it('bloque l’ajout au plafond (liste inchangée)', () => {
-    expect(togglePrepared(['a', 'b'], 'c', 2)).toEqual(['a', 'b']);
+  it('laisse dépasser le plafond par défaut (M26 — il avertit, il ne refuse plus)', () => {
+    // Le plafond est une valeur DÉRIVÉE du contenu, pas un invariant de
+    // données : une table qui accorde un sort de plus n'avait aucun recours.
+    expect(togglePrepared(['a', 'b'], 'c', 2)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('conserve le refus dur quand l’appelant demande la règle stricte', () => {
+    expect(togglePrepared(['a', 'b'], 'c', 2, { enforceCap: true })).toEqual(['a', 'b']);
   });
 
   it('autorise toujours le retrait même au plafond', () => {

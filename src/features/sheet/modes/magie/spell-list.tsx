@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import { Card, CardHeader } from '@/shared/components/card';
+import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
 import { Icon } from '@/shared/components/icon';
 import { Tooltip } from '@/shared/components/tooltip';
@@ -11,6 +11,8 @@ import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
+import { usePermissionContext } from '../../permissions-context';
+import { AddSpellModal } from './add-spell-modal';
 import { SpellDamageChip } from './spell-damage-chip';
 
 interface SpellListProps {
@@ -80,6 +82,8 @@ export function SpellList({
   const { data: classCatalog } = useContent('classes');
   const [query, setQuery] = useState<string>('');
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [adding, setAdding] = useState<boolean>(false);
+  const { canEdit } = usePermissionContext();
 
   const classNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -180,6 +184,13 @@ export function SpellList({
     <Card data-testid="spell-list">
       <CardHeader>
         <h3>{t('sheet.magie.spellbookTitle')}</h3>
+        {/* M26 — un sort appris en jeu (parchemin, faveur divine, sort de
+            domaine hors liste) n'avait aucune porte d'entrée. */}
+        {canEdit && hasClassCaster ? (
+          <CardAction onClick={() => setAdding(true)}>
+            {t('sheet.magie.addSpell.action')}
+          </CardAction>
+        ) : null}
       </CardHeader>
 
       <label className="mb-3 flex items-center gap-2 rounded-card-sm border border-white-8 bg-bg-2/60 px-3 py-2">
@@ -263,6 +274,15 @@ export function SpellList({
           </p>
         )}
       </div>
+
+      {adding ? (
+        <AddSpellModal
+          character={character}
+          spellcasterClassIds={spellcasterClassIds}
+          open
+          onClose={() => setAdding(false)}
+        />
+      ) : null}
     </Card>
   );
 }
