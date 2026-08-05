@@ -265,13 +265,30 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 
 | Ordre | Murs | Pourquoi ici |
 |---|---|---|
-| 1 | **M1** — plumbing `useActiveCampaignStore` (settings) | **Bloquant amont** : il débloque à lui seul `slowHealing`, l'épuisement débrayable (M55), le mode de dés de table, et sert de socle à M46 et M38. À faire en premier, tout le reste s'y branche. |
-| 2 | **M4, M6, M8, M9, M10, M15, M19, M28, M29, M33, M37** — les XS | Onze correctifs d'une à trente lignes. Le hand-off numérique (M4) et les états libres (M8) changent une séance dès le soir même. |
+| 1 | ✅ **M1** — plumbing `useActiveCampaignStore` (settings) | **Bloquant amont** : il débloque à lui seul `slowHealing`, l'épuisement débrayable (M55), le mode de dés de table, et sert de socle à M46 et M38. À faire en premier, tout le reste s'y branche. |
+| 2 | ✅ **M4, M6, M8, M9, M10, M15, M19, M28, M29, M33, M37** — les XS | Onze correctifs d'une à trente lignes. Le hand-off numérique (M4) et les états libres (M8) changent une séance dès le soir même. |
 | 3 | ✅ **M2, M3, M7** — le tracker devient éditable | Le cœur du lot. Ajouter/retirer/renommer un combattant, saisir une initiative, revenir d'un tour : c'est **la** différence entre un tracker de démo et un tracker de table. `firestore.rules:338` autorise déjà tout. |
 | 4 | ✅ **M5** — appliquer les dégâts aux PJ depuis le tracker | Complète M4 : la chaîne « le joueur lance → le MJ cible → les PV bougent » devient continue pour les deux modes de dés. |
 | 5 | ✅ **M11, M12, M13, M14** — cycle de vie (roster, documents, séances, journal) | Tout ce qui rend une campagne **réparable** après une erreur : exclure, rétrograder, corriger un document, renommer une séance, retirer un event parasite. |
-| 6 | **M30, M31, M32, M34** — la carte devient utilisable en amont et côté joueur | Image nue + échelle réglable + zoom + vue joueur. Sans ça, seul un fichier Dungeon Alchemist bien formé produit une carte exploitable. |
-| 7 | **M39, M40, M41, M42** — les PNJ | Portrait, lien bestiaire, recherche, duplication inter-campagnes. Bon marché, très visible en séance. |
+| 6 | ✅ **M30, M31, M32, M34** — la carte devient utilisable en amont et côté joueur | Image nue + échelle réglable + zoom + vue joueur. Sans ça, seul un fichier Dungeon Alchemist bien formé produit une carte exploitable. |
+| 7 | ✅ **M39, M40, M41, M42** — les PNJ | Portrait, lien bestiaire, recherche, duplication inter-campagnes. Bon marché, très visible en séance. |
+
+> **Lot 1 CLOS le 2026-08-05.** Les 7 rangées ci-dessus sont livrées, plus
+> **M67(a)** sorti du lot 3 (créer à la volée le doc `members/{uid}` du meneur
+> — zéro schéma, zéro rule) et livré ici. Zéro `firestore.rules`, zéro schéma
+> Firestore, zéro chemin protégé sur l'ensemble du lot : rien à déployer.
+>
+> Deux constats gravés en chemin :
+>
+> 1. **Une perte de donnée silencieuse trouvée en cherchant M40** :
+>    `handleSave` de la modale PNJ reconstruisait `combatStats` depuis les seuls
+>    CR/CA/PV/notes, donc **renommer un PNJ le déliait de son monstre** — alors
+>    que `relationships`, juste à côté, était préservé. Le mur annoncé (« aucune
+>    UI ne renseigne `monsterContentId` ») en cachait un pire.
+> 2. **Le pan d'une carte ne se cumule pas.** Convertir chaque `pointermove`
+>    avec le `viewBox` courant est auto-référentiel (le viewBox bouge parce
+>    qu'on le déplace) : la carte part en accélération. Le geste repart de la
+>    position gelée à son début, à l'échelle gelée à son début.
 
 **Gates** : `pnpm typecheck && pnpm test && pnpm lint` par commit · UAT navigateur obligatoire (tout est UI visible) · `pnpm test:e2e` sur les commits touchant fiche/dés/routes · couverture matricielle étendue pour chaque nouveau geste mécanique (M2, M3, M5, M8, M15 sont mécaniquement testables — ils ne doivent **pas** partir en UAT manuel d'Adrien).
 
