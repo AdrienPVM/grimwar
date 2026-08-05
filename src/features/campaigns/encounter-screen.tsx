@@ -29,6 +29,8 @@ import {
   EncounterServiceError,
   grantParticipantTempHp,
   removeParticipant,
+  reopenEncounter,
+  rewindTurn,
   rollInitiativeFor,
   setParticipantCondition,
   setParticipantNote,
@@ -302,6 +304,57 @@ export function EncounterScreen(): JSX.Element {
     }
   }
 
+  // ─── Tour précédent (M7) — symétrique de « Fin du tour », sans event : on
+  // corrige la feuille de suivi, on ne fait pas rejouer le tour dans le récit
+  // (rejouer `turn-start` inscrirait deux fois le même tour au journal).
+  async function handlePreviousTurn(): Promise<void> {
+    if (!encounter || !cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await rewindTurn(cid, eid);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Abandon (M7) — `'aborted'` était déclaré, traduit, doté de sa pastille,
+  // et aucun code ne l'écrivait. AUCUN event `encounter-end` : un combat que la
+  // table abandonne n'a pas d'issue, et l'enum du payload n'en propose aucune
+  // qui ne mentirait pas (victoire / défaite / fuite).
+  async function handleAbort(): Promise<void> {
+    if (!encounter || !cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await endEncounter(cid, eid, 'aborted');
+      setActiveEncounter(null);
+      setEndMode(false);
+    } catch {
+      setActionError(t('encounters.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  // ─── Réouverture (M7) — une clôture erronée n'était plus rattrapable. Repose
+  // le pointeur de rencontre active : le tracker redevient la scène en cours.
+  async function handleReopen(): Promise<void> {
+    if (!encounter || !cid || !eid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await reopenEncounter(cid, eid);
+      ensurePointers(cid, eid);
+    } catch (err) {
+      setActionError(mapActionError(err));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   // ─── Clôture (step 9) — l'issue vit dans l'event `encounter-end` (pas sur le
   // doc, cf. 24.1). On (re)pose le pointeur avant de logguer, puis on libère la
   // rencontre active (la campagne reste active).
@@ -519,6 +572,9 @@ export function EncounterScreen(): JSX.Element {
   // PAS au seul `hasRolled` (une init légitime à 0 le mettrait à false en plein
   // combat) : le statut prime.
   const showInitiativeOrder = encounter.status !== 'planned' || hasRolled;
+  // Rencontre encore jouable (préparation ou combat en cours) vs close. Une
+  // rencontre close n'offre au MJ que la réouverture (M7).
+  const isGmPlayable = encounter.status === 'planned' || isActive;
 
   // Participant ciblé par la modale de contrôle, dérivé EN LIVE du doc : les PV /
   // états affichés se rafraîchissent via `onSnapshot` après chaque application.
@@ -626,7 +682,7 @@ export function EncounterScreen(): JSX.Element {
           ) : null}
         </div>
 
-        {isGm && (encounter.status === 'planned' || isActive) ? (
+        {isGm && isGmPlayable ? (
           <div className="mt-5 flex flex-col items-center gap-3">
             <div className="flex flex-wrap items-center justify-center gap-3">
               {canRoll ? (
@@ -655,6 +711,17 @@ export function EncounterScreen(): JSX.Element {
                 </Button>
               ) : (
                 <>
+                  {/* Revenir d'un tour (M7) : « Fin du tour » n'avait aucun
+                      symétrique — un tour avancé par erreur était définitif. */}
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    onClick={handlePreviousTurn}
+                    disabled={actionPending || (encounter.round <= 1 && encounter.turnIndex === 0)}
+                    tooltip={t('campaigns.tip.previousTurn')}
+                  >
+                    {t('encounters.action.previousTurn')}
+                  </Button>
                   <Button
                     variant="primary"
                     size="md"
@@ -706,6 +773,19 @@ export function EncounterScreen(): JSX.Element {
                       {t(OUTCOME_LABEL[outcome])}
                     </Button>
                   ))}
+                  {/* Abandon (M7) : à côté des trois issues, parce que c'est
+                      une quatrième façon de sortir d'un combat — celle où il
+                      n'y a rien à raconter. */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleAbort}
+                    disabled={actionPending}
+                    className="text-crimson"
+                    tooltip={t('campaigns.tip.abortCombat')}
+                  >
+                    {t('encounters.action.abort')}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -718,6 +798,35 @@ export function EncounterScreen(): JSX.Element {
               </GlassPanel>
             ) : null}
 
+            {actionError ? (
+              <p
+                role="alert"
+                className="rounded-card-sm border border-crimson/40 bg-crimson/[0.08] px-3 py-2 font-serif text-body-sm text-crimson"
+              >
+                {actionError}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* Rencontre close (M7) — une clôture erronée était définitive. La
+            rouvrir reprend round et tour là où ils s'étaient arrêtés. */}
+        {isGm && !isGmPlayable ? (
+          <div className="mt-5 flex flex-col items-center gap-3">
+            <p className="max-w-[46ch] font-serif text-body-sm italic text-text-secondary">
+              {t('encounters.detail.closedHint')}
+            </p>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={handleReopen}
+              disabled={actionPending}
+              tooltip={t('campaigns.tip.reopenCombat')}
+            >
+              {actionPending
+                ? t('encounters.action.reopening')
+                : t('encounters.action.reopen')}
+            </Button>
             {actionError ? (
               <p
                 role="alert"

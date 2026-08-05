@@ -61,6 +61,8 @@ const setParticipantConditionMock = vi.fn();
 const updateParticipantMock = vi.fn();
 const removeParticipantMock = vi.fn();
 const addParticipantMock = vi.fn();
+const rewindTurnMock = vi.fn();
+const reopenEncounterMock = vi.fn();
 vi.mock('@/shared/lib/services/encounters', async (importActual) => {
   const actual = await importActual<typeof import('@/shared/lib/services/encounters')>();
   return {
@@ -75,6 +77,8 @@ vi.mock('@/shared/lib/services/encounters', async (importActual) => {
     updateParticipant: (...a: unknown[]) => updateParticipantMock(...a),
     removeParticipant: (...a: unknown[]) => removeParticipantMock(...a),
     addParticipant: (...a: unknown[]) => addParticipantMock(...a),
+    rewindTurn: (...a: unknown[]) => rewindTurnMock(...a),
+    reopenEncounter: (...a: unknown[]) => reopenEncounterMock(...a),
   };
 });
 
@@ -110,6 +114,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
 
 import { EncounterScreen } from '../encounter-screen';
+import { t } from '@/shared/lib/i18n';
 import { EncounterServiceError } from '@/shared/lib/services/encounters';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
@@ -466,6 +471,79 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
     // (source unique : plus de doublon avec une vue de groupe).
     const turnList = screen.getByRole('list', { name: /Ordre d’initiative/ });
     expect(within(turnList).getByText('Empoisonné')).toBeInTheDocument();
+  });
+});
+
+describe('<EncounterScreen> — cycle de vie réparable (M7)', () => {
+  it('« Tour précédent » recule d’un tour sans réémettre `turn-start`', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 3, turnIndex: 1 });
+    rewindTurnMock.mockResolvedValueOnce({ round: 3, turnIndex: 0 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tour précédent' }));
+    await waitFor(() => expect(rewindTurnMock).toHaveBeenCalledWith('c-1', 'e-1'));
+    // Revenir en arrière corrige la feuille de suivi ; le récit ne rejoue pas
+    // le tour (sinon le journal l'inscrirait deux fois).
+    expect(logTurnStartMock).not.toHaveBeenCalled();
+  });
+
+  it('« Tour précédent » est inerte au tout premier tour du combat', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(screen.getByRole('button', { name: 'Tour précédent' })).toBeDisabled();
+  });
+
+  it('« Abandonner » écrit le statut `aborted` et NE journalise aucune issue', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2, turnIndex: 0 });
+    endEncounterMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clôturer le combat' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Abandonner le combat' }));
+
+    await waitFor(() => expect(endEncounterMock).toHaveBeenCalledWith('c-1', 'e-1', 'aborted'));
+    // Un combat abandonné n'a pas d'issue : victoire / défaite / fuite
+    // mentiraient toutes les trois.
+    expect(logEncounterEndMock).not.toHaveBeenCalled();
+  });
+
+  it('une rencontre close propose « Rouvrir » au MJ, et rien d’autre', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'completed', round: 4, turnIndex: 2 });
+    reopenEncounterMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    expect(screen.queryByRole('button', { name: 'Fin du tour' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir le combat' }));
+    await waitFor(() => expect(reopenEncounterMock).toHaveBeenCalledWith('c-1', 'e-1'));
+    // Le tracker redevient la scène en cours.
+    expect(useActiveCampaignStore.getState().activeEncounterId).toBe('e-1');
+  });
+
+  it('le joueur ne voit pas « Rouvrir » sur une rencontre close', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({ status: 'completed', round: 4, turnIndex: 0 });
+    renderScreen();
+    expect(screen.queryByRole('button', { name: 'Rouvrir le combat' })).not.toBeInTheDocument();
+  });
+
+  it('une réouverture refusée (autre combat actif) affiche le message dédié', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'completed', round: 2, turnIndex: 0 });
+    reopenEncounterMock.mockRejectedValueOnce(
+      new EncounterServiceError('another-encounter-active', 'busy'),
+    );
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir le combat' }));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        t('encounters.action.error.anotherActive'),
+      ),
+    );
   });
 });
 

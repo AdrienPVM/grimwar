@@ -59,9 +59,14 @@ vi.mock('../use-encounter-party-draft', () => ({
 }));
 
 const createEncounterMock = vi.fn();
+const renameEncounterMock = vi.fn();
+const deleteEncounterMock = vi.fn();
 vi.mock('@/shared/lib/services/encounters', () => ({
   createEncounter: (cid: string, input: CreateEncounterInput) =>
     createEncounterMock(cid, input),
+  renameEncounter: (...a: unknown[]) => renameEncounterMock(...a),
+  deleteEncounter: (...a: unknown[]) => deleteEncounterMock(...a),
+  ENCOUNTER_NAME_MAX: 120,
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({
@@ -145,6 +150,8 @@ afterEach(() => {
   partyHolder.isLoading = false;
   partyHolder.hadReadError = false;
   createEncounterMock.mockReset();
+  renameEncounterMock.mockReset().mockResolvedValue(undefined);
+  deleteEncounterMock.mockReset().mockResolvedValue(undefined);
 });
 
 function renderScreen(): ReturnType<typeof render> {
@@ -218,7 +225,9 @@ describe('<EncountersListScreen> — liste avec items', () => {
       mkEncounter({ id: 'e-7', name: 'Le pont effondré', participants: [{ instanceId: 'a' } as never] }),
     ];
     renderScreen();
-    fireEvent.click(screen.getByRole('button', { name: /Le pont effondré/i }));
+    // Ancré au début : la ligne s'appelle « Le pont effondré … », le bouton de
+    // gestion « Gérer la rencontre — Le pont effondré » (M7).
+    fireEvent.click(screen.getByRole('button', { name: /^Le pont effondré/i }));
     expect(screen.getByText(/TRACKER/)).toBeInTheDocument();
   });
 
@@ -373,5 +382,62 @@ describe('<EncounterCreateModal> via screen', () => {
       expect(screen.getByText(/La création n['']a pas abouti/i)).toBeInTheDocument();
     });
     expect(encountersHolder.refresh).not.toHaveBeenCalled();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Gestion d'une rencontre — M7 (audit de malléabilité)
+//
+// Ni renommage ni suppression n'existaient : une rencontre mal nommée le
+// restait, une rencontre créée par erreur encombrait la liste pour toujours —
+// alors que `firestore.rules:338` autorisait déjà les deux.
+// ─────────────────────────────────────────────────────────────────────
+
+describe('<EncountersListScreen> — gestion MJ (M7)', () => {
+  it('le geste de gestion est réservé au MJ', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encountersHolder.encounters = [mkEncounter()];
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: /Gérer la rencontre/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renomme une rencontre saisie à la hâte', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encountersHolder.encounters = [mkEncounter({ name: 'Embuscade' })];
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Gérer la rencontre — Embuscade/ }));
+    fireEvent.change(screen.getByLabelText('Nom de la rencontre'), {
+      target: { value: 'Le guet-apens du col' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Renommer' }));
+
+    await waitFor(() =>
+      expect(renameEncounterMock).toHaveBeenCalledWith('c-1', 'e-1', 'Le guet-apens du col'),
+    );
+    await waitFor(() => expect(encountersHolder.refresh).toHaveBeenCalled());
+  });
+
+  it('« Renommer » reste désactivé tant que le nom n’a pas changé', () => {
+    campaignHolder.campaign = mkCampaign();
+    encountersHolder.encounters = [mkEncounter({ name: 'Embuscade' })];
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /Gérer la rencontre — Embuscade/ }));
+    expect(screen.getByRole('button', { name: 'Renommer' })).toBeDisabled();
+  });
+
+  it('la suppression se fait en deux temps', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encountersHolder.encounters = [mkEncounter({ name: 'Embuscade' })];
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Gérer la rencontre — Embuscade/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer la rencontre' }));
+    expect(deleteEncounterMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer la suppression' }));
+    await waitFor(() => expect(deleteEncounterMock).toHaveBeenCalledWith('c-1', 'e-1'));
   });
 });

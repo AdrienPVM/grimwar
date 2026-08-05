@@ -17,6 +17,7 @@ const mockGetDoc = vi.fn();
 const mockGetDocs = vi.fn();
 const mockSetDoc = vi.fn();
 const mockUpdateDoc = vi.fn();
+const mockDeleteDoc = vi.fn();
 const mockServerTimestamp = vi.fn(() => 'MOCK_SERVER_TS');
 
 let autoIdCounter = 0;
@@ -83,6 +84,7 @@ vi.mock('firebase/firestore', () => ({
   getDocs: (...args: unknown[]) => mockGetDocs(...args),
   setDoc: (...args: unknown[]) => mockSetDoc(...args),
   updateDoc: (...args: unknown[]) => mockUpdateDoc(...args),
+  deleteDoc: (...args: unknown[]) => mockDeleteDoc(...args),
   serverTimestamp: () => mockServerTimestamp(),
   waitForPendingWrites: () => Promise.resolve(),
 }));
@@ -102,6 +104,7 @@ import type { EncounterParticipant } from '@/shared/types/encounter';
 import {
   addParticipant,
   advanceTurn,
+  deleteEncounter,
   applyHpDelta,
   applyInitiative,
   applyInitiativeRolls,
@@ -116,8 +119,12 @@ import {
   nextTurn,
   PARTICIPANT_NOTE_MAX,
   patchParticipantIn,
+  previousTurn,
   removeParticipant,
   removeParticipantIn,
+  renameEncounter,
+  reopenEncounter,
+  rewindTurn,
   rollInitiativeFor,
   setParticipantCondition,
   setParticipantNoteIn,
@@ -154,6 +161,7 @@ beforeEach(() => {
   mockGetDocs.mockReset();
   mockSetDoc.mockReset().mockResolvedValue(undefined);
   mockUpdateDoc.mockReset().mockResolvedValue(undefined);
+  mockDeleteDoc.mockReset().mockResolvedValue(undefined);
   mockDoc.mockClear();
   mockCollection.mockClear();
   mockQuery.mockClear();
@@ -440,6 +448,118 @@ describe('endEncounter', () => {
       updatedAt: 'MOCK_SERVER_TS',
     });
     expect(payload).not.toHaveProperty('outcome');
+  });
+
+  // M7 — `'aborted'` était déclaré à l'enum, traduit, doté de sa pastille, et
+  // aucun code ne l'écrivait : `'completed'` était en dur.
+  it('écrit status=aborted quand la table abandonne le combat', async () => {
+    await endEncounter(CID, EID, 'aborted');
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ status: 'aborted', endedAt: 'MOCK_SERVER_TS' });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Cycle de vie réparable — M7 (audit de malléabilité)
+// ─────────────────────────────────────────────────────────────────────
+
+describe('previousTurn', () => {
+  it('recule d’un cran dans le round', () => {
+    expect(previousTurn({ round: 2, turnIndex: 3 }, 5)).toEqual({ round: 2, turnIndex: 2 });
+  });
+
+  it('remonte à la FIN du round précédent depuis le premier combattant', () => {
+    expect(previousTurn({ round: 3, turnIndex: 0 }, 4)).toEqual({ round: 2, turnIndex: 3 });
+  });
+
+  it('ne fabrique pas de round 0 au tout début du combat', () => {
+    expect(previousTurn({ round: 1, turnIndex: 0 }, 4)).toEqual({ round: 1, turnIndex: 0 });
+  });
+
+  it('est l’exact symétrique de nextTurn', () => {
+    const start = { round: 2, turnIndex: 0 };
+    expect(previousTurn(nextTurn(start, 3), 3)).toEqual(start);
+  });
+});
+
+describe('rewindTurn', () => {
+  it('relit l’état serveur puis écrit round + turnIndex reculés', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({
+        id: EID,
+        round: 3,
+        turnIndex: 0,
+        participants: [makeParticipant({ instanceId: 'a' }), makeParticipant({ instanceId: 'b' })],
+      }),
+    });
+    const out = await rewindTurn(CID, EID);
+    expect(out).toEqual({ round: 2, turnIndex: 1 });
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ round: 2, turnIndex: 1 });
+  });
+});
+
+describe('reopenEncounter', () => {
+  it('remet en `active` et efface `endedAt`, en gardant round et tour', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: EID, status: 'completed', round: 4, turnIndex: 2, participants: [] }),
+    });
+    mockGetDocs.mockResolvedValueOnce({ empty: true, docs: [] });
+    await reopenEncounter(CID, EID);
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ status: 'active', round: 4, endedAt: null });
+    // Le tour n'est pas réécrit : on reprend exactement où on s'était arrêté.
+    expect(payload).not.toHaveProperty('turnIndex');
+  });
+
+  it('remonte un `round: 0` à 1 (une rencontre en cours a forcément un round)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: EID, status: 'aborted', round: 0, turnIndex: 0, participants: [] }),
+    });
+    mockGetDocs.mockResolvedValueOnce({ empty: true, docs: [] });
+    await reopenEncounter(CID, EID);
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ round: 1 });
+  });
+
+  it('refuse si une AUTRE rencontre est déjà active', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: EID, status: 'completed', round: 2, turnIndex: 0, participants: [] }),
+    });
+    mockGetDocs.mockResolvedValueOnce({
+      empty: false,
+      docs: [{ data: () => ({ id: 'other-enc', status: 'active' }) }],
+    });
+    await expect(reopenEncounter(CID, EID)).rejects.toMatchObject({
+      kind: 'another-encounter-active',
+    });
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+});
+
+describe('renameEncounter', () => {
+  it('écrit le nom élagué', async () => {
+    await renameEncounter(CID, EID, '  Le guet-apens du col  ');
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toMatchObject({ name: 'Le guet-apens du col' });
+  });
+
+  it('ignore un nom vide plutôt que de violer `min(1)` du schéma', async () => {
+    await renameEncounter(CID, EID, '   ');
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+});
+
+describe('deleteEncounter', () => {
+  it('supprime le doc de rencontre', async () => {
+    await deleteEncounter(CID, EID);
+    expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
+    const [ref] = mockDeleteDoc.mock.calls[0]! as [{ path: string }];
+    expect(ref.path).toBe(`campaigns/${CID}/encounters/${EID}`);
   });
 });
 

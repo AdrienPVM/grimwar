@@ -23,6 +23,7 @@
  */
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -389,24 +390,153 @@ export async function advanceTurn(
 }
 
 /**
- * Clôt une rencontre (`active` → `completed`, step 9). L'`outcome`
+ * Recule d'un tour (pur, testable) — symétrique exact de `nextTurn` (M7).
+ *
+ * Au premier combattant de l'ordre, on remonte à la FIN du round précédent
+ * (`round - 1`, dernier index). Au tout début du combat (round 1, index 0), il
+ * n'y a rien avant : l'état est renvoyé tel quel plutôt que de fabriquer un
+ * round 0, que le schéma réserve à une rencontre pas encore démarrée.
+ */
+export function previousTurn(
+  current: { round: number; turnIndex: number },
+  count: number,
+): { round: number; turnIndex: number } {
+  if (current.turnIndex > 0) {
+    return { round: current.round, turnIndex: current.turnIndex - 1 };
+  }
+  if (current.round <= 1 || count <= 0) return { ...current };
+  return { round: current.round - 1, turnIndex: count - 1 };
+}
+
+/**
+ * Revient d'un tour (M7) — « on a oublié la réaction du gobelin ». Aucun event
+ * `turn-start` n'est réémis côté UI : revenir en arrière corrige la feuille de
+ * suivi, ça ne fait pas rejouer le tour dans le récit.
+ */
+export async function rewindTurn(
+  campaignId: string,
+  encounterId: string,
+): Promise<{ round: number; turnIndex: number }> {
+  const current = await getEncounter(campaignId, encounterId);
+  const computed = previousTurn(
+    { round: current.round, turnIndex: current.turnIndex },
+    current.participants.length,
+  );
+  const firestore = getDb();
+  await trackPendingWrite(
+    firestore,
+    updateDoc(encounterRef(campaignId, encounterId), {
+      round: computed.round,
+      turnIndex: computed.turnIndex,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  return computed;
+}
+
+/**
+ * Clôt une rencontre (`active` → `completed` ou `aborted`, step 9). L'`outcome`
  * (victory/defeat/fled) est journalisé dans l'event `encounter-end` côté UI —
  * il n'est PAS persisté sur le doc (le schéma documenté ne le porte pas, cf.
  * `encounter.ts`). La compilation du journal (plan 25) se branchera ici.
+ *
+ * M7 : `'aborted'` était déclaré à l'enum, traduit et doté de sa pastille
+ * rouge, mais AUCUN code ne l'écrivait — `'completed'` était en dur. Un combat
+ * que la table abandonne en cours de route n'est pourtant pas un combat
+ * terminé, et le distinguer coûtait un paramètre.
  */
 export async function endEncounter(
   campaignId: string,
   encounterId: string,
+  status: Extract<EncounterStatus, 'completed' | 'aborted'> = 'completed',
 ): Promise<void> {
   const firestore = getDb();
   await trackPendingWrite(
     firestore,
     updateDoc(encounterRef(campaignId, encounterId), {
-      status: 'completed' satisfies EncounterStatus,
+      status,
       endedAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }),
   );
+}
+
+/**
+ * Rouvre une rencontre close par erreur (M7) — retour en `active`, `endedAt`
+ * effacé. Même garde-fou que `startEncounter` : refuse si une AUTRE rencontre
+ * est déjà active, sinon deux combats se disputeraient le pointeur de campagne.
+ *
+ * `round`/`turnIndex` sont conservés (on reprend là où on s'était arrêté) ;
+ * `round: 0` — état d'une rencontre jamais démarrée — est remonté à 1.
+ *
+ * L'event `encounter-end` déjà journalisé n'est PAS retiré ici : les événements
+ * sont immuables côté rules. Le MJ dispose du geste « Retirer du journal » (M9)
+ * pour effacer une fin qui n'a pas eu lieu.
+ */
+export async function reopenEncounter(
+  campaignId: string,
+  encounterId: string,
+): Promise<void> {
+  const current = await getEncounter(campaignId, encounterId);
+  const active = await getActiveEncounter(campaignId);
+  if (active && active.id !== encounterId) {
+    throw new EncounterServiceError(
+      'another-encounter-active',
+      `Campaign ${campaignId} already has an active encounter (${active.id})`,
+    );
+  }
+
+  const firestore = getDb();
+  await trackPendingWrite(
+    firestore,
+    updateDoc(encounterRef(campaignId, encounterId), {
+      status: 'active' satisfies EncounterStatus,
+      round: current.round > 0 ? current.round : 1,
+      endedAt: null,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/**
+ * Renomme une rencontre (M7) — « Embuscade » saisi à la hâte devient « Le
+ * guet-apens du col ». Nom vide ignoré (le schéma exige `min(1)`).
+ */
+export async function renameEncounter(
+  campaignId: string,
+  encounterId: string,
+  name: string,
+): Promise<void> {
+  const trimmed = name.trim().slice(0, ENCOUNTER_NAME_MAX);
+  if (trimmed.length === 0) return;
+  const firestore = getDb();
+  await trackPendingWrite(
+    firestore,
+    updateDoc(encounterRef(campaignId, encounterId), {
+      name: trimmed,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+}
+
+/** Limite du champ `name` au schéma (`EncounterSchema`). */
+export const ENCOUNTER_NAME_MAX = 120;
+
+/**
+ * Supprime une rencontre (M7). `allow delete: if isDMOf` est déployée depuis
+ * l'origine (`firestore.rules:338`) et n'avait aucun appelant : une rencontre
+ * créée par erreur encombrait la liste pour toujours.
+ *
+ * Les événements déjà journalisés survivent (ils appartiennent au récit de la
+ * campagne, pas au doc de rencontre) — le MJ les retire un à un via M9 s'il le
+ * souhaite.
+ */
+export async function deleteEncounter(
+  campaignId: string,
+  encounterId: string,
+): Promise<void> {
+  const firestore = getDb();
+  await trackPendingWrite(firestore, deleteDoc(encounterRef(campaignId, encounterId)));
 }
 
 // ─────────────────────────────────────────────────────────────────────

@@ -1534,6 +1534,18 @@ export type StringKey =
   | 'encounters.action.end'
   | 'encounters.action.ending'
   | 'encounters.action.cancelEnd'
+  | 'encounters.action.previousTurn'
+  | 'encounters.action.abort'
+  | 'encounters.action.reopen'
+  | 'encounters.action.reopening'
+  | 'encounters.detail.closedHint'
+  | 'encounters.row.actions'
+  | 'encounters.row.manageTitle'
+  | 'encounters.row.manageCloseAria'
+  | 'encounters.row.renameLabel'
+  | 'encounters.row.renameSave'
+  | 'encounters.row.delete'
+  | 'encounters.row.deleteConfirm'
   | 'encounters.action.error.anotherActive'
   | 'encounters.action.error.noParticipants'
   | 'encounters.action.error.generic'
@@ -2457,6 +2469,10 @@ export type StringKey =
   | 'campaigns.tip.endCombat'
   | 'campaigns.tip.reroll'
   | 'campaigns.tip.controlParticipant'
+  | 'campaigns.tip.previousTurn'
+  | 'campaigns.tip.abortCombat'
+  | 'campaigns.tip.reopenCombat'
+  | 'campaigns.tip.manageEncounter'
   | 'campaigns.tip.addParticipant'
   | 'campaigns.tip.editParticipant'
   | 'campaigns.tip.removeParticipant'
@@ -4607,6 +4623,20 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.action.end': 'Clôturer le combat',
     'encounters.action.ending': 'Clôture…',
     'encounters.action.cancelEnd': 'Annuler',
+    // Encounters — cycle de vie réparable (M7 de l'audit de malléabilité).
+    'encounters.action.previousTurn': 'Tour précédent',
+    'encounters.action.abort': 'Abandonner le combat',
+    'encounters.action.reopen': 'Rouvrir le combat',
+    'encounters.action.reopening': 'Réouverture…',
+    'encounters.detail.closedHint':
+      'Cette rencontre est close. La rouvrir la remet en cours, là où elle s’était arrêtée.',
+    'encounters.row.actions': 'Gérer la rencontre',
+    'encounters.row.manageTitle': 'Gérer la rencontre',
+    'encounters.row.manageCloseAria': 'Fermer la gestion de la rencontre',
+    'encounters.row.renameLabel': 'Nom de la rencontre',
+    'encounters.row.renameSave': 'Renommer',
+    'encounters.row.delete': 'Supprimer la rencontre',
+    'encounters.row.deleteConfirm': 'Confirmer la suppression',
     'encounters.action.error.anotherActive':
       'Une autre rencontre est déjà en cours. Clôture-la avant d’en démarrer une nouvelle.',
     'encounters.action.error.noParticipants':
@@ -5912,6 +5942,10 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.endCombat': 'Clôturer le combat et choisir son issue.',
     'campaigns.tip.reroll': 'Relancer l’initiative de ce combattant.',
     'campaigns.tip.controlParticipant': 'Ajuster ses points de vie et ses états.',
+    'campaigns.tip.previousTurn': 'Revenir au combattant précédent — on a oublié quelque chose.',
+    'campaigns.tip.abortCombat': 'Clore sans issue : le combat n’a pas eu de fin.',
+    'campaigns.tip.reopenCombat': 'Remettre ce combat en cours, là où il s’était arrêté.',
+    'campaigns.tip.manageEncounter': 'Renommer ou supprimer cette rencontre.',
     'campaigns.tip.addParticipant': 'Faire entrer un combattant dans une rencontre déjà lancée.',
     'campaigns.tip.editParticipant': 'Corriger son nom, ses points de vie ou son initiative.',
     'campaigns.tip.removeParticipant': 'Le sortir de la rencontre — il disparaît de l’ordre des tours.',
@@ -7983,6 +8017,19 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.action.end': 'End combat',
     'encounters.action.ending': 'Ending…',
     'encounters.action.cancelEnd': 'Cancel',
+    'encounters.action.previousTurn': 'Previous turn',
+    'encounters.action.abort': 'Abandon the fight',
+    'encounters.action.reopen': 'Reopen the fight',
+    'encounters.action.reopening': 'Reopening…',
+    'encounters.detail.closedHint':
+      'This encounter is closed. Reopening puts it back where it left off.',
+    'encounters.row.actions': 'Manage encounter',
+    'encounters.row.manageTitle': 'Manage encounter',
+    'encounters.row.manageCloseAria': 'Close encounter management',
+    'encounters.row.renameLabel': 'Encounter name',
+    'encounters.row.renameSave': 'Rename',
+    'encounters.row.delete': 'Delete encounter',
+    'encounters.row.deleteConfirm': 'Confirm deletion',
     'encounters.action.error.anotherActive':
       'Another encounter is already active. End it before starting a new one.',
     'encounters.action.error.noParticipants':
@@ -9205,6 +9252,10 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.endCombat': 'End combat and choose its outcome.',
     'campaigns.tip.reroll': 'Reroll this combatant’s initiative.',
     'campaigns.tip.controlParticipant': 'Adjust its hit points and conditions.',
+    'campaigns.tip.previousTurn': 'Step back to the previous combatant — something was missed.',
+    'campaigns.tip.abortCombat': 'Close with no outcome: this fight never ended.',
+    'campaigns.tip.reopenCombat': 'Put this fight back in progress, where it left off.',
+    'campaigns.tip.manageEncounter': 'Rename or delete this encounter.',
     'campaigns.tip.addParticipant': 'Bring a combatant into an encounter already under way.',
     'campaigns.tip.editParticipant': 'Fix its name, hit points or initiative.',
     'campaigns.tip.removeParticipant': 'Take it out of the encounter — it leaves the turn order.',
