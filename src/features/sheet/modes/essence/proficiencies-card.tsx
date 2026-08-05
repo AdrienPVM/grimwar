@@ -85,7 +85,11 @@ export function ProficienciesCard({ character }: ProficienciesCardProps): JSX.El
       <CardHeader>
         <h3>{t('sheet.essence.proficiencies.title')}</h3>
         {readOnly ? null : (
-          <CardAction aria-pressed={editing} onClick={() => setEditing((v) => !v)}>
+          <CardAction
+            aria-pressed={editing}
+            aria-label={t('sheet.essence.prof.editGearAria')}
+            onClick={() => setEditing((v) => !v)}
+          >
             {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
           </CardAction>
         )}

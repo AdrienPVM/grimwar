@@ -91,7 +91,11 @@ export function SavesRow({
       <CardHeader>
         <h3>{t('sheet.essence.saves.title')}</h3>
         {readOnly ? null : (
-          <CardAction aria-pressed={editing} onClick={() => setEditing((v) => !v)}>
+          <CardAction
+            aria-pressed={editing}
+            aria-label={t('sheet.essence.prof.editSavesAria')}
+            onClick={() => setEditing((v) => !v)}
+          >
             {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
           </CardAction>
         )}

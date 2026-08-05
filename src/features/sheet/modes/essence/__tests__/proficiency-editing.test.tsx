@@ -131,7 +131,9 @@ describe('SkillsList — mode maîtrises', () => {
     const user = userEvent.setup();
     render(<SkillsList character={buildCharacter()} readOnly={false} />);
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Modifier les maîtrises de compétences' }),
+    );
     await user.click(screen.getByRole('button', { name: /^Survie — Non maîtrisée/ }));
 
     await waitFor(() => expect(updateCharacterMock).toHaveBeenCalledTimes(1));
@@ -147,7 +149,9 @@ describe('SkillsList — mode maîtrises', () => {
       <SkillsList character={buildCharacter({ skills: { survival: 1 } })} readOnly={false} />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Modifier les maîtrises de compétences' }),
+    );
     await user.click(screen.getByRole('button', { name: /^Survie — Maîtrise/ }));
 
     await waitFor(() => expect(updateCharacterMock).toHaveBeenCalledTimes(1));
@@ -163,7 +167,9 @@ describe('SkillsList — mode maîtrises', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Modifier les maîtrises de compétences' }),
+    );
     await user.click(screen.getByRole('button', { name: /^Survie — Expertise/ }));
 
     await waitFor(() => expect(updateCharacterMock).toHaveBeenCalledTimes(1));
@@ -182,7 +188,9 @@ describe('SkillsList — mode maîtrises', () => {
 
   it('en lecture seule, le mode édition n’est pas proposé', () => {
     render(<SkillsList character={buildCharacter()} readOnly />);
-    expect(screen.queryByRole('button', { name: 'Maîtrises' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Modifier les maîtrises de compétences' }),
+    ).toBeNull();
   });
 });
 
@@ -191,7 +199,9 @@ describe('SavesRow — mode maîtrises', () => {
     const user = userEvent.setup();
     render(<SavesRow character={buildCharacter()} readOnly={false} />);
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Modifier les maîtrises de sauvegarde' }),
+    );
     await user.click(
       screen.getByRole('button', { name: 'Maîtrise de la sauvegarde de Sagesse' }),
     );
@@ -209,7 +219,9 @@ describe('<ProficienciesCard> — maîtrises ajoutées à la main', () => {
     const user = userEvent.setup();
     render(editable(<ProficienciesCard character={buildCharacter()} />));
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Modifier les maîtrises d’équipement' }),
+    );
     await user.type(
       screen.getByLabelText('Saisir une entrée libre — Outils'),
       'Outils de forgeron',
@@ -266,7 +278,9 @@ describe('<ProficienciesCard> — maîtrises ajoutées à la main', () => {
       ),
     );
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(
+      screen.getByRole('button', { name: 'Modifier les maîtrises d’équipement' }),
+    );
     await user.click(screen.getByRole('button', { name: 'Retirer Cornemuse' }));
 
     await waitFor(() => expect(updateCharacterMock).toHaveBeenCalledTimes(1));
@@ -282,7 +296,9 @@ describe('<ProficienciesCard> — maîtrises ajoutées à la main', () => {
 
   it('sans droit d’écriture, aucun mode édition', () => {
     render(<ProficienciesCard character={buildCharacter()} />);
-    expect(screen.queryByRole('button', { name: 'Maîtrises' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Modifier les maîtrises d’équipement' }),
+    ).toBeNull();
   });
 });
 
@@ -291,7 +307,7 @@ describe('<LanguagesCard> — langues apprises en jeu', () => {
     const user = userEvent.setup();
     render(editable(<LanguagesCard character={buildCharacter()} />));
 
-    await user.click(screen.getByRole('button', { name: 'Maîtrises' }));
+    await user.click(screen.getByRole('button', { name: 'Modifier les langues connues' }));
     await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByRole('option', { name: 'Drake' }));
 

@@ -109,7 +109,11 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
             de la maîtrise a besoin de son propre mode, pas d'un troisième geste
             sur la même cible. */}
         {readOnly ? null : (
-          <CardAction aria-pressed={editing} onClick={() => setEditing((v) => !v)}>
+          <CardAction
+            aria-pressed={editing}
+            aria-label={t('sheet.essence.prof.editSkillsAria')}
+            onClick={() => setEditing((v) => !v)}
+          >
             {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
           </CardAction>
         )}

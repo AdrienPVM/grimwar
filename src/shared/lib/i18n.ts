@@ -891,6 +891,10 @@ export type StringKey =
   | 'sheet.essence.skills.proficient'
   | 'sheet.essence.skills.expertise'
   | 'sheet.essence.prof.edit'
+  | 'sheet.essence.prof.editSkillsAria'
+  | 'sheet.essence.prof.editSavesAria'
+  | 'sheet.essence.prof.editGearAria'
+  | 'sheet.essence.prof.editLanguagesAria'
   | 'sheet.essence.prof.done'
   | 'sheet.essence.prof.add'
   | 'sheet.essence.prof.pick'
@@ -4126,7 +4130,11 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.skills.notProficient': 'Non maîtrisée',
     'sheet.essence.skills.proficient': 'Maîtrise',
     'sheet.essence.skills.expertise': 'Expertise',
-    'sheet.essence.prof.edit': 'Maîtrises',
+    'sheet.essence.prof.edit': 'Modifier',
+    'sheet.essence.prof.editSkillsAria': 'Modifier les maîtrises de compétences',
+    'sheet.essence.prof.editSavesAria': 'Modifier les maîtrises de sauvegarde',
+    'sheet.essence.prof.editGearAria': 'Modifier les maîtrises d’équipement',
+    'sheet.essence.prof.editLanguagesAria': 'Modifier les langues connues',
     'sheet.essence.prof.done': 'Terminer',
     'sheet.essence.prof.add': 'Ajouter',
     'sheet.essence.prof.pick': 'Choisir dans la liste…',
@@ -7828,7 +7836,11 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.skills.notProficient': 'Not proficient',
     'sheet.essence.skills.proficient': 'Proficient',
     'sheet.essence.skills.expertise': 'Expertise',
-    'sheet.essence.prof.edit': 'Proficiencies',
+    'sheet.essence.prof.edit': 'Edit',
+    'sheet.essence.prof.editSkillsAria': 'Edit skill proficiencies',
+    'sheet.essence.prof.editSavesAria': 'Edit saving throw proficiencies',
+    'sheet.essence.prof.editGearAria': 'Edit equipment proficiencies',
+    'sheet.essence.prof.editLanguagesAria': 'Edit known languages',
     'sheet.essence.prof.done': 'Done',
     'sheet.essence.prof.add': 'Add',
     'sheet.essence.prof.pick': 'Pick from the list…',

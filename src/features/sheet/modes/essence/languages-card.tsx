@@ -71,7 +71,11 @@ export function LanguagesCard({ character }: LanguagesCardProps): JSX.Element | 
       <CardHeader>
         <h3>{t('sheet.essence.languages.title')}</h3>
         {readOnly ? null : (
-          <CardAction aria-pressed={editing} onClick={() => setEditing((v) => !v)}>
+          <CardAction
+            aria-pressed={editing}
+            aria-label={t('sheet.essence.prof.editLanguagesAria')}
+            onClick={() => setEditing((v) => !v)}
+          >
             {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
           </CardAction>
         )}
