@@ -1,38 +1,39 @@
-import { useMemo, type CSSProperties, type JSX } from 'react';
+import { useEffect, useRef, useState, type JSX } from 'react';
 
-import { polyhedronFor } from '@/shared/lib/dice3d/polyhedra';
+import { polyhedronFor, type Polyhedron } from '@/shared/lib/dice3d/polyhedra';
 import {
-  landingRotation,
-  placeFace,
-  restLighting,
-  rotate3dCss,
-  tumbleFor,
-  type FacePlacement,
-} from '@/shared/lib/dice3d/transforms';
+  LIGHT_SCREEN,
+  multiply,
+  projectDie,
+  restRotation,
+  rotationAxisAngle,
+  visualScaleFor,
+  type Mat3,
+  type ProjectedFace,
+} from '@/shared/lib/dice3d/projection';
+import { easeOutTumble, tumbleFor } from '@/shared/lib/dice3d/tumble';
 import { cn } from '@/shared/lib/cn';
 
 /**
- * Un dé, en vraie 3D CSS.
+ * Un dé, en volume, tracé sur un canevas.
  *
- * **Pourquoi pas une bibliothèque.** Un moteur physique 3D (Babylon + ammo)
- * pèse plusieurs mégaoctets pour une app qui doit démarrer dans une cave sans
- * réseau, et serait une dépendance externe — décision qui ne m'appartient pas.
- * Les faces sont donc de vrais polygones posés dans l'espace par `matrix3d` :
- * pas de simulation de rebond, mais un solide authentique qui culbute et se
- * pose sur la face tirée.
+ * **Pourquoi pas une bibliothèque 3D.** Un moteur physique (Babylon + ammo) pèse
+ * plusieurs mégaoctets pour une app qui doit démarrer dans une cave sans réseau,
+ * et serait une dépendance externe — décision qui ne m'appartient pas.
  *
- * **Comment la culbute finit juste.** Trois couches emboîtées :
- *   1. l'enveloppe fait la CHUTE (translation + échelle, avec un léger rebond) ;
- *   2. la couche du milieu fait la CULBUTE, une rotation multi-tours qui
- *      s'achève sur l'identité ;
- *   3. la couche interne porte la POSE, rotation statique amenant la face
- *      tirée vers la caméra.
+ * **Pourquoi pas la 3D CSS non plus.** C'était la version précédente : chaque
+ * face posée dans l'espace par `matrix3d`, le navigateur composant le tout.
+ * Chromium trie des couches, pas des fragments ; vingt faces qui se croisent
+ * n'ont pas d'ordre de tri valide, et le même d20 sortait correct sur une face
+ * tirée, éclaté en moulin à vent sur une autre. On projette donc nous-mêmes
+ * (cf. `projection.ts`) et on remplit des polygones : sur un solide convexe
+ * amputé de ses faces arrière, plus rien ne se recouvre.
  *
- * Comme la culbute finit sur l'identité, la composition au repos vaut
- * exactement la pose : le dé s'arrête forcément sur le bon chiffre. Une
- * animation qui interpolerait directement vers la rotation finale prendrait le
- * plus court chemin et ne tournerait pas du tout — CSS n'interpole l'angle que
- * si les deux `rotate3d` partagent le même axe.
+ * **Comment la culbute finit juste.** La rotation dessinée vaut
+ * `culbute(t) · pose`, où la culbute s'annule exactement en fin de course
+ * (cf. `easeOutTumble`). La dernière image vaut donc la pose : le dé s'arrête
+ * forcément sur le chiffre tiré, sans qu'aucun réglage d'animation puisse le
+ * décaler.
  */
 
 interface Die3DProps {
@@ -41,7 +42,7 @@ interface Die3DProps {
   face: number;
   /** `false` pour un dé écarté par l'avantage : présent, mais en retrait. */
   kept?: boolean;
-  /** Rayon circonscrit en pixels. */
+  /** Rayon de référence en pixels. */
   radius?: number;
   /** Rang du dé dans le jet — sème une culbute différente pour chacun. */
   index?: number;
@@ -51,6 +52,18 @@ interface Die3DProps {
 }
 
 const DEFAULT_RADIUS = 40;
+
+/** Marge autour du solide : le trait doré et l'ombre portée débordent un peu. */
+const PADDING_PX = 6;
+
+/**
+ * Distance de la caméra, en multiples du rayon.
+ *
+ * Assez proche pour que la fuite se voie (une valeur élevée revient à une
+ * projection orthographique, qui écrase le relief), assez loin pour que les
+ * arêtes ne partent pas en éventail.
+ */
+const PERSPECTIVE_RATIO = 5.5;
 
 /**
  * Taille d'un dé selon le nombre de dés du jet.
@@ -74,187 +87,232 @@ export function Die3D({
   seed = 0,
   className,
 }: Die3DProps): JSX.Element | null {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Le dé annonce lui-même qu'il s'est posé. Sans ce signal, un observateur
+  // extérieur — une capture d'UAT, par exemple — ne peut qu'attendre à
+  // l'estime ; et une attente à l'estime devient fausse dès que la machine
+  // rame, alors que le plateau, lui, se retire au bout de 2,2 s.
+  const [settled, setSettled] = useState(false);
   const solid = polyhedronFor(sides);
 
-  const model = useMemo(() => {
-    if (!solid) return null;
-    // Le moteur peut rendre une face hors bornes si une formule exotique passe :
-    // on retombe sur la première face plutôt que de ne rien afficher.
-    const target =
-      solid.faces.find((f) => f.value === face) ?? solid.faces[0]!;
-    const landing = landingRotation(target);
-    return {
-      faces: solid.faces.map((f) => ({
-        placed: placeFace(f, radius),
-        lighting: restLighting(f.normal, landing),
-      })),
-      landing: rotate3dCss(landing.axis, landing.angleDeg),
-      tumble: tumbleFor(seed * 31 + index),
+  // Le rayon circonscrit est corrigé pour que tous les solides d'un même jet
+  // aient la même taille APPARENTE — un cube ne remplit pas sa sphère comme un
+  // icosaèdre (cf. `visualScaleFor`).
+  const drawRadius = solid ? radius * visualScaleFor(solid) : radius;
+  const box = Math.ceil(radius * 2 + PADDING_PX * 2);
+  const tumble = tumbleFor(seed * 31 + index);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !solid) return undefined;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return undefined;
+
+    const target = solid.faces.find((f) => f.value === face) ?? solid.faces[0]!;
+    const rest = restRotation(solid, target);
+    const spin = tumbleFor(seed * 31 + index);
+    let cancelled = false;
+
+    // Le canevas est dimensionné en pixels PHYSIQUES : sans cela, le tracé est
+    // rééchantillonné à l'affichage et les arêtes fines bavent sur écran retina.
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    canvas.width = Math.round(box * dpr);
+    canvas.height = Math.round(box * dpr);
+
+    const paint = (rotation: Mat3): void => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, box, box);
+      ctx.translate(box / 2, box / 2);
+      drawSolid(ctx, solid, {
+        radiusPx: drawRadius,
+        rotation,
+        perspectivePx: drawRadius * PERSPECTIVE_RATIO,
+        targetValue: target.value,
+      });
     };
-  }, [solid, face, radius, seed, index]);
 
-  if (!solid || !model) return null;
+    /**
+     * Un chiffre tracé sur un canevas ne se redessine PAS quand la fonte finit
+     * d'arriver — contrairement à un `<span>`, que le navigateur remet en page
+     * tout seul. Sans ce rappel, le premier jet d'une session afficherait ses
+     * chiffres dans la police de repli, définitivement.
+     */
+    const repaintWhenFontArrives = (): void => {
+      if (!('fonts' in document)) return;
+      void document.fonts.ready.then(() => {
+        if (!cancelled) paint(rest);
+      });
+    };
 
-  const { tumble } = model;
-  const dropStyle: CSSProperties = {
-    animationDelay: `${tumble.delayMs}ms`,
-    animationDuration: `${tumble.durationMs}ms`,
-  };
-  const tumbleStyle: CSSProperties = {
-    ...dropStyle,
-    // Départ de la culbute : N tours autour d'un axe tiré de la graine. La fin
-    // (0deg) est posée dans la keyframe — même axe, donc CSS interpole l'angle.
-    ['--die-spin-from' as string]: rotate3dCss(
-      tumble.axis,
-      tumble.turns * 360,
-    ),
-    ['--die-spin-axis' as string]: `${tumble.axis[0]},${tumble.axis[1]},${tumble.axis[2]}`,
-  };
+    const still =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (still) {
+      paint(rest);
+      setSettled(true);
+      repaintWhenFontArrives();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    let raf = 0;
+    let start = 0;
+    const step = (now: number): void => {
+      if (!start) start = now;
+      const elapsed = now - start - spin.delayMs;
+      if (elapsed >= spin.durationMs) {
+        // Dernière image posée explicitement sur la pose : on ne dépend pas de
+        // l'instant exact où le navigateur nous rappelle.
+        paint(rest);
+        setSettled(true);
+        repaintWhenFontArrives();
+        return;
+      }
+      const remaining = rotationAxisAngle(
+        spin.axis,
+        (1 - easeOutTumble(Math.max(0, elapsed) / spin.durationMs)) *
+          spin.turns *
+          2 *
+          Math.PI,
+      );
+      paint(multiply(remaining, rest));
+      raf = window.requestAnimationFrame(step);
+    };
+    raf = window.requestAnimationFrame(step);
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(raf);
+    };
+  }, [solid, face, drawRadius, box, seed, index]);
+
+  if (!solid) return null;
 
   return (
     <div
       className={cn('die3d-drop', !kept && 'opacity-40 saturate-50', className)}
-      style={dropStyle}
-      // Le chiffre est déjà annoncé par le toast du jet ; le dé n'est qu'une
-      // mise en scène. L'annoncer deux fois ferait bafouiller le lecteur d'écran.
+      style={{
+        animationDelay: `${tumble.delayMs}ms`,
+        animationDuration: `${tumble.durationMs}ms`,
+      }}
+      // Le chiffre est déjà annoncé par le toast du jet ; le dé n'est qu'une mise
+      // en scène. L'annoncer deux fois ferait bafouiller le lecteur d'écran.
       aria-hidden="true"
       data-testid="die-3d"
       data-sides={sides}
       data-face={face}
       data-kept={kept ? 'true' : 'false'}
+      data-settled={settled ? 'true' : 'false'}
     >
-      <div className="die3d-tumble" style={tumbleStyle}>
-        <div
-          className="die3d-solid"
-          style={{
-            width: radius * 2,
-            height: radius * 2,
-            transform: model.landing,
-          }}
-        >
-          {model.faces.map(({ placed, lighting }) => (
-            <DieFace
-              key={placed.value}
-              placed={placed}
-              radius={radius}
-              lighting={lighting}
-              highlighted={placed.value === face}
-            />
-          ))}
-        </div>
-      </div>
+      <canvas ref={canvasRef} style={{ width: box, height: box }} />
     </div>
   );
 }
 
-interface DieFaceProps {
-  placed: FacePlacement;
-  radius: number;
-  /** Éclairement de la face au repos, 0 (tranche) à 1 (de face). */
-  lighting: number;
-  highlighted: boolean;
+/** Teintes du dé — pierre violette, gravure claire, arêtes dorées. */
+const STONE_DARK = [46, 32, 66] as const;
+const STONE_LIGHT = [156, 122, 196] as const;
+const GOLD = '#d8bc76';
+const ENGRAVING = '#f2ecfa';
+const ENGRAVING_TARGET = '#ffe9b0';
+
+function drawSolid(
+  ctx: CanvasRenderingContext2D,
+  solid: Polyhedron,
+  options: Parameters<typeof projectDie>[1],
+): void {
+  const faces = projectDie(solid, options);
+  for (const face of faces) drawFace(ctx, face);
+}
+
+/** Écart de teinte entre l'arête éclairée d'une face et son arête à l'ombre. */
+const BEVEL = 0.14;
+
+function drawFace(ctx: CanvasRenderingContext2D, face: ProjectedFace): void {
+  if (face.polygon.length < 3) return;
+
+  ctx.beginPath();
+  face.polygon.forEach(([x, y], i) => {
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+
+  // La face tirée est un cran plus claire : elle attire l'œil sans changer de
+  // matière. Une couleur franchement différente — l'or plein de la version
+  // précédente — donnait un dé bicolore où la face lue semblait d'un autre objet.
+  const shade = Math.min(1, face.shade * (face.isTarget ? 1.2 : 1));
+  ctx.fillStyle = bevelGradient(ctx, face, shade);
+  ctx.fill();
+
+  // Le liseré porte la lisibilité du solide : c'est lui qui sépare deux faces
+  // d'orientations voisines, que l'ombrage seul ne distingue pas assez.
+  ctx.strokeStyle = GOLD;
+  ctx.globalAlpha = 0.5 + 0.42 * face.shade;
+  ctx.lineWidth = 1.1;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  drawDigit(ctx, face);
 }
 
 /**
- * Une face : le polygone exact déduit de la géométrie, plus son chiffre.
+ * Dégradé d'une face, de son arête tournée vers la lumière à son arête à l'ombre.
  *
- * **Des `<div>` découpés, et surtout PAS des `<svg>`.** La première version
- * dessinait chaque face en SVG, ce qui est plus direct à écrire — un
- * `<polygon points>` et c'est fini. Le résultat était un solide troué : les
- * facettes apparaissaient éparpillées, avec un vide là où la face tournée vers
- * la caméra aurait dû être. La géométrie n'y était pour rien, une sonde l'a
- * établi en recomposant les matrices appliquées par le navigateur : douze
- * sommets distincts, chacun partagé par cinq faces, tous à la bonne distance.
- * C'est la RASTÉRISATION qui lâche — Chromium traite mal un `<svg>` placé dans
- * un contexte `transform-style: preserve-3d`. Un `<div>` découpé au
- * `clip-path` est le chemin balisé de la 3D CSS, et il rend juste.
- *
- * L'arête dorée est obtenue en superposant deux découpes : la face pleine en or
- * dessous, la face légèrement rétrécie en couleur de facette dessus. Une
- * bordure classique ne suivrait pas le `clip-path`.
+ * L'axe est celui de la lumière PROJETÉE : le dégradé de toutes les faces suit
+ * donc la même direction, ce qui se lit comme une seule source et non comme des
+ * facettes éclairées chacune pour soi.
  */
-function DieFace({
-  placed,
-  radius,
-  lighting,
-  highlighted,
-}: DieFaceProps): JSX.Element {
-  const { box } = placed;
-  // Rétrécissement homothétique : le polygone est centré sur l'origine, une
-  // simple mise à l'échelle en tient donc lieu d'inset.
-  const circumradius = Math.max(
-    ...placed.polygon.map(([x, y]) => Math.hypot(x, y)),
-  );
-  const innerScale = Math.max(0.5, 1 - 1.4 / circumradius);
-
-  return (
-    <div
-      className="die3d-face"
-      // L'ombrage passe par une variable CSS plutôt que par une couleur en dur :
-      // la teinte reste décidée par la feuille de style (donc par le thème),
-      // seule l'INTENSITÉ vient de la géométrie. Portée par l'enveloppe pour que
-      // le chiffre en hérite — sinon une facette de tranche afficherait un
-      // chiffre en pleine lumière.
-      style={{
-        width: box.width,
-        height: box.height,
-        // La boîte est serrée sur le polygone : son coin haut-gauche se cale par
-        // marge, et l'origine de transformation revient au centre de la face.
-        marginLeft: box.offsetX,
-        marginTop: box.offsetY,
-        transformOrigin: `${-box.offsetX}px ${-box.offsetY}px 0`,
-        transform: placed.transform,
-        clipPath: clipPathFor(placed, 1),
-        ['--facet-light' as string]: lighting.toFixed(3),
-      }}
-    >
-      <div
-        className={cn('die3d-facet', highlighted && 'die3d-facet--lit')}
-        style={{ clipPath: clipPathFor(placed, innerScale) }}
-      />
-      <span
-        className={cn('die3d-pip', highlighted && 'die3d-pip--lit')}
-        // Le chiffre se centre sur le CENTRE DE LA FACE, pas sur le centre de la
-        // boîte : pour un triangle les deux diffèrent nettement, et un chiffre
-        // calé sur la boîte flotterait vers une pointe.
-        style={{
-          left: -box.offsetX,
-          top: -box.offsetY,
-          fontSize: faceFontSize(placed.polygon, radius),
-        }}
-      >
-        {placed.value}
-      </span>
-    </div>
-  );
+function bevelGradient(
+  ctx: CanvasRenderingContext2D,
+  face: ProjectedFace,
+  shade: number,
+): CanvasGradient {
+  const [lx, ly] = LIGHT_SCREEN;
+  let min = Infinity;
+  let max = -Infinity;
+  for (const [x, y] of face.polygon) {
+    const d = x * lx + y * ly;
+    if (d < min) min = d;
+    if (d > max) max = d;
+  }
+  // Le côté éclairé est celui qui va le plus LOIN dans la direction de la
+  // lumière, donc `max` — la source est du côté vers lequel pointe `LIGHT`.
+  const g = ctx.createLinearGradient(max * lx, max * ly, min * lx, min * ly);
+  g.addColorStop(0, mix(STONE_DARK, STONE_LIGHT, Math.min(1, shade + BEVEL)));
+  g.addColorStop(1, mix(STONE_DARK, STONE_LIGHT, Math.max(0, shade - BEVEL)));
+  return g;
 }
 
-/** `clip-path: polygon(...)` d'une face, en coordonnées de sa boîte serrée. */
-function clipPathFor(placed: FacePlacement, scale: number): string {
-  const { offsetX, offsetY } = placed.box;
-  const points = placed.polygon
-    .map(
-      ([x, y]) =>
-        `${(x * scale - offsetX).toFixed(2)}px ${(y * scale - offsetY).toFixed(2)}px`,
-    )
-    .join(',');
-  return `polygon(${points})`;
+function drawDigit(ctx: CanvasRenderingContext2D, face: ProjectedFace): void {
+  const [a, b, c, d, e, f] = face.digitTransform;
+  // Une face vue quasiment par la tranche écrase son repère : le chiffre y
+  // deviendrait un trait. On l'omet plutôt que de dessiner une bavure.
+  if (Math.abs(a * d - b * c) < 0.05) return;
+
+  ctx.save();
+  ctx.transform(a, b, c, d, e, f);
+  ctx.font = `700 ${face.digitSize.toFixed(2)}px Cinzel, Georgia, serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = face.isTarget ? ENGRAVING_TARGET : ENGRAVING;
+  ctx.globalAlpha = face.isTarget ? 1 : 0.35 + 0.55 * face.shade;
+  // Léger décalage optique : `middle` cale sur la moyenne des hauteurs de fonte,
+  // qui tombe un peu haut pour des chiffres sans jambage.
+  ctx.fillText(String(face.value), 0, face.digitSize * 0.04);
+  ctx.restore();
 }
 
-/** Rayon inscrit approché du polygone → taille de chiffre qui tient dedans. */
-function faceFontSize(
-  polygon: readonly (readonly [number, number])[],
-  radius: number,
-): number {
-  const inradius = Math.min(
-    ...polygon.map(([x, y], i) => {
-      const [nx, ny] = polygon[(i + 1) % polygon.length]!;
-      // Distance du centre au segment [p_i, p_i+1].
-      const ex = nx - x;
-      const ey = ny - y;
-      const len = Math.hypot(ex, ey) || 1;
-      return Math.abs((ex * -y - ey * -x) / len);
-    }),
-  );
-  return Math.max(9, Math.min(radius * 0.9, inradius * 1.15));
+/** Interpolation linéaire entre deux teintes, `t` de 0 à 1. */
+function mix(
+  dark: readonly [number, number, number],
+  light: readonly [number, number, number],
+  t: number,
+): string {
+  const k = Math.min(1, Math.max(0, t));
+  const channel = (i: number): number =>
+    Math.round(dark[i]! + (light[i]! - dark[i]!) * k);
+  return `rgb(${channel(0)} ${channel(1)} ${channel(2)})`;
 }

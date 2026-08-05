@@ -28,6 +28,15 @@ export interface PolyFace {
   readonly normal: Vec3;
   /** Chiffre gravé sur la face. */
   readonly value: number;
+  /**
+   * Rayon inscrit de la face — la plus grande pastille qui y tient.
+   *
+   * C'est ce qui dimensionne le chiffre : un triangle d'icosaèdre et un
+   * pentagone de dodécaèdre ont des circonscrits comparables mais des inscrits
+   * très différents, et un chiffre calé sur le circonscrit déborderait du
+   * triangle.
+   */
+  readonly inradius: number;
 }
 
 export interface Polyhedron {
@@ -205,7 +214,22 @@ function numberFaces(
     centroid: f.centroid,
     normal: f.normal,
     value: values.get(idx) ?? idx + 1,
+    inradius: faceInradius(f.vertices, f.centroid),
   }));
+}
+
+/** Distance du centre de la face à son arête la plus proche. */
+function faceInradius(vertices: readonly Vec3[], centroid: Vec3): number {
+  let min = Infinity;
+  for (let i = 0; i < vertices.length; i += 1) {
+    const a = sub(vertices[i]!, centroid);
+    const b = sub(vertices[(i + 1) % vertices.length]!, centroid);
+    const edge = sub(b, a);
+    const len = length(edge);
+    // Aire du triangle (centre, a, b) = ½·|edge|·hauteur.
+    if (len > EPS) min = Math.min(min, length(cross(a, b)) / len);
+  }
+  return min;
 }
 
 /** Ramène le solide à un rayon circonscrit de 1. */

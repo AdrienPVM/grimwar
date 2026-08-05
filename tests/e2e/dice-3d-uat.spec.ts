@@ -45,16 +45,22 @@ async function uatShot(
  * lieu de la vraie composition « les dés au-dessus, le total en dessous ».
  */
 async function freezeTray(page: Page): Promise<void> {
-  // Le total du toast défile avant de se poser (cf. `<RollingNumber>`), et ce
-  // défilement est piloté en JS, donc `animations: 'disabled'` ne l'arrête pas.
-  // Capturer trop tôt fige un chiffre intermédiaire qui ne correspond pas à la
-  // somme affichée en dessous — on croirait à une erreur de calcul.
-  await page.waitForTimeout(900);
+  // On attend un SIGNAL, pas une durée.
+  //
+  // La culbute est peinte image par image sur un canevas : `animations:
+  // 'disabled'` ne l'arrête pas, et une attente à l'estime est fausse deux fois
+  // — trop courte sur une machine chargée, trop longue face au plateau qui se
+  // retire de lui-même au bout de 2,2 s. C'est exactement ce qui a fait tomber
+  // cette spec sous la charge d'un run complet, alors qu'elle passait seule.
+  // Chaque dé annonce donc sa pose, et le total du toast la sienne.
+  for (const die of await page.getByTestId('die-3d').all()) {
+    await expect(die).toHaveAttribute('data-settled', 'true');
+  }
+  await expect(page.getByTestId('toast-total')).not.toHaveClass(/opacity-70/);
   await page.addStyleTag({
     content: `
       .dice-tray-life { animation: none !important; opacity: 1 !important; transform: none !important; }
       .die3d-drop { animation: none !important; opacity: 1 !important; transform: none !important; }
-      .die3d-tumble { animation: none !important; transform: none !important; }
       .toast-anim { animation: none !important; opacity: 1 !important; transform: none !important; }
     `,
   });
@@ -111,10 +117,24 @@ test.describe('UAT — dés en relief', () => {
     const face = await die.getAttribute('data-face');
     expect(Number(face)).toBeGreaterThanOrEqual(1);
     expect(Number(face)).toBeLessThanOrEqual(20);
-    // Et la facette allumée est bien celle-là.
-    await expect(
-      die.locator('.die3d-pip--lit'),
-    ).toHaveText(String(Number(face)));
+
+    // Le solide est PEINT, et pas seulement monté. Un canevas vierge est le mode
+    // de panne propre au tracé sur canevas : le DOM est intact, les attributs
+    // justes, et il n'y a rien à l'écran. Le seul moyen honnête de l'exclure est
+    // de compter les pixels réellement couverts.
+    const coverage = await die.locator('canvas').evaluate((node) => {
+      const canvas = node as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return 0;
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let opaque = 0;
+      for (let i = 3; i < data.length; i += 4) if (data[i]! > 8) opaque += 1;
+      return opaque / (canvas.width * canvas.height);
+    });
+    // Un dé occupe une bonne part de sa boîte sans la remplir — il est convexe
+    // mais pas carré.
+    expect(coverage).toBeGreaterThan(0.25);
+    expect(coverage).toBeLessThan(0.95);
   });
 
   test('les six solides ont chacun leur forme', async ({ page }) => {
@@ -152,6 +172,11 @@ test.describe('UAT — dés en relief', () => {
     await expect(page.getByRole('status').locator('.sr-only')).toHaveText(
       String(sum),
     );
+    // Et le total VU par le joueur dit la même chose que celui annoncé au
+    // lecteur d'écran. Le compteur du toast défile avant de se poser : s'il
+    // restait bloqué sur une face intermédiaire, le joueur lirait un total qui
+    // ne correspond ni à ses dés ni au détail affiché juste en dessous.
+    await expect(page.getByTestId('toast-total')).toHaveText(String(sum));
 
     await uatShot(page, '04-les-six-solides', { viewport: true });
   });

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useDevicePrefsStore } from '@/shared/lib/slices/device-prefs-slice';
 import {
@@ -132,27 +132,101 @@ describe('useDiceTrayStore', () => {
   });
 });
 
+/**
+ * Contexte 2D instrumenté.
+ *
+ * Le dé est tracé sur un canevas, que jsdom n'implémente pas : sans ce double,
+ * le composant sortirait au premier `getContext` et les tests ne prouveraient
+ * plus rien de ce qui est DESSINÉ. On enregistre donc les appels et on les
+ * inspecte — c'est plus proche du résultat visible que ne l'était l'ancienne
+ * inspection du DOM.
+ */
+function stubCanvas(): { texts: string[]; fills: number } {
+  const record = { texts: [] as string[], fills: 0 };
+  const ctx = {
+    setTransform() {},
+    clearRect() {},
+    translate() {},
+    save() {},
+    restore() {},
+    transform() {},
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    closePath() {},
+    stroke() {},
+    createLinearGradient: () => ({ addColorStop() {} }),
+    fill() {
+      record.fills += 1;
+    },
+    fillText(text: string) {
+      record.texts.push(text);
+    },
+    globalAlpha: 1,
+    lineWidth: 1,
+    lineJoin: 'round',
+    font: '',
+    textAlign: 'center',
+    textBaseline: 'middle',
+    fillStyle: '',
+    strokeStyle: '',
+  };
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
+    ctx as unknown as CanvasRenderingContext2D,
+  );
+  // Le mouvement réduit fait peindre la pose une seule fois, sans `rAF` : la
+  // dernière image est donc celle qu'on inspecte, et le test ne dépend d'aucun
+  // minuteur.
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes('reduce'),
+        media: query,
+        addEventListener() {},
+        removeEventListener() {},
+        addListener() {},
+        removeListener() {},
+        onchange: null,
+        dispatchEvent: () => false,
+      }) as unknown as MediaQueryList,
+  );
+  return record;
+}
+
 describe('<Die3D>', () => {
-  it('rend une facette par face du solide, et une seule allumée', () => {
-    const { container } = render(<Die3D sides={20} face={17} />);
-    expect(container.querySelectorAll('.die3d-facet')).toHaveLength(20);
-    expect(container.querySelectorAll('.die3d-facet--lit')).toHaveLength(1);
-    // La facette allumée porte bien le chiffre tiré.
-    expect(container.querySelector('.die3d-pip--lit')?.textContent).toBe('17');
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('trace le chiffre tiré, et une fois seulement', () => {
+    const record = stubCanvas();
+    render(<Die3D sides={20} face={17} />);
+    expect(record.texts.filter((t) => t === '17')).toHaveLength(1);
   });
 
   it.each([4, 6, 8, 10, 12, 20])(
-    'd%i : chaque face porte un chiffre distinct de 1 à N',
+    'd%i : ne trace que des chiffres du dé, tous distincts',
     (sides) => {
-      const { container } = render(<Die3D sides={sides} face={1} />);
-      const pips = Array.from(container.querySelectorAll('.die3d-pip')).map(
-        (n) => Number(n.textContent),
-      );
-      expect([...pips].sort((a, b) => a - b)).toEqual(
-        Array.from({ length: sides }, (_, i) => i + 1),
-      );
+      const record = stubCanvas();
+      render(<Die3D sides={sides} face={1} />);
+      const values = record.texts.map(Number);
+      expect(values.length).toBeGreaterThan(1);
+      expect(new Set(values).size).toBe(values.length);
+      for (const v of values) {
+        expect(v).toBeGreaterThanOrEqual(1);
+        expect(v).toBeLessThanOrEqual(sides);
+      }
+      // Une face de dos ne se dessine pas : on en voit toujours moins que le
+      // solide n'en compte.
+      expect(values.length).toBeLessThan(sides);
     },
   );
+
+  it('remplit exactement une facette par chiffre tracé', () => {
+    const record = stubCanvas();
+    render(<Die3D sides={12} face={5} />);
+    expect(record.fills).toBe(record.texts.length);
+  });
 
   it('ne rend rien pour un dé sans solide connu', () => {
     const { container } = render(<Die3D sides={100} face={42} />);

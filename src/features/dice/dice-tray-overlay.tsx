@@ -48,12 +48,11 @@ export function DiceTrayOverlay(): JSX.Element | null {
       className="pointer-events-none fixed inset-x-0 bottom-[19rem] z-[95] flex flex-col items-center gap-2 px-4"
       data-testid="dice-tray"
     >
-      <div
-        className="dice-tray-life flex flex-wrap items-center justify-center gap-4"
-        // La perspective vit sur le CONTENEUR : posée sur chaque dé, chacun
-        // aurait son propre point de fuite et le lot paraîtrait éclaté.
-        style={{ perspective: '900px' }}
-      >
+      {/* Pas de `perspective` CSS ici : la fuite est calculée dans la projection
+          de chaque dé (cf. `projection.ts`). Une perspective de conteneur
+          déformerait en plus les dés selon leur position dans la rangée — ceux
+          du bord seraient vus de trois quarts sans raison. */}
+      <div className="dice-tray-life flex flex-wrap items-center justify-center gap-4">
         {shown.map((die, index) => (
           <Die3D
             key={die.id}
