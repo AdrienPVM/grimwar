@@ -107,7 +107,12 @@ export function CampaignMemberItem({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
+    // Empilé sur mobile, en ligne dès `sm`. Le passage en colonne n'est pas
+    // cosmétique : avec trois affordances d'autorité sur la même rangée, le nom
+    // du membre — `min-w-0 flex-1 truncate` — était comprimé à ZÉRO pixel sur un
+    // écran de téléphone. Il restait dans le DOM, invisible à l'œil comme au
+    // lecteur d'écran. Attrapé par `campaigns-member-names-uat`.
+    <div className="flex flex-col gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <span
           className={cn(
@@ -124,7 +129,7 @@ export function CampaignMemberItem({
           </span>
         ) : null}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {entry.role === 'gm' ? (
           <Chip variant="gold">{t('campaigns.card.roleGm')}</Chip>
         ) : (

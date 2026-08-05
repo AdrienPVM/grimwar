@@ -80,7 +80,9 @@ test.describe('UAT 25.4 — vue agrégée du journal + export', () => {
     });
     await expect(page.getByText('Le départ')).toBeVisible();
     await expect(page.getByText('La crypte oubliée')).toBeVisible();
-    const exportBtn = page.getByRole('button', { name: /Exporter/ });
+    // Étiquette EXACTE : depuis M14, une séance dépliée expose « Exporter cette
+    // séance » et un `/Exporter/` large résout à deux boutons.
+    const exportBtn = page.getByRole('button', { name: 'Exporter (.md)' });
     await expect(exportBtn).toBeVisible();
     await captureFull(page, '01-journal-campagne.png');
 

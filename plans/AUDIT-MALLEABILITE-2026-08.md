@@ -194,8 +194,45 @@ Trois lots, à livrer dans l'ordre. Le découpage suit une règle simple : **d'a
 > | ✅ | **M7** — tour précédent, abandon, réouverture, renommer/supprimer | `0b05524` |
 > | ✅ | **M5** — dégâts sur un PJ depuis le tracker | `94268c6` |
 >
-> **Reste du lot 1 :** M11, M12, M13, M14 (cycle de vie) · M28 (scope d'objet) ·
-> M30, M31, M32, M34 (carte en amont et côté joueur) · M39, M40, M41, M42 (PNJ).
+> **Lot 1 ter — 2026-08-05, le cycle de vie** (commits `be776e4` → `be714f0`, locaux) :
+>
+> | Livré | Mur | Commit |
+> |---|---|---|
+> | ✅ | **M11** — exclure, rétrograder, régénérer le code d'invitation | `be776e4` |
+> | ✅ | **M12** — corriger / désarchiver / supprimer un document, destinataires nommés | `3eca6bb` |
+> | ✅ | **M13** — renommer, annuler, rouvrir une séance | `b92554a` |
+> | ✅ | **M14** — cadrer le récit compilé, exporter une séance seule | `be714f0` |
+>
+> **Reste du lot 1 :** M28 (scope d'objet) · M30, M31, M32, M34 (carte en amont
+> et côté joueur) · M39, M40, M41, M42 (PNJ).
+>
+> **Découvertes de livraison (lot 1 ter) :**
+> 1. **Une rule « préparée sans consommateur » ne garantit pas que le CLIENT
+>    passera.** `rotateInviteCode` reprenait d'abord `campaign.createdBy` comme
+>    `createdBy` du nouveau doc `inviteCodes` — or la rule de create exige
+>    `createdBy == auth.uid`. Tout co-meneur n'ayant pas créé la campagne aurait
+>    été refusé. Corrigé en passant l'uid de l'APPELANT.
+> 2. **Rétrograder n'est pas exclure, et le distinguo tient à un doc absent.**
+>    Un meneur fondateur n'a PAS de doc `members/{uid}` (sa membership est
+>    sous-entendue par `gmIds`). Le retirer de `gmIds` sans lui créer de doc
+>    joueur l'éjectait entièrement de la campagne — une rétrogradation
+>    silencieusement transformée en exclusion.
+> 3. **Exclure un meneur ne lui retire RIEN.** Le kick supprime le doc member,
+>    mais un MJ reste MJ par `gmIds`. L'affordance est donc interdite à la
+>    sélection sur une ligne meneur — garde vu rouge avant vert.
+> 4. **Trois affordances d'autorité sur une rangée écrasent le nom du membre à
+>    ZÉRO pixel sur mobile.** Le nom (`min-w-0 flex-1 truncate`) restait dans le
+>    DOM, invisible à l'œil comme au lecteur d'écran. Attrapé par
+>    `campaigns-member-names-uat` — la ligne compacte s'empile désormais sous
+>    `sm`. **Un bouton ajouté à une rangée dense est un risque de layout, pas
+>    seulement de sélecteur.**
+> 5. **Le piège du sélecteur e2e ambigu, deuxième occurrence.** « Exporter cette
+>    séance » (M14) a rendu ambigu le `/Exporter/` de `journal-aggregate-uat`.
+>    Corrigé par étiquette exacte, comme au lot 1 bis.
+> 6. **Ajouter un destinataire à un document le prévient tout seul.**
+>    `useHandoutNotifications` écoute une query `recipients array-contains uid` :
+>    élargir la liste fait ENTRER le doc dans la query du nouveau joueur, son
+>    listener le voit en `added` et lève le toast. Zéro code de notification.
 >
 > **Découverte de livraison (lot 1) :** M4 et M37 ont cassé trois specs e2e qui
 > encodaient l'ancien comportement (bouton « −10 » en dur, aria-label « Dégâts
@@ -232,7 +269,7 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 | 2 | **M4, M6, M8, M9, M10, M15, M19, M28, M29, M33, M37** — les XS | Onze correctifs d'une à trente lignes. Le hand-off numérique (M4) et les états libres (M8) changent une séance dès le soir même. |
 | 3 | ✅ **M2, M3, M7** — le tracker devient éditable | Le cœur du lot. Ajouter/retirer/renommer un combattant, saisir une initiative, revenir d'un tour : c'est **la** différence entre un tracker de démo et un tracker de table. `firestore.rules:338` autorise déjà tout. |
 | 4 | ✅ **M5** — appliquer les dégâts aux PJ depuis le tracker | Complète M4 : la chaîne « le joueur lance → le MJ cible → les PV bougent » devient continue pour les deux modes de dés. |
-| 5 | **M11, M12, M13, M14** — cycle de vie (roster, documents, séances, journal) | Tout ce qui rend une campagne **réparable** après une erreur : exclure, rétrograder, corriger un document, renommer une séance, retirer un event parasite. |
+| 5 | ✅ **M11, M12, M13, M14** — cycle de vie (roster, documents, séances, journal) | Tout ce qui rend une campagne **réparable** après une erreur : exclure, rétrograder, corriger un document, renommer une séance, retirer un event parasite. |
 | 6 | **M30, M31, M32, M34** — la carte devient utilisable en amont et côté joueur | Image nue + échelle réglable + zoom + vue joueur. Sans ça, seul un fichier Dungeon Alchemist bien formé produit une carte exploitable. |
 | 7 | **M39, M40, M41, M42** — les PNJ | Portrait, lien bestiaire, recherche, duplication inter-campagnes. Bon marché, très visible en séance. |
 
