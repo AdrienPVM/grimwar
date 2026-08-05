@@ -23,7 +23,7 @@ vi.mock('../../../use-update-character', () => ({
   }),
 }));
 
-const rollWithFlagsMock = vi.fn(() => Promise.resolve(null));
+const rollWithFlagsMock = vi.fn((..._args: unknown[]) => Promise.resolve(null));
 vi.mock('@/features/dice/roll-with-flags', () => ({
   rollWithFlags: (...args: unknown[]) => rollWithFlagsMock(...args),
 }));
@@ -215,7 +215,8 @@ describe('<ProficienciesCard> — maîtrises ajoutées à la main', () => {
       'Outils de forgeron',
     );
     const addButtons = screen.getAllByRole('button', { name: 'Ajouter' });
-    await user.click(addButtons[addButtons.length - 1]);
+    // Trois groupes, donc trois boutons « Ajouter » : celui des outils est le dernier.
+    await user.click(addButtons[addButtons.length - 1]!);
 
     await waitFor(() => expect(updateCharacterMock).toHaveBeenCalledTimes(1));
     expect(updateCharacterMock).toHaveBeenCalledWith({

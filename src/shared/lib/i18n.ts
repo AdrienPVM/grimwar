@@ -3001,6 +3001,8 @@ export type StringKey =
   | 'levelUp.addClass.pickTitle'
   | 'levelUp.addClass.pickIntro'
   | 'levelUp.addClass.blockedTitle'
+  | 'levelUp.addClass.dmOverrideBadge'
+  | 'levelUp.addClass.dmOverrideTitle'
   | 'levelUp.addClass.selectFirst'
   | 'levelUp.addClass.defNotFound'
   | 'levelUp.addClass.subChoicesTitle'
@@ -6756,6 +6758,9 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.addClass.pickIntro':
       'Choisis la classe que ton personnage souhaite apprendre. Les classes grisées sont indisponibles — survole pour voir la raison.',
     'levelUp.addClass.blockedTitle': 'Indisponible — {reason}',
+    'levelUp.addClass.dmOverrideBadge': 'Hors prérequis · {reason}',
+    'levelUp.addClass.dmOverrideTitle':
+      'Prérequis non atteints ({reason}). Tu peux l’accorder quand même.',
     'levelUp.addClass.selectFirst':
       "Sélectionne d'abord une classe à l'étape précédente.",
     'levelUp.addClass.defNotFound': 'Définition introuvable pour « {id} ».',
@@ -10314,6 +10319,9 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.addClass.pickIntro':
       'Choose the class your character wishes to learn. Greyed-out classes are unavailable — hover to see why.',
     'levelUp.addClass.blockedTitle': 'Unavailable — {reason}',
+    'levelUp.addClass.dmOverrideBadge': 'Below prerequisites · {reason}',
+    'levelUp.addClass.dmOverrideTitle':
+      'Prerequisites not met ({reason}). You may grant it anyway.',
     'levelUp.addClass.selectFirst': 'Select a class at the previous step first.',
     'levelUp.addClass.defNotFound': 'Definition not found for “{id}”.',
     'levelUp.addClass.subChoicesTitle': 'Level 1 sub-choices',

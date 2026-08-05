@@ -391,3 +391,59 @@ describe('applyLevelUp — sous-choix L1 lors de l\'ajout d\'une classe (2D.4a)'
     expect(fighterEntry?.weaponMasteries).toEqual([]);
   });
 });
+
+describe('applyLevelUp — autorité du meneur sur les prérequis multiclass (M25)', () => {
+  /** Paladin : CHA 13 ET FOR 13 requis par le SRD. On tombe court des deux. */
+  function underqualified(): Character {
+    return buildMulticlassCharacter({
+      classes: [mkClassEntry('wizard', 3)],
+      primaryClassId: 'wizard',
+      abilitiesOverride: { for: 10, cha: 12 },
+    });
+  }
+
+  const draft: LevelUpDraft = {
+    classId: 'paladin',
+    newClassLevel: 1,
+    hpRoll: { kind: 'average' },
+  };
+
+  it('refuse par défaut — le joueur reste tenu par la règle SRD', () => {
+    expect(() =>
+      applyLevelUp({
+        character: underqualified(),
+        draft,
+        classDefinitions: { wizard: ALL_CLASSES.wizard!, paladin: ALL_CLASSES.paladin! },
+      }),
+    ).toThrow(/prérequis multiclass non satisfaits/);
+  });
+
+  it('accorde la classe quand le meneur lève explicitement le prérequis', () => {
+    const result = applyLevelUp({
+      character: underqualified(),
+      draft,
+      classDefinitions: { wizard: ALL_CLASSES.wizard!, paladin: ALL_CLASSES.paladin! },
+      allowUnmetPrerequisites: true,
+    });
+    const paladin = result.classes.find((c) => c.classId === 'paladin');
+    expect(paladin).toBeDefined();
+    expect(paladin?.level).toBe(1);
+    expect(result.totalLevel).toBe(4);
+  });
+
+  it('la levée ne touche QUE les prérequis — le plafond de 20 tient toujours', () => {
+    const capped = buildMulticlassCharacter({
+      classes: [mkClassEntry('wizard', 20)],
+      primaryClassId: 'wizard',
+      abilitiesOverride: { for: 10, cha: 12 },
+    });
+    expect(() =>
+      applyLevelUp({
+        character: capped,
+        draft,
+        classDefinitions: { wizard: ALL_CLASSES.wizard!, paladin: ALL_CLASSES.paladin! },
+        allowUnmetPrerequisites: true,
+      }),
+    ).toThrow(/totalLevel déjà à 20/);
+  });
+});

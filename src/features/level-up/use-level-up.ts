@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 
+import { usePermissionContext } from '@/features/sheet/permissions-context';
 import { useUpdateCharacter } from '@/features/sheet/use-update-character';
 import { useContent } from '@/shared/hooks/use-content';
 import { applyLevelUp } from '@/shared/lib/level-up/apply-level-up';
@@ -54,6 +55,9 @@ const PATCHED_KEYS = [
 export function useLevelUp(character: Character): UseLevelUpResult {
   const { data: classes } = useContent('classes');
   const { updateCharacter, isUpdating, error } = useUpdateCharacter(character);
+  // M25 — le meneur peut accorder une classe dont les prérequis ne sont pas
+  // atteints. Le défaut (édition propriétaire) reste le refus SRD.
+  const { isDMEdit } = usePermissionContext();
 
   const applyAndPersist = useCallback(
     async (draft: LevelUpDraft): Promise<void> => {
@@ -69,7 +73,12 @@ export function useLevelUp(character: Character): UseLevelUpResult {
         const def = classes.find((cd) => cd.id === draft.classId);
         if (def) classDefinitions[draft.classId] = def;
       }
-      const updated = applyLevelUp({ character, draft, classDefinitions });
+      const updated = applyLevelUp({
+        character,
+        draft,
+        classDefinitions,
+        allowUnmetPrerequisites: isDMEdit,
+      });
       const patch: Partial<Character> = {};
       for (const key of PATCHED_KEYS) {
         (patch as Record<string, unknown>)[key] = updated[key];
@@ -80,7 +89,7 @@ export function useLevelUp(character: Character): UseLevelUpResult {
       // wizard de montée de niveau au plan 18 (cf. plan 22 step 5, différé).
       await updateCharacter(patch, { log: 'manual' });
     },
-    [character, classes, updateCharacter],
+    [character, classes, updateCharacter, isDMEdit],
   );
 
   return { applyAndPersist, isUpdating, error };

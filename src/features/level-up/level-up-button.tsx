@@ -1,5 +1,6 @@
 import { useMemo, useState, type JSX } from 'react';
 
+import { usePermissionContext } from '@/features/sheet/permissions-context';
 import { Button } from '@/shared/components/button';
 import { useContent } from '@/shared/hooks/use-content';
 import { t } from '@/shared/lib/i18n';
@@ -48,6 +49,7 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { data: classes } = useContent('classes');
   const { applyAndPersist } = useLevelUp(character);
+  const { isDMEdit } = usePermissionContext();
 
   const classDefinition = useMemo(
     () => classes.find((c) => c.id === character.primaryClassId) ?? null,
@@ -63,13 +65,16 @@ export function LevelUpButton({ character, onConfirm }: LevelUpButtonProps): JSX
     const ownedIds = new Set(character.classes.map((c) => c.classId));
     return classes.some((def) => {
       if (ownedIds.has(def.id)) return false;
+      // M25 — pour le meneur, un prérequis non atteint n'est plus une porte
+      // fermée mais un avertissement : la modale ne peut donc pas être vide.
+      if (isDMEdit) return true;
       const eligibility = computeMulticlassEligibility(
         character,
         def.multiclassPrerequisite ?? null,
       );
       return eligibility.eligible;
     });
-  }, [character, classes]);
+  }, [character, classes, isDMEdit]);
 
   const primaryEntry = character.classes.find((c) => c.classId === character.primaryClassId);
   const canLevelUp = !!primaryEntry && primaryEntry.level < 20 && classDefinition !== null;

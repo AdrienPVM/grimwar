@@ -1,5 +1,6 @@
 import { useMemo, type JSX } from 'react';
 
+import { usePermissionContext } from '@/features/sheet/permissions-context';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
@@ -76,6 +77,9 @@ export function AddClassPickerStep({
   dispatch,
   allClasses,
 }: AddClassStepProps): JSX.Element {
+  // Lu du contexte plutôt que passé en prop : la chaîne bouton → modale →
+  // StepBody → step transporterait un drapeau que seul ce composant consomme.
+  const { isDMEdit } = usePermissionContext();
   const ownedIds = useMemo(
     () => new Set(character.classes.map((c) => c.classId)),
     [character.classes],
@@ -90,20 +94,19 @@ export function AddClassPickerStep({
           character,
           def.multiclassPrerequisite ?? null,
         );
-        const blocked = isOwned || !eligibility.eligible;
-        const reason = isOwned
-          ? t('levelUp.addClass.ownedReason')
-          : !eligibility.eligible
-            ? eligibility.unmetScores
-                .map(
-                  (s) =>
-                    `${t(ABILITY_SHORT_LABEL_KEYS[s.ability])} ${s.actual}/${s.minimum}`,
-                )
-                .join(' · ')
-            : '';
-        return { def, blocked, reason };
+        const unmet = eligibility.unmetScores
+          .map((s) => `${t(ABILITY_SHORT_LABEL_KEYS[s.ability])} ${s.actual}/${s.minimum}`)
+          .join(' · ');
+        // M25 — pour le meneur, un prérequis non atteint devient un
+        // AVERTISSEMENT : la classe reste sélectionnable. Une classe déjà
+        // possédée, elle, reste bloquée des deux côtés — ce n'est pas un
+        // arbitrage de table, c'est le path level-up qui la sert.
+        const blocked = isOwned || (!eligibility.eligible && !isDMEdit);
+        const reason = isOwned ? t('levelUp.addClass.ownedReason') : blocked ? unmet : '';
+        const warning = !isOwned && !eligibility.eligible && isDMEdit ? unmet : '';
+        return { def, blocked, reason, warning };
       });
-  }, [allClasses, character, ownedIds]);
+  }, [allClasses, character, ownedIds, isDMEdit]);
 
   return (
     <section aria-labelledby="step-add-class-pick-title" className="space-y-4">
@@ -119,7 +122,7 @@ export function AddClassPickerStep({
         </p>
       </header>
       <ul className="grid gap-2">
-        {options.map(({ def, blocked, reason }) => {
+        {options.map(({ def, blocked, reason, warning }) => {
           const selected = state.addClassTargetId === def.id;
           return (
             <li key={def.id}>
@@ -153,6 +156,16 @@ export function AddClassPickerStep({
                 {blocked ? (
                   <span className="font-ui text-[10px] uppercase tracking-[0.18em] text-text-tertiary">
                     {reason}
+                  </span>
+                ) : warning ? (
+                  <span
+                    className="font-ui text-[10px] uppercase tracking-[0.18em] text-gold-bright/80"
+                    title={t('levelUp.addClass.dmOverrideTitle').replace(
+                      '{reason}',
+                      warning,
+                    )}
+                  >
+                    {t('levelUp.addClass.dmOverrideBadge').replace('{reason}', warning)}
                   </span>
                 ) : selected ? (
                   <span
