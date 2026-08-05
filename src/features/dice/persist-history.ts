@@ -25,6 +25,11 @@ export async function persistRollHistory(result: RollResult): Promise<void> {
     fumble: result.fumble,
     kind: result.kind,
     timestamp: result.timestamp,
+    // M49 — de quoi REJOUER le jet. Le résultat portait déjà la formule et le
+    // modificateur effectif ; seul l'historique les jetait, ce qui rendait
+    // « relancer avec les mêmes bonus » impossible à reconstituer.
+    dice: result.dice,
+    modifier: result.modifier,
   };
   try {
     await db.diceHistory.add(row);

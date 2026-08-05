@@ -3079,6 +3079,9 @@ export type StringKey =
   | 'dice.hitMiss.hitTip'
   | 'dice.history.closeLabel'
   | 'dice.history.empty'
+  | 'dice.history.replay'
+  | 'dice.history.replayTip'
+  | 'dice.history.replayAria'
   | 'dice.history.modeSaveError'
   | 'dice.history.modeSaveErrorSub'
   | 'dm.tip.advNormal'
@@ -6855,6 +6858,9 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.history.closeLabel': 'Fermer l’historique',
     'dice.history.empty':
       'Aucun jet enregistré. Tente une initiative ou un test de caractéristique.',
+    'dice.history.replay': 'Relancer',
+    'dice.history.replayTip': 'Relancer ce jet, mêmes dés et mêmes bonus',
+    'dice.history.replayAria': 'Relancer : {label}',
     'dice.history.modeSaveError': 'Mode de dés non sauvegardé',
     'dice.history.modeSaveErrorSub': 'Erreur Firestore',
     'dm.tip.advNormal': 'Jet normal : un seul d20.',
@@ -10426,6 +10432,9 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.history.closeLabel': 'Close history',
     'dice.history.empty':
       'No rolls recorded yet. Try an initiative or an ability check.',
+    'dice.history.replay': 'Reroll',
+    'dice.history.replayTip': 'Roll this again, same dice and same bonuses',
+    'dice.history.replayAria': 'Reroll: {label}',
     'dice.history.modeSaveError': 'Dice mode not saved',
     'dice.history.modeSaveErrorSub': 'Firestore error',
     'dm.tip.advNormal': 'Normal roll: a single d20.',

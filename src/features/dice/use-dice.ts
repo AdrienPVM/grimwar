@@ -123,7 +123,13 @@ async function rollWithDisadvantage(
   return rollD20Plus(modifier, { ...opts, advantage: 'disadvantage' });
 }
 
-async function rollExpression(expr: string, opts: RollDamageOpts): Promise<RollResult | null> {
+// Exporté depuis M49 : le panneau d'historique rejoue un jet hors d'un
+// composant qui consomme `useDice()` (la ligne n'est pas un point d'appel de
+// hook). La fonction est déjà sans état — l'exposer ne change rien au pivot.
+export async function rollExpression(
+  expr: string,
+  opts: RollDamageOpts,
+): Promise<RollResult | null> {
   return rollDamageWithMode(expr, opts);
 }
 

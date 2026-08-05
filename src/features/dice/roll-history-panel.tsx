@@ -6,11 +6,29 @@ import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import type { DiceHistoryRow } from '@/shared/lib/dexie-db';
+import { stringifyDiceAst } from '@/shared/lib/dice/parser';
 import { setDiceMode, useUserSettingsStore } from '@/shared/lib/slices/user-settings-slice';
-import type { DiceMode } from '@/shared/lib/dice/types';
+import type { DiceMode, RollKind } from '@/shared/lib/dice/types';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 
 import { readRollHistory } from './persist-history';
+import { rollExpression } from './use-dice';
+
+const ROLL_KINDS: readonly RollKind[] = [
+  'attack',
+  'damage',
+  'check',
+  'save',
+  'init',
+  'death-save',
+  'cantrip-attack',
+  'custom',
+];
+
+/** L'historique persiste `kind` en chaîne libre — on ne fait confiance qu'aux siens. */
+function isRollKind(value: string): value is RollKind {
+  return (ROLL_KINDS as readonly string[]).includes(value);
+}
 
 interface RollHistoryPanelProps {
   open: boolean;
@@ -51,6 +69,27 @@ export function RollHistoryPanel({
       cancelled = true;
     };
   }, [open, characterId]);
+
+  /**
+   * Rejoue un jet à l'identique : mêmes dés, même modificateur effectif.
+   *
+   * On repasse par la formule plutôt que par une copie du résultat — un jet
+   * rejoué est un VRAI jet (nouvelles faces, journalisé, historisé), pas un
+   * doublon de l'ancien. Le panneau se ferme pour laisser voir le plateau.
+   */
+  async function replay(row: DiceHistoryRow): Promise<void> {
+    if (!row.dice) return;
+    const expression = stringifyDiceAst({
+      terms: row.dice,
+      modifier: row.modifier ?? 0,
+    });
+    onClose();
+    await rollExpression(expression, {
+      label: row.label,
+      characterId: row.characterId,
+      kind: isRollKind(row.kind) ? row.kind : 'custom',
+    });
+  }
 
   if (!open) return null;
 
@@ -99,7 +138,7 @@ export function RollHistoryPanel({
           ) : (
             <ul className="flex flex-col gap-1.5">
               {rows.map((row) => (
-                <HistoryRow key={row.id} row={row} />
+                <HistoryRow key={row.id} row={row} onReplay={() => void replay(row)} />
               ))}
             </ul>
           )}
@@ -111,10 +150,14 @@ export function RollHistoryPanel({
 
 interface HistoryRowProps {
   row: DiceHistoryRow;
+  onReplay: () => void;
 }
 
-function HistoryRow({ row }: HistoryRowProps): JSX.Element {
+function HistoryRow({ row, onReplay }: HistoryRowProps): JSX.Element {
   const badgeLabel = row.mode === 'physical' ? 'P' : 'D';
+  // Une ligne d'avant M49 ne porte pas sa formule : pas de bouton plutôt qu'un
+  // bouton qui ne ferait rien.
+  const canReplay = Boolean(row.dice && row.dice.length > 0);
   return (
     <li
       className={cn(
@@ -138,6 +181,18 @@ function HistoryRow({ row }: HistoryRowProps): JSX.Element {
       >
         {row.total}
       </span>
+      {canReplay ? (
+        <Tooltip label={t('dice.history.replayTip')} placement="left" decorative>
+          <button
+            type="button"
+            onClick={onReplay}
+            aria-label={t('dice.history.replayAria').replace('{label}', row.label)}
+            className="shrink-0 rounded-full border border-white-8 px-2.5 py-1 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-text-tertiary transition-colors duration-200 ease-base hover:border-gold hover:text-gold-bright"
+          >
+            {t('dice.history.replay')}
+          </button>
+        </Tooltip>
+      ) : null}
     </li>
   );
 }
