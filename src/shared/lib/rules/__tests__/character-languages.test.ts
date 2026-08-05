@@ -43,10 +43,23 @@ describe('resolveCharacterLanguages', () => {
     expect(out.map((l) => l.id)).toEqual(['common', 'draconic']);
   });
 
-  it('ignore silencieusement un id de langue inconnu', () => {
+  it('rend une langue hors registre telle quelle au lieu de la jeter (M17)', () => {
+    // Une table joue des langues de son monde : le registre SRD n'en connaît que
+    // 16. Les faire disparaître de la fiche après saisie serait pire qu'un
+    // libellé approximatif.
     const out = resolveCharacterLanguages({
       ancestryLanguages: ['common'],
-      extraLanguages: ['not-a-language'],
+      extraLanguages: [],
+      proficiencyLanguages: ['Thayen'],
+    });
+    expect(out.map((l) => l.id)).toEqual(['common', 'Thayen']);
+    expect(out.map((l) => l.name.fr)).toEqual(['Commun', 'Thayen']);
+  });
+
+  it('ignore une chaîne vide (saisie abandonnée)', () => {
+    const out = resolveCharacterLanguages({
+      ancestryLanguages: ['common'],
+      extraLanguages: ['', '   '],
     });
     expect(out.map((l) => l.id)).toEqual(['common']);
   });

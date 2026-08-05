@@ -1,4 +1,4 @@
-import { Card, CardHeader } from '@/shared/components/card';
+import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Tooltip } from '@/shared/components/tooltip';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
@@ -49,8 +49,16 @@ export function SavesRow({
   extraSaveBonus = 0,
 }: SavesRowProps): JSX.Element {
   const [menuFor, setMenuFor] = useState<AbilityCode | null>(null);
+  const [editing, setEditing] = useState<boolean>(false);
   const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
+
+  /** Bascule la maîtrise d'une sauvegarde (don Résilient, aptitude accordée). */
+  async function toggleProficiency(ability: AbilityCode): Promise<void> {
+    await updateCharacter({
+      saves: { ...character.saves, [ability]: !character.saves[ability] },
+    });
+  }
 
   async function performSave(
     ability: AbilityCode,
@@ -81,7 +89,19 @@ export function SavesRow({
     <Card>
       <CardHeader>
         <h3>{t('sheet.essence.saves.title')}</h3>
+        {readOnly ? null : (
+          <CardAction aria-pressed={editing} onClick={() => setEditing((v) => !v)}>
+            {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
+          </CardAction>
+        )}
       </CardHeader>
+
+      {editing ? (
+        <p className="mb-4 font-serif text-body-sm italic text-text-tertiary">
+          {t('sheet.essence.saves.editHint')}
+        </p>
+      ) : null}
+
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {ABILITY_ORDER.map((ability) => (
           <SaveChip
@@ -92,8 +112,15 @@ export function SavesRow({
             profBonus={pb}
             extraBonus={extraSaveBonus}
             disabled={readOnly}
-            onTap={() => void performSave(ability, NORMAL_ROLL)}
-            onLongPress={() => setMenuFor(ability)}
+            editing={editing}
+            onTap={() =>
+              editing
+                ? void toggleProficiency(ability)
+                : void performSave(ability, NORMAL_ROLL)
+            }
+            onLongPress={() => {
+              if (!editing) setMenuFor(ability);
+            }}
           />
         ))}
       </div>
@@ -128,6 +155,7 @@ interface SaveChipProps {
   profBonus: number;
   extraBonus: number;
   disabled: boolean;
+  editing: boolean;
   onTap: () => void;
   onLongPress: () => void;
 }
@@ -139,6 +167,7 @@ function SaveChip({
   profBonus,
   extraBonus,
   disabled,
+  editing,
   onTap,
   onLongPress,
 }: SaveChipProps): JSX.Element {
@@ -147,13 +176,23 @@ function SaveChip({
     abilityModifier(score) + (proficient ? profBonus : 0) + extraBonus;
   const signed = mod >= 0 ? `+${mod}` : `${mod}`;
   return (
-    <Tooltip label={t('sheet.tip.rollSave')} decorative className="w-full">
+    <Tooltip
+      label={t(editing ? 'sheet.essence.saves.editHint' : 'sheet.tip.rollSave')}
+      decorative
+      className="w-full"
+    >
       <button
         type="button"
         disabled={disabled}
+        aria-pressed={editing ? proficient : undefined}
         aria-label={
-          t('sheet.essence.saves.chipAria').replace('{ability}', t(`ability.${ability}`)) +
-          (proficient ? t('sheet.essence.saves.proficientSuffix') : '')
+          editing
+            ? t('sheet.essence.saves.toggleAria').replace(
+                '{ability}',
+                t(`ability.${ability}`),
+              )
+            : t('sheet.essence.saves.chipAria').replace('{ability}', t(`ability.${ability}`)) +
+              (proficient ? t('sheet.essence.saves.proficientSuffix') : '')
         }
         className={cn(
           'relative flex w-full flex-col items-center justify-center gap-0.5 rounded-card-sm border bg-bg-2/40 px-2 py-2.5 transition-all',

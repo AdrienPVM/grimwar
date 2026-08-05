@@ -7,14 +7,14 @@ import {
 } from '@/features/dice/roll-options-menu';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 
-import { Card, CardHeader } from '@/shared/components/card';
+import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Icon } from '@/shared/components/icon';
 import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { abilityModifier } from '@/shared/lib/rules/abilities';
 import { proficiencyBonus, totalLevel } from '@/shared/lib/rules/multiclass';
 import { getSkillProficiency, SKILLS, skillModifier } from '@/shared/lib/rules/skills';
-import { localize, t } from '@/shared/lib/i18n';
+import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { Character, SkillProf } from '@/shared/types/character';
 
@@ -39,9 +39,25 @@ interface SkillsListProps {
 export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Element {
   const [query, setQuery] = useState<string>('');
   const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [editing, setEditing] = useState<boolean>(false);
   const menuSkill = menuFor ? (SKILLS.find((sk) => sk.id === menuFor) ?? null) : null;
   const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
+
+  /**
+   * Fait tourner la maîtrise : aucune → maîtrise → expertise → aucune.
+   *
+   * Le niveau 0 RETIRE la clé au lieu d'écrire un zéro : `getSkillProficiency`
+   * traite déjà l'absence comme « non maîtrisé », et un document qui
+   * n'accumule pas 18 zéros reste lisible.
+   */
+  async function cycleProficiency(skillId: string): Promise<void> {
+    const next = ((getSkillProficiency(character.skills, skillId) + 1) % 3) as SkillProf;
+    const skills: Record<string, SkillProf> = { ...character.skills };
+    if (next === 0) delete skills[skillId];
+    else skills[skillId] = next;
+    await updateCharacter({ skills });
+  }
 
   const filtered = useMemo(() => {
     // Accents compris : « representation » doit trouver « Représentation ».
@@ -88,7 +104,22 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
     <Card>
       <CardHeader>
         <h3>{t('sheet.essence.skills.title')}</h3>
+        {/* Le tap est déjà le jet et l'appui long les options de jet : l'édition
+            de la maîtrise a besoin de son propre mode, pas d'un troisième geste
+            sur la même cible. */}
+        {readOnly ? null : (
+          <CardAction aria-pressed={editing} onClick={() => setEditing((v) => !v)}>
+            {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
+          </CardAction>
+        )}
       </CardHeader>
+
+      {editing ? (
+        <p className="mb-4 font-serif text-body-sm italic text-text-tertiary">
+          {t('sheet.essence.skills.editHint')}
+        </p>
+      ) : null}
+
       <div className="mb-4 flex items-center gap-2 rounded-pill border border-white-8 bg-bg-3/60 px-4 py-2">
         <Icon name="i-search" className="h-4 w-4 text-text-tertiary" />
         <input
@@ -129,8 +160,13 @@ export function SkillsList({ character, readOnly }: SkillsListProps): JSX.Elemen
                 profLevel={profLevel}
                 mod={mod}
                 disabled={readOnly}
-                onTap={() => void rollSkill(skill.id)}
-                onLongPress={() => setMenuFor(skill.id)}
+                editing={editing}
+                onTap={() =>
+                  editing ? void cycleProficiency(skill.id) : void rollSkill(skill.id)
+                }
+                onLongPress={() => {
+                  if (!editing) setMenuFor(skill.id);
+                }}
               />
             );
           })
@@ -168,6 +204,7 @@ function SkillRow({
   profLevel,
   mod,
   disabled,
+  editing,
   onTap,
   onLongPress,
 }: {
@@ -176,20 +213,30 @@ function SkillRow({
   readonly profLevel: SkillProf;
   readonly mod: number;
   readonly disabled: boolean;
+  readonly editing: boolean;
   readonly onTap: () => void;
   readonly onLongPress: () => void;
 }): JSX.Element {
   const handlers = useLongPress(onTap, onLongPress);
   const signed = mod >= 0 ? `+${mod}` : `${mod}`;
+  const editAria = t('sheet.essence.skills.cycleAria')
+    .replace('{skill}', label)
+    .replace('{state}', t(PROF_STATE_KEYS[profLevel]));
   return (
     <li>
-      <Tooltip label={t('sheet.tip.rollSkill')} decorative className="w-full">
+      <Tooltip
+        label={t(editing ? 'sheet.essence.skills.editHint' : 'sheet.tip.rollSkill')}
+        decorative
+        className="w-full"
+      >
         <button
           type="button"
           disabled={disabled}
+          aria-label={editing ? editAria : undefined}
           {...handlers}
           className={cn(
-            'flex w-full items-center gap-3 rounded-card-sm border border-white-8 bg-bg-2/30 px-3 py-2 text-left transition-all',
+            'flex w-full items-center gap-3 rounded-card-sm border bg-bg-2/30 px-3 py-2 text-left transition-all',
+            editing ? 'border-gold/40 bg-gold-bright/[0.04]' : 'border-white-8',
             'hover:border-soft hover:bg-white/[0.04] active:scale-[0.99]',
             'disabled:cursor-not-allowed disabled:opacity-50',
           )}
@@ -214,6 +261,13 @@ function SkillRow({
     </li>
   );
 }
+
+/** Libellé de l'état de maîtrise, partagé par l'indicateur et l'aria d'édition. */
+const PROF_STATE_KEYS: Record<SkillProf, StringKey> = {
+  0: 'sheet.essence.skills.notProficient',
+  1: 'sheet.essence.skills.proficient',
+  2: 'sheet.essence.skills.expertise',
+};
 
 function ProficiencyIndicator({ level }: { level: SkillProf }): JSX.Element {
   if (level === 0) {

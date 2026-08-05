@@ -881,6 +881,20 @@ export type StringKey =
   | 'sheet.essence.skills.notProficient'
   | 'sheet.essence.skills.proficient'
   | 'sheet.essence.skills.expertise'
+  | 'sheet.essence.prof.edit'
+  | 'sheet.essence.prof.done'
+  | 'sheet.essence.prof.add'
+  | 'sheet.essence.prof.pick'
+  | 'sheet.essence.prof.pickAria'
+  | 'sheet.essence.prof.freeAria'
+  | 'sheet.essence.prof.removeAria'
+  | 'sheet.essence.proficiencies.editHint'
+  | 'sheet.essence.proficiencies.addPlaceholder'
+  | 'sheet.essence.languages.addPlaceholder'
+  | 'sheet.essence.skills.editHint'
+  | 'sheet.essence.skills.cycleAria'
+  | 'sheet.essence.saves.editHint'
+  | 'sheet.essence.saves.toggleAria'
   | 'sheet.essence.hex.title'
   | 'sheet.essence.hex.proficiency'
   | 'sheet.essence.hex.rollLabel'
@@ -4085,6 +4099,23 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.skills.notProficient': 'Non maîtrisée',
     'sheet.essence.skills.proficient': 'Maîtrise',
     'sheet.essence.skills.expertise': 'Expertise',
+    'sheet.essence.prof.edit': 'Maîtrises',
+    'sheet.essence.prof.done': 'Terminer',
+    'sheet.essence.prof.add': 'Ajouter',
+    'sheet.essence.prof.pick': 'Choisir dans la liste…',
+    'sheet.essence.prof.pickAria': 'Choisir une entrée à ajouter — {group}',
+    'sheet.essence.prof.freeAria': 'Saisir une entrée libre — {group}',
+    'sheet.essence.prof.removeAria': 'Retirer {entry}',
+    'sheet.essence.proficiencies.editHint':
+      'Ajoute ce que le jeu t’a apporté. Les maîtrises de classe et d’historique restent calculées.',
+    'sheet.essence.proficiencies.addPlaceholder': 'Outils de forgeron…',
+    'sheet.essence.languages.addPlaceholder': 'Une langue de ton monde…',
+    'sheet.essence.skills.editHint':
+      'Touche une compétence pour faire tourner sa maîtrise : aucune, maîtrise, expertise.',
+    'sheet.essence.skills.cycleAria': '{skill} — {state}. Toucher pour changer la maîtrise.',
+    'sheet.essence.saves.editHint':
+      'Touche une sauvegarde pour ajouter ou retirer sa maîtrise.',
+    'sheet.essence.saves.toggleAria': 'Maîtrise de la sauvegarde de {ability}',
     'sheet.essence.hex.title': 'Hexagramme',
     'sheet.essence.hex.proficiency': 'Maîtrise',
     'sheet.essence.hex.rollLabel': 'Test de {ability}',
@@ -7750,6 +7781,22 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.skills.notProficient': 'Not proficient',
     'sheet.essence.skills.proficient': 'Proficient',
     'sheet.essence.skills.expertise': 'Expertise',
+    'sheet.essence.prof.edit': 'Proficiencies',
+    'sheet.essence.prof.done': 'Done',
+    'sheet.essence.prof.add': 'Add',
+    'sheet.essence.prof.pick': 'Pick from the list…',
+    'sheet.essence.prof.pickAria': 'Pick an entry to add — {group}',
+    'sheet.essence.prof.freeAria': 'Type a free entry — {group}',
+    'sheet.essence.prof.removeAria': 'Remove {entry}',
+    'sheet.essence.proficiencies.editHint':
+      'Add what play has granted. Class and background proficiencies stay derived.',
+    'sheet.essence.proficiencies.addPlaceholder': 'Smith’s tools…',
+    'sheet.essence.languages.addPlaceholder': 'A language from your world…',
+    'sheet.essence.skills.editHint':
+      'Tap a skill to cycle its proficiency: none, proficient, expertise.',
+    'sheet.essence.skills.cycleAria': '{skill} — {state}. Tap to change proficiency.',
+    'sheet.essence.saves.editHint': 'Tap a saving throw to add or remove its proficiency.',
+    'sheet.essence.saves.toggleAria': '{ability} saving throw proficiency',
     'sheet.essence.hex.title': 'Hexagram',
     'sheet.essence.hex.proficiency': 'Proficiency',
     'sheet.essence.hex.rollLabel': 'Test of {ability}',
