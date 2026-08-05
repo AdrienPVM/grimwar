@@ -906,6 +906,7 @@ export type StringKey =
   | 'sheet.turnOptions.opportunityAttack'
   | 'account.haptics.title'
   | 'account.haptics.hint'
+  | 'library.loading'
   | 'account.dice3d.title'
   | 'account.dice3d.hint'
   | 'nav.tabs.aria'
@@ -4075,6 +4076,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.turnOptions.bonus.empty': 'Aucun sort d’action Bonus connu.',
     'sheet.turnOptions.reaction': 'Réaction',
     'sheet.turnOptions.opportunityAttack': 'Attaque d’Opportunité',
+    'library.loading': 'Chargement de tes personnages',
     'account.dice3d.title': 'Dés en relief',
     'account.dice3d.hint':
       'Les dés numériques tombent en trois dimensions et se posent sur leur face. Décoratif : le résultat est le même sans.',
@@ -7692,6 +7694,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.turnOptions.bonus.empty': 'No known Bonus Action spell.',
     'sheet.turnOptions.reaction': 'Reaction',
     'sheet.turnOptions.opportunityAttack': 'Opportunity Attack',
+    'library.loading': 'Loading your characters',
     'account.dice3d.title': 'Three-dimensional dice',
     'account.dice3d.hint':
       'Digital dice tumble in three dimensions and settle on their face. Decorative: the result is the same without it.',

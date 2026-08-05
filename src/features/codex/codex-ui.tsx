@@ -1,6 +1,7 @@
 import type { JSX, ReactNode } from 'react';
 
 import { Icon } from '@/shared/components/icon';
+import { SkeletonList } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
@@ -63,12 +64,13 @@ export function CodexEmpty(): JSX.Element {
   );
 }
 
+/**
+ * Attente du Codex — l'ossature des rangées à venir, pas un mot au milieu du
+ * vide. Le Codex charge des bundles de plusieurs centaines d'entrées : c'est
+ * l'écran de l'app où l'attente se voit le plus.
+ */
 export function CodexLoading(): JSX.Element {
-  return (
-    <p className="px-2 py-8 text-center font-serif italic text-text-tertiary">
-      {t('codex.loading')}
-    </p>
-  );
+  return <SkeletonList label={t('codex.loading')} rows={6} className="mt-1" />;
 }
 
 interface CodexRowProps {

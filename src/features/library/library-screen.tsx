@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
+import { SkeletonList } from '@/shared/components/skeleton';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
-import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
 
 import { OngoingPlayCard } from '@/features/campaigns/ongoing-play-card';
@@ -68,7 +68,26 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
     [draft, currentStep],
   );
 
-  if (isLoading) return <Splash />;
+  // Ossature plutôt que splash plein écran : le splash escamote la page entière
+  // et la fait réapparaître d'un bloc. L'ossature garde le titre et dessine déjà
+  // la silhouette des fiches — le regard n'a rien à relocaliser à l'arrivée.
+  if (isLoading) {
+    return (
+      <PageContainer width="wide">
+        <header className="text-center">
+          <Divider className="mb-4" />
+          <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
+            {t('library.title')}
+          </h1>
+        </header>
+        <SkeletonList
+          label={t('library.loading')}
+          rows={3}
+          className="mx-auto mt-8 max-w-[720px]"
+        />
+      </PageContainer>
+    );
+  }
 
   if (error) {
     return (

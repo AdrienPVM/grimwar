@@ -186,6 +186,35 @@ body {
 }
 
 /* ===========================================================================
+   Ossature de chargement — la silhouette du contenu avant le contenu.
+   Le miroitement traverse la forme de gauche à droite ; sans lui l'ossature
+   ressemblerait à du contenu vide plutôt qu'à du contenu en route.
+   =========================================================================== */
+.skeleton {
+  background-color: rgba(255, 255, 255, 0.05);
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(220, 184, 108, 0.11) 44%,
+    rgba(220, 184, 108, 0.11) 56%,
+    transparent 80%
+  );
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: skeletonSheen 1.5s var(--t) infinite;
+}
+@keyframes skeletonSheen {
+  from { background-position: 130% 0; }
+  to { background-position: -130% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    background-image: none;
+    animation: none;
+  }
+}
+
+/* ===========================================================================
    Dés 3D — un vrai solide qui culbute et se pose sur la face tirée.
 
    Trois couches emboîtées, chacune avec UNE responsabilité (cf. `die-3d.tsx`) :
