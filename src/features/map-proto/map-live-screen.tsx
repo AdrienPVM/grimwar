@@ -42,6 +42,10 @@ import {
   type LightPresetKey,
 } from './light-state';
 import { MapScene } from './map-scene';
+import {
+  MapSettingsModal,
+  type MapSettingsPatch,
+} from './map-settings-modal';
 import { monsterToTokenInput } from './monster-token';
 import { MonsterPickerModal } from './monster-picker-modal';
 import {
@@ -193,6 +197,8 @@ export function MapLiveScreen(): JSX.Element {
   const [editingTokenId, setEditingTokenId] = useState<string | null>(null);
   // Sélecteur de bestiaire ouvert (autofill carte depuis un monstre).
   const [showMonsterPicker, setShowMonsterPicker] = useState(false);
+  // Panneau de réglages de la carte (nom, calibrage de grille, image partagée).
+  const [settingsOpen, setSettingsOpen] = useState(false);
   // Drag des templates AoE — même machinerie que les tokens (override local
   // pendant le glisser, write Firestore au lâcher). Distinct du drag de token :
   // un AoE et un token peuvent coexister, et l'AoE se rend SOUS les tokens.
@@ -708,6 +714,27 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, map, mid, user]);
 
+  /**
+   * Réglages de la carte (M30) — nom, calibrage de grille, image de fond
+   * partagée. Écriture unique : les 4 champs partent ensemble, donc une carte
+   * recalibrée ne passe jamais par un état intermédiaire incohérent (grille
+   * neuve avec ancienne échelle). Tout dérive ensuite : règle, portées de
+   * vision, gabarits d'AoE, rayons de lumière.
+   */
+  const handleSaveSettings = useCallback(
+    async (patch: MapSettingsPatch): Promise<void> => {
+      if (!cid || !mid || !user) return;
+      try {
+        await updateMap(cid, mid, { ...patch }, user.uid);
+        setWriteError(null);
+        setSettingsOpen(false);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, mid, user],
+  );
+
   // ── Tokens (affordance prototype « au centre », parité fog/light/AoE) ───
   // N'arbitre PAS la décision produit F23 (UX d'édition complète) : c'est le
   // même geste minimal que les boutons « Torche/Sphère au centre » déjà
@@ -1054,6 +1081,19 @@ export function MapLiveScreen(): JSX.Element {
           <span className="rounded-pill border border-gold-dim/40 bg-gold/10 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
             {t('map.live.badge')}
           </span>
+          {/* Réglages (M30) : le nom, le calibrage de grille et l'image de fond
+              n'étaient éditables NULLE PART après la création — or tout le reste
+              de la carte (distances, vision, AoE, lumières) en dérive. */}
+          <Tooltip label={t('map.tip.openSettings')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-open-settings"
+              onClick={() => setSettingsOpen(true)}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              {t('map.live.settingsButton')}
+            </button>
+          </Tooltip>
         </div>
         <p
           data-testid="map-live-meta"
@@ -1672,6 +1712,14 @@ export function MapLiveScreen(): JSX.Element {
         }
         onCarriedLightChange={(preset) => {
           void handleSetCarriedLight(preset);
+        }}
+      />
+
+      <MapSettingsModal
+        map={settingsOpen ? map : null}
+        onClose={() => setSettingsOpen(false)}
+        onSave={(patch) => {
+          void handleSaveSettings(patch);
         }}
       />
 

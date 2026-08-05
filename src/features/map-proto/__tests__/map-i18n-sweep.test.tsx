@@ -57,6 +57,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
 
 import { MapImportScreen } from '../map-import-screen';
 import { MapProtoScreen } from '../map-proto-screen';
+import { MapSettingsModal } from '../map-settings-modal';
 import { MapsCloudScreen } from '../maps-cloud-screen';
 import { MapTvScreen } from '../map-tv-screen';
 import { MonsterPickerModal } from '../monster-picker-modal';
@@ -117,6 +118,51 @@ describe('MapImportScreen — i18n', () => {
     );
     expect(screen.getByText('Import a map')).toBeInTheDocument();
     expect(screen.getByText('Choose a .dd2vtt file')).toBeInTheDocument();
+    expect(screen.getByText('Battlemap image')).toBeInTheDocument();
+  });
+
+  it('FR : le second onglet (image nue) est localisé', () => {
+    renderRoute(
+      '/map-proto/cloud/camp-1/import',
+      '/map-proto/cloud/:cid/import',
+      <MapImportScreen />,
+    );
+    expect(screen.getByText('Image de battlemap')).toBeInTheDocument();
+    expect(screen.getByText('Fichier Dungeon Alchemist')).toBeInTheDocument();
+  });
+});
+
+describe('MapSettingsModal — i18n', () => {
+  const map = {
+    id: 'donjon',
+    name: 'Donjon',
+    imageUrl: null,
+    gridSize: 70,
+    feetPerSquare: 5,
+    showGrid: true,
+    fogEnabled: false,
+    lightingEnabled: false,
+    fogPolygons: [],
+    lightSources: [],
+    aoeTemplates: [],
+    schemaVersion: 1 as const,
+    createdAt: null,
+    updatedAt: null,
+    updatedBy: 'u',
+  };
+
+  it('FR : titre + champs de calibrage localisés', () => {
+    render(<MapSettingsModal map={map} onSave={() => {}} onClose={() => {}} />);
+    expect(screen.getByText('Réglages de la carte')).toBeInTheDocument();
+    expect(screen.getByText('Une case représente (mètres)')).toBeInTheDocument();
+  });
+
+  it('EN : aucune fuite FR', () => {
+    useLocaleStore.setState({ locale: 'en' });
+    render(<MapSettingsModal map={map} onSave={() => {}} onClose={() => {}} />);
+    expect(screen.getByText('Map settings')).toBeInTheDocument();
+    expect(screen.getByText('One square represents (metres)')).toBeInTheDocument();
+    expect(screen.getByText('Save settings')).toBeInTheDocument();
   });
 });
 

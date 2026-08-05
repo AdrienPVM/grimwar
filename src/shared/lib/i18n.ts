@@ -2643,6 +2643,31 @@ export type StringKey =
   | 'map.import.saveSection'
   | 'map.import.submitting'
   | 'map.import.submit'
+  // Écran carte — import d'une image nue (2ᵉ onglet de l'import)
+  | 'map.import.tabDd2vtt'
+  | 'map.import.tabImage'
+  | 'map.import.imageIntro'
+  | 'map.import.chooseImage'
+  | 'map.import.imageProcessing'
+  | 'map.import.imageTooLarge'
+  | 'map.import.imageFailed'
+  | 'map.import.statWeight'
+  | 'map.import.statScale'
+  | 'map.import.imageHint'
+  // Écran carte — réglages d'une carte existante (map-settings-modal)
+  | 'map.settings.closeLabel'
+  | 'map.settings.title'
+  | 'map.settings.gridSizeLabel'
+  | 'map.settings.gridSizeHelp'
+  | 'map.settings.scaleLabel'
+  | 'map.settings.scaleEchoPrefix'
+  | 'map.settings.scaleInvalid'
+  | 'map.settings.imageUrlLabel'
+  | 'map.settings.imageUrlPlaceholder'
+  | 'map.settings.imageUrlHelp'
+  | 'map.settings.save'
+  | 'map.live.settingsButton'
+  | 'map.tip.openSettings'
   // Écran carte — édition de jeton (token-edit-modal) + bestiaire (monster-picker)
   | 'map.token.editTitle'
   | 'map.token.closeLabel'
@@ -6217,6 +6242,37 @@ const STRINGS: Record<Locale, Dict> = {
     'map.import.saveSection': 'Enregistrer la carte',
     'map.import.submitting': 'Import…',
     'map.import.submit': 'Importer',
+    // Écran carte — import d'une image nue (2ᵉ onglet de l'import)
+    'map.import.tabDd2vtt': 'Fichier Dungeon Alchemist',
+    'map.import.tabImage': 'Image de battlemap',
+    'map.import.imageIntro':
+      "Une image suffit : n'importe quel plan trouvé en ligne devient une carte jouable. Ni murs ni lumières ne sont déduits — le voile et la grille se règlent ensuite dans la carte.",
+    'map.import.chooseImage': 'Choisir une image',
+    'map.import.imageProcessing': 'Optimisation…',
+    'map.import.imageTooLarge':
+      "Cette image reste trop lourde après optimisation. Réduis-la avant de l'importer.",
+    'map.import.imageFailed': "Cette image n'a pas pu être lue.",
+    'map.import.statWeight': 'Poids optimisé',
+    'map.import.statScale': 'Échelle de départ',
+    'map.import.imageHint':
+      "L'image reste sur cet appareil. Pour que la table la voie, renseigne une URL publique dans les réglages de la carte.",
+    // Écran carte — réglages d'une carte existante (map-settings-modal)
+    'map.settings.closeLabel': 'Fermer les réglages',
+    'map.settings.title': 'Réglages de la carte',
+    'map.settings.gridSizeLabel': "Taille d'une case à l'écran (pixels)",
+    'map.settings.gridSizeHelp':
+      "Ajuste cette valeur jusqu'à ce que la grille se pose sur celle de l'image.",
+    'map.settings.scaleLabel': 'Une case représente (mètres)',
+    'map.settings.scaleEchoPrefix': 'Enregistré comme ',
+    'map.settings.scaleInvalid': 'Saisis une distance en mètres, par exemple 1,5.',
+    'map.settings.imageUrlLabel': "URL de l'image de fond",
+    'map.settings.imageUrlPlaceholder': 'https://…',
+    'map.settings.imageUrlHelp':
+      "Une image importée reste locale à cet appareil. Une URL publique, elle, s'affiche aussi chez les joueurs et sur l'écran de table.",
+    'map.settings.save': 'Enregistrer les réglages',
+    'map.live.settingsButton': 'Réglages',
+    'map.tip.openSettings':
+      "Renommer la carte, recaler la grille, changer l'échelle ou l'image de fond.",
     // Écran carte — édition de jeton (token-edit-modal) + bestiaire (monster-picker)
     'map.token.editTitle': 'Modifier le jeton',
     'map.token.closeLabel': 'Fermer l’édition du jeton',
@@ -9618,6 +9674,37 @@ const STRINGS: Record<Locale, Dict> = {
     'map.import.saveSection': 'Save the map',
     'map.import.submitting': 'Importing…',
     'map.import.submit': 'Import',
+    // Map screen — plain image import (2nd import tab)
+    'map.import.tabDd2vtt': 'Dungeon Alchemist file',
+    'map.import.tabImage': 'Battlemap image',
+    'map.import.imageIntro':
+      'An image is enough: any floor plan found online becomes a playable map. No walls or lights are inferred — fog and grid are set inside the map afterwards.',
+    'map.import.chooseImage': 'Choose an image',
+    'map.import.imageProcessing': 'Optimising…',
+    'map.import.imageTooLarge':
+      'This image is still too heavy after optimisation. Shrink it before importing.',
+    'map.import.imageFailed': 'This image could not be read.',
+    'map.import.statWeight': 'Optimised weight',
+    'map.import.statScale': 'Starting scale',
+    'map.import.imageHint':
+      'The image stays on this device. For the table to see it, set a public URL in the map settings.',
+    // Map screen — settings of an existing map (map-settings-modal)
+    'map.settings.closeLabel': 'Close settings',
+    'map.settings.title': 'Map settings',
+    'map.settings.gridSizeLabel': 'Square size on screen (pixels)',
+    'map.settings.gridSizeHelp':
+      "Adjust until the grid lines up with the image's own grid.",
+    'map.settings.scaleLabel': 'One square represents (metres)',
+    'map.settings.scaleEchoPrefix': 'Stored as ',
+    'map.settings.scaleInvalid': 'Enter a distance in metres, for example 1.5.',
+    'map.settings.imageUrlLabel': 'Background image URL',
+    'map.settings.imageUrlPlaceholder': 'https://…',
+    'map.settings.imageUrlHelp':
+      'An imported image stays local to this device. A public URL also shows up for players and on the table screen.',
+    'map.settings.save': 'Save settings',
+    'map.live.settingsButton': 'Settings',
+    'map.tip.openSettings':
+      'Rename the map, realign the grid, change the scale or the background image.',
     // Map screen — token editor + bestiary picker
     'map.token.editTitle': 'Edit the token',
     'map.token.closeLabel': 'Close token editing',
