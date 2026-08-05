@@ -38,6 +38,21 @@ async function uatShot(
   });
 }
 
+/**
+ * Appui long sur un élément. Playwright n'a pas de geste natif ; `hover()` +
+ * `mouse.down()` dépend des COORDONNÉES, et un décalage de mise en page entre
+ * les deux (contenu tardif, toast) fait tomber l'appui à côté — la spec passait
+ * isolément et échouait en suite complète. On adresse donc l'élément lui-même.
+ */
+async function longPress(page: Page, selector: string): Promise<void> {
+  const el = page.locator(selector).first();
+  await el.scrollIntoViewIfNeeded();
+  await el.dispatchEvent('pointerdown', { button: 0, isPrimary: true });
+  // Le seuil du hook est de 450 ms ; on tient large.
+  await page.waitForTimeout(800);
+  await el.dispatchEvent('pointerup', { button: 0, isPrimary: true });
+}
+
 /** Ouvre le menu radial et choisit une entrée par son libellé. */
 async function pickFromFab(page: Page, label: string): Promise<void> {
   await page.getByRole('button', { name: /Ouvrir le menu/i }).click();
@@ -108,15 +123,15 @@ test.describe('Dés — jet libre et options de jet', () => {
     const panel = page.locator('#sheet-mode-panel-essence');
     await expect(panel).toBeVisible();
 
-    // Appui long sur Discrétion → menu d'options. Playwright n'a pas de
-    // « long press » natif : on maintient le pointeur au-delà du seuil de 450 ms.
-    const stealth = panel.getByRole('button').filter({ hasText: 'Discrétion' });
-    await stealth.first().hover();
-    await page.mouse.down();
-    await page.waitForTimeout(700);
-    await page.mouse.up();
+    // Appui long sur Discrétion → menu d'options.
+    await longPress(
+      page,
+      '#sheet-mode-panel-essence button:has-text("Discrétion")',
+    );
 
-    await expect(page.getByTestId('roll-options-advantage')).toBeVisible();
+    await expect(page.getByTestId('roll-options-advantage')).toBeVisible({
+      timeout: 10_000,
+    });
     await uatShot(page, '11-options-de-jet-competence', { viewport: true });
 
     // M22 — un bonus du moment, qui ne touche pas la fiche.

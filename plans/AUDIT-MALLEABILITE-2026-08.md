@@ -294,6 +294,44 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 
 ### Lot 2 — Surcharges manuelles et liberté de jet (CLIENT, sauf une exception nommée)
 
+> **État au 2026-08-05 — 8 murs livrés** (commits `f186a9a` → `1d4e944`, locaux).
+>
+> | Livré | Mur | Commit |
+> |---|---|---|
+> | ✅ | **M28** — portée réelle d'un objet de pack à l'inventaire | `f186a9a` |
+> | ✅ | **M48** — terme de dés soustractif (`1d20-1d4`) | `c233214` |
+> | ✅ | **M21** — inspiration dépensée à la demande | `c233214` |
+> | ✅ | **M22** — bonus ponctuel sur un jet | `c233214` |
+> | ✅ | **M23** — options de jet sur les 5 familles | `c233214` |
+> | ✅ | **M20** — formule de dés libre | `c233214` |
+> | ✅ | **M16** (partie `speed`/`initiative`) — cellules éditables | `1d4e944` |
+> | ✅ | **M24** — maximum de réserve accordé et éditable | `1d4e944` |
+> | ⚠ | **M38** — moitié client livrée (`1d4e944`) : harmonisation offerte sur tout objet magique, plafond qui AVERTIT au lieu de refuser. Le plafond **réglable par campagne** demande un champ `settings.attunementCap` → **schéma, arbitrage Adrien**. |
+>
+> **Découvertes de livraison :**
+>
+> 1. **M28 en cachait un pire.** Écrire la vraie portée ne suffisait pas :
+>    `resolveContent(scope:'user')` visait `users/{uid}/customContent/{type}/{id}`,
+>    soit CINQ segments — que `doc()` refuse. La branche ne renvoyait donc jamais
+>    `null`, elle **levait**. Dormante faute d'appelant ; le premier à en brancher
+>    un aurait hérité d'un « introuvable » incompréhensible. Rebranchée sur les
+>    packs, la vraie source — ce qui répare aussi `resolveContentMulti` et
+>    `useContentResolver`.
+> 2. **Un `sign` sur un terme de dés touche DEUX sommes.** Le mode physique
+>    recalcule son total indépendamment du roller : sans la même correction, le
+>    joueur qui saisit ses vrais dés aurait vu sa pénalité s'**ajouter**. Et un 20
+>    sur un d20 retranché n'est pas un critique.
+> 3. **`useLongPress` est un hook.** L'appeler dans le `.map()` de la liste
+>    FILTRÉE des compétences fait varier le nombre de hooks dès que la recherche
+>    change. Idem pour la modale de jets de mort, qui rend `null` tant que le
+>    personnage va bien : un hook posé après cette sortie changerait l'ordre au
+>    rendu exact où le personnage tombe à 0 PV.
+> 4. **Un émulateur Firestore vieux de huit heures fait échouer 61 specs.**
+>    Symptôme : « Création en cours… » qui ne finit jamais + bannière de
+>    synchronisation — le `setDoc` ne résout plus. Diagnostic décisif : rejouer la
+>    spec sur un `git worktree` du commit d'avant, contre le MÊME émulateur. Même
+>    échec ⇒ environnement, pas régression. Redémarrage ⇒ 249 verts.
+
 | Ordre | Murs | Note |
 |---|---|---|
 | 1 | **M16 (partie `speed`/`initiative`), M17, M18, M24, M25, M26, M27, M38** | La fiche devient pilotable. Pattern unique et déjà validé : tap/appui long → saisie → `updateCharacter`. Rules inchangées (`hasAll`). |
