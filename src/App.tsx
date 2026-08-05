@@ -1,4 +1,4 @@
-import { useEffect, type JSX, type ReactNode } from 'react';
+import { useEffect, useRef, type JSX, type ReactNode } from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 
 import { AuthProvider } from '@/features/auth/auth-provider';
@@ -16,6 +16,7 @@ import { OfflineBanner } from '@/shared/components/offline-banner';
 import { Particles } from '@/shared/components/particles';
 import { SacredGeometry } from '@/shared/components/sacred-geometry';
 import { Splash } from '@/shared/components/splash';
+import { useRouteMotion } from '@/shared/hooks/use-route-motion';
 import { ToastHost } from '@/shared/components/toast-host';
 import {
   BOTTOM_NAV_SPACER_CLASS,
@@ -69,8 +70,11 @@ export function App(): JSX.Element {
  */
 function RouteViewport({ children }: { children: ReactNode }): JSX.Element {
   const { pathname } = useLocation();
+  const ref = useRef<HTMLDivElement>(null);
+  // Entrée d'écran + restauration du défilement (cf. `use-route-motion.ts`).
+  useRouteMotion(ref);
   return (
-    <div className={shouldShowBottomNav(pathname) ? BOTTOM_NAV_SPACER_CLASS : undefined}>
+    <div ref={ref} className={shouldShowBottomNav(pathname) ? BOTTOM_NAV_SPACER_CLASS : undefined}>
       {children}
     </div>
   );
