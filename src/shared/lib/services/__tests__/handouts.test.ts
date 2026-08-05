@@ -13,6 +13,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockGetDocs = vi.fn();
 const mockSetDoc = vi.fn();
 const mockUpdateDoc = vi.fn();
+const mockDeleteDoc = vi.fn();
 const mockServerTimestamp = vi.fn(() => 'MOCK_SERVER_TS');
 
 let autoIdCounter = 0;
@@ -66,6 +67,7 @@ vi.mock('firebase/firestore', () => ({
   getDocs: (...args: unknown[]) => mockGetDocs(...args),
   setDoc: (...args: unknown[]) => mockSetDoc(...args),
   updateDoc: (...args: unknown[]) => mockUpdateDoc(...args),
+  deleteDoc: (...args: unknown[]) => mockDeleteDoc(...args),
   serverTimestamp: () => mockServerTimestamp(),
   waitForPendingWrites: () => Promise.resolve(),
 }));
@@ -77,9 +79,12 @@ vi.mock('@/shared/lib/firebase', () => ({
 import {
   archiveHandout,
   createHandout,
+  deleteHandout,
   listAllHandouts,
   listHandoutsForRecipient,
   revealHandout,
+  unarchiveHandout,
+  updateHandout,
 } from '../handouts';
 
 const CID = 'demo-cid';
@@ -111,6 +116,7 @@ beforeEach(() => {
   mockGetDocs.mockReset();
   mockSetDoc.mockReset().mockResolvedValue(undefined);
   mockUpdateDoc.mockReset().mockResolvedValue(undefined);
+  mockDeleteDoc.mockReset().mockResolvedValue(undefined);
   mockDoc.mockClear();
   mockCollection.mockClear();
   mockQuery.mockClear();
@@ -217,5 +223,62 @@ describe('archiveHandout (MJ)', () => {
     expect(mockUpdateDoc).toHaveBeenCalledTimes(1);
     const [, patch] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
     expect(patch).toEqual({ visibility: 'archived' });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// M12 — un document envoyé se corrige, se désarchive, se supprime
+// ─────────────────────────────────────────────────────────────────────
+
+describe('unarchiveHandout (M12)', () => {
+  it("remet visibility à 'sent' — l'archivage n'est plus irréversible", async () => {
+    await unarchiveHandout(CID, 'h-1');
+    const [ref, patch] = mockUpdateDoc.mock.calls[0]! as [
+      { path: string },
+      Record<string, unknown>,
+    ];
+    expect(ref.path).toBe(`campaigns/${CID}/handouts/h-1`);
+    expect(patch).toEqual({ visibility: 'sent' });
+  });
+});
+
+describe('updateHandout (M12)', () => {
+  it('patche titre, contenu et destinataires', async () => {
+    await updateHandout(CID, 'h-1', {
+      title: 'Nouveau titre',
+      text: 'Corrigé',
+      recipients: ['p-1', 'p-2'],
+    });
+    const [ref, patch] = mockUpdateDoc.mock.calls[0]! as [
+      { path: string },
+      Record<string, unknown>,
+    ];
+    expect(ref.path).toBe(`campaigns/${CID}/handouts/h-1`);
+    expect(patch).toEqual({
+      title: 'Nouveau titre',
+      content: { text: 'Corrigé' },
+      recipients: ['p-1', 'p-2'],
+    });
+  });
+
+  it('ne touche PAS revealedTo : un lecteur reste marqué comme ayant lu', async () => {
+    await updateHandout(CID, 'h-1', { text: 'Corrigé' });
+    const [, patch] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(patch).not.toHaveProperty('revealedTo');
+    expect(patch).toEqual({ content: { text: 'Corrigé' } });
+  });
+
+  it('patch vide → aucune écriture (Firestore rejette un update sans champ)', async () => {
+    await updateHandout(CID, 'h-1', {});
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+});
+
+describe('deleteHandout (M12)', () => {
+  it('supprime le doc au bon chemin', async () => {
+    await deleteHandout(CID, 'h-1');
+    expect(mockDeleteDoc).toHaveBeenCalledTimes(1);
+    const [ref] = mockDeleteDoc.mock.calls[0]! as [{ path: string }];
+    expect(ref.path).toBe(`campaigns/${CID}/handouts/h-1`);
   });
 });

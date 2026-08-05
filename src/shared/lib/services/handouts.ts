@@ -19,6 +19,7 @@
  */
 import {
   collection,
+  deleteDoc,
   doc,
   getDocs,
   query,
@@ -186,4 +187,75 @@ export async function archiveHandout(campaignId: string, handoutId: string): Pro
     getDb(),
     updateDoc(handoutRef(campaignId, handoutId), { visibility: 'archived' }),
   );
+}
+
+/**
+ * Désarchive un handout — le remet dans le flux actif (M12). L'archivage était
+ * irréversible côté UI alors que la rule `isDMOf` autorise n'importe quel
+ * update : une fausse manœuvre condamnait le document à la section grisée.
+ */
+export async function unarchiveHandout(
+  campaignId: string,
+  handoutId: string,
+): Promise<void> {
+  await trackPendingWrite(
+    getDb(),
+    updateDoc(handoutRef(campaignId, handoutId), { visibility: 'sent' }),
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// updateHandout / deleteHandout (M12) — un document envoyé se corrige
+// ─────────────────────────────────────────────────────────────────────
+
+export interface UpdateHandoutPatch {
+  title?: string;
+  /** Texte Markdown. Remplace `content` en entier (V1 = texte seul). */
+  text?: string;
+  recipients?: string[] | typeof HANDOUT_RECIPIENTS_ALL;
+}
+
+/**
+ * Corrige un document déjà envoyé : coquille du titre, contenu, ou liste de
+ * destinataires (« montre-le aussi au Barde »). MJ only — la rule d'update
+ * `isDMOf` couvre déjà tout.
+ *
+ * EFFET DE BORD VOULU sur l'ajout d'un destinataire : `useHandoutNotifications`
+ * écoute une query `recipients array-contains uid`. Ajouter un joueur fait
+ * ENTRER le doc dans SA query → son listener voit un `added` → il reçoit le
+ * toast « Le meneur t'a envoyé un document ». Aucun code de notification à
+ * écrire : le nouveau destinataire est prévenu comme s'il l'avait reçu d'emblée.
+ *
+ * On ne touche PAS à `revealedTo` : un joueur qui avait déjà ouvert le document
+ * reste marqué comme l'ayant lu, même si le texte a changé. Le contraire ferait
+ * réapparaître en « nouveau » un document qu'il connaît.
+ */
+export async function updateHandout(
+  campaignId: string,
+  handoutId: string,
+  patch: UpdateHandoutPatch,
+): Promise<void> {
+  const payload: Record<string, unknown> = {};
+  if (patch.title !== undefined) payload.title = patch.title;
+  if (patch.text !== undefined) payload.content = { text: patch.text };
+  if (patch.recipients !== undefined) payload.recipients = patch.recipients;
+  // Rien à écrire → on n'émet pas un update vide (Firestore le rejetterait).
+  if (Object.keys(payload).length === 0) return;
+  await trackPendingWrite(
+    getDb(),
+    updateDoc(handoutRef(campaignId, handoutId), payload),
+  );
+}
+
+/**
+ * Supprime définitivement un document (MJ only). Distinct de l'archivage :
+ * l'archive garde une trace consultable, la suppression efface. Sert au document
+ * créé par erreur — un brouillon parti trop tôt n'a pas à polluer l'historique.
+ * `allow delete: if isDMOf` est déployé depuis le plan 27.
+ */
+export async function deleteHandout(
+  campaignId: string,
+  handoutId: string,
+): Promise<void> {
+  await trackPendingWrite(getDb(), deleteDoc(handoutRef(campaignId, handoutId)));
 }

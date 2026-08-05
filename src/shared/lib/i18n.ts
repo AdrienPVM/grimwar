@@ -1163,6 +1163,19 @@ export type StringKey =
   | 'handouts.create.error.recipients'
   | 'handouts.create.error.send'
   | 'handouts.create.sentToast'
+  // Cycle de vie d'un document envoyé (M12) — corriger, désarchiver, supprimer
+  | 'handouts.card.edit'
+  | 'handouts.card.unarchive'
+  | 'handouts.card.delete'
+  | 'handouts.card.deleteConfirm'
+  | 'handouts.card.recipientsNone'
+  | 'handouts.edit.title'
+  | 'handouts.edit.save'
+  | 'handouts.edit.saving'
+  | 'handouts.edit.savedToast'
+  | 'campaigns.tip.editHandout'
+  | 'campaigns.tip.unarchiveHandout'
+  | 'campaigns.tip.deleteHandout'
   // PNJ récurrents — plan 28
   | 'campaigns.detail.npcsCta'
   | 'campaigns.detail.eventFeed.kind.npcIntroduced'
@@ -4401,6 +4414,21 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.create.error.recipients': 'Choisissez au moins un destinataire.',
     'handouts.create.error.send': "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
     'handouts.create.sentToast': 'Document transmis',
+    // Cycle de vie d'un document envoyé (M12)
+    'handouts.card.edit': 'Corriger',
+    'handouts.card.unarchive': 'Désarchiver',
+    'handouts.card.delete': 'Supprimer',
+    'handouts.card.deleteConfirm': 'Confirmer la suppression',
+    'handouts.card.recipientsNone': 'Aucun destinataire',
+    'handouts.edit.title': 'Corriger le document',
+    'handouts.edit.save': 'Enregistrer les corrections',
+    'handouts.edit.saving': 'Enregistrement…',
+    'handouts.edit.savedToast': 'Document corrigé',
+    'campaigns.tip.editHandout':
+      'Corriger le titre, le texte ou les destinataires. Ajouter un joueur le prévient.',
+    'campaigns.tip.unarchiveHandout': 'Remettre ce document dans le flux actif.',
+    'campaigns.tip.deleteHandout':
+      'Effacer définitivement ce document. L’archivage, lui, en garde la trace.',
     // PNJ récurrents — plan 28
     'campaigns.detail.npcsCta': 'PNJ',
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'PNJ introduit',
@@ -7853,6 +7881,21 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.create.error.recipients': 'Pick at least one recipient.',
     'handouts.create.error.send': 'Sending failed. Check your connection and try again.',
     'handouts.create.sentToast': 'Handout sent',
+    // Lifecycle of a sent handout (M12)
+    'handouts.card.edit': 'Correct',
+    'handouts.card.unarchive': 'Unarchive',
+    'handouts.card.delete': 'Delete',
+    'handouts.card.deleteConfirm': 'Confirm deletion',
+    'handouts.card.recipientsNone': 'No recipient',
+    'handouts.edit.title': 'Correct the handout',
+    'handouts.edit.save': 'Save corrections',
+    'handouts.edit.saving': 'Saving…',
+    'handouts.edit.savedToast': 'Handout corrected',
+    'campaigns.tip.editHandout':
+      'Correct the title, text or recipients. Adding a player notifies them.',
+    'campaigns.tip.unarchiveHandout': 'Put this handout back in the active flow.',
+    'campaigns.tip.deleteHandout':
+      'Erase this handout for good. Archiving keeps a trace instead.',
     // NPCs — plan 28
     'campaigns.detail.npcsCta': 'NPCs',
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'NPC introduced',

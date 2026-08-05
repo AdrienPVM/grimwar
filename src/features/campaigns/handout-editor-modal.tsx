@@ -1,4 +1,4 @@
-import { useId, useState, type JSX } from 'react';
+import { useEffect, useId, useState, type JSX } from 'react';
 
 import { JournalMarkdown } from '@/features/journal/journal-markdown';
 import { Button } from '@/shared/components/button';
@@ -6,9 +6,9 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { cn } from '@/shared/lib/cn';
 import { logHandoutSent } from '@/shared/lib/event-logger';
 import { t } from '@/shared/lib/i18n';
-import { createHandout } from '@/shared/lib/services/handouts';
+import { createHandout, updateHandout } from '@/shared/lib/services/handouts';
 import { showToast } from '@/shared/lib/slices/toast-slice';
-import { HANDOUT_RECIPIENTS_ALL } from '@/shared/types/handout';
+import { HANDOUT_RECIPIENTS_ALL, type Handout } from '@/shared/types/handout';
 
 /** Joueur sélectionnable comme destinataire (UID + libellé affiché). */
 export interface HandoutPlayer {
@@ -16,33 +16,44 @@ export interface HandoutPlayer {
   label: string;
 }
 
-interface HandoutCreateModalProps {
+interface HandoutEditorModalProps {
   open: boolean;
   campaignId: string;
   createdByUid: string;
   /** Joueurs de la campagne (hors MJ) — destinataires possibles. */
   players: HandoutPlayer[];
+  /**
+   * Document à corriger (M12). `null` → mode création. Quand il est fourni, le
+   * formulaire est prérempli et l'envoi devient une mise à jour.
+   */
+  editing?: Handout | null;
   onClose: () => void;
-  /** Appelé après un envoi réussi (rafraîchit la liste). */
+  /** Appelé après un envoi ou une correction réussie (rafraîchit la liste). */
   onSent: () => void;
 }
 
 type FormError = 'title' | 'content' | 'recipients' | 'send' | null;
 
 /**
- * Création d'un document MJ (plan 27 steps 4-6). V1 = texte/Markdown
- * uniquement : le sélecteur de type expose Image / Les deux en DÉSACTIVÉ avec
- * une note (upload Firebase Storage différé en sous-plan 27b). Aperçu Markdown
- * live via `JournalMarkdown`. Destinataires : toute la table ou sélection.
+ * Création ET correction d'un document MJ (plan 27 steps 4-6 ; correction =
+ * M12 de l'audit de malléabilité). V1 = texte/Markdown uniquement : le sélecteur
+ * de type expose Image / Les deux en DÉSACTIVÉ avec une note (upload Firebase
+ * Storage différé en sous-plan 27b). Aperçu Markdown live via `JournalMarkdown`.
+ * Destinataires : toute la table ou sélection.
+ *
+ * Un SEUL formulaire pour les deux gestes : corriger un document, c'est remplir
+ * le même formulaire avec les valeurs existantes. Deux composants jumeaux
+ * auraient divergé dès la première évolution de l'aperçu Markdown.
  */
-export function HandoutCreateModal({
+export function HandoutEditorModal({
   open,
   campaignId,
   createdByUid,
   players,
+  editing = null,
   onClose,
   onSent,
-}: HandoutCreateModalProps): JSX.Element {
+}: HandoutEditorModalProps): JSX.Element {
   const titleId = useId();
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
@@ -50,6 +61,29 @@ export function HandoutCreateModal({
   const [selected, setSelected] = useState<string[]>([]);
   const [sending, setSending] = useState<boolean>(false);
   const [error, setError] = useState<FormError>(null);
+
+  const isEditing = editing !== null;
+
+  // Préremplissage à l'ouverture en correction. Effet légitime (synchronisation
+  // d'un état de formulaire sur une prop externe, pas un état dérivé) : le
+  // formulaire doit rester librement éditable ensuite, donc on ne peut pas
+  // simplement calculer les champs au rendu.
+  useEffect(() => {
+    if (!open) return;
+    if (editing) {
+      setTitle(editing.title);
+      setContent(editing.content.text ?? '');
+      const all = editing.recipients === HANDOUT_RECIPIENTS_ALL;
+      setRecipientsMode(all ? 'all' : 'some');
+      setSelected(all ? [] : [...editing.recipients]);
+    } else {
+      setTitle('');
+      setContent('');
+      setRecipientsMode('all');
+      setSelected([]);
+    }
+    setError(null);
+  }, [open, editing]);
 
   function reset(): void {
     setTitle('');
@@ -92,14 +126,33 @@ export function HandoutCreateModal({
     setError(null);
     setSending(true);
     try {
-      const id = await createHandout(campaignId, createdByUid, {
-        title: trimmedTitle,
-        type: 'text',
-        content: { text: trimmedContent },
-        recipients,
-      });
-      await logHandoutSent(id, recipients, trimmedTitle);
-      showToast({ kind: 'info', title: t('handouts.create.sentToast'), sub: trimmedTitle });
+      if (editing) {
+        // Correction : aucun `handout-sent` re-journalisé — le document n'est
+        // pas renvoyé, il est corrigé. Un second event ferait croire à une
+        // seconde diffusion dans le récit de séance.
+        // Le nouveau destinataire, lui, est prévenu tout seul : le doc entre
+        // dans sa query `recipients array-contains uid` → son listener le voit
+        // en `added` et lève le toast (cf. `updateHandout`).
+        await updateHandout(campaignId, editing.id, {
+          title: trimmedTitle,
+          text: trimmedContent,
+          recipients,
+        });
+        showToast({
+          kind: 'info',
+          title: t('handouts.edit.savedToast'),
+          sub: trimmedTitle,
+        });
+      } else {
+        const id = await createHandout(campaignId, createdByUid, {
+          title: trimmedTitle,
+          type: 'text',
+          content: { text: trimmedContent },
+          recipients,
+        });
+        await logHandoutSent(id, recipients, trimmedTitle);
+        showToast({ kind: 'info', title: t('handouts.create.sentToast'), sub: trimmedTitle });
+      }
       reset();
       onSent();
       onClose();
@@ -122,7 +175,7 @@ export function HandoutCreateModal({
           id={titleId}
           className="pr-10 font-display text-2xl font-bold uppercase tracking-[0.14em] text-gold-bright"
         >
-          {t('handouts.create.title')}
+          {isEditing ? t('handouts.edit.title') : t('handouts.create.title')}
         </h2>
 
         {/* Titre */}
@@ -285,7 +338,13 @@ export function HandoutCreateModal({
             onClick={() => void handleSend()}
             disabled={sending}
           >
-            {sending ? t('handouts.create.sending') : t('handouts.create.send')}
+            {isEditing
+              ? sending
+                ? t('handouts.edit.saving')
+                : t('handouts.edit.save')
+              : sending
+                ? t('handouts.create.sending')
+                : t('handouts.create.send')}
           </Button>
         </div>
       </div>
