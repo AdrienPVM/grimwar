@@ -25,7 +25,7 @@ type SchoolFilter = SpellSchool | 'all';
  * niveau à gauche, tap → modale détail. Tout dérivé de `spells.json`.
  */
 export function SpellBrowser(): JSX.Element {
-  const { data: spells, loading } = useContent('spells');
+  const { data: spells, loading, scopeOf } = useContent('spells');
   const { data: classCatalog } = useContent('classes');
 
   const [query, setQuery] = useState<string>('');
@@ -135,6 +135,7 @@ export function SpellBrowser(): JSX.Element {
                   <li key={spell.id}>
                     <CodexRow
                       title={localize(spell.name)}
+                      origin={scopeOf(spell.id)}
                       onClick={() => setActive(spell)}
                       badge={
                         <div

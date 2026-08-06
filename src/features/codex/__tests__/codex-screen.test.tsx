@@ -9,7 +9,7 @@ import { CodexScreen } from '../codex-screen';
  */
 
 vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({ data: [], loading: false, error: null }),
+  useContent: () => ({ data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }),
 }));
 
 describe('CodexScreen', () => {

@@ -166,9 +166,9 @@ const RITUALS = [
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'classes')
-      return { data: [WARLOCK_FIXTURE], loading: false, error: null };
+      return { data: [WARLOCK_FIXTURE], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     if (type === 'spells')
-      return { data: [...CANTRIPS, ...RITUALS], loading: false, error: null };
+      return { data: [...CANTRIPS, ...RITUALS], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     if (type === 'invocations')
       return {
         data: [
@@ -184,7 +184,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
         loading: false,
         error: null,
       };
-    return { data: [], loading: false, error: null };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

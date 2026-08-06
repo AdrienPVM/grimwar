@@ -244,12 +244,22 @@ describe('validateClassDraft', () => {
     if (!result.ok) expect(result.fieldErrors.id).toBeDefined();
   });
 
-  it('rejette les 12 ids SRD réservés', () => {
-    for (const reserved of [
+  // M50 — le refus ne couvre plus que ce que le schéma impose vraiment. Clerc
+  // et Druide déclenchent un `superRefine` exigeant une liste d'ordres que ce
+  // formulaire ne produit pas ; les accepter donnerait un échec Zod illisible
+  // au save. Les 10 autres n'avaient aucune raison mécanique d'être refusées.
+  it('rejette les 2 ids que le schéma contraint (cleric, druid)', () => {
+    for (const reserved of ['cleric', 'druid']) {
+      const result = validateClassDraft({ ...minimalDraft(), id: reserved });
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.fieldErrors.id).toBeDefined();
+    }
+  });
+
+  it('accepte les 10 autres classes SRD — surcharger est un choix, plus un refus', () => {
+    for (const overridable of [
       'barbarian',
       'bard',
-      'cleric',
-      'druid',
       'fighter',
       'monk',
       'paladin',
@@ -259,9 +269,9 @@ describe('validateClassDraft', () => {
       'warlock',
       'wizard',
     ]) {
-      const result = validateClassDraft({ ...minimalDraft(), id: reserved });
-      expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.fieldErrors.id).toBeDefined();
+      const result = validateClassDraft({ ...minimalDraft(), id: overridable });
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.cls.id).toBe(overridable);
     }
   });
 

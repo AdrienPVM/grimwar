@@ -42,12 +42,16 @@ import { FieldString } from './fields/field-string';
  *   - Multiples options d'équipement A/B/C (SRD 2024 propose souvent 2-3
  *     paquets — V1 livre 1 option).
  *
- * Pour éviter la branche `superRefine` du `ClassSchema` qui exige
- * `divineOrders`/`primalOrders` non vide quand `id === 'cleric' || 'druid'`,
- * on bloque les 12 ids SRD officiels à la validation — un homebrew ne peut
- * pas re-définir une classe SRD avec le même id (de toute façon le merger
- * SRD ∪ custom écraserait, et l'écrasement d'une classe complète serait
- * généralement une erreur de l'utilisateur).
+ * Ids refusés : `cleric` et `druid` SEULEMENT (M50). Ces deux-là déclenchent
+ * une branche `superRefine` du `ClassSchema` qui exige `divineOrders` /
+ * `primalOrders` non vide — champs que ce formulaire ne produit pas : les
+ * accepter mènerait à un échec Zod incompréhensible au moment du save.
+ *
+ * Les 10 autres classes SRD étaient refusées « par principe ». C'était le mur :
+ * « chez moi le Roublard… » n'avait aucun chemin. Le merger `user > public` sait
+ * écraser proprement, et le sélecteur « Dupliquer » pose le choix explicitement
+ * (copie sous un nouvel id, ou remplacement assumé) — le refus n'avait plus
+ * d'objet.
  *
  * `source` est figé à `custom` — convention partagée 3C.
  */
@@ -66,20 +70,7 @@ type SpellcastingProgression = (typeof SPELLCASTING_PROGRESSIONS)[number];
 
 const COIN_UNITS: readonly CoinUnit[] = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
-const RESERVED_CLASS_IDS = new Set([
-  'barbarian',
-  'bard',
-  'cleric',
-  'druid',
-  'fighter',
-  'monk',
-  'paladin',
-  'ranger',
-  'rogue',
-  'sorcerer',
-  'warlock',
-  'wizard',
-]);
+const RESERVED_CLASS_IDS = new Set(['cleric', 'druid']);
 
 interface FeatureDraft {
   level: number;

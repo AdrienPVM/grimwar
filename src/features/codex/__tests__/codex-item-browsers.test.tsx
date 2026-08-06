@@ -64,10 +64,10 @@ const CHAIN_MAIL: Item = {
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'magic-items')
-      return { data: [FLAME_TONGUE, POTION_HEALING], loading: false, error: null };
+      return { data: [FLAME_TONGUE, POTION_HEALING], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     if (type === 'items')
-      return { data: [LONGSWORD, CHAIN_MAIL], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+      return { data: [LONGSWORD, CHAIN_MAIL], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

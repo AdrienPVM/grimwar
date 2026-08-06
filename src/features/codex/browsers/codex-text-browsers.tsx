@@ -6,7 +6,11 @@ import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { Condition, Feat, Invocation } from '@/shared/types/content';
 
 import { CodexField } from '../codex-ui';
-import { TextEntityBrowser, type CodexEntry } from './text-entity-browser';
+import {
+  TextEntityBrowser,
+  withOrigin,
+  type CodexEntry,
+} from './text-entity-browser';
 
 /**
  * Navigateurs « texte » du Codex (plan 19) : dons, états, invocations. Chacun
@@ -55,10 +59,10 @@ export function buildFeatEntries(feats: readonly Feat[]): CodexEntry[] {
 }
 
 export function FeatBrowser(): JSX.Element {
-  const { data, loading } = useContent('feats');
+  const { data, loading, scopeOf } = useContent('feats');
   return (
     <TextEntityBrowser
-      entries={buildFeatEntries(data)}
+      entries={withOrigin(buildFeatEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.feats')}
     />
@@ -81,10 +85,10 @@ export function buildConditionEntries(conditions: readonly Condition[]): CodexEn
 }
 
 export function ConditionBrowser(): JSX.Element {
-  const { data, loading } = useContent('conditions');
+  const { data, loading, scopeOf } = useContent('conditions');
   return (
     <TextEntityBrowser
-      entries={buildConditionEntries(data)}
+      entries={withOrigin(buildConditionEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.conditions')}
     />
@@ -131,10 +135,10 @@ export function buildInvocationEntries(
 }
 
 export function InvocationBrowser(): JSX.Element {
-  const { data, loading } = useContent('invocations');
+  const { data, loading, scopeOf } = useContent('invocations');
   return (
     <TextEntityBrowser
-      entries={buildInvocationEntries(data)}
+      entries={withOrigin(buildInvocationEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.invocations')}
     />

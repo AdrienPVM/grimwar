@@ -2023,6 +2023,19 @@ export type StringKey =
   | 'customContent.editor.meta.nameFr'
   | 'customContent.editor.meta.nameEn'
   | 'customContent.editor.meta.author'
+  | 'customContent.duplicate.title'
+  | 'customContent.duplicate.open'
+  | 'customContent.duplicate.modeLegend'
+  | 'customContent.duplicate.modeCopy'
+  | 'customContent.duplicate.modeCopyHint'
+  | 'customContent.duplicate.modeReplace'
+  | 'customContent.duplicate.modeReplaceHint'
+  | 'customContent.duplicate.searchPlaceholder'
+  | 'customContent.duplicate.searchAria'
+  | 'customContent.duplicate.loading'
+  | 'customContent.duplicate.empty'
+  | 'customContent.duplicate.copySuffixName'
+  | 'customContent.origin.custom'
   | 'customContent.editor.meta.sourceLabel'
   | 'customContent.editor.meta.sourceLabelHelper'
   | 'customContent.editor.meta.version'
@@ -5455,6 +5468,21 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.meta.nameFr': 'Nom (FR)',
     'customContent.editor.meta.nameEn': 'Nom (EN, optionnel)',
     'customContent.editor.meta.author': 'Auteur',
+    'customContent.duplicate.title': 'Dupliquer une entrée existante',
+    'customContent.duplicate.open': 'Dupliquer',
+    'customContent.duplicate.modeLegend': 'Que faire de l’entrée choisie',
+    'customContent.duplicate.modeCopy': 'Nouvelle entrée',
+    'customContent.duplicate.modeCopyHint':
+      'Une copie sous un nouvel identifiant. L’originale reste servie à la table.',
+    'customContent.duplicate.modeReplace': 'Remplacer l’originale',
+    'customContent.duplicate.modeReplaceHint':
+      'On garde son identifiant : ta version l’écrase partout à ta table.',
+    'customContent.duplicate.searchPlaceholder': 'Chercher dans le catalogue…',
+    'customContent.duplicate.searchAria': 'Chercher une entrée à dupliquer',
+    'customContent.duplicate.loading': 'Chargement du catalogue…',
+    'customContent.duplicate.empty': 'Aucune entrée ne correspond.',
+    'customContent.duplicate.copySuffixName': ' (maison)',
+    'customContent.origin.custom': 'Maison',
     'customContent.editor.meta.sourceLabel': 'Provenance',
     'customContent.editor.meta.sourceLabelHelper':
       'D’où vient ce contenu, en clair : « Xanathar », « Ma campagne », « Traduit de la table de Jean ». Affiché à côté des entrées du pack.',
@@ -6202,7 +6230,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.ancestryForm.error.idFormat':
       'Slug invalide : minuscules, chiffres et tirets uniquement.',
     'customContent.editor.ancestryForm.error.idReserved':
-      'Cet identifiant est réservé aux ascendances officielles — utilise un slug spécifique à ta création.',
+      'Cette ascendance officielle demande une liste de sous-choix que ce formulaire ne produit pas encore — choisis un autre identifiant.',
     'customContent.editor.ancestryForm.error.nameFrRequired':
       'Le nom FR est obligatoire.',
     'customContent.editor.ancestryForm.error.descriptionFrRequired':
@@ -6387,7 +6415,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.classForm.error.idFormat':
       'Slug invalide : minuscules, chiffres et tirets uniquement.',
     'customContent.editor.classForm.error.idReserved':
-      'Cet identifiant est réservé aux 12 classes officielles — utilise un slug spécifique à ta création.',
+      'Le Clerc et le Druide demandent une liste d’ordres que ce formulaire ne produit pas encore — choisis un autre identifiant. Les 10 autres classes officielles sont dupliquables.',
     'customContent.editor.classForm.error.nameFrRequired':
       'Le nom FR est obligatoire.',
     'customContent.editor.classForm.error.descriptionFrRequired':
@@ -9141,6 +9169,21 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.meta.nameFr': 'Name (FR)',
     'customContent.editor.meta.nameEn': 'Name (EN, optional)',
     'customContent.editor.meta.author': 'Author',
+    'customContent.duplicate.title': 'Duplicate an existing entry',
+    'customContent.duplicate.open': 'Duplicate',
+    'customContent.duplicate.modeLegend': 'What to do with the chosen entry',
+    'customContent.duplicate.modeCopy': 'New entry',
+    'customContent.duplicate.modeCopyHint':
+      'A copy under a new id. The original is still served at the table.',
+    'customContent.duplicate.modeReplace': 'Replace the original',
+    'customContent.duplicate.modeReplaceHint':
+      'Keeps its id: your version overrides it everywhere at your table.',
+    'customContent.duplicate.searchPlaceholder': 'Search the catalogue…',
+    'customContent.duplicate.searchAria': 'Search for an entry to duplicate',
+    'customContent.duplicate.loading': 'Loading the catalogue…',
+    'customContent.duplicate.empty': 'No entry matches.',
+    'customContent.duplicate.copySuffixName': ' (custom)',
+    'customContent.origin.custom': 'Custom',
     'customContent.editor.meta.sourceLabel': 'Provenance',
     'customContent.editor.meta.sourceLabelHelper':
       'Where this content comes from, in plain words: “Xanathar”, “My campaign”, “Translated from Jean’s table”. Shown next to the pack’s entries.',
@@ -9832,7 +9875,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.ancestryForm.error.idFormat':
       'Invalid slug: lowercase, digits and dashes only.',
     'customContent.editor.ancestryForm.error.idReserved':
-      'This identifier is reserved for official ancestries — use a slug specific to your creation.',
+      'This official ancestry requires a sub-choice list this form cannot produce yet — pick another id.',
     'customContent.editor.ancestryForm.error.nameFrRequired':
       'FR name is required.',
     'customContent.editor.ancestryForm.error.descriptionFrRequired':
@@ -10010,7 +10053,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.classForm.error.idFormat':
       'Invalid slug: lowercase, digits and dashes only.',
     'customContent.editor.classForm.error.idReserved':
-      'This identifier is reserved by an official class — pick a slug unique to your homebrew.',
+      'Cleric and Druid require an order list this form cannot produce yet — pick another id. The other 10 official classes can be duplicated.',
     'customContent.editor.classForm.error.nameFrRequired':
       'FR name is required.',
     'customContent.editor.classForm.error.descriptionFrRequired':

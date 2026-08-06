@@ -49,7 +49,7 @@ vi.mock('../use-my-campaigns', () => ({
 }));
 // Le bestiaire ne sert qu'à résoudre le nom d'un monstre lié.
 vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({ data: [], loading: false, error: null }),
+  useContent: () => ({ data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }),
 }));
 vi.mock('@/features/journal/journal-markdown', () => ({
   JournalMarkdown: ({ markdown }: { markdown: string }) => <div>{markdown}</div>,

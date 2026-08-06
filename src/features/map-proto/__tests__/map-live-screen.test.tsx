@@ -74,8 +74,8 @@ const useContentState: { data: unknown[] } = { data: [] };
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) =>
     type === 'monsters'
-      ? { data: useContentState.data, loading: false, error: null }
-      : { data: [], loading: false, error: null },
+      ? { data: useContentState.data, loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }
+      : { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) },
 }));
 
 const GOBLIN_BESTIARY = {

@@ -108,6 +108,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
         : [],
     loading: false,
     error: null,
+    scopeOf: () => ({ scope: 'public' as const }),
   }),
 }));
 

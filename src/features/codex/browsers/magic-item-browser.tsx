@@ -32,7 +32,7 @@ type RarityFilter = Rarity | 'all';
  * `magic-items.json`.
  */
 export function MagicItemBrowser(): JSX.Element {
-  const { data: items, loading } = useContent('magic-items');
+  const { data: items, loading, scopeOf } = useContent('magic-items');
   const [query, setQuery] = useState<string>('');
   const [rarity, setRarity] = useState<RarityFilter>('all');
   const [active, setActive] = useState<MagicItem | null>(null);
@@ -92,6 +92,7 @@ export function MagicItemBrowser(): JSX.Element {
             <li key={item.id}>
               <CodexRow
                 title={localize(item.name)}
+                origin={scopeOf(item.id)}
                 onClick={() => setActive(item)}
                 meta={
                   <>

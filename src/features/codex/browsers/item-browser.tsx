@@ -42,7 +42,7 @@ const CATEGORY_ORDER: readonly ItemCategory[] = [
  * description. Tout dérivé de `items.json` (DB stricte d'objets).
  */
 export function ItemBrowser(): JSX.Element {
-  const { data: items, loading } = useContent('items');
+  const { data: items, loading, scopeOf } = useContent('items');
   const [query, setQuery] = useState<string>('');
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [active, setActive] = useState<Item | null>(null);
@@ -102,6 +102,7 @@ export function ItemBrowser(): JSX.Element {
             <li key={item.id}>
               <CodexRow
                 title={localize(item.name)}
+                origin={scopeOf(item.id)}
                 onClick={() => setActive(item)}
                 meta={
                   <>

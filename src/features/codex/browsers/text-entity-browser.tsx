@@ -1,6 +1,7 @@
 import { useId, useMemo, useState, type JSX, type ReactNode } from 'react';
 
 import { DetailModal } from '@/shared/components/detail-modal';
+import type { ContentEntryScope } from '@/shared/hooks/use-content';
 import { normalizeForSearch } from '@/shared/lib/search-normalize';
 
 import {
@@ -35,6 +36,20 @@ export interface CodexEntry {
   searchText: string;
   /** Corps de la modale détail. */
   body: ReactNode;
+  /** Provenance (M50) — posée par l'adaptateur via `scopeOf`. */
+  origin?: ContentEntryScope;
+}
+
+/**
+ * Décore un lot d'entrées avec leur provenance (M50). Séparé des `build*Entries`
+ * pour ne pas contaminer ces fonctions pures — elles projettent une entité en
+ * entrée d'affichage, la provenance vient du hook de chargement.
+ */
+export function withOrigin(
+  entries: readonly CodexEntry[],
+  scopeOf: (id: string) => ContentEntryScope,
+): CodexEntry[] {
+  return entries.map((entry) => ({ ...entry, origin: scopeOf(entry.id) }));
 }
 
 interface TextEntityBrowserProps {
@@ -94,6 +109,7 @@ export function TextEntityBrowser({
               <CodexRow
                 title={entry.name}
                 meta={entry.meta}
+                {...(entry.origin ? { origin: entry.origin } : {})}
                 onClick={() => setActive(entry)}
               />
             </li>

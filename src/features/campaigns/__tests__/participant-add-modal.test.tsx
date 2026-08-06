@@ -14,8 +14,8 @@ const bestiary: { data: unknown[] } = { data: [] };
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) =>
     type === 'monsters'
-      ? { data: bestiary.data, loading: false, error: null }
-      : { data: [], loading: false, error: null },
+      ? { data: bestiary.data, loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }
+      : { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) },
 }));
 
 import { ParticipantAddModal } from '../participant-add-modal';

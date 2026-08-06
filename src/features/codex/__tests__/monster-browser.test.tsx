@@ -67,8 +67,8 @@ const DRAGON: Monster = {
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'monsters')
-      return { data: [GOBLIN, DRAGON], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+      return { data: [GOBLIN, DRAGON], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

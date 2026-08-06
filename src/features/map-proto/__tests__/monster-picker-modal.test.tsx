@@ -54,8 +54,8 @@ const contentState: { data: Monster[]; loading: boolean } = {
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) =>
     type === 'monsters'
-      ? { data: contentState.data, loading: contentState.loading, error: null }
-      : { data: [], loading: false, error: null },
+      ? { data: contentState.data, loading: contentState.loading, error: null , scopeOf: () => ({ scope: 'public' as const }) }
+      : { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) },
 }));
 
 function reset(data: Monster[], loading = false): void {

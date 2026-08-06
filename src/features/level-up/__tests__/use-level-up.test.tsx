@@ -70,9 +70,9 @@ vi.mock('@/features/sheet/use-update-character', () => ({
 
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'classes') return { data: [fighterClass], loading: false, error: null };
-    if (type === 'subclasses') return { data: [championSubclass], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+    if (type === 'classes') return { data: [fighterClass], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'subclasses') return { data: [championSubclass], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

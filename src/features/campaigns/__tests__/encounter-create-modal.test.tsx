@@ -14,8 +14,8 @@ vi.mock('@/shared/lib/services/encounters', () => ({
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) =>
     type === 'monsters'
-      ? { data: bestiary.data, loading: false, error: null }
-      : { data: [], loading: false, error: null },
+      ? { data: bestiary.data, loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }
+      : { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) },
 }));
 // La compagnie liée et les PNJ enregistrés ne concernent pas l'autofill bestiaire.
 vi.mock('../use-encounter-party-draft', () => ({

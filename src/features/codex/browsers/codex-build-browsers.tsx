@@ -13,7 +13,11 @@ import type {
 } from '@/shared/types/content';
 
 import { CodexField } from '../codex-ui';
-import { TextEntityBrowser, type CodexEntry } from './text-entity-browser';
+import {
+  TextEntityBrowser,
+  withOrigin,
+  type CodexEntry,
+} from './text-entity-browser';
 
 /**
  * Navigateurs « construction de perso » du Codex (plan 19) : espèces,
@@ -121,10 +125,10 @@ export function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntr
 }
 
 export function AncestryBrowser(): JSX.Element {
-  const { data, loading } = useContent('ancestries');
+  const { data, loading, scopeOf } = useContent('ancestries');
   return (
     <TextEntityBrowser
-      entries={buildAncestryEntries(data)}
+      entries={withOrigin(buildAncestryEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.ancestries')}
     />
@@ -166,10 +170,10 @@ export function buildBackgroundEntries(
 }
 
 export function BackgroundBrowser(): JSX.Element {
-  const { data, loading } = useContent('backgrounds');
+  const { data, loading, scopeOf } = useContent('backgrounds');
   return (
     <TextEntityBrowser
-      entries={buildBackgroundEntries(data)}
+      entries={withOrigin(buildBackgroundEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.backgrounds')}
     />
@@ -228,10 +232,10 @@ export function buildClassEntries(classes: readonly ClassEntity[]): CodexEntry[]
 }
 
 export function ClassBrowser(): JSX.Element {
-  const { data, loading } = useContent('classes');
+  const { data, loading, scopeOf } = useContent('classes');
   return (
     <TextEntityBrowser
-      entries={buildClassEntries(data)}
+      entries={withOrigin(buildClassEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.classes')}
     />

@@ -29,7 +29,7 @@ import { useInventoryDerived } from '../use-inventory-derived';
  */
 
 vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({ data: [], loading: false, error: null }),
+  useContent: () => ({ data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }),
 }));
 
 function makeCharacter(inventoryItems: Character['inventory']['items']): Character {

@@ -85,7 +85,7 @@ const clericClass = makeClass({
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'subclasses') {
-      return { data: [championSubclass], loading: false, error: null };
+      return { data: [championSubclass], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     }
     if (type === 'feats') {
       return {
@@ -101,10 +101,10 @@ vi.mock('@/shared/hooks/use-content', () => ({
       };
     }
     if (type === 'classes') {
-      return { data: [fighterClass, clericClass], loading: false, error: null };
+      return { data: [fighterClass, clericClass], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     }
     // spells, invocations, items
-    return { data: [], loading: false, error: null };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

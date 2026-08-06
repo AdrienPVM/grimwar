@@ -31,7 +31,7 @@ import { MonsterStatBlock } from './monster-stat-block';
  * SRD sera peuplé, il s'affichera ici sans changement de code.
  */
 export function MonsterBrowser(): JSX.Element {
-  const { data: monsters, loading } = useContent('monsters');
+  const { data: monsters, loading, scopeOf } = useContent('monsters');
   const [query, setQuery] = useState<string>('');
   const [size, setSize] = useState<string>('all');
   const [active, setActive] = useState<Monster | null>(null);
@@ -93,6 +93,7 @@ export function MonsterBrowser(): JSX.Element {
             <li key={m.id}>
               <CodexRow
                 title={localize(m.name)}
+                origin={scopeOf(m.id)}
                 onClick={() => setActive(m)}
                 meta={
                   <>
