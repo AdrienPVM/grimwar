@@ -49,7 +49,7 @@ import { FieldString } from './fields/field-string';
  * SRD ∪ custom écraserait, et l'écrasement d'une classe complète serait
  * généralement une erreur de l'utilisateur).
  *
- * `source` est figé à `aidedd-homebrew` — convention partagée 3C.
+ * `source` est figé à `custom` — convention partagée 3C.
  */
 
 const ABILITY_KEYS = ['for', 'dex', 'con', 'int', 'sag', 'cha'] as const;
@@ -238,7 +238,7 @@ export function buildClassFromDraft(draft: ClassFormDraft): ClassEntity {
       weapons: draft.multiclassWeapons.map((s) => s.trim()).filter(Boolean),
       tools: draft.multiclassTools.map((s) => s.trim()).filter(Boolean),
     },
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

@@ -32,7 +32,7 @@ import { FieldString } from './fields/field-string';
  * couvre les 6 champs requis (id, name, category, cost?, weight, description)
  * + les champs conditionnels (damage, properties, range, masteryProperty,
  * acBase, acDexMax, strRequired, stealthDisadvantage). `source` est figé à
- * `aidedd-homebrew`.
+ * `custom`.
  *
  * Modélisation des champs « nullable / optional » :
  *   - `cost: null | {qty, unit}` → toggle `hasCost`. Off → null.
@@ -154,7 +154,7 @@ export function buildItemFromDraft(draft: ItemFormDraft): Item {
       draft.hasDescription && draft.descriptionFr.trim()
         ? i18nFrEn(draft.descriptionFr, draft.descriptionEn)
         : null,
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
   // Champs propriété (toutes catégories) — on garde uniquement les entrées
   // non vides, déjà dédupliquées au moment de l'ajout.

@@ -2023,6 +2023,8 @@ export type StringKey =
   | 'customContent.editor.meta.nameFr'
   | 'customContent.editor.meta.nameEn'
   | 'customContent.editor.meta.author'
+  | 'customContent.editor.meta.sourceLabel'
+  | 'customContent.editor.meta.sourceLabelHelper'
   | 'customContent.editor.meta.version'
   | 'customContent.editor.meta.versionHelper'
   | 'customContent.editor.meta.descriptionFr'
@@ -5453,6 +5455,9 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.meta.nameFr': 'Nom (FR)',
     'customContent.editor.meta.nameEn': 'Nom (EN, optionnel)',
     'customContent.editor.meta.author': 'Auteur',
+    'customContent.editor.meta.sourceLabel': 'Provenance',
+    'customContent.editor.meta.sourceLabelHelper':
+      'D’où vient ce contenu, en clair : « Xanathar », « Ma campagne », « Traduit de la table de Jean ». Affiché à côté des entrées du pack.',
     'customContent.editor.meta.version': 'Version',
     'customContent.editor.meta.versionHelper':
       'Format semver MAJOR.MINOR.PATCH, par exemple 1.0.0.',
@@ -9136,6 +9141,9 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.meta.nameFr': 'Name (FR)',
     'customContent.editor.meta.nameEn': 'Name (EN, optional)',
     'customContent.editor.meta.author': 'Author',
+    'customContent.editor.meta.sourceLabel': 'Provenance',
+    'customContent.editor.meta.sourceLabelHelper':
+      'Where this content comes from, in plain words: “Xanathar”, “My campaign”, “Translated from Jean’s table”. Shown next to the pack’s entries.',
     'customContent.editor.meta.version': 'Version',
     'customContent.editor.meta.versionHelper':
       'semver format MAJOR.MINOR.PATCH, e.g. 1.0.0.',

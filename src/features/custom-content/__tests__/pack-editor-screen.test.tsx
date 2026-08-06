@@ -188,7 +188,7 @@ describe('PackEditorScreen — création d\'un pack valide', () => {
     expect(calledPack.entities.feats).toHaveLength(1);
     expect(calledPack.entities.feats[0].id).toBe('don-tracer');
     expect(calledPack.entities.feats[0].name.fr).toBe('Don tracer');
-    expect(calledPack.entities.feats[0].source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.feats[0].source).toBe('custom');
 
     // 5. Toast succès + redirection
     await waitFor(() =>
@@ -278,7 +278,7 @@ describe('PackEditorScreen — création d\'une invocation (JALON 3C.2)', () => 
     expect(calledPack.entities.invocations[0].name.fr).toBe('Invocation tracer');
     expect(calledPack.entities.invocations[0].summary.fr).toBe('Effet de test');
     expect(calledPack.entities.invocations[0].prerequisiteWarlockLevel).toBeNull();
-    expect(calledPack.entities.invocations[0].source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.invocations[0].source).toBe('custom');
     // Pas de feats — invocations seules suffisent à passer parsePack.
     expect(calledPack.entities.feats).toBeUndefined();
   });
@@ -371,7 +371,7 @@ describe("PackEditorScreen — création d'une sous-ascendance (JALON 3C.3)", ()
     expect(sub.ancestryId).toBe('humain');
     expect(sub.name.fr).toBe('Humain vigilant');
     expect(sub.abilityScoreIncrease).toEqual([{ ability: 'for', bonus: 1 }]);
-    expect(sub.source).toBe('aidedd-homebrew');
+    expect(sub.source).toBe('custom');
     expect(calledPack.entities.feats).toBeUndefined();
     expect(calledPack.entities.invocations).toBeUndefined();
   });
@@ -475,7 +475,7 @@ describe("PackEditorScreen — création d'un background (JALON 3C.4)", () => {
     expect(bg.equipment).toEqual([{ itemId: 'rope', qty: 1 }]);
     expect(bg.startingCoins).toEqual({ qty: 0, unit: 'gp' });
     expect(bg.feature.name.fr).toBe('Bénédiction');
-    expect(bg.source).toBe('aidedd-homebrew');
+    expect(bg.source).toBe('custom');
     expect(calledPack.entities.feats).toBeUndefined();
   });
 
@@ -563,7 +563,7 @@ describe("PackEditorScreen — création d'une sous-classe (JALON 3C.5)", () => 
     expect(sc.features).toHaveLength(1);
     expect(sc.features[0].level).toBe(3);
     expect(sc.features[0].name.fr).toBe('Coup précis');
-    expect(sc.source).toBe('aidedd-homebrew');
+    expect(sc.source).toBe('custom');
     expect(calledPack.entities.feats).toBeUndefined();
   });
 
@@ -660,7 +660,7 @@ describe("PackEditorScreen — création d'un sort (JALON 3C.6)", () => {
     expect(sp.atHigherLevels).toBeNull();
     expect(sp.classes).toEqual([]);
     expect(sp).not.toHaveProperty('damage');
-    expect(sp.source).toBe('aidedd-homebrew');
+    expect(sp.source).toBe('custom');
     // Pas d'autres catégories
     expect(calledPack.entities.feats).toBeUndefined();
   });
@@ -831,7 +831,7 @@ describe("PackEditorScreen — création d'un objet (JALON 3C.7)", () => {
     expect(it.cost).toBeNull();
     expect(it.weight).toBe(0);
     expect(it.description).toBeNull();
-    expect(it.source).toBe('aidedd-homebrew');
+    expect(it.source).toBe('custom');
     expect(it).not.toHaveProperty('damage');
     expect(it).not.toHaveProperty('acBase');
     expect(calledPack.entities.feats).toBeUndefined();
@@ -967,7 +967,7 @@ describe('PackEditorScreen — création d’un objet magique (directive 2026-06
       'Sur commande, la lame s’embrase (+2d6 feu).',
     );
     expect(mi.description).toBeNull();
-    expect(mi.source).toBe('aidedd-homebrew');
+    expect(mi.source).toBe('custom');
     // Catégorie distincte des objets « mondains » : items reste vide.
     expect(calledPack.entities.items).toBeUndefined();
   });
@@ -1037,7 +1037,7 @@ describe('PackEditorScreen — création d’un monstre (directive 2026-06-27)',
     expect(mo.hp.formula).toBe('2d6');
     expect(mo.speed).toEqual({ walk: 30 });
     expect(mo.reactions).toBeNull();
-    expect(mo.source).toBe('aidedd-homebrew');
+    expect(mo.source).toBe('custom');
   });
 
   it('refuse confirm sans formule de PV (erreur visible, pas d’ajout)', async () => {
@@ -1106,7 +1106,7 @@ describe("PackEditorScreen — création d'une ascendance (JALON 3C.8)", () => {
     expect(a.description.fr).toBe('Ascendance brumeuse.');
     expect(a.size).toBe('medium');
     expect(a.speed).toBe(9);
-    expect(a.source).toBe('aidedd-homebrew');
+    expect(a.source).toBe('custom');
     expect(a.options).toEqual({});
     expect(calledPack.entities.feats).toBeUndefined();
   });
@@ -1230,7 +1230,7 @@ describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
     expect(c.primaryAbility).toEqual(['cha']);
     expect(c.saveProficiencies).toEqual(['cha', 'sag']);
     expect(c.spellcasting).toBeNull();
-    expect(c.source).toBe('aidedd-homebrew');
+    expect(c.source).toBe('custom');
     expect(c.weaponMasteryCount).toBe(0);
     expect(c.multiclassPrerequisite).toBeNull();
   });
@@ -1316,7 +1316,7 @@ describe('PackEditorScreen — édition d\'un pack existant (JALON 3C.10)', () =
             prerequisite: null,
             summary: { fr: 'Résumé.' },
             description: { fr: 'Description.' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -1377,7 +1377,7 @@ describe('PackEditorScreen — édition d\'un pack existant (JALON 3C.10)', () =
             prerequisite: null,
             summary: { fr: 'S1' },
             description: { fr: 'D1' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -1414,7 +1414,7 @@ describe('PackEditorScreen — mode édition (JALON 3C.10)', () => {
         {
           id: 'don-existant',
           name: { fr: 'Don existant', en: 'Existing feat' },
-          source: 'aidedd-homebrew',
+          source: 'custom',
         },
       ],
     },

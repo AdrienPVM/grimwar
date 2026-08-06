@@ -1,5 +1,5 @@
 import { loadPublicContent, type ContentScope } from './content-loader';
-import { loadUserPacksEntries } from './load-user-packs-entries';
+import { loadUserPacksEntriesScoped, type PackEntry } from './load-user-packs-entries';
 import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
 
 /**
@@ -34,6 +34,12 @@ export interface ScopedContentEntry<K extends ContentTypeKey> {
   readonly scope: ContentScope;
   /** uid ou id de campagne selon le scope ; `undefined` en public. */
   readonly scopeId?: string;
+  /**
+   * Provenance lisible du pack d'origine (M53) — `meta.sourceLabel` ou, à
+   * défaut, le nom du pack. `undefined` en public : le SRD n'a pas d'étiquette
+   * à afficher, c'est la base.
+   */
+  readonly originLabel?: string;
 }
 
 export async function loadContentMulti<K extends ContentTypeKey>(
@@ -91,6 +97,7 @@ export async function loadContentMultiScoped<K extends ContentTypeKey>(
     entry: ContentEntityByKey[K],
     scope: ContentScope,
     scopeId?: string,
+    originLabel?: string,
   ): void => {
     const id = (entry as { id: string }).id;
     const existing = byId.get(id);
@@ -99,11 +106,17 @@ export async function loadContentMultiScoped<K extends ContentTypeKey>(
         `[load-content-multi] ${type}: collision id "${id}" — ${scope} remplace ${existing.scope}.`,
       );
     }
-    byId.set(id, scopeId === undefined ? { entity: entry, scope } : { entity: entry, scope, scopeId });
+    byId.set(id, {
+      entity: entry,
+      scope,
+      ...(scopeId === undefined ? {} : { scopeId }),
+      ...(originLabel === undefined ? {} : { originLabel }),
+    });
   };
 
   for (const entry of publicEntries) push(entry, 'public');
-  for (const entry of userEntries) push(entry, 'user', userId ?? undefined);
+  for (const entry of userEntries)
+    push(entry.entity, 'user', userId ?? undefined, entry.originLabel);
   for (const entry of campaignEntries) push(entry, 'campaign', campaignId ?? undefined);
 
   return Array.from(byId.values());
@@ -120,9 +133,9 @@ export async function loadContentMultiScoped<K extends ContentTypeKey>(
 async function safeLoadUserPacks<K extends ContentTypeKey>(
   type: K,
   userId: string,
-): Promise<ContentEntityByKey[K][]> {
+): Promise<PackEntry<K>[]> {
   try {
-    return await loadUserPacksEntries(type, userId);
+    return await loadUserPacksEntriesScoped(type, userId);
   } catch (err) {
     const code = (err as { code?: string }).code;
     const msg = (err as { message?: string }).message ?? String(err);

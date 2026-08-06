@@ -47,6 +47,13 @@ export const CustomContentPackMetaSchema = z.object({
     .string()
     .regex(ISO_DATE_REGEX, 'createdAt must be ISO 8601 UTC (YYYY-MM-DDTHH:MM:SSZ)'),
   description: I18nSchema.optional(),
+  /**
+   * Provenance affichable du pack (M53) — « Xanathar », « Ma campagne »,
+   * « Traduit de la table de Jean ». Optionnel : les packs existants n'en ont
+   * pas et restent valides. C'est le pendant lisible du `source` d'entité, qui
+   * est un enum fermé et ne pourra jamais nommer une origine réelle.
+   */
+  sourceLabel: z.string().min(1).max(60).optional(),
 });
 export type CustomContentPackMeta = z.infer<typeof CustomContentPackMetaSchema>;
 

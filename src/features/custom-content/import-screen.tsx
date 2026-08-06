@@ -354,6 +354,16 @@ function PreviewCard({
             {pack.meta.version}
           </dd>
         </div>
+        {pack.meta.sourceLabel ? (
+          <div>
+            <dt className="font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
+              {t('customContent.editor.meta.sourceLabel')}
+            </dt>
+            <dd className="mt-1 font-serif text-body-sm text-text">
+              {pack.meta.sourceLabel}
+            </dd>
+          </div>
+        ) : null}
         <div>
           <dt className="font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
             {t('customContent.preview.entities')}
@@ -476,6 +486,7 @@ function PackRow({ pack, isDeleting, onExport, onDelete }: PackRowProps): JSX.El
         </p>
         <p className="truncate font-meta text-meta uppercase tracking-[0.18em] text-text-secondary">
           {pack.meta.author} · v{pack.meta.version}
+          {pack.meta.sourceLabel ? ` · ${pack.meta.sourceLabel}` : ''}
         </p>
       </div>
       <div className="flex items-center gap-2">

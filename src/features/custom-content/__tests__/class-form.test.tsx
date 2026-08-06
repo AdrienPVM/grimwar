@@ -35,7 +35,7 @@ describe('buildClassFromDraft', () => {
   it('produit une Class minimale + source aidedd-homebrew + 1 option starting equipment vide', () => {
     const cls = buildClassFromDraft(minimalDraft());
     expect(cls.id).toBe('cendre-pacte');
-    expect(cls.source).toBe('aidedd-homebrew');
+    expect(cls.source).toBe('custom');
     expect(cls.hitDie).toBe('d8');
     expect(cls.primaryAbility).toEqual(['cha']);
     expect(cls.saveProficiencies).toEqual(['cha', 'sag']);
@@ -405,7 +405,7 @@ describe('validateClassDraft', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.cls.id).toBe('cendre-pacte');
-      expect(result.cls.source).toBe('aidedd-homebrew');
+      expect(result.cls.source).toBe('custom');
     }
   });
 

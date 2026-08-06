@@ -42,7 +42,7 @@ describe('buildMagicItemFromDraft', () => {
         en: 'On command, the blade ignites (+2d6 fire).',
       },
       description: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 

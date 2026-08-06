@@ -10,6 +10,8 @@ import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
 export interface ContentEntryScope {
   readonly scope: ContentScope;
   readonly scopeId?: string;
+  /** Provenance lisible du pack d'origine (M53) — absente en public. */
+  readonly originLabel?: string;
 }
 
 interface UseContentResult<K extends ContentTypeKey> {
@@ -59,9 +61,13 @@ export function useContent<K extends ContentTypeKey>(type: K): UseContentResult<
           new Map(
             entries.map((e) => [
               (e.entity as { id: string }).id,
-              e.scopeId === undefined
-                ? { scope: e.scope }
-                : { scope: e.scope, scopeId: e.scopeId },
+              {
+                scope: e.scope,
+                ...(e.scopeId === undefined ? {} : { scopeId: e.scopeId }),
+                ...(e.originLabel === undefined
+                  ? {}
+                  : { originLabel: e.originLabel }),
+              },
             ]),
           ),
         );

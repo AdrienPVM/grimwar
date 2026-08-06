@@ -67,28 +67,58 @@ async function fetchUserPacksSnapshot(userId: string): Promise<PackSnapshot> {
   return promise;
 }
 
+/**
+ * Une entrée de pack AVEC l'étiquette de provenance de son pack d'origine
+ * (M53). Sans ça, la fusion multi-scope sait qu'une entrée est « maison » mais
+ * pas de QUEL pack elle vient — et le `sourceLabel` saisi par le MJ ne serait
+ * lisible nulle part hors de l'écran d'édition du pack.
+ */
+export interface PackEntry<K extends ContentTypeKey> {
+  readonly entity: ContentEntityByKey[K];
+  /** `meta.sourceLabel`, à défaut `meta.name.fr`. `undefined` si le pack n'a ni l'un ni l'autre. */
+  readonly originLabel?: string;
+}
+
 export async function loadUserPacksEntries<K extends ContentTypeKey>(
   type: K,
   userId: string,
 ): Promise<ContentEntityByKey[K][]> {
+  const scoped = await loadUserPacksEntriesScoped(type, userId);
+  return scoped.map((e) => e.entity);
+}
+
+export async function loadUserPacksEntriesScoped<K extends ContentTypeKey>(
+  type: K,
+  userId: string,
+): Promise<PackEntry<K>[]> {
   if (!isPackCategory(type)) return [];
 
   const snap = await fetchUserPacksSnapshot(userId);
 
-  const entries: ContentEntityByKey[K][] = [];
+  const entries: PackEntry<K>[] = [];
   const schema = ContentTypeSchemas[type];
 
   snap.forEach((docSnap) => {
-    const data = docSnap.data() as { entities?: CustomContentPack['entities'] };
+    const data = docSnap.data() as {
+      meta?: Partial<CustomContentPack['meta']>;
+      entities?: CustomContentPack['entities'];
+    };
     const list = data.entities?.[type as CustomContentPackCategory];
     if (!list) return;
+    // Le nom du pack sert de repli : un pack sans provenance déclarée reste
+    // identifiable par son titre, ce qui vaut mieux qu'un « Maison » anonyme.
+    const originLabel = data.meta?.sourceLabel ?? data.meta?.name?.fr;
     for (const raw of list) {
       // Defense-in-depth : un pack écrit avant une évolution de schéma peut
       // contenir des entrées légèrement invalides. On filtre plutôt que de
       // planter le wizard entier — symétrique à `loadFromFirestore`.
       const parsed = schema.safeParse(raw);
       if (parsed.success) {
-        entries.push(parsed.data as ContentEntityByKey[K]);
+        entries.push(
+          originLabel
+            ? { entity: parsed.data as ContentEntityByKey[K], originLabel }
+            : { entity: parsed.data as ContentEntityByKey[K] },
+        );
       } else {
         console.warn(
           `[load-user-packs-entries] ${type}/${(raw as { id?: string }).id ?? '<no-id>'} dans pack ${docSnap.id}: schema invalide, ignoré`,

@@ -25,7 +25,7 @@ describe('buildFeatFromDraft', () => {
       name: { fr: 'Don tracer' },
       summary: null,
       prerequisite: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -88,7 +88,7 @@ describe('draftFromFeat', () => {
       name: { fr: 'Don', en: 'Feat' },
       summary: null,
       prerequisite: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft).toEqual({
       id: 'don-tracer',

@@ -64,7 +64,7 @@ describe('buildItemFromDraft', () => {
       cost: null,
       weight: 5,
       description: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 

@@ -40,7 +40,7 @@ import { FieldString } from './fields/field-string';
  *   - feature : { name i18n, description i18n } — le don / bonus offert par
  *     le background ; FR requis pour name et description.
  *
- * `source` est figé à `aidedd-homebrew` — convention partagée 3C.
+ * `source` est figé à `custom` — convention partagée 3C.
  */
 
 const COIN_UNITS: readonly CoinUnit[] = ['cp', 'sp', 'ep', 'gp', 'pp'];
@@ -136,7 +136,7 @@ export function buildBackgroundFromDraft(
           : {}),
       },
     },
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

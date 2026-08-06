@@ -38,7 +38,7 @@ describe('buildBackgroundFromDraft', () => {
         name: { fr: 'Bénédiction du chemin' },
         description: { fr: 'Voyage plus vite.' },
       },
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -160,7 +160,7 @@ describe('draftFromBackground', () => {
         name: { fr: 'Don', en: 'Feat' },
         description: { fr: 'D' },
       },
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.id).toBe('acolyte');
     expect(draft.nameEn).toBe('Acolyte');
@@ -187,7 +187,7 @@ describe('draftFromBackground', () => {
         name: { fr: 'F' },
         description: { fr: 'D' },
       },
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.hasStartingCoins).toBe(true);
     expect(draft.startingCoinsQty).toBe(8);

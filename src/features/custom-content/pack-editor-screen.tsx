@@ -559,6 +559,13 @@ export function PackEditorScreen(): JSX.Element {
                 testId="pack-meta-version"
               />
             </div>
+            <FieldString
+              label={t('customContent.editor.meta.sourceLabel')}
+              value={builder.state.meta.sourceLabel}
+              onChange={(value) => builder.setMetaField('sourceLabel', value)}
+              helper={t('customContent.editor.meta.sourceLabelHelper')}
+              testId="pack-meta-source-label"
+            />
             <FieldI18n
               labelFr={t('customContent.editor.meta.descriptionFr')}
               labelEn={t('customContent.editor.meta.descriptionEn')}
