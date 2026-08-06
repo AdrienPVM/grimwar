@@ -2634,6 +2634,16 @@ export type StringKey =
   | 'customContent.editor.classForm.confirm'
   | 'customContent.editor.classForm.error.idRequired'
   | 'customContent.editor.classForm.error.idFormat'
+  | 'customContent.editor.classForm.spellcastingPreparation'
+  | 'customContent.editor.classForm.spellcastingPreparationHelper'
+  | 'customContent.editor.classForm.spellcastingPreparation.prepared'
+  | 'customContent.editor.classForm.spellcastingPreparation.known'
+  | 'customContent.editor.classForm.spellsKnownOrPrepared'
+  | 'customContent.editor.classForm.spellsKnownOrPreparedHelper'
+  | 'customContent.editor.classForm.cantripsKnown'
+  | 'customContent.editor.classForm.cantripsKnownHelper'
+  | 'customContent.editor.classForm.error.progressionFormat'
+  | 'customContent.editor.classForm.error.progressionRequiredForCantrips'
   | 'customContent.editor.classForm.error.idReserved'
   | 'customContent.editor.classForm.error.nameFrRequired'
   | 'customContent.editor.classForm.error.descriptionFrRequired'
@@ -6414,6 +6424,23 @@ const STRINGS: Record<Locale, Dict> = {
       'L’identifiant est obligatoire.',
     'customContent.editor.classForm.error.idFormat':
       'Slug invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.classForm.spellcastingPreparation': 'Sorts',
+    'customContent.editor.classForm.spellcastingPreparationHelper':
+      'Préparés : la liste se refait à chaque repos long. Connus : elle est fixe.',
+    'customContent.editor.classForm.spellcastingPreparation.prepared': 'Préparés',
+    'customContent.editor.classForm.spellcastingPreparation.known': 'Connus',
+    'customContent.editor.classForm.spellsKnownOrPrepared':
+      'Sorts préparés ou connus, par niveau',
+    'customContent.editor.classForm.spellsKnownOrPreparedHelper':
+      'Les 20 valeurs de la colonne, du niveau 1 au niveau 20, séparées par des espaces. Laisse vide si ta classe n’a pas de table.',
+    'customContent.editor.classForm.cantripsKnown':
+      'Sorts mineurs connus, par niveau',
+    'customContent.editor.classForm.cantripsKnownHelper':
+      'Facultatif — 20 valeurs, comme ci-dessus. À laisser vide si ta classe n’a pas de sorts mineurs.',
+    'customContent.editor.classForm.error.progressionFormat':
+      'Il faut exactement 20 nombres entiers positifs, un par niveau.',
+    'customContent.editor.classForm.error.progressionRequiredForCantrips':
+      'Renseigne d’abord la colonne des sorts préparés ou connus.',
     'customContent.editor.classForm.error.idReserved':
       'Le Clerc et le Druide demandent une liste d’ordres que ce formulaire ne produit pas encore — choisis un autre identifiant. Les 10 autres classes officielles sont dupliquables.',
     'customContent.editor.classForm.error.nameFrRequired':
@@ -10052,6 +10079,22 @@ const STRINGS: Record<Locale, Dict> = {
       'Identifier is required.',
     'customContent.editor.classForm.error.idFormat':
       'Invalid slug: lowercase, digits and dashes only.',
+    'customContent.editor.classForm.spellcastingPreparation': 'Spells',
+    'customContent.editor.classForm.spellcastingPreparationHelper':
+      'Prepared: the list is rebuilt on every long rest. Known: it is fixed.',
+    'customContent.editor.classForm.spellcastingPreparation.prepared': 'Prepared',
+    'customContent.editor.classForm.spellcastingPreparation.known': 'Known',
+    'customContent.editor.classForm.spellsKnownOrPrepared':
+      'Spells prepared or known, per level',
+    'customContent.editor.classForm.spellsKnownOrPreparedHelper':
+      'The 20 values of the column, level 1 to 20, separated by spaces. Leave empty if your class has no table.',
+    'customContent.editor.classForm.cantripsKnown': 'Cantrips known, per level',
+    'customContent.editor.classForm.cantripsKnownHelper':
+      'Optional — 20 values, same as above. Leave empty if your class has no cantrips.',
+    'customContent.editor.classForm.error.progressionFormat':
+      'Exactly 20 non-negative whole numbers are required, one per level.',
+    'customContent.editor.classForm.error.progressionRequiredForCantrips':
+      'Fill in the prepared-or-known column first.',
     'customContent.editor.classForm.error.idReserved':
       'Cleric and Druid require an order list this form cannot produce yet — pick another id. The other 10 official classes can be duplicated.',
     'customContent.editor.classForm.error.nameFrRequired':

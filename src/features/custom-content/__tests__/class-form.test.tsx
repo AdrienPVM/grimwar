@@ -78,6 +78,9 @@ describe('buildClassFromDraft', () => {
     expect(cls.spellcasting).toEqual({
       ability: 'cha',
       progression: 'pact',
+      // M51 — le mode de préparation est désormais toujours écrit ; 'known'
+      // est le défaut du formulaire, et c'est le comportement d'avant.
+      preparation: 'known',
     });
   });
 
@@ -453,6 +456,7 @@ describe('validateClassDraft', () => {
       expect(result.cls.spellcasting).toEqual({
         ability: 'cha',
         progression: 'pact',
+        preparation: 'known',
       });
       expect(result.cls.multiclassPrerequisite).toEqual({
         combinator: 'and',

@@ -1338,7 +1338,48 @@ describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
     expect(c.spellcasting).toEqual({
       ability: 'int',
       progression: 'full',
+      preparation: 'known',
     });
+    // M51 — aucune colonne saisie ⇒ pas de table. La classe lance des sorts
+    // sans progression : c'est le comportement d'avant, on ne le change pas.
+    expect(c.spellProgression).toBeUndefined();
+  });
+
+  // M51 — sans table, `preparationCap` rendait 0 à tous les niveaux : une
+  // classe maison lançait des sorts sur le papier et n'en préparait aucun.
+  it('propage la table de progression saisie et le mode « préparés »', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-thaum');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack thaumaturge');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-class'));
+    await user.type(screen.getByTestId('class-form-id'), 'thaumaturge');
+    await user.type(screen.getByTestId('class-form-name-fr'), 'Thaumaturge');
+    await user.type(
+      screen.getByTestId('class-form-description-fr'),
+      'La classe de ma table.',
+    );
+    await user.click(screen.getByTestId('class-form-primary-sag'));
+    await user.click(screen.getByTestId('class-form-save-sag'));
+
+    await user.click(screen.getByTestId('class-form-spellcasting-toggle'));
+    await user.type(
+      screen.getByTestId('class-form-spells-known'),
+      '2 3 4 5 6 6 7 7 9 9 10 10 11 11 12 12 14 14 15 15',
+    );
+
+    await user.click(screen.getByTestId('class-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    const c = calledPack.entities.classes[0];
+    expect(c.spellProgression.spellsKnownOrPrepared).toHaveLength(20);
+    // Niveau 5 → 5e valeur : 6 sorts préparés.
+    expect(c.spellProgression.spellsKnownOrPrepared[4]).toBe(6);
   });
 });
 

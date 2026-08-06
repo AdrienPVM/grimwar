@@ -172,10 +172,18 @@ export function MagieMode({ character }: MagieModeProps): JSX.Element {
                 liste complète (Clerc, Druide, Paladin). Le Magicien prépare
                 depuis son grimoire (`WizardSpellbookSections`) ; les
                 connaisseurs (Barde, Ensorceleur, Rôdeur, Occultiste) n'ont pas
-                d'éditeur.
+                d'éditeur. Une classe maison décide elle-même (M51) : on lui
+                passe sa définition, sinon elle ne pourrait jamais entrer dans
+                la liste d'ids SRD.
               */}
               {castingClasses
-                .filter((c) => isPreparedCaster(c.classId) && c.classId !== 'wizard')
+                .filter(
+                  (c) =>
+                    isPreparedCaster(
+                      c.classId,
+                      classCatalog.find((def) => def.id === c.classId),
+                    ) && c.classId !== 'wizard',
+                )
                 .map((c) => (
                   <PreparationEditor
                     key={c.classId}

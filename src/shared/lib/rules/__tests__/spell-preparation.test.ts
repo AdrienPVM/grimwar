@@ -38,6 +38,42 @@ describe('isPreparedCaster', () => {
     expect(isPreparedCaster('warlock')).toBe(false);
   });
 
+  // M51 — la liste d'ids est fermée et `classes.json` est un path protégé :
+  // sans déclaration portée par la classe elle-même, aucune classe maison ne
+  // pouvait être préparatrice.
+  it('une classe maison qui se déclare préparatrice l’est', () => {
+    const homebrew = {
+      id: 'thaumaturge',
+      spellcasting: { ability: 'sag', progression: 'full', preparation: 'prepared' },
+    } as unknown as Parameters<typeof isPreparedCaster>[1];
+    expect(isPreparedCaster('thaumaturge', homebrew)).toBe(true);
+  });
+
+  it('une classe maison qui se déclare connaisseuse ne prépare pas', () => {
+    const homebrew = {
+      id: 'thaumaturge',
+      spellcasting: { ability: 'sag', progression: 'full', preparation: 'known' },
+    } as unknown as Parameters<typeof isPreparedCaster>[1];
+    expect(isPreparedCaster('thaumaturge', homebrew)).toBe(false);
+  });
+
+  it('la déclaration de la classe l’emporte sur la liste SRD', () => {
+    const overridden = {
+      id: 'bard',
+      spellcasting: { ability: 'cha', progression: 'full', preparation: 'prepared' },
+    } as unknown as Parameters<typeof isPreparedCaster>[1];
+    expect(isPreparedCaster('bard', overridden)).toBe(true);
+  });
+
+  it('sans déclaration, la liste SRD reste la référence', () => {
+    const silent = {
+      id: 'cleric',
+      spellcasting: { ability: 'sag', progression: 'full' },
+    } as unknown as Parameters<typeof isPreparedCaster>[1];
+    expect(isPreparedCaster('cleric', silent)).toBe(true);
+    expect(isPreparedCaster('thaumaturge', silent)).toBe(false);
+  });
+
   it('le set canonique est exactement les 4 préparateurs SRD 2024', () => {
     expect([...PREPARED_CASTER_CLASS_IDS].sort()).toEqual([
       'cleric',

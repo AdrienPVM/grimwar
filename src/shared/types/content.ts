@@ -578,6 +578,16 @@ export const ClassSchema = z
       .object({
         ability: z.enum(['int', 'sag', 'cha']),
         progression: z.enum(['full', 'half', 'third', 'pact']),
+        /**
+         * Prépare-t-elle ses sorts, ou les connaît-elle ? (M51)
+         *
+         * Optionnel : les 12 classes SRD ne le portent pas et retombent sur
+         * `PREPARED_CASTER_CLASS_IDS` (`rules/spell-preparation.ts`), qui est un
+         * fait de règles gravé — `classes.json` est un path protégé. Le champ
+         * n'existe que pour les classes maison, qui n'ont aucun moyen d'entrer
+         * dans une liste d'ids fermée.
+         */
+        preparation: z.enum(['prepared', 'known']).optional(),
       })
       .nullable(),
     startingEquipment: StartingEquipmentSchema,

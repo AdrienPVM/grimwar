@@ -33,8 +33,20 @@ export const PREPARED_CASTER_CLASS_IDS = [
 
 const PREPARED_CASTER_SET: ReadonlySet<string> = new Set(PREPARED_CASTER_CLASS_IDS);
 
-/** `true` si la classe prépare ses sorts (par opposition à « connaît »). */
-export function isPreparedCaster(classId: string): boolean {
+/**
+ * `true` si la classe prépare ses sorts (par opposition à « connaît »).
+ *
+ * La classe le déclare elle-même quand elle le peut (`spellcasting.preparation`,
+ * M51) ; sinon on retombe sur la liste d'ids SRD. Sans ce passage par la
+ * définition, une classe maison ne pouvait PAS être préparatrice : la liste est
+ * fermée et `classes.json` est un path protégé.
+ */
+export function isPreparedCaster(
+  classId: string,
+  classDef?: ClassEntity | undefined,
+): boolean {
+  const declared = classDef?.spellcasting?.preparation;
+  if (declared) return declared === 'prepared';
   return PREPARED_CASTER_SET.has(classId);
 }
 
