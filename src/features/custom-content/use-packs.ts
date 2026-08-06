@@ -6,6 +6,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { logicalPackId } from '@/shared/lib/services/pack-storage';
 import { getDb } from '@/shared/lib/firebase';
 import type {
   CustomContentPack,
@@ -21,6 +22,11 @@ export interface PackListEntry {
   packId: string;
   meta: CustomContentPackMeta;
   importedAt: number | null;
+  /**
+   * Nombre de documents Firestore derrière ce pack (M52). Un pack volumineux
+   * est découpé en tranches ; il reste UNE ligne dans la liste.
+   */
+  chunkCount: number;
 }
 
 interface UsePacksResult {
@@ -56,7 +62,9 @@ export function usePacks(): UsePacksResult {
     const unsubscribe = onSnapshot(
       ref,
       (snap: QuerySnapshot) => {
-        const next: PackListEntry[] = [];
+        // Regroupement par pack LOGIQUE (M52) : les tranches `--00`, `--01`…
+        // d'un même pack se présentaient sinon comme autant de packs.
+        const byLogicalId = new Map<string, PackListEntry>();
         snap.forEach((docSnap) => {
           const data = docSnap.data() as {
             meta?: CustomContentPackMeta;
@@ -69,15 +77,27 @@ export function usePacks(): UsePacksResult {
             );
             return;
           }
-          next.push({
-            packId: docSnap.id,
+          const packId = data.meta.id || logicalPackId(docSnap.id);
+          const importedAt =
+            data.importedAt && typeof data.importedAt.toMillis === 'function'
+              ? data.importedAt.toMillis()
+              : null;
+          const existing = byLogicalId.get(packId);
+          if (existing) {
+            existing.chunkCount += 1;
+            if (importedAt !== null && (existing.importedAt ?? 0) < importedAt) {
+              existing.importedAt = importedAt;
+            }
+            return;
+          }
+          byLogicalId.set(packId, {
+            packId,
             meta: data.meta,
-            importedAt:
-              data.importedAt && typeof data.importedAt.toMillis === 'function'
-                ? data.importedAt.toMillis()
-                : null,
+            importedAt,
+            chunkCount: 1,
           });
         });
+        const next: PackListEntry[] = Array.from(byLogicalId.values());
         // Tri : plus récent en premier ; fallback meta.name FR alpha.
         next.sort((a, b) => {
           const ia = a.importedAt ?? 0;

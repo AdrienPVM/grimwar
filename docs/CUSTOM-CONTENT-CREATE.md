@@ -88,6 +88,7 @@ Sous la zone de drop, la liste des packs existants pour ton compte (live via `on
 
 - **Pas d'export in-app** : pour récupérer le JSON brut, passe par la Firestore console.
 - **Pas de partage public** : le pack reste sur ton compte. Partager = donner le JSON à un ami qui l'importe sur le sien.
+- **Packs volumineux** : au-delà de la limite Firestore d'un document (1 Mio), le pack est découpé automatiquement en tranches `{id}--00`, `--01`… Rien à faire : il reste UNE ligne dans la liste, il se recolle à l'édition, et le supprimer emporte toutes ses tranches. Seule limite dure restante : une entité SEULE plus lourde qu'un document est indécoupable (message explicite au save).
 - **Pas de validation cross-pack** : si un sort d'ascendance référence un slug qui n'existe pas dans le pack, l'erreur sort au moment où le wizard essaie de résoudre le slug (pas au save).
 - **Sorts d'ascendance Tieffelin/Elfe/Gnome** : il faut éditer le JSON manuellement après export. La V1 du form d'ascendance bloque ces sous-races pour éviter une UX cassée.
 

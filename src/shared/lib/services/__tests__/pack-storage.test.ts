@@ -42,6 +42,7 @@ import {
   deletePack,
   getPack,
   listPacks,
+  logicalPackId,
   writePack,
 } from '../pack-storage';
 import type { CustomContentPack } from '@/shared/types/custom-content-pack';
@@ -79,9 +80,18 @@ const validPack: CustomContentPack = {
   entities: { spells: [minimalSpell] },
 };
 
+/** Snapshot Firestore minimal — `forEach` est la seule API consommée. */
+function snapshotOf(
+  docs: { id: string; data: () => unknown }[],
+): { forEach: (cb: (d: { id: string; data: () => unknown }) => void) => void } {
+  return { forEach: (cb) => docs.forEach(cb) };
+}
+
 beforeEach(() => {
   mockGetDoc.mockReset();
-  mockGetDocs.mockReset();
+  // Depuis M52, `writePack`/`deletePack`/`getPack` lisent la collection pour
+  // retrouver les tranches d'un pack. Défaut : collection vide.
+  mockGetDocs.mockReset().mockResolvedValue(snapshotOf([]));
   mockSetDoc.mockReset().mockResolvedValue(undefined);
   mockDeleteDoc.mockReset().mockResolvedValue(undefined);
   mockDoc.mockClear();
@@ -103,22 +113,75 @@ describe('writePack', () => {
     });
   });
 
-  it('rejette un pack dont le payload sérialisé dépasse 1 MiB', async () => {
-    // Construire un pack > 1 MiB via une description gargantuesque.
+  // M52 — un bestiaire de plusieurs centaines de créatures dépassait la limite
+  // Firestore et le service refusait net, avec pour seul conseil « splitte à la
+  // main » : N fichiers donnaient alors N packs distincts dans la liste.
+  it('découpe un pack volumineux en tranches --00, --01… sous le même meta.id', async () => {
+    // ~600 sorts de ~4 Kio : largement au-dessus de la limite d'un document.
+    const filler = 'x'.repeat(4_000);
+    const bigPack: CustomContentPack = {
+      ...validPack,
+      entities: {
+        spells: Array.from({ length: 600 }, (_, i) => ({
+          ...minimalSpell,
+          id: `sort-${i}`,
+          description: { fr: filler, en: filler },
+        })),
+      },
+    };
+
+    await writePack(UID, bigPack);
+
+    expect(mockSetDoc.mock.calls.length).toBeGreaterThan(1);
+    const paths = mockSetDoc.mock.calls.map(
+      ([ref]) => (ref as { path: string }).path,
+    );
+    expect(paths[0]).toBe(`users/${UID}/customContentPacks/pack-test--00`);
+    expect(paths[1]).toBe(`users/${UID}/customContentPacks/pack-test--01`);
+    // Toutes les tranches portent le MÊME meta : c'est ce qui en fait un pack.
+    for (const [, payload] of mockSetDoc.mock.calls) {
+      expect((payload as { meta: { id: string } }).meta.id).toBe('pack-test');
+    }
+    // Et aucune entité n'est perdue en route.
+    const total = mockSetDoc.mock.calls.reduce(
+      (n, [, payload]) =>
+        n + ((payload as { entities: { spells?: unknown[] } }).entities.spells?.length ?? 0),
+      0,
+    );
+    expect(total).toBe(600);
+  });
+
+  it('supprime les tranches devenues inutiles quand le pack maigrit', async () => {
+    mockGetDocs.mockResolvedValue(
+      snapshotOf([
+        { id: 'pack-test--00', data: () => ({ meta: validPack.meta }) },
+        { id: 'pack-test--01', data: () => ({ meta: validPack.meta }) },
+        { id: 'autre-pack', data: () => ({ meta: validPack.meta }) },
+      ]),
+    );
+
+    await writePack(UID, validPack);
+
+    // Le pack tient maintenant dans un document nu : les 2 tranches partent…
+    const deleted = mockDeleteDoc.mock.calls.map(
+      ([ref]) => (ref as { path: string }).path,
+    );
+    expect(deleted).toContain(`users/${UID}/customContentPacks/pack-test--00`);
+    expect(deleted).toContain(`users/${UID}/customContentPacks/pack-test--01`);
+    // …et le pack d'à côté n'est pas touché.
+    expect(deleted).not.toContain(`users/${UID}/customContentPacks/autre-pack`);
+  });
+
+  it('refuse une entité seule plus lourde qu’un document — elle est indécoupable', async () => {
     const huge = 'x'.repeat(1_100_000);
     const oversizedPack: CustomContentPack = {
       ...validPack,
       entities: {
-        spells: [
-          {
-            ...minimalSpell,
-            description: { fr: huge, en: huge },
-          },
-        ],
+        spells: [{ ...minimalSpell, description: { fr: huge, en: huge } }],
       },
     };
     await expect(writePack(UID, oversizedPack)).rejects.toThrow(
-      /trop volumineux/,
+      /trop volumineuse/,
     );
     expect(mockSetDoc).not.toHaveBeenCalled();
   });
@@ -224,5 +287,91 @@ describe('deletePack', () => {
     expect((docRef as { path: string }).path).toBe(
       `users/${UID}/customContentPacks/pack-test`,
     );
+  });
+});
+
+/**
+ * M52 — un pack découpé doit se présenter comme UN pack : une ligne dans la
+ * liste, un pack recollé à l'édition, une suppression qui emporte tout.
+ */
+describe('packs découpés — regroupement logique', () => {
+  const chunkMeta = { ...validPack.meta, id: 'bestiaire' };
+
+  it('listPacks regroupe les tranches en une seule entrée', async () => {
+    mockGetDocs.mockResolvedValue(
+      snapshotOf([
+        {
+          id: 'bestiaire--00',
+          data: () => ({ meta: chunkMeta, importedAt: { toMillis: () => 100 } }),
+        },
+        {
+          id: 'bestiaire--01',
+          data: () => ({ meta: chunkMeta, importedAt: { toMillis: () => 200 } }),
+        },
+      ]),
+    );
+
+    const summaries = await listPacks(UID);
+
+    expect(summaries).toHaveLength(1);
+    expect(summaries[0]?.packId).toBe('bestiaire');
+    expect(summaries[0]?.docIds).toEqual(['bestiaire--00', 'bestiaire--01']);
+    // La date affichée est celle de la tranche la plus récente.
+    expect(summaries[0]?.importedAt).toBe(200);
+  });
+
+  it('getPack recolle les tranches dans l’ordre des documents', async () => {
+    mockGetDoc.mockResolvedValue({ exists: () => false });
+    mockGetDocs.mockResolvedValue(
+      snapshotOf([
+        // Volontairement en désordre : l'itération Firestore ne garantit rien.
+        {
+          id: 'bestiaire--01',
+          data: () => ({
+            meta: chunkMeta,
+            entities: { spells: [{ ...minimalSpell, id: 'sort-b' }] },
+          }),
+        },
+        {
+          id: 'bestiaire--00',
+          data: () => ({
+            meta: chunkMeta,
+            entities: { spells: [{ ...minimalSpell, id: 'sort-a' }] },
+          }),
+        },
+      ]),
+    );
+
+    const pack = await getPack(UID, 'bestiaire');
+
+    expect(pack?.meta.id).toBe('bestiaire');
+    expect(pack?.entities.spells?.map((s) => s.id)).toEqual([
+      'sort-a',
+      'sort-b',
+    ]);
+  });
+
+  it('deletePack emporte toutes les tranches', async () => {
+    mockGetDocs.mockResolvedValue(
+      snapshotOf([
+        { id: 'bestiaire--00', data: () => ({ meta: chunkMeta }) },
+        { id: 'bestiaire--01', data: () => ({ meta: chunkMeta }) },
+        { id: 'autre', data: () => ({ meta: validPack.meta }) },
+      ]),
+    );
+
+    await deletePack(UID, 'bestiaire');
+
+    const deleted = mockDeleteDoc.mock.calls.map(
+      ([ref]) => (ref as { path: string }).path,
+    );
+    expect(deleted).toContain(`users/${UID}/customContentPacks/bestiaire--00`);
+    expect(deleted).toContain(`users/${UID}/customContentPacks/bestiaire--01`);
+    expect(deleted).not.toContain(`users/${UID}/customContentPacks/autre`);
+  });
+
+  it('un id de pack contenant des tirets n’est pas confondu avec une tranche', () => {
+    expect(logicalPackId('mon-pack-01')).toBe('mon-pack-01');
+    expect(logicalPackId('mon-pack--01')).toBe('mon-pack');
   });
 });
