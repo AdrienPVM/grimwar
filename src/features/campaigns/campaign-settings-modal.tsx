@@ -9,6 +9,7 @@ import { cn } from '@/shared/lib/cn';
 import { t, type StringKey } from '@/shared/lib/i18n';
 import type { DiceMode } from '@/shared/lib/rules/dice-mode';
 import { updateCampaign } from '@/shared/lib/services/campaigns';
+import type { Locale } from '@/shared/lib/slices/locale-slice';
 import type {
   Campaign,
   CampaignStatus,
@@ -33,6 +34,14 @@ const DICE_MODES: readonly {
 }[] = [
   { mode: 'digital', labelKey: 'account.dice.digital', hintKey: 'account.dice.digitalHint' },
   { mode: 'physical', labelKey: 'account.dice.physical', hintKey: 'account.dice.physicalHint' },
+];
+
+const LANGUAGES: readonly {
+  language: Locale;
+  labelKey: StringKey;
+}[] = [
+  { language: 'fr', labelKey: 'account.locale.fr' },
+  { language: 'en', labelKey: 'account.locale.en' },
 ];
 
 const VARIANT_ROWS: readonly {
@@ -96,10 +105,13 @@ const STATUS_ROWS: readonly {
  * fermeture (`{open ? <CampaignSettingsModal … /> : null}`), garantissant des
  * valeurs de départ fraîches à chaque ouverture.
  *
- * `language` (switch runtime EN déféré S5) n'est pas exposé ici : on ne montre
- * que les réglages qui ont un consommateur user-visible en V1. Le `status`, lui,
- * est éditable — c'est la clôture naturelle du cycle de vie d'une campagne (une
- * campagne se met en pause entre deux arcs, ou s'archive une fois terminée).
+ * `language` est exposé depuis l'audit de malléabilité (M54) : le champ existait
+ * au schéma depuis le plan 14 sans aucune UI ni aucun lecteur. Il sert désormais
+ * de langue par défaut aux joueurs qui n'ont rien choisi dans leur compte, via
+ * `effectiveLocale` (`shared/lib/rules/table-language.ts`) — un choix personnel
+ * l'emporte toujours. Le `status`, lui, est éditable — c'est la clôture
+ * naturelle du cycle de vie d'une campagne (une campagne se met en pause entre
+ * deux arcs, ou s'archive une fois terminée).
  */
 export function CampaignSettingsModal({ campaign, onClose, onSaved }: Props): JSX.Element {
   const titleId = useId();
@@ -107,6 +119,7 @@ export function CampaignSettingsModal({ campaign, onClose, onSaved }: Props): JS
   const [description, setDescription] = useState<string>(campaign.description);
   const [status, setStatus] = useState<CampaignStatus>(campaign.status);
   const [diceMode, setDiceMode] = useState<DiceMode>(campaign.settings.diceMode);
+  const [language, setLanguage] = useState<Locale>(campaign.settings.language);
   const [variants, setVariants] = useState<CampaignVariants>({
     ...campaign.settings.variants,
   });
@@ -134,7 +147,7 @@ export function CampaignSettingsModal({ campaign, onClose, onSaved }: Props): JS
         name: trimmed,
         description: description.trim(),
         status,
-        settings: { diceMode, variants },
+        settings: { diceMode, language, variants },
       });
       onSaved();
       onClose();
@@ -302,6 +315,54 @@ export function CampaignSettingsModal({ campaign, onClose, onSaved }: Props): JS
                   </span>
                   <span className="font-serif text-[12px] text-text-tertiary">
                     {t(hintKey)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section aria-labelledby={`${titleId}-language`}>
+          <p
+            id={`${titleId}-language`}
+            className="font-title text-[11px] font-bold uppercase tracking-[0.2em] text-gold"
+          >
+            {t('campaigns.settings.language.title')}
+          </p>
+          <p className="mt-1 font-serif text-body-sm text-text-tertiary">
+            {t('campaigns.settings.language.hint')}
+          </p>
+          <div
+            role="radiogroup"
+            aria-label={t('campaigns.settings.language.title')}
+            className="mt-3 grid grid-cols-2 gap-2"
+            data-testid="campaign-settings-language"
+          >
+            {LANGUAGES.map(({ language: value, labelKey }) => {
+              const active = language === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  disabled={submitting}
+                  onClick={() => setLanguage(value)}
+                  className={cn(
+                    'rounded-card-sm border p-3 text-center transition-all duration-200 ease-base',
+                    'disabled:cursor-not-allowed',
+                    active
+                      ? 'border-gold-dim bg-gradient-to-b from-gold-bright/[0.1] to-gold/[0.02]'
+                      : 'border-white-8 bg-white/[0.02] hover:border-soft',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'font-title text-[12px] font-bold uppercase tracking-[0.14em]',
+                      active ? 'text-gold-bright' : 'text-text-secondary',
+                    )}
+                  >
+                    {t(labelKey)}
                   </span>
                 </button>
               );

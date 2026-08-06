@@ -29,7 +29,18 @@ import { create } from 'zustand';
 
 import type { DiceMode } from '@/shared/lib/dice/types';
 import { NO_VARIANTS } from '@/shared/lib/rules/long-rest';
+import { useLocaleStore } from '@/shared/lib/slices/locale-slice';
 import type { CampaignSettings, CampaignVariants } from '@/shared/types/campaign';
+
+/**
+ * Miroir de `settings.language` vers la locale (M54). Centralisé ici plutôt
+ * qu'aux call sites : l'invariant « la langue de table suit la table active »
+ * doit tenir sur TOUS les chemins (réglages chargés, campagne changée,
+ * contexte libéré), pas seulement sur celui qu'on a pensé à câbler.
+ */
+function mirrorTableLocale(settings: CampaignSettings | null): void {
+  useLocaleStore.getState().setTableLocale(settings?.language ?? null);
+}
 
 type ActiveCampaignState = {
   activeCampaignId: string | null;
@@ -59,25 +70,33 @@ export const useActiveCampaignStore = create<ActiveCampaignState>((set, get) => 
   activeSessionId: null,
   activeEncounterId: null,
   activeCampaignSettings: null,
-  setActiveCampaign: (campaignId, sessionId = null) =>
+  setActiveCampaign: (campaignId, sessionId = null) => {
+    // Changer de campagne invalide les réglages chargés : sans ça, une
+    // seconde fiche héritée d'une autre table jouerait avec les variantes
+    // de la première jusqu'à la fin du fetch.
+    const kept =
+      campaignId === get().activeCampaignId ? get().activeCampaignSettings : null;
     set({
       activeCampaignId: campaignId,
       activeSessionId: sessionId,
-      // Changer de campagne invalide les réglages chargés : sans ça, une
-      // seconde fiche héritée d'une autre table jouerait avec les variantes
-      // de la première jusqu'à la fin du fetch.
-      activeCampaignSettings:
-        campaignId === get().activeCampaignId ? get().activeCampaignSettings : null,
-    }),
-  setActiveCampaignSettings: (settings) => set({ activeCampaignSettings: settings }),
+      activeCampaignSettings: kept,
+    });
+    mirrorTableLocale(kept);
+  },
+  setActiveCampaignSettings: (settings) => {
+    set({ activeCampaignSettings: settings });
+    mirrorTableLocale(settings);
+  },
   setActiveEncounter: (encounterId) => set({ activeEncounterId: encounterId }),
-  clearActiveCampaign: () =>
+  clearActiveCampaign: () => {
     set({
       activeCampaignId: null,
       activeSessionId: null,
       activeEncounterId: null,
       activeCampaignSettings: null,
-    }),
+    });
+    mirrorTableLocale(null);
+  },
 }));
 
 /**

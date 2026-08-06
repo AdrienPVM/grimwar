@@ -108,6 +108,7 @@ describe('<CampaignSettingsModal>', () => {
         status: 'paused',
         settings: {
           diceMode: 'physical',
+          language: 'fr',
           variants: {
             featAtLevel1: false,
             flanking: true,
@@ -119,6 +120,48 @@ describe('<CampaignSettingsModal>', () => {
     });
     expect(onSaved).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
+  });
+
+  // M54 — le réglage `settings.language` existait au schéma depuis le plan 14
+  // sans aucune UI. Rouge avant vert : sans la section « Langue de la table »,
+  // les deux tests ci-dessous ne trouvent pas leur radio.
+  it('préremplit la langue de la table depuis la campagne', () => {
+    renderModal(
+      mkCampaign({
+        settings: {
+          language: 'en',
+          diceMode: 'digital',
+          variants: {
+            featAtLevel1: false,
+            flanking: false,
+            slowHealing: false,
+            grittyRealism: false,
+          },
+        },
+      }),
+    );
+    expect(screen.getByRole('radio', { name: /^Anglais$/ })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('radio', { name: /^Français$/ })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
+  });
+
+  it('changer la langue de la table la fait remonter dans le patch', async () => {
+    renderModal();
+    fireEvent.click(screen.getByRole('radio', { name: /^Anglais$/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Enregistrer/i }));
+    await waitFor(() => {
+      expect(updateCampaignMock).toHaveBeenCalledWith(
+        'c-1',
+        expect.objectContaining({
+          settings: expect.objectContaining({ language: 'en' }),
+        }),
+      );
+    });
   });
 
   it('nom vidé → erreur de champ, service jamais appelé', async () => {

@@ -1201,6 +1201,8 @@ export type StringKey =
   | 'campaigns.detail.statusBanner.archived'
   | 'campaigns.settings.dice.title'
   | 'campaigns.settings.dice.hint'
+  | 'campaigns.settings.language.title'
+  | 'campaigns.settings.language.hint'
   | 'campaigns.settings.variants.title'
   | 'campaigns.settings.variants.hint'
   | 'campaigns.settings.variants.featAtLevel1.label'
@@ -4681,6 +4683,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.settings.dice.title': 'Mode de dés de la table',
     'campaigns.settings.dice.hint':
       'Le mode par défaut de cette table. Chaque joueur peut le suivre ou choisir le sien dans son compte.',
+    'campaigns.settings.language.title': 'Langue de la table',
+    'campaigns.settings.language.hint':
+      'La langue servie aux joueurs qui n’en ont pas choisi une dans leur compte. Un choix personnel l’emporte toujours.',
     'campaigns.settings.variants.title': 'Variantes 5e',
     'campaigns.settings.variants.hint':
       'Règles optionnelles appliquées à toute la table. Désactivées par défaut.',
@@ -8397,6 +8402,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.settings.dice.title': 'Table dice mode',
     'campaigns.settings.dice.hint':
       'The table’s default mode. Each player can follow it or pick their own in their account.',
+    'campaigns.settings.language.title': 'Table language',
+    'campaigns.settings.language.hint':
+      'The language served to players who have not picked one in their account. A personal choice always wins.',
     'campaigns.settings.variants.title': '5e variants',
     'campaigns.settings.variants.hint':
       'Optional rules applied to the whole table. Off by default.',
