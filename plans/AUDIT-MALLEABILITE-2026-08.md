@@ -345,8 +345,37 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 >    distinctes annoncées à l'identique au lecteur d'écran. Attrapé par une
 >    spec e2e existante (`sheet-fidelity-uat`), pas par la nouvelle.
 >
-> **Reste du lot 2 :** M44, M45, M46, M55 (rangée 3) · M50 à M54 (rangée 4) ·
-> M16 partie CA (`acOverride`) et M38 plafond réglable, tous deux schéma.
+> **Reste du lot 2 :** M50 à M54 (rangée 4) · M16 partie CA (`acOverride`),
+> M38 plafond réglable et **M46**, tous trois schéma.
+
+### Rangée 3 — livrée sauf M46
+
+| Mur | État |
+|---|---|
+| **M44** — journal complété | ✅ `8f2093b`. `level-up`, `death`, `revival`, `rest` écrits, templatés, rendus au feed. Branches distinguées (nouvelle classe vs progression · 20 naturel vs meneur · court vs long). `EVENT-LOG.md` réaligné sur les payloads réels. |
+| **M45** — jouer à l'XP | ✅ `6818823`. Table SRD des 20 seuils vérifiée contre l'extraction, carte éditable en mode Âme, `xp-gain` journalisé avec delta signé. **Rien n'est bloqué** quand l'XP et le niveau de fiche divergent — la carte informe, le meneur tranche. Le réglage « XP ou jalons » par campagne reste schéma. |
+| **M55** — variantes honnêtes | ✅ `15594e6`. `flanking` a enfin un consommateur (entrée « Prise en tenaille » au menu d'attaque). **La partie « épuisement débrayable » a été écartée après vérification** : le −2/niveau est la règle SRD de base (condition Exhaustion), pas une variante — la rendre optionnelle serait un écart au SRD. |
+| **M46** — don au niveau 1 | ⚠ **BLOQUÉ — schéma, arbitrage Adrien.** |
+
+> **M46 — bloqueur, et ce qu'il révèle.**
+>
+> Un don choisi n'a **nulle part où être rangé** : `CharacterSchema` n'a pas de
+> champ `feats[]`. Le commentaire d'`apply-level-up.ts:53-64` documente ce
+> manque depuis le jalon 2B.3a et le qualifie explicitement de « changement de
+> schéma, hors-scope ».
+>
+> **Conséquence non documentée, et vivante aujourd'hui :** le sélecteur de don
+> EXISTE déjà à la montée de niveau (`level-up-modal.tsx:738-753`), le draft
+> porte le `featId` (`level-up-types.ts:82`), et `applyLevelUp` ne traite que la
+> branche `asi` (`apply-level-up.ts:376`). **Un joueur qui prend un don au
+> niveau 4 le voit validé, puis silencieusement jeté.** C'est le même défaut de
+> famille que M28 et M42 (« on choisit quelque chose, et ça disparaît »), sauf
+> qu'ici le remède n'est pas client.
+>
+> Décision demandée : ajouter `feats: string[]` à `CharacterSchema`
+> (+ `docs/DATA-MODEL.md`, + version de migration). Une fois le champ posé, M46
+> et le don de niveau 4 se règlent ensemble — et l'étape conditionnelle du
+> wizard devient un chooser de plus, alimenté par `feats.json` déjà bundlé.
 
 > | ⚠ | **M38** — moitié client livrée (`1d4e944`) : harmonisation offerte sur tout objet magique, plafond qui AVERTIT au lieu de refuser. Le plafond **réglable par campagne** demande un champ `settings.attunementCap` → **schéma, arbitrage Adrien**. |
 >
