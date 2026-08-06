@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
+import { expectModalContentPadded } from '../../../../../../tests/helpers/modal-padding';
+
 /**
  * M26 — « Recopier Boule de feu depuis un parchemin trouvé ».
  *
@@ -179,5 +181,19 @@ describe('<AddSpellModal>', () => {
 
     await user.type(screen.getByLabelText('Chercher un sort à ajouter'), 'benediction');
     expect(screen.getByRole('button', { name: /Bénédiction/ })).toBeInTheDocument();
+  });
+
+  // UAT mobile : « AJOUTER UN SORT » débordait par la gauche du panneau, et la
+  // liste de résultats était collée aux deux bordures verticales.
+  it('pose un padding : le contenu ne touche pas les bordures du panneau', () => {
+    render(
+      <AddSpellModal
+        character={buildCleric()}
+        spellcasterClassIds={['cleric']}
+        open
+        onClose={() => {}}
+      />,
+    );
+    expectModalContentPadded('Ajouter un sort');
   });
 });

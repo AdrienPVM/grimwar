@@ -63,10 +63,12 @@ export function IdentityEditModal({
 
   return (
     <DetailModal open={open} onClose={onClose} titleId={titleId} size="sm">
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 p-6">
         <h2
           id={titleId}
-          className="font-display text-[18px] font-black uppercase tracking-[0.12em] text-gold-bright"
+          // `pr-10` : le ✕ de la primitive est en absolu à droite — sans
+          // dégagement, un titre long passerait dessous.
+          className="pr-10 font-display text-[18px] font-black uppercase tracking-[0.12em] text-gold-bright"
         >
           {t('sheet.identity.title')}
         </h2>

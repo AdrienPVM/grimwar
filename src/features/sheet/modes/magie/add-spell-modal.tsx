@@ -97,8 +97,9 @@ export function AddSpellModal({
 
   return (
     <DetailModal open={open} onClose={onClose} size="lg">
-      <div className="flex flex-col gap-4">
-        <h2 className="font-display text-[18px] font-black uppercase tracking-[0.12em] text-gold-bright">
+      <div className="flex flex-col gap-4 p-6">
+        {/* `pr-10` : dégagement du ✕ posé en absolu par la primitive. */}
+        <h2 className="pr-10 font-display text-[18px] font-black uppercase tracking-[0.12em] text-gold-bright">
           {t('sheet.magie.addSpell.title')}
         </h2>
 

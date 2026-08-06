@@ -6,6 +6,7 @@ import { EMPTY_DRAFT, useWizardStore } from '@/shared/lib/slices/wizard-slice';
 import { createEmptyClassSubChoices } from '@/shared/types/character';
 
 import { ClassSubChoicesSection } from '../class-sub-choices-section';
+import { expectModalContentPadded } from '../../../../../../tests/helpers/modal-padding';
 
 /**
  * D13e — PactOfTheTomeChooser tests (CHANTIER B).
@@ -290,5 +291,21 @@ describe('<PactOfTheTomeChooser> (D13e)', () => {
       'comprehension-des-langues',
     ]);
     expect(screen.getByTestId('pact-tome-rituals-counter')).toHaveTextContent('2 / 2');
+  });
+
+  // Même défaut que les modales Identité et Ajouter un sort : le contenu était
+  // posé en enfant direct du panneau, donc collé à ses bordures en bottom-sheet.
+  it('détail d\'un sort : le contenu ne touche pas les bordures du panneau', async () => {
+    seedWarlock(['pact-of-the-tome']);
+    const user = userEvent.setup();
+    render(<ClassSubChoicesSection />);
+
+    // Cibler le déclencheur DU chooser de Tome : `ClassSubChoicesSection` en
+    // rend d'autres, et le premier du document appartient à un voisin qui, lui,
+    // délègue à `HelpPanel` (padé) — le test passerait sans rien prouver.
+    await user.click(
+      screen.getByRole('button', { name: 'Voir le détail · Détection de la magie' }),
+    );
+    expectModalContentPadded('Pacte du Tome — détail de sort');
   });
 });

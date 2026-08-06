@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
+import { expectModalContentPadded } from '../../../../../tests/helpers/modal-padding';
+
 /**
  * M18 — nom et alignement redeviennent modifiables après la création.
  *
@@ -110,5 +112,13 @@ describe('<IdentityEditModal>', () => {
 
     await waitFor(() => expect(updateCharacterMock).toHaveBeenCalledTimes(1));
     expect(updateCharacterMock).toHaveBeenCalledWith({ alignment: 'N' });
+  });
+
+  // UAT mobile : en bottom-sheet le panneau est collé au bord de l'écran, donc
+  // un contenu sans padding sort littéralement du cadre — « IDENTITÉ » était
+  // rogné à gauche et « Enregistrer » touchait deux bordures.
+  it('pose un padding : le contenu ne touche pas les bordures du panneau', () => {
+    renderModal(false);
+    expectModalContentPadded('Identité');
   });
 });
