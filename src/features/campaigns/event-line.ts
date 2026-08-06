@@ -223,6 +223,15 @@ export function summarizeEvent(
               : `${t('campaigns.detail.eventFeed.levelDetail').replace('{n}', String(level))} · ${className}`,
       };
     }
+    case 'xp-gain': {
+      const delta = asNumber(p.delta);
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.xpGain'),
+        // Le signe est porté explicitement : un retrait du meneur doit se lire
+        // comme tel, pas comme un gain.
+        detail: delta === null ? null : `${delta >= 0 ? '+' : '−'}${Math.abs(delta)} PX`,
+      };
+    }
     case 'death':
       return { kindLabel: t('campaigns.detail.eventFeed.kind.death'), detail: null };
     case 'revival':

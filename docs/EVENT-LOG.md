@@ -60,7 +60,7 @@ export async function logRoll(args: {
 | `attunement-changed` | Attunement modifié | `all` | itemRef, attuned |
 | `coins-change` | Coins modified | `all` | before, after, delta |
 | `level-up` | Niveau gagné | `all` | newLevel (total), classId, className (localisé), classLevel, isNewClass |
-| `xp-gain` | XP gagné | `all` | delta, total, source |
+| `xp-gain` | XP gagné ou retiré | `all` | delta (signé — négatif = correction MJ), total (après coup) |
 | `rest` | Repos pris | `all` | type ('short' / 'long'), hpHealed, resourcesReset |
 | `death-save` | Sauvegarde de mort | `all` | success/fail, currentTally |
 | `death` | PJ mort | `all` | cause ('death-saves' / 'dm') |

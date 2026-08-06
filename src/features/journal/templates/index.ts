@@ -24,6 +24,7 @@ import {
   levelUpTemplate,
   restTemplate,
   revivalTemplate,
+  xpGainTemplate,
 } from './milestones';
 import { rollTemplate, spellCastTemplate } from './rolls';
 
@@ -34,7 +35,7 @@ export type { JournalContext, JournalTemplate } from './context';
  *
  * PARTIEL À DESSEIN : seuls les kinds réellement écrits par `event-logger.ts`
  * aujourd'hui ont un template (cf. audit du payload réel). Les kinds encore non
- * journalisés (xp-gain, treasure-drop, note, stabilize…) n'ont pas d'entrée —
+ * journalisés (treasure-drop, note, stabilize…) n'ont pas d'entrée —
  * `renderEventLine` retourne alors `null`
  * (aucune ligne) plutôt que de planter ou d'inventer de la prose. Ajouter un
  * logger pour un de ces kinds = ajouter sa clé i18n + son template ici, sans
@@ -68,6 +69,7 @@ export const EVENT_TEMPLATES: Partial<Record<EventKind, JournalTemplate>> = {
   'session-end': sessionEndTemplate,
   // Jalons de vie du personnage (M44)
   'level-up': levelUpTemplate,
+  'xp-gain': xpGainTemplate,
   death: deathTemplate,
   revival: revivalTemplate,
   rest: restTemplate,

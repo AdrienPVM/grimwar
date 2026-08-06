@@ -512,6 +512,27 @@ export async function logLevelUp(
 }
 
 /**
+ * Journalise un gain (ou un retrait) d'XP (kind `xp-gain`, visibilité `all`).
+ *
+ * `delta` peut être négatif : le meneur corrige une attribution, et le journal
+ * doit pouvoir le dire plutôt que de laisser un total sauter sans explication.
+ * `total` est la valeur APRÈS coup — c'est elle qu'on relit dans le récit.
+ */
+export async function logXpGain(
+  characterId: string,
+  delta: number,
+  total: number,
+): Promise<void> {
+  await writeEvent({
+    kind: 'xp-gain',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { delta, total },
+  });
+}
+
+/**
  * Journalise la mort d'un personnage (kind `death`, visibilité `all`).
  *
  * `cause` reste volontairement grossier (`'death-saves'` = trois échecs de

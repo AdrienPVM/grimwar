@@ -370,3 +370,19 @@ describe('summarizeEvent — jalons de vie (M44)', () => {
     });
   });
 });
+
+describe('summarizeEvent — expérience (M45)', () => {
+  it('gain → détail signé +', () => {
+    expect(summarizeEvent(ev('xp-gain', { delta: 450, total: 3150 }))).toEqual({
+      kindLabel: 'Expérience',
+      detail: '+450 PX',
+    });
+  });
+
+  it('retrait → détail signé −, pas un « +-500 »', () => {
+    expect(summarizeEvent(ev('xp-gain', { delta: -500, total: 2500 }))).toEqual({
+      kindLabel: 'Expérience',
+      detail: '−500 PX',
+    });
+  });
+});

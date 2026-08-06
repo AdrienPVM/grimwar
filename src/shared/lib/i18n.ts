@@ -679,6 +679,16 @@ export type StringKey =
   | 'sheet.placeholder.todo'
   // Mode Âme (plan 20) — personnalité, histoire, statistiques
   | 'sheet.ame.personality.title'
+  | 'sheet.ame.xp.title'
+  | 'sheet.ame.xp.unit'
+  | 'sheet.ame.xp.editAria'
+  | 'sheet.ame.xp.progressAria'
+  | 'sheet.ame.xp.toNext'
+  | 'sheet.ame.xp.maxLevel'
+  | 'sheet.ame.xp.levelMismatch'
+  | 'sheet.ame.xp.toastTitle'
+  | 'sheet.ame.xp.toastSub'
+  | 'sheet.tip.editXp'
   | 'sheet.ame.personality.empty'
   | 'sheet.ame.personality.edit'
   | 'sheet.ame.personality.save'
@@ -1268,6 +1278,7 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.kind.npcIntroduced'
   | 'campaigns.detail.eventFeed.kind.npcAttitudeChanged'
   | 'campaigns.detail.eventFeed.kind.levelUp'
+  | 'campaigns.detail.eventFeed.kind.xpGain'
   | 'campaigns.detail.eventFeed.kind.death'
   | 'campaigns.detail.eventFeed.kind.revival'
   | 'campaigns.detail.eventFeed.kind.rest'
@@ -1819,6 +1830,8 @@ export type StringKey =
   | 'journal.tpl.levelUp'
   | 'journal.tpl.levelUpNewClass'
   | 'journal.tpl.levelUpNoClass'
+  | 'journal.tpl.xpGain'
+  | 'journal.tpl.xpLoss'
   | 'journal.tpl.death'
   | 'journal.tpl.deathByDm'
   | 'journal.tpl.revivalNat20'
@@ -3884,6 +3897,16 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.historique': 'Historique des jets',
     'sheet.fab.d20Label': 'd20 vif',
     'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
+    'sheet.ame.xp.title': 'Expérience',
+    'sheet.ame.xp.unit': 'Points d’expérience',
+    'sheet.ame.xp.editAria': 'Modifier les points d’expérience',
+    'sheet.ame.xp.progressAria': 'Progression vers le niveau suivant',
+    'sheet.ame.xp.toNext': 'Encore {n} PX avant le niveau {level}.',
+    'sheet.ame.xp.maxLevel': 'Niveau 20 atteint — plus rien à gravir.',
+    'sheet.ame.xp.levelMismatch': 'L’expérience situe ce personnage au niveau {xpLevel}, la fiche au niveau {sheetLevel}. Rien n’est bloqué : le meneur tranche.',
+    'sheet.ame.xp.toastTitle': 'Expérience',
+    'sheet.ame.xp.toastSub': 'Total : {total} PX',
+    'sheet.tip.editXp': 'Appuie pour modifier l’expérience',
     'sheet.ame.personality.title': 'Personnalité',
     'sheet.ame.personality.empty': 'Pas encore renseigné.',
     'sheet.ame.personality.edit': 'Modifier',
@@ -4743,6 +4766,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'PNJ introduit',
     'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'Attitude d’un PNJ',
     'campaigns.detail.eventFeed.kind.levelUp': 'Montée de niveau',
+    'campaigns.detail.eventFeed.kind.xpGain': 'Expérience',
     'campaigns.detail.eventFeed.kind.death': 'Mort',
     'campaigns.detail.eventFeed.kind.revival': 'Retour à la vie',
     'campaigns.detail.eventFeed.kind.rest': 'Repos',
@@ -5215,6 +5239,8 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.tpl.levelUpNewClass':
       '{actor} embrasse une nouvelle voie : **{className}** — niveau {level} au total.',
     'journal.tpl.levelUpNoClass': '{actor} passe **niveau {level}**.',
+    'journal.tpl.xpGain': '{actor} gagne {amount} PX (total : {total}).',
+    'journal.tpl.xpLoss': '{actor} perd {amount} PX (total : {total}).',
     'journal.tpl.death': '**{actor}** succombe à ses blessures.',
     'journal.tpl.deathByDm': '**{actor}** meurt.',
     'journal.tpl.revivalNat20':
@@ -7647,6 +7673,16 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.historique': 'Roll history',
     'sheet.fab.d20Label': 'Quick d20',
     'sheet.placeholder.todo': 'Section coming in a later plan.',
+    'sheet.ame.xp.title': 'Experience',
+    'sheet.ame.xp.unit': 'Experience points',
+    'sheet.ame.xp.editAria': 'Edit experience points',
+    'sheet.ame.xp.progressAria': 'Progress towards next level',
+    'sheet.ame.xp.toNext': '{n} XP to go before level {level}.',
+    'sheet.ame.xp.maxLevel': 'Level 20 reached — nothing left to climb.',
+    'sheet.ame.xp.levelMismatch': 'Experience places this character at level {xpLevel}, the sheet at level {sheetLevel}. Nothing is blocked: the GM decides.',
+    'sheet.ame.xp.toastTitle': 'Experience',
+    'sheet.ame.xp.toastSub': 'Total: {total} XP',
+    'sheet.tip.editXp': 'Tap to edit experience',
     'sheet.ame.personality.title': 'Personality',
     'sheet.ame.personality.empty': 'Not filled in yet.',
     'sheet.ame.personality.edit': 'Edit',
@@ -8445,6 +8481,7 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'NPC introduced',
     'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'NPC attitude',
     'campaigns.detail.eventFeed.kind.levelUp': 'Level up',
+    'campaigns.detail.eventFeed.kind.xpGain': 'Experience',
     'campaigns.detail.eventFeed.kind.death': 'Death',
     'campaigns.detail.eventFeed.kind.revival': 'Revival',
     'campaigns.detail.eventFeed.kind.rest': 'Rest',
@@ -8892,6 +8929,8 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.tpl.levelUpNewClass':
       '{actor} takes up a new path: **{className}** — level {level} overall.',
     'journal.tpl.levelUpNoClass': '{actor} reaches **level {level}**.',
+    'journal.tpl.xpGain': '{actor} gains {amount} XP (total: {total}).',
+    'journal.tpl.xpLoss': '{actor} loses {amount} XP (total: {total}).',
     'journal.tpl.death': '**{actor}** succumbs to their wounds.',
     'journal.tpl.deathByDm': '**{actor}** dies.',
     'journal.tpl.revivalNat20': '**{actor}** opens their eyes at the last moment and rises.',

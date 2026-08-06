@@ -42,6 +42,19 @@ export const levelUpTemplate: JournalTemplate = (event: GameEvent, ctx) => {
   });
 };
 
+export const xpGainTemplate: JournalTemplate = (event: GameEvent, ctx) => {
+  const p = event.payload;
+  const actor = actorName(ctx, event.actorCharacterId);
+  const delta = payloadNumber(p, 'delta');
+  const total = payloadNumber(p, 'total');
+  // Un delta négatif est une CORRECTION du meneur, pas un gain : le raconter
+  // comme un gain de « −200 PX » serait illisible.
+  if (delta < 0) {
+    return fillTemplate(t('journal.tpl.xpLoss'), { actor, amount: Math.abs(delta), total });
+  }
+  return fillTemplate(t('journal.tpl.xpGain'), { actor, amount: delta, total });
+};
+
 export const deathTemplate: JournalTemplate = (event: GameEvent, ctx) => {
   const actor = actorName(ctx, event.actorCharacterId);
   const byDm = payloadString(event.payload, 'cause') === 'dm';

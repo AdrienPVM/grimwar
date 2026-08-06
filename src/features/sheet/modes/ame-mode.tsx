@@ -3,7 +3,10 @@ import { Card, CardHeader } from '@/shared/components/card';
 import { t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
+import { useSheetReadOnly } from '../permissions-context';
+
 import { BackstoryCard } from './ame/backstory-card';
+import { ExperienceCard } from './ame/experience-card';
 import { PersonalityFieldCard } from './ame/personality-field-card';
 import { StatsDashboard } from './ame/stats-dashboard';
 
@@ -26,6 +29,8 @@ interface AmeModeProps {
  * « client + rules » sans nouvelle collection non déployée.
  */
 export function AmeMode({ character }: AmeModeProps): JSX.Element {
+  const readOnly = useSheetReadOnly(character);
+
   return (
     <section
       role="tabpanel"
@@ -85,6 +90,12 @@ export function AmeMode({ character }: AmeModeProps): JSX.Element {
 
       <BentoTile span="sm">
         <StatsDashboard character={character} />
+      </BentoTile>
+
+      {/* L'XP ferme la rangée : c'est une pile de chiffres, elle lit bien en
+          étroit — même raisonnement que le tableau de bord au-dessus. */}
+      <BentoTile span="sm">
+        <ExperienceCard character={character} readOnly={readOnly} />
       </BentoTile>
     </section>
   );

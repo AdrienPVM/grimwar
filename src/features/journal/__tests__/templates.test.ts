@@ -320,3 +320,17 @@ describe('renderEventLine — level-up à payload partiel (M44)', () => {
     expect(line).toBe('Lyralei passe **niveau 2**.');
   });
 });
+
+describe('renderEventLine — expérience (M45)', () => {
+  it('gain → montant et total exacts', () => {
+    expect(renderEventLine(ev('xp-gain', { delta: 450, total: 3150 }, 'lyralei'), ctx)).toBe(
+      'Lyralei gagne 450 PX (total : 3150).',
+    );
+  });
+
+  it('delta négatif → raconté comme une PERTE, jamais « gagne −500 PX »', () => {
+    expect(renderEventLine(ev('xp-gain', { delta: -500, total: 2500 }, 'thorin'), ctx)).toBe(
+      'Thorin perd 500 PX (total : 2500).',
+    );
+  });
+});

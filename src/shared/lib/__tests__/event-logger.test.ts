@@ -43,6 +43,7 @@ import {
   logMonsterHpChange,
   logRest,
   logRevival,
+  logXpGain,
   logRoll,
   logRollIfCampaign,
   logSessionEnd,
@@ -574,6 +575,38 @@ describe('event-logger — jalons de vie (M44)', () => {
     await logDeath('char-7', 'dm');
     await logRevival('char-7', 'dm');
     await logRest('char-7', 'short');
+    expect(addDocMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * M45 — `xp-gain` était déclaré au schéma et explicitement listé comme non
+ * journalisé. Le delta est signé : un retrait du meneur doit se raconter comme
+ * une correction, pas comme un gain.
+ */
+describe('event-logger — gain d’expérience (M45)', () => {
+  beforeEach(() => {
+    useActiveCampaignStore.getState().setActiveCampaign('camp-1');
+    useAuthStore.getState().setUser(AUTH_USER);
+  });
+
+  it('écrit le delta ET le total après coup', async () => {
+    await logXpGain('char-7', 450, 3150);
+    const doc = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(doc.kind).toBe('xp-gain');
+    expect(doc.visibility).toBe('all');
+    expect(doc.payload).toEqual({ delta: 450, total: 3150 });
+  });
+
+  it('accepte un delta négatif (correction du meneur)', async () => {
+    await logXpGain('char-7', -500, 2500);
+    const doc = addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+    expect(doc.payload).toEqual({ delta: -500, total: 2500 });
+  });
+
+  it('no-op silencieux hors campagne active', async () => {
+    useActiveCampaignStore.getState().clearActiveCampaign();
+    await logXpGain('char-7', 100, 100);
     expect(addDocMock).not.toHaveBeenCalled();
   });
 });
