@@ -345,8 +345,8 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 >    distinctes annoncées à l'identique au lecteur d'écran. Attrapé par une
 >    spec e2e existante (`sheet-fidelity-uat`), pas par la nouvelle.
 >
-> **Reste du lot 2 :** M50 à M54 (rangée 4) · M16 partie CA (`acOverride`),
-> M38 plafond réglable et **M46**, tous trois schéma.
+> **Reste du lot 2 :** M16 partie CA (`acOverride`), M38 plafond réglable et
+> **M46**, tous trois schéma. La rangée 4 est close (voir plus bas).
 
 ### Rangée 3 — livrée sauf M46
 
@@ -376,6 +376,39 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 > (+ `docs/DATA-MODEL.md`, + version de migration). Une fois le champ posé, M46
 > et le don de niveau 4 se règlent ensemble — et l'étape conditionnelle du
 > wizard devient un chooser de plus, alimenté par `feats.json` déjà bundlé.
+
+### Rangée 4 — livrée entièrement
+
+| Mur | État |
+|---|---|
+| **M54** — langue de la table | ✅ `2a0a31c`. Le champ était au schéma depuis le plan 14 sans UI ni lecteur. Exposé au MJ + `effectiveLocale(userLocale, tableLocale)` calqué sur `effectiveDiceMode` : un choix personnel l'emporte toujours. **Aucun champ ajouté** — l'absence de `users/{uid}.locale` portait déjà le « je n'ai rien choisi », puisqu'il n'est jamais écrit spéculativement. |
+| **M53** — provenance d'un pack | ✅ `1bfe0b8`. `source: 'custom'` remplace `'aidedd-homebrew'` écrit en dur par les 11 formulaires ; `'aidedd-homebrew'` reste dans l'enum (des packs enregistrés le portent, et `d23` l'exige sur le bundle grandfathered). `meta.sourceLabel` porte l'origine lisible et **suit chaque entrée jusqu'à l'écran** via `loadUserPacksEntriesScoped` → fusion → `scopeOf`. |
+| **M50** — dupliquer une entrée SRD | ✅ `f844fef`. Sélecteur sur les 11 catégories, alimenté par le catalogue fusionné. Le choix copie/remplacement est posé **avant** le clic. `RESERVED_CLASS_IDS` ramené de 12 ids à 2 (`cleric`, `druid`, seuls contraints par le `superRefine`). Puce de provenance dans le Codex. |
+| **M51** — classe maison qui prépare | ✅ `8eb55c8`. Deux colonnes de 20 valeurs saisissables + `spellcasting.preparation` optionnel. Les 12 classes SRD ne le portent pas et retombent sur `PREPARED_CASTER_CLASS_IDS` — `classes.json` reste un path protégé. |
+| **M52** — gros bestiaire | ✅ `4d33259`. Découpage automatique en tranches `--00`/`--01`, regroupées à l'affichage, recollées à l'édition, emportées ensemble à la suppression. |
+
+> **Découvertes de livraison (rangée 4) :**
+>
+> 1. **M53 était deux murs, pas un.** Étiqueter la provenance ne sert à rien si
+>    personne ne peut la lire : le `sourceLabel` saisi serait resté invisible
+>    hors de l'écran d'édition. Il a fallu le faire descendre jusqu'au Codex —
+>    c'est ce qui règle en même temps la seconde moitié de M50 (« savoir d'un
+>    coup d'œil ce qui est officiel »).
+> 2. **Le refus des 12 classes n'était justifié que pour 2.** Le commentaire
+>    d'origine invoquait le `superRefine`, qui ne concerne que `cleric` et
+>    `druid` ; les 10 autres étaient refusées « par principe », et le merger
+>    `user > public` savait déjà écraser proprement.
+> 3. **Un `scopeOf` ajouté à un hook casse 24 fichiers de test.** Les mocks de
+>    `useContent` rendaient `{data, loading, error}` : la moindre méthode
+>    supplémentaire les rend incomplets, et l'erreur sort en `TypeError` au
+>    rendu, pas au typecheck. Coût réel du changement, invisible à la lecture.
+> 4. **`mon-pack-01` est un id de pack légitime.** D'où le double tiret comme
+>    séparateur de tranche : un tiret simple aurait fait passer un pack existant
+>    pour la tranche 1 d'un pack fantôme.
+> 5. **`use-my-campaigns.test.tsx` est instable.** Un échec isolé sur
+>    « refresh() après une erreur efface l'erreur » pendant la passe M51, vert
+>    en isolation et vert au re-run complet. Rien à voir avec la rangée —
+>    à surveiller.
 
 > | ⚠ | **M38** — moitié client livrée (`1d4e944`) : harmonisation offerte sur tout objet magique, plafond qui AVERTIT au lieu de refuser. Le plafond **réglable par campagne** demande un champ `settings.attunementCap` → **schéma, arbitrage Adrien**. |
 >
@@ -408,7 +441,7 @@ Aucun déploiement de rules, aucun changement de schéma Firestore, aucune déci
 | 1 | **M16 (partie `speed`/`initiative`), M17, M18, M24, M25, M26, M27, M38** | La fiche devient pilotable. Pattern unique et déjà validé : tap/appui long → saisie → `updateCharacter`. Rules inchangées (`hasAll`). |
 | 2 | **M20, M21, M22, M23, M43, M48, M49** | Le plateau de dés devient un outil de MJ : formule libre, bonus ponctuel, avantage partout, inspiration à la demande, jet discret. |
 | 3 | **M44, M45, M46, M55** | Journal complété (level-up/mort/repos), XP, don au niveau 1, variantes honnêtes. Dépendent de M1. |
-| 4 | **M50, M51, M52, M53, M54** | Confort de l'éditeur de packs (dupliquer une entrée SRD, provenance affichée, gros bestiaires, `sourceLabel`, trancher `language`). |
+| 4 ✅ | **M50, M51, M52, M53, M54** | Confort de l'éditeur de packs (dupliquer une entrée SRD, provenance affichée, gros bestiaires, `sourceLabel`, trancher `language`). **Livrée** — cf. « Rangée 4 » ci-dessus. |
 | ⚠ | **M16 partie CA (`acOverride`) = M56bis** | Seul item du lot qui touche un schéma → à sortir du lot 2 et à grouper avec le lot 3, ou à valider isolément avec Adrien. |
 
 ### Lot 3 — **ARBITRAGE ADRIEN OBLIGATOIRE** (rules et/ou schéma)
