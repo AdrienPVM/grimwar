@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type JSX } from 'react';
 import { Card } from '@/shared/components/card';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
+import { logRest } from '@/shared/lib/event-logger';
 import { t } from '@/shared/lib/i18n';
 import { deriveClassResourcePools } from '@/shared/lib/rules/class-resources';
 import { applyLongRest, NO_VARIANTS } from '@/shared/lib/rules/long-rest';
@@ -75,6 +76,13 @@ export function LongRestButton({
     const pools = deriveClassResourcePools(character, classes);
     const { patch, summary } = applyLongRest(character, pools, variants);
     await updateCharacter(patch);
+    // M44 — jalon narratif. Le patch de repos long remet PV, dés de vie et
+    // réserves d'un coup ; le diff seul produirait une pluie de lignes sans
+    // jamais dire « ils ont dormi ».
+    await logRest(character.id, 'long', {
+      hpHealed: summary.hpHealed,
+      resourcesReset: summary.resourcesReset,
+    });
 
     const parts: string[] = [];
     if (summary.hpHealed > 0)

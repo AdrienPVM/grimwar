@@ -35,10 +35,14 @@ vi.mock('@/shared/lib/firebase', () => ({
 
 import {
   logCharacterDiff,
+  logDeath,
   logDmEdit,
   logEncounterEnd,
   logEncounterStart,
+  logLevelUp,
   logMonsterHpChange,
+  logRest,
+  logRevival,
   logRoll,
   logRollIfCampaign,
   logSessionEnd,
@@ -486,6 +490,90 @@ describe('event-logger — logDmEdit (plan 26)', () => {
   it('no-op silencieux hors campagne active', async () => {
     useActiveCampaignStore.getState().clearActiveCampaign();
     await logDmEdit(BEFORE, { status: 'dead' } as Partial<Character>, 'char-9');
+    expect(addDocMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * M44 — jalons de vie du personnage. Ces quatre kinds étaient déclarés au
+ * schéma et documentés dans EVENT-LOG.md sans qu'aucun logger ne les écrive.
+ * On vérifie le CHEMIN d'écriture, le kind, la visibilité et l'identité exacte
+ * du payload — un payload approximatif rendrait une prose fausse côté journal.
+ */
+describe('event-logger — jalons de vie (M44)', () => {
+  beforeEach(() => {
+    useActiveCampaignStore.getState().setActiveCampaign('camp-1');
+    useAuthStore.getState().setUser(AUTH_USER);
+  });
+
+  /** Le document réellement passé à `addDoc`. */
+  function written(): Record<string, unknown> {
+    return addDocMock.mock.calls[0]![1] as Record<string, unknown>;
+  }
+
+  it('level-up : payload complet, acteur ET cible = le personnage', async () => {
+    await logLevelUp('char-7', {
+      newTotalLevel: 5,
+      classId: 'rogue',
+      className: 'Roublard',
+      classLevel: 1,
+      isNewClass: true,
+    });
+    const doc = written();
+    expect(doc.kind).toBe('level-up');
+    expect(doc.visibility).toBe('all');
+    expect(doc.actorCharacterId).toBe('char-7');
+    expect(doc.targetCharacterId).toBe('char-7');
+    expect(doc.payload).toEqual({
+      newLevel: 5,
+      classId: 'rogue',
+      className: 'Roublard',
+      classLevel: 1,
+      isNewClass: true,
+    });
+  });
+
+  it('death : la cause distingue les sauvegardes ratées de la décision du meneur', async () => {
+    await logDeath('char-7', 'death-saves');
+    expect(written().kind).toBe('death');
+    expect(written().payload).toEqual({ cause: 'death-saves' });
+  });
+
+  it('revival : la source distingue le 20 naturel du bouton meneur', async () => {
+    await logRevival('char-7', 'nat20');
+    expect(written().kind).toBe('revival');
+    expect(written().payload).toEqual({ source: 'nat20' });
+  });
+
+  it('rest : bilan chiffré normalisé à 0 quand l’appelant ne le fournit pas', async () => {
+    await logRest('char-7', 'short');
+    expect(written().kind).toBe('rest');
+    // Un repos court ne soigne rien — 0 est la vérité, pas un champ manquant.
+    expect(written().payload).toEqual({ type: 'short', hpHealed: 0, resourcesReset: 0 });
+  });
+
+  it('rest long : le bilan passe tel quel dans le payload', async () => {
+    await logRest('char-7', 'long', { hpHealed: 12, resourcesReset: 3 });
+    expect(written().payload).toEqual({ type: 'long', hpHealed: 12, resourcesReset: 3 });
+  });
+
+  it('écrit dans la sous-collection events de la campagne active', async () => {
+    await logRest('char-7', 'long', { hpHealed: 1 });
+    expect(collectionMock).toHaveBeenCalledWith(expect.anything(), 'campaigns', 'camp-1', 'events');
+  });
+
+  it('no-op silencieux hors campagne active', async () => {
+    useActiveCampaignStore.getState().clearActiveCampaign();
+    await logLevelUp('char-7', {
+      newTotalLevel: 2,
+      classId: 'rogue',
+      className: 'Roublard',
+      classLevel: 2,
+      isNewClass: false,
+    });
+    await logDeath('char-7', 'dm');
+    await logRevival('char-7', 'dm');
+    await logRest('char-7', 'short');
     expect(addDocMock).not.toHaveBeenCalled();
   });
 });

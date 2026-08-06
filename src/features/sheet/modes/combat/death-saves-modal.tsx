@@ -9,6 +9,7 @@ import { useDice } from '@/features/dice/use-dice';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
+import { logDeath, logRevival } from '@/shared/lib/event-logger';
 import { t } from '@/shared/lib/i18n';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
@@ -83,6 +84,9 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
         deathSaves: outcome.deathSaves,
         hp: { ...character.hp, current: outcome.restoredHp },
       });
+      // M44 — le 20 naturel qui relève est un jalon de récit, pas un simple
+      // `hp-change` : le diff de fiche seul dirait « +1 PV » et rien d'autre.
+      await logRevival(character.id, 'nat20');
       showToast({
         kind: 'crit',
         title: t('sheet.combat.death.revivedTitle'),
@@ -105,6 +109,7 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
     }
     if (outcome.kind === 'dead') {
       await updateCharacter({ deathSaves: outcome.deathSaves, status: 'dead' });
+      await logDeath(character.id, 'death-saves');
       showToast({
         kind: 'grim',
         title: t('sheet.combat.death.deadTitle'),
@@ -134,6 +139,7 @@ export function DeathSavesModal({ character }: DeathSavesModalProps): JSX.Elemen
       hp: { ...character.hp, current: 1 },
       deathSaves: { success: 0, fail: 0 },
     });
+    await logRevival(character.id, 'dm');
     showToast({
       kind: 'heal',
       title: t('sheet.combat.death.reviveTitle'),

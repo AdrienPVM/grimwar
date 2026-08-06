@@ -1267,6 +1267,13 @@ export type StringKey =
   | 'campaigns.detail.npcsCta'
   | 'campaigns.detail.eventFeed.kind.npcIntroduced'
   | 'campaigns.detail.eventFeed.kind.npcAttitudeChanged'
+  | 'campaigns.detail.eventFeed.kind.levelUp'
+  | 'campaigns.detail.eventFeed.kind.death'
+  | 'campaigns.detail.eventFeed.kind.revival'
+  | 'campaigns.detail.eventFeed.kind.rest'
+  | 'campaigns.detail.eventFeed.levelDetail'
+  | 'campaigns.detail.eventFeed.restShort'
+  | 'campaigns.detail.eventFeed.restLong'
   | 'npcs.role.merchant'
   | 'npcs.role.ally'
   | 'npcs.role.enemy'
@@ -1809,6 +1816,16 @@ export type StringKey =
   | 'journal.actor.someone'
   | 'journal.tpl.sessionStart'
   | 'journal.tpl.sessionEnd'
+  | 'journal.tpl.levelUp'
+  | 'journal.tpl.levelUpNewClass'
+  | 'journal.tpl.levelUpNoClass'
+  | 'journal.tpl.death'
+  | 'journal.tpl.deathByDm'
+  | 'journal.tpl.revivalNat20'
+  | 'journal.tpl.revivalDm'
+  | 'journal.tpl.restShort'
+  | 'journal.tpl.restLong'
+  | 'journal.tpl.restLongHealed'
   | 'journal.tpl.turnStart'
   | 'journal.tpl.rollAttackCrit'
   | 'journal.tpl.rollAttackFumble'
@@ -4725,6 +4742,13 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.npcsCta': 'PNJ',
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'PNJ introduit',
     'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'Attitude d’un PNJ',
+    'campaigns.detail.eventFeed.kind.levelUp': 'Montée de niveau',
+    'campaigns.detail.eventFeed.kind.death': 'Mort',
+    'campaigns.detail.eventFeed.kind.revival': 'Retour à la vie',
+    'campaigns.detail.eventFeed.kind.rest': 'Repos',
+    'campaigns.detail.eventFeed.levelDetail': 'Niveau {n}',
+    'campaigns.detail.eventFeed.restShort': 'Repos court',
+    'campaigns.detail.eventFeed.restLong': 'Repos long',
     'npcs.role.merchant': 'Marchand',
     'npcs.role.ally': 'Allié',
     'npcs.role.enemy': 'Ennemi',
@@ -5187,6 +5211,18 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.actor.someone': 'Quelqu’un',
     'journal.tpl.sessionStart': 'La séance {number} — « {title} » — commence.',
     'journal.tpl.sessionEnd': 'La séance {number} — « {title} » — se termine.',
+    'journal.tpl.levelUp': '{actor} passe **niveau {level}** ({className} {classLevel}).',
+    'journal.tpl.levelUpNewClass':
+      '{actor} embrasse une nouvelle voie : **{className}** — niveau {level} au total.',
+    'journal.tpl.levelUpNoClass': '{actor} passe **niveau {level}**.',
+    'journal.tpl.death': '**{actor}** succombe à ses blessures.',
+    'journal.tpl.deathByDm': '**{actor}** meurt.',
+    'journal.tpl.revivalNat20':
+      '**{actor}** rouvre les yeux au dernier moment et se relève.',
+    'journal.tpl.revivalDm': '**{actor}** est ramené à la vie.',
+    'journal.tpl.restShort': '{actor} prend un repos court.',
+    'journal.tpl.restLong': '{actor} prend un repos long.',
+    'journal.tpl.restLongHealed': '{actor} prend un repos long et récupère {hp} PV.',
     'journal.tpl.turnStart': 'Au tour de **{name}** (round {round}).',
     'journal.tpl.rollAttackCrit':
       '{actor} attaque et obtient un **coup critique** ({label}, total {total}) !',
@@ -8408,6 +8444,13 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.npcsCta': 'NPCs',
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'NPC introduced',
     'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'NPC attitude',
+    'campaigns.detail.eventFeed.kind.levelUp': 'Level up',
+    'campaigns.detail.eventFeed.kind.death': 'Death',
+    'campaigns.detail.eventFeed.kind.revival': 'Revival',
+    'campaigns.detail.eventFeed.kind.rest': 'Rest',
+    'campaigns.detail.eventFeed.levelDetail': 'Level {n}',
+    'campaigns.detail.eventFeed.restShort': 'Short rest',
+    'campaigns.detail.eventFeed.restLong': 'Long rest',
     'npcs.role.merchant': 'Merchant',
     'npcs.role.ally': 'Ally',
     'npcs.role.enemy': 'Enemy',
@@ -8845,6 +8888,17 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.actor.someone': 'Someone',
     'journal.tpl.sessionStart': 'Session {number} — “{title}” — begins.',
     'journal.tpl.sessionEnd': 'Session {number} — “{title}” — ends.',
+    'journal.tpl.levelUp': '{actor} reaches **level {level}** ({className} {classLevel}).',
+    'journal.tpl.levelUpNewClass':
+      '{actor} takes up a new path: **{className}** — level {level} overall.',
+    'journal.tpl.levelUpNoClass': '{actor} reaches **level {level}**.',
+    'journal.tpl.death': '**{actor}** succumbs to their wounds.',
+    'journal.tpl.deathByDm': '**{actor}** dies.',
+    'journal.tpl.revivalNat20': '**{actor}** opens their eyes at the last moment and rises.',
+    'journal.tpl.revivalDm': '**{actor}** is brought back to life.',
+    'journal.tpl.restShort': '{actor} takes a short rest.',
+    'journal.tpl.restLong': '{actor} takes a long rest.',
+    'journal.tpl.restLongHealed': '{actor} takes a long rest and recovers {hp} HP.',
     'journal.tpl.turnStart': '**{name}**’s turn (round {round}).',
     'journal.tpl.rollAttackCrit':
       '{actor} attacks and scores a **critical hit** ({label}, total {total})!',

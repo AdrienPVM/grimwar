@@ -462,6 +462,125 @@ export async function deleteEvent(campaignId: string, eventId: string): Promise<
   await deleteDoc(doc(db, 'campaigns', campaignId, 'events', eventId));
 }
 
+// ─────────────────────────────────────────────────────────────────────
+// Jalons de vie du personnage (M44)
+//
+// Ces quatre kinds étaient déclarés au schéma ET documentés avec leur payload
+// dans EVENT-LOG.md depuis l'origine, mais aucun logger ne les écrivait : le
+// journal d'une séance pouvait raconter chaque point de vie perdu sans jamais
+// mentionner qu'un personnage était monté de niveau, mort, ou revenu. Ce sont
+// pourtant les seules lignes qu'on relit six mois plus tard.
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Journalise une montée de niveau (kind `level-up`, visibilité `all`).
+ *
+ * Appelé par `useLevelUp` APRÈS l'écriture du patch — le call site portait
+ * jusqu'ici un commentaire « différé au plan 18 ». Le patch de montée de niveau
+ * passe en `log: 'manual'` précisément pour que l'auto-diff ne noie pas ce
+ * jalon sous un flot de `slot-restored` / `hp-change` : cet événement-ci est le
+ * seul qui doive rester.
+ *
+ * `newTotalLevel` est le niveau TOTAL après coup, `classLevel` le niveau dans la
+ * classe montée — un multiclassé qui prend son 1er niveau de Roublard passe au
+ * total 5 et au Roublard 1, et les deux comptent dans le récit.
+ */
+export async function logLevelUp(
+  characterId: string,
+  meta: {
+    newTotalLevel: number;
+    classId: string;
+    className: string;
+    classLevel: number;
+    /** `true` quand ce niveau ouvre une nouvelle classe (multiclassage). */
+    isNewClass: boolean;
+  },
+): Promise<void> {
+  await writeEvent({
+    kind: 'level-up',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: {
+      newLevel: meta.newTotalLevel,
+      classId: meta.classId,
+      className: meta.className,
+      classLevel: meta.classLevel,
+      isNewClass: meta.isNewClass,
+    },
+  });
+}
+
+/**
+ * Journalise la mort d'un personnage (kind `death`, visibilité `all`).
+ *
+ * `cause` reste volontairement grossier (`'death-saves'` = trois échecs de
+ * sauvegarde, `'dm'` = décidé par le meneur). EVENT-LOG.md prévoit un `causeRef`
+ * pointant la créature responsable ; on ne l'écrit pas tant que rien ne le
+ * connaît au call site — mieux vaut un champ absent qu'un champ faux.
+ */
+export async function logDeath(
+  characterId: string,
+  cause: 'death-saves' | 'dm',
+): Promise<void> {
+  await writeEvent({
+    kind: 'death',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { cause },
+  });
+}
+
+/**
+ * Journalise un retour à la vie (kind `revival`, visibilité `all`).
+ *
+ * `source` distingue les deux chemins qui existent réellement : le 20 naturel
+ * en sauvegarde de mort (le personnage se relève seul à 1 PV) et le bouton
+ * « Ressusciter » du meneur. `writeEvent` pose déjà `actorUserId` — inutile de
+ * dupliquer le `revivedByDmUserId` d'EVENT-LOG.md dans le payload.
+ */
+export async function logRevival(
+  characterId: string,
+  source: 'nat20' | 'dm',
+): Promise<void> {
+  await writeEvent({
+    kind: 'revival',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { source },
+  });
+}
+
+/**
+ * Journalise un repos (kind `rest`, visibilité `all`).
+ *
+ * Le payload porte le bilan chiffré déjà calculé par `applyShortRest` /
+ * `applyLongRest` pour le toast — le journal peut donc dire « la troupe se
+ * repose, Astrid récupère 12 PV » sans relire la fiche. Les champs sont
+ * optionnels : un repos court sans dé de vie dépensé ne soigne rien.
+ */
+export async function logRest(
+  characterId: string,
+  type: 'short' | 'long',
+  summary: { hpHealed?: number; resourcesReset?: number } = {},
+): Promise<void> {
+  await writeEvent({
+    kind: 'rest',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: {
+      type,
+      // Un repos court ne soigne pas (`applyShortRest` ne touche pas aux PV) —
+      // le champ vaut alors 0, ce qui est la vérité et non un trou.
+      hpHealed: summary.hpHealed ?? 0,
+      resourcesReset: summary.resourcesReset ?? 0,
+    },
+  });
+}
+
 /**
  * Back-compat : le pivot de dés (plan 12 / 12.5) appelle ce nom depuis quatre
  * call sites. C'était un stub no-op ; il délègue maintenant au vrai `logRoll`.

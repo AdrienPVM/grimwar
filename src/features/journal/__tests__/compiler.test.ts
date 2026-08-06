@@ -127,8 +127,14 @@ describe('compileJournal — groupage', () => {
     expect(md).not.toContain('## Combat');
   });
 
+  // Les exemples étaient `level-up` / `xp-gain` jusqu'à M44, qui a templaté le
+  // premier. L'invariant testé est le repli du compilateur quand AUCUN event ne
+  // produit de ligne — il faut donc deux kinds encore réellement muets.
   it('tous les events muets (kinds non templatés) → repli journal.empty', () => {
-    const md = compileJournal([ev('level-up', { newLevel: 2 }), ev('xp-gain', { delta: 100 })], ctx);
+    const md = compileJournal(
+      [ev('treasure-drop', { gold: 120 }), ev('stabilize', {})],
+      ctx,
+    );
     expect(md).toBe('_Aucun événement enregistré pour cette séance._');
   });
 });

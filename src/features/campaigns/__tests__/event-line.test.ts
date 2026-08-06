@@ -112,12 +112,15 @@ describe('summarizeEvent — identité du libellé + détail (FR)', () => {
     });
   });
 
+  // L'exemple était `level-up` jusqu'à M44, qui lui a donné son propre libellé.
+  // L'invariant protégé n'est pas ce kind-là mais le repli : un kind non mappé
+  // affiche un libellé FR générique, jamais son identifiant machine.
   it('kind non mappé → libellé générique (jamais l’identifiant machine brut)', () => {
-    const parts = summarizeEvent(ev('level-up', { newLevel: 5 }));
+    const parts = summarizeEvent(ev('treasure-drop', { gold: 120 }));
     expect(parts.kindLabel).toBe('Événement de jeu');
     expect(parts.detail).toBeNull();
     // Garde-fou : aucun identifiant machine ne fuit dans le rendu.
-    expect(parts.kindLabel).not.toContain('level-up');
+    expect(parts.kindLabel).not.toContain('treasure-drop');
   });
 
   it('payload corrompu (types inattendus) → pas de crash, détail null', () => {
@@ -318,5 +321,52 @@ describe('eventDetailRows — dm-edit (plan 26)', () => {
       }),
     );
     expect(rows).toContainEqual({ label: 'Inspiration', value: 'Non → Oui' });
+  });
+});
+
+/**
+ * M44 — sans ces cas, les quatre jalons de vie tombaient sur le libellé
+ * générique du feed MJ : « Événement », sans détail. Le journal les racontait
+ * en prose mais le meneur, dans son feed temps réel, ne voyait rien.
+ */
+describe('summarizeEvent — jalons de vie (M44)', () => {
+  it('level-up : niveau + nom de classe localisé (jamais le slug)', () => {
+    expect(
+      summarizeEvent(
+        ev('level-up', { newLevel: 5, classId: 'rogue', className: 'Roublard', classLevel: 1 }),
+      ),
+    ).toEqual({ kindLabel: 'Montée de niveau', detail: 'Niveau 5 · Roublard' });
+  });
+
+  it('level-up sans nom de classe (payload legacy) → le niveau seul, pas de « null »', () => {
+    expect(summarizeEvent(ev('level-up', { newLevel: 3 }))).toEqual({
+      kindLabel: 'Montée de niveau',
+      detail: 'Niveau 3',
+    });
+  });
+
+  it('death : libellé dédié', () => {
+    expect(summarizeEvent(ev('death', { cause: 'death-saves' }))).toEqual({
+      kindLabel: 'Mort',
+      detail: null,
+    });
+  });
+
+  it('revival : libellé dédié', () => {
+    expect(summarizeEvent(ev('revival', { source: 'nat20' }))).toEqual({
+      kindLabel: 'Retour à la vie',
+      detail: null,
+    });
+  });
+
+  it('rest : le type distingue court et long dans le détail', () => {
+    expect(summarizeEvent(ev('rest', { type: 'long', hpHealed: 12 }))).toEqual({
+      kindLabel: 'Repos',
+      detail: 'Repos long',
+    });
+    expect(summarizeEvent(ev('rest', { type: 'short' }))).toEqual({
+      kindLabel: 'Repos',
+      detail: 'Repos court',
+    });
   });
 });

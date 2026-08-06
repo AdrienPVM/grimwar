@@ -19,6 +19,12 @@ import {
   turnStartTemplate,
 } from './combat';
 import { sessionEndTemplate, sessionStartTemplate } from './lifecycle';
+import {
+  deathTemplate,
+  levelUpTemplate,
+  restTemplate,
+  revivalTemplate,
+} from './milestones';
 import { rollTemplate, spellCastTemplate } from './rolls';
 
 export type { JournalContext, JournalTemplate } from './context';
@@ -27,9 +33,9 @@ export type { JournalContext, JournalTemplate } from './context';
  * Registre des templates par `EventKind` (plan 25.1, step 1).
  *
  * PARTIEL À DESSEIN : seuls les kinds réellement écrits par `event-logger.ts`
- * aujourd'hui ont un template (cf. audit du payload réel). Les ~24 kinds encore
- * non journalisés (level-up, death, xp-gain, revival, treasure-drop, note…)
- * n'ont pas d'entrée — `renderEventLine` retourne alors `null`
+ * aujourd'hui ont un template (cf. audit du payload réel). Les kinds encore non
+ * journalisés (xp-gain, treasure-drop, note, stabilize…) n'ont pas d'entrée —
+ * `renderEventLine` retourne alors `null`
  * (aucune ligne) plutôt que de planter ou d'inventer de la prose. Ajouter un
  * logger pour un de ces kinds = ajouter sa clé i18n + son template ici, sans
  * toucher au compilateur.
@@ -60,6 +66,11 @@ export const EVENT_TEMPLATES: Partial<Record<EventKind, JournalTemplate>> = {
   // Cycle de vie de séance (plan 23)
   'session-start': sessionStartTemplate,
   'session-end': sessionEndTemplate,
+  // Jalons de vie du personnage (M44)
+  'level-up': levelUpTemplate,
+  death: deathTemplate,
+  revival: revivalTemplate,
+  rest: restTemplate,
   // Audit d'édition MJ (plan 26)
   'dm-edit': dmEditTemplate,
 };

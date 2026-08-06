@@ -54,6 +54,12 @@ const fighterClass: ClassEntity = {
 
 const updateCharacterMock = vi.fn().mockResolvedValue(undefined);
 
+// M44 — le hook doit désormais journaliser le jalon `level-up` après l'écriture.
+const logLevelUpMock = vi.fn().mockResolvedValue(undefined);
+vi.mock('@/shared/lib/event-logger', () => ({
+  logLevelUp: (...args: unknown[]) => logLevelUpMock(...args),
+}));
+
 vi.mock('@/features/sheet/use-update-character', () => ({
   useUpdateCharacter: () => ({
     updateCharacter: updateCharacterMock,
@@ -182,5 +188,54 @@ describe('useLevelUp (JALON 2B.5)', () => {
       }),
     ).rejects.toThrow(/définition classe/);
     expect(updateCharacterMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * M44 — la montée de niveau passe en `log: 'manual'` pour que l'auto-diff ne
+ * noie pas le jalon sous un flot de `slot-restored` / `hp-change`. Sans logger
+ * dédié, la conséquence était qu'une montée de niveau ne laissait AUCUNE trace
+ * dans le journal. Ces tests fixent l'appel et son payload.
+ */
+describe('useLevelUp — journalisation du jalon (M44)', () => {
+  it('journalise level-up après l’écriture, avec le niveau total et la classe', async () => {
+    updateCharacterMock.mockClear();
+    logLevelUpMock.mockClear();
+    const { result } = renderHook(() => useLevelUp(makeFighter(1)));
+
+    await act(async () => {
+      await result.current.applyAndPersist({
+        classId: 'fighter',
+        newClassLevel: 2,
+        hpRoll: { kind: 'average' },
+      });
+    });
+
+    expect(logLevelUpMock).toHaveBeenCalledTimes(1);
+    expect(logLevelUpMock).toHaveBeenCalledWith('pj-1', {
+      newTotalLevel: 2,
+      classId: 'fighter',
+      // Nom LOCALISÉ, pas le slug : le journal ne doit jamais afficher « fighter ».
+      className: 'Guerrier',
+      classLevel: 2,
+      isNewClass: false,
+    });
+  });
+
+  it('n’écrit aucun jalon quand la montée de niveau échoue', async () => {
+    logLevelUpMock.mockClear();
+    const character = makeFighter(1);
+    character.primaryClassId = 'orphan';
+    character.classes[0]!.classId = 'orphan';
+    const { result } = renderHook(() => useLevelUp(character));
+
+    await expect(
+      result.current.applyAndPersist({
+        classId: 'orphan',
+        newClassLevel: 2,
+        hpRoll: { kind: 'average' },
+      }),
+    ).rejects.toThrow();
+    expect(logLevelUpMock).not.toHaveBeenCalled();
   });
 });

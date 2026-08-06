@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type JSX } from 'react';
 
 import { Card } from '@/shared/components/card';
 import { cn } from '@/shared/lib/cn';
+import { logRest } from '@/shared/lib/event-logger';
 import { t } from '@/shared/lib/i18n';
 import { applyShortRest } from '@/shared/lib/rules/short-rest';
 import { showToast } from '@/shared/lib/slices/toast-slice';
@@ -76,6 +77,11 @@ export function ShortRestButton({
     setConfirming(false);
 
     const { patch, summary } = applyShortRest(character);
+
+    // M44 — le repos est journalisé qu'il recharge quelque chose ou non : « la
+    // troupe souffle une heure » est le fait narratif, indépendamment du bilan.
+    // (Le patch, lui, reste conditionnel — écrire un patch vide n'a pas de sens.)
+    await logRest(character.id, 'short', { resourcesReset: summary.resourcesReset });
 
     // Rien à recharger → on ne patche pas (évite un event vide), simple toast.
     if (summary.resourcesReset === 0) {

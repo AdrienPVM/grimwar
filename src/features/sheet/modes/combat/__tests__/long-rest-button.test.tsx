@@ -16,9 +16,15 @@ import classesBundle from '../../../../../../public/data/classes.json';
  * dérivation des réserves.
  */
 
-const { updateCharacterMock, showToastMock } = vi.hoisted(() => ({
+const { updateCharacterMock, showToastMock, logRestMock } = vi.hoisted(() => ({
   updateCharacterMock: vi.fn().mockResolvedValue(undefined),
   showToastMock: vi.fn(),
+  // M44 — le repos devient un jalon journalisé, pas seulement un patch.
+  logRestMock: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/shared/lib/event-logger', () => ({
+  logRest: (...args: unknown[]) => logRestMock(...args),
 }));
 
 vi.mock('@/shared/hooks/use-content', () => ({
@@ -41,6 +47,7 @@ vi.mock('@/shared/lib/slices/toast-slice', () => ({ showToast: showToastMock }))
 beforeEach(() => {
   updateCharacterMock.mockClear();
   showToastMock.mockClear();
+  logRestMock.mockClear();
 });
 
 function classEntry(classId: string, level: number): Character['classes'][number] {
@@ -169,5 +176,40 @@ describe('<LongRestButton>', () => {
   it('lecture seule : rien rendu', () => {
     const { container } = render(<LongRestButton readOnly character={buildCharacter()} />);
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+/**
+ * M44 — un repos long remet PV, dés de vie et réserves d'un coup : le diff de
+ * fiche produisait une pluie de lignes sans jamais dire « ils ont dormi ». Le
+ * jalon dédié porte le bilan pour que le journal puisse le raconter.
+ */
+describe('<LongRestButton> — jalon journalisé (M44)', () => {
+  it('journalise un repos long avec les PV rendus', async () => {
+    const user = userEvent.setup();
+    render(<LongRestButton character={buildCharacter()} />);
+    await user.click(screen.getByRole('button', { name: 'Repos long' }));
+    await user.click(screen.getByRole('button', { name: 'Confirmer le repos long ?' }));
+
+    expect(logRestMock).toHaveBeenCalledTimes(1);
+    const [characterId, type, summary] = logRestMock.mock.calls[0]! as [
+      string,
+      string,
+      { hpHealed: number },
+    ];
+    expect(type).toBe('long');
+    expect(characterId).toBe(buildCharacter().id);
+    // Le personnage de test part à 5/32 PV → le repos en rend exactement 27.
+    expect(summary.hpHealed).toBe(27);
+  });
+
+  it('slowHealing : le jalon est écrit, avec 0 PV rendu (et non un champ absent)', async () => {
+    const user = userEvent.setup();
+    render(<LongRestButton character={buildCharacter()} variants={slowHealing} />);
+    await user.click(screen.getByRole('button', { name: 'Repos long' }));
+    await user.click(screen.getByRole('button', { name: 'Confirmer le repos long ?' }));
+
+    const [, , summary] = logRestMock.mock.calls[0]! as [string, string, { hpHealed: number }];
+    expect(summary.hpHealed).toBe(0);
   });
 });
