@@ -579,6 +579,7 @@ export type StringKey =
   | 'sheet.combat.attacks.ranged'
   | 'sheet.combat.attacks.melee'
   | 'sheet.combat.attacks.menuAdvantage'
+  | 'sheet.combat.attacks.menuFlanking'
   | 'sheet.combat.attacks.menuDisadvantage'
   | 'sheet.combat.attacks.menuCrit'
   | 'sheet.combat.hud.action'
@@ -3787,6 +3788,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.attacks.ranged': 'Distance',
     'sheet.combat.attacks.melee': 'Mêlée',
     'sheet.combat.attacks.menuAdvantage': 'Avantage',
+    'sheet.combat.attacks.menuFlanking': 'Prise en tenaille',
     'sheet.combat.attacks.menuDisadvantage': 'Désav.',
     'sheet.combat.attacks.menuCrit': 'Crit',
     'sheet.combat.hud.action': 'Action',
@@ -7574,6 +7576,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.attacks.ranged': 'Ranged',
     'sheet.combat.attacks.melee': 'Melee',
     'sheet.combat.attacks.menuAdvantage': 'Advantage',
+    'sheet.combat.attacks.menuFlanking': 'Flanking',
     'sheet.combat.attacks.menuDisadvantage': 'Disadv.',
     'sheet.combat.attacks.menuCrit': 'Crit',
     'sheet.combat.hud.action': 'Action',

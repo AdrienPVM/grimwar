@@ -23,6 +23,14 @@ import { useUpdateCharacter } from '../../use-update-character';
 interface AttacksListProps {
   character: Character;
   readOnly: boolean;
+  /**
+   * Variante « Prise en tenaille » active sur la table (M55). Elle était
+   * persistée et décrite au meneur sans AUCUN consommateur : cocher la case ne
+   * changeait rien nulle part. Quand elle est active, le menu d'appui long
+   * propose l'avantage sous son nom de règle plutôt que sous « Avantage » —
+   * c'est le rappel qui manquait au moment où on en a besoin.
+   */
+  flanking?: boolean;
 }
 
 interface AttackEntry {
@@ -48,7 +56,11 @@ interface AttackEntry {
  * Tap : roll attaque (d20+bonus) + roll dégâts → toast combiné.
  * Long-press : ouvre un mini menu Avantage / Désavantage / Crit.
  */
-export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Element {
+export function AttacksList({
+  character,
+  readOnly,
+  flanking = false,
+}: AttacksListProps): JSX.Element {
   const { data: items } = useContent('items');
   const itemsById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
   const pb = proficiencyBonus(character.totalLevel);
@@ -165,6 +177,7 @@ export function AttacksList({ character, readOnly }: AttacksListProps): JSX.Elem
               void performRoll(entry, advantage, crit);
             }}
             onOpenMastery={() => setMasteryModalId(entry.itemId)}
+            flanking={flanking}
           />
         ))}
       </div>
@@ -208,6 +221,8 @@ interface AttackRowProps {
   onCloseMenu: () => void;
   onPerform: (advantage: Advantage, forceCrit: boolean) => void;
   onOpenMastery: () => void;
+  /** Variante de table active → entrée « Prise en tenaille » dans le menu. */
+  flanking: boolean;
 }
 
 function AttackRow({
@@ -218,6 +233,7 @@ function AttackRow({
   onCloseMenu,
   onPerform,
   onOpenMastery,
+  flanking,
 }: AttackRowProps): JSX.Element {
   const handlers = useLongPress(
     () => onPerform('normal', false),
@@ -284,12 +300,22 @@ function AttackRow({
       {menuOpen && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-30 mt-1 flex gap-1 rounded-card-sm border border-soft bg-glass-2 p-1 shadow-card backdrop-blur-2xl"
+          className="absolute right-0 top-full z-30 mt-1 flex max-w-[min(20rem,calc(100vw-2rem))] flex-wrap justify-end gap-1 rounded-card-sm border border-soft bg-glass-2 p-1 shadow-card backdrop-blur-2xl"
         >
           <MenuItem
             label={t('sheet.combat.attacks.menuAdvantage')}
             onClick={() => onPerform('advantage', false)}
           />
+          {/* Même effet mécanique que l'avantage — c'est le NOM qui compte :
+              il rappelle la règle au moment où on la joue. Entrée distincte
+              plutôt que renommage, parce qu'on prend aussi l'avantage pour
+              d'autres raisons dans le même combat. */}
+          {flanking && (
+            <MenuItem
+              label={t('sheet.combat.attacks.menuFlanking')}
+              onClick={() => onPerform('advantage', false)}
+            />
+          )}
           <MenuItem
             label={t('sheet.combat.attacks.menuDisadvantage')}
             onClick={() => onPerform('disadvantage', false)}

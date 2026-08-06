@@ -74,7 +74,7 @@ export function CombatMode({ character, onOpenMode }: CombatModeProps): JSX.Elem
         <ConditionsRow character={character} readOnly={readOnly} />
       </BentoTile>
       <BentoTile span="lg">
-        <AttacksList character={character} readOnly={readOnly} />
+        <AttacksList character={character} readOnly={readOnly} flanking={variants.flanking} />
       </BentoTile>
       {/*
         Juste APRÈS les attaques, et c'est le seul endroit qui marche : la liste

@@ -24,10 +24,19 @@ type CampaignVariants = {
 
 **What it does** (5e): a creature is flanked when at least two of its enemies are on opposite sides. Flanking creatures get advantage on melee attacks.
 
-**Where wired**:
-- **Plan 24 (Encounters)** + **Plan 28 (Tokens)**: when computing attack advantage in the encounter combat HUD, check `flanking === true` and compute from positions. Uses `lib/rules/flanking.ts` (returns true/false given attacker, target, allies' positions, grid).
-- If no map / no positions available, flanking detection is a no-op (toggle still on but no auto-detection).
-- DM can always manually toggle advantage on any roll regardless of variant.
+**Where wired** (M55 — état réel, remplace l'intention initiale) :
+- **Fiche → mode Combat → liste d'attaques** : quand `flanking === true`, le menu
+  d'appui long d'une attaque propose une entrée « Prise en tenaille » en plus
+  d'« Avantage ». Elle applique l'avantage — c'est exactement ce que dit la
+  règle ; ce qu'elle apporte est le NOM au moment où on joue.
+- **Détection automatique depuis les positions : NON implémentée.** L'intention
+  d'origine décrivait un `lib/rules/flanking.ts` calculant l'encerclement depuis
+  la grille. Ce module n'a jamais existé, et la variante est restée sans AUCUN
+  consommateur pendant tout ce temps — une bascule qui ne fait rien est pire
+  qu'une bascule absente. L'entrée de menu est le minimum honnête ; la détection
+  géométrique reste ouverte, à porter par un plan dédié si elle est voulue.
+- Le meneur peut de toute façon accorder l'avantage sur n'importe quel jet,
+  variante active ou non.
 
 ## slowHealing
 
