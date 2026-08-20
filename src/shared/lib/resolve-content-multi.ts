@@ -21,7 +21,7 @@ export interface ResolvedContent<K extends ContentTypeKey> {
  * l'utilisateur. Sans cette primitive, chaque call site devrait orchestrer
  * lui-même la priorité — duplication garantie, dérive garantie.
  *
- * Politique d'override (cf. plans/2A-AGNOSTIC-SOURCE-INVENTORY.md § 2.3) :
+ * Politique d'override (cf. docs/plans/2A-AGNOSTIC-SOURCE-INVENTORY.md § 2.3) :
  *   campaign > user > public
  *
  * Justification : un MJ qui définit un item custom dans sa campagne doit

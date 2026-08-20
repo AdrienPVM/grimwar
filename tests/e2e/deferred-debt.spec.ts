@@ -13,7 +13,7 @@ import { test } from '@playwright/test';
  * **Les 4 placeholders restants ci-dessous** ne sont plus bloqués
  * structurellement par l'absence du fixture (il existe). Ils sont
  * explicitement assignés au **plan 20.5 (close-out S2)** — cf.
- * `plans/20.5-e2e-expansion-s2-close.md` + `plans/DEBT.md > D8`. Si tu lis ce
+ * `docs/plans/20.5-e2e-expansion-s2-close.md` + `docs/plans/DEBT.md > D8`. Si tu lis ce
  * fichier après la clôture du sprint 2, ce module devrait avoir été
  * supprimé (step 5 du plan 20.5).
  *

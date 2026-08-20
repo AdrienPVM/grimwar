@@ -1,0 +1,12 @@
+# Les gardes qui bloquent un commit.
+#
+# Une ligne par garde, le nom de la commande pnpm, sans commentaire sur la ligne.
+# Cette liste GRANDIT à chaque défaut signalé par Adrien : le temps 5 du cliquet
+# (.claude/skills/defaut/SKILL.md) y inscrit le garde neuf.
+#
+# Elle ne rétrécit jamais sans une raison écrite ici, datée.
+#
+# Un garde n'entre ici qu'une fois VERT. Un garde bloquant rouge par construction
+# empêcherait le commit qui le rend vert.
+#
+guard:structure

@@ -23,7 +23,7 @@ interface CampaignLinkProps {
  * coûtait donc quatre gestes (Retour → accueil → Campagnes → la campagne) pour
  * le déplacement le plus fréquent d'une soirée de jeu : consulter un document,
  * suivre le combat, relire les notes.
- * Cf. `plans/UX-AUDIT-2026-08.md > J5`.
+ * Cf. `docs/plans/UX-AUDIT-2026-08.md > J5`.
  *
  * Deux gardes :
  *  - fiche non liée (`homeCampaignId` nul) → rien à proposer ;

@@ -5,7 +5,7 @@
  *   - EN : `content-sources/extracted/raw/SRD_CC_v5.2.1.txt`
  *   - FR : `content-sources/extracted/raw/FR_SRD_CC_v5.2.1.txt`
  *
- * Cf. plan `plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.4).
+ * Cf. plan `docs/plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.4).
  *
  * Scope C.4 :
  *   - 2 génériques uncommon : Arme +1, Projectile +1.

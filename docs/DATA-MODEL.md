@@ -305,7 +305,7 @@ Private user homebrew + DMG extracts. `type` ∈ `spells | monsters | items | ma
 
 Source de vérité Zod : `src/shared/types/campaign.ts > CampaignSchema`.
 Divergences délibérées vs la première rédaction de ce doc (S2 brouillon)
-sont tracées dans `plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
+sont tracées dans `docs/plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
 `gmIds[]` (array, anticipe co-MJ 4C) au lieu de `dmUserId`, settings
 simplifiés (drop de `permissionMode`/`allowHomebrew`/`startingLevel`/`enableSpectators`),
 `inviteToken` (lien URL) déféré à 4.0.5.

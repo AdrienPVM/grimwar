@@ -15,7 +15,7 @@ import type { OngoingCandidate } from './ongoing-play';
  * « qu'est-ce qui se passe MAINTENANT ? ». Pour rejoindre le combat en cours, il
  * fallait accueil → Campagnes → la campagne → Rencontres → la bonne ligne :
  * quatre écrans, à la table, pendant que les autres attendent le tour. C'est le
- * défaut le plus structurant relevé par l'audit UX de `plans/UX-AUDIT-2026-08.md`.
+ * défaut le plus structurant relevé par l'audit UX de `docs/plans/UX-AUDIT-2026-08.md`.
  *
  * Composant PRÉSENTATIONNEL : il ne lit rien, il reçoit `ongoing`. Le sondage
  * Firestore vit dans `useOngoingPlay`, la règle de priorité dans `selectOngoing`

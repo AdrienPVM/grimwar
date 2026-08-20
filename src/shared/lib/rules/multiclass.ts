@@ -49,7 +49,7 @@ export function casterLevel(classes: CasterClassEntry[]): number {
 
 /**
  * Niveau à indexer dans la table d'emplacements pour DÉRIVER les emplacements
- * réels d'un personnage (`plans/DEBT.md > D30`).
+ * réels d'un personnage (`docs/plans/DEBT.md > D30`).
  *
  * `casterLevel` ci-dessus encode la règle d'ADDITION multiclasse — elle ne vaut
  * QUE quand on combine ≥ 2 classes lanceuses. Un demi-lanceur MONO-CLASSE suit

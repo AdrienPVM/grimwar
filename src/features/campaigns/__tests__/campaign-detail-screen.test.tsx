@@ -628,7 +628,7 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
     // Les deux écrans sont lisibles par tout membre (rules 23.1 / 24.1) et ont
     // chacun un état vide rédigé pour un joueur — mais leur seul point d'entrée
     // était enfermé dans le bloc MJ, ce qui rendait le suivi de combat
-    // inaccessible aux joueurs. Cf. `plans/UX-AUDIT-2026-08.md > B-2`.
+    // inaccessible aux joueurs. Cf. `docs/plans/UX-AUDIT-2026-08.md > B-2`.
     authHolder.user = { uid: 'uid-2' };
     stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
     stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];

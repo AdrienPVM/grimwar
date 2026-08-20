@@ -126,7 +126,7 @@ export function useCharacter(
           // (`fromCache`). Ce `setDoc` réécrit le document ENTIER : basé sur une
           // vue cachée périmée, il écraserait des champs écrits concurremment
           // côté serveur — en particulier `homeCampaignId` (le lien de campagne).
-          // Race observée (cf. `plans/DEBT.md > D27`) : la LibraryScreen met en
+          // Race observée (cf. `docs/plans/DEBT.md > D27`) : la LibraryScreen met en
           // cache la fiche à `homeCampaignId=null`, le lien passe à `cid` juste
           // après, on ouvre la fiche → le listener livre d'abord le snapshot
           // caché (`null`) et la migration clobberait `cid`. On attend donc la
@@ -171,7 +171,7 @@ export function useCharacter(
     return unsubscribe;
   }, [user, characterId, effectiveOwnerUid, isOwnerRead]);
 
-  // Réconciliation one-shot des emplacements de sort (cf. `plans/DEBT.md > D28`).
+  // Réconciliation one-shot des emplacements de sort (cf. `docs/plans/DEBT.md > D28`).
   // Les fiches créées avant l'init à la création portent `spellSlots: {}` et ne
   // pouvaient lancer aucun sort à emplacement. Dès que le contenu (classes.json)
   // et la fiche sont prêts, et si l'on est PROPRIÉTAIRE du doc (le MJ en lecture

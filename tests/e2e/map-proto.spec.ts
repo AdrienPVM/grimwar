@@ -8,7 +8,7 @@ import { takeStepScreenshot } from './helpers/screenshot';
  *
  * Ce spec est délibérément MINIMAL (pas de tests cat. 4 / matrix) — le
  * mode carte est un PROTOTYPE en attente d'arbitrage UX/produit. Cf.
- * `plans/MAP-MODE-PROPOSAL.md`.
+ * `docs/plans/MAP-MODE-PROPOSAL.md`.
  *
  * Couverture :
  *   1. La page `/map-proto` charge sans erreur, montre le titre + badge

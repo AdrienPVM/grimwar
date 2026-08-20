@@ -633,7 +633,7 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
 
     /**
      * JALON 2C-feat-2 — pin catégorie 3 (fidélité bundle SRD) sur les
-     * prérequis structurés. Source : `plans/2C-FEAT-PREREQS-AUDIT.md`.
+     * prérequis structurés. Source : `docs/plans/2C-FEAT-PREREQS-AUDIT.md`.
      *
      * Garde-fou : `computeFeatAvailability` (2C-feat-3) lira ce champ ; un
      * drift de structure (kind renommé, ability sur mauvais code) casserait
@@ -749,7 +749,7 @@ describe('SRD 5.2.1 compteurs (plan 13.7 §0.4)', () => {
      * Garde anti-régression sur la couverture spells par classe.
      *
      * Pourquoi : c'est la 3e occurrence du bug « sorts vides pour une
-     * classe lanceuse » (cf. plans/DEBT.md > D7). Un compteur exact attrape
+     * classe lanceuse » (cf. docs/plans/DEBT.md > D7). Un compteur exact attrape
      * une régression silencieuse (un re-build qui perd une classe d'une
      * liste de filtres) AVANT que le SpellsStep affiche un écran vide.
      *

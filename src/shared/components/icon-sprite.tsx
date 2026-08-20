@@ -2,7 +2,7 @@
  * Sprite SVG masqué — monté une fois en haut de l'arbre <App />, après quoi
  * <Icon name="i-flame" /> peut référencer n'importe quel symbole via <use href>.
  *
- * Copie verbatim des paths du prototype `prototype/grimwar.html`. Si on touche
+ * Copie verbatim des paths du prototype `docs/prototype/grimwar.html`. Si on touche
  * à un path, garder synchro avec le prototype pour rester fidèle au visuel cible.
  */
 export function IconSprite(): JSX.Element {

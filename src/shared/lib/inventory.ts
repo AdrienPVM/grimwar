@@ -138,7 +138,7 @@ export async function addItemToInventory(
   // contentSource n'est posé QUE si scopeId est défini.
   // Pour scope='public' (cas du wizard 100% du temps), scopeId est undefined :
   // poser `contentSource: undefined` ferait crasher setDoc côté Firestore en
-  // mode strict (cf. plans/DEBT.md > D3 bug #1).
+  // mode strict (cf. docs/plans/DEBT.md > D3 bug #1).
   const newItem: InventoryItem = {
     contentId,
     contentScope: scope,

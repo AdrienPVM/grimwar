@@ -46,7 +46,7 @@ This codebase is built via the GSD (Get Stuff Done) framework with Claude Code. 
 
 1. Open the repo in Claude Code.
 2. Run `cat CLAUDE.md` to see the rules + decision log.
-3. Run `ls plans/` and pick the lowest-numbered unfinished plan.
+3. Run `ls docs/plans/` and pick the lowest-numbered unfinished plan.
 4. Claude Code reads the plan, executes step by step, commits at the end.
 
 Claude Code has explicit **autonomy** for tactical decisions; it only stops for architectural conflicts, scope creep, or external dependencies that need Adrien's input.
@@ -55,7 +55,7 @@ Claude Code has explicit **autonomy** for tactical decisions; it only stops for 
 
 ```
 docs/         # architectural reference — read these
-plans/        # GSD work queue — pick lowest unfinished
+docs/plans/        # GSD work queue — pick lowest unfinished
 prototype/    # the visual reference (HTML)
 src/          # the code
 scripts/      # content extraction (PDFs, AideDD)

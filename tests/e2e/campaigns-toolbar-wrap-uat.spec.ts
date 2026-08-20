@@ -11,7 +11,7 @@ import { isEmulatorReachable, waitForAppReady } from './fixtures';
  * Historique : cet écran affichait 7 boutons identiques sur UNE barre, AU-DESSUS
  * du titre ; la spec vérifiait alors qu'ils enveloppaient sans déborder à 375 px.
  * Ils sont désormais regroupés sous le titre en deux sections nommées, « Jouer »
- * et « Mémoire de la table » (cf. `plans/UX-AUDIT-2026-08.md > M2`). L'invariant
+ * et « Mémoire de la table » (cf. `docs/plans/UX-AUDIT-2026-08.md > M2`). L'invariant
  * qui compte reste le même — **aucun débordement horizontal** — et il vaut
  * maintenant pour la nouvelle structure.
  *

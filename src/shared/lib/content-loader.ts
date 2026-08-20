@@ -31,7 +31,7 @@ const PUBLIC_CACHE_ID = '__public__';
  * Invalidation du cache public par hash de contenu.
  *
  * Pourquoi : le TTL 7 jours ne détecte pas les changements de bundle. Adrien
- * a vécu le bug plusieurs fois (plans/DEBT.md > D7 — "Page Sorts vide pour
+ * a vécu le bug plusieurs fois (docs/plans/DEBT.md > D7 — "Page Sorts vide pour
  * les lanceurs") : le bundle disque avait changé mais le cache Dexie servait
  * toujours l'ancienne version pendant 7j → SpellsStep filtrait dans le vide.
  *
@@ -218,7 +218,7 @@ export async function loadPublicContent<K extends ContentTypeKey>(
 ): Promise<ContentEntityByKey[K][]> {
   // Première étape de chaque session : vérifier qu'un build récent ne nous a
   // pas laissés sur un cache obsolète. Si le hash a changé, on vide tout le
-  // scope public avant de servir la moindre requête (cf. plans/DEBT.md > D7).
+  // scope public avant de servir la moindre requête (cf. docs/plans/DEBT.md > D7).
   await ensurePublicCacheFreshness();
 
   const cached = await readCache('public', type);

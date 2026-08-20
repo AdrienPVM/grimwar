@@ -665,7 +665,7 @@ export const ClassSchema = z
      * fixtures de test legacy ; le bundle SRD réel garantit la présence sur
      * les 12 classes (vérifié par `tests/srd-counters.test.ts` cat. 3 pin).
      * Optionnel pour matcher le pattern `divineOrders` / `primalOrders` —
-     * voir audit `plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED`.
+     * voir audit `docs/plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED`.
      */
     multiclassPrerequisite: MulticlassPrerequisiteSchema.nullable().optional(),
     /**

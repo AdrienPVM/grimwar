@@ -19,7 +19,7 @@ export type FeatCategory = 'origin' | 'general' | 'fighting-style' | 'epic-boon'
 
 /**
  * Prérequis structuré d'un feat — JALON 2C-feat-2.
- * Source de vérité audit : `plans/2C-FEAT-PREREQS-AUDIT.md`.
+ * Source de vérité audit : `docs/plans/2C-FEAT-PREREQS-AUDIT.md`.
  *
  * Le type est dupliqué ici (vs `src/shared/types/content.ts > featPrerequisiteSchema`)
  * pour garder le script SRD autonome (pas d'import depuis `src/`). Le Zod schema
@@ -41,7 +41,7 @@ export interface SrdFeatEntry {
   summary: { fr: string; en: string };
   /**
    * Prérequis exécutables (AND strict). Absent / `[]` = aucun prérequis.
-   * Audit feat-par-feat : `plans/2C-FEAT-PREREQS-AUDIT.md`.
+   * Audit feat-par-feat : `docs/plans/2C-FEAT-PREREQS-AUDIT.md`.
    */
   prerequisites?: SrdFeatPrerequisite[];
   source: 'srd-5.2.1';

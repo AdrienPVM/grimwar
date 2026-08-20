@@ -33,7 +33,7 @@ const AccountScreen = lazy(async () => {
 });
 
 // Route /map-proto — squelette de prototype carte (PAS production).
-// Cf. plans/MAP-MODE-PROPOSAL.md. Pas listée au menu, accessible par URL.
+// Cf. docs/plans/MAP-MODE-PROPOSAL.md. Pas listée au menu, accessible par URL.
 const MapProtoScreen = lazy(async () => {
   const mod = await import('@/features/map-proto/map-proto-screen');
   return { default: mod.MapProtoScreen };

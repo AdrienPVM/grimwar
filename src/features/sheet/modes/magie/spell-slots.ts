@@ -80,7 +80,7 @@ export function expectedSpellSlots(
  * ses emplacements de pacte restent un chantier dédié.
  *
  * Pourquoi : un caster fraîchement créé doit pouvoir lancer ses sorts à
- * emplacement sans attendre un premier level-up (cf. `plans/DEBT.md > D28`).
+ * emplacement sans attendre un premier level-up (cf. `docs/plans/DEBT.md > D28`).
  */
 export function fullSpellSlots(
   characterClasses: Character['classes'],
@@ -105,7 +105,7 @@ export function fullSpellSlots(
  * du level-up). Retourne `null` si rien n'est à faire (no-op), pour que
  * l'appelant n'écrive pas inutilement dans Firestore.
  *
- * Couvre `plans/DEBT.md > D28` : les fiches créées avant l'init à la création
+ * Couvre `docs/plans/DEBT.md > D28` : les fiches créées avant l'init à la création
  * portent `spellSlots: {}` et ne pouvaient lancer aucun sort à emplacement.
  */
 export function reconcileSpellSlots(

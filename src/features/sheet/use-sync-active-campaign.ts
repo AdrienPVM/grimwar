@@ -13,7 +13,7 @@ import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slic
  * Au démontage (ou fiche non liée), on nettoie → plus aucun event écrit hors
  * contexte de jeu. La lecture MJ (lecture seule) N'appelle PAS ce hook.
  *
- * TROIS ÉTATS d'entrée (cf. `plans/DEBT.md > D27`) :
+ * TROIS ÉTATS d'entrée (cf. `docs/plans/DEBT.md > D27`) :
  *  - `undefined` ⇒ fiche pas encore chargée OU re-sync transitoire pendant la
  *    migration v1→v2 (le doc est réécrit, `useCharacter` re-render). ON NE
  *    TOUCHE PAS le store : on préserve la dernière campagne active connue. Sans

@@ -12,7 +12,7 @@ import {
 } from './seed-character';
 
 /**
- * UAT — lot 1 de `plans/AUDIT-MALLEABILITE-2026-08.md`.
+ * UAT — lot 1 de `docs/plans/AUDIT-MALLEABILITE-2026-08.md`.
  *
  * Ce que ces captures montrent et que les tests unitaires ne montrent pas : le
  * RENDU des nouvelles soupapes dans la vraie fiche et le vrai tracker, avec le

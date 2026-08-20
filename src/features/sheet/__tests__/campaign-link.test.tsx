@@ -9,7 +9,7 @@ import { PermissionProvider } from '../permissions-context';
 
 /**
  * Le raccourci « ma campagne » ferme le cul-de-sac de la fiche
- * (`plans/UX-AUDIT-2026-08.md > J5`). Trois cas décident de sa présence.
+ * (`docs/plans/UX-AUDIT-2026-08.md > J5`). Trois cas décident de sa présence.
  */
 
 function mkCharacter(homeCampaignId: string | null): Character {

@@ -33,7 +33,7 @@ import {
  * Switch de langue FR/Anglais : livré (les bundles SRD portent `name.en` +
  * `description.en` à 100 %, les strings UI sont 100 % FR+EN). Seul gap connu —
  * 180 magic-items du bundle grandfathered AideDD sans `name.en` retombent en FR
- * via `localize()` (fallback gracieux, jamais de clé brute). Cf. plans/DEBT.md.
+ * via `localize()` (fallback gracieux, jamais de clé brute). Cf. docs/plans/DEBT.md.
  */
 export function AccountScreen(): JSX.Element {
   const { user, isAnonymous } = useAuth();

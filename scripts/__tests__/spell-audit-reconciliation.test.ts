@@ -18,7 +18,7 @@ import {
  *
  * Cross-check audit : l'audit D.3 ESTIMAIT 44 renames / 21 ajouts / 18 retraits.
  * La réconciliation réelle donne 50 / 16 / 7. L'écart est catalogué (pas étendu en
- * douce) — voir `plans/DEBT.md > D16`. Le test fige les nombres réels : toute
+ * douce) — voir `docs/plans/DEBT.md > D16`. Le test fige les nombres réels : toute
  * nouvelle dérive vis-à-vis de cette vérité réconciliée échoue et force un flag.
  */
 

@@ -55,7 +55,7 @@ export default defineConfig({
           // d'invalidation Dexie compare deux hashes périmés cohérents entre
           // eux et conclut « à jour » alors qu'un nouveau bundle est sur
           // disque. C'est Bug 1 du post-13.7 — un piège latent garanti en
-          // prod PWA où le SW est enregistré (cf. plans/DEBT.md > D7).
+          // prod PWA où le SW est enregistré (cf. docs/plans/DEBT.md > D7).
           //
           // NetworkFirst : online → vrai disque (le bon hash) ; offline →
           // fallback cache (PWA airplane-mode reste fonctionnelle). timeout

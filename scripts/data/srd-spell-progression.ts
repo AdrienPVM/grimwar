@@ -19,7 +19,7 @@
  * Décisions :
  *  - Encodage strict `number[20]` (index = level - 1). On n'utilise PAS les
  *    sentinelles `'ability-mod-plus-level'` / `'ability-mod-plus-half-level'`
- *    initialement envisagées dans `plans/2B-LEVELUP-INVENTORY.md §2.4` : le
+ *    initialement envisagées dans `docs/plans/2B-LEVELUP-INVENTORY.md §2.4` : le
  *    SRD CC 5.2.1 (PHB 2024) liste des compteurs fixes dans chaque table de
  *    classe. La formule WIS/INT/CHA mod + niveau n'apparaît plus comme règle
  *    générale dans les versions 2024 — chaque classe a sa colonne. Encoder

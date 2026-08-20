@@ -294,7 +294,7 @@ export function areAllClassStepSubChoicesCompleted(
  *      activer/désactiver le bouton « Valider » de la modale.
  *
  * Interprétation SRD 2024 LOCKED par l'audit
- * (`plans/2D-MULTICLASS-AUDIT.md > Gap 5`) : les caractéristiques de L1 d'une
+ * (`docs/plans/2D-MULTICLASS-AUDIT.md > Gap 5`) : les caractéristiques de L1 d'une
  * classe ajoutée en multiclass sont IDENTIQUES à celles d'un perso primaire L1
  * de cette classe (Divine Order, Fighting Style, Eldritch Invocations, etc.).
  * La SEULE différence SRD entre multiclass et primary L1 porte sur les

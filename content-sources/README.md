@@ -79,7 +79,7 @@ pnpm content:build
 pnpm content:upload-private
 ```
 
-For details, see `plans/04-content-pipeline.md`.
+For details, see `docs/plans/04-content-pipeline.md`.
 
 ## Legal note
 

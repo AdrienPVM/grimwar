@@ -12,7 +12,7 @@ import {
 } from './seed-character';
 
 /**
- * UAT — M11 à M14 de `plans/AUDIT-MALLEABILITE-2026-08.md` : le cycle de vie
+ * UAT — M11 à M14 de `docs/plans/AUDIT-MALLEABILITE-2026-08.md` : le cycle de vie
  * d'une campagne devient réparable (roster, documents, séances, journal).
  *
  * Ce que ces captures montrent et que les tests unitaires ne montrent pas :

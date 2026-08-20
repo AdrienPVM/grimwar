@@ -11,7 +11,7 @@ import { seedCharacter, wizardL5DamageD1 } from './seed-character';
  * screenshot fullPage à 4 viewports cibles : mobile (375px), petite
  * tablette (768px), tablette (1024px), desktop (1440px). Les captures
  * sont collectées dans `uat-review/13.14-audit/` via `takeStepScreenshot`
- * (et le rapport `plans/13.14-RESPONSIVE-AUDIT.md` les indexe).
+ * (et le rapport `docs/plans/13.14-RESPONSIVE-AUDIT.md` les indexe).
  *
  * Hors périmètre : tout fix. Si un défaut visuel est trouvé, il est
  * **listé** dans le rapport ; il n'est PAS corrigé dans cette PR.

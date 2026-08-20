@@ -19,7 +19,7 @@ import {
  * TAP. Avant, rejoindre le combat en cours demandait accueil → Campagnes → la
  * campagne → Rencontres → la bonne ligne : quatre écrans, à la table, pendant
  * que les autres attendent le tour (défaut le plus structurant de
- * `plans/UX-AUDIT-2026-08.md`).
+ * `docs/plans/UX-AUDIT-2026-08.md`).
  *
  * On teste la DESTINATION, pas seulement la présence du bandeau : un raccourci
  * qui s'affiche mais mène au mauvais écran serait vert et inutile.

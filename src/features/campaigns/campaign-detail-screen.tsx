@@ -218,7 +218,7 @@ export function CampaignDetailScreen(): JSX.Element {
           </Button>
           {/* Réglages seuls restent dans la barre du haut : c'est de
               l'administration, pas du jeu. Le reste descend sous le titre, en
-              groupes (cf. `plans/UX-AUDIT-2026-08.md > M2`). */}
+              groupes (cf. `docs/plans/UX-AUDIT-2026-08.md > M2`). */}
           {isGm ? (
             <Button
               type="button"
@@ -254,7 +254,7 @@ export function CampaignDetailScreen(): JSX.Element {
 
         {/*
           Espaces de la campagne — remplace la barre de 7 boutons identiques qui
-          régnait AU-DESSUS du titre (cf. `plans/UX-AUDIT-2026-08.md > M2`).
+          régnait AU-DESSUS du titre (cf. `docs/plans/UX-AUDIT-2026-08.md > M2`).
           Trois défauts corrigés d'un coup :
           (a) les actions passent SOUS le titre — on lit d'abord où on est ;
           (b) elles sont groupées par nature — « jouer ce soir » d'un côté, la

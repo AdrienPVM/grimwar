@@ -19,7 +19,7 @@ import { fighterL3, readBackCharacter, seedCharacter } from './seed-character';
  *   - `data-variant="syncing"` quand reconnect + `pendingWrites > 0`
  *   - bannière démontée (null) quand back online + queue vide
  *
- * Scénarios DIFFÉRÉS (cf. plans/MVP-V1-DECISIONS-PRISES.md > [JALON-1D.4]) :
+ * Scénarios DIFFÉRÉS (cf. docs/plans/MVP-V1-DECISIONS-PRISES.md > [JALON-1D.4]) :
  *   - (b) custom item offline : le flow `addItemToInventory` → `resolveContent`
  *     fait un round-trip Firestore qui peut se comporter de façon non-
  *     déterministe en offline (cache user vs. lecture fraîche). À tester

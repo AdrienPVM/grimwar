@@ -13,7 +13,7 @@ import { Icon } from './icon';
  * Coquille de navigation persistante — header sticky monté dans App.tsx,
  * visible sur toutes les routes.
  *
- * Fidélité prototype (`prototype/grimwar.html` lignes 122-150) :
+ * Fidélité prototype (`docs/prototype/grimwar.html` lignes 122-150) :
  *   - position sticky top 0, z-50
  *   - bg `rgba(8,6,14,0.6)` + backdrop-blur(30px) saturate(180%)
  *   - border-bottom blanc 8% + gradient pseudo-after subtil

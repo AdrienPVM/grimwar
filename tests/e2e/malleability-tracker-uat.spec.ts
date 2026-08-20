@@ -13,7 +13,7 @@ import {
 } from './seed-character';
 
 /**
- * UAT — M2, M3, M5 et M7 de `plans/AUDIT-MALLEABILITE-2026-08.md` : le tracker
+ * UAT — M2, M3, M5 et M7 de `docs/plans/AUDIT-MALLEABILITE-2026-08.md` : le tracker
  * de combat devient éditable et réparable.
  *
  * Ce que ces captures montrent et que les tests unitaires ne montrent pas : la

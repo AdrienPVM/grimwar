@@ -27,7 +27,7 @@ import {
  *      (`addClassSubChoices` du level-up draft, schéma livré 2D.3 — UI 2D.4b).
  *
  * Le test pin l'interprétation SRD 2024 LOCKED par
- * `plans/2D-MULTICLASS-AUDIT.md > Gap 5` : les sous-choix L1 d'une classe
+ * `docs/plans/2D-MULTICLASS-AUDIT.md > Gap 5` : les sous-choix L1 d'une classe
  * ajoutée en multiclass sont IDENTIQUES à ceux d'un personnage primaire L1
  * de cette classe. Toute divergence future devra mettre à jour ce test.
  */

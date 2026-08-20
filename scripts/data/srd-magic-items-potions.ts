@@ -5,7 +5,7 @@
  *   - EN : `content-sources/extracted/raw/SRD_CC_v5.2.1.txt` lignes 23671-23845
  *   - FR : `content-sources/extracted/raw/FR_SRD_CC_v5.2.1.txt` lignes 28067-28246
  *
- * Cf. plan `plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.1).
+ * Cf. plan `docs/plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.1).
  *
  * Politique :
  *   - Le `magicDescription` reprend la formulation officielle SRD FR (PDF FR CC v5.2.1).

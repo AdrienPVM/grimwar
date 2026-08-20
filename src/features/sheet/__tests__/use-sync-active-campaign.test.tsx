@@ -31,7 +31,7 @@ function campaignOf(id: string, settings: CampaignSettings): Campaign {
 }
 
 /**
- * Garde-fou `plans/DEBT.md > D27` — la campagne active ne doit JAMAIS retomber
+ * Garde-fou `docs/plans/DEBT.md > D27` — la campagne active ne doit JAMAIS retomber
  * transitoirement à `null` pendant que la fiche du propriétaire reste montée
  * (re-sync de migration v1→v2, double-invoke StrictMode). Sinon une action de
  * jeu tombant dans cette fenêtre verrait `activeCampaignId === null` et

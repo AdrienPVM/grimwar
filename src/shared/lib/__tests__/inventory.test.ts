@@ -87,7 +87,7 @@ describe('inventory — strict items DB', () => {
   });
 
   it("addItemToInventory n'écrit PAS la clé contentSource quand scopeId est undefined (Firestore strict)", async () => {
-    // Régression de plans/DEBT.md > D3 bug #1 : Firestore rejette les champs
+    // Régression de docs/plans/DEBT.md > D3 bug #1 : Firestore rejette les champs
     // `undefined` en mode strict. Pour scope='public' (cas du wizard 100% du
     // temps), scopeId est undefined et la clé doit être ABSENTE de l'objet,
     // pas posée à undefined. Sinon setDoc crash.

@@ -380,7 +380,7 @@ export async function buildCharacterFromWizard(
     currentConcentration: null,
     classResources: {},
     // Emplacements de sort initialisés à PLEIN dès la création (cf.
-    // `plans/DEBT.md > D28`). Avant ce fix, ce champ valait `{}` et seul un
+    // `docs/plans/DEBT.md > D28`). Avant ce fix, ce champ valait `{}` et seul un
     // level-up le peuplait : un caster fraîchement créé ne pouvait lancer AUCUN
     // sort à emplacement (bouton « Lancer » désactivé). Un Occultiste pur reçoit
     // `{}` ici (pact magic hors table unifiée — chantier dédié) ; les

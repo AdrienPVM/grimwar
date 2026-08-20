@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "source": "socle/STRUCTURE-CIBLE.md, section 1",
+  "projet": "grimwar",
+  "racine": {
+    "fichiersAutorises": [
+      "README.md",
+      "CLAUDE.md",
+      "LICENSE",
+      "package.json",
+      "package-lock.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "tsconfig*.json",
+      "vite.config.*",
+      "vitest.config.*",
+      "playwright*.config.*",
+      "eslint.config.*",
+      "biome.json",
+      "postcss.config.*",
+      "tailwind.config.*",
+      "stylelint.config.*",
+      "turbo.json",
+      ".prettierrc",
+      ".prettierignore",
+      ".gitignore",
+      ".gitattributes",
+      ".nvmrc",
+      ".npmrc",
+      ".env.example",
+      "index.html"
+    ],
+    "repertoiresAutorises": [
+      "src",
+      "apps",
+      "packages",
+      "public",
+      "docs",
+      "scripts",
+      "tests",
+      "e2e",
+      ".github",
+      ".claude",
+      ".vscode",
+      "supabase",
+      "functions",
+      "src-tauri",
+      "mobile"
+    ],
+    "toujoursTolere": [
+      ".git",
+      "node_modules",
+      ".mesures"
+    ]
+  },
+  "supplementsDeclares": {
+    ".gsd": "les écrits du moteur GSD arrêté, aucun suivi. On ne supprime pas un markdown de .gsd.",
+    ".env.local": "secret local, jamais suivi, déjà ignoré.",
+    ".firebaserc": "déclaration de projet Firebase, imposée à la racine.",
+    ".firebaserc.example": "le gabarit de la précédente, le seul des deux qui se commite utilement.",
+    ".githooks": "crochets git versionnés, un fichier suivi.",
+    "firebase.json": "déclaration Firebase, imposée à la racine.",
+    "firestore.rules": "règles Firestore, imposées à la racine.",
+    "firestore.indexes.json": "déclaration d'index Firestore, imposée à la racine.",
+    "content-sources": "1,1 Go de matière PREMIÈRE : PDF sources, extractions, aidedd. Quatre .gitkeep suivis, le reste ignoré. Reconstructible par AUCUNE commande, c'est du téléchargement. Verdict garder, jamais ignorer.",
+    "tsconfig.node.json": "seconde configuration TypeScript, imposée à la racine par Vite."
+  },
+  "adressesUniques": {
+    ".mesures": "toute sortie d'instrument : capture, rapport, trace, HAR, PDF, journal de campagne. Ignorée par git, effaçable à tout moment sans rien perdre.",
+    "docs": "tout markdown durable qui n'est ni README.md ni CLAUDE.md.",
+    "scripts": "les seuls scripts référencés par un package.json."
+  },
+  "markdown": {
+    "racineAutorisee": [
+      "README.md",
+      "CLAUDE.md"
+    ],
+    "repertoiresAutorises": [
+      "docs",
+      ".claude",
+      ".github",
+      ".gsd",
+      "site"
+    ],
+    "nomsAutorisesPartout": [
+      "README.md",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "SKILL.md",
+      "CHANGELOG.md"
+    ]
+  },
+  "nomsRefuses": [
+    "*-v2.*",
+    "*-old.*",
+    "*-copy.*",
+    "*.bak",
+    "*-tmp.*",
+    "temp-*",
+    "tmp-*",
+    "nouveau-*",
+    "untitled*",
+    "final*",
+    "*-final.*",
+    "*-t[0-9]*",
+    "*-s[0-9]*",
+    "*-m[0-9]*"
+  ],
+  "nomsRefusesMotif": "Un instrument se nomme par ce qu'il mesure, jamais par l'occasion qui l'a fait naître.",
+  "exceptionsDeNom": [
+    "*.config.*",
+    "tests/**",
+    "docs/**",
+    ".gsd/**",
+    "scripts/**",
+    "src/**",
+    "**/*.spec.*",
+    "**/*.test.*"
+  ],
+  "exceptionsDeNomMotif": "Les épreuves et les écrits déjà en place portent des noms de tranche par héritage. Le renommage des instruments est fait, celui des épreuves est un chantier à part."
+}

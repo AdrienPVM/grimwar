@@ -10,7 +10,7 @@ import { SpellsStep } from '../spells-step';
 /**
  * Test correctif — bloquant UAT plan 05 « Page Sorts VIDE pour les lanceurs ».
  *
- * Cause racine confirmée (cf. plans/DEBT.md > D7) : le cache Dexie public servait
+ * Cause racine confirmée (cf. docs/plans/DEBT.md > D7) : le cache Dexie public servait
  * un `spells.json` en classes FR (`['magicien']`) hydraté avant la régénération
  * du bundle en EN canonique. Le TTL 7j ne se sentait pas concerné, aucun
  * mécanisme d'invalidation par version n'existait, donc le wizard filtrait des

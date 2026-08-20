@@ -11,7 +11,7 @@ import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
  * sous-classes). Sans cette primitive, chaque call site UI orchestrerait
  * lui-même le merge — duplication et dérive garanties.
  *
- * Politique d'override (cf. plans/2A-AGNOSTIC-SOURCE-INVENTORY.md § 2.3) :
+ * Politique d'override (cf. docs/plans/2A-AGNOSTIC-SOURCE-INVENTORY.md § 2.3) :
  *   campaign > user > public
  *
  * Sur conflit d'id : l'entrée du scope prioritaire remplace la moins
