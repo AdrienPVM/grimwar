@@ -39,7 +39,7 @@ describe('buildAncestryFromDraft', () => {
       traits: [],
       languages: [],
       options: {},
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -187,7 +187,7 @@ describe('draftFromAncestry', () => {
         ],
       },
       commonSpellIds: ['thaumaturgie'],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.id).toBe('peuple-des-brumes');
     expect(draft.nameEn).toBe('Mistfolk');
@@ -220,7 +220,7 @@ describe('draftFromAncestry', () => {
           },
         ],
       },
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.dragonAncestries[0]?.damageType).toBe('fire');
   });

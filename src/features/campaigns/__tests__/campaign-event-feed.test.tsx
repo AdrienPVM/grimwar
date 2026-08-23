@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Membership } from '@/shared/types/campaign';
@@ -20,6 +20,9 @@ const nameHolder: { names: Record<string, string> } = { names: {} };
 vi.mock('../use-linked-character-names', () => ({
   useLinkedCharacterNames: () => nameHolder.names,
 }));
+
+const deleteEventMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+vi.mock('@/shared/lib/event-logger', () => ({ deleteEvent: deleteEventMock }));
 
 import { CampaignEventFeed } from '../campaign-event-feed';
 
@@ -52,6 +55,7 @@ afterEach(() => {
   feedHolder.isLoading = false;
   feedHolder.error = null;
   nameHolder.names = {};
+  deleteEventMock.mockClear();
 });
 
 function renderFeed(
@@ -250,5 +254,27 @@ describe('<CampaignEventFeed>', () => {
     expect(within(dialog).getByText('Meneur')).toBeInTheDocument();
     expect(within(dialog).getByText('Total')).toBeInTheDocument();
     expect(within(dialog).getByText('17')).toBeInTheDocument();
+  });
+  // ─── M9 — retirer un événement du journal (rule déjà déployée) ──────────
+  it('le MJ retire un événement à deux temps (confirmation avant suppression)', async () => {
+    feedHolder.events = [mkEvent({ id: 'e-oops', payload: { label: 'Jet parasite' } })];
+    renderFeed({ isDM: true });
+    fireEvent.click(screen.getByRole('button', { name: /Voir le détail de l’événement/ }));
+
+    // Premier tap : on arme, on ne supprime pas.
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer du journal' }));
+    expect(deleteEventMock).not.toHaveBeenCalled();
+
+    // Second tap : suppression réelle, et la modale se referme.
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer le retrait' }));
+    expect(deleteEventMock).toHaveBeenCalledWith('c-1', 'e-oops');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('un joueur ne voit AUCUN bouton de retrait', () => {
+    feedHolder.events = [mkEvent({ id: 'e1' })];
+    renderFeed({ isDM: false, viewerUid: 'p-1', myCharacterIds: ['char-1'] });
+    fireEvent.click(screen.getByRole('button', { name: /Voir le détail de l’événement/ }));
+    expect(screen.queryByRole('button', { name: 'Retirer du journal' })).toBeNull();
   });
 });

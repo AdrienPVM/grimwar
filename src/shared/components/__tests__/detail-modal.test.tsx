@@ -318,6 +318,18 @@ describe('DetailModal — gabarit responsive (size) + ancrage mobile', () => {
     expect(cls).toContain('lg:max-w-[760px]');
   });
 
+  it('size="xl" : pleine largeur mobile, jusqu’à 1000px sur desktop (Codex)', () => {
+    render(
+      <DetailModal open onClose={() => {}} titleId="t" size="xl">
+        <h2 id="t">Titre</h2>
+      </DetailModal>,
+    );
+    const cls = panelClassName();
+    // Pas de plafond mobile : une liste filtrable a besoin de toute la largeur.
+    expect(cls).toContain('max-w-none');
+    expect(cls).toContain('lg:max-w-[1000px]');
+  });
+
   it('backdrop ancré bottom-sheet sur mobile, recentré dès sm', () => {
     render(
       <DetailModal open onClose={() => {}} titleId="t">
@@ -327,5 +339,93 @@ describe('DetailModal — gabarit responsive (size) + ancrage mobile', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog.className).toMatch(/\bitems-end\b/);
     expect(dialog.className).toMatch(/\bsm:items-center\b/);
+  });
+});
+
+/**
+ * Pile de modales — prérequis du Codex en superposition (E6).
+ *
+ * Le Codex consultable en pleine partie est une modale QUI CONTIENT les
+ * navigateurs du Codex, lesquels ouvrent leur propre modale de détail (sort,
+ * monstre, état). C'est la première imbrication réelle de l'app.
+ *
+ * Rouge avant vert : les deux modales posent leur écouteur `keydown` sur
+ * `window`. Le `e.stopPropagation()` de l'écouteur interne n'y change rien —
+ * `stopPropagation` empêche la propagation vers d'AUTRES cibles, pas vers les
+ * autres écouteurs de la MÊME cible (il faudrait `stopImmediatePropagation`, et
+ * l'ordre d'appel resterait celui de l'enregistrement, donc l'extérieur d'abord).
+ * Sur le code d'avant, Échap fermait donc les deux d'un coup : on relisait la
+ * règle d'un état, on appuyait sur Échap, et on se retrouvait éjecté du Codex.
+ */
+describe('DetailModal — imbrication (modale du dessus)', () => {
+  /**
+   * Reproduit le vrai flux, et non un rendu simultané : la modale extérieure
+   * (le Codex) est déjà à l'écran, puis l'utilisateur ouvre un détail depuis
+   * son contenu. C'est l'ordre d'ouverture réel qui décide qui est au-dessus.
+   */
+  function CodexWithDetail({
+    onOuterClose,
+    onInnerClose,
+  }: {
+    onOuterClose: () => void;
+    onInnerClose: () => void;
+  }): JSX.Element {
+    const [detailOpen, setDetailOpen] = useState<boolean>(false);
+    return (
+      <DetailModal open onClose={onOuterClose} titleId="outer">
+        <h2 id="outer">Codex</h2>
+        <button type="button" onClick={() => setDetailOpen(true)}>
+          Ouvrir le détail
+        </button>
+        <DetailModal
+          open={detailOpen}
+          onClose={() => {
+            setDetailOpen(false);
+            onInnerClose();
+          }}
+          titleId="inner"
+        >
+          <h2 id="inner">Détail</h2>
+        </DetailModal>
+      </DetailModal>
+    );
+  }
+
+  it('Échap ne ferme que la modale du dessus', () => {
+    const onOuterClose = vi.fn();
+    const onInnerClose = vi.fn();
+    render(<CodexWithDetail onOuterClose={onOuterClose} onInnerClose={onInnerClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir le détail' }));
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(onInnerClose).toHaveBeenCalledTimes(1);
+    expect(onOuterClose).not.toHaveBeenCalled();
+  });
+
+  it('la modale du dessous reprend Échap une fois celle du dessus fermée', () => {
+    const onOuterClose = vi.fn();
+    render(<CodexWithDetail onOuterClose={onOuterClose} onInnerClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir le détail' }));
+
+    // 1er Échap : ferme le détail. 2e : le Codex redevient la modale du dessus.
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onOuterClose).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onOuterClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('une modale seule répond toujours à Échap', () => {
+    const onClose = vi.fn();
+    render(
+      <DetailModal open onClose={onClose} titleId="solo">
+        <h2 id="solo">Seule</h2>
+      </DetailModal>,
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

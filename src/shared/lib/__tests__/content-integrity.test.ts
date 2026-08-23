@@ -5,7 +5,7 @@ import { join } from 'node:path';
 /**
  * Test d'intégrité référentielle cross-bundle pour public/data/*.json.
  *
- * Pourquoi : plans/DEBT.md > D3 bug #2 a révélé que `spell.classes[*]` était
+ * Pourquoi : docs/plans/DEBT.md > D3 bug #2 a révélé que `spell.classes[*]` était
  * en FR tandis que `classes.json[*].id` était en EN. La triple gate était
  * verte (Zod valide chaque entité isolément) mais le filtre runtime
  * `spell.classes.includes(class.id)` ne matchait jamais. Cette classe de

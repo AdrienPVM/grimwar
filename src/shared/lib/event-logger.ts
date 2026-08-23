@@ -1,4 +1,12 @@
-import { addDoc, collection, doc, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  increment,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
 
 import { diffCharacterEvents } from '@/shared/lib/character-diff';
 import type { RollKind, RollResult } from '@/shared/lib/dice/types';
@@ -6,7 +14,7 @@ import { getDb } from '@/shared/lib/firebase';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 import { useAuthStore } from '@/shared/lib/slices/auth-slice';
 import type { Character } from '@/shared/types/character';
-import type { NewGameEvent } from '@/shared/types/event';
+import type { EventVisibility, NewGameEvent } from '@/shared/types/event';
 
 /**
  * Point d'entrée UNIQUE du journal d'événements (docs/EVENT-LOG.md).
@@ -32,16 +40,20 @@ import type { NewGameEvent } from '@/shared/types/event';
  * ne sont volontairement PAS comptés dans `trackPendingWrite` — on ne couple
  * pas l'indicateur de synchro à de la journalisation d'arrière-plan.
  */
-async function writeEvent(input: NewGameEvent): Promise<boolean> {
+async function writeEvent(input: NewGameEvent, campaignIdOverride?: string): Promise<boolean> {
   const { activeCampaignId, activeSessionId, activeEncounterId } =
     useActiveCampaignStore.getState();
-  if (!activeCampaignId) return false; // pas de campagne active → no-op
+  // Le store est renseigné par l'écran de FICHE. Un MJ agissant depuis l'écran
+  // de campagne (jet secret) n'a pas de fiche active : il passe sa campagne
+  // explicitement plutôt que d'aller polluer le pointeur de jeu.
+  const campaignId = campaignIdOverride ?? activeCampaignId;
+  if (!campaignId) return false; // pas de campagne cible → no-op
   const uid = useAuthStore.getState().user?.uid;
   if (!uid) return false; // pas d'utilisateur → écriture impossible (rule actorUserId)
 
   try {
     const db = getDb();
-    await addDoc(collection(db, 'campaigns', activeCampaignId, 'events'), {
+    await addDoc(collection(db, 'campaigns', campaignId, 'events'), {
       kind: input.kind,
       actorUserId: uid,
       actorCharacterId: input.actorCharacterId,
@@ -65,11 +77,14 @@ async function writeEvent(input: NewGameEvent): Promise<boolean> {
  * le total et les flags crit/fumble/avantage — le compilateur de journal
  * (plan 25) distingue les tables physiques pour la couleur narrative.
  */
-export async function logRoll(result: RollResult): Promise<void> {
+export async function logRoll(
+  result: RollResult,
+  visibility: EventVisibility = 'all',
+): Promise<void> {
   const written = await writeEvent({
     kind: 'roll',
     actorCharacterId: result.characterId || null,
-    visibility: 'all',
+    visibility,
     payload: {
       label: result.label,
       rollKind: result.kind,
@@ -383,11 +398,219 @@ export async function logMonsterHpChange(
 }
 
 /**
+ * Journalise un jet secret du MJ (kind `dm-secret-roll`, visibilité `dm`).
+ *
+ * Le kind était déclaré au schéma, documenté dans EVENT-LOG.md, et TOUT le côté
+ * lecteur était déjà écrit (`event-line.ts` : résumé + détail). Seul l'écrivain
+ * manquait — le jet vivait dans un `useState` plafonné à cinq entrées, perdu au
+ * démontage de l'écran. Un MJ ne pouvait donc pas retrouver, dix minutes plus
+ * tard, ce qu'il avait lancé derrière son paravent.
+ *
+ * `visibility` est un paramètre plutôt qu'une constante : « Révéler » re-log le
+ * même jet en `'all'` (les events sont immuables — `firestore.rules` : `allow
+ * update: if false`), ce qui est le chemin honnête pour dévoiler après coup.
+ *
+ * `label` est le champ libre « à propos de quoi ? » du MJ (« Perception du
+ * garde »). Vide ⇒ `null`, le lecteur affichera juste le total.
+ */
+export async function logSecretRoll(
+  campaignId: string,
+  meta: {
+    label: string | null;
+    face: number;
+    modifier: number;
+    total: number;
+    advantage: 'normal' | 'advantage' | 'disadvantage';
+    visibility?: 'dm' | 'all';
+  },
+): Promise<boolean> {
+  return writeEvent(
+    {
+      kind: 'dm-secret-roll',
+      actorCharacterId: null,
+      visibility: meta.visibility ?? 'dm',
+      payload: {
+        label: meta.label,
+        keptFaces: [meta.face],
+        rawFaces: [meta.face],
+        modifier: meta.modifier,
+        total: meta.total,
+        crit: meta.face === 20,
+        fumble: meta.face === 1,
+        advantage: meta.advantage,
+      },
+    },
+    campaignId,
+  );
+}
+
+/**
+ * Retire un événement du journal (M9 de l'audit de malléabilité).
+ *
+ * La rule était déployée depuis l'origine (`allow delete: if isDMOf`) sans
+ * aucun appelant : un jet lancé par erreur en pleine scène restait dans le
+ * récit pour toujours. Contrairement aux `log*`, cette fonction N'AVALE PAS ses
+ * erreurs — l'appelant est un geste utilisateur explicite, qui doit savoir si
+ * le retrait a échoué (permission perdue, event déjà supprimé).
+ *
+ * `campaignId` est explicite plutôt que lu dans le store : le MJ retire un
+ * event depuis le feed d'une campagne qu'il consulte, sans forcément y avoir
+ * une fiche active.
+ */
+export async function deleteEvent(campaignId: string, eventId: string): Promise<void> {
+  const db = getDb();
+  await deleteDoc(doc(db, 'campaigns', campaignId, 'events', eventId));
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Jalons de vie du personnage (M44)
+//
+// Ces quatre kinds étaient déclarés au schéma ET documentés avec leur payload
+// dans EVENT-LOG.md depuis l'origine, mais aucun logger ne les écrivait : le
+// journal d'une séance pouvait raconter chaque point de vie perdu sans jamais
+// mentionner qu'un personnage était monté de niveau, mort, ou revenu. Ce sont
+// pourtant les seules lignes qu'on relit six mois plus tard.
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Journalise une montée de niveau (kind `level-up`, visibilité `all`).
+ *
+ * Appelé par `useLevelUp` APRÈS l'écriture du patch — le call site portait
+ * jusqu'ici un commentaire « différé au plan 18 ». Le patch de montée de niveau
+ * passe en `log: 'manual'` précisément pour que l'auto-diff ne noie pas ce
+ * jalon sous un flot de `slot-restored` / `hp-change` : cet événement-ci est le
+ * seul qui doive rester.
+ *
+ * `newTotalLevel` est le niveau TOTAL après coup, `classLevel` le niveau dans la
+ * classe montée — un multiclassé qui prend son 1er niveau de Roublard passe au
+ * total 5 et au Roublard 1, et les deux comptent dans le récit.
+ */
+export async function logLevelUp(
+  characterId: string,
+  meta: {
+    newTotalLevel: number;
+    classId: string;
+    className: string;
+    classLevel: number;
+    /** `true` quand ce niveau ouvre une nouvelle classe (multiclassage). */
+    isNewClass: boolean;
+  },
+): Promise<void> {
+  await writeEvent({
+    kind: 'level-up',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: {
+      newLevel: meta.newTotalLevel,
+      classId: meta.classId,
+      className: meta.className,
+      classLevel: meta.classLevel,
+      isNewClass: meta.isNewClass,
+    },
+  });
+}
+
+/**
+ * Journalise un gain (ou un retrait) d'XP (kind `xp-gain`, visibilité `all`).
+ *
+ * `delta` peut être négatif : le meneur corrige une attribution, et le journal
+ * doit pouvoir le dire plutôt que de laisser un total sauter sans explication.
+ * `total` est la valeur APRÈS coup — c'est elle qu'on relit dans le récit.
+ */
+export async function logXpGain(
+  characterId: string,
+  delta: number,
+  total: number,
+): Promise<void> {
+  await writeEvent({
+    kind: 'xp-gain',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { delta, total },
+  });
+}
+
+/**
+ * Journalise la mort d'un personnage (kind `death`, visibilité `all`).
+ *
+ * `cause` reste volontairement grossier (`'death-saves'` = trois échecs de
+ * sauvegarde, `'dm'` = décidé par le meneur). EVENT-LOG.md prévoit un `causeRef`
+ * pointant la créature responsable ; on ne l'écrit pas tant que rien ne le
+ * connaît au call site — mieux vaut un champ absent qu'un champ faux.
+ */
+export async function logDeath(
+  characterId: string,
+  cause: 'death-saves' | 'dm',
+): Promise<void> {
+  await writeEvent({
+    kind: 'death',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { cause },
+  });
+}
+
+/**
+ * Journalise un retour à la vie (kind `revival`, visibilité `all`).
+ *
+ * `source` distingue les deux chemins qui existent réellement : le 20 naturel
+ * en sauvegarde de mort (le personnage se relève seul à 1 PV) et le bouton
+ * « Ressusciter » du meneur. `writeEvent` pose déjà `actorUserId` — inutile de
+ * dupliquer le `revivedByDmUserId` d'EVENT-LOG.md dans le payload.
+ */
+export async function logRevival(
+  characterId: string,
+  source: 'nat20' | 'dm',
+): Promise<void> {
+  await writeEvent({
+    kind: 'revival',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: { source },
+  });
+}
+
+/**
+ * Journalise un repos (kind `rest`, visibilité `all`).
+ *
+ * Le payload porte le bilan chiffré déjà calculé par `applyShortRest` /
+ * `applyLongRest` pour le toast — le journal peut donc dire « la troupe se
+ * repose, Astrid récupère 12 PV » sans relire la fiche. Les champs sont
+ * optionnels : un repos court sans dé de vie dépensé ne soigne rien.
+ */
+export async function logRest(
+  characterId: string,
+  type: 'short' | 'long',
+  summary: { hpHealed?: number; resourcesReset?: number } = {},
+): Promise<void> {
+  await writeEvent({
+    kind: 'rest',
+    actorCharacterId: characterId,
+    targetCharacterId: characterId,
+    visibility: 'all',
+    payload: {
+      type,
+      // Un repos court ne soigne pas (`applyShortRest` ne touche pas aux PV) —
+      // le champ vaut alors 0, ce qui est la vérité et non un trou.
+      hpHealed: summary.hpHealed ?? 0,
+      resourcesReset: summary.resourcesReset ?? 0,
+    },
+  });
+}
+
+/**
  * Back-compat : le pivot de dés (plan 12 / 12.5) appelle ce nom depuis quatre
  * call sites. C'était un stub no-op ; il délègue maintenant au vrai `logRoll`.
  */
-export async function logRollIfCampaign(result: RollResult): Promise<void> {
-  await logRoll(result);
+export async function logRollIfCampaign(
+  result: RollResult,
+  visibility: EventVisibility = 'all',
+): Promise<void> {
+  await logRoll(result, visibility);
 }
 
 /**

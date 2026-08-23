@@ -11,7 +11,10 @@ vi.mock('../firebase', () => ({
 
 import { collection, getDocs } from 'firebase/firestore';
 
-import { loadUserPacksEntries } from '../load-user-packs-entries';
+import {
+  loadUserPacksEntries,
+  loadUserPacksEntriesScoped,
+} from '../load-user-packs-entries';
 
 const mockedGetDocs = vi.mocked(getDocs);
 const mockedCollection = vi.mocked(collection);
@@ -258,5 +261,68 @@ describe('loadUserPacksEntries', () => {
     ]);
 
     expect(mockedGetDocs).toHaveBeenCalledTimes(2);
+  });
+});
+
+/**
+ * M53 — la provenance déclarée sur le pack doit suivre chaque entrée jusqu'à
+ * l'écran. Rouge avant vert : la variante scopée n'existait pas, les entrées
+ * sortaient nues.
+ */
+describe('loadUserPacksEntriesScoped — provenance du pack', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('rend `meta.sourceLabel` comme provenance de chaque entrée du pack', async () => {
+    mockedGetDocs.mockResolvedValueOnce(
+      makeSnapshot([
+        {
+          id: 'pack-a',
+          data: () => ({
+            meta: { name: { fr: 'Mon pack' }, sourceLabel: 'Xanathar' },
+            entities: { spells: [spell('fire-a', 'Feu A')] },
+          }),
+        },
+      ]) as never,
+    );
+
+    const entries = await loadUserPacksEntriesScoped('spells', 'user-1');
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0]!.originLabel).toBe('Xanathar');
+  });
+
+  it('retombe sur le nom du pack quand aucune provenance n’est déclarée', async () => {
+    mockedGetDocs.mockResolvedValueOnce(
+      makeSnapshot([
+        {
+          id: 'pack-a',
+          data: () => ({
+            meta: { name: { fr: 'Le bestiaire de Jean' } },
+            entities: { spells: [spell('fire-a', 'Feu A')] },
+          }),
+        },
+      ]) as never,
+    );
+
+    const entries = await loadUserPacksEntriesScoped('spells', 'user-1');
+
+    expect(entries[0]!.originLabel).toBe('Le bestiaire de Jean');
+  });
+
+  it('laisse la provenance absente sur un pack sans méta (packs d’avant M53)', async () => {
+    mockedGetDocs.mockResolvedValueOnce(
+      makeSnapshot([
+        {
+          id: 'pack-a',
+          data: () => ({ entities: { spells: [spell('fire-a', 'Feu A')] } }),
+        },
+      ]) as never,
+    );
+
+    const entries = await loadUserPacksEntriesScoped('spells', 'user-1');
+
+    expect(entries[0]!.originLabel).toBeUndefined();
   });
 });

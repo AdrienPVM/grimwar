@@ -164,6 +164,21 @@ function hasCanvas2d(): boolean {
   }
 }
 
+/**
+ * Source dessinable : un `HTMLImageElement` (chemin historique) ou un
+ * `ImageBitmap` (chemin réduit-au-décodage, cf. `decodeSource`). Les deux
+ * exposent `width`/`height` et sont acceptés par `drawImage`.
+ */
+type DecodedSource = HTMLImageElement | ImageBitmap;
+
+/** Dimensions naturelles, quel que soit le type de source décodée. */
+function sourceSize(src: DecodedSource): { w: number; h: number } {
+  if (src instanceof HTMLImageElement) {
+    return { w: src.naturalWidth || src.width, h: src.naturalHeight || src.height };
+  }
+  return { w: src.width, h: src.height };
+}
+
 /** Décode une data URL en HTMLImageElement (rejette si le décodage échoue). */
 function decodeImage(dataUrl: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -175,9 +190,61 @@ function decodeImage(dataUrl: string): Promise<HTMLImageElement> {
   });
 }
 
+/**
+ * Décode en réduisant DÈS le décodage quand le navigateur le permet.
+ *
+ * Pourquoi : un fond de carte `.dd2vtt` réel fait 8320 × 5760 px, soit ~190 Mo
+ * une fois décodé en RVBA — pour n'en garder ensuite que 2048 px de large. Un
+ * `HTMLImageElement` matérialise cette surface entière ; `createImageBitmap`
+ * avec `resizeWidth`/`resizeHeight` laisse le décodeur réduire au vol et ne rend
+ * que la surface utile. C'est la différence entre « ça passe » et « l'onglet
+ * meurt » sur un téléphone, et l'app doit tourner sur un téléphone dans une
+ * grotte.
+ *
+ * Le côté de référence dépend du RECADRAGE, sous peine de rétrécir ce qu'on
+ * voulait garder net : en `crop: 'none'` c'est le PLUS GRAND côté qui doit
+ * atteindre `maxDim` (l'image entière est conservée) ; en `crop: 'square'` c'est
+ * le PLUS PETIT, puisque le carré central y est découpé — pré-réduire sur le
+ * grand côté livrerait un portrait plus petit que demandé. Jamais d'agrandissement.
+ * Repli silencieux sur l'`HTMLImageElement` si l'API manque ou refuse le format.
+ */
+async function decodeSource(
+  dataUrl: string,
+  crop: CropMode,
+  maxDim: number,
+): Promise<DecodedSource> {
+  if (typeof createImageBitmap !== 'function' || typeof fetch !== 'function') {
+    return decodeImage(dataUrl);
+  }
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    // Un premier bitmap non redimensionné sert uniquement à connaître les
+    // dimensions natives ; il est libéré aussitôt. Sans lui, impossible de
+    // savoir s'il faut réduire — et demander une réduction vers une taille
+    // supérieure à la source agrandirait l'image.
+    const probe = await createImageBitmap(blob);
+    const reference =
+      crop === 'square'
+        ? Math.min(probe.width, probe.height)
+        : Math.max(probe.width, probe.height);
+    if (reference <= maxDim) return probe;
+
+    const scale = maxDim / reference;
+    const resized = await createImageBitmap(blob, {
+      resizeWidth: Math.max(1, Math.round(probe.width * scale)),
+      resizeHeight: Math.max(1, Math.round(probe.height * scale)),
+      resizeQuality: 'high',
+    });
+    probe.close();
+    return resized;
+  } catch {
+    return decodeImage(dataUrl);
+  }
+}
+
 /** Géométrie source→cible selon le mode de recadrage, sans jamais agrandir. */
 function computeDraw(
-  img: HTMLImageElement,
+  img: DecodedSource,
   crop: CropMode,
   dim: number,
 ): {
@@ -188,8 +255,7 @@ function computeDraw(
   dw: number;
   dh: number;
 } {
-  const natW = img.naturalWidth || img.width;
-  const natH = img.naturalHeight || img.height;
+  const { w: natW, h: natH } = sourceSize(img);
   if (crop === 'square') {
     const side = Math.min(natW, natH);
     const target = Math.min(dim, side);
@@ -216,7 +282,7 @@ function computeDraw(
 
 /** Une passe de rendu : recadre, réduit, ré-encode (webp, jpeg en repli). */
 function drawToDataUrl(
-  img: HTMLImageElement,
+  img: DecodedSource,
   crop: CropMode,
   dim: number,
   quality: number,
@@ -263,7 +329,7 @@ export async function optimizeDataUrl(
     );
   }
 
-  const img = await decodeImage(dataUrl);
+  const img = await decodeSource(dataUrl, opts.crop, opts.maxDim);
   let state = { dim: opts.maxDim, quality: opts.startQuality };
   let best = drawToDataUrl(img, opts.crop, state.dim, state.quality);
   let bestSize = dataUrlByteSize(best.dataUrl);
@@ -277,6 +343,10 @@ export async function optimizeDataUrl(
     best = drawToDataUrl(img, opts.crop, state.dim, state.quality);
     bestSize = dataUrlByteSize(best.dataUrl);
   }
+
+  // Un ImageBitmap retient sa surface décodée jusqu'à `close()` : sans ça, le
+  // fond de carte resterait en mémoire bien après l'import.
+  if (!(img instanceof HTMLImageElement)) img.close();
 
   return {
     dataUrl: best.dataUrl,

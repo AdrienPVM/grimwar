@@ -46,7 +46,7 @@ describe('buildMonsterFromDraft', () => {
     expect(m.acDetail).toBeNull();
     expect(m.reactions).toBeNull();
     expect(m.legendaryActions).toBeNull();
-    expect(m.source).toBe('aidedd-homebrew');
+    expect(m.source).toBe('custom');
   });
 
   it('inclut les vitesses + sens optionnels quand les toggles sont actifs', () => {

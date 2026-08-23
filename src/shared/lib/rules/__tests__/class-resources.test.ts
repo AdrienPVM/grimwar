@@ -4,6 +4,7 @@ import type { Character } from '../../../types/character';
 import type { ClassEntity } from '../../../types/content';
 import {
   currentResourceValue,
+  effectiveResourceMax,
   deriveClassResourcePools,
   resourceStorageKey,
 } from '../class-resources';
@@ -202,13 +203,41 @@ describe('currentResourceValue', () => {
     expect(currentResourceValue(spent, pool)).toBe(1);
   });
 
-  it('cape au max courant si le stocké le dépasse (défensif)', () => {
-    const stale = buildCharacter({
+  /**
+   * Un max stocké SUPÉRIEUR au dérivé n'est pas une donnée périmée : c'est un
+   * maximum ACCORDÉ (« le pacte lui donne une Rage de plus »). Il était jusqu'ici
+   * rabattu à la lecture et réécrit à chaque dépense — donc perdu au premier « − ».
+   */
+  it('respecte un maximum accordé au-dessus de la progression', () => {
+    const granted = buildCharacter({
       classes: [classEntry('barbarian', 3)],
       classResources: {
-        [resourceStorageKey('barbarian', 'rage')]: { current: 9, max: 9, restoresOn: 'long' },
+        [resourceStorageKey('barbarian', 'rage')]: { current: 4, max: 4, restoresOn: 'long' },
       },
     });
-    expect(currentResourceValue(stale, pool)).toBe(3);
+    expect(effectiveResourceMax(granted, pool)).toBe(4);
+    expect(currentResourceValue(granted, pool)).toBe(4);
+  });
+
+  it('ne descend JAMAIS sous la progression de classe', () => {
+    // Un vieux document porte un max plus petit : la montée de niveau doit
+    // continuer d'élargir la réserve.
+    const outdated = buildCharacter({
+      classes: [classEntry('barbarian', 3)],
+      classResources: {
+        [resourceStorageKey('barbarian', 'rage')]: { current: 1, max: 2, restoresOn: 'long' },
+      },
+    });
+    expect(effectiveResourceMax(outdated, pool)).toBe(3);
+  });
+
+  it('cape la valeur COURANTE au maximum effectif', () => {
+    const overfull = buildCharacter({
+      classes: [classEntry('barbarian', 3)],
+      classResources: {
+        [resourceStorageKey('barbarian', 'rage')]: { current: 9, max: 4, restoresOn: 'long' },
+      },
+    });
+    expect(currentResourceValue(overfull, pool)).toBe(4);
   });
 });

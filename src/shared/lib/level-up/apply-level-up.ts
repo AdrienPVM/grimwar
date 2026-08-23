@@ -7,7 +7,7 @@ import {
   resourceStorageKey,
 } from '../rules/class-resources';
 import {
-  casterLevel,
+  slotCasterLevel,
   spellSlotsForCasterLevel,
   type CasterClassEntry,
 } from '../rules/multiclass';
@@ -80,12 +80,22 @@ interface ApplyLevelUpParams {
    * progression d'incantation de chacune.
    */
   classDefinitions: Record<string, ClassEntity>;
+  /**
+   * Lève le refus sur prérequis multiclass non satisfaits (M25).
+   *
+   * Réservé à l'autorité du meneur (« je t'autorise un niveau de Paladin à 12
+   * en Charisme, c'est justifié ») : le défaut reste le refus, donc aucun
+   * appelant existant ne change de comportement. La table arbitre ses propres
+   * règles ; l'app ne doit pas être plus stricte qu'elle.
+   */
+  allowUnmetPrerequisites?: boolean;
 }
 
 export function applyLevelUp({
   character,
   draft,
   classDefinitions,
+  allowUnmetPrerequisites = false,
 }: ApplyLevelUpParams): Character {
   // Plafond SRD AVANT parse Zod : un perso à 20 ne lève plus, peu importe la
   // shape du brouillon. Vérifié d'abord parce que le schéma cappe `newClassLevel`
@@ -145,7 +155,7 @@ export function applyLevelUp({
   // JALON 2D.3 — Defense in depth : valide les prérequis multiclass aussi
   // côté pure-function (l'UI 2D.4 fait déjà le grisage, mais on défend les
   // appels programmatiques / tests / éventuels bypass UI).
-  if (isAddingNewClass) {
+  if (isAddingNewClass && !allowUnmetPrerequisites) {
     const eligibility = computeMulticlassEligibility(
       character,
       targetDef.multiclassPrerequisite ?? null,
@@ -226,7 +236,8 @@ export function applyLevelUp({
       progression: def?.spellcasting?.progression ?? null,
     };
   });
-  const unifiedLevel = casterLevel(casterEntries);
+  // Mono-classe ⇒ table de la classe ; multiclasse ⇒ règle d'addition (D30).
+  const unifiedLevel = slotCasterLevel(casterEntries);
   const slotMap = spellSlotsForCasterLevel(unifiedLevel);
   const nextSpellSlots: Character['spellSlots'] = { ...character.spellSlots };
   for (const lvl of [1, 2, 3, 4, 5, 6, 7, 8, 9] as const) {

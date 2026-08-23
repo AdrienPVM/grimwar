@@ -11,16 +11,27 @@ import type { Character } from '@/shared/types/character';
 
 interface CharacterCardProps {
   character: Character;
+  /**
+   * Nom de la campagne d'attache, résolu par l'appelant (E8 de l'audit UX).
+   * La carte ne lit pas Firestore elle-même : l'accueil charge la liste des
+   * campagnes une seule fois et distribue le nom, sinon chaque carte de la
+   * grille déclencherait son propre couple de requêtes.
+   */
+  campaignName?: string | null;
 }
 
 /**
  * Card de la grille library : tap → /character/{id}. Affiche emblème HP,
  * nom Cinzel Decorative, subtitle multi-class (« Magicien 5 / Roublard 2 »),
- * espèce, chip statut alive (or sourd) ou dead (crimson + label).
+ * espèce, chip statut alive (or sourd) ou dead (crimson + label), et le nom
+ * de la campagne d'attache quand il y en a une.
  *
  * Réutilise le pattern de subtitle multi-class de `hero-card.tsx` (plan 06).
  */
-export function CharacterCard({ character }: CharacterCardProps): JSX.Element {
+export function CharacterCard({
+  character,
+  campaignName = null,
+}: CharacterCardProps): JSX.Element {
   const navigate = useNavigate();
   const { data: classes } = useContent('classes');
   const { data: ancestries } = useContent('ancestries');
@@ -88,12 +99,28 @@ export function CharacterCard({ character }: CharacterCardProps): JSX.Element {
         <p className="mt-0.5 truncate font-serif text-meta italic text-text-tertiary">
           {ancestryName}
         </p>
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
           {isDead ? (
             <Chip variant="damage">{t('library.card.deadLabel')}</Chip>
           ) : (
             <Chip variant="gold">{t('library.card.aliveLabel')}</Chip>
           )}
+          {/* D-6 : avec plusieurs personnages, rien ne disait lequel appartenait
+              à quelle table. Le nom est tronqué plutôt que replié — la pastille
+              ne doit jamais pousser la carte hors de sa colonne de grille.
+              `truncate` va sur le SPAN interne : `text-overflow` ne s'applique
+              pas à un conteneur `inline-flex`, et le nom se faisait couper net,
+              sans points de suspension. */}
+          {campaignName ? (
+            <Chip
+              variant="default"
+              className="max-w-[12rem]"
+              title={campaignName}
+              aria-label={`${t('library.card.campaign')} ${campaignName}`}
+            >
+              <span className="min-w-0 truncate">{campaignName}</span>
+            </Chip>
+          ) : null}
         </div>
       </div>
     </GlassPanel>

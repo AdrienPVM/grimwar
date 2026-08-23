@@ -7,7 +7,10 @@ import type { I18nString } from '@/shared/lib/i18n';
 import { t } from '@/shared/lib/i18n';
 import { updateSessionJournal } from '@/shared/lib/services/sessions';
 
-import { compileSessionJournal } from './compile-session-journal';
+import {
+  compileSessionJournal,
+  type JournalCompileOptions,
+} from './compile-session-journal';
 import { JournalMarkdown } from './journal-markdown';
 
 interface NamedContent {
@@ -62,10 +65,24 @@ export function SessionJournalTab({
   const [draft, setDraft] = useState<string | null>(null);
   // Confirmation de re-compilation (step 7) : écrase l'édition manuelle.
   const [confirmingRecompile, setConfirmingRecompile] = useState<boolean>(false);
+  // Cadrage du récit (M14). État LOCAL non persisté : c'est une préférence de
+  // rédaction, pas une donnée de campagne — et le meneur la revoit à chaque
+  // compilation, là où elle est visible. Défauts = comportement d'origine.
+  const [includeRolls, setIncludeRolls] = useState<boolean>(true);
+  const [includeMonsterHp, setIncludeMonsterHp] = useState<boolean>(true);
+  const [includeDmOnly, setIncludeDmOnly] = useState<boolean>(true);
   const editorId = useId();
 
   const markdown = localMarkdown ?? journalCompiled;
   const isEditing = draft !== null;
+
+  function currentOptions(): JournalCompileOptions {
+    const excludedKinds = [
+      ...(includeRolls ? [] : (['roll'] as const)),
+      ...(includeMonsterHp ? [] : (['monster-hp-change'] as const)),
+    ];
+    return { excludedKinds, includeDmOnly };
+  }
 
   async function handleCompile(): Promise<void> {
     if (pending) return;
@@ -79,6 +96,7 @@ export function SessionJournalTab({
         spells,
         items,
         conditions,
+        options: currentOptions(),
       });
       setLocalMarkdown(result);
       setConfirmingRecompile(false);
@@ -108,6 +126,44 @@ export function SessionJournalTab({
     }
   }
 
+  /**
+   * Cases « ce que le récit embarque » (M14). Rendues au-dessus de chaque bouton
+   * de compilation — c'est le moment où le choix a du sens, et il est visible
+   * plutôt que caché dans un réglage lointain.
+   */
+  function renderScopeOptions(): JSX.Element {
+    return (
+      <fieldset className="mx-auto w-full max-w-[420px] rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 text-left">
+        <legend className="px-1 font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+          {t('sessions.journal.scope.legend')}
+        </legend>
+        <div className="mt-1 flex flex-col gap-2">
+          <ScopeToggle
+            checked={includeRolls}
+            onChange={setIncludeRolls}
+            label={t('sessions.journal.scope.rolls')}
+            disabled={pending}
+          />
+          <ScopeToggle
+            checked={includeMonsterHp}
+            onChange={setIncludeMonsterHp}
+            label={t('sessions.journal.scope.monsterHp')}
+            disabled={pending}
+          />
+          <ScopeToggle
+            checked={includeDmOnly}
+            onChange={setIncludeDmOnly}
+            label={t('sessions.journal.scope.dmOnly')}
+            disabled={pending}
+          />
+        </div>
+        <p className="mt-2 font-serif text-meta italic text-text-tertiary">
+          {t('sessions.journal.scope.help')}
+        </p>
+      </fieldset>
+    );
+  }
+
   if (markdown === null) {
     return (
       <GlassPanel className="px-6 py-10 text-center">
@@ -119,6 +175,7 @@ export function SessionJournalTab({
         </p>
         {canEdit ? (
           <div className="mt-6 flex flex-col items-center gap-3">
+            {renderScopeOptions()}
             <Button
               variant="primary"
               size="md"
@@ -202,6 +259,7 @@ export function SessionJournalTab({
               <p className="mx-auto mt-2 max-w-[40ch] font-serif text-body-sm text-text-secondary">
                 {t('sessions.journal.recompileConfirmBody')}
               </p>
+              <div className="mt-4">{renderScopeOptions()}</div>
               <div className="mt-4 flex items-center justify-center gap-3">
                 <Button
                   variant="ghost"
@@ -246,5 +304,35 @@ export function SessionJournalTab({
         </div>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Case à cocher du cadrage du récit. Composant local plutôt qu'un `Checkbox`
+ * partagé : le design system n'en expose pas, et trois cases dans un seul écran
+ * ne justifient pas d'en inventer un — le seuil du projet est 3 usages.
+ */
+function ScopeToggle({
+  checked,
+  onChange,
+  label,
+  disabled,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  label: string;
+  disabled: boolean;
+}): JSX.Element {
+  return (
+    <label className="flex cursor-pointer items-center gap-3 font-serif text-body-sm text-text-secondary">
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.checked)}
+        className="size-4 shrink-0 accent-gold-bright"
+      />
+      {label}
+    </label>
   );
 }

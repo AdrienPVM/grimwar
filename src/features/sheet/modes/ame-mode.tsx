@@ -1,8 +1,12 @@
+import { BENTO_GRID, BentoTile } from '@/shared/components/bento';
 import { Card, CardHeader } from '@/shared/components/card';
 import { t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
+import { useSheetReadOnly } from '../permissions-context';
+
 import { BackstoryCard } from './ame/backstory-card';
+import { ExperienceCard } from './ame/experience-card';
 import { PersonalityFieldCard } from './ame/personality-field-card';
 import { StatsDashboard } from './ame/stats-dashboard';
 
@@ -25,19 +29,29 @@ interface AmeModeProps {
  * « client + rules » sans nouvelle collection non déployée.
  */
 export function AmeMode({ character }: AmeModeProps): JSX.Element {
+  const readOnly = useSheetReadOnly(character);
+
   return (
     <section
       role="tabpanel"
       id="sheet-mode-panel-ame"
       aria-labelledby="sheet-mode-tab-ame"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[680px] lg:px-0 xl:max-w-none xl:grid xl:grid-cols-2 xl:gap-4"
+      className={BENTO_GRID}
     >
-      <div className="xl:col-span-2">
+      {/*
+        Bento (cf. `shared/components/bento.tsx`). L'histoire est de la prose :
+        elle prend 2/3 de rangée (~70 caractères par ligne en desktop) et NON la
+        pleine largeur, qui la pousserait au-delà de 110 caractères — au-dessus
+        de la mesure confortable de lecture. Le tableau de bord se pose dans le
+        tiers restant : c'est une pile de statistiques, il lit bien en étroit et
+        il ferme la rangée sans laisser de trou.
+      */}
+      <BentoTile span="full">
         <Card>
           <CardHeader>
             <h3>{t('sheet.ame.personality.title')}</h3>
           </CardHeader>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <PersonalityFieldCard
               character={character}
               field="trait"
@@ -68,15 +82,21 @@ export function AmeMode({ character }: AmeModeProps): JSX.Element {
             />
           </div>
         </Card>
-      </div>
+      </BentoTile>
 
-      <div className="xl:col-span-2">
+      <BentoTile span="lg">
         <BackstoryCard character={character} />
-      </div>
+      </BentoTile>
 
-      <div className="xl:col-span-2">
+      <BentoTile span="sm">
         <StatsDashboard character={character} />
-      </div>
+      </BentoTile>
+
+      {/* L'XP ferme la rangée : c'est une pile de chiffres, elle lit bien en
+          étroit — même raisonnement que le tableau de bord au-dessus. */}
+      <BentoTile span="sm">
+        <ExperienceCard character={character} readOnly={readOnly} />
+      </BentoTile>
     </section>
   );
 }

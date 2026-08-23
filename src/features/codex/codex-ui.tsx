@@ -1,8 +1,10 @@
 import type { JSX, ReactNode } from 'react';
 
 import { Icon } from '@/shared/components/icon';
+import { SkeletonList } from '@/shared/components/skeleton';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import type { ContentEntryScope } from '@/shared/hooks/use-content';
 
 /**
  * Briques d'UI partagées par les navigateurs du Codex (plan 19). Centralise le
@@ -63,12 +65,13 @@ export function CodexEmpty(): JSX.Element {
   );
 }
 
+/**
+ * Attente du Codex — l'ossature des rangées à venir, pas un mot au milieu du
+ * vide. Le Codex charge des bundles de plusieurs centaines d'entrées : c'est
+ * l'écran de l'app où l'attente se voit le plus.
+ */
 export function CodexLoading(): JSX.Element {
-  return (
-    <p className="px-2 py-8 text-center font-serif italic text-text-tertiary">
-      {t('codex.loading')}
-    </p>
-  );
+  return <SkeletonList label={t('codex.loading')} rows={6} className="mt-1" />;
 }
 
 interface CodexRowProps {
@@ -78,7 +81,27 @@ interface CodexRowProps {
   title: string;
   /** Ligne de méta sous le titre (école · composantes, prérequis…). */
   meta?: ReactNode;
+  /**
+   * Provenance de l'entrée (M50). Absente ou `'public'` ⇒ rien n'est rendu :
+   * le SRD est la base, il n'a pas à s'annoncer. Toute autre valeur affiche une
+   * puce — sans elle, rien à l'écran ne distingue « la Boule de feu du livre »
+   * de « la Boule de feu à 6d6 de ma table ».
+   */
+  origin?: ContentEntryScope;
   className?: string;
+}
+
+/** Puce de provenance — nom du pack quand il est connu, « Maison » sinon. */
+export function OriginChip({ origin }: { origin: ContentEntryScope }): JSX.Element | null {
+  if (origin.scope === 'public') return null;
+  return (
+    <span
+      data-testid="codex-origin-chip"
+      className="shrink-0 rounded-pill border border-gold-dim/40 bg-gold/[0.06] px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.14em] text-gold"
+    >
+      {origin.originLabel ?? t('customContent.origin.custom')}
+    </span>
+  );
 }
 
 /**
@@ -91,6 +114,7 @@ export function CodexRow({
   badge,
   title,
   meta,
+  origin,
   className,
 }: CodexRowProps): JSX.Element {
   return (
@@ -112,6 +136,7 @@ export function CodexRow({
           </div>
         ) : null}
       </div>
+      {origin ? <OriginChip origin={origin} /> : null}
       <span aria-hidden="true" className="font-title text-meta text-text-faint">
         ›
       </span>

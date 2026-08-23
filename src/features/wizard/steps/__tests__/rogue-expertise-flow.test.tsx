@@ -80,9 +80,9 @@ const CRIMINAL_FIXTURE = {
 
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'classes') return { data: [ROGUE_FIXTURE], loading: false, error: null };
+    if (type === 'classes') return { data: [ROGUE_FIXTURE], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     if (type === 'backgrounds')
-      return { data: [CRIMINAL_FIXTURE], loading: false, error: null };
+      return { data: [CRIMINAL_FIXTURE], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     if (type === 'items')
       return {
         // 1 arme simple + 1 arme martiale finesse pour ne pas vider le chooser
@@ -114,10 +114,10 @@ vi.mock('@/shared/hooks/use-content', () => ({
         loading: false,
         error: null,
       };
-    if (type === 'feats') return { data: [], loading: false, error: null };
-    if (type === 'invocations') return { data: [], loading: false, error: null };
-    if (type === 'spells') return { data: [], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+    if (type === 'feats') return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'invocations') return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'spells') return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

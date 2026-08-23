@@ -33,7 +33,7 @@ describe('buildInvocationFromDraft', () => {
       summary: { fr: 'Effet de test' },
       prerequisiteWarlockLevel: null,
       prerequisiteOther: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -105,7 +105,7 @@ describe('draftFromInvocation', () => {
       summary: { fr: 'Effet' },
       prerequisiteWarlockLevel: null,
       prerequisiteOther: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft).toEqual({
       id: 'inv-a',
@@ -127,7 +127,7 @@ describe('draftFromInvocation', () => {
       summary: { fr: 'S' },
       prerequisiteWarlockLevel: 5,
       prerequisiteOther: { fr: 'Pacte' },
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.hasLevelPrereq).toBe(true);
     expect(draft.prerequisiteWarlockLevel).toBe(5);

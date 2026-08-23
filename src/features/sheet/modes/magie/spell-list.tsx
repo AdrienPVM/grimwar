@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react';
 
-import { Card, CardHeader } from '@/shared/components/card';
+import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Chip } from '@/shared/components/chip';
 import { Icon } from '@/shared/components/icon';
 import { Tooltip } from '@/shared/components/tooltip';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { cn } from '@/shared/lib/cn';
 import { localize, t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 import type { Spell } from '@/shared/types/content';
 
+import { usePermissionContext } from '../../permissions-context';
+import { AddSpellModal } from './add-spell-modal';
 import { SpellDamageChip } from './spell-damage-chip';
 
 interface SpellListProps {
@@ -79,6 +82,8 @@ export function SpellList({
   const { data: classCatalog } = useContent('classes');
   const [query, setQuery] = useState<string>('');
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [adding, setAdding] = useState<boolean>(false);
+  const { canEdit } = usePermissionContext();
 
   const classNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -171,9 +176,21 @@ export function SpellList({
   const grouped = useMemo(() => groupByLevel(filtered), [filtered]);
 
   return (
-    <Card>
+    // `data-testid` : ancre de test stable. Le nom d'un sort apparaît AUSSI dans
+    // <PreparationEditor>, dont le disclosure garde son contenu monté même
+    // replié (`grid-rows-[0fr]`) — un locator par texte est donc ambigu et
+    // tombait sur la carte de préparation sous charge. Les e2e ciblent cette
+    // liste-ci explicitement.
+    <Card data-testid="spell-list">
       <CardHeader>
         <h3>{t('sheet.magie.spellbookTitle')}</h3>
+        {/* M26 — un sort appris en jeu (parchemin, faveur divine, sort de
+            domaine hors liste) n'avait aucune porte d'entrée. */}
+        {canEdit && hasClassCaster ? (
+          <CardAction onClick={() => setAdding(true)}>
+            {t('sheet.magie.addSpell.action')}
+          </CardAction>
+        ) : null}
       </CardHeader>
 
       <label className="mb-3 flex items-center gap-2 rounded-card-sm border border-white-8 bg-bg-2/60 px-3 py-2">
@@ -188,7 +205,7 @@ export function SpellList({
         />
       </label>
 
-      <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow className="mb-3">
         <Chip active={filter === 'all'} onToggle={() => setFilter('all')}>
           {t('sheet.magie.filterAll')} · {counts.all}
         </Chip>
@@ -203,7 +220,7 @@ export function SpellList({
         <Chip active={filter === 'ritual'} onToggle={() => setFilter('ritual')}>
           {t('sheet.magie.filterRituals')} · {counts.ritual}
         </Chip>
-      </div>
+      </ScrollRow>
 
       <div className="flex flex-col gap-3">
         {grouped.map(([level, items]) => (
@@ -213,7 +230,9 @@ export function SpellList({
                 ? t('sheet.magie.cantripsHeading')
                 : t('sheet.magie.prep.levelLabel').replace('{n}', String(level))}
             </h4>
-            <ul className="flex flex-col gap-2">
+            {/* xl: 2 colonnes de sorts (DEBT D6) — la carte prend toute la
+                largeur de la fiche desktop. */}
+            <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
               {items.map((spell) => {
                 const src = sourceMap.get(spell.id) ?? {
                   classNames: [],
@@ -255,6 +274,15 @@ export function SpellList({
           </p>
         )}
       </div>
+
+      {adding ? (
+        <AddSpellModal
+          character={character}
+          spellcasterClassIds={spellcasterClassIds}
+          open
+          onClose={() => setAdding(false)}
+        />
+      ) : null}
     </Card>
   );
 }

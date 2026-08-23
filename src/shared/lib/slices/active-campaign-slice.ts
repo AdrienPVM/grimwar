@@ -27,22 +27,93 @@
  */
 import { create } from 'zustand';
 
+import type { DiceMode } from '@/shared/lib/dice/types';
+import { NO_VARIANTS } from '@/shared/lib/rules/long-rest';
+import { useLocaleStore } from '@/shared/lib/slices/locale-slice';
+import type { CampaignSettings, CampaignVariants } from '@/shared/types/campaign';
+
+/**
+ * Miroir de `settings.language` vers la locale (M54). Centralisé ici plutôt
+ * qu'aux call sites : l'invariant « la langue de table suit la table active »
+ * doit tenir sur TOUS les chemins (réglages chargés, campagne changée,
+ * contexte libéré), pas seulement sur celui qu'on a pensé à câbler.
+ */
+function mirrorTableLocale(settings: CampaignSettings | null): void {
+  useLocaleStore.getState().setTableLocale(settings?.language ?? null);
+}
+
 type ActiveCampaignState = {
   activeCampaignId: string | null;
   activeSessionId: string | null;
   activeEncounterId: string | null;
+  /**
+   * Réglages de la campagne active (variantes 5e + mode de dés de table).
+   * `null` tant qu'ils ne sont pas chargés, ou hors campagne — les
+   * consommateurs retombent alors sur les règles standard / le mode
+   * utilisateur, ce qui est exactement le comportement d'avant ce plumbing.
+   *
+   * Séparé de `setActiveCampaign` parce que les deux n'arrivent PAS en même
+   * temps : l'id est connu de façon synchrone (`character.homeCampaignId`),
+   * les settings demandent une lecture Firestore. Une action de jeu tombant
+   * dans cette fenêtre voit `null` et joue en RAW — jamais avec les réglages
+   * d'une AUTRE campagne, puisque changer d'id remet les settings à `null`.
+   */
+  activeCampaignSettings: CampaignSettings | null;
   setActiveCampaign: (campaignId: string | null, sessionId?: string | null) => void;
+  setActiveCampaignSettings: (settings: CampaignSettings | null) => void;
   setActiveEncounter: (encounterId: string | null) => void;
   clearActiveCampaign: () => void;
 };
 
-export const useActiveCampaignStore = create<ActiveCampaignState>((set) => ({
+export const useActiveCampaignStore = create<ActiveCampaignState>((set, get) => ({
   activeCampaignId: null,
   activeSessionId: null,
   activeEncounterId: null,
-  setActiveCampaign: (campaignId, sessionId = null) =>
-    set({ activeCampaignId: campaignId, activeSessionId: sessionId }),
+  activeCampaignSettings: null,
+  setActiveCampaign: (campaignId, sessionId = null) => {
+    // Changer de campagne invalide les réglages chargés : sans ça, une
+    // seconde fiche héritée d'une autre table jouerait avec les variantes
+    // de la première jusqu'à la fin du fetch.
+    const kept =
+      campaignId === get().activeCampaignId ? get().activeCampaignSettings : null;
+    set({
+      activeCampaignId: campaignId,
+      activeSessionId: sessionId,
+      activeCampaignSettings: kept,
+    });
+    mirrorTableLocale(kept);
+  },
+  setActiveCampaignSettings: (settings) => {
+    set({ activeCampaignSettings: settings });
+    mirrorTableLocale(settings);
+  },
   setActiveEncounter: (encounterId) => set({ activeEncounterId: encounterId }),
-  clearActiveCampaign: () =>
-    set({ activeCampaignId: null, activeSessionId: null, activeEncounterId: null }),
+  clearActiveCampaign: () => {
+    set({
+      activeCampaignId: null,
+      activeSessionId: null,
+      activeEncounterId: null,
+      activeCampaignSettings: null,
+    });
+    mirrorTableLocale(null);
+  },
 }));
+
+/**
+ * Mode de dés de la table, sous la forme attendue par `effectiveDiceMode`.
+ * Lecture SYNCHRONE (hors React) : le pivot de dés s'exécute dans un handler,
+ * pas dans un render. `null` ⇒ pas de table ⇒ le mode utilisateur l'emporte.
+ */
+export function activeCampaignDiceSettings(): { diceMode: DiceMode } | null {
+  const settings = useActiveCampaignStore.getState().activeCampaignSettings;
+  return settings ? { diceMode: settings.diceMode } : null;
+}
+
+/**
+ * Variantes 5e de la table active, pour les composants de fiche (repos…).
+ * Hors campagne — ou avant l'arrivée des réglages — on rend `NO_VARIANTS` :
+ * les règles standard sont le défaut, jamais une variante par accident.
+ */
+export function useActiveCampaignVariants(): CampaignVariants {
+  return useActiveCampaignStore((s) => s.activeCampaignSettings?.variants ?? NO_VARIANTS);
+}

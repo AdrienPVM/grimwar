@@ -8,7 +8,7 @@ import { z } from 'zod';
  * encore consommé par aucun écran.
  *
  * Divergences vs `docs/DATA-MODEL.md` (section campaigns) — tracées dans
- * `plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
+ * `docs/plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
  *  - `gmIds: string[]` (array) au lieu de `dmUserId` (singleton). Anticipe 4C
  *    co-MJ multiples sans migration de doc — un MJ unique = `gmIds.length === 1`.
  *  - sous-collection `members/{uid}` au lieu de `memberships/{uid}`. Plus court,

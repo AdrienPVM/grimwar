@@ -45,10 +45,10 @@ const INVOCATION: Invocation = {
 
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'feats') return { data: [FEAT], loading: false, error: null };
-    if (type === 'conditions') return { data: [CONDITION], loading: false, error: null };
-    if (type === 'invocations') return { data: [INVOCATION], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+    if (type === 'feats') return { data: [FEAT], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'conditions') return { data: [CONDITION], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'invocations') return { data: [INVOCATION], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
 import { useDice } from '@/features/dice/use-dice';
+import {
+  NORMAL_ROLL,
+  RollOptionsMenu,
+  type RollOptions,
+} from '@/features/dice/roll-options-menu';
+import { useLongPress } from '@/shared/hooks/use-long-press';
 import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { t, type StringKey } from '@/shared/lib/i18n';
@@ -37,6 +43,7 @@ const ECON_TIP_KEYS: Record<EconKind, StringKey> = {
  */
 export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element {
   const [used, setUsed] = useState<Set<EconKind>>(new Set());
+  const [initiativeMenu, setInitiativeMenu] = useState<boolean>(false);
   const dice = useDice();
   const { updateCharacter } = useUpdateCharacter(character);
 
@@ -79,7 +86,16 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
     });
   }
 
-  async function rollInitiative(): Promise<void> {
+  // Appui long = menu d'options (avantage d'Alerte, bonus du moment,
+  // inspiration). Tap = jet ordinaire, comme avant.
+  const initiativeHandlers = useLongPress(
+    () => void rollInitiative(),
+    () => setInitiativeMenu(true),
+  );
+
+  async function rollInitiative(
+    options: RollOptions = NORMAL_ROLL,
+  ): Promise<void> {
     if (readOnly) return;
     // Le pivot rollWithFlags émet déjà le toast avec crit/fumble/advantage.
     // Plan 12.5 : en mode physique, `result` peut être `null` (joueur a Passé).
@@ -88,6 +104,10 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
       character,
       label: t('sheet.combat.hud.initiativeLabel'),
       kind: 'init',
+      advantage: options.advantage,
+      discreet: options.discreet,
+      useInspiration: options.useInspiration,
+      bonus: options.bonus,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
@@ -136,7 +156,7 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
           <button
             type="button"
             disabled={readOnly}
-            onClick={() => void rollInitiative()}
+            {...initiativeHandlers}
             aria-label={t('combat.hud.rollInitiative')}
             className="inline-flex items-center gap-1.5 rounded-pill border border-soft bg-gold/10 px-3 py-1.5 font-title text-[9px] font-bold uppercase tracking-[0.16em] text-gold-bright transition-all hover:bg-gold/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -147,6 +167,21 @@ export function BattleHud({ character, readOnly }: BattleHudProps): JSX.Element 
             </span>
           </button>
         </Tooltip>
+        {initiativeMenu && (
+          <RollOptionsMenu
+            title={t('sheet.combat.hud.initiativeLabel')}
+            ariaLabel={t('dice.options.aria').replace(
+              '{label}',
+              t('sheet.combat.hud.initiativeLabel'),
+            )}
+            hasInspiration={character.inspiration}
+            onPick={(options) => {
+              setInitiativeMenu(false);
+              void rollInitiative(options);
+            }}
+            onClose={() => setInitiativeMenu(false)}
+          />
+        )}
         <Tooltip
           label={t(
             character.inspiration

@@ -2,8 +2,10 @@ import { useId, useMemo, useState, type JSX } from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import { formatCr } from '@/shared/lib/rules/challenge-rating';
 import type { Monster } from '@/shared/types/content';
 
@@ -29,7 +31,7 @@ import { MonsterStatBlock } from './monster-stat-block';
  * SRD sera peuplé, il s'affichera ici sans changement de code.
  */
 export function MonsterBrowser(): JSX.Element {
-  const { data: monsters, loading } = useContent('monsters');
+  const { data: monsters, loading, scopeOf } = useContent('monsters');
   const [query, setQuery] = useState<string>('');
   const [size, setSize] = useState<string>('all');
   const [active, setActive] = useState<Monster | null>(null);
@@ -42,11 +44,11 @@ export function MonsterBrowser(): JSX.Element {
   }, [monsters]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return monsters
       .filter((m) => {
         if (size !== 'all' && m.size !== size) return false;
-        if (q && !localize(m.name).toLocaleLowerCase('fr').includes(q))
+        if (q && !normalizeForSearch(localize(m.name)).includes(q))
           return false;
         return true;
       })
@@ -64,7 +66,7 @@ export function MonsterBrowser(): JSX.Element {
       />
 
       {presentSizes.length > 0 ? (
-        <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+        <ScrollRow>
           <Chip active={size === 'all'} onToggle={() => setSize('all')}>
             {t('codex.monster.allSizes')}
           </Chip>
@@ -78,7 +80,7 @@ export function MonsterBrowser(): JSX.Element {
               {t(`size.${s}` as 'size.medium')}
             </Chip>
           ))}
-        </div>
+        </ScrollRow>
       ) : null}
 
       <CodexResultCount count={filtered.length} />
@@ -91,6 +93,7 @@ export function MonsterBrowser(): JSX.Element {
             <li key={m.id}>
               <CodexRow
                 title={localize(m.name)}
+                origin={scopeOf(m.id)}
                 onClick={() => setActive(m)}
                 meta={
                   <>

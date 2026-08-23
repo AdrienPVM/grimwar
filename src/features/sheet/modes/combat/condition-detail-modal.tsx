@@ -55,7 +55,7 @@ export function ConditionDetailModal({
               onClick={onRemove}
               className="self-start"
             >
-              Retirer cet état
+              {t('sheet.combat.condition.remove')}
             </Button>
           ) : null}
         </CodexModalShell>

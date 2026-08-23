@@ -19,21 +19,29 @@ import type { LinkedMember } from './use-encounter-party-draft';
  * même lecture cross-owner que `useEncounterPartyDraft` (rule
  * `gmCanReadLinkedCharacter`, 4A.1).
  *
- * Politique de repli (jamais throw) : un monstre/PNJ, un joueur dont la fiche
- * est introuvable, non liée au roster, ou dont `initiative` n'est pas un nombre,
- * obtient un modificateur **0**. Le MJ peut relancer un participant individuel
- * si une fiche se re-synchronise plus tard. Une lecture qui échoue (réseau,
+ * Créatures non joueuses (M3) : le modificateur vient du bestiaire, via une
+ * table `monsterContentId → mod de DEX` fournie par l'appelant (l'écran connaît
+ * `useContent('monsters')`, pas ce module — on ne recharge pas le contenu ici).
+ * Un gobelin à DEX 14 lance donc à +2 comme à la table, au lieu du 0 uniforme
+ * qui était câblé jusqu'ici. Une ligne saisie à la main, ou un slug absent du
+ * bestiaire chargé, reste à 0 : le MJ ajuste ensuite l'initiative en place.
+ *
+ * Politique de repli (jamais throw) : un joueur dont la fiche est introuvable,
+ * non liée au roster, ou dont `initiative` n'est pas un nombre, obtient un
+ * modificateur **0**. Le MJ peut relancer un participant individuel si une
+ * fiche se re-synchronise plus tard. Une lecture qui échoue (réseau,
  * permission) est isolée par participant — elle ne fait pas échouer tout le jet.
  */
 export async function resolveInitiativeModifiers(
   participants: readonly EncounterParticipant[],
   linkedMembers: readonly LinkedMember[],
+  monsterModifiers: ReadonlyMap<string, number> = new Map(),
 ): Promise<Map<string, number>> {
   const ownerByCharacter = new Map(linkedMembers.map((m) => [m.characterId, m.userId]));
 
   const entries = await Promise.all(
     participants.map(async (p): Promise<[string, number]> => {
-      const modifier = await resolveOne(p, ownerByCharacter);
+      const modifier = await resolveOne(p, ownerByCharacter, monsterModifiers);
       return [p.instanceId, modifier];
     }),
   );
@@ -44,8 +52,13 @@ export async function resolveInitiativeModifiers(
 async function resolveOne(
   participant: EncounterParticipant,
   ownerByCharacter: ReadonlyMap<string, string>,
+  monsterModifiers: ReadonlyMap<string, number>,
 ): Promise<number> {
-  if (participant.type !== 'player' || participant.characterId === null) return 0;
+  if (participant.type !== 'player' || participant.characterId === null) {
+    // Monstre / PNJ : mod de DEX de sa fiche de créature, 0 s'il n'en a pas.
+    if (participant.monsterContentId === null) return 0;
+    return monsterModifiers.get(participant.monsterContentId) ?? 0;
+  }
   const ownerUid = ownerByCharacter.get(participant.characterId);
   if (ownerUid === undefined) return 0;
 

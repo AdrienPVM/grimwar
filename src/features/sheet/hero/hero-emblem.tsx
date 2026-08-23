@@ -35,7 +35,18 @@ export function HeroEmblem({ hp, hpMax, letter, className }: HeroEmblemProps): J
   const isLowHp = ratio > 0 && ratio < LOW_HP_RATIO;
 
   return (
-    <div className={cn('relative h-[200px] w-[200px] flex-shrink-0', className)}>
+    // 200 px sur mobile (le portrait EST la page d'accueil de la fiche), 156 en
+    // colonne latérale desktop : là, la hauteur est un budget fermé partagé avec
+    // les statuts et les onglets, et l'emblème à 200 px le faisait déborder de
+    // ~93 px sur un écran de 900 — le bouton « Monter de niveau » se retrouvait
+    // tranché par le bas de la zone de défilement. Le SVG est en `viewBox`, il
+    // se met à l'échelle sans retouche.
+    <div
+      className={cn(
+        'relative h-[200px] w-[200px] flex-shrink-0 lg:h-[156px] lg:w-[156px]',
+        className,
+      )}
+    >
       <svg viewBox="0 0 200 200" className="h-full w-full">
         <defs>
           <linearGradient id={emGradId} x1="0%" y1="0%" x2="100%" y2="100%">

@@ -36,6 +36,21 @@ vi.mock('../use-linked-character-names', () => ({
 // Modales enfant neutralisées — le test cible le masquage des sections.
 vi.mock('../npc-edit-modal', () => ({ NpcEditModal: () => null }));
 vi.mock('../npc-relation-modal', () => ({ NpcRelationModal: () => null }));
+vi.mock('../npc-duplicate-modal', () => ({ NpcDuplicateModal: () => null }));
+// La duplication inter-campagnes (M42) liste les campagnes menées : sans ce
+// stub, l'écran ouvre une vraie requête Firestore et le worker part en OOM.
+vi.mock('../use-my-campaigns', () => ({
+  useMyCampaigns: () => ({
+    campaigns: [],
+    isLoading: false,
+    error: null,
+    refresh: vi.fn(),
+  }),
+}));
+// Le bestiaire ne sert qu'à résoudre le nom d'un monstre lié.
+vi.mock('@/shared/hooks/use-content', () => ({
+  useContent: () => ({ data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }),
+}));
 vi.mock('@/features/journal/journal-markdown', () => ({
   JournalMarkdown: ({ markdown }: { markdown: string }) => <div>{markdown}</div>,
 }));

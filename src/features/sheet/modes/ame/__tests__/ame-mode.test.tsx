@@ -117,6 +117,19 @@ beforeEach(() => {
   updateCharacterMock.mockClear();
 });
 
+/**
+ * Libellés EXACTS des boutons d'édition des champs réservés au propriétaire
+ * (`DM_LOCKED_FIELDS`). Ils viennent de `wizard.field.*` + `sheet.ame.backstory
+ * .title`, injectés dans `sheet.ame.personality.editLabel` (« Modifier {field} »).
+ */
+const LOCKED_FIELD_LABELS = [
+  'Trait de personnalité',
+  'Idéal',
+  'Attache',
+  'Défaut',
+  'Histoire',
+] as const;
+
 describe('<AmeMode>', () => {
   it('rend les sections Personnalité / Histoire / Statistiques', () => {
     renderAme(buildCharacter());
@@ -214,8 +227,32 @@ describe('<AmeMode>', () => {
     renderAme(buildCharacter(), dmCtx);
     // Le badge « Réservé au joueur » apparaît (cadenas plan 26).
     expect(screen.getAllByText('Réservé au joueur').length).toBeGreaterThan(0);
-    // Aucun bouton Modifier : le MJ ne peut pas écrire la personnalité.
-    expect(screen.queryByRole('button', { name: /^Modifier / })).not.toBeInTheDocument();
+    // Aucun bouton d'édition sur les 4 champs de personnalité + l'histoire :
+    // ce sont les champs réservés au propriétaire (`DM_LOCKED_FIELDS`).
+    // L'assertion vise ces champs NOMMÉMENT depuis M45 : elle balayait tout le
+    // document, ce qui l'aurait fait interdire aussi l'édition de l'XP — qui
+    // est au contraire le geste MJ attendu (« 450 PX chacun »).
+    for (const field of LOCKED_FIELD_LABELS) {
+      expect(
+        screen.queryByRole('button', { name: `Modifier ${field}` }),
+      ).not.toBeInTheDocument();
+    }
+  });
+
+  // Contre-épreuve : sans ces libellés EXACTS, les assertions négatives
+  // ci-dessus passeraient à vide et ne prouveraient rien.
+  it('propriétaire : ces mêmes boutons existent bel et bien', () => {
+    renderAme(buildCharacter());
+    for (const field of LOCKED_FIELD_LABELS) {
+      expect(screen.getByRole('button', { name: `Modifier ${field}` })).toBeInTheDocument();
+    }
+  });
+
+  it('MJ omni-edit : l’expérience RESTE éditable (elle n’est pas réservée au joueur)', () => {
+    renderAme(buildCharacter(), dmCtx);
+    expect(
+      screen.getByRole('button', { name: 'Modifier les points d’expérience' }),
+    ).toBeEnabled();
   });
 
   it('ne laisse fuir aucun anglais interdit dans le rendu FR', () => {

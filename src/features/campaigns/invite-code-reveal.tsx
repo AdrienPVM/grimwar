@@ -3,10 +3,21 @@ import { useEffect, useState, type JSX } from 'react';
 import { Button } from '@/shared/components/button';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { rotateInviteCode } from '@/shared/lib/services/campaigns';
 
 interface Props {
   /** Code 6 chars affiché en grand — alphabet anti-confusion. */
   code: string;
+  /**
+   * Campagne à laquelle appartient le code. Quand elle est fournie AVEC `uid`,
+   * le bloc expose la régénération (M11) — réservée au meneur, seul appelant de
+   * ce composant à la poser.
+   */
+  campaignId?: string;
+  /** UID du meneur qui régénère — la rule exige `createdBy == auth.uid`. */
+  uid?: string;
+  /** Notifie l'écran parent qu'un nouveau code est en place (refresh). */
+  onRotated?: (nextCode: string) => void;
   /** Permet de styler l'enveloppe selon le contexte (carte vs modale). */
   className?: string;
 }
@@ -30,9 +41,25 @@ const COPY_FEEDBACK_MS = 1800;
  * COPY_FEEDBACK_MS puis revient. Pas de toast — le feedback inline suffit et
  * évite un side-effect global.
  */
-export function InviteCodeReveal({ code, className }: Props): JSX.Element {
-  // Un seul feedback à la fois : 'code' (code copié) ou 'link' (lien copié).
-  const [feedback, setFeedback] = useState<'code' | 'link' | null>(null);
+export function InviteCodeReveal({
+  code,
+  campaignId,
+  uid,
+  onRotated,
+  className,
+}: Props): JSX.Element {
+  // Un seul feedback à la fois : 'code' (code copié), 'link' (lien copié) ou
+  // 'rotated' (code régénéré).
+  const [feedback, setFeedback] = useState<'code' | 'link' | 'rotated' | null>(
+    null,
+  );
+  // Confirmation en deux temps plutôt qu'une modale : la régénération est
+  // destructive mais LOCALE au bloc (elle n'affecte qu'un champ visible juste
+  // au-dessus). Même patron que le retrait d'un objet d'inventaire.
+  const [confirmingRotate, setConfirmingRotate] = useState<boolean>(false);
+  const [rotating, setRotating] = useState<boolean>(false);
+  const [rotateError, setRotateError] = useState<string | null>(null);
+  const canRotate = campaignId !== undefined && uid !== undefined;
 
   useEffect(() => {
     if (!feedback) return;
@@ -70,6 +97,27 @@ export function InviteCodeReveal({ code, className }: Props): JSX.Element {
     }
     const ok = await copyToClipboard(url);
     if (ok) setFeedback('link');
+  }
+
+  /**
+   * Régénère le code et révoque l'ancien (M11). Cas d'usage : le code a fuité
+   * sur un Discord public. L'écriture est atomique côté service — soit les trois
+   * docs changent, soit aucun.
+   */
+  async function handleRotate(): Promise<void> {
+    if (!canRotate || rotating) return;
+    setRotating(true);
+    setRotateError(null);
+    try {
+      const next = await rotateInviteCode(campaignId, uid);
+      setConfirmingRotate(false);
+      setFeedback('rotated');
+      onRotated?.(next);
+    } catch {
+      setRotateError(t('campaigns.detail.invite.rotateError'));
+    } finally {
+      setRotating(false);
+    }
   }
 
   return (
@@ -120,8 +168,67 @@ export function InviteCodeReveal({ code, className }: Props): JSX.Element {
         </Button>
       </div>
       <p className="mx-auto max-w-[36ch] text-center font-serif text-body-sm italic text-text-tertiary">
-        {t('campaigns.detail.invite.help')}
+        {feedback === 'rotated'
+          ? t('campaigns.detail.invite.rotated')
+          : t('campaigns.detail.invite.help')}
       </p>
+
+      {canRotate ? (
+        <div className="flex w-full flex-col items-center gap-3 border-t border-white-8 pt-3">
+          {confirmingRotate ? (
+            <>
+              <p className="mx-auto max-w-[40ch] text-center font-serif text-body-sm text-crimson">
+                {t('campaigns.detail.invite.rotateWarning')}
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmingRotate(false)}
+                  disabled={rotating}
+                >
+                  {t('campaigns.detail.invite.rotateCancel')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="sm"
+                  onClick={() => {
+                    void handleRotate();
+                  }}
+                  disabled={rotating}
+                >
+                  {rotating
+                    ? t('campaigns.detail.invite.rotating')
+                    : t('campaigns.detail.invite.rotateConfirm')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setRotateError(null);
+                setConfirmingRotate(true);
+              }}
+              tooltip={t('campaigns.tip.rotateInviteCode')}
+            >
+              {t('campaigns.detail.invite.rotate')}
+            </Button>
+          )}
+          {rotateError ? (
+            <p
+              role="alert"
+              className="text-center font-serif text-body-sm text-crimson"
+            >
+              {rotateError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { BENTO_GRID, BentoTile } from '@/shared/components/bento';
 import type { Character } from '@/shared/types/character';
 
 import { useSheetReadOnly } from '../permissions-context';
@@ -41,24 +42,40 @@ export function AvoirMode({ character }: AvoirModeProps): JSX.Element {
       role="tabpanel"
       id="sheet-mode-panel-avoir"
       aria-labelledby="sheet-mode-tab-avoir"
-      className="mx-auto mt-4 flex w-full max-w-[420px] flex-col gap-3 px-4 lg:max-w-[720px] lg:px-0"
+      className={BENTO_GRID}
     >
-      <WeightBar
-        weightTotal={derived.weightTotal}
-        carryingCapacity={derived.carryingCapacity}
-        level={derived.encumbranceLevel}
-      />
-      <CoinsSection character={character} readOnly={readOnly} />
-      <AttunementSummary
-        resolvedItems={derived.resolvedItems}
-        attunedCount={derived.attunedCount}
-      />
-      <InventoryList
-        resolvedItems={derived.resolvedItems}
-        onItemSelect={setActiveRow}
-        onAddItemClick={() => setShowAddModal(true)}
-        readOnly={readOnly}
-      />
+      {/*
+        Bento (cf. `shared/components/bento.tsx`). Poids et bourse forment le
+        bandeau d'état : ce sont les deux seules cartes TOUJOURS rendues, donc
+        la seule paire qui ne laisse jamais de trou en tête de mosaïque.
+        L'harmonisation prend une rangée pleine — elle se masque d'elle-même
+        sans objet harmonisé, et la tuile se retire avec elle (règle `:has()`),
+        sans que ce parent ait à dupliquer la condition.
+      */}
+      <BentoTile span="md">
+        <WeightBar
+          weightTotal={derived.weightTotal}
+          carryingCapacity={derived.carryingCapacity}
+          level={derived.encumbranceLevel}
+        />
+      </BentoTile>
+      <BentoTile span="md">
+        <CoinsSection character={character} readOnly={readOnly} />
+      </BentoTile>
+      <BentoTile span="full">
+        <AttunementSummary
+          resolvedItems={derived.resolvedItems}
+          attunedCount={derived.attunedCount}
+        />
+      </BentoTile>
+      <BentoTile span="full">
+        <InventoryList
+          resolvedItems={derived.resolvedItems}
+          onItemSelect={setActiveRow}
+          onAddItemClick={() => setShowAddModal(true)}
+          readOnly={readOnly}
+        />
+      </BentoTile>
 
       {activeRow && (
         <ItemDetailModal

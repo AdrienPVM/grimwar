@@ -38,7 +38,7 @@ async function captureFull(page: Page, filename: string): Promise<void> {
   await page.screenshot({ path: path.join(UAT_DIR, filename), fullPage: true });
 }
 
-test.describe('UAT 24.4 — hand-off dégâts physiques + vue de groupe', () => {
+test.describe('UAT 24.4 — hand-off dégâts + vue de groupe', () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
   test('seed combat actif → panneau hand-off → application sur une cible (émulateur requis)', async ({
@@ -118,7 +118,8 @@ test.describe('UAT 24.4 — hand-off dégâts physiques + vue de groupe', () => 
     });
 
     // ─── 02 — Le panneau de hand-off apparaît (live, onSnapshot).
-    const handoff = page.getByRole('region', { name: 'Dégâts physiques à appliquer' });
+    // M4 : le panneau n'est plus réservé au mode physique — son libellé non plus.
+    const handoff = page.getByRole('region', { name: 'Dégâts à appliquer' });
     await expect(handoff).toBeVisible({ timeout: 10_000 });
     await expect(handoff.getByText('11 dégâts')).toBeVisible();
     await expect(handoff.getByText('Att 17')).toBeVisible();

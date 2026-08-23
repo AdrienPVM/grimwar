@@ -126,9 +126,13 @@ export function subscribeToUserSettings(uid: string): () => void {
         followCampaignDiceMode:
           settings.followCampaignDiceMode ?? DEFAULT_USER_DICE_SETTINGS.followCampaignDiceMode,
       });
-      if (data?.locale === 'fr' || data?.locale === 'en') {
-        useLocaleStore.getState().setLocale(data.locale);
-      }
+      // Champ absent ⇒ `null` explicite, pas « laisser tel quel » : l'absence
+      // de `locale` EST le marqueur « l'utilisateur n'a jamais tranché », et
+      // c'est ce qui autorise la langue de la table à s'appliquer (M54).
+      const stored = data?.locale;
+      useLocaleStore
+        .getState()
+        .setUserLocale(stored === 'fr' || stored === 'en' ? stored : null);
       useUserSettingsStore.getState().setHydrated(true);
     },
     (err) => {

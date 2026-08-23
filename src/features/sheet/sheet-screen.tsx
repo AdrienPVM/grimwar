@@ -21,7 +21,7 @@ export function SheetScreen(): JSX.Element {
   // Appel avant tout `return` anticipé pour garder l'ordre des hooks stable.
   // On passe `character?.homeCampaignId` SANS `?? null` : `undefined` (fiche pas
   // encore chargée / re-sync de migration) doit préserver la campagne active,
-  // pas l'effacer — cf. `plans/DEBT.md > D27`.
+  // pas l'effacer — cf. `docs/plans/DEBT.md > D27`.
   useSyncActiveCampaign(character?.homeCampaignId);
 
   if (isLoading) return <Splash />;

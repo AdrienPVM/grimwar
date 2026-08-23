@@ -70,12 +70,18 @@ export type StringKey =
   // Codex — navigateur de contenu SRD (plan 19)
   | 'codex.title'
   | 'codex.subtitle'
+  // Codex en superposition — consultation sans quitter la fiche / la rencontre
+  | 'codex.overlay.subtitle'
+  | 'codex.overlay.close'
   | 'codex.nav.cta'
   | 'codex.loading'
   | 'codex.empty'
   | 'codex.result.singular'
   | 'codex.result.plural'
   | 'codex.cat.aria'
+  | 'codex.cat.search'
+  | 'codex.search.all'
+  | 'codex.search.allHint'
   | 'codex.cat.spells'
   | 'codex.cat.feats'
   | 'codex.cat.invocations'
@@ -185,6 +191,20 @@ export type StringKey =
   | 'account.link.error.generic'
   // Accueil — hub de navigation
   | 'home.hub.title'
+  | 'home.ongoing.label'
+  | 'home.ongoing.kindEncounter'
+  | 'home.ongoing.kindSession'
+  | 'home.ongoing.round'
+  | 'home.ongoing.sessionNumber'
+  | 'home.ongoing.cta'
+  // Brouillon de création en cours (E10 de l'audit UX)
+  | 'home.draft.label'
+  | 'home.draft.unnamed'
+  | 'home.draft.step'
+  | 'home.draft.resume'
+  | 'home.draft.resumeAria'
+  | 'home.draft.discard'
+  | 'home.draft.discardAria'
   | 'home.hub.codex.sub'
   | 'home.hub.campaigns.sub'
   // Wizard (plan 05)
@@ -420,14 +440,27 @@ export type StringKey =
   | 'sheet.notFound'
   | 'sheet.notFound.hint'
   | 'sheet.backHome'
+  | 'sheet.campaignLink'
+  | 'sheet.turnBanner.label'
+  | 'sheet.turnBanner.sub'
+  | 'sheet.turnBanner.aria'
   | 'sheet.error.title'
   | 'sheet.statusStrip.aria'
   | 'sheet.modeTabs.aria'
   | 'sheet.hero.level'
+  | 'sheet.identity.edit'
+  | 'sheet.identity.title'
+  | 'sheet.identity.name'
+  | 'sheet.identity.nameRequired'
+  | 'sheet.identity.alignment'
+  | 'sheet.identity.save'
+  | 'sheet.identity.cancel'
   | 'sheet.stat.hp'
   | 'sheet.stat.ac'
   | 'sheet.stat.init'
   | 'sheet.stat.speed'
+  | 'sheet.stat.editInit'
+  | 'sheet.stat.editSpeed'
   | 'sheet.stat.passivePerception'
   | 'sheet.combat.hitDice.title'
   | 'sheet.combat.hitDice.spend'
@@ -455,6 +488,7 @@ export type StringKey =
   | 'sheet.combat.resources.restore'
   | 'sheet.combat.resources.spendLabel'
   | 'sheet.combat.resources.restoreLabel'
+  | 'sheet.combat.resources.editMaxLabel'
   | 'sheet.combat.resources.restoresShort'
   | 'sheet.combat.resources.restoresLong'
   | 'sheet.combat.resources.rage'
@@ -472,6 +506,8 @@ export type StringKey =
   | 'sheet.combat.exhaustion.death'
   | 'sheet.combat.exhaustion.decrease'
   | 'sheet.combat.exhaustion.increase'
+  | 'sheet.combat.exhaustion.readRule'
+  | 'sheet.combat.condition.remove'
   | 'sheet.combat.concentration.title'
   | 'sheet.combat.concentration.cantrip'
   | 'sheet.combat.concentration.castAt'
@@ -529,9 +565,12 @@ export type StringKey =
   | 'sheet.combat.numberpad.title.damage'
   | 'sheet.combat.numberpad.title.heal'
   | 'sheet.combat.numberpad.title.temp'
+  | 'sheet.combat.numberpad.title.max'
   | 'sheet.combat.numberpad.commit.damage'
   | 'sheet.combat.numberpad.commit.heal'
   | 'sheet.combat.numberpad.commit.temp'
+  | 'sheet.combat.numberpad.commit.max'
+  | 'sheet.combat.hp.maxEdit'
   | 'sheet.combat.numberpad.cancel'
   | 'sheet.combat.numberpad.full'
   | 'sheet.combat.attacks.cardTitle'
@@ -540,6 +579,7 @@ export type StringKey =
   | 'sheet.combat.attacks.ranged'
   | 'sheet.combat.attacks.melee'
   | 'sheet.combat.attacks.menuAdvantage'
+  | 'sheet.combat.attacks.menuFlanking'
   | 'sheet.combat.attacks.menuDisadvantage'
   | 'sheet.combat.attacks.menuCrit'
   | 'sheet.combat.hud.action'
@@ -630,6 +670,7 @@ export type StringKey =
   | 'sheet.fab.sorts'
   | 'sheet.fab.outils'
   | 'sheet.fab.lancer'
+  | 'sheet.fab.codex'
   | 'sheet.fab.repos'
   | 'sheet.fab.inspiration'
   | 'sheet.fab.inspirationOn'
@@ -639,6 +680,16 @@ export type StringKey =
   | 'sheet.placeholder.todo'
   // Mode Âme (plan 20) — personnalité, histoire, statistiques
   | 'sheet.ame.personality.title'
+  | 'sheet.ame.xp.title'
+  | 'sheet.ame.xp.unit'
+  | 'sheet.ame.xp.editAria'
+  | 'sheet.ame.xp.progressAria'
+  | 'sheet.ame.xp.toNext'
+  | 'sheet.ame.xp.maxLevel'
+  | 'sheet.ame.xp.levelMismatch'
+  | 'sheet.ame.xp.toastTitle'
+  | 'sheet.ame.xp.toastSub'
+  | 'sheet.tip.editXp'
   | 'sheet.ame.personality.empty'
   | 'sheet.ame.personality.edit'
   | 'sheet.ame.personality.save'
@@ -682,11 +733,21 @@ export type StringKey =
   | 'sheet.magie.prep.edit'
   | 'sheet.magie.prep.done'
   | 'sheet.magie.prep.hint'
+  | 'sheet.magie.prep.overCap'
+  | 'sheet.magie.addSpell.action'
+  | 'sheet.magie.addSpell.title'
+  | 'sheet.magie.addSpell.classAria'
+  | 'sheet.magie.addSpell.searchPlaceholder'
+  | 'sheet.magie.addSpell.searchLabel'
+  | 'sheet.magie.addSpell.hint'
+  | 'sheet.magie.addSpell.already'
+  | 'sheet.magie.addSpell.cantrip'
   | 'sheet.magie.prep.hintWizard'
   | 'sheet.magie.prep.levelLabel'
   | 'sheet.magie.prep.prepared'
   | 'sheet.magie.prep.alwaysAvailable'
   | 'sheet.magie.prep.emptyPrepared'
+  | 'sheet.magie.noMagic'
   // Mode Magie — cartes, cercle/pacte, liste, modale de sort (i18n complète)
   | 'sheet.magie.restore'
   | 'sheet.magie.noSlotToConsume'
@@ -840,6 +901,24 @@ export type StringKey =
   | 'sheet.essence.skills.notProficient'
   | 'sheet.essence.skills.proficient'
   | 'sheet.essence.skills.expertise'
+  | 'sheet.essence.prof.edit'
+  | 'sheet.essence.prof.editSkillsAria'
+  | 'sheet.essence.prof.editSavesAria'
+  | 'sheet.essence.prof.editGearAria'
+  | 'sheet.essence.prof.editLanguagesAria'
+  | 'sheet.essence.prof.done'
+  | 'sheet.essence.prof.add'
+  | 'sheet.essence.prof.pick'
+  | 'sheet.essence.prof.pickAria'
+  | 'sheet.essence.prof.freeAria'
+  | 'sheet.essence.prof.removeAria'
+  | 'sheet.essence.proficiencies.editHint'
+  | 'sheet.essence.proficiencies.addPlaceholder'
+  | 'sheet.essence.languages.addPlaceholder'
+  | 'sheet.essence.skills.editHint'
+  | 'sheet.essence.skills.cycleAria'
+  | 'sheet.essence.saves.editHint'
+  | 'sheet.essence.saves.toggleAria'
   | 'sheet.essence.hex.title'
   | 'sheet.essence.hex.proficiency'
   | 'sheet.essence.hex.rollLabel'
@@ -859,7 +938,57 @@ export type StringKey =
   | 'nav.brand.aria'
   | 'nav.back'
   | 'nav.back.aria'
+  | 'nav.back.campaigns'
+  | 'nav.back.account'
+  | 'nav.back.content'
+  | 'nav.back.maps'
   | 'nav.avatar.aria'
+  | 'sheet.turnOptions.title'
+  | 'sheet.turnOptions.hint'
+  | 'sheet.turnOptions.bonus'
+  | 'sheet.turnOptions.bonus.empty'
+  | 'sheet.turnOptions.reaction'
+  | 'sheet.turnOptions.opportunityAttack'
+  | 'account.haptics.title'
+  | 'account.haptics.hint'
+  | 'library.loading'
+  | 'sheet.switcher.open'
+  | 'sheet.switcher.title'
+  | 'sheet.switcher.hint'
+  | 'sheet.switcher.level'
+  | 'account.dice3d.title'
+  | 'account.notifications.title'
+  | 'account.notifications.hint'
+  | 'account.dice3d.hint'
+  // Palette de commandes (⌘K)
+  | 'palette.open'
+  | 'palette.title'
+  | 'palette.placeholder'
+  | 'palette.hint'
+  | 'palette.close'
+  | 'palette.empty'
+  | 'palette.loading'
+  | 'palette.group.characters'
+  | 'palette.group.campaigns'
+  | 'palette.group.destinations'
+  | 'palette.group.codex'
+  | 'palette.nav.home'
+  | 'palette.nav.campaigns'
+  | 'palette.nav.codex'
+  | 'palette.nav.account'
+  | 'palette.nav.create'
+  | 'palette.nav.join'
+  | 'palette.nav.packs'
+  | 'palette.keys.move'
+  | 'palette.keys.select'
+  | 'palette.keys.close'
+  | 'palette.character.level'
+  | 'palette.campaign.gm'
+  | 'palette.campaign.player'
+  | 'nav.tabs.aria'
+  | 'nav.tab.characters'
+  | 'nav.tab.campaigns'
+  | 'nav.tab.codex'
   // Library (point d'entrée S1 — plan 13.6)
   | 'library.title'
   | 'library.subtitle'
@@ -875,6 +1004,7 @@ export type StringKey =
   | 'library.card.level'
   | 'library.card.aliveLabel'
   | 'library.card.deadLabel'
+  | 'library.card.campaign'
   // DM dashboard — vue MJ prototype 4A pré-V1 (recâblé sur vraies campagnes + members lors du JALON 4A)
   | 'dm.title'
   | 'dm.subtitle'
@@ -904,6 +1034,11 @@ export type StringKey =
   | 'dm.secretRoll.nat20'
   | 'dm.secretRoll.nat1'
   | 'dm.secretRoll.historyAria'
+  | 'dm.secretRoll.aboutLabel'
+  | 'dm.secretRoll.aboutPlaceholder'
+  | 'dm.secretRoll.reveal'
+  | 'dm.secretRoll.revealed'
+  | 'dm.tip.revealSecretRoll'
   // Campaigns — liste « Mes campagnes » + create/leave (JALON 4.0.4)
   | 'campaigns.title'
   | 'campaigns.subtitle'
@@ -966,13 +1101,44 @@ export type StringKey =
   | 'campaigns.detail.invite.help'
   | 'campaigns.detail.invite.firstStepTitle'
   | 'campaigns.detail.invite.firstStepBody'
+  // Rotation du code d'invitation (M11) — révocation d'un code diffusé
+  | 'campaigns.detail.invite.rotate'
+  | 'campaigns.detail.invite.rotateConfirm'
+  | 'campaigns.detail.invite.rotateCancel'
+  | 'campaigns.detail.invite.rotating'
+  | 'campaigns.detail.invite.rotateWarning'
+  | 'campaigns.detail.invite.rotateError'
+  | 'campaigns.detail.invite.rotated'
   | 'campaigns.detail.roster.aria'
   | 'campaigns.detail.roster.title'
   | 'campaigns.detail.dmTools.title'
   | 'campaigns.detail.dmTools.aria'
+  // Superposition « Outils du meneur » en séance / en combat (E12)
+  | 'campaigns.dmTools.open'
+  | 'campaigns.dmTools.openTip'
   | 'campaigns.detail.roster.youSuffix'
   | 'campaigns.detail.roster.promote'
+  | 'campaigns.detail.roster.demote'
+  | 'campaigns.detail.roster.kick'
   | 'campaigns.detail.roster.viewSheet'
+  // Modale d'autorité sur un membre — rétrogradation et exclusion (M11)
+  | 'campaigns.memberAction.close'
+  | 'campaigns.memberAction.cancel'
+  | 'campaigns.memberAction.demote.title'
+  | 'campaigns.memberAction.demote.confirmPrefix'
+  | 'campaigns.memberAction.demote.confirmSuffix'
+  | 'campaigns.memberAction.demote.notice'
+  | 'campaigns.memberAction.demote.confirm'
+  | 'campaigns.memberAction.demote.submitting'
+  | 'campaigns.memberAction.kick.title'
+  | 'campaigns.memberAction.kick.confirmPrefix'
+  | 'campaigns.memberAction.kick.confirmSuffix'
+  | 'campaigns.memberAction.kick.notice'
+  | 'campaigns.memberAction.kick.confirm'
+  | 'campaigns.memberAction.kick.submitting'
+  | 'campaigns.memberAction.error.notFound'
+  | 'campaigns.memberAction.error.lastGm'
+  | 'campaigns.memberAction.error.generic'
   | 'campaigns.detail.party.aria'
   | 'campaigns.detail.party.title'
   | 'campaigns.detail.party.empty'
@@ -1008,7 +1174,11 @@ export type StringKey =
   | 'campaigns.detail.journalCta'
   | 'campaigns.detail.handoutsCta'
   | 'campaigns.detail.mapsCta'
+  | 'campaigns.detail.mapsPlayerCta'
   | 'campaigns.detail.settingsCta'
+  | 'campaigns.detail.spaces.aria'
+  | 'campaigns.detail.spaces.play'
+  | 'campaigns.detail.spaces.memory'
   // Réglages de campagne (nom / mode de dés / variantes 5e)
   | 'campaigns.settings.title'
   | 'campaigns.settings.intro'
@@ -1031,6 +1201,8 @@ export type StringKey =
   | 'campaigns.detail.statusBanner.archived'
   | 'campaigns.settings.dice.title'
   | 'campaigns.settings.dice.hint'
+  | 'campaigns.settings.language.title'
+  | 'campaigns.settings.language.hint'
   | 'campaigns.settings.variants.title'
   | 'campaigns.settings.variants.hint'
   | 'campaigns.settings.variants.featAtLevel1.label'
@@ -1043,11 +1215,17 @@ export type StringKey =
   | 'campaigns.settings.variants.grittyRealism.desc'
   // Handouts MJ→joueur — plan 27
   | 'handouts.toast.title'
+  | 'encounters.toast.started.title'
+  | 'encounters.toast.yourTurn.title'
+  | 'encounters.toast.yourTurn.sub'
   | 'handouts.screen.back'
   | 'handouts.screen.title'
   | 'handouts.screen.subtitleDm'
   | 'handouts.screen.subtitlePlayer'
   | 'handouts.screen.newCta'
+  | 'handouts.search.placeholder'
+  | 'handouts.search.aria'
+  | 'handouts.search.noMatch'
   | 'handouts.screen.empty.dm'
   | 'handouts.screen.empty.player'
   | 'handouts.screen.activeHeading'
@@ -1085,10 +1263,31 @@ export type StringKey =
   | 'handouts.create.error.recipients'
   | 'handouts.create.error.send'
   | 'handouts.create.sentToast'
+  // Cycle de vie d'un document envoyé (M12) — corriger, désarchiver, supprimer
+  | 'handouts.card.edit'
+  | 'handouts.card.unarchive'
+  | 'handouts.card.delete'
+  | 'handouts.card.deleteConfirm'
+  | 'handouts.card.recipientsNone'
+  | 'handouts.edit.title'
+  | 'handouts.edit.save'
+  | 'handouts.edit.saving'
+  | 'handouts.edit.savedToast'
+  | 'campaigns.tip.editHandout'
+  | 'campaigns.tip.unarchiveHandout'
+  | 'campaigns.tip.deleteHandout'
   // PNJ récurrents — plan 28
   | 'campaigns.detail.npcsCta'
   | 'campaigns.detail.eventFeed.kind.npcIntroduced'
   | 'campaigns.detail.eventFeed.kind.npcAttitudeChanged'
+  | 'campaigns.detail.eventFeed.kind.levelUp'
+  | 'campaigns.detail.eventFeed.kind.xpGain'
+  | 'campaigns.detail.eventFeed.kind.death'
+  | 'campaigns.detail.eventFeed.kind.revival'
+  | 'campaigns.detail.eventFeed.kind.rest'
+  | 'campaigns.detail.eventFeed.levelDetail'
+  | 'campaigns.detail.eventFeed.restShort'
+  | 'campaigns.detail.eventFeed.restLong'
   | 'npcs.role.merchant'
   | 'npcs.role.ally'
   | 'npcs.role.enemy'
@@ -1122,6 +1321,21 @@ export type StringKey =
   | 'npcs.detail.notFound'
   | 'npcs.detail.edit'
   | 'npcs.detail.delete'
+  | 'npcs.detail.duplicate'
+  | 'npcs.duplicate.title'
+  | 'npcs.duplicate.intro'
+  | 'npcs.duplicate.helper'
+  | 'npcs.duplicate.noTarget'
+  | 'npcs.duplicate.confirm'
+  | 'npcs.duplicate.busy'
+  | 'npcs.duplicate.cancel'
+  | 'npcs.duplicate.error'
+  | 'npcs.duplicate.doneToast'
+  | 'npcs.search.placeholder'
+  | 'npcs.search.aria'
+  | 'npcs.sort.aria'
+  | 'npcs.sort.introduction'
+  | 'npcs.sort.alpha'
   | 'npcs.detail.secretBadge'
   | 'npcs.detail.publicHeading'
   | 'npcs.detail.relationsHeading'
@@ -1170,13 +1384,20 @@ export type StringKey =
   | 'npcs.edit.field.tagsPlaceholder'
   | 'npcs.edit.field.visibility'
   | 'npcs.edit.field.visibilityHelper'
-  | 'npcs.edit.imageDeferred'
+  | 'npcs.edit.portraitImageAdd'
+  | 'npcs.edit.portraitImageReplace'
+  | 'npcs.edit.portraitImageRemove'
+  | 'npcs.edit.portraitImageBusy'
+  | 'npcs.edit.portraitImageError'
+  | 'npcs.edit.portraitImageAlt'
   | 'npcs.edit.combat.enable'
   | 'npcs.edit.combat.cr'
   | 'npcs.edit.combat.ac'
   | 'npcs.edit.combat.hp'
   | 'npcs.edit.combat.notes'
-  | 'npcs.edit.combat.monsterDeferred'
+  | 'npcs.edit.combat.linkMonster'
+  | 'npcs.edit.combat.unlinkMonster'
+  | 'npcs.edit.combat.linkMonsterHelper'
   | 'npcs.edit.cancel'
   | 'npcs.edit.save'
   | 'npcs.edit.saving'
@@ -1273,6 +1494,9 @@ export type StringKey =
   | 'campaigns.detail.eventFeed.detail.systemActor'
   | 'campaigns.detail.eventFeed.detail.unknownCharacter'
   | 'campaigns.detail.eventFeed.detail.noDetail'
+  | 'campaigns.detail.eventFeed.detail.delete'
+  | 'campaigns.detail.eventFeed.detail.deleteConfirm'
+  | 'campaigns.detail.eventFeed.detail.deleteError'
   | 'campaigns.detail.eventFeed.field.label'
   | 'campaigns.detail.eventFeed.field.total'
   | 'campaigns.detail.eventFeed.field.modifier'
@@ -1404,6 +1628,12 @@ export type StringKey =
   | 'sessions.journal.recompileConfirmTitle'
   | 'sessions.journal.recompileConfirmBody'
   | 'sessions.journal.recompileConfirm'
+  // Cadrage du récit compilé (M14) — ce que le journal embarque
+  | 'sessions.journal.scope.legend'
+  | 'sessions.journal.scope.rolls'
+  | 'sessions.journal.scope.monsterHp'
+  | 'sessions.journal.scope.dmOnly'
+  | 'sessions.journal.scope.help'
   // Démarrage / clôture de séance — JALON 23.4
   | 'sessions.action.start'
   | 'sessions.action.end'
@@ -1411,6 +1641,24 @@ export type StringKey =
   | 'sessions.action.ending'
   | 'sessions.action.error.anotherActive'
   | 'sessions.action.error.generic'
+  // Cycle de vie d'une séance (M13) — renommer, annuler, rouvrir
+  | 'sessions.edit.cta'
+  | 'sessions.edit.title'
+  | 'sessions.edit.close'
+  | 'sessions.edit.save'
+  | 'sessions.edit.saving'
+  | 'sessions.edit.number.label'
+  | 'sessions.edit.number.helper'
+  | 'sessions.edit.error.number'
+  | 'sessions.edit.error.generic'
+  | 'sessions.action.cancel'
+  | 'sessions.action.cancelConfirm'
+  | 'sessions.action.cancelNotice'
+  | 'sessions.action.reopen'
+  | 'sessions.action.reopening'
+  | 'campaigns.tip.editSession'
+  | 'campaigns.tip.cancelSession'
+  | 'campaigns.tip.reopenSession'
   // Rencontres de combat — JALON 24.2 (liste + création)
   | 'encounters.back'
   | 'encounters.title'
@@ -1459,6 +1707,13 @@ export type StringKey =
   | 'encounters.create.error.generic'
   // Encounters — écran de combat (JALON 24.3)
   | 'encounters.detail.back'
+  | 'encounters.detail.codex'
+  | 'encounters.detail.roster'
+  | 'encounters.detail.rosterTip'
+  | 'campaigns.roster.overlay.subtitle'
+  | 'campaigns.roster.overlay.close'
+  | 'campaigns.roster.overlay.empty'
+  | 'encounters.detail.codexTip'
   | 'encounters.detail.round'
   | 'encounters.detail.error.title'
   | 'encounters.detail.error.body'
@@ -1474,6 +1729,18 @@ export type StringKey =
   | 'encounters.action.end'
   | 'encounters.action.ending'
   | 'encounters.action.cancelEnd'
+  | 'encounters.action.previousTurn'
+  | 'encounters.action.abort'
+  | 'encounters.action.reopen'
+  | 'encounters.action.reopening'
+  | 'encounters.detail.closedHint'
+  | 'encounters.row.actions'
+  | 'encounters.row.manageTitle'
+  | 'encounters.row.manageCloseAria'
+  | 'encounters.row.renameLabel'
+  | 'encounters.row.renameSave'
+  | 'encounters.row.delete'
+  | 'encounters.row.deleteConfirm'
   | 'encounters.action.error.anotherActive'
   | 'encounters.action.error.noParticipants'
   | 'encounters.action.error.generic'
@@ -1500,6 +1767,41 @@ export type StringKey =
   | 'encounters.control.closeAria'
   | 'encounters.control.viewStatBlock'
   | 'encounters.control.statBlockCloseAria'
+  | 'encounters.control.tempHp'
+  | 'encounters.control.customCondition'
+  | 'encounters.control.customConditionPlaceholder'
+  | 'encounters.control.customConditionAdd'
+  | 'encounters.control.noteTitle'
+  | 'encounters.control.notePlaceholder'
+  | 'encounters.control.noteSave'
+  | 'encounters.playerControl.badge'
+  | 'encounters.playerControl.help'
+  | 'encounters.playerControl.loading'
+  | 'encounters.playerControl.unreadable'
+  | 'encounters.playerControl.open'
+  | 'encounters.control.editTitle'
+  | 'encounters.control.editName'
+  | 'encounters.control.editInitiative'
+  | 'encounters.control.editCurrentHp'
+  | 'encounters.control.editMaxHp'
+  | 'encounters.control.editSave'
+  | 'encounters.control.remove'
+  | 'encounters.control.removeConfirm'
+  | 'encounters.add.open'
+  | 'encounters.add.title'
+  | 'encounters.add.intro'
+  | 'encounters.add.closeAria'
+  | 'encounters.add.nameLabel'
+  | 'encounters.add.namePlaceholder'
+  | 'encounters.add.hpLabel'
+  | 'encounters.add.typeLabel'
+  | 'encounters.add.typeMonster'
+  | 'encounters.add.typeNpc'
+  | 'encounters.add.fromBestiary'
+  | 'encounters.add.submit'
+  | 'encounters.add.cancel'
+  | 'encounters.add.error.name'
+  | 'encounters.add.error.hp'
   | 'encounters.handoff.title'
   | 'encounters.handoff.help'
   | 'encounters.handoff.aria'
@@ -1528,6 +1830,18 @@ export type StringKey =
   | 'journal.actor.someone'
   | 'journal.tpl.sessionStart'
   | 'journal.tpl.sessionEnd'
+  | 'journal.tpl.levelUp'
+  | 'journal.tpl.levelUpNewClass'
+  | 'journal.tpl.levelUpNoClass'
+  | 'journal.tpl.xpGain'
+  | 'journal.tpl.xpLoss'
+  | 'journal.tpl.death'
+  | 'journal.tpl.deathByDm'
+  | 'journal.tpl.revivalNat20'
+  | 'journal.tpl.revivalDm'
+  | 'journal.tpl.restShort'
+  | 'journal.tpl.restLong'
+  | 'journal.tpl.restLongHealed'
   | 'journal.tpl.turnStart'
   | 'journal.tpl.rollAttackCrit'
   | 'journal.tpl.rollAttackFumble'
@@ -1559,6 +1873,7 @@ export type StringKey =
   | 'journal.aggregate.subtitle'
   | 'journal.aggregate.back'
   | 'journal.aggregate.export'
+  | 'journal.aggregate.exportSession'
   | 'journal.aggregate.empty'
   | 'journal.aggregate.sessionNumberPrefix'
   | 'journal.aggregate.notCompiled'
@@ -1599,6 +1914,10 @@ export type StringKey =
   | 'sheet.avoir.coin.el'
   | 'sheet.avoir.coin.or'
   | 'sheet.avoir.coin.pl'
+  | 'sheet.avoir.weight.title'
+  | 'sheet.avoir.weight.normal'
+  | 'sheet.avoir.weight.encumbered'
+  | 'sheet.avoir.weight.heavilyEncumbered'
   | 'sheet.avoir.coins.title'
   | 'sheet.avoir.coins.purseToast'
   | 'sheet.avoir.coins.updated'
@@ -1676,6 +1995,8 @@ export type StringKey =
   | 'customContent.list.title'
   | 'customContent.list.empty'
   | 'customContent.list.delete'
+  | 'customContent.list.export'
+  | 'customContent.list.exportTip'
   | 'customContent.list.deleteConfirm'
   | 'customContent.toast.imported'
   | 'customContent.toast.importedSub'
@@ -1702,6 +2023,21 @@ export type StringKey =
   | 'customContent.editor.meta.nameFr'
   | 'customContent.editor.meta.nameEn'
   | 'customContent.editor.meta.author'
+  | 'customContent.duplicate.title'
+  | 'customContent.duplicate.open'
+  | 'customContent.duplicate.modeLegend'
+  | 'customContent.duplicate.modeCopy'
+  | 'customContent.duplicate.modeCopyHint'
+  | 'customContent.duplicate.modeReplace'
+  | 'customContent.duplicate.modeReplaceHint'
+  | 'customContent.duplicate.searchPlaceholder'
+  | 'customContent.duplicate.searchAria'
+  | 'customContent.duplicate.loading'
+  | 'customContent.duplicate.empty'
+  | 'customContent.duplicate.copySuffixName'
+  | 'customContent.origin.custom'
+  | 'customContent.editor.meta.sourceLabel'
+  | 'customContent.editor.meta.sourceLabelHelper'
   | 'customContent.editor.meta.version'
   | 'customContent.editor.meta.versionHelper'
   | 'customContent.editor.meta.descriptionFr'
@@ -2298,6 +2634,16 @@ export type StringKey =
   | 'customContent.editor.classForm.confirm'
   | 'customContent.editor.classForm.error.idRequired'
   | 'customContent.editor.classForm.error.idFormat'
+  | 'customContent.editor.classForm.spellcastingPreparation'
+  | 'customContent.editor.classForm.spellcastingPreparationHelper'
+  | 'customContent.editor.classForm.spellcastingPreparation.prepared'
+  | 'customContent.editor.classForm.spellcastingPreparation.known'
+  | 'customContent.editor.classForm.spellsKnownOrPrepared'
+  | 'customContent.editor.classForm.spellsKnownOrPreparedHelper'
+  | 'customContent.editor.classForm.cantripsKnown'
+  | 'customContent.editor.classForm.cantripsKnownHelper'
+  | 'customContent.editor.classForm.error.progressionFormat'
+  | 'customContent.editor.classForm.error.progressionRequiredForCantrips'
   | 'customContent.editor.classForm.error.idReserved'
   | 'customContent.editor.classForm.error.nameFrRequired'
   | 'customContent.editor.classForm.error.descriptionFrRequired'
@@ -2350,6 +2696,9 @@ export type StringKey =
   | 'campaigns.tip.applyHeal'
   | 'campaigns.tip.quickDamage'
   | 'campaigns.tip.quickHeal'
+  | 'campaigns.tip.grantTempHp'
+  | 'campaigns.tip.customCondition'
+  | 'campaigns.tip.saveNote'
   | 'campaigns.tip.conditionAdd'
   | 'campaigns.tip.conditionRemove'
   | 'campaigns.tip.rollInit'
@@ -2358,12 +2707,20 @@ export type StringKey =
   | 'campaigns.tip.endCombat'
   | 'campaigns.tip.reroll'
   | 'campaigns.tip.controlParticipant'
+  | 'campaigns.tip.previousTurn'
+  | 'campaigns.tip.abortCombat'
+  | 'campaigns.tip.reopenCombat'
+  | 'campaigns.tip.manageEncounter'
+  | 'campaigns.tip.addParticipant'
+  | 'campaigns.tip.editParticipant'
+  | 'campaigns.tip.removeParticipant'
   | 'campaigns.tip.openJournal'
   | 'campaigns.tip.openHandouts'
   | 'campaigns.tip.openNpcs'
   | 'campaigns.tip.openSessions'
   | 'campaigns.tip.openEncounters'
   | 'campaigns.tip.openMaps'
+  | 'campaigns.tip.viewMaps'
   | 'campaigns.tip.openSettings'
   | 'campaigns.tip.promoteGm'
   | 'campaigns.tip.copyInviteCode'
@@ -2373,6 +2730,7 @@ export type StringKey =
   | 'campaigns.tip.createCharacter'
   | 'campaigns.tip.editNpc'
   | 'campaigns.tip.deleteNpc'
+  | 'campaigns.tip.duplicateNpc'
   | 'campaigns.tip.editRelations'
   | 'campaigns.tip.archiveHandout'
   | 'campaigns.tip.startSession'
@@ -2381,6 +2739,9 @@ export type StringKey =
   | 'campaigns.tip.handoffTarget'
   | 'campaigns.tip.removeMonsterRow'
   | 'campaigns.tip.fromBestiary'
+  | 'campaigns.tip.demoteGm'
+  | 'campaigns.tip.kickMember'
+  | 'campaigns.tip.rotateInviteCode'
   // Infobulles explicites — carte (map)
   | 'map.tip.placeAoe'
   | 'map.tip.rotateAoeCcw'
@@ -2396,6 +2757,7 @@ export type StringKey =
   | 'map.tip.toggleGrid'
   | 'map.tip.toggleFog'
   | 'map.tip.toggleLos'
+  | 'map.tip.viewAsPlayer'
   | 'map.tip.toggleLighting'
   | 'map.tip.toggleMeasure'
   | 'map.tip.deleteMap'
@@ -2428,6 +2790,11 @@ export type StringKey =
   | 'map.cloud.loadErrorPrefix'
   | 'map.cloud.loadingMaps'
   | 'map.cloud.empty'
+  | 'map.cloud.emptyMember'
+  | 'map.cloud.memberIntro'
+  | 'map.zoom.inAria'
+  | 'map.zoom.outAria'
+  | 'map.zoom.reset'
   | 'map.cloud.listAria'
   | 'map.cloud.delete'
   | 'map.import.signedOut'
@@ -2450,6 +2817,31 @@ export type StringKey =
   | 'map.import.saveSection'
   | 'map.import.submitting'
   | 'map.import.submit'
+  // Écran carte — import d'une image nue (2ᵉ onglet de l'import)
+  | 'map.import.tabDd2vtt'
+  | 'map.import.tabImage'
+  | 'map.import.imageIntro'
+  | 'map.import.chooseImage'
+  | 'map.import.imageProcessing'
+  | 'map.import.imageTooLarge'
+  | 'map.import.imageFailed'
+  | 'map.import.statWeight'
+  | 'map.import.statScale'
+  | 'map.import.imageHint'
+  // Écran carte — réglages d'une carte existante (map-settings-modal)
+  | 'map.settings.closeLabel'
+  | 'map.settings.title'
+  | 'map.settings.gridSizeLabel'
+  | 'map.settings.gridSizeHelp'
+  | 'map.settings.scaleLabel'
+  | 'map.settings.scaleEchoPrefix'
+  | 'map.settings.scaleInvalid'
+  | 'map.settings.imageUrlLabel'
+  | 'map.settings.imageUrlPlaceholder'
+  | 'map.settings.imageUrlHelp'
+  | 'map.settings.save'
+  | 'map.live.settingsButton'
+  | 'map.tip.openSettings'
   // Écran carte — édition de jeton (token-edit-modal) + bestiaire (monster-picker)
   | 'map.token.editTitle'
   | 'map.token.closeLabel'
@@ -2540,6 +2932,7 @@ export type StringKey =
   | 'map.live.snapToggle'
   | 'map.live.fogToggleLabel'
   | 'map.live.losToggle'
+  | 'map.live.playerViewToggle'
   | 'map.live.lightingToggle'
   | 'map.live.tvView'
   | 'map.live.measureLabel'
@@ -2679,6 +3072,8 @@ export type StringKey =
   | 'levelUp.addClass.pickTitle'
   | 'levelUp.addClass.pickIntro'
   | 'levelUp.addClass.blockedTitle'
+  | 'levelUp.addClass.dmOverrideBadge'
+  | 'levelUp.addClass.dmOverrideTitle'
   | 'levelUp.addClass.selectFirst'
   | 'levelUp.addClass.defNotFound'
   | 'levelUp.addClass.subChoicesTitle'
@@ -2705,6 +3100,27 @@ export type StringKey =
   | 'radialMenu.tip.close'
   | 'dice.tip.closeHistory'
   | 'dice.history.title'
+  // Menu d'options de jet — partagé par sauvegardes, compétences, initiative,
+  // jets de mort et attaques de sort (M21/M22/M23)
+  | 'dice.options.bonus'
+  | 'dice.options.bonusAria'
+  | 'dice.options.discreet'
+  | 'dice.options.discreetNote'
+  | 'dice.options.useInspiration'
+  | 'dice.options.inspirationNote'
+  | 'dice.options.title'
+  | 'dice.options.aria'
+  // Jet libre — une formule tapée à la main (M20)
+  | 'dice.free.title'
+  | 'dice.free.aria'
+  | 'dice.free.label'
+  | 'dice.free.placeholder'
+  | 'dice.free.hint'
+  | 'dice.free.invalid'
+  | 'dice.free.submit'
+  | 'dice.free.cancel'
+  | 'dice.free.rollLabel'
+  | 'sheet.fab.freeRoll'
   // Modale de jet physique (plan 12.5)
   | 'dice.physical.header'
   | 'dice.physical.rollPrompt'
@@ -2727,6 +3143,9 @@ export type StringKey =
   | 'dice.hitMiss.hitTip'
   | 'dice.history.closeLabel'
   | 'dice.history.empty'
+  | 'dice.history.replay'
+  | 'dice.history.replayTip'
+  | 'dice.history.replayAria'
   | 'dice.history.modeSaveError'
   | 'dice.history.modeSaveErrorSub'
   | 'dm.tip.advNormal'
@@ -2734,6 +3153,7 @@ export type StringKey =
   | 'dm.tip.advDisadvantage'
   | 'dm.tip.secretRoll'
   | 'journal.tip.export'
+  | 'journal.tip.exportSession'
   | 'journal.tip.compile'
   | 'journal.tip.edit'
   | 'journal.tip.recompile';
@@ -2804,12 +3224,18 @@ const STRINGS: Record<Locale, Dict> = {
     // Codex — navigateur de contenu SRD (plan 19)
     'codex.title': 'Le Codex',
     'codex.subtitle': 'Tout le contenu du SRD 5.2.1, à portée de main.',
+    'codex.overlay.subtitle': 'Consulter une règle sans quitter la partie.',
+    'codex.overlay.close': 'Fermer le Codex',
     'codex.nav.cta': 'Le Codex',
     'codex.loading': 'Invocation du contenu…',
     'codex.empty': 'Aucune entrée ne correspond à ta recherche.',
     'codex.result.singular': 'résultat',
     'codex.result.plural': 'résultats',
     'codex.cat.aria': 'Catégories du Codex',
+    'codex.cat.search': 'Recherche',
+    'codex.search.all': 'Rechercher dans tout le Codex…',
+    'codex.search.allHint':
+      'Saisis au moins deux lettres pour chercher dans toutes les catégories à la fois.',
     'codex.cat.spells': 'Sorts',
     'codex.cat.feats': 'Dons',
     'codex.cat.invocations': 'Invocations',
@@ -2927,6 +3353,19 @@ const STRINGS: Record<Locale, Dict> = {
     'account.link.error.generic': 'La liaison n’a pas abouti. Réessaie.',
     // Accueil — hub de navigation
     'home.hub.title': 'Explorer',
+    'home.ongoing.label': 'En cours',
+    'home.ongoing.kindEncounter': 'Combat',
+    'home.ongoing.kindSession': 'Séance',
+    'home.ongoing.round': 'Manche {n}',
+    'home.ongoing.sessionNumber': 'Séance {n}',
+    'home.ongoing.cta': 'Reprendre',
+    'home.draft.label': 'Création commencée',
+    'home.draft.unnamed': 'Héros sans nom',
+    'home.draft.step': 'Étape {n} sur {total} · {step}',
+    'home.draft.resume': 'Continuer',
+    'home.draft.resumeAria': 'Continuer la création de',
+    'home.draft.discard': 'Abandonner',
+    'home.draft.discardAria': 'Abandonner le brouillon de',
     'home.hub.codex.sub': 'Sorts, objets, espèces, classes…',
     'home.hub.campaigns.sub': 'Rejoins ou crée une table.',
     // Wizard (plan 05)
@@ -3233,14 +3672,27 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.notFound': 'Personnage introuvable',
     'sheet.notFound.hint': "Aucune fiche à cet emplacement. Elle a peut-être été supprimée.",
     'sheet.backHome': 'Retour à la bibliothèque',
+    'sheet.campaignLink': 'Ma campagne',
+    'sheet.turnBanner.label': 'C’est à vous de jouer',
+    'sheet.turnBanner.sub': 'Round {n} · {name}',
+    'sheet.turnBanner.aria': 'Rejoindre le combat en cours, c’est à vous de jouer',
     'sheet.error.title': 'Erreur de chargement',
     'sheet.statusStrip.aria': 'Statistiques vitales',
     'sheet.modeTabs.aria': 'Sections de la fiche',
     'sheet.hero.level': 'Niveau {n}',
+    'sheet.identity.edit': 'Modifier l’identité',
+    'sheet.identity.title': 'Identité',
+    'sheet.identity.name': 'Nom',
+    'sheet.identity.nameRequired': 'Le nom ne peut pas être vide.',
+    'sheet.identity.alignment': 'Alignement',
+    'sheet.identity.save': 'Enregistrer',
+    'sheet.identity.cancel': 'Annuler',
     'sheet.stat.hp': 'PV',
     'sheet.stat.ac': 'CA',
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Vit.',
+    'sheet.stat.editInit': 'Modifier l’initiative',
+    'sheet.stat.editSpeed': 'Modifier la vitesse (en mètres)',
     'sheet.stat.passivePerception': 'Perc. passive',
     'sheet.combat.hitDice.title': 'Dés de vie',
     'sheet.combat.hitDice.spend': 'Repos court',
@@ -3270,6 +3722,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.resources.restore': 'Récupérer',
     'sheet.combat.resources.spendLabel': 'Dépenser un point de {resource}',
     'sheet.combat.resources.restoreLabel': 'Récupérer un point de {resource}',
+    'sheet.combat.resources.editMaxLabel': 'Modifier le maximum de {resource}',
     'sheet.combat.resources.restoresShort': 'Repos court',
     'sheet.combat.resources.restoresLong': 'Repos long',
     'sheet.combat.resources.rage': 'Rage',
@@ -3287,6 +3740,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.exhaustion.death': 'Niveau 6 : mort.',
     'sheet.combat.exhaustion.decrease': 'Diminuer l’épuisement',
     'sheet.combat.exhaustion.increase': 'Augmenter l’épuisement',
+    'sheet.combat.exhaustion.readRule': 'Lire la règle',
+    'sheet.combat.condition.remove': 'Retirer cet état',
     'sheet.combat.concentration.title': 'Concentration',
     'sheet.combat.concentration.cantrip': 'Sort mineur',
     'sheet.combat.concentration.castAt': 'Lancé au niveau {n}',
@@ -3346,9 +3801,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.numberpad.title.damage': 'Dégâts',
     'sheet.combat.numberpad.title.heal': 'Soigner',
     'sheet.combat.numberpad.title.temp': 'PV temporaires',
+    'sheet.combat.numberpad.title.max': 'Maximum de PV',
     'sheet.combat.numberpad.commit.damage': 'Appliquer',
     'sheet.combat.numberpad.commit.heal': 'Soigner',
     'sheet.combat.numberpad.commit.temp': 'Poser',
+    'sheet.combat.numberpad.commit.max': 'Fixer',
+    'sheet.combat.hp.maxEdit': 'Modifier le maximum de PV (actuellement {n})',
     'sheet.combat.numberpad.cancel': 'Annuler',
     'sheet.combat.numberpad.full': 'Plein ({max})',
     'sheet.combat.attacks.cardTitle': 'Attaques',
@@ -3357,6 +3815,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.attacks.ranged': 'Distance',
     'sheet.combat.attacks.melee': 'Mêlée',
     'sheet.combat.attacks.menuAdvantage': 'Avantage',
+    'sheet.combat.attacks.menuFlanking': 'Prise en tenaille',
     'sheet.combat.attacks.menuDisadvantage': 'Désav.',
     'sheet.combat.attacks.menuCrit': 'Crit',
     'sheet.combat.hud.action': 'Action',
@@ -3459,6 +3918,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.sorts': 'Sorts',
     'sheet.fab.outils': 'Outils',
     'sheet.fab.lancer': 'Lancer',
+    'sheet.fab.codex': 'Codex',
     'sheet.fab.repos': 'Repos',
     'sheet.fab.inspiration': 'Inspiration héroïque',
     'sheet.fab.inspirationOn': 'Octroyée — relancez un test au choix.',
@@ -3466,6 +3926,16 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.historique': 'Historique des jets',
     'sheet.fab.d20Label': 'd20 vif',
     'sheet.placeholder.todo': 'Section à venir dans un prochain plan.',
+    'sheet.ame.xp.title': 'Expérience',
+    'sheet.ame.xp.unit': 'Points d’expérience',
+    'sheet.ame.xp.editAria': 'Modifier les points d’expérience',
+    'sheet.ame.xp.progressAria': 'Progression vers le niveau suivant',
+    'sheet.ame.xp.toNext': 'Encore {n} PX avant le niveau {level}.',
+    'sheet.ame.xp.maxLevel': 'Niveau 20 atteint — plus rien à gravir.',
+    'sheet.ame.xp.levelMismatch': 'L’expérience situe ce personnage au niveau {xpLevel}, la fiche au niveau {sheetLevel}. Rien n’est bloqué : le meneur tranche.',
+    'sheet.ame.xp.toastTitle': 'Expérience',
+    'sheet.ame.xp.toastSub': 'Total : {total} PX',
+    'sheet.tip.editXp': 'Appuie pour modifier l’expérience',
     'sheet.ame.personality.title': 'Personnalité',
     'sheet.ame.personality.empty': 'Pas encore renseigné.',
     'sheet.ame.personality.edit': 'Modifier',
@@ -3507,6 +3977,17 @@ const STRINGS: Record<Locale, Dict> = {
     // pour cantrip (cf. règle terminologique du projet).
     'sheet.magie.prep.titleFor': 'Préparation · {class}',
     'sheet.magie.prep.count': '{n} / {cap} préparés',
+    'sheet.magie.prep.overCap':
+      'Tu dépasses le plafond de {cap} sorts préparés. À la table de l’arbitrer.',
+    'sheet.magie.addSpell.action': 'Ajouter un sort',
+    'sheet.magie.addSpell.title': 'Ajouter un sort',
+    'sheet.magie.addSpell.classAria': 'Classe qui apprend le sort',
+    'sheet.magie.addSpell.searchPlaceholder': 'Chercher un sort…',
+    'sheet.magie.addSpell.searchLabel': 'Chercher un sort à ajouter',
+    'sheet.magie.addSpell.hint':
+      'Tape au moins deux lettres. Tous les sorts sont proposés, y compris hors de ta liste de classe.',
+    'sheet.magie.addSpell.already': 'Déjà connu',
+    'sheet.magie.addSpell.cantrip': 'Sort mineur',
     'sheet.magie.prep.edit': 'Modifier',
     'sheet.magie.prep.done': 'Terminer',
     'sheet.magie.prep.hint':
@@ -3517,6 +3998,11 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.prepared': 'Préparé',
     'sheet.magie.prep.alwaysAvailable': 'Toujours',
     'sheet.magie.prep.emptyPrepared': 'Aucun sort préparé pour le moment.',
+    // Formulation NEUTRE en genre : l'ancienne chaîne était codée en dur et
+    // accordée au féminin (« Cette aventurière ») — elle mégenrait tout
+    // personnage masculin ou non binaire.
+    'sheet.magie.noMagic':
+      'Ce personnage ne pratique aucun art arcanique — aucune classe lanceuse de sorts.',
     // Mode Magie — cartes, cercle/pacte, liste, modale de sort
     'sheet.magie.restore': 'Restaurer',
     'sheet.magie.noSlotToConsume': 'Plus aucun emplacement à consommer',
@@ -3713,6 +4199,27 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.skills.notProficient': 'Non maîtrisée',
     'sheet.essence.skills.proficient': 'Maîtrise',
     'sheet.essence.skills.expertise': 'Expertise',
+    'sheet.essence.prof.edit': 'Modifier',
+    'sheet.essence.prof.editSkillsAria': 'Modifier les maîtrises de compétences',
+    'sheet.essence.prof.editSavesAria': 'Modifier les maîtrises de sauvegarde',
+    'sheet.essence.prof.editGearAria': 'Modifier les maîtrises d’équipement',
+    'sheet.essence.prof.editLanguagesAria': 'Modifier les langues connues',
+    'sheet.essence.prof.done': 'Terminer',
+    'sheet.essence.prof.add': 'Ajouter',
+    'sheet.essence.prof.pick': 'Choisir dans la liste…',
+    'sheet.essence.prof.pickAria': 'Choisir une entrée à ajouter — {group}',
+    'sheet.essence.prof.freeAria': 'Saisir une entrée libre — {group}',
+    'sheet.essence.prof.removeAria': 'Retirer {entry}',
+    'sheet.essence.proficiencies.editHint':
+      'Ajoute ce que le jeu t’a apporté. Les maîtrises de classe et d’historique restent calculées.',
+    'sheet.essence.proficiencies.addPlaceholder': 'Outils de forgeron…',
+    'sheet.essence.languages.addPlaceholder': 'Une langue de ton monde…',
+    'sheet.essence.skills.editHint':
+      'Touche une compétence pour faire tourner sa maîtrise : aucune, maîtrise, expertise.',
+    'sheet.essence.skills.cycleAria': '{skill} — {state}. Toucher pour changer la maîtrise.',
+    'sheet.essence.saves.editHint':
+      'Touche une sauvegarde pour ajouter ou retirer sa maîtrise.',
+    'sheet.essence.saves.toggleAria': 'Maîtrise de la sauvegarde de {ability}',
     'sheet.essence.hex.title': 'Hexagramme',
     'sheet.essence.hex.proficiency': 'Maîtrise',
     'sheet.essence.hex.rollLabel': 'Test de {ability}',
@@ -3732,7 +4239,66 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.brand.aria': "Retour à l'accueil",
     'nav.back': 'Retour',
     'nav.back.aria': 'Retour à la bibliothèque',
+    // Destinations du bouton Retour contextuel (cf. `lib/parent-route.ts`) :
+    // l'annonce doit nommer la destination RÉELLE, pas la bibliothèque.
+    'nav.back.campaigns': 'Retour à mes campagnes',
+    'nav.back.account': 'Retour au compte',
+    'nav.back.content': 'Retour à mon contenu',
+    'nav.back.maps': 'Retour aux cartes',
     'nav.avatar.aria': 'Compte (à venir)',
+    // Barre de navigation basse (mobile) / rail de destinations (desktop).
+    // Terminologie reprise telle quelle du SRD FR 5.2.1 : « action Bonus »,
+    // « Réaction », « attaque d'Opportunité » (majuscules du terme de jeu).
+    'sheet.turnOptions.title': 'En dehors de ton action',
+    'sheet.turnOptions.hint':
+      'Ce qui ne coûte pas ton action, et qu’on oublie une campagne entière.',
+    'sheet.turnOptions.bonus': 'Action Bonus',
+    'sheet.turnOptions.bonus.empty': 'Aucun sort d’action Bonus connu.',
+    'sheet.turnOptions.reaction': 'Réaction',
+    'sheet.turnOptions.opportunityAttack': 'Attaque d’Opportunité',
+    'library.loading': 'Chargement de tes personnages',
+    'sheet.switcher.open': 'Changer de personnage',
+    'sheet.switcher.title': 'Changer de personnage',
+    'sheet.switcher.hint': 'Ouvre une autre de tes fiches sans repasser par la bibliothèque.',
+    'sheet.switcher.level': 'Niveau',
+    'account.dice3d.title': 'Dés en relief',
+    'account.dice3d.hint':
+      'Les dés numériques tombent en trois dimensions et se posent sur leur face. Décoratif : le résultat est le même sans.',
+    'account.notifications.title': 'Notifications de partie',
+    'account.notifications.hint':
+      'Document du meneur, début de combat, ton tour. Coupe les annonces sans masquer le bandeau « à toi de jouer » de la fiche. Réglage propre à cet appareil.',
+    'account.haptics.title': 'Retour haptique',
+    'account.haptics.hint':
+      "Vibration courte sur les jets et leurs issues. Réglage propre à cet appareil.",
+    // Palette de commandes (⌘K)
+    'palette.open': 'Rechercher partout',
+    'palette.title': 'Rechercher',
+    'palette.placeholder': 'Un personnage, une campagne, une règle…',
+    'palette.hint': 'Cherche un personnage, une campagne, un écran, ou n’importe quelle entrée du Codex.',
+    'palette.close': 'Fermer la recherche',
+    'palette.empty': 'Rien ne correspond à ta recherche.',
+    'palette.loading': 'Le Codex se charge…',
+    'palette.group.characters': 'Personnages',
+    'palette.group.campaigns': 'Campagnes',
+    'palette.group.destinations': 'Aller à',
+    'palette.group.codex': 'Le Codex',
+    'palette.nav.home': 'Mes personnages',
+    'palette.nav.campaigns': 'Mes campagnes',
+    'palette.nav.codex': 'Le Codex',
+    'palette.nav.account': 'Mon compte',
+    'palette.nav.create': 'Créer un personnage',
+    'palette.nav.join': 'Rejoindre une campagne',
+    'palette.nav.packs': 'Mes packs de contenu',
+    'palette.keys.move': 'naviguer',
+    'palette.keys.select': 'ouvrir',
+    'palette.keys.close': 'fermer',
+    'palette.character.level': 'niv.',
+    'palette.campaign.gm': 'Tu es MJ',
+    'palette.campaign.player': 'Tu y joues',
+    'nav.tabs.aria': 'Espaces principaux',
+    'nav.tab.characters': 'Personnages',
+    'nav.tab.campaigns': 'Campagnes',
+    'nav.tab.codex': 'Codex',
     // Library
     'library.title': 'Bibliothèque',
     'library.subtitle': 'Tes héros et héroïnes',
@@ -3750,6 +4316,7 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.level': 'Niveau',
     'library.card.aliveLabel': 'En vie',
     'library.card.deadLabel': 'Mort.e',
+    'library.card.campaign': 'Campagne',
     // DM dashboard — vue MJ (S1 MVP route /dm)
     'dm.title': 'Tableau du meneur',
     'dm.subtitle': "Vue d'ensemble de la compagnie",
@@ -3782,6 +4349,11 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.secretRoll.nat20': 'Réussite critique',
     'dm.secretRoll.nat1': 'Échec critique',
     'dm.secretRoll.historyAria': 'Derniers jets secrets',
+    'dm.secretRoll.aboutLabel': 'À propos de quoi ?',
+    'dm.secretRoll.aboutPlaceholder': 'Perception du garde…',
+    'dm.secretRoll.reveal': 'Révéler à la table',
+    'dm.secretRoll.revealed': 'Révélé',
+    'dm.tip.revealSecretRoll': 'Rejournalise ce jet en visible par toute la table.',
     // Campaigns — liste « Mes campagnes » + create/leave (JALON 4.0.4)
     'campaigns.title': 'Mes campagnes',
     'campaigns.subtitle': 'Les tables où ton héros prend vie',
@@ -3859,13 +4431,49 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.firstStepTitle': 'Invite tes joueurs',
     'campaigns.detail.invite.firstStepBody':
       'Ta campagne est prête. Partage le lien ou dicte le code autour de la table : chaque joueur rejoint, puis crée ou lie son personnage. Tu les verras apparaître ici dans la compagnie.',
+    'campaigns.detail.invite.rotate': 'Régénérer le code',
+    'campaigns.detail.invite.rotateConfirm': 'Confirmer la régénération',
+    'campaigns.detail.invite.rotateCancel': 'Garder le code actuel',
+    'campaigns.detail.invite.rotating': 'Régénération en cours…',
+    'campaigns.detail.invite.rotateWarning':
+      'Le code actuel cessera immédiatement de fonctionner, ainsi que les liens déjà partagés. Les membres déjà inscrits ne sont pas affectés.',
+    'campaigns.detail.invite.rotateError':
+      "La régénération n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'campaigns.detail.invite.rotated': 'Nouveau code en place.',
     'campaigns.detail.roster.aria': 'Membres de la campagne',
     'campaigns.detail.roster.title': 'La compagnie',
     'campaigns.detail.dmTools.title': 'Outils du meneur',
     'campaigns.detail.dmTools.aria': 'Outils du meneur — jet secret et bloc-notes',
+    'campaigns.dmTools.open': 'Outils',
+    'campaigns.dmTools.openTip': 'Jet secret et bloc-notes, sans quitter la table.',
     'campaigns.detail.roster.youSuffix': '(toi)',
     'campaigns.detail.roster.promote': 'Promouvoir meneur',
+    'campaigns.detail.roster.demote': 'Rétrograder',
+    'campaigns.detail.roster.kick': 'Exclure',
     'campaigns.detail.roster.viewSheet': 'Voir la fiche',
+    'campaigns.memberAction.close': 'Fermer la confirmation',
+    'campaigns.memberAction.cancel': 'Annuler',
+    'campaigns.memberAction.demote.title': 'Rétrograder ce meneur',
+    'campaigns.memberAction.demote.confirmPrefix':
+      'Retirer les droits de meneur à',
+    'campaigns.memberAction.demote.confirmSuffix': '?',
+    'campaigns.memberAction.demote.notice':
+      'Il redevient joueur et garde sa place à la table : il perd seulement l’autorité sur la campagne. La rétrogradation est réversible — tu peux le repromouvoir à tout moment.',
+    'campaigns.memberAction.demote.confirm': 'Rétrograder',
+    'campaigns.memberAction.demote.submitting': 'Rétrogradation en cours…',
+    'campaigns.memberAction.kick.title': 'Exclure ce membre',
+    'campaigns.memberAction.kick.confirmPrefix': 'Retirer de la campagne',
+    'campaigns.memberAction.kick.confirmSuffix': '?',
+    'campaigns.memberAction.kick.notice':
+      'Il perd l’accès à la campagne, à ses séances et à son journal. Sa fiche de personnage lui appartient et reste intacte dans sa bibliothèque. Il peut revenir avec le code d’invitation.',
+    'campaigns.memberAction.kick.confirm': 'Confirmer l’exclusion',
+    'campaigns.memberAction.kick.submitting': 'Exclusion en cours…',
+    'campaigns.memberAction.error.notFound':
+      "Cette campagne n'existe plus côté serveur.",
+    'campaigns.memberAction.error.lastGm':
+      'Impossible : une campagne doit toujours garder au moins un meneur. Promeus un autre membre d’abord.',
+    'campaigns.memberAction.error.generic':
+      "L'opération n'a pas abouti. Vérifie ta connexion et réessaye.",
     'campaigns.detail.party.aria': 'État de combat de la compagnie en temps réel',
     'campaigns.detail.party.title': 'État de la compagnie',
     'campaigns.detail.party.empty': 'Aucun joueur n’a encore lié de personnage.',
@@ -3989,6 +4597,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.detail.systemActor': 'Système',
     'campaigns.detail.eventFeed.detail.unknownCharacter': 'Personnage',
     'campaigns.detail.eventFeed.detail.noDetail': 'Aucun détail supplémentaire.',
+    'campaigns.detail.eventFeed.detail.delete': 'Retirer du journal',
+    'campaigns.detail.eventFeed.detail.deleteConfirm': 'Confirmer le retrait',
+    'campaigns.detail.eventFeed.detail.deleteError': 'Le retrait a échoué.',
     'campaigns.detail.eventFeed.field.label': 'Intitulé',
     'campaigns.detail.eventFeed.field.total': 'Total',
     'campaigns.detail.eventFeed.field.modifier': 'Modificateur',
@@ -4063,7 +4674,11 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Documents',
     'campaigns.detail.mapsCta': 'Cartes',
+    'campaigns.detail.mapsPlayerCta': 'Voir la carte',
     'campaigns.detail.settingsCta': 'Réglages',
+    'campaigns.detail.spaces.aria': 'Espaces de la campagne',
+    'campaigns.detail.spaces.play': 'Jouer',
+    'campaigns.detail.spaces.memory': 'Mémoire de la table',
     'campaigns.settings.title': 'Réglages de la campagne',
     'campaigns.settings.intro':
       'Ajuste le nom, le mode de dés de la table et les règles optionnelles. Ces choix s’appliquent à toute la campagne.',
@@ -4093,6 +4708,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.settings.dice.title': 'Mode de dés de la table',
     'campaigns.settings.dice.hint':
       'Le mode par défaut de cette table. Chaque joueur peut le suivre ou choisir le sien dans son compte.',
+    'campaigns.settings.language.title': 'Langue de la table',
+    'campaigns.settings.language.hint':
+      'La langue servie aux joueurs qui n’en ont pas choisi une dans leur compte. Un choix personnel l’emporte toujours.',
     'campaigns.settings.variants.title': 'Variantes 5e',
     'campaigns.settings.variants.hint':
       'Règles optionnelles appliquées à toute la table. Désactivées par défaut.',
@@ -4110,11 +4728,17 @@ const STRINGS: Record<Locale, Dict> = {
       'Repos court de 8 heures, repos long de 7 jours.',
     // Handouts MJ→joueur — plan 27
     'handouts.toast.title': 'Le MJ vous a transmis un document',
+    'encounters.toast.started.title': 'Le combat commence',
+    'encounters.toast.yourTurn.title': 'C’est à vous de jouer',
+    'encounters.toast.yourTurn.sub': 'Round {n} · {name}',
     'handouts.screen.back': 'Retour à la campagne',
     'handouts.screen.title': 'Documents',
     'handouts.screen.subtitleDm': 'Cartes, lettres et indices transmis à la table.',
     'handouts.screen.subtitlePlayer': 'Les documents que le MJ vous a transmis.',
     'handouts.screen.newCta': 'Nouveau document',
+    'handouts.search.placeholder': 'Chercher un titre, un mot du texte…',
+    'handouts.search.aria': 'Chercher parmi les documents',
+    'handouts.search.noMatch': 'Aucun document ne correspond à cette recherche.',
     'handouts.screen.empty.dm': 'Aucun document transmis pour le moment.',
     'handouts.screen.empty.player': "Le MJ ne vous a transmis aucun document.",
     'handouts.screen.activeHeading': 'Actifs',
@@ -4154,10 +4778,33 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.create.error.recipients': 'Choisissez au moins un destinataire.',
     'handouts.create.error.send': "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
     'handouts.create.sentToast': 'Document transmis',
+    // Cycle de vie d'un document envoyé (M12)
+    'handouts.card.edit': 'Corriger',
+    'handouts.card.unarchive': 'Désarchiver',
+    'handouts.card.delete': 'Supprimer',
+    'handouts.card.deleteConfirm': 'Confirmer la suppression',
+    'handouts.card.recipientsNone': 'Aucun destinataire',
+    'handouts.edit.title': 'Corriger le document',
+    'handouts.edit.save': 'Enregistrer les corrections',
+    'handouts.edit.saving': 'Enregistrement…',
+    'handouts.edit.savedToast': 'Document corrigé',
+    'campaigns.tip.editHandout':
+      'Corriger le titre, le texte ou les destinataires. Ajouter un joueur le prévient.',
+    'campaigns.tip.unarchiveHandout': 'Remettre ce document dans le flux actif.',
+    'campaigns.tip.deleteHandout':
+      'Effacer définitivement ce document. L’archivage, lui, en garde la trace.',
     // PNJ récurrents — plan 28
     'campaigns.detail.npcsCta': 'PNJ',
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'PNJ introduit',
     'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'Attitude d’un PNJ',
+    'campaigns.detail.eventFeed.kind.levelUp': 'Montée de niveau',
+    'campaigns.detail.eventFeed.kind.xpGain': 'Expérience',
+    'campaigns.detail.eventFeed.kind.death': 'Mort',
+    'campaigns.detail.eventFeed.kind.revival': 'Retour à la vie',
+    'campaigns.detail.eventFeed.kind.rest': 'Repos',
+    'campaigns.detail.eventFeed.levelDetail': 'Niveau {n}',
+    'campaigns.detail.eventFeed.restShort': 'Repos court',
+    'campaigns.detail.eventFeed.restLong': 'Repos long',
     'npcs.role.merchant': 'Marchand',
     'npcs.role.ally': 'Allié',
     'npcs.role.enemy': 'Ennemi',
@@ -4193,6 +4840,24 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.detail.notFound': 'Ce PNJ est introuvable.',
     'npcs.detail.edit': 'Modifier',
     'npcs.detail.delete': 'Supprimer',
+    'npcs.detail.duplicate': 'Dupliquer',
+    'npcs.duplicate.title': 'Dupliquer vers une autre campagne',
+    'npcs.duplicate.intro':
+      'Choisis la table qui recevra une copie de ce personnage non-joueur.',
+    'npcs.duplicate.helper':
+      "La copie arrive en secret, sans ses relations : celles-ci désignent des personnages de cette campagne-ci, qui n'existent pas là-bas.",
+    'npcs.duplicate.noTarget':
+      "Tu ne mènes aucune autre campagne pour l'instant.",
+    'npcs.duplicate.confirm': 'Dupliquer',
+    'npcs.duplicate.busy': 'Duplication…',
+    'npcs.duplicate.cancel': 'Annuler',
+    'npcs.duplicate.error': "La duplication n'a pas abouti. Réessaie.",
+    'npcs.duplicate.doneToast': 'Personnage dupliqué',
+    'npcs.search.placeholder': 'Chercher un nom, un lieu, une étiquette…',
+    'npcs.search.aria': 'Chercher parmi les personnages non-joueurs',
+    'npcs.sort.aria': 'Ordre de la liste',
+    'npcs.sort.introduction': 'Ordre de rencontre',
+    'npcs.sort.alpha': 'Alphabétique',
     'npcs.detail.secretBadge': 'Secret',
     'npcs.detail.publicHeading': 'Description',
     'npcs.detail.relationsHeading': 'Relations',
@@ -4244,15 +4909,21 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.edit.field.visibility': 'Visibilité',
     'npcs.edit.field.visibilityHelper':
       'Un PNJ secret reste totalement invisible des joueurs.',
-    'npcs.edit.imageDeferred':
-      'Le portrait en image arrivera bientôt — pour l’instant, une lettre ou un emoji.',
+    'npcs.edit.portraitImageAdd': 'Ajouter une photo',
+    'npcs.edit.portraitImageReplace': 'Remplacer la photo',
+    'npcs.edit.portraitImageRemove': 'Retirer la photo',
+    'npcs.edit.portraitImageBusy': 'Optimisation…',
+    'npcs.edit.portraitImageError': "Cette image n'a pas pu être lue.",
+    'npcs.edit.portraitImageAlt': 'Portrait de',
     'npcs.edit.combat.enable': 'PNJ combattant',
     'npcs.edit.combat.cr': 'FP',
     'npcs.edit.combat.ac': 'CA',
     'npcs.edit.combat.hp': 'PV',
     'npcs.edit.combat.notes': 'Notes de combat',
-    'npcs.edit.combat.monsterDeferred':
-      'Le lien vers un monstre du bestiaire (remplissage auto) arrivera avec le bestiaire SRD.',
+    'npcs.edit.combat.linkMonster': 'Lier un monstre',
+    'npcs.edit.combat.unlinkMonster': 'Délier',
+    'npcs.edit.combat.linkMonsterHelper':
+      'Le monstre lié remplit FP, CA et PV — qui restent modifiables — et donne au tracker son bloc complet.',
     'npcs.edit.cancel': 'Annuler',
     'npcs.edit.save': 'Enregistrer',
     'npcs.edit.saving': 'Enregistrement…',
@@ -4357,6 +5028,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.journal.recompileConfirmBody':
       'Cela réécrit le journal à partir des événements et écrase toute édition manuelle. Les événements restent la source de vérité.',
     'sessions.journal.recompileConfirm': 'Re-compiler et écraser',
+    'sessions.journal.scope.legend': 'Ce que le récit embarque',
+    'sessions.journal.scope.rolls': 'Les jets de dés',
+    'sessions.journal.scope.monsterHp': 'Les points de vie des monstres',
+    'sessions.journal.scope.dmOnly': 'Les coulisses du meneur',
+    'sessions.journal.scope.help':
+      'Décoché, ce type d’événement n’apparaît pas dans le récit. Rien n’est perdu : les événements restent la source de vérité, tu peux re-compiler autrement.',
     'sessions.action.start': 'Démarrer la séance',
     'sessions.action.end': 'Clore la séance',
     'sessions.action.starting': 'Démarrage…',
@@ -4365,6 +5042,29 @@ const STRINGS: Record<Locale, Dict> = {
       'Une autre séance est déjà en cours. Clos-la avant d’en démarrer une nouvelle.',
     'sessions.action.error.generic':
       "L'action n'a pas abouti. Vérifie ta connexion et réessaye.",
+    // Cycle de vie d'une séance (M13)
+    'sessions.edit.cta': 'Modifier la séance',
+    'sessions.edit.title': 'Modifier la séance',
+    'sessions.edit.close': 'Fermer la fenêtre de modification',
+    'sessions.edit.save': 'Enregistrer',
+    'sessions.edit.saving': 'Enregistrement…',
+    'sessions.edit.number.label': 'Numéro de séance',
+    'sessions.edit.number.helper':
+      'Attribué automatiquement, mais modifiable — une campagne reprise en cours de route peut démarrer à la séance 42.',
+    'sessions.edit.error.number': 'Le numéro doit être un entier supérieur à 0.',
+    'sessions.edit.error.generic':
+      "L'enregistrement n'a pas abouti. Vérifie ta connexion et réessaye.",
+    'sessions.action.cancel': 'Annuler la séance',
+    'sessions.action.cancelConfirm': 'Confirmer l’annulation',
+    'sessions.action.cancelNotice':
+      'Une séance annulée sort du récit de campagne : elle n’est ni à venir, ni terminée. Tu pourras la rouvrir.',
+    'sessions.action.reopen': 'Rouvrir la séance',
+    'sessions.action.reopening': 'Réouverture…',
+    'campaigns.tip.editSession': 'Corriger le titre, le numéro ou la date.',
+    'campaigns.tip.cancelSession':
+      'Marquer cette séance comme n’ayant pas eu lieu, sans la clore.',
+    'campaigns.tip.reopenSession':
+      'Revenir sur une clôture ou une annulation erronée.',
     // Rencontres de combat — JALON 24.2
     'encounters.back': 'Retour à la campagne',
     'encounters.title': 'Rencontres',
@@ -4422,6 +5122,13 @@ const STRINGS: Record<Locale, Dict> = {
       "La création n'a pas abouti. Vérifie ta connexion et réessaye.",
     // Encounters — écran de combat (JALON 24.3)
     'encounters.detail.back': 'Retour aux rencontres',
+    'encounters.detail.codex': 'Codex',
+    'encounters.detail.roster': 'La compagnie',
+    'encounters.detail.rosterTip': 'Voir l’état du groupe sans quitter le combat.',
+    'campaigns.roster.overlay.subtitle': 'L’état du groupe, sans quitter la partie.',
+    'campaigns.roster.overlay.close': 'Fermer la compagnie',
+    'campaigns.roster.overlay.empty': 'Personne à la table pour l’instant.',
+    'encounters.detail.codexTip': 'Consulter une règle ou un monstre sans quitter le combat.',
     'encounters.detail.round': 'Round',
     'encounters.detail.error.title': 'Lecture impossible',
     'encounters.detail.error.body':
@@ -4439,6 +5146,20 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.action.end': 'Clôturer le combat',
     'encounters.action.ending': 'Clôture…',
     'encounters.action.cancelEnd': 'Annuler',
+    // Encounters — cycle de vie réparable (M7 de l'audit de malléabilité).
+    'encounters.action.previousTurn': 'Tour précédent',
+    'encounters.action.abort': 'Abandonner le combat',
+    'encounters.action.reopen': 'Rouvrir le combat',
+    'encounters.action.reopening': 'Réouverture…',
+    'encounters.detail.closedHint':
+      'Cette rencontre est close. La rouvrir la remet en cours, là où elle s’était arrêtée.',
+    'encounters.row.actions': 'Gérer la rencontre',
+    'encounters.row.manageTitle': 'Gérer la rencontre',
+    'encounters.row.manageCloseAria': 'Fermer la gestion de la rencontre',
+    'encounters.row.renameLabel': 'Nom de la rencontre',
+    'encounters.row.renameSave': 'Renommer',
+    'encounters.row.delete': 'Supprimer la rencontre',
+    'encounters.row.deleteConfirm': 'Confirmer la suppression',
     'encounters.action.error.anotherActive':
       'Une autre rencontre est déjà en cours. Clôture-la avant d’en démarrer une nouvelle.',
     'encounters.action.error.noParticipants':
@@ -4469,12 +5190,55 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.closeAria': 'Fermer le contrôle',
     'encounters.control.viewStatBlock': 'Voir la fiche de créature',
     'encounters.control.statBlockCloseAria': 'Fermer la fiche de créature',
+    'encounters.control.tempHp': '+ PV temp.',
+    'encounters.control.customCondition': 'Autre état',
+    'encounters.control.customConditionPlaceholder': 'Marqué par le Chasseur…',
+    'encounters.control.customConditionAdd': 'Poser',
+    'encounters.control.noteTitle': 'Note du combattant',
+    'encounters.control.notePlaceholder': 'Celui-ci porte la clé…',
+    'encounters.control.noteSave': 'Enregistrer la note',
+    // Encounters — édition d'un combattant en lice (M2/M3 de l'audit de
+    // malléabilité) : renommer, corriger des PV mal tapés, saisir l'initiative
+    // annoncée à voix haute, retirer celui qui prend la fuite.
+    // Encounters — contrôle des PV d'un PJ depuis le tracker (M5). L'écriture
+    // emprunte la voie omni-edit MJ, journalisée comme telle.
+    'encounters.playerControl.badge': 'Fiche du joueur',
+    'encounters.playerControl.help':
+      'Les points de vie sont appliqués sur sa fiche, et l’édition est journalisée.',
+    'encounters.playerControl.loading': 'Lecture de la fiche…',
+    'encounters.playerControl.unreadable':
+      'Fiche illisible : le joueur l’a peut-être déliée de la campagne.',
+    'encounters.playerControl.open': 'Points de vie',
+    'encounters.control.editTitle': 'Modifier le combattant',
+    'encounters.control.editName': 'Nom',
+    'encounters.control.editInitiative': 'Initiative',
+    'encounters.control.editCurrentHp': 'PV actuels',
+    'encounters.control.editMaxHp': 'PV maximum',
+    'encounters.control.editSave': 'Enregistrer les corrections',
+    'encounters.control.remove': 'Retirer du combat',
+    'encounters.control.removeConfirm': 'Confirmer le retrait',
+    'encounters.add.open': 'Ajouter un combattant',
+    'encounters.add.title': 'Nouveau combattant',
+    'encounters.add.intro':
+      'Le renfort arrive en fin d’ordre, initiative à 0. Saisis ou relance la sienne ensuite.',
+    'encounters.add.closeAria': 'Fermer l’ajout de combattant',
+    'encounters.add.nameLabel': 'Nom',
+    'encounters.add.namePlaceholder': 'Chef gobelin…',
+    'encounters.add.hpLabel': 'PV',
+    'encounters.add.typeLabel': 'Type',
+    'encounters.add.typeMonster': 'Monstre',
+    'encounters.add.typeNpc': 'PNJ',
+    'encounters.add.fromBestiary': 'Depuis le bestiaire',
+    'encounters.add.submit': 'Ajouter au combat',
+    'encounters.add.cancel': 'Annuler',
+    'encounters.add.error.name': 'Donne un nom à ce combattant.',
+    'encounters.add.error.hp': 'Indique des PV valides (au moins 1).',
     // Encounters — hand-off des dégâts physiques (JALON 24.4, step 7b). Le MJ
     // applique les jets physiques récents des joueurs sur une cible qu'il choisit.
     'encounters.handoff.title': 'Dégâts à appliquer',
     'encounters.handoff.help':
-      'Jets physiques récents des joueurs. Choisis une cible pour appliquer les dégâts.',
-    'encounters.handoff.aria': 'Dégâts physiques à appliquer',
+      'Jets récents des joueurs. Choisis une cible pour appliquer les dégâts.',
+    'encounters.handoff.aria': 'Dégâts à appliquer',
     'encounters.handoff.attackPrefix': 'Att',
     'encounters.handoff.damageSuffix': 'dégâts',
     'encounters.handoff.attackInfo': 'Jet d’attaque — compare à la CA de la cible.',
@@ -4503,6 +5267,20 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.actor.someone': 'Quelqu’un',
     'journal.tpl.sessionStart': 'La séance {number} — « {title} » — commence.',
     'journal.tpl.sessionEnd': 'La séance {number} — « {title} » — se termine.',
+    'journal.tpl.levelUp': '{actor} passe **niveau {level}** ({className} {classLevel}).',
+    'journal.tpl.levelUpNewClass':
+      '{actor} embrasse une nouvelle voie : **{className}** — niveau {level} au total.',
+    'journal.tpl.levelUpNoClass': '{actor} passe **niveau {level}**.',
+    'journal.tpl.xpGain': '{actor} gagne {amount} PX (total : {total}).',
+    'journal.tpl.xpLoss': '{actor} perd {amount} PX (total : {total}).',
+    'journal.tpl.death': '**{actor}** succombe à ses blessures.',
+    'journal.tpl.deathByDm': '**{actor}** meurt.',
+    'journal.tpl.revivalNat20':
+      '**{actor}** rouvre les yeux au dernier moment et se relève.',
+    'journal.tpl.revivalDm': '**{actor}** est ramené à la vie.',
+    'journal.tpl.restShort': '{actor} prend un repos court.',
+    'journal.tpl.restLong': '{actor} prend un repos long.',
+    'journal.tpl.restLongHealed': '{actor} prend un repos long et récupère {hp} PV.',
     'journal.tpl.turnStart': 'Au tour de **{name}** (round {round}).',
     'journal.tpl.rollAttackCrit':
       '{actor} attaque et obtient un **coup critique** ({label}, total {total}) !',
@@ -4538,6 +5316,7 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.aggregate.subtitle': 'Le récit compilé de vos séances, dans l’ordre.',
     'journal.aggregate.back': 'Retour à la campagne',
     'journal.aggregate.export': 'Exporter (.md)',
+    'journal.aggregate.exportSession': 'Exporter cette séance',
     'journal.aggregate.empty':
       'Aucune séance terminée pour l’instant. Le journal de campagne se remplira à mesure que vous clôturez des séances.',
     'journal.aggregate.sessionNumberPrefix': 'Séance ',
@@ -4578,6 +5357,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.avoir.coin.el': 'Él',
     'sheet.avoir.coin.or': 'Or',
     'sheet.avoir.coin.pl': 'Pl',
+    'sheet.avoir.weight.title': 'Poids transporté',
+    'sheet.avoir.weight.normal': 'Charge normale',
+    'sheet.avoir.weight.encumbered': 'Encombré',
+    'sheet.avoir.weight.heavilyEncumbered': 'Fortement encombré',
     'sheet.avoir.coins.title': 'Bourse',
     'sheet.avoir.coins.purseToast': 'Bourse — {coin}',
     'sheet.avoir.coins.updated': 'Mise à jour',
@@ -4664,6 +5447,8 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.list.empty':
       'Aucun pack importé pour l’instant.',
     'customContent.list.delete': 'Supprimer',
+    'customContent.list.export': 'Exporter',
+    'customContent.list.exportTip': 'Télécharge ce pack en JSON, réimportable tel quel.',
     'customContent.list.deleteConfirm':
       'Supprimer définitivement ce pack ?',
     'customContent.toast.imported': 'Pack importé',
@@ -4693,6 +5478,24 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.meta.nameFr': 'Nom (FR)',
     'customContent.editor.meta.nameEn': 'Nom (EN, optionnel)',
     'customContent.editor.meta.author': 'Auteur',
+    'customContent.duplicate.title': 'Dupliquer une entrée existante',
+    'customContent.duplicate.open': 'Dupliquer',
+    'customContent.duplicate.modeLegend': 'Que faire de l’entrée choisie',
+    'customContent.duplicate.modeCopy': 'Nouvelle entrée',
+    'customContent.duplicate.modeCopyHint':
+      'Une copie sous un nouvel identifiant. L’originale reste servie à la table.',
+    'customContent.duplicate.modeReplace': 'Remplacer l’originale',
+    'customContent.duplicate.modeReplaceHint':
+      'On garde son identifiant : ta version l’écrase partout à ta table.',
+    'customContent.duplicate.searchPlaceholder': 'Chercher dans le catalogue…',
+    'customContent.duplicate.searchAria': 'Chercher une entrée à dupliquer',
+    'customContent.duplicate.loading': 'Chargement du catalogue…',
+    'customContent.duplicate.empty': 'Aucune entrée ne correspond.',
+    'customContent.duplicate.copySuffixName': ' (maison)',
+    'customContent.origin.custom': 'Maison',
+    'customContent.editor.meta.sourceLabel': 'Provenance',
+    'customContent.editor.meta.sourceLabelHelper':
+      'D’où vient ce contenu, en clair : « Xanathar », « Ma campagne », « Traduit de la table de Jean ». Affiché à côté des entrées du pack.',
     'customContent.editor.meta.version': 'Version',
     'customContent.editor.meta.versionHelper':
       'Format semver MAJOR.MINOR.PATCH, par exemple 1.0.0.',
@@ -5437,7 +6240,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.ancestryForm.error.idFormat':
       'Slug invalide : minuscules, chiffres et tirets uniquement.',
     'customContent.editor.ancestryForm.error.idReserved':
-      'Cet identifiant est réservé aux ascendances officielles — utilise un slug spécifique à ta création.',
+      'Cette ascendance officielle demande une liste de sous-choix que ce formulaire ne produit pas encore — choisis un autre identifiant.',
     'customContent.editor.ancestryForm.error.nameFrRequired':
       'Le nom FR est obligatoire.',
     'customContent.editor.ancestryForm.error.descriptionFrRequired':
@@ -5621,8 +6424,25 @@ const STRINGS: Record<Locale, Dict> = {
       'L’identifiant est obligatoire.',
     'customContent.editor.classForm.error.idFormat':
       'Slug invalide : minuscules, chiffres et tirets uniquement.',
+    'customContent.editor.classForm.spellcastingPreparation': 'Sorts',
+    'customContent.editor.classForm.spellcastingPreparationHelper':
+      'Préparés : la liste se refait à chaque repos long. Connus : elle est fixe.',
+    'customContent.editor.classForm.spellcastingPreparation.prepared': 'Préparés',
+    'customContent.editor.classForm.spellcastingPreparation.known': 'Connus',
+    'customContent.editor.classForm.spellsKnownOrPrepared':
+      'Sorts préparés ou connus, par niveau',
+    'customContent.editor.classForm.spellsKnownOrPreparedHelper':
+      'Les 20 valeurs de la colonne, du niveau 1 au niveau 20, séparées par des espaces. Laisse vide si ta classe n’a pas de table.',
+    'customContent.editor.classForm.cantripsKnown':
+      'Sorts mineurs connus, par niveau',
+    'customContent.editor.classForm.cantripsKnownHelper':
+      'Facultatif — 20 valeurs, comme ci-dessus. À laisser vide si ta classe n’a pas de sorts mineurs.',
+    'customContent.editor.classForm.error.progressionFormat':
+      'Il faut exactement 20 nombres entiers positifs, un par niveau.',
+    'customContent.editor.classForm.error.progressionRequiredForCantrips':
+      'Renseigne d’abord la colonne des sorts préparés ou connus.',
     'customContent.editor.classForm.error.idReserved':
-      'Cet identifiant est réservé aux 12 classes officielles — utilise un slug spécifique à ta création.',
+      'Le Clerc et le Druide demandent une liste d’ordres que ce formulaire ne produit pas encore — choisis un autre identifiant. Les 10 autres classes officielles sont dupliquables.',
     'customContent.editor.classForm.error.nameFrRequired':
       'Le nom FR est obligatoire.',
     'customContent.editor.classForm.error.descriptionFrRequired':
@@ -5693,6 +6513,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.applyHeal': 'Rendre ce nombre de points de vie.',
     'campaigns.tip.quickDamage': 'Infliger ces dégâts en un toucher.',
     'campaigns.tip.quickHeal': 'Soigner ce montant en un toucher.',
+    'campaigns.tip.grantTempHp': 'Accorder ce montant en points de vie temporaires (on garde le plus avantageux).',
+    'campaigns.tip.customCondition': 'Poser un état inventé par la table.',
+    'campaigns.tip.saveNote': 'Enregistrer cette note sur le combattant.',
     'campaigns.tip.conditionAdd': 'Appliquer cet état à la créature.',
     'campaigns.tip.conditionRemove': 'Retirer cet état de la créature.',
     'campaigns.tip.rollInit': 'Lancer l’initiative de tous les combattants.',
@@ -5701,12 +6524,21 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.endCombat': 'Clôturer le combat et choisir son issue.',
     'campaigns.tip.reroll': 'Relancer l’initiative de ce combattant.',
     'campaigns.tip.controlParticipant': 'Ajuster ses points de vie et ses états.',
+    'campaigns.tip.previousTurn': 'Revenir au combattant précédent — on a oublié quelque chose.',
+    'campaigns.tip.abortCombat': 'Clore sans issue : le combat n’a pas eu de fin.',
+    'campaigns.tip.reopenCombat': 'Remettre ce combat en cours, là où il s’était arrêté.',
+    'campaigns.tip.manageEncounter': 'Renommer ou supprimer cette rencontre.',
+    'campaigns.tip.addParticipant': 'Faire entrer un combattant dans une rencontre déjà lancée.',
+    'campaigns.tip.editParticipant': 'Corriger son nom, ses points de vie ou son initiative.',
+    'campaigns.tip.removeParticipant': 'Le sortir de la rencontre — il disparaît de l’ordre des tours.',
     'campaigns.tip.openJournal': 'Ouvrir le journal de la campagne.',
     'campaigns.tip.openHandouts': 'Ouvrir les documents partagés avec la table.',
     'campaigns.tip.openNpcs': 'Ouvrir l’annuaire des personnages non-joueurs.',
     'campaigns.tip.openSessions': 'Ouvrir la liste des séances de jeu.',
     'campaigns.tip.openEncounters': 'Ouvrir la liste des rencontres de combat.',
     'campaigns.tip.openMaps': 'Ouvrir le mode carte de la campagne.',
+    'campaigns.tip.viewMaps':
+      'Voir les cartes de la campagne, telles que le meneur les projette.',
     'campaigns.tip.openSettings':
       'Modifier le nom, le mode de dés et les variantes 5e de la table.',
     'campaigns.tip.promoteGm': 'Donner à ce joueur les pleins pouvoirs de meneur.',
@@ -5719,6 +6551,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Créer un nouveau personnage, lié automatiquement à cette campagne.',
     'campaigns.tip.editNpc': 'Modifier la fiche de ce personnage non-joueur.',
     'campaigns.tip.deleteNpc': 'Supprimer définitivement ce personnage non-joueur.',
+    'campaigns.tip.duplicateNpc':
+      'Recopier ce personnage non-joueur dans une autre campagne que tu mènes.',
     'campaigns.tip.editRelations': 'Modifier les liens avec les personnages joueurs.',
     'campaigns.tip.archiveHandout': 'Archiver ce document et le masquer aux joueurs.',
     'campaigns.tip.startSession': 'Démarrer la séance et journaliser le jeu.',
@@ -5727,6 +6561,12 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.handoffTarget': 'Appliquer les dégâts à cette créature.',
     'campaigns.tip.removeMonsterRow': 'Retirer ce monstre de la rencontre.',
     'campaigns.tip.fromBestiary': 'Préremplir un monstre depuis le bestiaire.',
+    'campaigns.tip.demoteGm':
+      'Lui retirer l’autorité de meneur. Il reste joueur à la table.',
+    'campaigns.tip.kickMember':
+      'Retirer ce joueur de la campagne. Sa fiche lui reste acquise.',
+    'campaigns.tip.rotateInviteCode':
+      'Révoquer le code actuel et en générer un nouveau.',
     // Infobulles explicites — carte (map)
     'map.tip.placeAoe': 'Choisir cette forme de zone d’effet à poser.',
     'map.tip.rotateAoeCcw': 'Pivoter la zone de 15° vers la gauche.',
@@ -5742,6 +6582,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.tip.toggleGrid': 'Afficher ou masquer la grille de la carte.',
     'map.tip.toggleFog': 'Activer ou couper le voile de brouillard.',
     'map.tip.toggleLos': 'Activer ou couper la ligne de vue (occlusion par les murs).',
+    'map.tip.viewAsPlayer': 'Voir la carte comme la table la voit, avant de dévoiler.',
     'map.tip.toggleLighting': 'Afficher ou masquer la teinte des sources lumineuses.',
     'map.tip.toggleMeasure': 'Mesurer une distance en mètres sur la carte.',
     'map.tip.deleteMap': 'Supprimer définitivement cette carte.',
@@ -5776,6 +6617,13 @@ const STRINGS: Record<Locale, Dict> = {
     'map.cloud.loadErrorPrefix': 'Erreur de chargement : ',
     'map.cloud.loadingMaps': 'Chargement des cartes…',
     'map.cloud.empty': 'Aucune carte pour cette campagne. Créez-en une ci-dessus.',
+    'map.cloud.emptyMember':
+      "Le meneur n'a pas encore préparé de carte pour cette campagne.",
+    'map.cloud.memberIntro':
+      'Ces cartes sont en lecture seule : tu vois exactement ce que le meneur projette sur la table.',
+    'map.zoom.inAria': 'Zoomer sur la carte',
+    'map.zoom.outAria': 'Dézoomer la carte',
+    'map.zoom.reset': 'Recadrer',
     'map.cloud.listAria': 'Liste des cartes',
     'map.cloud.delete': 'Suppr.',
     'map.import.signedOut': 'Connexion requise pour importer une carte.',
@@ -5799,6 +6647,37 @@ const STRINGS: Record<Locale, Dict> = {
     'map.import.saveSection': 'Enregistrer la carte',
     'map.import.submitting': 'Import…',
     'map.import.submit': 'Importer',
+    // Écran carte — import d'une image nue (2ᵉ onglet de l'import)
+    'map.import.tabDd2vtt': 'Fichier Dungeon Alchemist',
+    'map.import.tabImage': 'Image de battlemap',
+    'map.import.imageIntro':
+      "Une image suffit : n'importe quel plan trouvé en ligne devient une carte jouable. Ni murs ni lumières ne sont déduits — le voile et la grille se règlent ensuite dans la carte.",
+    'map.import.chooseImage': 'Choisir une image',
+    'map.import.imageProcessing': 'Optimisation…',
+    'map.import.imageTooLarge':
+      "Cette image reste trop lourde après optimisation. Réduis-la avant de l'importer.",
+    'map.import.imageFailed': "Cette image n'a pas pu être lue.",
+    'map.import.statWeight': 'Poids optimisé',
+    'map.import.statScale': 'Échelle de départ',
+    'map.import.imageHint':
+      "L'image reste sur cet appareil. Pour que la table la voie, renseigne une URL publique dans les réglages de la carte.",
+    // Écran carte — réglages d'une carte existante (map-settings-modal)
+    'map.settings.closeLabel': 'Fermer les réglages',
+    'map.settings.title': 'Réglages de la carte',
+    'map.settings.gridSizeLabel': "Taille d'une case à l'écran (pixels)",
+    'map.settings.gridSizeHelp':
+      "Ajuste cette valeur jusqu'à ce que la grille se pose sur celle de l'image.",
+    'map.settings.scaleLabel': 'Une case représente (mètres)',
+    'map.settings.scaleEchoPrefix': 'Enregistré comme ',
+    'map.settings.scaleInvalid': 'Saisis une distance en mètres, par exemple 1,5.',
+    'map.settings.imageUrlLabel': "URL de l'image de fond",
+    'map.settings.imageUrlPlaceholder': 'https://…',
+    'map.settings.imageUrlHelp':
+      "Une image importée reste locale à cet appareil. Une URL publique, elle, s'affiche aussi chez les joueurs et sur l'écran de table.",
+    'map.settings.save': 'Enregistrer les réglages',
+    'map.live.settingsButton': 'Réglages',
+    'map.tip.openSettings':
+      "Renommer la carte, recaler la grille, changer l'échelle ou l'image de fond.",
     // Écran carte — édition de jeton (token-edit-modal) + bestiaire (monster-picker)
     'map.token.editTitle': 'Modifier le jeton',
     'map.token.closeLabel': 'Fermer l’édition du jeton',
@@ -5894,6 +6773,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.live.snapToggle': 'Aimant :',
     'map.live.fogToggleLabel': 'Voile :',
     'map.live.losToggle': 'Ligne de vue :',
+    'map.live.playerViewToggle': 'Vue joueur :',
     'map.live.lightingToggle': 'Éclairage :',
     'map.live.tvView': 'Vue présentation',
     'map.live.measureLabel': 'Mesure',
@@ -6040,6 +6920,9 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.addClass.pickIntro':
       'Choisis la classe que ton personnage souhaite apprendre. Les classes grisées sont indisponibles — survole pour voir la raison.',
     'levelUp.addClass.blockedTitle': 'Indisponible — {reason}',
+    'levelUp.addClass.dmOverrideBadge': 'Hors prérequis · {reason}',
+    'levelUp.addClass.dmOverrideTitle':
+      'Prérequis non atteints ({reason}). Tu peux l’accorder quand même.',
     'levelUp.addClass.selectFirst':
       "Sélectionne d'abord une classe à l'étape précédente.",
     'levelUp.addClass.defNotFound': 'Définition introuvable pour « {id} ».',
@@ -6074,6 +6957,26 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.close': 'Ferme le menu.',
     'dice.tip.closeHistory': 'Ferme l’historique des jets.',
     'dice.history.title': 'Historique des jets',
+    'dice.options.bonus': 'Bonus ponctuel',
+    'dice.options.discreet': 'Jet discret',
+    'dice.options.discreetNote':
+      'Le jet part dans ton journal seul — la table ne le voit pas passer.',
+    'dice.options.bonusAria': 'Bonus ponctuel appliqué à ce jet',
+    'dice.options.useInspiration': 'Dépenser l’inspiration',
+    'dice.options.inspirationNote':
+      'L’inspiration impose l’avantage et sera dépensée.',
+    'dice.options.title': 'Comment lancer',
+    'dice.options.aria': 'Options du jet {label}',
+    'dice.free.title': 'Jet libre',
+    'dice.free.aria': 'Lancer une formule de dés libre',
+    'dice.free.label': 'Formule',
+    'dice.free.placeholder': '2d10+3',
+    'dice.free.hint': 'Exemples : 4d6 · 2d10+3 · 1d20-1d4 · 2d20kh1',
+    'dice.free.invalid': 'Formule illisible.',
+    'dice.free.submit': 'Lancer',
+    'dice.free.cancel': 'Annuler',
+    'dice.free.rollLabel': 'Jet libre',
+    'sheet.fab.freeRoll': 'Jet libre',
     // Modale de jet physique (le wording « Passer » est non négociable, plan 12.5)
     'dice.physical.header': 'Mode physique — saisis tes dés',
     'dice.physical.rollPrompt': 'Lance {dice}',
@@ -6097,6 +7000,9 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.history.closeLabel': 'Fermer l’historique',
     'dice.history.empty':
       'Aucun jet enregistré. Tente une initiative ou un test de caractéristique.',
+    'dice.history.replay': 'Relancer',
+    'dice.history.replayTip': 'Relancer ce jet, mêmes dés et mêmes bonus',
+    'dice.history.replayAria': 'Relancer : {label}',
     'dice.history.modeSaveError': 'Mode de dés non sauvegardé',
     'dice.history.modeSaveErrorSub': 'Erreur Firestore',
     'dm.tip.advNormal': 'Jet normal : un seul d20.',
@@ -6104,6 +7010,8 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.tip.advDisadvantage': 'Désavantage : lance deux d20, garde le plus bas.',
     'dm.tip.secretRoll': 'Lance le d20 secret avec le modificateur.',
     'journal.tip.export': 'Télécharge le journal complet en fichier Markdown.',
+    'journal.tip.exportSession':
+      'Télécharge cette seule séance — de quoi la transmettre à un joueur absent.',
     'journal.tip.compile': 'Génère le récit de la séance à partir des événements.',
     'journal.tip.edit': 'Modifie le récit à la main.',
     'journal.tip.recompile': 'Régénère le récit depuis les événements.',
@@ -6166,12 +7074,18 @@ const STRINGS: Record<Locale, Dict> = {
     // Codex — SRD content browser (plan 19)
     'codex.title': 'The Codex',
     'codex.subtitle': 'All SRD 5.2.1 content, at your fingertips.',
+    'codex.overlay.subtitle': 'Look up a rule without leaving the game.',
+    'codex.overlay.close': 'Close the Codex',
     'codex.nav.cta': 'The Codex',
     'codex.loading': 'Summoning content…',
     'codex.empty': 'No entry matches your search.',
     'codex.result.singular': 'result',
     'codex.result.plural': 'results',
     'codex.cat.aria': 'Codex categories',
+    'codex.cat.search': 'Search',
+    'codex.search.all': 'Search the whole Codex…',
+    'codex.search.allHint':
+      'Type at least two letters to search every category at once.',
     'codex.cat.spells': 'Spells',
     'codex.cat.feats': 'Feats',
     'codex.cat.invocations': 'Invocations',
@@ -6287,6 +7201,19 @@ const STRINGS: Record<Locale, Dict> = {
       'The Google window closed before finishing. Try again.',
     'account.link.error.generic': 'Linking failed. Try again.',
     'home.hub.title': 'Explore',
+    'home.ongoing.label': 'In progress',
+    'home.ongoing.kindEncounter': 'Combat',
+    'home.ongoing.kindSession': 'Session',
+    'home.ongoing.round': 'Round {n}',
+    'home.ongoing.sessionNumber': 'Session {n}',
+    'home.ongoing.cta': 'Resume',
+    'home.draft.label': 'Creation started',
+    'home.draft.unnamed': 'Unnamed hero',
+    'home.draft.step': 'Step {n} of {total} · {step}',
+    'home.draft.resume': 'Continue',
+    'home.draft.resumeAria': 'Continue the creation of',
+    'home.draft.discard': 'Discard',
+    'home.draft.discardAria': 'Discard the draft of',
     'home.hub.codex.sub': 'Spells, items, species, classes…',
     'home.hub.campaigns.sub': 'Join or create a table.',
     'wizard.title': 'Create a character',
@@ -6572,14 +7499,27 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.notFound': 'Character not found',
     'sheet.notFound.hint': "No character at this location. It may have been deleted.",
     'sheet.backHome': 'Back to library',
+    'sheet.campaignLink': 'My campaign',
+    'sheet.turnBanner.label': 'Your turn',
+    'sheet.turnBanner.sub': 'Round {n} · {name}',
+    'sheet.turnBanner.aria': 'Join the ongoing combat, it is your turn',
     'sheet.error.title': 'Loading error',
     'sheet.statusStrip.aria': 'Vital statistics',
     'sheet.modeTabs.aria': 'Sheet sections',
     'sheet.hero.level': 'Level {n}',
+    'sheet.identity.edit': 'Edit identity',
+    'sheet.identity.title': 'Identity',
+    'sheet.identity.name': 'Name',
+    'sheet.identity.nameRequired': 'The name cannot be empty.',
+    'sheet.identity.alignment': 'Alignment',
+    'sheet.identity.save': 'Save',
+    'sheet.identity.cancel': 'Cancel',
     'sheet.stat.hp': 'HP',
     'sheet.stat.ac': 'AC',
     'sheet.stat.init': 'Init',
     'sheet.stat.speed': 'Spd',
+    'sheet.stat.editInit': 'Edit initiative',
+    'sheet.stat.editSpeed': 'Edit speed (in meters)',
     'sheet.stat.passivePerception': 'Pass. perc.',
     'sheet.combat.hitDice.title': 'Hit Dice',
     'sheet.combat.hitDice.spend': 'Short rest',
@@ -6609,6 +7549,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.resources.restore': 'Restore',
     'sheet.combat.resources.spendLabel': 'Spend one {resource}',
     'sheet.combat.resources.restoreLabel': 'Restore one {resource}',
+    'sheet.combat.resources.editMaxLabel': 'Edit the maximum for {resource}',
     'sheet.combat.resources.restoresShort': 'Short rest',
     'sheet.combat.resources.restoresLong': 'Long rest',
     'sheet.combat.resources.rage': 'Rage',
@@ -6626,6 +7567,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.exhaustion.death': 'Level 6: death.',
     'sheet.combat.exhaustion.decrease': 'Decrease exhaustion',
     'sheet.combat.exhaustion.increase': 'Increase exhaustion',
+    'sheet.combat.exhaustion.readRule': 'Read the rule',
+    'sheet.combat.condition.remove': 'Remove this condition',
     'sheet.combat.concentration.title': 'Concentration',
     'sheet.combat.concentration.cantrip': 'Cantrip',
     'sheet.combat.concentration.castAt': 'Cast at level {n}',
@@ -6684,9 +7627,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.numberpad.title.damage': 'Damage',
     'sheet.combat.numberpad.title.heal': 'Heal',
     'sheet.combat.numberpad.title.temp': 'Temporary HP',
+    'sheet.combat.numberpad.title.max': 'Maximum HP',
     'sheet.combat.numberpad.commit.damage': 'Apply',
     'sheet.combat.numberpad.commit.heal': 'Heal',
     'sheet.combat.numberpad.commit.temp': 'Set',
+    'sheet.combat.numberpad.commit.max': 'Set',
+    'sheet.combat.hp.maxEdit': 'Change maximum HP (currently {n})',
     'sheet.combat.numberpad.cancel': 'Cancel',
     'sheet.combat.numberpad.full': 'Full ({max})',
     'sheet.combat.attacks.cardTitle': 'Attacks',
@@ -6695,6 +7641,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.combat.attacks.ranged': 'Ranged',
     'sheet.combat.attacks.melee': 'Melee',
     'sheet.combat.attacks.menuAdvantage': 'Advantage',
+    'sheet.combat.attacks.menuFlanking': 'Flanking',
     'sheet.combat.attacks.menuDisadvantage': 'Disadv.',
     'sheet.combat.attacks.menuCrit': 'Crit',
     'sheet.combat.hud.action': 'Action',
@@ -6786,6 +7733,7 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.sorts': 'Spells',
     'sheet.fab.outils': 'Tools',
     'sheet.fab.lancer': 'Roll',
+    'sheet.fab.codex': 'Codex',
     'sheet.fab.repos': 'Rest',
     'sheet.fab.inspiration': 'Heroic Inspiration',
     'sheet.fab.inspirationOn': 'Granted — reroll any check.',
@@ -6793,6 +7741,16 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.fab.historique': 'Roll history',
     'sheet.fab.d20Label': 'Quick d20',
     'sheet.placeholder.todo': 'Section coming in a later plan.',
+    'sheet.ame.xp.title': 'Experience',
+    'sheet.ame.xp.unit': 'Experience points',
+    'sheet.ame.xp.editAria': 'Edit experience points',
+    'sheet.ame.xp.progressAria': 'Progress towards next level',
+    'sheet.ame.xp.toNext': '{n} XP to go before level {level}.',
+    'sheet.ame.xp.maxLevel': 'Level 20 reached — nothing left to climb.',
+    'sheet.ame.xp.levelMismatch': 'Experience places this character at level {xpLevel}, the sheet at level {sheetLevel}. Nothing is blocked: the GM decides.',
+    'sheet.ame.xp.toastTitle': 'Experience',
+    'sheet.ame.xp.toastSub': 'Total: {total} XP',
+    'sheet.tip.editXp': 'Tap to edit experience',
     'sheet.ame.personality.title': 'Personality',
     'sheet.ame.personality.empty': 'Not filled in yet.',
     'sheet.ame.personality.edit': 'Edit',
@@ -6830,6 +7788,17 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.pactTome.sourceLabel': 'Pact of the Tome',
     'sheet.magie.prep.titleFor': 'Preparation · {class}',
     'sheet.magie.prep.count': '{n} / {cap} prepared',
+    'sheet.magie.prep.overCap':
+      'You are over the cap of {cap} prepared spells. Your table decides.',
+    'sheet.magie.addSpell.action': 'Add a spell',
+    'sheet.magie.addSpell.title': 'Add a spell',
+    'sheet.magie.addSpell.classAria': 'Class learning the spell',
+    'sheet.magie.addSpell.searchPlaceholder': 'Search a spell…',
+    'sheet.magie.addSpell.searchLabel': 'Search a spell to add',
+    'sheet.magie.addSpell.hint':
+      'Type at least two letters. Every spell is offered, including outside your class list.',
+    'sheet.magie.addSpell.already': 'Already known',
+    'sheet.magie.addSpell.cantrip': 'Cantrip',
     'sheet.magie.prep.edit': 'Edit',
     'sheet.magie.prep.done': 'Done',
     'sheet.magie.prep.hint':
@@ -6840,6 +7809,8 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.magie.prep.prepared': 'Prepared',
     'sheet.magie.prep.alwaysAvailable': 'Always',
     'sheet.magie.prep.emptyPrepared': 'No spells prepared yet.',
+    'sheet.magie.noMagic':
+      'This character practises no arcane art — no spellcasting class.',
     // Magic mode — cards, circle/pact, list, spell modal
     'sheet.magie.restore': 'Restore',
     'sheet.magie.noSlotToConsume': 'No slot left to use',
@@ -7005,6 +7976,26 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.essence.skills.notProficient': 'Not proficient',
     'sheet.essence.skills.proficient': 'Proficient',
     'sheet.essence.skills.expertise': 'Expertise',
+    'sheet.essence.prof.edit': 'Edit',
+    'sheet.essence.prof.editSkillsAria': 'Edit skill proficiencies',
+    'sheet.essence.prof.editSavesAria': 'Edit saving throw proficiencies',
+    'sheet.essence.prof.editGearAria': 'Edit equipment proficiencies',
+    'sheet.essence.prof.editLanguagesAria': 'Edit known languages',
+    'sheet.essence.prof.done': 'Done',
+    'sheet.essence.prof.add': 'Add',
+    'sheet.essence.prof.pick': 'Pick from the list…',
+    'sheet.essence.prof.pickAria': 'Pick an entry to add — {group}',
+    'sheet.essence.prof.freeAria': 'Type a free entry — {group}',
+    'sheet.essence.prof.removeAria': 'Remove {entry}',
+    'sheet.essence.proficiencies.editHint':
+      'Add what play has granted. Class and background proficiencies stay derived.',
+    'sheet.essence.proficiencies.addPlaceholder': 'Smith’s tools…',
+    'sheet.essence.languages.addPlaceholder': 'A language from your world…',
+    'sheet.essence.skills.editHint':
+      'Tap a skill to cycle its proficiency: none, proficient, expertise.',
+    'sheet.essence.skills.cycleAria': '{skill} — {state}. Tap to change proficiency.',
+    'sheet.essence.saves.editHint': 'Tap a saving throw to add or remove its proficiency.',
+    'sheet.essence.saves.toggleAria': '{ability} saving throw proficiency',
     'sheet.essence.hex.title': 'Hexagram',
     'sheet.essence.hex.proficiency': 'Proficiency',
     'sheet.essence.hex.rollLabel': 'Test of {ability}',
@@ -7022,7 +8013,58 @@ const STRINGS: Record<Locale, Dict> = {
     'nav.brand.aria': 'Back to home',
     'nav.back': 'Back',
     'nav.back.aria': 'Back to library',
+    'nav.back.campaigns': 'Back to my campaigns',
+    'nav.back.account': 'Back to account',
+    'nav.back.content': 'Back to my content',
+    'nav.back.maps': 'Back to maps',
     'nav.avatar.aria': 'Account (coming soon)',
+    'sheet.turnOptions.title': 'Outside your action',
+    'sheet.turnOptions.hint': "What doesn't cost your action, and gets forgotten all campaign long.",
+    'sheet.turnOptions.bonus': 'Bonus Action',
+    'sheet.turnOptions.bonus.empty': 'No known Bonus Action spell.',
+    'sheet.turnOptions.reaction': 'Reaction',
+    'sheet.turnOptions.opportunityAttack': 'Opportunity Attack',
+    'library.loading': 'Loading your characters',
+    'sheet.switcher.open': 'Switch character',
+    'sheet.switcher.title': 'Switch character',
+    'sheet.switcher.hint': 'Open another of your sheets without going back to the library.',
+    'sheet.switcher.level': 'Level',
+    'account.dice3d.title': 'Three-dimensional dice',
+    'account.dice3d.hint':
+      'Digital dice tumble in three dimensions and settle on their face. Decorative: the result is the same without it.',
+    'account.notifications.title': 'Game notifications',
+    'account.notifications.hint':
+      'Handout from the GM, combat start, your turn. Silences the announcements without hiding the sheet’s “your turn” banner. Applies to this device only.',
+    'account.haptics.title': 'Haptic feedback',
+    'account.haptics.hint': 'Short vibration on rolls and their outcomes. Applies to this device only.',
+    'palette.open': 'Search everywhere',
+    'palette.title': 'Search',
+    'palette.placeholder': 'A character, a campaign, a rule…',
+    'palette.hint': 'Search a character, a campaign, a screen, or any Codex entry.',
+    'palette.close': 'Close search',
+    'palette.empty': 'Nothing matches your search.',
+    'palette.loading': 'Loading the Codex…',
+    'palette.group.characters': 'Characters',
+    'palette.group.campaigns': 'Campaigns',
+    'palette.group.destinations': 'Go to',
+    'palette.group.codex': 'The Codex',
+    'palette.nav.home': 'My characters',
+    'palette.nav.campaigns': 'My campaigns',
+    'palette.nav.codex': 'The Codex',
+    'palette.nav.account': 'My account',
+    'palette.nav.create': 'Create a character',
+    'palette.nav.join': 'Join a campaign',
+    'palette.nav.packs': 'My content packs',
+    'palette.keys.move': 'move',
+    'palette.keys.select': 'open',
+    'palette.keys.close': 'close',
+    'palette.character.level': 'lvl',
+    'palette.campaign.gm': 'You are GM',
+    'palette.campaign.player': 'You play here',
+    'nav.tabs.aria': 'Main areas',
+    'nav.tab.characters': 'Characters',
+    'nav.tab.campaigns': 'Campaigns',
+    'nav.tab.codex': 'Codex',
     'library.title': 'Library',
     'library.subtitle': 'Your heroes and heroines',
     'library.cta.create': 'Create a character',
@@ -7039,6 +8081,7 @@ const STRINGS: Record<Locale, Dict> = {
     'library.card.level': 'Level',
     'library.card.aliveLabel': 'Alive',
     'library.card.deadLabel': 'Dead',
+    'library.card.campaign': 'Campaign',
     'dm.title': 'DM table',
     'dm.subtitle': 'Party overview',
     'dm.empty.title': 'No heroes to lead',
@@ -7070,6 +8113,11 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.secretRoll.nat20': 'Natural 20',
     'dm.secretRoll.nat1': 'Natural 1',
     'dm.secretRoll.historyAria': 'Recent secret rolls',
+    'dm.secretRoll.aboutLabel': 'About what?',
+    'dm.secretRoll.aboutPlaceholder': 'Guard’s Perception…',
+    'dm.secretRoll.reveal': 'Reveal to the table',
+    'dm.secretRoll.revealed': 'Revealed',
+    'dm.tip.revealSecretRoll': 'Re-logs this roll as visible to the whole table.',
     'campaigns.title': 'My campaigns',
     'campaigns.subtitle': 'The tables where your hero comes to life',
     'campaigns.list.aria': 'Campaign list',
@@ -7141,13 +8189,47 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.invite.firstStepTitle': 'Invite your players',
     'campaigns.detail.invite.firstStepBody':
       'Your campaign is ready. Share the link or read the code aloud around the table: each player joins, then creates or links their character. You will see them appear here in the party.',
+    'campaigns.detail.invite.rotate': 'Regenerate code',
+    'campaigns.detail.invite.rotateConfirm': 'Confirm regeneration',
+    'campaigns.detail.invite.rotateCancel': 'Keep current code',
+    'campaigns.detail.invite.rotating': 'Regenerating…',
+    'campaigns.detail.invite.rotateWarning':
+      'The current code stops working immediately, along with any links already shared. Members who already joined are unaffected.',
+    'campaigns.detail.invite.rotateError':
+      'Regeneration failed. Check your connection and try again.',
+    'campaigns.detail.invite.rotated': 'New code in place.',
     'campaigns.detail.roster.aria': 'Campaign members',
     'campaigns.detail.roster.title': 'The party',
     'campaigns.detail.dmTools.title': 'Game master tools',
     'campaigns.detail.dmTools.aria': 'Game master tools — secret roll and scratchpad',
+    'campaigns.dmTools.open': 'Tools',
+    'campaigns.dmTools.openTip': 'Secret roll and scratchpad, without leaving the table.',
     'campaigns.detail.roster.youSuffix': '(you)',
     'campaigns.detail.roster.promote': 'Promote to GM',
+    'campaigns.detail.roster.demote': 'Demote',
+    'campaigns.detail.roster.kick': 'Remove',
     'campaigns.detail.roster.viewSheet': 'View sheet',
+    'campaigns.memberAction.close': 'Close confirmation',
+    'campaigns.memberAction.cancel': 'Cancel',
+    'campaigns.memberAction.demote.title': 'Demote this GM',
+    'campaigns.memberAction.demote.confirmPrefix': 'Revoke GM rights from',
+    'campaigns.memberAction.demote.confirmSuffix': '?',
+    'campaigns.memberAction.demote.notice':
+      'They become a player again and keep their seat at the table: they only lose authority over the campaign. Demotion is reversible — you can promote them again at any time.',
+    'campaigns.memberAction.demote.confirm': 'Demote',
+    'campaigns.memberAction.demote.submitting': 'Demoting…',
+    'campaigns.memberAction.kick.title': 'Remove this member',
+    'campaigns.memberAction.kick.confirmPrefix': 'Remove from the campaign',
+    'campaigns.memberAction.kick.confirmSuffix': '?',
+    'campaigns.memberAction.kick.notice':
+      'They lose access to the campaign, its sessions and its journal. Their character sheet belongs to them and stays intact in their library. They can come back with the invite code.',
+    'campaigns.memberAction.kick.confirm': 'Confirm removal',
+    'campaigns.memberAction.kick.submitting': 'Removing…',
+    'campaigns.memberAction.error.notFound': 'This campaign no longer exists.',
+    'campaigns.memberAction.error.lastGm':
+      'Not possible: a campaign must always keep at least one GM. Promote another member first.',
+    'campaigns.memberAction.error.generic':
+      'The operation failed. Check your connection and try again.',
     'campaigns.detail.party.aria': 'Live party combat status',
     'campaigns.detail.party.title': 'Party status',
     'campaigns.detail.party.empty': 'No player has linked a character yet.',
@@ -7270,6 +8352,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.eventFeed.detail.systemActor': 'System',
     'campaigns.detail.eventFeed.detail.unknownCharacter': 'Character',
     'campaigns.detail.eventFeed.detail.noDetail': 'No additional details.',
+    'campaigns.detail.eventFeed.detail.delete': 'Remove from journal',
+    'campaigns.detail.eventFeed.detail.deleteConfirm': 'Confirm removal',
+    'campaigns.detail.eventFeed.detail.deleteError': 'Removal failed.',
     'campaigns.detail.eventFeed.field.label': 'Label',
     'campaigns.detail.eventFeed.field.total': 'Total',
     'campaigns.detail.eventFeed.field.modifier': 'Modifier',
@@ -7343,7 +8428,11 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.detail.journalCta': 'Journal',
     'campaigns.detail.handoutsCta': 'Handouts',
     'campaigns.detail.mapsCta': 'Maps',
+    'campaigns.detail.mapsPlayerCta': 'View the map',
     'campaigns.detail.settingsCta': 'Settings',
+    'campaigns.detail.spaces.aria': 'Campaign spaces',
+    'campaigns.detail.spaces.play': 'Play',
+    'campaigns.detail.spaces.memory': 'Table memory',
     'campaigns.settings.title': 'Campaign settings',
     'campaigns.settings.intro':
       'Adjust the name, the table’s dice mode and optional rules. These choices apply to the whole campaign.',
@@ -7373,6 +8462,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.settings.dice.title': 'Table dice mode',
     'campaigns.settings.dice.hint':
       'The table’s default mode. Each player can follow it or pick their own in their account.',
+    'campaigns.settings.language.title': 'Table language',
+    'campaigns.settings.language.hint':
+      'The language served to players who have not picked one in their account. A personal choice always wins.',
     'campaigns.settings.variants.title': '5e variants',
     'campaigns.settings.variants.hint':
       'Optional rules applied to the whole table. Off by default.',
@@ -7390,11 +8482,17 @@ const STRINGS: Record<Locale, Dict> = {
       'Short rest is 8 hours, long rest is 7 days.',
     // Handouts DM→player — plan 27
     'handouts.toast.title': 'The DM sent you a handout',
+    'encounters.toast.started.title': 'Combat begins',
+    'encounters.toast.yourTurn.title': 'Your turn',
+    'encounters.toast.yourTurn.sub': 'Round {n} · {name}',
     'handouts.screen.back': 'Back to campaign',
     'handouts.screen.title': 'Handouts',
     'handouts.screen.subtitleDm': 'Maps, letters and clues shared with the table.',
     'handouts.screen.subtitlePlayer': 'Handouts the DM has shared with you.',
     'handouts.screen.newCta': 'New handout',
+    'handouts.search.placeholder': 'Search a title, a word from the text…',
+    'handouts.search.aria': 'Search handouts',
+    'handouts.search.noMatch': 'No handout matches this search.',
     'handouts.screen.empty.dm': 'No handout shared yet.',
     'handouts.screen.empty.player': 'The DM has not shared any handout with you.',
     'handouts.screen.activeHeading': 'Active',
@@ -7434,10 +8532,33 @@ const STRINGS: Record<Locale, Dict> = {
     'handouts.create.error.recipients': 'Pick at least one recipient.',
     'handouts.create.error.send': 'Sending failed. Check your connection and try again.',
     'handouts.create.sentToast': 'Handout sent',
+    // Lifecycle of a sent handout (M12)
+    'handouts.card.edit': 'Correct',
+    'handouts.card.unarchive': 'Unarchive',
+    'handouts.card.delete': 'Delete',
+    'handouts.card.deleteConfirm': 'Confirm deletion',
+    'handouts.card.recipientsNone': 'No recipient',
+    'handouts.edit.title': 'Correct the handout',
+    'handouts.edit.save': 'Save corrections',
+    'handouts.edit.saving': 'Saving…',
+    'handouts.edit.savedToast': 'Handout corrected',
+    'campaigns.tip.editHandout':
+      'Correct the title, text or recipients. Adding a player notifies them.',
+    'campaigns.tip.unarchiveHandout': 'Put this handout back in the active flow.',
+    'campaigns.tip.deleteHandout':
+      'Erase this handout for good. Archiving keeps a trace instead.',
     // NPCs — plan 28
     'campaigns.detail.npcsCta': 'NPCs',
     'campaigns.detail.eventFeed.kind.npcIntroduced': 'NPC introduced',
     'campaigns.detail.eventFeed.kind.npcAttitudeChanged': 'NPC attitude',
+    'campaigns.detail.eventFeed.kind.levelUp': 'Level up',
+    'campaigns.detail.eventFeed.kind.xpGain': 'Experience',
+    'campaigns.detail.eventFeed.kind.death': 'Death',
+    'campaigns.detail.eventFeed.kind.revival': 'Revival',
+    'campaigns.detail.eventFeed.kind.rest': 'Rest',
+    'campaigns.detail.eventFeed.levelDetail': 'Level {n}',
+    'campaigns.detail.eventFeed.restShort': 'Short rest',
+    'campaigns.detail.eventFeed.restLong': 'Long rest',
     'npcs.role.merchant': 'Merchant',
     'npcs.role.ally': 'Ally',
     'npcs.role.enemy': 'Enemy',
@@ -7472,6 +8593,23 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.detail.notFound': 'This NPC could not be found.',
     'npcs.detail.edit': 'Edit',
     'npcs.detail.delete': 'Delete',
+    'npcs.detail.duplicate': 'Duplicate',
+    'npcs.duplicate.title': 'Duplicate into another campaign',
+    'npcs.duplicate.intro':
+      'Pick the table that will receive a copy of this non-player character.',
+    'npcs.duplicate.helper':
+      'The copy arrives secret and without its relationships: those point at characters from this campaign, which do not exist over there.',
+    'npcs.duplicate.noTarget': 'You do not run any other campaign yet.',
+    'npcs.duplicate.confirm': 'Duplicate',
+    'npcs.duplicate.busy': 'Duplicating…',
+    'npcs.duplicate.cancel': 'Cancel',
+    'npcs.duplicate.error': 'The duplication did not go through. Try again.',
+    'npcs.duplicate.doneToast': 'Character duplicated',
+    'npcs.search.placeholder': 'Search a name, a place, a tag…',
+    'npcs.search.aria': 'Search non-player characters',
+    'npcs.sort.aria': 'List order',
+    'npcs.sort.introduction': 'Order met',
+    'npcs.sort.alpha': 'Alphabetical',
     'npcs.detail.secretBadge': 'Secret',
     'npcs.detail.publicHeading': 'Description',
     'npcs.detail.relationsHeading': 'Relationships',
@@ -7520,15 +8658,21 @@ const STRINGS: Record<Locale, Dict> = {
     'npcs.edit.field.tagsPlaceholder': 'recurring, faction-x',
     'npcs.edit.field.visibility': 'Visibility',
     'npcs.edit.field.visibilityHelper': 'A secret NPC stays fully invisible to players.',
-    'npcs.edit.imageDeferred':
-      'Image portraits are coming soon — for now, a letter or an emoji.',
+    'npcs.edit.portraitImageAdd': 'Add a photo',
+    'npcs.edit.portraitImageReplace': 'Replace the photo',
+    'npcs.edit.portraitImageRemove': 'Remove the photo',
+    'npcs.edit.portraitImageBusy': 'Optimising…',
+    'npcs.edit.portraitImageError': 'This image could not be read.',
+    'npcs.edit.portraitImageAlt': 'Portrait of',
     'npcs.edit.combat.enable': 'Combatant NPC',
     'npcs.edit.combat.cr': 'CR',
     'npcs.edit.combat.ac': 'AC',
     'npcs.edit.combat.hp': 'HP',
     'npcs.edit.combat.notes': 'Combat notes',
-    'npcs.edit.combat.monsterDeferred':
-      'Linking to a bestiary monster (auto-fill) will arrive with the SRD bestiary.',
+    'npcs.edit.combat.linkMonster': 'Link a monster',
+    'npcs.edit.combat.unlinkMonster': 'Unlink',
+    'npcs.edit.combat.linkMonsterHelper':
+      'The linked monster fills in CR, AC and HP — all still editable — and gives the tracker its full stat block.',
     'npcs.edit.cancel': 'Cancel',
     'npcs.edit.save': 'Save',
     'npcs.edit.saving': 'Saving…',
@@ -7627,6 +8771,12 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.journal.recompileConfirmBody':
       'This rewrites the journal from events and overwrites any manual edit. Events remain the source of truth.',
     'sessions.journal.recompileConfirm': 'Recompile and overwrite',
+    'sessions.journal.scope.legend': 'What the story carries',
+    'sessions.journal.scope.rolls': 'Dice rolls',
+    'sessions.journal.scope.monsterHp': 'Monster hit points',
+    'sessions.journal.scope.dmOnly': 'Behind the screen',
+    'sessions.journal.scope.help':
+      'Unchecked, that kind of event stays out of the story. Nothing is lost: events remain the source of truth, you can recompile differently.',
     'sessions.action.start': 'Start session',
     'sessions.action.end': 'End session',
     'sessions.action.starting': 'Starting…',
@@ -7634,6 +8784,28 @@ const STRINGS: Record<Locale, Dict> = {
     'sessions.action.error.anotherActive':
       'Another session is already active. End it before starting a new one.',
     'sessions.action.error.generic': 'The action failed. Check your connection and try again.',
+    // Session lifecycle (M13)
+    'sessions.edit.cta': 'Edit session',
+    'sessions.edit.title': 'Edit session',
+    'sessions.edit.close': 'Close edit dialog',
+    'sessions.edit.save': 'Save',
+    'sessions.edit.saving': 'Saving…',
+    'sessions.edit.number.label': 'Session number',
+    'sessions.edit.number.helper':
+      'Assigned automatically, but editable — a campaign picked up mid-run can start at session 42.',
+    'sessions.edit.error.number': 'The number must be an integer greater than 0.',
+    'sessions.edit.error.generic':
+      'Saving failed. Check your connection and try again.',
+    'sessions.action.cancel': 'Cancel session',
+    'sessions.action.cancelConfirm': 'Confirm cancellation',
+    'sessions.action.cancelNotice':
+      'A cancelled session drops out of the campaign story: neither upcoming nor completed. You can reopen it.',
+    'sessions.action.reopen': 'Reopen session',
+    'sessions.action.reopening': 'Reopening…',
+    'campaigns.tip.editSession': 'Correct the title, number or date.',
+    'campaigns.tip.cancelSession':
+      'Mark this session as never held, without closing it.',
+    'campaigns.tip.reopenSession': 'Undo a wrong closure or cancellation.',
     // Combat encounters — JALON 24.2
     'encounters.back': 'Back to campaign',
     'encounters.title': 'Encounters',
@@ -7691,6 +8863,13 @@ const STRINGS: Record<Locale, Dict> = {
       'Creation failed. Check your connection and try again.',
     // Encounters — combat screen (JALON 24.3)
     'encounters.detail.back': 'Back to encounters',
+    'encounters.detail.codex': 'Codex',
+    'encounters.detail.codexTip': 'Look up a rule or a monster without leaving combat.',
+    'encounters.detail.roster': 'The party',
+    'encounters.detail.rosterTip': 'See the party’s state without leaving combat.',
+    'campaigns.roster.overlay.subtitle': 'The party’s state, without leaving the game.',
+    'campaigns.roster.overlay.close': 'Close the party',
+    'campaigns.roster.overlay.empty': 'Nobody at the table yet.',
     'encounters.detail.round': 'Round',
     'encounters.detail.error.title': 'Unable to load',
     'encounters.detail.error.body':
@@ -7708,6 +8887,19 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.action.end': 'End combat',
     'encounters.action.ending': 'Ending…',
     'encounters.action.cancelEnd': 'Cancel',
+    'encounters.action.previousTurn': 'Previous turn',
+    'encounters.action.abort': 'Abandon the fight',
+    'encounters.action.reopen': 'Reopen the fight',
+    'encounters.action.reopening': 'Reopening…',
+    'encounters.detail.closedHint':
+      'This encounter is closed. Reopening puts it back where it left off.',
+    'encounters.row.actions': 'Manage encounter',
+    'encounters.row.manageTitle': 'Manage encounter',
+    'encounters.row.manageCloseAria': 'Close encounter management',
+    'encounters.row.renameLabel': 'Encounter name',
+    'encounters.row.renameSave': 'Rename',
+    'encounters.row.delete': 'Delete encounter',
+    'encounters.row.deleteConfirm': 'Confirm deletion',
     'encounters.action.error.anotherActive':
       'Another encounter is already active. End it before starting a new one.',
     'encounters.action.error.noParticipants':
@@ -7737,10 +8929,48 @@ const STRINGS: Record<Locale, Dict> = {
     'encounters.control.closeAria': 'Close control panel',
     'encounters.control.viewStatBlock': 'View stat block',
     'encounters.control.statBlockCloseAria': 'Close stat block',
+    'encounters.control.tempHp': '+ Temp HP',
+    'encounters.control.customCondition': 'Other condition',
+    'encounters.control.customConditionPlaceholder': 'Marked by the Hunter…',
+    'encounters.control.customConditionAdd': 'Apply',
+    'encounters.control.noteTitle': 'Combatant note',
+    'encounters.control.notePlaceholder': 'This one carries the key…',
+    'encounters.control.noteSave': 'Save note',
+    'encounters.playerControl.badge': 'Player sheet',
+    'encounters.playerControl.help':
+      'Hit points are applied to their sheet, and the edit is logged.',
+    'encounters.playerControl.loading': 'Reading the sheet…',
+    'encounters.playerControl.unreadable':
+      'Sheet unreadable: the player may have unlinked it from the campaign.',
+    'encounters.playerControl.open': 'Hit points',
+    'encounters.control.editTitle': 'Edit combatant',
+    'encounters.control.editName': 'Name',
+    'encounters.control.editInitiative': 'Initiative',
+    'encounters.control.editCurrentHp': 'Current HP',
+    'encounters.control.editMaxHp': 'Max HP',
+    'encounters.control.editSave': 'Save changes',
+    'encounters.control.remove': 'Remove from combat',
+    'encounters.control.removeConfirm': 'Confirm removal',
+    'encounters.add.open': 'Add a combatant',
+    'encounters.add.title': 'New combatant',
+    'encounters.add.intro':
+      'Reinforcements join at the end of the order, initiative 0. Enter or roll theirs next.',
+    'encounters.add.closeAria': 'Close combatant form',
+    'encounters.add.nameLabel': 'Name',
+    'encounters.add.namePlaceholder': 'Goblin boss…',
+    'encounters.add.hpLabel': 'HP',
+    'encounters.add.typeLabel': 'Type',
+    'encounters.add.typeMonster': 'Monster',
+    'encounters.add.typeNpc': 'NPC',
+    'encounters.add.fromBestiary': 'From the bestiary',
+    'encounters.add.submit': 'Add to combat',
+    'encounters.add.cancel': 'Cancel',
+    'encounters.add.error.name': 'Give this combatant a name.',
+    'encounters.add.error.hp': 'Enter valid HP (at least 1).',
     'encounters.handoff.title': 'Damage to apply',
     'encounters.handoff.help':
-      'Recent physical rolls from players. Pick a target to apply the damage.',
-    'encounters.handoff.aria': 'Physical damage to apply',
+      'Recent rolls from players. Pick a target to apply the damage.',
+    'encounters.handoff.aria': 'Damage to apply',
     'encounters.handoff.attackPrefix': 'Atk',
     'encounters.handoff.damageSuffix': 'damage',
     'encounters.handoff.attackInfo': 'Attack roll — compare to the target’s AC.',
@@ -7766,6 +8996,19 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.actor.someone': 'Someone',
     'journal.tpl.sessionStart': 'Session {number} — “{title}” — begins.',
     'journal.tpl.sessionEnd': 'Session {number} — “{title}” — ends.',
+    'journal.tpl.levelUp': '{actor} reaches **level {level}** ({className} {classLevel}).',
+    'journal.tpl.levelUpNewClass':
+      '{actor} takes up a new path: **{className}** — level {level} overall.',
+    'journal.tpl.levelUpNoClass': '{actor} reaches **level {level}**.',
+    'journal.tpl.xpGain': '{actor} gains {amount} XP (total: {total}).',
+    'journal.tpl.xpLoss': '{actor} loses {amount} XP (total: {total}).',
+    'journal.tpl.death': '**{actor}** succumbs to their wounds.',
+    'journal.tpl.deathByDm': '**{actor}** dies.',
+    'journal.tpl.revivalNat20': '**{actor}** opens their eyes at the last moment and rises.',
+    'journal.tpl.revivalDm': '**{actor}** is brought back to life.',
+    'journal.tpl.restShort': '{actor} takes a short rest.',
+    'journal.tpl.restLong': '{actor} takes a long rest.',
+    'journal.tpl.restLongHealed': '{actor} takes a long rest and recovers {hp} HP.',
     'journal.tpl.turnStart': '**{name}**’s turn (round {round}).',
     'journal.tpl.rollAttackCrit':
       '{actor} attacks and scores a **critical hit** ({label}, total {total})!',
@@ -7801,6 +9044,7 @@ const STRINGS: Record<Locale, Dict> = {
     'journal.aggregate.subtitle': 'The compiled tale of your sessions, in order.',
     'journal.aggregate.back': 'Back to campaign',
     'journal.aggregate.export': 'Export (.md)',
+    'journal.aggregate.exportSession': 'Export this session',
     'journal.aggregate.empty':
       'No completed sessions yet. The campaign journal fills in as you end sessions.',
     'journal.aggregate.sessionNumberPrefix': 'Session ',
@@ -7840,6 +9084,10 @@ const STRINGS: Record<Locale, Dict> = {
     'sheet.avoir.coin.el': 'ep',
     'sheet.avoir.coin.or': 'gp',
     'sheet.avoir.coin.pl': 'pp',
+    'sheet.avoir.weight.title': 'Carried weight',
+    'sheet.avoir.weight.normal': 'Normal load',
+    'sheet.avoir.weight.encumbered': 'Encumbered',
+    'sheet.avoir.weight.heavilyEncumbered': 'Heavily encumbered',
     'sheet.avoir.coins.title': 'Purse',
     'sheet.avoir.coins.purseToast': 'Purse — {coin}',
     'sheet.avoir.coins.updated': 'Updated',
@@ -7918,6 +9166,8 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.list.title': 'My imported packs',
     'customContent.list.empty': 'No packs imported yet.',
     'customContent.list.delete': 'Delete',
+    'customContent.list.export': 'Export',
+    'customContent.list.exportTip': 'Downloads this pack as JSON, re-importable as is.',
     'customContent.list.deleteConfirm': 'Permanently delete this pack?',
     'customContent.toast.imported': 'Pack imported',
     'customContent.toast.importedSub': '{count} entries added',
@@ -7946,6 +9196,24 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.meta.nameFr': 'Name (FR)',
     'customContent.editor.meta.nameEn': 'Name (EN, optional)',
     'customContent.editor.meta.author': 'Author',
+    'customContent.duplicate.title': 'Duplicate an existing entry',
+    'customContent.duplicate.open': 'Duplicate',
+    'customContent.duplicate.modeLegend': 'What to do with the chosen entry',
+    'customContent.duplicate.modeCopy': 'New entry',
+    'customContent.duplicate.modeCopyHint':
+      'A copy under a new id. The original is still served at the table.',
+    'customContent.duplicate.modeReplace': 'Replace the original',
+    'customContent.duplicate.modeReplaceHint':
+      'Keeps its id: your version overrides it everywhere at your table.',
+    'customContent.duplicate.searchPlaceholder': 'Search the catalogue…',
+    'customContent.duplicate.searchAria': 'Search for an entry to duplicate',
+    'customContent.duplicate.loading': 'Loading the catalogue…',
+    'customContent.duplicate.empty': 'No entry matches.',
+    'customContent.duplicate.copySuffixName': ' (custom)',
+    'customContent.origin.custom': 'Custom',
+    'customContent.editor.meta.sourceLabel': 'Provenance',
+    'customContent.editor.meta.sourceLabelHelper':
+      'Where this content comes from, in plain words: “Xanathar”, “My campaign”, “Translated from Jean’s table”. Shown next to the pack’s entries.',
     'customContent.editor.meta.version': 'Version',
     'customContent.editor.meta.versionHelper':
       'semver format MAJOR.MINOR.PATCH, e.g. 1.0.0.',
@@ -8634,7 +9902,7 @@ const STRINGS: Record<Locale, Dict> = {
     'customContent.editor.ancestryForm.error.idFormat':
       'Invalid slug: lowercase, digits and dashes only.',
     'customContent.editor.ancestryForm.error.idReserved':
-      'This identifier is reserved for official ancestries — use a slug specific to your creation.',
+      'This official ancestry requires a sub-choice list this form cannot produce yet — pick another id.',
     'customContent.editor.ancestryForm.error.nameFrRequired':
       'FR name is required.',
     'customContent.editor.ancestryForm.error.descriptionFrRequired':
@@ -8811,8 +10079,24 @@ const STRINGS: Record<Locale, Dict> = {
       'Identifier is required.',
     'customContent.editor.classForm.error.idFormat':
       'Invalid slug: lowercase, digits and dashes only.',
+    'customContent.editor.classForm.spellcastingPreparation': 'Spells',
+    'customContent.editor.classForm.spellcastingPreparationHelper':
+      'Prepared: the list is rebuilt on every long rest. Known: it is fixed.',
+    'customContent.editor.classForm.spellcastingPreparation.prepared': 'Prepared',
+    'customContent.editor.classForm.spellcastingPreparation.known': 'Known',
+    'customContent.editor.classForm.spellsKnownOrPrepared':
+      'Spells prepared or known, per level',
+    'customContent.editor.classForm.spellsKnownOrPreparedHelper':
+      'The 20 values of the column, level 1 to 20, separated by spaces. Leave empty if your class has no table.',
+    'customContent.editor.classForm.cantripsKnown': 'Cantrips known, per level',
+    'customContent.editor.classForm.cantripsKnownHelper':
+      'Optional — 20 values, same as above. Leave empty if your class has no cantrips.',
+    'customContent.editor.classForm.error.progressionFormat':
+      'Exactly 20 non-negative whole numbers are required, one per level.',
+    'customContent.editor.classForm.error.progressionRequiredForCantrips':
+      'Fill in the prepared-or-known column first.',
     'customContent.editor.classForm.error.idReserved':
-      'This identifier is reserved by an official class — pick a slug unique to your homebrew.',
+      'Cleric and Druid require an order list this form cannot produce yet — pick another id. The other 10 official classes can be duplicated.',
     'customContent.editor.classForm.error.nameFrRequired':
       'FR name is required.',
     'customContent.editor.classForm.error.descriptionFrRequired':
@@ -8882,6 +10166,9 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.applyHeal': 'Restore this many hit points.',
     'campaigns.tip.quickDamage': 'Deal this much damage in one tap.',
     'campaigns.tip.quickHeal': 'Heal this amount in one tap.',
+    'campaigns.tip.grantTempHp': 'Grant this amount as temporary hit points (the better value wins).',
+    'campaigns.tip.customCondition': 'Apply a condition invented by the table.',
+    'campaigns.tip.saveNote': 'Save this note on the combatant.',
     'campaigns.tip.conditionAdd': 'Apply this condition to the creature.',
     'campaigns.tip.conditionRemove': 'Remove this condition from the creature.',
     'campaigns.tip.rollInit': 'Roll initiative for every combatant.',
@@ -8890,12 +10177,21 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.endCombat': 'End combat and choose its outcome.',
     'campaigns.tip.reroll': 'Reroll this combatant’s initiative.',
     'campaigns.tip.controlParticipant': 'Adjust its hit points and conditions.',
+    'campaigns.tip.previousTurn': 'Step back to the previous combatant — something was missed.',
+    'campaigns.tip.abortCombat': 'Close with no outcome: this fight never ended.',
+    'campaigns.tip.reopenCombat': 'Put this fight back in progress, where it left off.',
+    'campaigns.tip.manageEncounter': 'Rename or delete this encounter.',
+    'campaigns.tip.addParticipant': 'Bring a combatant into an encounter already under way.',
+    'campaigns.tip.editParticipant': 'Fix its name, hit points or initiative.',
+    'campaigns.tip.removeParticipant': 'Take it out of the encounter — it leaves the turn order.',
     'campaigns.tip.openJournal': 'Open the campaign journal.',
     'campaigns.tip.openHandouts': 'Open the documents shared with the table.',
     'campaigns.tip.openNpcs': 'Open the directory of non-player characters.',
     'campaigns.tip.openSessions': 'Open the list of game sessions.',
     'campaigns.tip.openEncounters': 'Open the list of combat encounters.',
     'campaigns.tip.openMaps': 'Open the campaign’s map mode.',
+    'campaigns.tip.viewMaps':
+      'View the campaign maps, exactly as the GM projects them.',
     'campaigns.tip.openSettings':
       'Edit the table’s name, dice mode and 5e variants.',
     'campaigns.tip.promoteGm': 'Grant this player full game master authority.',
@@ -8908,6 +10204,8 @@ const STRINGS: Record<Locale, Dict> = {
       'Create a new character, automatically linked to this campaign.',
     'campaigns.tip.editNpc': 'Edit this non-player character’s sheet.',
     'campaigns.tip.deleteNpc': 'Permanently delete this non-player character.',
+    'campaigns.tip.duplicateNpc':
+      'Copy this non-player character into another campaign you run.',
     'campaigns.tip.editRelations': 'Edit the ties with player characters.',
     'campaigns.tip.archiveHandout': 'Archive this document and hide it from players.',
     'campaigns.tip.startSession': 'Start the session and log play.',
@@ -8916,6 +10214,12 @@ const STRINGS: Record<Locale, Dict> = {
     'campaigns.tip.handoffTarget': 'Apply the damage to this creature.',
     'campaigns.tip.removeMonsterRow': 'Remove this monster from the encounter.',
     'campaigns.tip.fromBestiary': 'Prefill a monster from the bestiary.',
+    'campaigns.tip.demoteGm':
+      'Revoke their GM authority. They stay a player at the table.',
+    'campaigns.tip.kickMember':
+      'Remove this player from the campaign. Their sheet stays theirs.',
+    'campaigns.tip.rotateInviteCode':
+      'Revoke the current code and generate a new one.',
     // Explicit tooltips — map
     'map.tip.placeAoe': 'Pick this area-of-effect shape to place.',
     'map.tip.rotateAoeCcw': 'Rotate the area 15° counter-clockwise.',
@@ -8931,6 +10235,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.tip.toggleGrid': 'Show or hide the map grid.',
     'map.tip.toggleFog': 'Turn the fog of war on or off.',
     'map.tip.toggleLos': 'Turn line of sight on or off (walls block vision).',
+    'map.tip.viewAsPlayer': 'See the map as the table sees it, before revealing.',
     'map.tip.toggleLighting': 'Show or hide the glow of light sources.',
     'map.tip.toggleMeasure': 'Measure a distance in meters on the map.',
     'map.tip.deleteMap': 'Permanently delete this map.',
@@ -8965,6 +10270,13 @@ const STRINGS: Record<Locale, Dict> = {
     'map.cloud.loadErrorPrefix': 'Loading error: ',
     'map.cloud.loadingMaps': 'Loading maps…',
     'map.cloud.empty': 'No maps for this campaign. Create one above.',
+    'map.cloud.emptyMember':
+      'The GM has not prepared a map for this campaign yet.',
+    'map.cloud.memberIntro':
+      'These maps are read-only: you see exactly what the GM projects on the table.',
+    'map.zoom.inAria': 'Zoom in on the map',
+    'map.zoom.outAria': 'Zoom out of the map',
+    'map.zoom.reset': 'Reframe',
     'map.cloud.listAria': 'Map list',
     'map.cloud.delete': 'Del.',
     'map.import.signedOut': 'Sign in to import a map.',
@@ -8988,6 +10300,37 @@ const STRINGS: Record<Locale, Dict> = {
     'map.import.saveSection': 'Save the map',
     'map.import.submitting': 'Importing…',
     'map.import.submit': 'Import',
+    // Map screen — plain image import (2nd import tab)
+    'map.import.tabDd2vtt': 'Dungeon Alchemist file',
+    'map.import.tabImage': 'Battlemap image',
+    'map.import.imageIntro':
+      'An image is enough: any floor plan found online becomes a playable map. No walls or lights are inferred — fog and grid are set inside the map afterwards.',
+    'map.import.chooseImage': 'Choose an image',
+    'map.import.imageProcessing': 'Optimising…',
+    'map.import.imageTooLarge':
+      'This image is still too heavy after optimisation. Shrink it before importing.',
+    'map.import.imageFailed': 'This image could not be read.',
+    'map.import.statWeight': 'Optimised weight',
+    'map.import.statScale': 'Starting scale',
+    'map.import.imageHint':
+      'The image stays on this device. For the table to see it, set a public URL in the map settings.',
+    // Map screen — settings of an existing map (map-settings-modal)
+    'map.settings.closeLabel': 'Close settings',
+    'map.settings.title': 'Map settings',
+    'map.settings.gridSizeLabel': 'Square size on screen (pixels)',
+    'map.settings.gridSizeHelp':
+      "Adjust until the grid lines up with the image's own grid.",
+    'map.settings.scaleLabel': 'One square represents (metres)',
+    'map.settings.scaleEchoPrefix': 'Stored as ',
+    'map.settings.scaleInvalid': 'Enter a distance in metres, for example 1.5.',
+    'map.settings.imageUrlLabel': 'Background image URL',
+    'map.settings.imageUrlPlaceholder': 'https://…',
+    'map.settings.imageUrlHelp':
+      'An imported image stays local to this device. A public URL also shows up for players and on the table screen.',
+    'map.settings.save': 'Save settings',
+    'map.live.settingsButton': 'Settings',
+    'map.tip.openSettings':
+      'Rename the map, realign the grid, change the scale or the background image.',
     // Map screen — token editor + bestiary picker
     'map.token.editTitle': 'Edit the token',
     'map.token.closeLabel': 'Close token editing',
@@ -9082,6 +10425,7 @@ const STRINGS: Record<Locale, Dict> = {
     'map.live.snapToggle': 'Magnet:',
     'map.live.fogToggleLabel': 'Fog:',
     'map.live.losToggle': 'Line of sight:',
+    'map.live.playerViewToggle': 'Player view:',
     'map.live.lightingToggle': 'Lighting:',
     'map.live.tvView': 'Presentation view',
     'map.live.measureLabel': 'Measure',
@@ -9227,6 +10571,9 @@ const STRINGS: Record<Locale, Dict> = {
     'levelUp.addClass.pickIntro':
       'Choose the class your character wishes to learn. Greyed-out classes are unavailable — hover to see why.',
     'levelUp.addClass.blockedTitle': 'Unavailable — {reason}',
+    'levelUp.addClass.dmOverrideBadge': 'Below prerequisites · {reason}',
+    'levelUp.addClass.dmOverrideTitle':
+      'Prerequisites not met ({reason}). You may grant it anyway.',
     'levelUp.addClass.selectFirst': 'Select a class at the previous step first.',
     'levelUp.addClass.defNotFound': 'Definition not found for “{id}”.',
     'levelUp.addClass.subChoicesTitle': 'Level 1 sub-choices',
@@ -9260,6 +10607,26 @@ const STRINGS: Record<Locale, Dict> = {
     'radialMenu.tip.close': 'Close the menu.',
     'dice.tip.closeHistory': 'Close the roll history.',
     'dice.history.title': 'Roll history',
+    'dice.options.bonus': 'One-off bonus',
+    'dice.options.discreet': 'Discreet roll',
+    'dice.options.discreetNote':
+      'The roll goes to your own log only — the table will not see it.',
+    'dice.options.bonusAria': 'One-off bonus applied to this roll',
+    'dice.options.useInspiration': 'Spend inspiration',
+    'dice.options.inspirationNote':
+      'Inspiration grants advantage and will be spent.',
+    'dice.options.title': 'How to roll',
+    'dice.options.aria': 'Options for the {label} roll',
+    'dice.free.title': 'Free roll',
+    'dice.free.aria': 'Roll a free dice formula',
+    'dice.free.label': 'Formula',
+    'dice.free.placeholder': '2d10+3',
+    'dice.free.hint': 'Examples: 4d6 · 2d10+3 · 1d20-1d4 · 2d20kh1',
+    'dice.free.invalid': 'Unreadable formula.',
+    'dice.free.submit': 'Roll',
+    'dice.free.cancel': 'Cancel',
+    'dice.free.rollLabel': 'Free roll',
+    'sheet.fab.freeRoll': 'Free roll',
     // Physical-roll modal (plan 12.5)
     'dice.physical.header': 'Physical mode — enter your dice',
     'dice.physical.rollPrompt': 'Roll {dice}',
@@ -9283,6 +10650,9 @@ const STRINGS: Record<Locale, Dict> = {
     'dice.history.closeLabel': 'Close history',
     'dice.history.empty':
       'No rolls recorded yet. Try an initiative or an ability check.',
+    'dice.history.replay': 'Reroll',
+    'dice.history.replayTip': 'Roll this again, same dice and same bonuses',
+    'dice.history.replayAria': 'Reroll: {label}',
     'dice.history.modeSaveError': 'Dice mode not saved',
     'dice.history.modeSaveErrorSub': 'Firestore error',
     'dm.tip.advNormal': 'Normal roll: a single d20.',
@@ -9290,6 +10660,8 @@ const STRINGS: Record<Locale, Dict> = {
     'dm.tip.advDisadvantage': 'Disadvantage: roll two d20, keep the lowest.',
     'dm.tip.secretRoll': 'Roll the secret d20 with the modifier.',
     'journal.tip.export': 'Download the full journal as a Markdown file.',
+    'journal.tip.exportSession':
+      'Download this session alone — enough to pass on to an absent player.',
     'journal.tip.compile': 'Generate the session narrative from the events.',
     'journal.tip.edit': 'Edit the narrative by hand.',
     'journal.tip.recompile': 'Regenerate the narrative from the events.',

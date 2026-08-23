@@ -15,11 +15,25 @@ const slug = z
   .min(1)
   .regex(/^[a-z0-9-]+$/, 'kebab-case slug only');
 
+/**
+ * Provenance d'une entrée de contenu.
+ *
+ * `'custom'` (M53) est le tag des entrées créées dans l'app. Il remplace
+ * `'aidedd-homebrew'`, qui restait écrit en dur par les 11 formulaires et
+ * étiquetait « AideDD » du contenu qui n'en venait pas. L'ancienne valeur est
+ * CONSERVÉE dans l'enum : des packs déjà enregistrés la portent, et la faire
+ * disparaître les rendrait illisibles au prochain `safeParse`.
+ *
+ * La provenance humainement lisible (« Xanathar », « ma campagne ») n'est pas
+ * ici mais sur `meta.sourceLabel` du pack : elle vaut pour tout le pack et un
+ * enum fermé ne pourra jamais l'exprimer.
+ */
 const sourceTag = z.enum([
   'srd-5.2.1',
   'free-rules-2024',
   'basic-rules',
   'aidedd-homebrew',
+  'custom',
 ]);
 export type SourceTag = z.infer<typeof sourceTag>;
 
@@ -564,6 +578,16 @@ export const ClassSchema = z
       .object({
         ability: z.enum(['int', 'sag', 'cha']),
         progression: z.enum(['full', 'half', 'third', 'pact']),
+        /**
+         * Prépare-t-elle ses sorts, ou les connaît-elle ? (M51)
+         *
+         * Optionnel : les 12 classes SRD ne le portent pas et retombent sur
+         * `PREPARED_CASTER_CLASS_IDS` (`rules/spell-preparation.ts`), qui est un
+         * fait de règles gravé — `classes.json` est un path protégé. Le champ
+         * n'existe que pour les classes maison, qui n'ont aucun moyen d'entrer
+         * dans une liste d'ids fermée.
+         */
+        preparation: z.enum(['prepared', 'known']).optional(),
       })
       .nullable(),
     startingEquipment: StartingEquipmentSchema,
@@ -641,7 +665,7 @@ export const ClassSchema = z
      * fixtures de test legacy ; le bundle SRD réel garantit la présence sur
      * les 12 classes (vérifié par `tests/srd-counters.test.ts` cat. 3 pin).
      * Optionnel pour matcher le pattern `divineOrders` / `primalOrders` —
-     * voir audit `plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED`.
+     * voir audit `docs/plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED`.
      */
     multiclassPrerequisite: MulticlassPrerequisiteSchema.nullable().optional(),
     /**

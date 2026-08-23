@@ -13,7 +13,7 @@ import { db as dexie } from '../dexie-db';
  *
  * Pourquoi : le test d'intégrité disque (`content-integrity.test.ts`) ne lit
  * que les JSON sur disque. Il était vert pendant qu'à l'écran un Magicien
- * voyait une liste de sorts vide (cache Dexie pollué, plans/DEBT.md > D7).
+ * voyait une liste de sorts vide (cache Dexie pollué, docs/plans/DEBT.md > D7).
  *
  * Ce test passe par le VRAI loader `loadPublicContent` qui valide via Zod et
  * écrit dans le cache Dexie — exactement ce que voit l'UI runtime. Si un

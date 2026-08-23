@@ -19,7 +19,9 @@ import {
   collectNpcFacets,
   EMPTY_NPC_FILTER,
   filterNpcs,
+  sortNpcs,
   type NpcFilter,
+  type NpcSort,
 } from './npc-filter';
 import { useCampaign } from './use-campaign';
 import { useNpcs } from './use-npcs';
@@ -45,10 +47,14 @@ export function NpcDirectoryScreen(): JSX.Element {
 
   const { npcs, isLoading, error, refresh } = useNpcs(cid, isDM);
   const [filter, setFilter] = useState<NpcFilter>(EMPTY_NPC_FILTER);
+  const [sort, setSort] = useState<NpcSort>('introduction');
   const [createOpen, setCreateOpen] = useState<boolean>(false);
 
   const facets = useMemo(() => collectNpcFacets(npcs), [npcs]);
-  const visible = useMemo(() => filterNpcs(npcs, filter), [npcs, filter]);
+  const visible = useMemo(
+    () => sortNpcs(filterNpcs(npcs, filter), sort),
+    [npcs, filter, sort],
+  );
 
   if (campaignLoading) return <Splash />;
 
@@ -123,7 +129,50 @@ export function NpcDirectoryScreen(): JSX.Element {
         </header>
 
         {npcs.length > 0 ? (
-          <NpcFilters facets={facets} filter={filter} onChange={setFilter} />
+          <>
+            {/* Recherche + ordre (M41). Trois facettes fermées ne retrouvent pas
+                « Aldric » parmi quarante PNJ, et l'ordre d'introduction devient
+                inutilisable passé une dizaine d'entrées. */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <input
+                type="search"
+                value={filter.query}
+                onChange={(e) => setFilter({ ...filter, query: e.target.value })}
+                placeholder={t('npcs.search.placeholder')}
+                aria-label={t('npcs.search.aria')}
+                data-testid="npc-search"
+                className="min-w-[16rem] flex-1 rounded-pill border border-white-8 bg-ink/40 px-4 py-2 font-serif text-body text-text outline-none transition-colors duration-200 ease-base placeholder:italic placeholder:text-text-faint focus:border-gold"
+              />
+              <div
+                role="group"
+                aria-label={t('npcs.sort.aria')}
+                className="flex flex-wrap gap-2"
+              >
+                {(['introduction', 'alpha'] as const).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={sort === key}
+                    data-testid={`npc-sort-${key}`}
+                    onClick={() => setSort(key)}
+                    className={cn(
+                      'rounded-pill border px-4 py-1.5 font-title text-[11px] font-bold uppercase tracking-[0.14em] transition-colors duration-200 ease-base',
+                      sort === key
+                        ? 'border-gold-bright bg-gold-bright/15 text-gold-bright'
+                        : 'border-white-8 bg-white/[0.04] text-text-secondary hover:border-soft hover:text-gold-bright',
+                    )}
+                  >
+                    {t(
+                      key === 'introduction'
+                        ? 'npcs.sort.introduction'
+                        : 'npcs.sort.alpha',
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <NpcFilters facets={facets} filter={filter} onChange={setFilter} />
+          </>
         ) : null}
 
         {error ? (

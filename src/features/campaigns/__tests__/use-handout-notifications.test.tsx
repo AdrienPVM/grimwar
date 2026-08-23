@@ -83,6 +83,20 @@ describe('useHandoutNotifications', () => {
     expect(showToast).not.toHaveBeenCalled();
   });
 
+  it('ne notifie jamais un utilisateur de ses PROPRES envois', () => {
+    // Le MJ est destinataire de sa propre diffusion « toute la table » (la rule
+    // l'autorise en tant qu'isDMOf). Depuis que le hook est monté au-dessus des
+    // routes (E13/1), il n'a plus de garde `!isGm` au call site : c'est ce
+    // filtre sur `createdBy` qui l'empêche de se notifier lui-même.
+    renderHook(() => useHandoutNotifications('c-1', 'dm-1', true));
+    handlers[1]!(snap([])); // listener « all » : chargement initial
+    handlers[1]!(snap([added('h-mine', { createdBy: 'dm-1', recipients: 'all' })]));
+    expect(showToast).not.toHaveBeenCalled();
+    // …mais le document d'un AUTRE meneur passe bien.
+    handlers[1]!(snap([added('h-other', { createdBy: 'dm-2', recipients: 'all' })]));
+    expect(showToast).toHaveBeenCalledTimes(1);
+  });
+
   it("n'ouvre aucun listener quand enabled=false (cas MJ)", () => {
     renderHook(() => useHandoutNotifications('c-1', 'dm-1', false));
     expect(handlers).toHaveLength(0);

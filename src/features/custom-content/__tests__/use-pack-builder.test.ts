@@ -36,7 +36,7 @@ describe('builderStateFromPack', () => {
             name: { fr: 'X' },
             prerequisite: null,
             summary: { fr: 'S' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -67,7 +67,7 @@ describe('builderStateFromPack', () => {
             name: { fr: 'X' },
             prerequisite: null,
             summary: { fr: 'S' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -88,7 +88,7 @@ describe('builderStateFromPack', () => {
             name: { fr: 'X' },
             prerequisite: null,
             summary: { fr: 'S' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -113,7 +113,7 @@ describe('builderStateFromPack', () => {
       name: { fr: 'A' },
       prerequisite: null,
       summary: { fr: 'S' },
-      source: 'aidedd-homebrew' as const,
+      source: 'custom' as const,
     };
     const pack: CustomContentPack = {
       meta: baseMeta,
@@ -133,7 +133,7 @@ describe('builderStateFromPack', () => {
       attunement: true,
       magicDescription: { fr: 'Lame enflammée', en: 'Flaming blade' },
       description: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     };
     const monster: Monster = {
       id: 'gobelin-roi',
@@ -160,7 +160,7 @@ describe('builderStateFromPack', () => {
       actions: [],
       reactions: null,
       legendaryActions: null,
-      source: 'aidedd-homebrew',
+      source: 'custom',
     };
 
     // state camelCase → entité kebab : `pack.entities['magic-items']`.

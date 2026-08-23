@@ -1,5 +1,5 @@
-import { loadPublicContent } from './content-loader';
-import { loadUserPacksEntries } from './load-user-packs-entries';
+import { loadPublicContent, type ContentScope } from './content-loader';
+import { loadUserPacksEntriesScoped, type PackEntry } from './load-user-packs-entries';
 import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
 
 /**
@@ -11,7 +11,7 @@ import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
  * sous-classes). Sans cette primitive, chaque call site UI orchestrerait
  * lui-même le merge — duplication et dérive garanties.
  *
- * Politique d'override (cf. plans/2A-AGNOSTIC-SOURCE-INVENTORY.md § 2.3) :
+ * Politique d'override (cf. docs/plans/2A-AGNOSTIC-SOURCE-INVENTORY.md § 2.3) :
  *   campaign > user > public
  *
  * Sur conflit d'id : l'entrée du scope prioritaire remplace la moins
@@ -23,6 +23,25 @@ import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
  * la fusion. Les call sites ne changent pas — ils voient juste plus
  * d'entrées.
  */
+/**
+ * Une entrée fusionnée AVEC sa provenance. La liste seule ne suffit pas dès
+ * qu'un écran doit ÉCRIRE une référence : l'inventaire persiste
+ * `contentScope`/`contentSource`, et poser `'public'` sur un objet venu d'un
+ * pack maison le rend « introuvable » à la relecture.
+ */
+export interface ScopedContentEntry<K extends ContentTypeKey> {
+  readonly entity: ContentEntityByKey[K];
+  readonly scope: ContentScope;
+  /** uid ou id de campagne selon le scope ; `undefined` en public. */
+  readonly scopeId?: string;
+  /**
+   * Provenance lisible du pack d'origine (M53) — `meta.sourceLabel` ou, à
+   * défaut, le nom du pack. `undefined` en public : le SRD n'a pas d'étiquette
+   * à afficher, c'est la base.
+   */
+  readonly originLabel?: string;
+}
+
 export async function loadContentMulti<K extends ContentTypeKey>(
   type: K,
   options: {
@@ -30,6 +49,18 @@ export async function loadContentMulti<K extends ContentTypeKey>(
     userId?: string | null;
   } = {},
 ): Promise<ContentEntityByKey[K][]> {
+  const scoped = await loadContentMultiScoped(type, options);
+  return scoped.map((s) => s.entity);
+}
+
+/** Variante de `loadContentMulti` qui conserve la provenance de chaque entrée. */
+export async function loadContentMultiScoped<K extends ContentTypeKey>(
+  type: K,
+  options: {
+    campaignId?: string | null;
+    userId?: string | null;
+  } = {},
+): Promise<ScopedContentEntry<K>[]> {
   const { campaignId, userId } = options;
 
   const publicEntries = await loadPublicContent(type);
@@ -60,9 +91,14 @@ export async function loadContentMulti<K extends ContentTypeKey>(
   // Index par id, en empilant dans l'ordre de priorité croissante. La
   // dernière écriture l'emporte → public d'abord, user au-dessus, campaign
   // tout en haut. C'est strictement équivalent à `campaign > user > public`.
-  const byId = new Map<string, { entity: ContentEntityByKey[K]; scope: string }>();
+  const byId = new Map<string, ScopedContentEntry<K>>();
 
-  const push = (entry: ContentEntityByKey[K], scope: string): void => {
+  const push = (
+    entry: ContentEntityByKey[K],
+    scope: ContentScope,
+    scopeId?: string,
+    originLabel?: string,
+  ): void => {
     const id = (entry as { id: string }).id;
     const existing = byId.get(id);
     if (existing) {
@@ -70,14 +106,20 @@ export async function loadContentMulti<K extends ContentTypeKey>(
         `[load-content-multi] ${type}: collision id "${id}" — ${scope} remplace ${existing.scope}.`,
       );
     }
-    byId.set(id, { entity: entry, scope });
+    byId.set(id, {
+      entity: entry,
+      scope,
+      ...(scopeId === undefined ? {} : { scopeId }),
+      ...(originLabel === undefined ? {} : { originLabel }),
+    });
   };
 
   for (const entry of publicEntries) push(entry, 'public');
-  for (const entry of userEntries) push(entry, 'user');
-  for (const entry of campaignEntries) push(entry, 'campaign');
+  for (const entry of userEntries)
+    push(entry.entity, 'user', userId ?? undefined, entry.originLabel);
+  for (const entry of campaignEntries) push(entry, 'campaign', campaignId ?? undefined);
 
-  return Array.from(byId.values()).map((v) => v.entity);
+  return Array.from(byId.values());
 }
 
 /**
@@ -91,9 +133,9 @@ export async function loadContentMulti<K extends ContentTypeKey>(
 async function safeLoadUserPacks<K extends ContentTypeKey>(
   type: K,
   userId: string,
-): Promise<ContentEntityByKey[K][]> {
+): Promise<PackEntry<K>[]> {
   try {
-    return await loadUserPacksEntries(type, userId);
+    return await loadUserPacksEntriesScoped(type, userId);
   } catch (err) {
     const code = (err as { code?: string }).code;
     const msg = (err as { message?: string }).message ?? String(err);

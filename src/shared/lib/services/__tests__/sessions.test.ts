@@ -100,14 +100,17 @@ vi.mock('@/shared/lib/firebase', () => ({
 }));
 
 import {
+  cancelSession,
   createSession,
   endSession,
   getActiveSession,
   getSession,
   listSessions,
+  reopenSession,
   SessionServiceError,
   setSessionAttendance,
   startSession,
+  updateSessionMeta,
   updateSessionNotes,
 } from '../sessions';
 
@@ -328,6 +331,111 @@ describe('setSessionAttendance', () => {
     await setSessionAttendance(CID, SID, ['u1', 'u2']);
     const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
     expect(payload).toEqual({ attendance: ['u1', 'u2'], updatedAt: 'MOCK_SERVER_TS' });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// M13 — renommer, annuler, rouvrir
+// ─────────────────────────────────────────────────────────────────────
+
+describe('updateSessionMeta (M13)', () => {
+  it('patche titre, numéro et date', async () => {
+    const date = new Date('2026-09-12T00:00:00');
+    await updateSessionMeta(CID, SID, {
+      title: 'Le Siège de Corvus',
+      number: 42,
+      plannedDate: date,
+    });
+    const [ref, payload] = mockUpdateDoc.mock.calls[0]! as [
+      { path: string },
+      Record<string, unknown>,
+    ];
+    expect(ref.path).toBe(`campaigns/${CID}/sessions/${SID}`);
+    expect(payload).toEqual({
+      title: 'Le Siège de Corvus',
+      number: 42,
+      plannedDate: date,
+      updatedAt: 'MOCK_SERVER_TS',
+    });
+  });
+
+  it('accepte un effacement explicite de la date (null ≠ absent)', async () => {
+    await updateSessionMeta(CID, SID, { plannedDate: null });
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toEqual({ plannedDate: null, updatedAt: 'MOCK_SERVER_TS' });
+  });
+
+  it("patch vide → aucune écriture", async () => {
+    await updateSessionMeta(CID, SID, {});
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+});
+
+describe('cancelSession (M13)', () => {
+  it("écrit le statut 'cancelled' sans poser endedAt", async () => {
+    await cancelSession(CID, SID);
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toEqual({ status: 'cancelled', updatedAt: 'MOCK_SERVER_TS' });
+    // Rien ne s'est terminé : `endedAt` doit rester tel quel.
+    expect(payload).not.toHaveProperty('endedAt');
+  });
+});
+
+describe('reopenSession (M13)', () => {
+  it("séance terminée → redevient active et efface endedAt", async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: SID, status: 'completed' }),
+    });
+    mockGetDocs.mockResolvedValueOnce({ empty: true, docs: [] });
+
+    await reopenSession(CID, SID);
+
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toEqual({
+      status: 'active',
+      endedAt: null,
+      updatedAt: 'MOCK_SERVER_TS',
+    });
+  });
+
+  it("séance annulée → revient à 'planned' (elle n'avait jamais commencé)", async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: SID, status: 'cancelled' }),
+    });
+
+    await reopenSession(CID, SID);
+
+    const [, payload] = mockUpdateDoc.mock.calls[0]! as [unknown, Record<string, unknown>];
+    expect(payload).toEqual({ status: 'planned', updatedAt: 'MOCK_SERVER_TS' });
+    // Pas de lecture de la séance active : on ne va pas vers `active`.
+    expect(mockGetDocs).not.toHaveBeenCalled();
+  });
+
+  it('refuse de rouvrir en active si une AUTRE séance tourne', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: SID, status: 'completed' }),
+    });
+    mockGetDocs.mockResolvedValueOnce({
+      empty: false,
+      docs: [{ data: () => ({ id: 'other-live', status: 'active' }) }],
+    });
+
+    await expect(reopenSession(CID, SID)).rejects.toMatchObject({
+      kind: 'another-session-active',
+    });
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
+  });
+
+  it('no-op sur une séance déjà ouverte', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: SID, status: 'active' }),
+    });
+    await reopenSession(CID, SID);
+    expect(mockUpdateDoc).not.toHaveBeenCalled();
   });
 });
 

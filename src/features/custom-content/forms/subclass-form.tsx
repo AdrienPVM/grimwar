@@ -34,7 +34,7 @@ import { FieldString } from './fields/field-string';
  * d'édition n'est PAS résolue ici — ce raffinement attendra une passe edit
  * mode (3C.10).
  *
- * `source` est figé à `aidedd-homebrew` — convention partagée 3C.
+ * `source` est figé à `custom` — convention partagée 3C.
  */
 
 interface SubclassFeatureDraft {
@@ -98,7 +98,7 @@ export function buildSubclassFromDraft(draft: SubclassFormDraft): Subclass {
           : {}),
       },
     })),
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

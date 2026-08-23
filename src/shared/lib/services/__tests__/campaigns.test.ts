@@ -160,6 +160,7 @@ vi.mock('@/shared/lib/firebase', () => ({
 import {
   CampaignServiceError,
   createCampaign,
+  demoteGm,
   ensureCampaignExists,
   generateInviteCode,
   getCampaign,
@@ -171,6 +172,7 @@ import {
   listCampaignMembers,
   listMyCampaigns,
   promoteToGm,
+  rotateInviteCode,
   updateCampaign,
 } from '../campaigns';
 import { INVITE_CODE_REGEX } from '@/shared/types/campaign';
@@ -773,6 +775,171 @@ describe('promoteToGm', () => {
   it('throw campaign-not-found si la campagne est absente', async () => {
     mockGetDoc.mockResolvedValueOnce({ exists: () => false });
     await expect(promoteToGm(CID, TARGET)).rejects.toMatchObject({
+      kind: 'campaign-not-found',
+    });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// demoteGm (M11) — symétrique de promoteToGm
+// ─────────────────────────────────────────────────────────────────────
+
+describe('demoteGm', () => {
+  const TARGET = 'user-bob';
+
+  it('retire la cible de gmIds et repasse son doc member en joueur', async () => {
+    mockGetDoc
+      .mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ id: CID, gmIds: [UID, TARGET] }),
+      })
+      .mockResolvedValueOnce({ exists: () => true });
+
+    await demoteGm(CID, TARGET);
+
+    expect(lastBatch!.ops).toHaveLength(2);
+    expect(lastBatch!.ops[0]).toMatchObject({
+      type: 'update',
+      ref: { path: `campaigns/${CID}` },
+      payload: { gmIds: [UID], updatedAt: 'MOCK_SERVER_TS' },
+    });
+    expect(lastBatch!.ops[1]).toMatchObject({
+      type: 'update',
+      ref: { path: `campaigns/${CID}/members/${TARGET}` },
+      payload: { role: 'member' },
+    });
+  });
+
+  it('crée un doc member joueur si le MJ rétrogradé n\'en avait pas', async () => {
+    // Un MJ fondateur n'a PAS de doc `members/{uid}` (sa membership est
+    // sous-entendue par gmIds). Sans création, le rétrograder l'éjecterait de la
+    // campagne au lieu de le rendre joueur.
+    mockGetDoc
+      .mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ id: CID, gmIds: [UID, TARGET] }),
+      })
+      .mockResolvedValueOnce({ exists: () => false });
+
+    await demoteGm(CID, TARGET);
+
+    expect(lastBatch!.ops[1]).toMatchObject({
+      type: 'set',
+      ref: { path: `campaigns/${CID}/members/${TARGET}` },
+      payload: {
+        userId: TARGET,
+        role: 'member',
+        characterId: null,
+        displayName: null,
+        photoURL: null,
+        schemaVersion: 1,
+      },
+    });
+  });
+
+  it('refuse de rétrograder le DERNIER meneur (invariant ≥ 1 MJ)', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: CID, gmIds: [TARGET] }),
+    });
+    await expect(demoteGm(CID, TARGET)).rejects.toMatchObject({
+      kind: 'last-gm-cannot-demote',
+    });
+    expect(lastBatch).toBeNull();
+  });
+
+  it("no-op idempotent si la cible n'est pas meneur", async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: CID, gmIds: [UID] }),
+    });
+    await demoteGm(CID, TARGET);
+    expect(lastBatch).toBeNull();
+  });
+
+  it('throw campaign-not-found si la campagne est absente', async () => {
+    mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+    await expect(demoteGm(CID, TARGET)).rejects.toMatchObject({
+      kind: 'campaign-not-found',
+    });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// rotateInviteCode (M11) — révocation d'un code diffusé
+// ─────────────────────────────────────────────────────────────────────
+
+describe('rotateInviteCode', () => {
+  const OLD_CODE = 'ABC234';
+
+  it('pose le nouveau code, supprime l\'ancien et repointe la campagne', async () => {
+    mockGetDoc
+      .mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({
+          id: CID,
+          inviteCode: OLD_CODE,
+          createdBy: 'user-founder',
+          gmIds: ['user-founder', UID],
+        }),
+      })
+      // Lookup de collision sur le code candidat → libre.
+      .mockResolvedValueOnce({ exists: () => false });
+
+    const next = await rotateInviteCode(CID, UID);
+
+    expect(next).toMatch(INVITE_CODE_REGEX);
+    expect(next).not.toBe(OLD_CODE);
+    expect(lastBatch!.ops).toHaveLength(3);
+    expect(lastBatch!.ops[0]).toMatchObject({
+      type: 'set',
+      ref: { path: `inviteCodes/${next}` },
+      // `createdBy` doit être l'APPELANT, pas le fondateur : la rule de create
+      // exige `createdBy == auth.uid`, sinon un co-MJ serait refusé.
+      payload: { code: next, campaignId: CID, createdBy: UID },
+    });
+    expect(lastBatch!.ops[1]).toMatchObject({
+      type: 'delete',
+      ref: { path: `inviteCodes/${OLD_CODE}` },
+    });
+    expect(lastBatch!.ops[2]).toMatchObject({
+      type: 'update',
+      ref: { path: `campaigns/${CID}` },
+      payload: { inviteCode: next, updatedAt: 'MOCK_SERVER_TS' },
+    });
+  });
+
+  it('réessaye quand le code tiré est déjà pris', async () => {
+    mockGetDoc
+      .mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({ id: CID, inviteCode: OLD_CODE, createdBy: UID, gmIds: [UID] }),
+      })
+      .mockResolvedValueOnce({ exists: () => true }) // 1er candidat pris
+      .mockResolvedValueOnce({ exists: () => false }); // 2e libre
+
+    const next = await rotateInviteCode(CID, UID);
+    expect(next).toMatch(INVITE_CODE_REGEX);
+    expect(lastBatch!.ops).toHaveLength(3);
+  });
+
+  it('throw invite-code-collision-exhausted après 5 collisions', async () => {
+    mockGetDoc.mockResolvedValueOnce({
+      exists: () => true,
+      data: () => ({ id: CID, inviteCode: OLD_CODE, createdBy: UID, gmIds: [UID] }),
+    });
+    for (let i = 0; i < 5; i++) {
+      mockGetDoc.mockResolvedValueOnce({ exists: () => true });
+    }
+    await expect(rotateInviteCode(CID, UID)).rejects.toMatchObject({
+      kind: 'invite-code-collision-exhausted',
+    });
+    expect(lastBatch).toBeNull();
+  });
+
+  it('throw campaign-not-found si la campagne est absente', async () => {
+    mockGetDoc.mockResolvedValueOnce({ exists: () => false });
+    await expect(rotateInviteCode(CID, UID)).rejects.toMatchObject({
       kind: 'campaign-not-found',
     });
   });

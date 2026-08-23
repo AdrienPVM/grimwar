@@ -57,6 +57,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
 
 import { MapImportScreen } from '../map-import-screen';
 import { MapProtoScreen } from '../map-proto-screen';
+import { MapSettingsModal } from '../map-settings-modal';
 import { MapsCloudScreen } from '../maps-cloud-screen';
 import { MapTvScreen } from '../map-tv-screen';
 import { MonsterPickerModal } from '../monster-picker-modal';
@@ -76,12 +77,17 @@ function renderRoute(path: string, routePath: string, element: JSX.Element): voi
   );
 }
 
+// Sans mock d'autorité, le lecteur n'est meneur d'aucune campagne : l'écran rend
+// donc sa variante JOUEUR (lecture seule, M34). C'est le comportement attendu —
+// la variante meneur est couverte par `maps-cloud-screen.test.tsx`.
 describe('MapsCloudScreen — i18n', () => {
   it('FR : titre + état vide + badge localisés', () => {
     renderRoute('/map-proto/cloud/camp-1', '/map-proto/cloud/:cid', <MapsCloudScreen />);
     expect(screen.getByText('Cartes')).toBeInTheDocument();
     expect(
-      screen.getByText('Aucune carte pour cette campagne. Créez-en une ci-dessus.'),
+      screen.getByText(
+        "Le meneur n'a pas encore préparé de carte pour cette campagne.",
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Prototype — hors production')).toBeInTheDocument();
   });
@@ -91,7 +97,9 @@ describe('MapsCloudScreen — i18n', () => {
     renderRoute('/map-proto/cloud/camp-1', '/map-proto/cloud/:cid', <MapsCloudScreen />);
     expect(screen.getByText('Maps')).toBeInTheDocument();
     expect(
-      screen.getByText('No maps for this campaign. Create one above.'),
+      screen.getByText(
+        'The GM has not prepared a map for this campaign yet.',
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Prototype — not production')).toBeInTheDocument();
   });
@@ -117,6 +125,51 @@ describe('MapImportScreen — i18n', () => {
     );
     expect(screen.getByText('Import a map')).toBeInTheDocument();
     expect(screen.getByText('Choose a .dd2vtt file')).toBeInTheDocument();
+    expect(screen.getByText('Battlemap image')).toBeInTheDocument();
+  });
+
+  it('FR : le second onglet (image nue) est localisé', () => {
+    renderRoute(
+      '/map-proto/cloud/camp-1/import',
+      '/map-proto/cloud/:cid/import',
+      <MapImportScreen />,
+    );
+    expect(screen.getByText('Image de battlemap')).toBeInTheDocument();
+    expect(screen.getByText('Fichier Dungeon Alchemist')).toBeInTheDocument();
+  });
+});
+
+describe('MapSettingsModal — i18n', () => {
+  const map = {
+    id: 'donjon',
+    name: 'Donjon',
+    imageUrl: null,
+    gridSize: 70,
+    feetPerSquare: 5,
+    showGrid: true,
+    fogEnabled: false,
+    lightingEnabled: false,
+    fogPolygons: [],
+    lightSources: [],
+    aoeTemplates: [],
+    schemaVersion: 1 as const,
+    createdAt: null,
+    updatedAt: null,
+    updatedBy: 'u',
+  };
+
+  it('FR : titre + champs de calibrage localisés', () => {
+    render(<MapSettingsModal map={map} onSave={() => {}} onClose={() => {}} />);
+    expect(screen.getByText('Réglages de la carte')).toBeInTheDocument();
+    expect(screen.getByText('Une case représente (mètres)')).toBeInTheDocument();
+  });
+
+  it('EN : aucune fuite FR', () => {
+    useLocaleStore.setState({ locale: 'en' });
+    render(<MapSettingsModal map={map} onSave={() => {}} onClose={() => {}} />);
+    expect(screen.getByText('Map settings')).toBeInTheDocument();
+    expect(screen.getByText('One square represents (metres)')).toBeInTheDocument();
+    expect(screen.getByText('Save settings')).toBeInTheDocument();
   });
 });
 

@@ -27,7 +27,7 @@ import { FieldString } from './fields/field-string';
  * (pas de toggle dédié, c'est suffisamment auto-explicatif pour un champ
  * libre).
  *
- * `source` est figé à `aidedd-homebrew` — convention partagée avec FeatForm.
+ * `source` est figé à `custom` — convention partagée avec FeatForm.
  */
 
 export interface InvocationFormDraft {
@@ -77,7 +77,7 @@ export function buildInvocationFromDraft(draft: InvocationFormDraft): Invocation
             : {}),
         }
       : null,
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

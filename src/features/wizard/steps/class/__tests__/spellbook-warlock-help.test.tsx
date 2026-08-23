@@ -97,11 +97,11 @@ const ARMOR_OF_SHADOWS_INV = {
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'classes')
-      return { data: [WIZARD_FIXTURE, WARLOCK_FIXTURE], loading: false, error: null };
-    if (type === 'spells') return { data: [MAGE_HAND_SPELL], loading: false, error: null };
+      return { data: [WIZARD_FIXTURE, WARLOCK_FIXTURE], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'spells') return { data: [MAGE_HAND_SPELL], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     if (type === 'invocations')
-      return { data: [ARMOR_OF_SHADOWS_INV], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+      return { data: [ARMOR_OF_SHADOWS_INV], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

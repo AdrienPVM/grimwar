@@ -80,7 +80,7 @@ const fighterClass: ClassEntity = {
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'subclasses') {
-      return { data: [championSubclass], loading: false, error: null };
+      return { data: [championSubclass], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     }
     if (type === 'feats') {
       return {
@@ -112,9 +112,9 @@ vi.mock('@/shared/hooks/use-content', () => ({
       };
     }
     if (type === 'spells' || type === 'invocations' || type === 'classes') {
-      return { data: [], loading: false, error: null };
+      return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
     }
-    return { data: [], loading: false, error: null };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

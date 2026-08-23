@@ -236,7 +236,9 @@ function SpellRows({
   onToggle,
 }: SpellRowsProps): JSX.Element {
   return (
-    <ul className="flex flex-col gap-2">
+    // xl: 2 colonnes de sorts (DEBT D6) — les sections Grimoire / Préparés
+    // occupent toute la largeur de la fiche desktop.
+    <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
       {spells.map((spell) => {
         const isCantrip = spell.level === 0;
         // En mode édition : un sort de niveau ≥ 1 non-préparé est bloqué si le

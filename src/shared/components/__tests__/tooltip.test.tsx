@@ -129,6 +129,28 @@ describe('<Tooltip>', () => {
     expect(tip.className).toContain('opacity-0');
   });
 
+  it("est rendue en portail hors de la cible, en `fixed` (anti-débordement)", () => {
+    // Garde-fou du bug UAT « bande vide à droite » : une bulle `absolute`
+    // enfant de la cible reste dans le flux même fermée (elle n'est
+    // qu'`opacity: 0`) et élargit `document.body` quand elle est ancrée près du
+    // bord droit — mesuré 466px de contenu pour 412px de viewport sur /create.
+    // jsdom ne mesure pas le layout : on verrouille donc les deux invariants
+    // STRUCTURELS qui rendent ce débordement impossible.
+    render(
+      <Tooltip label="Aide">
+        <button type="button">OK</button>
+      </Tooltip>,
+    );
+    const btn = screen.getByRole('button');
+    const wrapper = btn.parentElement as HTMLElement;
+    const tip = screen.getByRole('tooltip', { hidden: true });
+
+    expect(wrapper.contains(tip)).toBe(false);
+    expect(tip.parentElement).toBe(document.body);
+    expect(tip.className).toContain('fixed');
+    expect(tip.className).not.toContain('absolute');
+  });
+
   it('se ferme sur Échap', () => {
     render(
       <Tooltip label="Aide">

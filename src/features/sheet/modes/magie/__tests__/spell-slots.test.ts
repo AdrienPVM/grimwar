@@ -190,13 +190,27 @@ describe('fullSpellSlots (D28 — init à la création)', () => {
     expect(slots).toEqual({ '1': { current: 2, max: 2 } });
   });
 
-  it('Paladin 1 (demi-lanceur niveau 1) → AUCUN emplacement (SRD : sorts dès le niv. 2)', () => {
-    expect(fullSpellSlots([mkClassEntry('paladin', 1)], [paladin])).toEqual({});
+  // D30 — CORRIGE l'attente initiale de D28 (« demi-lanceur L1 → {} »), qui
+  // appliquait la règle 2014. Le SRD 5.2.1 donne l'Incantation au niveau 1 aux
+  // demi-lanceurs : table Paladin `SRD_CC_v5.2.1.txt` L5145 → « 1 … 2 2———— »
+  // (2 sorts préparés, 2 emplacements de niveau 1).
+  it('Paladin 1 (demi-lanceur niveau 1) → 2/2 au niveau 1 (SRD 5.2.1)', () => {
+    const slots = fullSpellSlots([mkClassEntry('paladin', 1)], [paladin]);
+    expect(slots).toEqual({ '1': { current: 2, max: 2 } });
   });
 
-  it('Paladin 2 (demi-lanceur) → caster level 1 → 2/2 au niveau 1', () => {
+  it('Paladin 2 (demi-lanceur) → 2/2 au niveau 1', () => {
     const slots = fullSpellSlots([mkClassEntry('paladin', 2)], [paladin]);
     expect(slots).toEqual({ '1': { current: 2, max: 2 } });
+  });
+
+  it('Paladin 5 (demi-lanceur mono-classe) → 4/4 niv.1 + 2/2 niv.2 (SRD 5.2.1)', () => {
+    // Avant D30 : floor(5/2)=2 → { 1: 3/3 } — un niveau de sort entier manquant.
+    const slots = fullSpellSlots([mkClassEntry('paladin', 5)], [paladin]);
+    expect(slots).toEqual({
+      '1': { current: 4, max: 4 },
+      '2': { current: 2, max: 2 },
+    });
   });
 
   it('Fighter (non-lanceur) → {}', () => {

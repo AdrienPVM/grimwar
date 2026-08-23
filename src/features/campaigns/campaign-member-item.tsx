@@ -5,14 +5,24 @@ import { Chip } from '@/shared/components/chip';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 
-import type { RosterEntry } from './campaign-detail-screen';
+import type { RosterEntry } from './roster';
 import { PartyMemberCard } from './party-member-card';
 
 interface CampaignMemberItemProps {
   entry: RosterEntry;
   /** Le spectateur est MJ de la campagne — débloque l'état live + les actions d'autorité. */
   viewerIsGm: boolean;
+  /**
+   * Affiche les affordances d'autorité (promouvoir / rétrograder / exclure).
+   * Faux en pleine partie (roster ouvert depuis une rencontre) : administrer la
+   * table ne relève pas d'un tour de jeu, et ça n'a rien à faire à côté des PV.
+   */
+  showPromote?: boolean;
   onPromote: () => void;
+  /** Rétrograder un co-meneur en joueur (M11). Absent → affordance masquée. */
+  onDemote?: () => void;
+  /** Exclure un joueur de la campagne (M11). Absent → affordance masquée. */
+  onKick?: () => void;
   onViewSheet: () => void;
 }
 
@@ -38,10 +48,24 @@ interface CampaignMemberItemProps {
 export function CampaignMemberItem({
   entry,
   viewerIsGm,
+  showPromote = true,
   onPromote,
+  onDemote,
+  onKick,
   onViewSheet,
 }: CampaignMemberItemProps): JSX.Element {
-  const canPromote = viewerIsGm && entry.role === 'member';
+  const authority = showPromote && viewerIsGm;
+  const canPromote = authority && entry.role === 'member';
+  // Rétrograder : jamais sur SOI. Un meneur qui veut passer la main dispose du
+  // bouton « Quitter la campagne » en pied d'écran ; un bouton d'auto-révocation
+  // au milieu d'une liste d'actions sur les AUTRES serait un piège au pouce.
+  const canDemote =
+    authority && entry.role === 'gm' && !entry.isSelf && onDemote !== undefined;
+  // Exclure : jamais un meneur. Le kick supprime le doc `members/{uid}` — un MJ
+  // reste MJ par `gmIds`, donc l'exclure ainsi ne lui retirerait RIEN tout en
+  // donnant l'illusion du contraire. Il faut le rétrograder d'abord.
+  const canKick =
+    authority && entry.role === 'member' && !entry.isSelf && onKick !== undefined;
   const showLiveCard = viewerIsGm && entry.characterId !== null;
 
   if (showLiveCard) {
@@ -52,17 +76,30 @@ export function CampaignMemberItem({
           ownerUid={entry.uid}
           onOpen={onViewSheet}
         />
-        {canPromote ? (
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onPromote}
-              tooltip={t('campaigns.tip.promoteGm')}
-            >
-              {t('campaigns.detail.roster.promote')}
-            </Button>
+        {canPromote || canKick ? (
+          <div className="flex flex-wrap justify-end gap-2">
+            {canPromote ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onPromote}
+                tooltip={t('campaigns.tip.promoteGm')}
+              >
+                {t('campaigns.detail.roster.promote')}
+              </Button>
+            ) : null}
+            {canKick ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onKick}
+                tooltip={t('campaigns.tip.kickMember')}
+              >
+                {t('campaigns.detail.roster.kick')}
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -70,7 +107,12 @@ export function CampaignMemberItem({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3">
+    // Empilé sur mobile, en ligne dès `sm`. Le passage en colonne n'est pas
+    // cosmétique : avec trois affordances d'autorité sur la même rangée, le nom
+    // du membre — `min-w-0 flex-1 truncate` — était comprimé à ZÉRO pixel sur un
+    // écran de téléphone. Il restait dans le DOM, invisible à l'œil comme au
+    // lecteur d'écran. Attrapé par `campaigns-member-names-uat`.
+    <div className="flex flex-col gap-3 rounded-card-sm border border-white-8 bg-bg-3/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <span
           className={cn(
@@ -87,7 +129,7 @@ export function CampaignMemberItem({
           </span>
         ) : null}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {entry.role === 'gm' ? (
           <Chip variant="gold">{t('campaigns.card.roleGm')}</Chip>
         ) : (
@@ -102,6 +144,28 @@ export function CampaignMemberItem({
             tooltip={t('campaigns.tip.promoteGm')}
           >
             {t('campaigns.detail.roster.promote')}
+          </Button>
+        ) : null}
+        {canDemote ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onDemote}
+            tooltip={t('campaigns.tip.demoteGm')}
+          >
+            {t('campaigns.detail.roster.demote')}
+          </Button>
+        ) : null}
+        {canKick ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onKick}
+            tooltip={t('campaigns.tip.kickMember')}
+          >
+            {t('campaigns.detail.roster.kick')}
           </Button>
         ) : null}
       </div>

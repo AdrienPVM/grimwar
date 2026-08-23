@@ -41,7 +41,7 @@ test.describe('JALON 22.1 — auto-log des jets sur fiche liée', () => {
     // physique). On récupère l'uid anonyme + l'id de fiche. Preset déjà en
     // schemaVersion 2 : pas de migration v1 → v2 au chargement, donc pas de
     // cascade de re-render qui pourrait laisser la campagne active transitoirement
-    // nulle (flake observé en 22.2 — cf. plans/DEBT.md > D27).
+    // nulle (flake observé en 22.2 — cf. docs/plans/DEBT.md > D27).
     const { uid, charId } = await seedCharacter(page, fighterL1MasteryDefense, {
       diceMode: 'digital',
     });
@@ -157,7 +157,7 @@ test.describe('JALON 22.2 — auto-log du diff de fiche (PV) sur fiche liée', (
 });
 
 /**
- * D27 — garde-fou de la CAUSE RACINE (cf. `plans/DEBT.md > D27`).
+ * D27 — garde-fou de la CAUSE RACINE (cf. `docs/plans/DEBT.md > D27`).
  *
  * Les deux tests ci-dessus utilisent un preset déjà v2 pour rester
  * déterministes. Ce test-ci prend au contraire un preset **v1**

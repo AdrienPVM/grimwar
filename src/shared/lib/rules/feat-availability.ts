@@ -3,7 +3,7 @@
  *
  * Résout l'éligibilité d'un feat pour un personnage donné en se basant sur
  * son champ `prerequisites[]` structuré (peuplé en 2C-feat-2, audit
- * `plans/2C-FEAT-PREREQS-AUDIT.md`).
+ * `docs/plans/2C-FEAT-PREREQS-AUDIT.md`).
  *
  * Sémantique : AND strict sur les prérequis. Retourne la liste des prérequis
  * non satisfaits — consommée par `FeatPicker` (2C-feat-4) pour griser le feat

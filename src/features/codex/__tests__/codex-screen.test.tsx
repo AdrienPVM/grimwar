@@ -9,13 +9,14 @@ import { CodexScreen } from '../codex-screen';
  */
 
 vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({ data: [], loading: false, error: null }),
+  useContent: () => ({ data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) }),
 }));
 
 describe('CodexScreen', () => {
-  it('rend le titre et les 10 onglets de catégorie', () => {
+  it('rend le titre et les 11 onglets de catégorie', () => {
     render(<CodexScreen />);
     expect(screen.getByRole('heading', { name: 'Le Codex' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Recherche/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Sorts/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Objets magiques/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Équipement/ })).toBeInTheDocument();
@@ -26,7 +27,21 @@ describe('CodexScreen', () => {
     expect(screen.getByRole('tab', { name: /Dons/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Invocations/ })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /États/ })).toBeInTheDocument();
-    expect(screen.getAllByRole('tab')).toHaveLength(10);
+    expect(screen.getAllByRole('tab')).toHaveLength(11);
+  });
+
+  it('place « Recherche » en premier — c’est l’onglet de celui qui ne sait pas où chercher', () => {
+    render(<CodexScreen />);
+    const first = screen.getAllByRole('tab')[0];
+    expect(first).toHaveTextContent('Recherche');
+  });
+
+  it('bascule vers Recherche et affiche le champ transverse', () => {
+    render(<CodexScreen />);
+    fireEvent.click(screen.getByRole('tab', { name: /Recherche/ }));
+    expect(
+      screen.getByPlaceholderText('Rechercher dans tout le Codex…'),
+    ).toBeInTheDocument();
   });
 
   it('bascule vers Classes et affiche le navigateur de classes', () => {

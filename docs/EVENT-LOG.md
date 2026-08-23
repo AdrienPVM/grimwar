@@ -59,12 +59,12 @@ export async function logRoll(args: {
 | `item-unequipped` | Item déséquipé | `all` | itemRef |
 | `attunement-changed` | Attunement modifié | `all` | itemRef, attuned |
 | `coins-change` | Coins modified | `all` | before, after, delta |
-| `level-up` | Niveau gagné | `all` | newLevel, choices (subclass, ASI/feat, prepared spells…) |
-| `xp-gain` | XP gagné | `all` | delta, total, source |
-| `rest` | Repos pris | `all` | type ('short' / 'long') |
+| `level-up` | Niveau gagné | `all` | newLevel (total), classId, className (localisé), classLevel, isNewClass |
+| `xp-gain` | XP gagné ou retiré | `all` | delta (signé — négatif = correction MJ), total (après coup) |
+| `rest` | Repos pris | `all` | type ('short' / 'long'), hpHealed, resourcesReset |
 | `death-save` | Sauvegarde de mort | `all` | success/fail, currentTally |
-| `death` | PJ mort | `all` | causeRef (monster/trap/PJ), location |
-| `revival` | MJ ressuscite un PJ mort | `all` | revivedByDmUserId, previousDeathEventId? |
+| `death` | PJ mort | `all` | cause ('death-saves' / 'dm') |
+| `revival` | PJ revenu à la vie | `all` | source ('nat20' / 'dm') — l'auteur est déjà dans `actorUserId` |
 | `stabilize` | PJ stabilisé | `all` | |
 | `inspiration-grant` | Inspiration accordée | `all` | byUserId |
 | `inspiration-consume` | Inspiration utilisée | `all` | onEventId (refs the event it boosted) |

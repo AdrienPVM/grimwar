@@ -10,7 +10,8 @@ import { DetailModal } from '@/shared/components/detail-modal';
 import { Divider } from '@/shared/components/divider';
 import { PageContainer } from '@/shared/components/page-container';
 import { Splash } from '@/shared/components/splash';
-import { t } from '@/shared/lib/i18n';
+import { useContent } from '@/shared/hooks/use-content';
+import { localize, t } from '@/shared/lib/i18n';
 import { deleteNpc } from '@/shared/lib/services/npcs';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
@@ -19,11 +20,13 @@ import {
 } from '@/shared/types/npc-labels';
 import type { NpcAttitude } from '@/shared/types/npc';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
+import { NpcDuplicateModal } from './npc-duplicate-modal';
 import { NpcEditModal } from './npc-edit-modal';
 import { NpcPortraitFor } from './npc-portrait';
 import { NpcRelationModal, type NpcRelationPlayer } from './npc-relation-modal';
 import { useCampaign } from './use-campaign';
+import { useMyCampaigns } from './use-my-campaigns';
 import { useLinkedCharacterNames } from './use-linked-character-names';
 import { useNpc } from './use-npcs';
 
@@ -40,6 +43,14 @@ export function NpcDetailScreen(): JSX.Element {
   const { campaign, members, isLoading: campaignLoading } = useCampaign(cid);
   const { npc, isLoading, notFound, refresh } = useNpc(cid, npcId);
   const characterNames = useLinkedCharacterNames(members);
+  // Bestiaire chargé pour résoudre le NOM du monstre lié (SRD + packs custom).
+  const { data: monsters } = useContent('monsters');
+  const monsterLabel = useMemo<string | null>(() => {
+    const id = npc?.combatStats?.monsterContentId;
+    if (!id) return null;
+    const found = monsters.find((m) => m.id === id);
+    return found ? localize(found.name) : null;
+  }, [monsters, npc]);
 
   const isDM = useMemo<boolean>(
     () => !!campaign && !!user && campaign.gmIds.includes(user.uid),
@@ -49,7 +60,19 @@ export function NpcDetailScreen(): JSX.Element {
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [relationOpen, setRelationOpen] = useState<boolean>(false);
   const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
+  const [duplicateOpen, setDuplicateOpen] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
+
+  // Campagnes où l'on est meneur, la courante exclue — cibles de duplication.
+  // Chargées seulement pour un MJ : un joueur n'a pas ce geste.
+  const { campaigns } = useMyCampaigns(isDM);
+  const duplicateTargets = useMemo(
+    () =>
+      campaigns.filter(
+        (c) => c.id !== cid && !!user && c.gmIds.includes(user.uid),
+      ),
+    [campaigns, cid, user],
+  );
 
   const players = useMemo<NpcRelationPlayer[]>(
     () =>
@@ -105,7 +128,9 @@ export function NpcDetailScreen(): JSX.Element {
   return (
     <>
       <PageContainer width="content">
-        <nav className="flex items-center justify-between">
+        {/* `flex-wrap` sur les deux niveaux : une 3ᵉ action sur une rangée
+            dense comprime le voisin jusqu'à zéro pixel en 375 px de large. */}
+        <nav className="flex flex-wrap items-center justify-between gap-3">
           <Button
             type="button"
             variant="ghost"
@@ -116,7 +141,7 @@ export function NpcDetailScreen(): JSX.Element {
             ← {t('npcs.detail.back')}
           </Button>
           {isDM ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -124,6 +149,14 @@ export function NpcDetailScreen(): JSX.Element {
                 tooltip={t('campaigns.tip.editNpc')}
               >
                 {t('npcs.detail.edit')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDuplicateOpen(true)}
+                tooltip={t('campaigns.tip.duplicateNpc')}
+              >
+                {t('npcs.detail.duplicate')}
               </Button>
               <Button
                 variant="ghost"
@@ -240,7 +273,12 @@ export function NpcDetailScreen(): JSX.Element {
                   {npc.combatStats.monsterContentId ? (
                     <StatRow
                       label={t('npcs.detail.combat.monster')}
-                      value={npc.combatStats.monsterContentId}
+                      // Le NOM de la créature, pas son slug : « Gobelours »
+                      // dit quelque chose à la table, « bugbear » non. Repli
+                      // sur le slug si le bestiaire ne connaît pas l'entrée
+                      // (pack désinstallé) — mieux vaut un identifiant brut
+                      // qu'un champ vide qui laisserait croire au délien.
+                      value={monsterLabel ?? npc.combatStats.monsterContentId}
                     />
                   ) : null}
                 </dl>
@@ -281,6 +319,16 @@ export function NpcDetailScreen(): JSX.Element {
           npc={npc}
           onClose={() => setEditOpen(false)}
           onSaved={refresh}
+        />
+      ) : null}
+
+      {isDM && cid && user && duplicateOpen ? (
+        <NpcDuplicateModal
+          open={duplicateOpen}
+          npc={npc}
+          targets={duplicateTargets}
+          createdByUid={user.uid}
+          onClose={() => setDuplicateOpen(false)}
         />
       ) : null}
 

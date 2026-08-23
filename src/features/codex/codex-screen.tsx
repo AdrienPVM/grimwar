@@ -1,28 +1,10 @@
-import { useState, type JSX } from 'react';
+import { type JSX } from 'react';
 
 import { Divider } from '@/shared/components/divider';
-import { GlassPanel } from '@/shared/components/glass-panel';
 import { PageContainer } from '@/shared/components/page-container';
 import { t } from '@/shared/lib/i18n';
 
-import {
-  CodexCategoryTabs,
-  type CodexCategoryId,
-} from './codex-categories';
-import {
-  AncestryBrowser,
-  BackgroundBrowser,
-  ClassBrowser,
-} from './browsers/codex-build-browsers';
-import {
-  ConditionBrowser,
-  FeatBrowser,
-  InvocationBrowser,
-} from './browsers/codex-text-browsers';
-import { ItemBrowser } from './browsers/item-browser';
-import { MagicItemBrowser } from './browsers/magic-item-browser';
-import { MonsterBrowser } from './browsers/monster-browser';
-import { SpellBrowser } from './browsers/spell-browser';
+import { CodexBrowser } from './codex-browser';
 
 /**
  * Le Codex (plan 19) — navigateur du contenu SRD 5.2.1 bundlé. Lecture seule,
@@ -31,10 +13,10 @@ import { SpellBrowser } from './browsers/spell-browser';
  * sa propre recherche / ses filtres / sa modale.
  *
  * Point d'entrée : carte « Le Codex » de la bibliothèque (`/`). Route `/codex`.
+ * Le corps est partagé avec `CodexOverlay` (`codex-browser.tsx`), qui sert la
+ * même consultation sans quitter la fiche ni la rencontre (audit UX, E6).
  */
 export function CodexScreen(): JSX.Element {
-  const [active, setActive] = useState<CodexCategoryId>('spells');
-
   return (
     <PageContainer width="wide">
       <header className="text-center">
@@ -48,46 +30,8 @@ export function CodexScreen(): JSX.Element {
       </header>
 
       <div className="mt-8">
-        <CodexCategoryTabs active={active} onChange={setActive} />
+        <CodexBrowser surface="glass" />
       </div>
-
-      <GlassPanel
-        role="tabpanel"
-        id={`codex-panel-${active}`}
-        aria-labelledby={`codex-tab-${active}`}
-        className="mt-4 p-4 sm:p-6"
-      >
-        <CodexActiveBrowser category={active} />
-      </GlassPanel>
     </PageContainer>
   );
-}
-
-function CodexActiveBrowser({
-  category,
-}: {
-  category: CodexCategoryId;
-}): JSX.Element {
-  switch (category) {
-    case 'spells':
-      return <SpellBrowser />;
-    case 'magicItems':
-      return <MagicItemBrowser />;
-    case 'items':
-      return <ItemBrowser />;
-    case 'monsters':
-      return <MonsterBrowser />;
-    case 'ancestries':
-      return <AncestryBrowser />;
-    case 'backgrounds':
-      return <BackgroundBrowser />;
-    case 'classes':
-      return <ClassBrowser />;
-    case 'feats':
-      return <FeatBrowser />;
-    case 'invocations':
-      return <InvocationBrowser />;
-    case 'conditions':
-      return <ConditionBrowser />;
-  }
 }

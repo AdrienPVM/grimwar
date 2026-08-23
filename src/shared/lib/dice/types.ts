@@ -21,6 +21,17 @@ export interface DiceTerm {
   kh?: number;
   /** keep-lowest N. */
   kl?: number;
+  /**
+   * Sens du terme dans la somme : `1` (défaut, absent) ou `-1`. Le 5e retire
+   * des dés autant qu'il en ajoute — Fardeau (`1d20-1d4`), Malédiction, pénalité
+   * de conditions maison. Sans ce champ, ces mécaniques étaient inexprimables :
+   * le parseur refusait catégoriquement un terme de dés précédé d'un moins.
+   *
+   * Le tirage et les `kh`/`kl` ignorent le signe — on lance 1d4 normalement,
+   * c'est la SOMME qui le soustrait. Un « garder le plus haut » sur un terme
+   * soustractif garde donc bien le dé le plus haut, qu'on retranche ensuite.
+   */
+  sign?: 1 | -1;
 }
 
 /** AST d'une expression de dés : somme de termes + modificateur plat. */

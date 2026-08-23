@@ -7,7 +7,7 @@ import { SKILLS } from '@/shared/lib/rules/skills';
  * `classes.json` et `backgrounds.json` exposent ces strings en EN, parfois avec
  * un tiret de coupure de mot qui n'a pas été nettoyé au build. On normalise ici
  * pour ne pas répandre la dette dans 5 composants. Le nettoyage à la source est
- * tracé dans `plans/DEBT.md` — quand le pipeline d'extraction sera corrigé,
+ * tracé dans `docs/plans/DEBT.md` — quand le pipeline d'extraction sera corrigé,
  * ce résolveur restera comme garde-fou.
  */
 export function resolveSkillId(rawName: string): string | null {

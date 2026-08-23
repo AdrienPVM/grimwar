@@ -24,7 +24,7 @@ import { FieldString } from './fields/field-string';
  * Schéma source : `MagicItemSchema`. Champs requis : id, name, category
  * (8 catégories SRD), rarity (6 raretés), attunement (harmonisation),
  * magicDescription (l'effet magique). Optionnel : description (fluff non
- * mécanique). `source` est figé à `aidedd-homebrew` (contenu joueur, hors SRD).
+ * mécanique). `source` est figé à `custom` (contenu joueur, hors SRD).
  *
  * Modélisation des champs nullable / union :
  *   - `attunement: boolean | i18n` → on n'expose que la forme BOOLÉENNE
@@ -85,7 +85,7 @@ export function buildMagicItemFromDraft(draft: MagicItemFormDraft): MagicItem {
       draft.hasDescription && draft.descriptionFr.trim()
         ? i18nFrEn(draft.descriptionFr, draft.descriptionEn)
         : null,
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

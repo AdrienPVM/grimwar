@@ -10,11 +10,16 @@ import { PageContainer } from '@/shared/components/page-container';
 import { Splash } from '@/shared/components/splash';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
-import { archiveHandout } from '@/shared/lib/services/handouts';
+import { matchesSearch } from '@/shared/lib/search-normalize';
+import {
+  archiveHandout,
+  deleteHandout,
+  unarchiveHandout,
+} from '@/shared/lib/services/handouts';
 import { HANDOUT_RECIPIENTS_ALL, type Handout } from '@/shared/types/handout';
 
-import { formatUid } from './campaign-detail-screen';
-import { HandoutCreateModal, type HandoutPlayer } from './handout-create-modal';
+import { buildRoster, formatUid } from './roster';
+import { HandoutEditorModal, type HandoutPlayer } from './handout-editor-modal';
 import { HandoutViewerModal } from './handout-viewer-modal';
 import { useCampaign } from './use-campaign';
 import { useHandouts } from './use-handouts';
@@ -45,24 +50,48 @@ export function CampaignHandoutsScreen(): JSX.Element {
   const { handouts, isLoading, error, refresh } = useHandouts(cid, isDM);
 
   const [createOpen, setCreateOpen] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>('');
+  const [editing, setEditing] = useState<Handout | null>(null);
   const [viewing, setViewing] = useState<Handout | null>(null);
+  // Suppression confirmée en deux temps, par document — même patron que le
+  // retrait d'un objet d'inventaire ou d'un événement du journal.
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
-  // Joueurs destinataires possibles = membres hors MJ.
+  // Joueurs destinataires possibles = membres hors MJ. Le libellé vient de
+  // `buildRoster`, qui résout le `displayName` DÉNORMALISÉ sur le doc member —
+  // l'écran construisait auparavant sa propre liste avec `formatUid`, si bien
+  // que le meneur choisissait ses destinataires parmi des « aBc12dEf… ».
   const players = useMemo<HandoutPlayer[]>(() => {
     if (!campaign) return [];
-    const gm = new Set(campaign.gmIds);
-    return members
-      .filter((m) => !gm.has(m.userId))
-      .map((m) => ({ uid: m.userId, label: formatUid(m.userId) }));
-  }, [campaign, members]);
+    return buildRoster(campaign, members, user?.uid ?? null, user?.displayName ?? null)
+      .filter((entry) => entry.role === 'member')
+      .map((entry) => ({ uid: entry.uid, label: entry.label }));
+  }, [campaign, members, user]);
 
+  /** Nom d'affichage d'un destinataire, par UID — repli sur l'UID tronqué. */
+  const labelByUid = useMemo<Map<string, string>>(
+    () => new Map(players.map((p) => [p.uid, p.label])),
+    [players],
+  );
+
+  // Recherche texte (M41). Les documents n'avaient AUCUN outil — ni tag, ni
+  // recherche, ni tri : retrouver « la lettre du baron » à la séance 12
+  // supposait de tout parcourir. On balaie titre et corps, les deux étant déjà
+  // lisibles par le destinataire — la recherche n'ouvre donc rien de nouveau.
+  const searched = useMemo(
+    () =>
+      handouts.filter((h) =>
+        matchesSearch(`${h.title} ${h.content.text ?? ''}`, search),
+      ),
+    [handouts, search],
+  );
   const active = useMemo(
-    () => handouts.filter((h) => h.visibility !== 'archived'),
-    [handouts],
+    () => searched.filter((h) => h.visibility !== 'archived'),
+    [searched],
   );
   const archived = useMemo(
-    () => handouts.filter((h) => h.visibility === 'archived'),
-    [handouts],
+    () => searched.filter((h) => h.visibility === 'archived'),
+    [searched],
   );
 
   if (campaignLoading) return <Splash />;
@@ -73,11 +102,33 @@ export function CampaignHandoutsScreen(): JSX.Element {
     refresh();
   }
 
+  async function onUnarchive(handout: Handout): Promise<void> {
+    if (!cid) return;
+    await unarchiveHandout(cid, handout.id);
+    refresh();
+  }
+
+  async function onDelete(handout: Handout): Promise<void> {
+    if (!cid) return;
+    await deleteHandout(cid, handout.id);
+    setConfirmingDelete(null);
+    refresh();
+  }
+
+  /**
+   * Résumé des destinataires pour la carte MJ. Nomme les joueurs plutôt que de
+   * les compter : « Bob, Marie » se relit d'un coup d'œil, « Ciblé · 2 »
+   * obligeait à rouvrir le document pour savoir QUI l'avait reçu.
+   */
   function recipientsSummary(handout: Handout): string {
     if (handout.recipients === HANDOUT_RECIPIENTS_ALL) {
       return t('handouts.card.recipientsAll');
     }
-    return `${t('handouts.card.recipientsTargeted')} · ${handout.recipients.length}`;
+    if (handout.recipients.length === 0) {
+      return t('handouts.card.recipientsNone');
+    }
+    const names = handout.recipients.map((uid) => labelByUid.get(uid) ?? formatUid(uid));
+    return `${t('handouts.card.recipientsTargeted')} · ${names.join(', ')}`;
   }
 
   function renderCard(handout: Handout): JSX.Element {
@@ -114,19 +165,58 @@ export function CampaignHandoutsScreen(): JSX.Element {
             </span>
           ) : null}
         </button>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <Button variant="secondary" size="sm" onClick={() => setViewing(handout)}>
             {t('handouts.card.open')}
           </Button>
-          {isDM && !isArchived ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => void onArchive(handout)}
-              tooltip={t('campaigns.tip.archiveHandout')}
-            >
-              {t('handouts.card.archive')}
-            </Button>
+          {isDM ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditing(handout)}
+                tooltip={t('campaigns.tip.editHandout')}
+              >
+                {t('handouts.card.edit')}
+              </Button>
+              {isArchived ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void onUnarchive(handout)}
+                  tooltip={t('campaigns.tip.unarchiveHandout')}
+                >
+                  {t('handouts.card.unarchive')}
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void onArchive(handout)}
+                  tooltip={t('campaigns.tip.archiveHandout')}
+                >
+                  {t('handouts.card.archive')}
+                </Button>
+              )}
+              {confirmingDelete === handout.id ? (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => void onDelete(handout)}
+                >
+                  {t('handouts.card.deleteConfirm')}
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmingDelete(handout.id)}
+                  tooltip={t('campaigns.tip.deleteHandout')}
+                >
+                  {t('handouts.card.delete')}
+                </Button>
+              )}
+            </div>
           ) : null}
         </div>
       </Card>
@@ -163,6 +253,20 @@ export function CampaignHandoutsScreen(): JSX.Element {
           </p>
         </header>
 
+        {handouts.length > 2 ? (
+          <div className="mt-6">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('handouts.search.placeholder')}
+              aria-label={t('handouts.search.aria')}
+              data-testid="handout-search"
+              className="w-full rounded-pill border border-white-8 bg-ink/40 px-4 py-2 font-serif text-body text-text outline-none transition-colors duration-200 ease-base placeholder:italic placeholder:text-text-faint focus:border-gold"
+            />
+          </div>
+        ) : null}
+
         {error ? (
           <p className="mt-10 text-center font-serif text-body-sm text-crimson">
             {t('handouts.screen.loadError')}
@@ -172,8 +276,15 @@ export function CampaignHandoutsScreen(): JSX.Element {
             …
           </p>
         ) : active.length === 0 && archived.length === 0 ? (
-          <p className="mt-10 text-center font-serif text-body italic text-text-tertiary">
-            {isDM ? t('handouts.screen.empty.dm') : t('handouts.screen.empty.player')}
+          <p
+            data-testid="handouts-empty"
+            className="mt-10 text-center font-serif text-body italic text-text-tertiary"
+          >
+            {search.trim() !== ''
+              ? t('handouts.search.noMatch')
+              : isDM
+                ? t('handouts.screen.empty.dm')
+                : t('handouts.screen.empty.player')}
           </p>
         ) : (
           <div className="mt-8 flex flex-col gap-8">
@@ -207,12 +318,16 @@ export function CampaignHandoutsScreen(): JSX.Element {
       </PageContainer>
 
       {isDM && cid && user ? (
-        <HandoutCreateModal
-          open={createOpen}
+        <HandoutEditorModal
+          open={createOpen || editing !== null}
           campaignId={cid}
           createdByUid={user.uid}
           players={players}
-          onClose={() => setCreateOpen(false)}
+          editing={editing}
+          onClose={() => {
+            setCreateOpen(false);
+            setEditing(null);
+          }}
           onSent={refresh}
         />
       ) : null}

@@ -2,6 +2,8 @@ import { buildD20Ast, rollAst, applyKeep } from '@/shared/lib/dice/roller';
 import type { Advantage, DiceAst, RollKind, RollResult } from '@/shared/lib/dice/types';
 import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
+import { activeCampaignDiceSettings } from '@/shared/lib/slices/active-campaign-slice';
+import { presentRollOnTray } from '@/shared/lib/slices/dice-tray-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   requestPhysicalRoll,
@@ -18,7 +20,7 @@ import { persistRollHistory } from './persist-history';
  *
  * Mode digital (plan 12) :
  *   1. Pénalité d'exhaustion (5e 2024 : −2 par niveau d'épuisement).
- *   2. Inspiration → force `advantage` et consomme la flag.
+ *   2. Inspiration → avantage + consommation, UNIQUEMENT si `useInspiration`.
  *   3. Construit l'AST d20 (1d20, 2d20kh1 ou 2d20kl1) et roule via `rollAst`.
  *   4. Émet le toast (`roll` / `crit` / `fumble`) — sauf si `silent: true`.
  *   5. Appelle `logRollIfCampaign` (réel depuis plan 22 — écrit un événement
@@ -43,8 +45,28 @@ export interface RollWithFlagsArgs {
   baseMod: number;
   label: string;
   kind?: RollKind;
-  /** Préférence explicite. Inspiration force `'advantage'` quoi qu'il arrive. */
+  /** Préférence explicite du joueur, respectée telle quelle. */
   advantage?: Advantage;
+  /**
+   * Dépenser l'inspiration héroïque SUR CE JET. Défaut `false`.
+   *
+   * Le pivot forçait auparavant l'avantage dès que `character.inspiration` était
+   * vrai, et la consommait sans rien demander : impossible de garder son
+   * inspiration pour le jet qui compte, et le Désavantage explicitement choisi
+   * au menu était écrasé en silence. La dépense est désormais un geste.
+   */
+  useInspiration?: boolean;
+  /**
+   * Bonus ponctuel du moment — Bénédiction, +1 circonstanciel accordé par le MJ.
+   * S'ajoute au modificateur dérivé sans rien persister sur la fiche.
+   */
+  bonus?: number;
+  /**
+   * Jet DISCRET (M43) : l'événement part en visibilité `self` — le joueur voit
+   * son jet, la table ne le voit pas passer. Le plateau et l'historique local
+   * sont inchangés : c'est la JOURNALISATION qui est discrète, pas le jet.
+   */
+  discreet?: boolean;
   /** Persiste `inspiration: false` quand l'inspiration est consommée. */
   consumeInspiration?: () => Promise<void> | void;
   /** Si `true`, n'émet PAS le toast par défaut. Utilisé par `rollAttackDamage`
@@ -65,14 +87,19 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     label,
     kind = 'check',
     advantage = 'normal',
+    useInspiration = false,
+    bonus = 0,
+    discreet = false,
     consumeInspiration,
     silent = false,
     skillId,
   } = args;
 
+  // L'inspiration ne se dépense que si le joueur la dépense ET qu'il en a une.
+  const spendsInspiration = useInspiration && character.inspiration;
   const exhaustionPenalty = 2 * character.exhaustion;
-  const effectiveMod = baseMod - exhaustionPenalty;
-  const effectiveAdvantage: Advantage = character.inspiration ? 'advantage' : advantage;
+  const effectiveMod = baseMod - exhaustionPenalty + bonus;
+  const effectiveAdvantage: Advantage = spendsInspiration ? 'advantage' : advantage;
   const ast = buildD20Ast(effectiveMod, effectiveAdvantage);
   const mode = resolveMode();
 
@@ -84,11 +111,15 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
       advantage: effectiveAdvantage,
     });
     const result: RollResult = skillId ? { ...base, skillId } : base;
-    if (character.inspiration && consumeInspiration) {
+    if (spendsInspiration && consumeInspiration) {
       await consumeInspiration();
     }
+    // Les dés tombent même sur un sous-jet `silent` : une attaque enchaînée sur
+    // ses dégâts n'émet qu'un toast combiné, mais le joueur doit voir rouler le
+    // d20 au moment où il roule, pas seulement lire son total après coup.
+    presentRollOnTray(result);
     if (!silent) emitD20Toast(result, effectiveMod);
-    await logRollIfCampaign(result);
+    await logRollIfCampaign(result, discreet ? 'self' : 'all');
     void persistRollHistory(result);
     return result;
   }
@@ -112,20 +143,18 @@ export async function rollWithFlags(args: RollWithFlagsArgs): Promise<RollResult
     advantage: effectiveAdvantage,
     skillId,
   });
-  if (character.inspiration && consumeInspiration) {
+  if (spendsInspiration && consumeInspiration) {
     await consumeInspiration();
   }
   if (!silent) emitD20Toast(result, effectiveMod);
-  await logRollIfCampaign(result);
+  await logRollIfCampaign(result, discreet ? 'self' : 'all');
   void persistRollHistory(result);
   return result;
 }
 
 function resolveMode(): 'digital' | 'physical' {
-  // S1 : pas de campagne active — `effectiveDiceMode` retourne directement le
-  // mode utilisateur. Plan 14 câblera la campagne via `useActiveCampaign()`.
   const { diceMode, followCampaignDiceMode } = useUserSettingsStore.getState();
-  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, null);
+  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, activeCampaignDiceSettings());
 }
 
 interface BuildPhysicalArgs {
@@ -149,18 +178,24 @@ export function buildPhysicalResult(args: BuildPhysicalArgs): RollResult {
   const keptFaces: number[] = [];
   let crit = false;
   let fumble = false;
+  // Somme SIGNÉE, comme en numérique : un terme `sign: -1` (Fardeau) se
+  // retranche. Sans ça, le joueur qui saisit ses vrais dés verrait sa pénalité
+  // s'ajouter à son jet — l'inverse exact de la règle.
+  let sum = 0;
   for (const term of ast.terms) {
     const slice = rawFaces.slice(cursor, cursor + term.count);
     cursor += term.count;
     const kept = applyKeep(slice, term);
     keptFaces.push(...kept);
-    if (term.sides === 20 && kept.length === 1) {
+    sum +=
+      (term.sign === -1 ? -1 : 1) * kept.reduce((a, b) => a + b, 0);
+    // Un d20 retranché n'est pas le dé d'attaque (cf. `rollAst`).
+    if (term.sign !== -1 && term.sides === 20 && kept.length === 1) {
       const face = kept[0]!;
       if (face === 20) crit = true;
       else if (face === 1) fumble = true;
     }
   }
-  const sum = keptFaces.reduce((a, b) => a + b, 0);
   const total = sum + ast.modifier;
 
   return {

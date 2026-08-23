@@ -3,6 +3,7 @@ import { useId, useMemo, useState, type JSX } from 'react';
 import { DetailModal } from '@/shared/components/detail-modal';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import { formatCr } from '@/shared/lib/rules/challenge-rating';
 import type { Monster } from '@/shared/types/content';
 
@@ -31,9 +32,9 @@ export function MonsterPickerModal({ open, onClose, onPick }: Props): JSX.Elemen
   const titleId = useId();
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return monsters
-      .filter((m) => !q || localize(m.name).toLocaleLowerCase('fr').includes(q))
+      .filter((m) => !q || normalizeForSearch(localize(m.name)).includes(q))
       .sort(
         (a, b) =>
           a.cr - b.cr || localize(a.name).localeCompare(localize(b.name), 'fr'),

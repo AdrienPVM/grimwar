@@ -31,7 +31,7 @@ describe('buildSubancestryFromDraft', () => {
       description: { fr: 'Variante test.' },
       traits: [],
       abilityScoreIncrease: [],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -110,7 +110,7 @@ describe('draftFromSubancestry', () => {
         },
       ],
       abilityScoreIncrease: [{ ability: 'for', bonus: 2 }],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.id).toBe('human-vigilant');
     expect(draft.ancestryId).toBe('humain');

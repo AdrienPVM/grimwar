@@ -33,8 +33,20 @@ export const PREPARED_CASTER_CLASS_IDS = [
 
 const PREPARED_CASTER_SET: ReadonlySet<string> = new Set(PREPARED_CASTER_CLASS_IDS);
 
-/** `true` si la classe prépare ses sorts (par opposition à « connaît »). */
-export function isPreparedCaster(classId: string): boolean {
+/**
+ * `true` si la classe prépare ses sorts (par opposition à « connaît »).
+ *
+ * La classe le déclare elle-même quand elle le peut (`spellcasting.preparation`,
+ * M51) ; sinon on retombe sur la liste d'ids SRD. Sans ce passage par la
+ * définition, une classe maison ne pouvait PAS être préparatrice : la liste est
+ * fermée et `classes.json` est un path protégé.
+ */
+export function isPreparedCaster(
+  classId: string,
+  classDef?: ClassEntity | undefined,
+): boolean {
+  const declared = classDef?.spellcasting?.preparation;
+  if (declared) return declared === 'prepared';
   return PREPARED_CASTER_SET.has(classId);
 }
 
@@ -62,13 +74,21 @@ export function candidatePreparableSpells(
   spells: readonly Spell[],
   classId: string,
   maxLevel: number,
+  /**
+   * Sorts appris HORS liste de classe (M26) — parchemin recopié, sort de
+   * domaine, faveur accordée par le meneur. Ils rejoignent le pool sans quoi
+   * un sort ajouté à `knownSpells` resterait impossible à préparer, donc
+   * inutilisable : ajouté, visible, et mort.
+   */
+  extraSpellIds: readonly string[] = [],
 ): Spell[] {
+  const extra = new Set(extraSpellIds);
   return spells
     .filter(
       (s) =>
         s.level >= 1 &&
         s.level <= maxLevel &&
-        s.classes.includes(classId),
+        (s.classes.includes(classId) || extra.has(s.id)),
     )
     .sort(
       (a, b) =>
@@ -77,20 +97,27 @@ export function candidatePreparableSpells(
 }
 
 /**
- * Applique un toggle de préparation à la liste d'une classe, en respectant le
- * plafond. Si le sort est déjà préparé → retiré. Sinon ajouté, **sauf** si le
- * plafond est atteint (retourne la liste inchangée — l'UI désactive de toute
- * façon les lignes au plafond, ceci est la barrière logique). Retourne une
- * nouvelle liste (jamais de mutation).
+ * Applique un toggle de préparation à la liste d'une classe. Si le sort est
+ * déjà préparé → retiré, sinon ajouté.
+ *
+ * Le plafond n'est plus une barrière (M26) : il reste la valeur de référence
+ * affichée, mais dépasser est possible et signalé. Une table qui accorde un
+ * sort de plus par une aptitude maison ou un objet se heurtait autrement à un
+ * refus dur, sans recours — alors que le plafond est une valeur dérivée du
+ * contenu, pas un invariant de données. `enforceCap` conserve l'ancien
+ * comportement pour les appelants qui veulent la règle stricte.
+ *
+ * Retourne une nouvelle liste (jamais de mutation).
  */
 export function togglePrepared(
   current: readonly string[],
   spellId: string,
   cap: number,
+  options: { enforceCap?: boolean } = {},
 ): string[] {
   if (current.includes(spellId)) {
     return current.filter((id) => id !== spellId);
   }
-  if (current.length >= cap) return [...current];
+  if (options.enforceCap && current.length >= cap) return [...current];
   return [...current, spellId];
 }

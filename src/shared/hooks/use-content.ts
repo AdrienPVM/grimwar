@@ -1,14 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useCampaignContent } from '../lib/campaign-content-context';
-import { loadContentMulti } from '../lib/load-content-multi';
+import type { ContentScope } from '../lib/content-loader';
+import { loadContentMultiScoped } from '../lib/load-content-multi';
 import { useAuthStore } from '../lib/slices/auth-slice';
 import type { ContentEntityByKey, ContentTypeKey } from '../types/content';
+
+/** Provenance d'une entrée, pour les écrans qui PERSISTENT une référence. */
+export interface ContentEntryScope {
+  readonly scope: ContentScope;
+  readonly scopeId?: string;
+  /** Provenance lisible du pack d'origine (M53) — absente en public. */
+  readonly originLabel?: string;
+}
 
 interface UseContentResult<K extends ContentTypeKey> {
   data: ContentEntityByKey[K][];
   loading: boolean;
   error: Error | null;
+  /**
+   * Provenance de l'entrée `id`, ou `'public'` par défaut. Un écran qui écrit
+   * une référence durable (inventaire) DOIT s'en servir : marquer `'public'`
+   * un objet venu d'un pack maison le rend « introuvable » à la relecture.
+   */
+  scopeOf: (id: string) => ContentEntryScope;
 }
 
 /**
@@ -25,6 +40,9 @@ interface UseContentResult<K extends ContentTypeKey> {
  */
 export function useContent<K extends ContentTypeKey>(type: K): UseContentResult<K> {
   const [data, setData] = useState<ContentEntityByKey[K][]>([]);
+  const [scopes, setScopes] = useState<Map<string, ContentEntryScope>>(
+    () => new Map(),
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -35,10 +53,24 @@ export function useContent<K extends ContentTypeKey>(type: K): UseContentResult<
     let cancelled = false;
     setLoading(true);
     setError(null);
-    loadContentMulti(type, { userId, campaignId })
+    loadContentMultiScoped(type, { userId, campaignId })
       .then((entries) => {
         if (cancelled) return;
-        setData(entries);
+        setData(entries.map((e) => e.entity));
+        setScopes(
+          new Map(
+            entries.map((e) => [
+              (e.entity as { id: string }).id,
+              {
+                scope: e.scope,
+                ...(e.scopeId === undefined ? {} : { scopeId: e.scopeId }),
+                ...(e.originLabel === undefined
+                  ? {}
+                  : { originLabel: e.originLabel }),
+              },
+            ]),
+          ),
+        );
         setLoading(false);
       })
       .catch((err: unknown) => {
@@ -51,5 +83,10 @@ export function useContent<K extends ContentTypeKey>(type: K): UseContentResult<
     };
   }, [type, userId, campaignId]);
 
-  return { data, loading, error };
+  const scopeOf = useCallback(
+    (id: string): ContentEntryScope => scopes.get(id) ?? { scope: 'public' },
+    [scopes],
+  );
+
+  return { data, loading, error, scopeOf };
 }

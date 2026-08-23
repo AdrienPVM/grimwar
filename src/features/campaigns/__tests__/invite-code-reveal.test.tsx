@@ -1,6 +1,14 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+// Le service de rotation (M11) écrit 3 docs Firestore — stubé au niveau module
+// pour observer les arguments réellement passés (l'uid de l'APPELANT, exigé par
+// la rule de create sur `inviteCodes`).
+const rotateMock = vi.fn();
+vi.mock('@/shared/lib/services/campaigns', () => ({
+  rotateInviteCode: (...args: unknown[]) => rotateMock(...args),
+}));
+
 import { InviteCodeReveal, buildInviteLink } from '../invite-code-reveal';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -56,6 +64,7 @@ function uninstallShare(): void {
 afterEach(() => {
   uninstallClipboard();
   uninstallShare();
+  rotateMock.mockReset();
 });
 
 describe('<InviteCodeReveal>', () => {
@@ -173,5 +182,82 @@ describe('<InviteCodeReveal>', () => {
         screen.getByRole('button', { name: /Lien copié/i }),
       ).toBeInTheDocument();
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Régénération du code (M11) — révocation d'un code diffusé
+// ─────────────────────────────────────────────────────────────────────
+
+describe('<InviteCodeReveal> — régénération du code', () => {
+  it('sans campaignId/uid → aucune affordance de régénération (vue joueur)', () => {
+    render(<InviteCodeReveal code="ABC234" />);
+    expect(
+      screen.queryByRole('button', { name: /Régénérer le code/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('un simple clic ne régénère RIEN : il faut confirmer', () => {
+    render(<InviteCodeReveal code="ABC234" campaignId="cid-1" uid="gm-1" />);
+    fireEvent.click(screen.getByRole('button', { name: /Régénérer le code/i }));
+    expect(rotateMock).not.toHaveBeenCalled();
+    // L'avertissement dit ce qui casse — les liens déjà partagés.
+    expect(
+      screen.getByText(/Le code actuel cessera immédiatement de fonctionner/i),
+    ).toBeInTheDocument();
+  });
+
+  it('confirmation → appelle le service avec (campaignId, uid) et notifie le parent', async () => {
+    rotateMock.mockResolvedValue('ZZZ789');
+    const onRotated = vi.fn();
+    render(
+      <InviteCodeReveal
+        code="ABC234"
+        campaignId="cid-1"
+        uid="gm-1"
+        onRotated={onRotated}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Régénérer le code/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Confirmer la régénération/i }),
+    );
+    await waitFor(() => {
+      expect(rotateMock).toHaveBeenCalledWith('cid-1', 'gm-1');
+    });
+    await waitFor(() => {
+      expect(onRotated).toHaveBeenCalledWith('ZZZ789');
+    });
+    // Le bloc revient à l'état de repos, avec l'accusé de réception.
+    await waitFor(() => {
+      expect(screen.getByText('Nouveau code en place.')).toBeInTheDocument();
+    });
+  });
+
+  it('« Garder le code actuel » annule sans écrire', () => {
+    render(<InviteCodeReveal code="ABC234" campaignId="cid-1" uid="gm-1" />);
+    fireEvent.click(screen.getByRole('button', { name: /Régénérer le code/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Garder le code actuel/i }),
+    );
+    expect(rotateMock).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('button', { name: /Régénérer le code/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('échec du service → message d’erreur, le code affiché reste inchangé', async () => {
+    rotateMock.mockRejectedValue(new Error('permission-denied'));
+    render(<InviteCodeReveal code="ABC234" campaignId="cid-1" uid="gm-1" />);
+    fireEvent.click(screen.getByRole('button', { name: /Régénérer le code/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Confirmer la régénération/i }),
+    );
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        /La régénération n'a pas abouti/i,
+      );
+    });
+    expect(screen.getByText('ABC234')).toBeInTheDocument();
   });
 });

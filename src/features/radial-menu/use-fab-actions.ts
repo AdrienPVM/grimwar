@@ -18,6 +18,10 @@ interface FabActionDeps {
   setMode: (mode: SheetMode) => void;
   /** Ouvre le panneau d'historique des jets. */
   openHistory: () => void;
+  /** Ouvre le Codex en superposition, sans quitter la fiche (audit UX, E6). */
+  openCodex: () => void;
+  /** Ouvre la saisie d'une formule de dés libre (M20). */
+  openFreeRoll: () => void;
 }
 
 /**
@@ -35,7 +39,7 @@ interface FabActionDeps {
  */
 export function useFabActions(
   character: Character,
-  { setMode, openHistory }: FabActionDeps,
+  { setMode, openHistory, openCodex, openFreeRoll }: FabActionDeps,
 ): { run: (action: WedgeAction) => Promise<void> } {
   const { updateCharacter } = useUpdateCharacter(character);
   const dice = useDice();
@@ -116,9 +120,26 @@ export function useFabActions(
         case 'open-history':
           openHistory();
           return;
+
+        case 'open-codex':
+          openCodex();
+          return;
+
+        case 'free-roll':
+          openFreeRoll();
+          return;
       }
     },
-    [character, classes, dice, updateCharacter, setMode, openHistory],
+    [
+      character,
+      classes,
+      dice,
+      updateCharacter,
+      setMode,
+      openHistory,
+      openCodex,
+      openFreeRoll,
+    ],
   );
 
   return { run };

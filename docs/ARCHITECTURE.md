@@ -76,10 +76,10 @@ grimwar/
 ├── functions/                   # Firebase Cloud Functions (S2+ for App Check token mint, S5 for GDPR export/delete)
 │
 ├── docs/                        # this folder
-├── plans/                       # GSD work queue
+├── docs/plans/                       # GSD work queue
 ├── scripts/                     # content extraction
 ├── content-sources/             # raw PDFs + HTML (gitignored)
-├── prototype/grimwar.html      # visual reference
+├── docs/prototype/grimwar.html      # visual reference
 └── tests/
     ├── setup.ts
     └── e2e/

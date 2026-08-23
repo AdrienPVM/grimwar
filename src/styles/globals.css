@@ -186,6 +186,86 @@ body {
 }
 
 /* ===========================================================================
+   Ossature de chargement — la silhouette du contenu avant le contenu.
+   Le miroitement traverse la forme de gauche à droite ; sans lui l'ossature
+   ressemblerait à du contenu vide plutôt qu'à du contenu en route.
+   =========================================================================== */
+.skeleton {
+  background-color: rgba(255, 255, 255, 0.05);
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(220, 184, 108, 0.11) 44%,
+    rgba(220, 184, 108, 0.11) 56%,
+    transparent 80%
+  );
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: skeletonSheen 1.5s var(--t) infinite;
+}
+@keyframes skeletonSheen {
+  from { background-position: 130% 0; }
+  to { background-position: -130% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    background-image: none;
+    animation: none;
+  }
+}
+
+/* ===========================================================================
+   Dés 3D — un vrai solide qui culbute et se pose sur la face tirée.
+
+   Le SOLIDE est tracé sur un canevas, pas composé en 3D CSS : le compositeur
+   n'a pas d'ordre de tri valide pour vingt faces qui se croisent, et le même
+   d20 sortait éclaté sur certaines faces tirées (cf. `projection.ts`). La
+   feuille de style ne garde donc que ce qui reste du ressort de CSS : la CHUTE
+   du dé et la vie du plateau. La culbute, elle, est peinte image par image.
+   =========================================================================== */
+.die3d-drop {
+  animation: die3dDrop var(--t-spring) both;
+}
+/* Le plateau tombe AU-DESSUS de la fiche, donc souvent au-dessus de son texte.
+   Sans ombre, les dés s'y confondent — la capture d'UAT montrait un d6 posé en
+   plein milieu du nom du personnage. `drop-shadow` suit la silhouette découpée
+   du canevas, là où une `box-shadow` dessinerait l'ombre du carré qui le porte. */
+.die3d-drop canvas {
+  display: block;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.55));
+}
+@keyframes die3dDrop {
+  0% { opacity: 0; transform: translate3d(0, -90px, 0) scale(0.45); }
+  55% { opacity: 1; }
+  70% { transform: translate3d(0, 6px, 0) scale(1.06); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Vie du plateau : plein régime pendant la lecture, puis effacement. La durée
+   est alignée sur `TRAY_LIFETIME_MS` (cf. `dice-tray-overlay.tsx`) — les dés
+   sont démontés au moment précis où ils achèvent de disparaître. */
+.dice-tray-life {
+  animation: die3dTrayLife 2.2s var(--t) forwards;
+}
+@keyframes die3dTrayLife {
+  0%, 82% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Mouvement réduit : le dé se pose sans chuter ni tourner. Le résultat est
+   identique — seule la mise en scène disparaît. Le canevas, lui, se peint
+   directement sur la pose (cf. `die-3d.tsx`). */
+@media (prefers-reduced-motion: reduce) {
+  .die3d-drop {
+    animation: die3dAppear 0.2s ease-out both;
+  }
+  @keyframes die3dAppear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* ===========================================================================
    Death modal — fade-in + scale spring, ambiance crimson. Sheet en read-only
    quand `data-readonly="true"` est porté par <main>.
    =========================================================================== */
@@ -216,18 +296,22 @@ body {
    neutralise ici dans la sidebar (à lg+) pour qu'elles s'alignent et
    remplissent la colonne 300-320px sans dead space.
 
-   Pour les modes (zone main), la responsabilité de la densification est
-   désormais portée par les utilities Tailwind dans chaque `*-mode.tsx`
-   (`lg:max-w-[*]` pour élargir, `xl:grid xl:grid-cols-2` pour densifier
-   combat/essence, `xl:col-span-2` sur les cards focales). Plus de
+   Pour les modes (zone main), la densification est portée par la primitive
+   bento (`shared/components/bento.tsx`) : chaque mode pose `BENTO_GRID` sur sa
+   `<section>` et enveloppe ses cartes dans des `<BentoTile span="…">`. Plus de
    sur-selecteurs CSS hardcodés à `420px` — c'était précisément ce qui
    empêchait la densification (le `> * { max-width: 420px }` global
    re-cappait toute card à 420px quelle que soit l'intention Tailwind).
    =========================================================================== */
 @media (min-width: 1024px) {
   /* aside (sidebar) : neutralise mx-auto + max-w + padding latéraux mobile
-     des enfants pour qu'ils prennent toute la sidebar 300-320px. */
-  .sheet-state .sheet-desktop-aside > * {
+     des enfants pour qu'ils prennent toute la sidebar 300-320px.
+     Deux niveaux : les onglets sont enfants directs (épinglés en bas), tandis
+     que l'identité et les statuts vivent dans le conteneur de défilement
+     intermédiaire — sans le second sélecteur, ils récupéreraient leur padding
+     latéral mobile et se désaligneraient des onglets. */
+  .sheet-state .sheet-desktop-aside > *,
+  .sheet-state .sheet-desktop-aside > div > * {
     max-width: none;
     margin-left: 0;
     margin-right: 0;
@@ -242,4 +326,37 @@ body {
     margin-left: 0;
     margin-right: 0;
   }
+}
+
+/* ===========================================================================
+   BOÎTE VIDE AUTO-SUPPRIMÉE — `data-hide-if-empty` (cf. `components/bento.tsx`).
+
+   28 des cartes de la fiche se masquent elles-mêmes (`return null` quand le
+   personnage n'a pas d'invocations, pas d'objet harmonisé, pas d'emplacement…).
+   Un composant qui rend `null` ne produit aucun nœud DOM — mais le `<div>` de
+   tuile qui l'enveloppe, si : en grille il ouvre une cellule vide, en colonne
+   simple il ouvre un `gap` fantôme. La règle retire donc du flux toute tuile
+   sans enfant élément, à TOUS les paliers (le défaut existe aussi en mobile).
+
+   Non media-scopée volontairement, et générique plutôt que réservée au bento :
+   tout conteneur qui enveloppe une carte susceptible de ne rien rendre porte
+   l'attribut (tuiles de mosaïque, mais aussi le raccourci de campagne épinglé
+   dans la sidebar de fiche).
+   =========================================================================== */
+[data-hide-if-empty]:not(:has(*)) {
+  display: none;
+}
+
+/* Un cran de profondeur : une tuile dont l'unique enfant est lui-même un
+   conteneur `data-hide-if-empty` VIDE (une pile ou un groupe dont toutes les
+   cartes ont rendu `null`). La règle ci-dessus ne l'attrape pas — la tuile a
+   bien un enfant élément, c'est le conteneur, qui n'a lui-même rien dedans.
+   Sans ça, `BentoStack` / `BentoCluster` réintroduisaient exactement la cellule
+   fantôme que la primitive existe pour supprimer.
+   Lecture : « aucun enfant direct qui ne soit un conteneur à masquer » ET
+   « aucun petit-enfant dans ces conteneurs » → on retire du flux. */
+[data-hide-if-empty]:not(:has(> *:not([data-hide-if-empty]))):not(
+    :has(> [data-hide-if-empty] > *)
+  ) {
+  display: none;
 }

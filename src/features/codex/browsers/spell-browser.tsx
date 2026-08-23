@@ -1,8 +1,10 @@
 import { useMemo, useState, type JSX } from 'react';
 
 import { Chip } from '@/shared/components/chip';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { Spell, SpellSchool } from '@/shared/types/content';
 
 import {
@@ -23,7 +25,7 @@ type SchoolFilter = SpellSchool | 'all';
  * niveau à gauche, tap → modale détail. Tout dérivé de `spells.json`.
  */
 export function SpellBrowser(): JSX.Element {
-  const { data: spells, loading } = useContent('spells');
+  const { data: spells, loading, scopeOf } = useContent('spells');
   const { data: classCatalog } = useContent('classes');
 
   const [query, setQuery] = useState<string>('');
@@ -46,12 +48,12 @@ export function SpellBrowser(): JSX.Element {
   }, [spells]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return spells
       .filter((s) => {
         if (level !== 'all' && s.level !== level) return false;
         if (school !== 'all' && s.school !== school) return false;
-        if (q && !localize(s.name).toLocaleLowerCase('fr').includes(q))
+        if (q && !normalizeForSearch(localize(s.name)).includes(q))
           return false;
         return true;
       })
@@ -82,7 +84,7 @@ export function SpellBrowser(): JSX.Element {
         placeholder={t('codex.search.spells')}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={level === 'all'} onToggle={() => setLevel('all')}>
           {t('codex.spell.allLevels')}
         </Chip>
@@ -96,9 +98,9 @@ export function SpellBrowser(): JSX.Element {
             {lvl === 0 ? t('spell.level.cantrip') : `${t('spell.level.prefix')} ${lvl}`}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={school === 'all'} onToggle={() => setSchool('all')}>
           {t('codex.spell.allSchools')}
         </Chip>
@@ -113,7 +115,7 @@ export function SpellBrowser(): JSX.Element {
             {t(`school.${sc}`)}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
       <CodexResultCount count={filtered.length} />
 
@@ -133,6 +135,7 @@ export function SpellBrowser(): JSX.Element {
                   <li key={spell.id}>
                     <CodexRow
                       title={localize(spell.name)}
+                      origin={scopeOf(spell.id)}
                       onClick={() => setActive(spell)}
                       badge={
                         <div

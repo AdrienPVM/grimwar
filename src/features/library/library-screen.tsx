@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
+import { SkeletonList } from '@/shared/components/skeleton';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
-import { Splash } from '@/shared/components/splash';
 import { t } from '@/shared/lib/i18n';
+
+import { OngoingPlayCard } from '@/features/campaigns/ongoing-play-card';
+import { useMyCampaigns } from '@/features/campaigns/use-my-campaigns';
+import { useOngoingPlay } from '@/features/campaigns/use-ongoing-play';
+import { describeDraftProgress } from '@/features/wizard/draft-progress';
+import { WizardDraftCard } from '@/features/wizard/wizard-draft-card';
+import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
 
 import { CharacterCard } from './character-card';
 import { NavHub } from './nav-hub';
@@ -35,8 +42,52 @@ interface InnerProps {
 function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   const navigate = useNavigate();
   const { characters, isLoading, error } = useCharactersList();
+  // Sondé ici et non dans <OngoingPlayCard> : l'accueil a deux rendus (peuplé
+  // et vide) qui affichent tous les deux le bandeau, et on ne veut pas deux
+  // sondages. Un joueur sans personnage PEUT être attendu à une table.
+  const { ongoing } = useOngoingPlay();
 
-  if (isLoading) return <Splash />;
+  // E8 — la carte de personnage n'indiquait pas sa table. Les campagnes ne sont
+  // sondées que si au moins une fiche est liée : un utilisateur solo ne paie pas
+  // deux requêtes de plus sur l'écran le plus visité de l'app.
+  const anyLinked = characters.some((c) => c.homeCampaignId !== null);
+  const { campaigns } = useMyCampaigns(anyLinked);
+  const campaignNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const campaign of campaigns) map.set(campaign.id, campaign.name);
+    return map;
+  }, [campaigns]);
+
+  // E10 — le brouillon de wizard survivait à la fermeture de l'onglet sans que
+  // rien ne le dise. Lecture du store local uniquement : aucun coût réseau.
+  const draft = useWizardStore((s) => s.draft);
+  const currentStep = useWizardStore((s) => s.currentStep);
+  const resetDraft = useWizardStore((s) => s.reset);
+  const draftProgress = useMemo(
+    () => describeDraftProgress(draft, currentStep),
+    [draft, currentStep],
+  );
+
+  // Ossature plutôt que splash plein écran : le splash escamote la page entière
+  // et la fait réapparaître d'un bloc. L'ossature garde le titre et dessine déjà
+  // la silhouette des fiches — le regard n'a rien à relocaliser à l'arrivée.
+  if (isLoading) {
+    return (
+      <PageContainer width="wide">
+        <header className="text-center">
+          <Divider className="mb-4" />
+          <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
+            {t('library.title')}
+          </h1>
+        </header>
+        <SkeletonList
+          label={t('library.loading')}
+          rows={3}
+          className="mx-auto mt-8 max-w-[720px]"
+        />
+      </PageContainer>
+    );
+  }
 
   if (error) {
     return (
@@ -59,6 +110,14 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
   if (characters.length === 0) {
     return (
       <main className="relative z-10 mx-auto flex min-h-[60vh] w-full max-w-[680px] flex-col items-center justify-center px-6 py-12">
+        <OngoingPlayCard ongoing={ongoing} className="mb-4 max-w-[480px]" />
+        {/* C'est ICI que le bandeau compte le plus : sans personnage terminé,
+            l'accueil vide donnait l'impression qu'aucun travail n'existait. */}
+        <WizardDraftCard
+          progress={draftProgress}
+          onDiscard={resetDraft}
+          className="mb-8 max-w-[480px]"
+        />
         <GlassPanel className="w-full max-w-[480px] px-7 py-10 text-center">
           <h1 className="font-display text-2xl uppercase tracking-[0.18em] text-gold-bright">
             {t('library.empty.title')}
@@ -94,6 +153,16 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
 
   return (
     <PageContainer width="wide">
+      {/*
+        Au-dessus du titre, et non dans le hub du bas : quand une partie est en
+        cours, « reprendre » est la seule chose que l'utilisateur vient faire.
+      */}
+      <OngoingPlayCard ongoing={ongoing} className="mx-auto mb-3 max-w-[720px]" />
+      <WizardDraftCard
+        progress={draftProgress}
+        onDiscard={resetDraft}
+        className="mx-auto mb-6 max-w-[720px]"
+      />
       <header className="text-center">
         <Divider className="mb-4" />
         <h1 className="font-display text-3xl font-bold uppercase tracking-[0.18em] text-gold-bright">
@@ -109,7 +178,15 @@ function LibraryScreenInner({ onRetry }: InnerProps): JSX.Element {
         className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2"
       >
         {characters.map((character) => (
-          <CharacterCard key={character.id} character={character} />
+          <CharacterCard
+            key={character.id}
+            character={character}
+            campaignName={
+              character.homeCampaignId
+                ? (campaignNameById.get(character.homeCampaignId) ?? null)
+                : null
+            }
+          />
         ))}
       </section>
 

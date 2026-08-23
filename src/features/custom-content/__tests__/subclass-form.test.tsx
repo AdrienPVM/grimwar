@@ -30,7 +30,7 @@ describe('buildSubclassFromDraft', () => {
       name: { fr: 'Tracer' },
       description: { fr: 'Sous-classe test.' },
       features: [],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -101,7 +101,7 @@ describe('draftFromSubclass', () => {
           description: { fr: 'D1' },
         },
       ],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.id).toBe('tracer');
     expect(draft.classId).toBe('guerrier');

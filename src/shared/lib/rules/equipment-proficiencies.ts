@@ -168,17 +168,38 @@ export function resolveCharacterProficiencies(input: {
     if (name) toolLabels.push(name);
   }
 
+  // Maîtrises ajoutées à la main : ce qui ne se réduit pas à un slug canonique
+  // est conservé LITTÉRAL (M17). La normalisation ne connaît que le vocabulaire
+  // SRD anglais — « Armure de plates naine », saisie par un joueur, n'y entre
+  // pas et disparaissait en silence de la fiche juste après avoir été écrite.
+  const literalArmor: string[] = [];
+  const literalWeapons: string[] = [];
   if (input.extra) {
-    addArmor(input.extra.armor);
-    addWeapons(input.extra.weapons);
+    for (const a of input.extra.armor ?? []) {
+      const slug = normalizeArmorProficiency(a);
+      if (slug) armorSlugs.add(slug);
+      else if (a.trim().length > 0) literalArmor.push(a.trim());
+    }
+    for (const w of input.extra.weapons ?? []) {
+      const [slug] = normalizeWeaponProficiencies([w]);
+      if (slug) weaponSlugs.add(slug);
+      else if (w.trim().length > 0) literalWeapons.push(w.trim());
+    }
     for (const slug of input.extra.tools ?? []) {
+      if (slug.trim().length === 0) continue;
       toolLabels.push(input.resolveItemName(slug) ?? slug);
     }
   }
 
   return {
-    armor: ARMOR_ORDER.filter((s) => armorSlugs.has(s)).map((s) => ARMOR_PROF_FR[s]),
-    weapons: WEAPON_ORDER.filter((s) => weaponSlugs.has(s)).map((s) => WEAPON_PROF_FR[s]),
+    armor: [
+      ...ARMOR_ORDER.filter((s) => armorSlugs.has(s)).map((s) => ARMOR_PROF_FR[s]),
+      ...literalArmor,
+    ],
+    weapons: [
+      ...WEAPON_ORDER.filter((s) => weaponSlugs.has(s)).map((s) => WEAPON_PROF_FR[s]),
+      ...literalWeapons,
+    ],
     tools: [...new Set(toolLabels)],
   };
 }

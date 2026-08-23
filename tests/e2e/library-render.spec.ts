@@ -13,7 +13,7 @@ import { waitForAppReady } from './fixtures';
  *     rend son **empty state**. L'empty state expose le CTA « Créer un
  *     personnage » — exactement le marqueur qu'on cherche.
  *   - Si jamais quelqu'un réintroduit un placeholder Lyralei sur `/` (cf.
- *     `plans/DEBT.md > D2`), ce test casse en CI/local immédiatement, sans
+ *     `docs/plans/DEBT.md > D2`), ce test casse en CI/local immédiatement, sans
  *     dépendre de Java/JRE.
  *
  * Step 9 du plan 13.5 (sanity-check) : commenter le contenu de

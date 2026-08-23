@@ -1,15 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { LevelUpButton } from '@/features/level-up/level-up-button';
 import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { Icon } from '@/shared/components/icon';
+import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { alignmentLabel } from '@/shared/lib/rules/alignment';
 import type { Character } from '@/shared/types/character';
 
 import { useFieldLocked, usePermissionContext } from '../permissions-context';
+import { CharacterSwitcher } from './character-switcher';
 import { HeroEmblem } from './hero-emblem';
+import { IdentityEditModal } from './identity-edit-modal';
 
 interface HeroCardProps {
   character: Character;
@@ -36,6 +40,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
   // Omni-edit MJ (plan 26 step 3) : le nom est réservé au propriétaire. On le
   // signale sous le titre par un cadenas — la barrière réelle est la rule.
   const nameLocked = useFieldLocked('name');
+  const [editingIdentity, setEditingIdentity] = useState<boolean>(false);
 
   const ancestryName = useMemo(() => {
     const ancestry = ancestries.find((a) => a.id === character.ancestryId);
@@ -99,7 +104,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
   return (
     <section
       aria-labelledby="hero-name"
-      className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-4 pt-8 lg:pt-3"
+      className="relative z-10 mx-auto flex w-full max-w-[420px] flex-col items-center px-4 pt-8 lg:pt-2"
     >
       <HeroEmblem
         hp={character.hp.current}
@@ -109,9 +114,14 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
 
       <h1
         id="hero-name"
-        className="mt-8 text-center font-display text-2xl font-bold uppercase tracking-[0.18em] text-gold-bright"
+        className="mt-8 text-center font-display text-2xl font-bold uppercase tracking-[0.18em] text-gold-bright lg:mt-4"
       >
-        {character.name}
+        {/* Le nom devient la porte vers les autres fiches — c'est l'endroit où
+            l'on s'attend à pouvoir changer de personnage. Le composant se
+            replie sur un simple texte s'il n'y a rien vers quoi basculer. */}
+        <CharacterSwitcher currentId={character.id}>
+          {character.name}
+        </CharacterSwitcher>
       </h1>
 
       {nameLocked ? (
@@ -121,7 +131,7 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
         </span>
       ) : null}
 
-      <Divider className="my-3" />
+      <Divider className="my-3 lg:my-2" />
 
       <p className="text-center font-serif text-body italic text-text-secondary">
         <strong className="not-italic font-semibold text-gold-bright">{classSubtitle}</strong>
@@ -134,14 +144,36 @@ export function HeroCard({ character }: HeroCardProps): JSX.Element {
         {backgroundName ? <> · {backgroundName}</> : null}
       </p>
 
-      <Chip variant="gold" className="mt-3">
-        {character.alignment}
-      </Chip>
+      {/* L'alignement était rendu en CODE brut (« LB », « N ») : le champ persiste
+          un code, pas un libellé, et personne ne le traduisait à l'affichage. */}
+      <div className="mt-3 flex items-center gap-2 lg:mt-2">
+        <Chip variant="gold">{alignmentLabel(character.alignment)}</Chip>
+        {canEdit ? (
+          <Tooltip label={t('sheet.identity.edit')}>
+            <button
+              type="button"
+              aria-label={t('sheet.identity.edit')}
+              onClick={() => setEditingIdentity(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white-8 bg-bg-3/40 text-text-tertiary transition-colors duration-200 ease-base hover:border-soft hover:text-gold-bright"
+            >
+              <Icon name="i-feather" className="h-3.5 w-3.5" />
+            </button>
+          </Tooltip>
+        ) : null}
+      </div>
 
       {canEdit ? (
-        <div className="mt-4">
+        <div className="mt-4 lg:mt-3">
           <LevelUpButton character={character} />
         </div>
+      ) : null}
+
+      {canEdit ? (
+        <IdentityEditModal
+          character={character}
+          open={editingIdentity}
+          onClose={() => setEditingIdentity(false)}
+        />
       ) : null}
     </section>
   );

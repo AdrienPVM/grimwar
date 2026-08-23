@@ -49,7 +49,7 @@ describe('buildSpellFromDraft', () => {
       description: { fr: 'Une lueur jaillit de votre doigt vers un point.' },
       atHigherLevels: null,
       classes: [],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
   });
 
@@ -186,7 +186,7 @@ describe('draftFromSpell', () => {
       description: { fr: 'D' },
       atHigherLevels: { fr: '+1d6 par niveau', en: '+1d6 per slot' },
       classes: ['magicien'],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.hasAtHigherLevels).toBe(true);
     expect(draft.atHigherLevelsFr).toBe('+1d6 par niveau');
@@ -214,7 +214,7 @@ describe('draftFromSpell', () => {
       description: { fr: 'D' },
       atHigherLevels: null,
       classes: [],
-      source: 'aidedd-homebrew',
+      source: 'custom',
     });
     expect(draft.componentsM).toBe(true);
     expect(draft.materialFr).toBe('une bougie');

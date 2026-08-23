@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as ContentLoader from '../content-loader';
-import { loadContentMulti } from '../load-content-multi';
+import {
+  loadContentMulti,
+  loadContentMultiScoped,
+} from '../load-content-multi';
 import * as PacksEntries from '../load-user-packs-entries';
 import type { Item } from '../../types/content';
 
@@ -27,7 +30,7 @@ describe('loadContentMulti', () => {
     vi.restoreAllMocks();
     // Par défaut, les packs user ne contribuent rien — chaque test surcharge
     // si besoin.
-    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([]);
   });
 
   it('SRD seul (no userId, no campaignId) : retourne loadPublicContent tel quel', async () => {
@@ -35,7 +38,7 @@ describe('loadContentMulti', () => {
       fakeItem('sword', 'épée'),
       fakeItem('shield', 'bouclier'),
     ]);
-    const packs = vi.spyOn(PacksEntries, 'loadUserPacksEntries');
+    const packs = vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped');
     packs.mockResolvedValue([]);
 
     const result = await loadContentMulti('items');
@@ -48,8 +51,8 @@ describe('loadContentMulti', () => {
     vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
       fakeItem('sword', 'épée'),
     ]);
-    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([
-      fakeItem('homebrew-bow', 'arc maison'),
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([
+      { entity: fakeItem('homebrew-bow', 'arc maison') },
     ] as never);
 
     const result = await loadContentMulti('items', { userId: 'user-1' });
@@ -62,8 +65,8 @@ describe('loadContentMulti', () => {
     vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
       fakeItem('sword', 'épée SRD'),
     ]);
-    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([
-      fakeItem('sword', 'épée user'),
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([
+      { entity: fakeItem('sword', 'épée user') },
     ] as never);
 
     const result = await loadContentMulti('items', { userId: 'user-1' });
@@ -80,7 +83,7 @@ describe('loadContentMulti', () => {
     vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
       fakeItem('sword', 'épée'),
     ]);
-    const packs = vi.spyOn(PacksEntries, 'loadUserPacksEntries');
+    const packs = vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped');
 
     const result = await loadContentMulti('items', { campaignId: 'camp-1' });
 
@@ -94,7 +97,7 @@ describe('loadContentMulti', () => {
       fakeItem('sword', 'épée'),
       fakeItem('shield', 'bouclier'),
     ]);
-    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockRejectedValue(
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockRejectedValue(
       Object.assign(new Error('Missing or insufficient permissions.'), {
         code: 'permission-denied',
       }),
@@ -113,8 +116,8 @@ describe('loadContentMulti', () => {
     vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
       fakeItem('sword', 'épée'),
     ]);
-    vi.spyOn(PacksEntries, 'loadUserPacksEntries').mockResolvedValue([
-      fakeItem('pack-bow', 'arc pack'),
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([
+      { entity: fakeItem('pack-bow', 'arc pack') },
     ] as never);
 
     const result = await loadContentMulti('items', {
@@ -123,5 +126,76 @@ describe('loadContentMulti', () => {
     });
 
     expect(result.map((i) => i.id)).toEqual(['sword', 'pack-bow']);
+  });
+});
+
+/**
+ * La provenance de chaque entrée, telle qu'un écran qui PERSISTE une référence
+ * doit la lire. `loadContentMulti` l'écrase en ne rendant que les entités —
+ * c'était la cause du mur « l'objet du pack devient introuvable ».
+ */
+describe('loadContentMultiScoped — provenance conservée', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([]);
+  });
+
+  it('marque « public » une entrée SRD et « user » une entrée de pack', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée'),
+    ]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([
+      { entity: fakeItem('homebrew-bow', 'arc maison') },
+    ] as never);
+
+    const result = await loadContentMultiScoped('items', { userId: 'user-1' });
+
+    expect(
+      result.map((r) => [(r.entity as { id: string }).id, r.scope, r.scopeId]),
+    ).toEqual([
+      ['sword', 'public', undefined],
+      ['homebrew-bow', 'user', 'user-1'],
+    ]);
+  });
+
+  it('donne au pack qui écrase un id SRD la provenance du pack', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée'),
+    ]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([
+      { entity: fakeItem('sword', 'épée maison') },
+    ] as never);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const result = await loadContentMultiScoped('items', { userId: 'user-1' });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.scope).toBe('user');
+    expect(result[0]!.scopeId).toBe('user-1');
+    warn.mockRestore();
+  });
+
+  // M53 — la provenance lisible du pack remonte jusqu'à l'écran. Sans elle,
+  // une entrée maison est « maison » et rien d'autre : impossible de dire de
+  // quel pack elle sort.
+  it('remonte l’étiquette de provenance du pack d’origine', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([]);
+    vi.spyOn(PacksEntries, 'loadUserPacksEntriesScoped').mockResolvedValue([
+      { entity: fakeItem('homebrew-bow', 'arc maison'), originLabel: 'Xanathar' },
+    ] as never);
+
+    const result = await loadContentMultiScoped('items', { userId: 'user-1' });
+
+    expect(result[0]!.originLabel).toBe('Xanathar');
+  });
+
+  it('laisse la provenance absente sur une entrée SRD', async () => {
+    vi.spyOn(ContentLoader, 'loadPublicContent').mockResolvedValue([
+      fakeItem('sword', 'épée'),
+    ]);
+
+    const result = await loadContentMultiScoped('items', { userId: 'user-1' });
+
+    expect(result[0]!.originLabel).toBeUndefined();
   });
 });

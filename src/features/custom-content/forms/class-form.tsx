@@ -42,14 +42,18 @@ import { FieldString } from './fields/field-string';
  *   - Multiples options d'équipement A/B/C (SRD 2024 propose souvent 2-3
  *     paquets — V1 livre 1 option).
  *
- * Pour éviter la branche `superRefine` du `ClassSchema` qui exige
- * `divineOrders`/`primalOrders` non vide quand `id === 'cleric' || 'druid'`,
- * on bloque les 12 ids SRD officiels à la validation — un homebrew ne peut
- * pas re-définir une classe SRD avec le même id (de toute façon le merger
- * SRD ∪ custom écraserait, et l'écrasement d'une classe complète serait
- * généralement une erreur de l'utilisateur).
+ * Ids refusés : `cleric` et `druid` SEULEMENT (M50). Ces deux-là déclenchent
+ * une branche `superRefine` du `ClassSchema` qui exige `divineOrders` /
+ * `primalOrders` non vide — champs que ce formulaire ne produit pas : les
+ * accepter mènerait à un échec Zod incompréhensible au moment du save.
  *
- * `source` est figé à `aidedd-homebrew` — convention partagée 3C.
+ * Les 10 autres classes SRD étaient refusées « par principe ». C'était le mur :
+ * « chez moi le Roublard… » n'avait aucun chemin. Le merger `user > public` sait
+ * écraser proprement, et le sélecteur « Dupliquer » pose le choix explicitement
+ * (copie sous un nouvel id, ou remplacement assumé) — le refus n'avait plus
+ * d'objet.
+ *
+ * `source` est figé à `custom` — convention partagée 3C.
  */
 
 const ABILITY_KEYS = ['for', 'dex', 'con', 'int', 'sag', 'cha'] as const;
@@ -64,22 +68,33 @@ type SpellcastingAbility = (typeof SPELLCASTING_ABILITIES)[number];
 const SPELLCASTING_PROGRESSIONS = ['full', 'half', 'third', 'pact'] as const;
 type SpellcastingProgression = (typeof SPELLCASTING_PROGRESSIONS)[number];
 
+const SPELLCASTING_PREPARATIONS = ['prepared', 'known'] as const;
+type SpellcastingPreparation = (typeof SPELLCASTING_PREPARATIONS)[number];
+
+/** Longueur imposée par `ClassSchema` : une valeur par niveau, du 1 au 20. */
+const PROGRESSION_LENGTH = 20;
+
+/**
+ * Parse une colonne de table de classe saisie à la main (« 2 3 4 4 5 … »).
+ * Accepte espaces, virgules et points-virgules — un MJ colle ce qu'il a.
+ * Rend `null` si la saisie n'est pas exactement 20 entiers positifs : la
+ * valider à moitié produirait un `spellProgression` que Zod refuserait au save,
+ * avec un message incompréhensible.
+ */
+export function parseProgressionColumn(raw: string): number[] | null {
+  const parts = raw
+    .split(/[\s,;]+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (parts.length !== PROGRESSION_LENGTH) return null;
+  const values = parts.map((p) => (/^\d+$/.test(p) ? Number(p) : NaN));
+  if (values.some((v) => !Number.isInteger(v))) return null;
+  return values;
+}
+
 const COIN_UNITS: readonly CoinUnit[] = ['cp', 'sp', 'ep', 'gp', 'pp'];
 
-const RESERVED_CLASS_IDS = new Set([
-  'barbarian',
-  'bard',
-  'cleric',
-  'druid',
-  'fighter',
-  'monk',
-  'paladin',
-  'ranger',
-  'rogue',
-  'sorcerer',
-  'warlock',
-  'wizard',
-]);
+const RESERVED_CLASS_IDS = new Set(['cleric', 'druid']);
 
 interface FeatureDraft {
   level: number;
@@ -116,6 +131,15 @@ export interface ClassFormDraft {
   spellcastingEnabled: boolean;
   spellcastingAbility: SpellcastingAbility;
   spellcastingProgression: SpellcastingProgression;
+  /** M51 — 'prepared' (re-prépare au repos long) ou 'known' (liste fixe). */
+  spellcastingPreparation: SpellcastingPreparation;
+  /**
+   * M51 — colonne « sorts préparés / connus », 20 valeurs séparées par des
+   * espaces ou des virgules. Vide = pas de table (comportement d'avant).
+   */
+  spellsKnownOrPrepared: string;
+  /** M51 — colonne « sorts mineurs », 20 valeurs. Vide = colonne absente. */
+  cantripsKnown: string;
   startingEquipmentItems: StartingItemDraft[];
   startingEquipmentCoinsIncluded: boolean;
   startingEquipmentCoinsQty: number;
@@ -164,6 +188,9 @@ export const EMPTY_CLASS_DRAFT: ClassFormDraft = {
   spellcastingEnabled: false,
   spellcastingAbility: 'int',
   spellcastingProgression: 'full',
+  spellcastingPreparation: 'known',
+  spellsKnownOrPrepared: '',
+  cantripsKnown: '',
   startingEquipmentItems: [],
   startingEquipmentCoinsIncluded: false,
   startingEquipmentCoinsQty: 0,
@@ -195,6 +222,22 @@ export function buildClassFromDraft(draft: ClassFormDraft): ClassEntity {
     ? { qty: draft.startingEquipmentCoinsQty, unit: draft.startingEquipmentCoinsUnit }
     : null;
 
+  // Table de progression (M51) : n'existe que si la classe lance des sorts ET
+  // que la colonne obligatoire est saisie. `preparationCap` rendait 0 sans
+  // elle — une classe maison montait en niveau sans jamais rien préparer.
+  const preparedColumn = draft.spellcastingEnabled
+    ? parseProgressionColumn(draft.spellsKnownOrPrepared)
+    : null;
+  const cantripColumn = draft.spellcastingEnabled
+    ? parseProgressionColumn(draft.cantripsKnown)
+    : null;
+  const spellProgression = preparedColumn
+    ? {
+        spellsKnownOrPrepared: preparedColumn,
+        ...(cantripColumn ? { cantripsKnown: cantripColumn } : {}),
+      }
+    : null;
+
   const multiclassPrerequisite = draft.multiclassPrerequisiteEnabled
     ? {
         combinator: draft.multiclassCombinator,
@@ -224,8 +267,10 @@ export function buildClassFromDraft(draft: ClassFormDraft): ClassEntity {
       ? {
           ability: draft.spellcastingAbility,
           progression: draft.spellcastingProgression,
+          preparation: draft.spellcastingPreparation,
         }
       : null,
+    ...(spellProgression ? { spellProgression } : {}),
     startingEquipment: {
       options: [{ items, coins }],
     },
@@ -238,7 +283,7 @@ export function buildClassFromDraft(draft: ClassFormDraft): ClassEntity {
       weapons: draft.multiclassWeapons.map((s) => s.trim()).filter(Boolean),
       tools: draft.multiclassTools.map((s) => s.trim()).filter(Boolean),
     },
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 
@@ -261,6 +306,10 @@ export function draftFromClass(cls: ClassEntity): ClassFormDraft {
     spellcastingEnabled: cls.spellcasting !== null,
     spellcastingAbility: cls.spellcasting?.ability ?? 'int',
     spellcastingProgression: cls.spellcasting?.progression ?? 'full',
+    spellcastingPreparation: cls.spellcasting?.preparation ?? 'known',
+    spellsKnownOrPrepared:
+      cls.spellProgression?.spellsKnownOrPrepared.join(' ') ?? '',
+    cantripsKnown: cls.spellProgression?.cantripsKnown?.join(' ') ?? '',
     startingEquipmentItems: firstOption.items.map((it) => ({
       itemId: it.itemId,
       qty: it.qty,
@@ -310,6 +359,33 @@ export function validateClassDraft(
     fieldErrors.descriptionFr = t(
       'customContent.editor.classForm.error.descriptionFrRequired',
     );
+  }
+  // M51 — une colonne partielle serait refusée par Zod au save avec un message
+  // illisible ; on la rattrape ici, au champ.
+  if (draft.spellcastingEnabled) {
+    if (
+      draft.spellsKnownOrPrepared.trim() &&
+      parseProgressionColumn(draft.spellsKnownOrPrepared) === null
+    ) {
+      fieldErrors.spellsKnownOrPrepared = t(
+        'customContent.editor.classForm.error.progressionFormat',
+      );
+    }
+    if (
+      draft.cantripsKnown.trim() &&
+      parseProgressionColumn(draft.cantripsKnown) === null
+    ) {
+      fieldErrors.cantripsKnown = t(
+        'customContent.editor.classForm.error.progressionFormat',
+      );
+    }
+    // Une colonne de sorts mineurs sans colonne principale ne produirait rien :
+    // `spellProgression` exige `spellsKnownOrPrepared`.
+    if (draft.cantripsKnown.trim() && !draft.spellsKnownOrPrepared.trim()) {
+      fieldErrors.spellsKnownOrPrepared = t(
+        'customContent.editor.classForm.error.progressionRequiredForCantrips',
+      );
+    }
   }
   if (draft.primaryAbility.length === 0) {
     fieldErrors.primaryAbility = t(
@@ -586,6 +662,14 @@ export function ClassForm({
     value,
     label: t(`ability.${value}` as const),
   }));
+  const spellcastingPreparationOptions = SPELLCASTING_PREPARATIONS.map(
+    (value) => ({
+      value,
+      label: t(
+        `customContent.editor.classForm.spellcastingPreparation.${value}` as const,
+      ),
+    }),
+  );
   const spellcastingProgressionOptions = SPELLCASTING_PROGRESSIONS.map(
     (value) => ({
       value,
@@ -873,6 +957,44 @@ export function ClassForm({
                 }
                 required
                 testId="class-form-spellcasting-progression"
+              />
+              <FieldEnum
+                label={t('customContent.editor.classForm.spellcastingPreparation')}
+                value={draft.spellcastingPreparation}
+                options={spellcastingPreparationOptions}
+                onChange={(value) =>
+                  update(
+                    'spellcastingPreparation',
+                    value as SpellcastingPreparation,
+                  )
+                }
+                helper={t(
+                  'customContent.editor.classForm.spellcastingPreparationHelper',
+                )}
+                required
+                testId="class-form-spellcasting-preparation"
+              />
+              <FieldString
+                label={t('customContent.editor.classForm.spellsKnownOrPrepared')}
+                value={draft.spellsKnownOrPrepared}
+                onChange={(value) => update('spellsKnownOrPrepared', value)}
+                helper={t(
+                  'customContent.editor.classForm.spellsKnownOrPreparedHelper',
+                )}
+                placeholder="2 3 4 5 6 6 7 7 9 9 10 10 11 11 12 12 14 14 15 15"
+                error={errors.spellsKnownOrPrepared}
+                testId="class-form-spells-known"
+                className="sm:col-span-2"
+              />
+              <FieldString
+                label={t('customContent.editor.classForm.cantripsKnown')}
+                value={draft.cantripsKnown}
+                onChange={(value) => update('cantripsKnown', value)}
+                helper={t('customContent.editor.classForm.cantripsKnownHelper')}
+                placeholder="3 3 3 4 4 4 4 4 4 5 5 5 5 5 5 5 5 5 5 5"
+                error={errors.cantripsKnown}
+                testId="class-form-cantrips-known"
+                className="sm:col-span-2"
               />
             </div>
           ) : null}

@@ -60,11 +60,20 @@ const CLASSES: ClassEntity[] = [
 ];
 
 // Mock par type ; le navigateur lit 'spells' + 'classes'.
+// M50 — la provenance : « Trait de feu » vient du SRD, « Charme-personne » est
+// servi par un pack maison. `scopeOf` est la source de la puce.
+const scopeOf = (id: string): { scope: 'public' | 'user'; originLabel?: string } =>
+  id === 'charm-person'
+    ? { scope: 'user', originLabel: 'Ma campagne' }
+    : { scope: 'public' };
+
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'spells') return { data: SPELLS, loading: false, error: null };
-    if (type === 'classes') return { data: CLASSES, loading: false, error: null };
-    return { data: [], loading: false, error: null };
+    if (type === 'spells')
+      return { data: SPELLS, loading: false, error: null, scopeOf };
+    if (type === 'classes')
+      return { data: CLASSES, loading: false, error: null, scopeOf };
+    return { data: [], loading: false, error: null, scopeOf };
   },
 }));
 
@@ -121,5 +130,19 @@ describe('SpellBrowser (Codex)', () => {
     ).toBeInTheDocument();
     // Classes résolues + triées (Ensorceleur, Magicien).
     expect(within(dialog).getByText('Ensorceleur, Magicien')).toBeInTheDocument();
+  });
+
+  it('marque d’une puce le sort servi par un pack maison, pas le sort SRD', () => {
+    render(<SpellBrowser />);
+    const chips = screen.getAllByTestId('codex-origin-chip');
+    expect(chips).toHaveLength(1);
+    expect(chips[0]).toHaveTextContent('Ma campagne');
+    // La puce est bien dans la rangée du sort maison.
+    expect(
+      screen.getByText('Charme-personne').closest('button'),
+    ).toHaveTextContent('Ma campagne');
+    expect(screen.getByText('Trait de feu').closest('button')).not.toHaveTextContent(
+      'Ma campagne',
+    );
   });
 });

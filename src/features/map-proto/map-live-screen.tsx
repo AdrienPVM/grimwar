@@ -42,6 +42,11 @@ import {
   type LightPresetKey,
 } from './light-state';
 import { MapScene } from './map-scene';
+import {
+  MapSettingsModal,
+  type MapSettingsPatch,
+} from './map-settings-modal';
+import { MapZoomControls } from './map-zoom-controls';
 import { monsterToTokenInput } from './monster-token';
 import { MonsterPickerModal } from './monster-picker-modal';
 import {
@@ -56,6 +61,7 @@ import {
 import { TokenEditModal } from './token-edit-modal';
 import { useMap } from './use-map';
 import { useMapImage } from './use-map-image';
+import { useMapTransform } from './use-map-transform';
 
 /**
  * Vue live de carte côté MJ (CHANTIER D phase 2, tracer D.4).
@@ -88,6 +94,11 @@ const TOKEN_RADIUS = 22;
 const CENTER_X = VIEWBOX_W / 2;
 const CENTER_Y = VIEWBOX_H / 2;
 const FOG_DEFAULT_RADIUS = 120;
+// Opacité du voile côté MJ : atténuée pour piloter à travers le brouillard.
+const FOG_OPACITY_DM = 0.45;
+// Opacité vue par la table (identique à `map-tv-screen`) — ce que le toggle
+// « Vue joueur » (M33) permet de vérifier AVANT de dévoiler.
+const FOG_OPACITY_PLAYER = 0.92;
 /**
  * Presets de lumière SRD, en PIEDS (rayon vif / faible), convertis en px à
  * l'ÉCHELLE RÉELLE de la carte au moment de la pose (cf. `handleAddLight`) —
@@ -188,6 +199,8 @@ export function MapLiveScreen(): JSX.Element {
   const [editingTokenId, setEditingTokenId] = useState<string | null>(null);
   // Sélecteur de bestiaire ouvert (autofill carte depuis un monstre).
   const [showMonsterPicker, setShowMonsterPicker] = useState(false);
+  // Panneau de réglages de la carte (nom, calibrage de grille, image partagée).
+  const [settingsOpen, setSettingsOpen] = useState(false);
   // Drag des templates AoE — même machinerie que les tokens (override local
   // pendant le glisser, write Firestore au lâcher). Distinct du drag de token :
   // un AoE et un token peuvent coexister, et l'AoE se rend SOUS les tokens.
@@ -213,8 +226,16 @@ export function MapLiveScreen(): JSX.Element {
   // En mode mesure, les jetons deviennent non-interactifs et un clic sur le
   // fond pose les ancres ; le curseur dessine le segment vivant.
   const [measureMode, setMeasureMode] = useState(false);
+  // « Vue joueur » (M33) — bascule LOCALE de l'opacité du voile sur celle de la
+  // vue TV. Le MJ voit au travers du brouillard par défaut (0.45) pour piloter ;
+  // ce toggle lui montre ce que la table voit réellement AVANT de dévoiler.
+  // Rien n'est persisté : c'est une lunette, pas un réglage de carte.
+  const [viewAsPlayer, setViewAsPlayer] = useState(false);
   const [ruler, setRuler] = useState<Ruler>(EMPTY_RULER);
   const svgRef = useRef<SVGSVGElement>(null);
+  // Cadrage local (zoom + panoramique). Non persisté : chacun cadre son écran,
+  // personne ne recadre celui des autres — comme l'aimant et la règle.
+  const view = useMapTransform(svgRef);
   const dragStart = useRef<{
     pointerX: number;
     pointerY: number;
@@ -698,6 +719,27 @@ export function MapLiveScreen(): JSX.Element {
     }
   }, [cid, map, mid, user]);
 
+  /**
+   * Réglages de la carte (M30) — nom, calibrage de grille, image de fond
+   * partagée. Écriture unique : les 4 champs partent ensemble, donc une carte
+   * recalibrée ne passe jamais par un état intermédiaire incohérent (grille
+   * neuve avec ancienne échelle). Tout dérive ensuite : règle, portées de
+   * vision, gabarits d'AoE, rayons de lumière.
+   */
+  const handleSaveSettings = useCallback(
+    async (patch: MapSettingsPatch): Promise<void> => {
+      if (!cid || !mid || !user) return;
+      try {
+        await updateMap(cid, mid, { ...patch }, user.uid);
+        setWriteError(null);
+        setSettingsOpen(false);
+      } catch (err: unknown) {
+        setWriteError(err instanceof Error ? err.message : String(err));
+      }
+    },
+    [cid, mid, user],
+  );
+
   // ── Tokens (affordance prototype « au centre », parité fog/light/AoE) ───
   // N'arbitre PAS la décision produit F23 (UX d'édition complète) : c'est le
   // même geste minimal que les boutons « Torche/Sphère au centre » déjà
@@ -1044,6 +1086,19 @@ export function MapLiveScreen(): JSX.Element {
           <span className="rounded-pill border border-gold-dim/40 bg-gold/10 px-2 py-0.5 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright">
             {t('map.live.badge')}
           </span>
+          {/* Réglages (M30) : le nom, le calibrage de grille et l'image de fond
+              n'étaient éditables NULLE PART après la création — or tout le reste
+              de la carte (distances, vision, AoE, lumières) en dérive. */}
+          <Tooltip label={t('map.tip.openSettings')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-open-settings"
+              onClick={() => setSettingsOpen(true)}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              {t('map.live.settingsButton')}
+            </button>
+          </Tooltip>
         </div>
         <p
           data-testid="map-live-meta"
@@ -1369,6 +1424,19 @@ export function MapLiveScreen(): JSX.Element {
               {t('map.live.snapToggle')} {snapEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
+          {/* « Vue joueur » (M33) : bascule locale sur l'opacité de voile de la
+              vue TV. Savoir ce que la table voit AVANT de dévoiler. */}
+          <Tooltip label={t('map.tip.viewAsPlayer')} placement="bottom" decorative>
+            <button
+              type="button"
+              data-testid="map-live-toggle-player-view"
+              aria-pressed={viewAsPlayer}
+              onClick={() => setViewAsPlayer((v) => !v)}
+              className="rounded-pill border border-gold-dim/40 px-3 py-1 font-title text-[10px] uppercase tracking-[0.16em] text-gold-bright transition-colors duration-200 ease-base hover:bg-gold/10"
+            >
+              {t('map.live.playerViewToggle')} {viewAsPlayer ? 'ON' : 'OFF'}
+            </button>
+          </Tooltip>
           <Tooltip label={t('map.tip.toggleFog')} placement="bottom" decorative>
             <button
               type="button"
@@ -1405,6 +1473,7 @@ export function MapLiveScreen(): JSX.Element {
               {t('map.live.lightingToggle')} {map.lightingEnabled ? 'ON' : 'OFF'}
             </button>
           </Tooltip>
+          <MapZoomControls view={view} testidPrefix="map-live" />
           <button
             type="button"
             data-testid="map-live-open-tv"
@@ -1462,13 +1531,25 @@ export function MapLiveScreen(): JSX.Element {
       >
         <svg
           ref={svgRef}
-          viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
+          viewBox={view.viewBox}
           preserveAspectRatio="xMidYMid meet"
           className="h-full w-full touch-none select-none"
-          style={measureMode ? { cursor: 'crosshair' } : undefined}
+          style={
+            measureMode
+              ? { cursor: 'crosshair' }
+              : view.isPanning
+                ? { cursor: 'grabbing' }
+                : undefined
+          }
           data-testid="map-live-svg"
-          onPointerDown={measureMode ? handleMeasurePointerDown : undefined}
-          onPointerMove={measureMode ? handleMeasurePointerMove : undefined}
+          // Jetons et AoE arrêtent la propagation au pointerdown : ce handler ne
+          // reçoit que le FOND, donc glisser le décor ne déplace jamais un jeton.
+          onPointerDown={
+            measureMode ? handleMeasurePointerDown : view.beginPan
+          }
+          onPointerMove={measureMode ? handleMeasurePointerMove : view.movePan}
+          onPointerUp={measureMode ? undefined : view.endPan}
+          onPointerLeave={measureMode ? undefined : view.endPan}
         >
           {/* Décor partagé : image, grille, murs (debug MJ), fog (voile
               atténué côté MJ pour qu'il voie au travers) + LOS, lumières. Les
@@ -1479,7 +1560,7 @@ export function MapLiveScreen(): JSX.Element {
             tokens={tokens}
             maskId={`fog-live-${mid}`}
             showWalls
-            fogOpacity={0.45}
+            fogOpacity={viewAsPlayer ? FOG_OPACITY_PLAYER : FOG_OPACITY_DM}
             renderAoe={false}
           />
           {/* Couche AoE draggable (live MJ) — rendue SOUS les tokens (décor
@@ -1649,6 +1730,14 @@ export function MapLiveScreen(): JSX.Element {
         }
         onCarriedLightChange={(preset) => {
           void handleSetCarriedLight(preset);
+        }}
+      />
+
+      <MapSettingsModal
+        map={settingsOpen ? map : null}
+        onClose={() => setSettingsOpen(false)}
+        onSave={(patch) => {
+          void handleSaveSettings(patch);
         }}
       />
 

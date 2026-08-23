@@ -29,7 +29,7 @@ const encounterHolder: {
 } = { encounter: null, isLoading: false, error: null };
 vi.mock('../use-encounter', () => ({ useEncounter: () => encounterHolder }));
 
-// Feed d'événements — alimente le hand-off des dégâts physiques (step 7b).
+// Feed d'événements — alimente le hand-off des dégâts (step 7b, tous modes).
 const eventsHolder: { events: GameEvent[] } = { events: [] };
 vi.mock('../use-campaign-events', () => ({
   useCampaignEvents: () => ({ events: eventsHolder.events, isLoading: false, error: null }),
@@ -55,8 +55,14 @@ const startEncounterMock = vi.fn();
 const advanceTurnMock = vi.fn();
 const endEncounterMock = vi.fn();
 const setParticipantsMock = vi.fn();
+const applyInitiativeRollsMock = vi.fn();
 const applyParticipantHpDeltaMock = vi.fn();
 const setParticipantConditionMock = vi.fn();
+const updateParticipantMock = vi.fn();
+const removeParticipantMock = vi.fn();
+const addParticipantMock = vi.fn();
+const rewindTurnMock = vi.fn();
+const reopenEncounterMock = vi.fn();
 vi.mock('@/shared/lib/services/encounters', async (importActual) => {
   const actual = await importActual<typeof import('@/shared/lib/services/encounters')>();
   return {
@@ -65,8 +71,14 @@ vi.mock('@/shared/lib/services/encounters', async (importActual) => {
     advanceTurn: (...a: unknown[]) => advanceTurnMock(...a),
     endEncounter: (...a: unknown[]) => endEncounterMock(...a),
     setParticipants: (...a: unknown[]) => setParticipantsMock(...a),
+    applyInitiativeRolls: (...a: unknown[]) => applyInitiativeRollsMock(...a),
     applyParticipantHpDelta: (...a: unknown[]) => applyParticipantHpDeltaMock(...a),
     setParticipantCondition: (...a: unknown[]) => setParticipantConditionMock(...a),
+    updateParticipant: (...a: unknown[]) => updateParticipantMock(...a),
+    removeParticipant: (...a: unknown[]) => removeParticipantMock(...a),
+    addParticipant: (...a: unknown[]) => addParticipantMock(...a),
+    rewindTurn: (...a: unknown[]) => rewindTurnMock(...a),
+    reopenEncounter: (...a: unknown[]) => reopenEncounterMock(...a),
   };
 });
 
@@ -81,21 +93,52 @@ vi.mock('@/shared/lib/event-logger', () => ({
   logMonsterHpChange: (...a: unknown[]) => logMonsterHpChangeMock(...a),
 }));
 
-// Catalogue d'états minimal pour le contrôle MJ (libellés localisés).
+// Catalogue d'états minimal pour le contrôle MJ (libellés localisés). Le mock
+// est TYPÉ PAR CATÉGORIE : l'écran lit aussi `monsters` (modificateur d'init
+// dérivé de la DEX, M3), et lui servir des états produirait des entrées sans
+// `abilities` — une forme que le schéma de contenu interdit.
 vi.mock('@/shared/hooks/use-content', () => ({
-  useContent: () => ({
-    data: [
-      { id: 'prone', name: { fr: 'À terre', en: 'Prone' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
-      { id: 'poisoned', name: { fr: 'Empoisonné', en: 'Poisoned' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
-    ],
+  useContent: (type: string) => ({
+    data:
+      type === 'conditions'
+        ? [
+            { id: 'prone', name: { fr: 'À terre', en: 'Prone' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
+            { id: 'poisoned', name: { fr: 'Empoisonné', en: 'Poisoned' }, description: { fr: '', en: '' }, source: 'srd-5.2.1' },
+          ]
+        : [],
     loading: false,
     error: null,
+    scopeOf: () => ({ scope: 'public' as const }),
   }),
 }));
 
 vi.mock('@/shared/lib/firebase', () => ({ getDb: () => ({}) }));
 
+// Le contrôle de PV d'un PJ (M5) tire toute la pile de fiche (`useCharacter`
+// temps-réel + omni-edit). Ici on ne teste que le CÂBLAGE : quelle modale
+// s'ouvre, sur quelle fiche, et ce que le tracker fait du retour. Le contenu de
+// la modale a son propre test (`player-control-modal.test.tsx`).
+vi.mock('../player-control-modal', () => ({
+  PlayerControlModal: ({
+    characterId,
+    ownerUid,
+    onApplied,
+  }: {
+    characterId: string;
+    ownerUid: string;
+    onApplied: (currentHp: number, maxHp: number) => void;
+  }) => (
+    <div data-testid="player-control">
+      {characterId}@{ownerUid}
+      <button type="button" onClick={() => onApplied(9, 20)}>
+        STUB_APPLY
+      </button>
+    </div>
+  ),
+}));
+
 import { EncounterScreen } from '../encounter-screen';
+import { t } from '@/shared/lib/i18n';
 import { EncounterServiceError } from '@/shared/lib/services/encounters';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
@@ -120,6 +163,19 @@ function mkCampaign(overrides: Partial<Campaign> = {}): Campaign {
     schemaVersion: 1,
     createdAt: null,
     updatedAt: null,
+    ...overrides,
+  };
+}
+
+function mkMembership(overrides: Partial<Membership> = {}): Membership {
+  return {
+    userId: 'uid-player',
+    role: 'member',
+    characterId: null,
+    displayName: 'Lyralei',
+    photoURL: null,
+    joinedAt: null,
+    schemaVersion: 1,
     ...overrides,
   };
 }
@@ -202,6 +258,7 @@ afterEach(() => {
   advanceTurnMock.mockReset();
   endEncounterMock.mockReset();
   setParticipantsMock.mockReset();
+  applyInitiativeRollsMock.mockReset();
   applyParticipantHpDeltaMock.mockReset();
   setParticipantConditionMock.mockReset();
   logEncounterStartMock.mockReset();
@@ -237,17 +294,22 @@ describe('<EncounterScreen> — état planned (MJ)', () => {
     expect(screen.getByText(/Lance l’initiative pour établir l’ordre/i)).toBeInTheDocument();
   });
 
-  it('« Lancer l’initiative » → setParticipants reçoit les participants initiés (init 10)', async () => {
+  // DEBT D31 volet 1 — l'écriture passe par `applyInitiativeRolls` (relecture
+  // serveur), jamais par `setParticipants` depuis la closure : sinon un jet
+  // d'initiative réécrase les PV/états appliqués entre-temps.
+  it('« Lancer l’initiative » → applyInitiativeRolls reçoit les jets (total 10)', async () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter();
-    setParticipantsMock.mockResolvedValueOnce(undefined);
+    applyInitiativeRollsMock.mockResolvedValueOnce([]);
     renderScreen();
     fireEvent.click(screen.getByRole('button', { name: 'Lancer l’initiative' }));
-    await waitFor(() => expect(setParticipantsMock).toHaveBeenCalledTimes(1));
-    const [cid, eid, participants] = setParticipantsMock.mock.calls[0]!;
+    await waitFor(() => expect(applyInitiativeRollsMock).toHaveBeenCalledTimes(1));
+    const [cid, eid, rolls] = applyInitiativeRollsMock.mock.calls[0]!;
     expect(cid).toBe('c-1');
     expect(eid).toBe('e-1');
-    expect((participants as EncounterParticipant[]).every((p) => p.initiative === 10)).toBe(true);
+    expect((rolls as { total: number }[]).every((r) => r.total === 10)).toBe(true);
+    // Le tableau complet n'est plus réécrit depuis la closure UI.
+    expect(setParticipantsMock).not.toHaveBeenCalled();
   });
 
   it('« Démarrer le combat » → startEncounter + loggers + pointeur posé', async () => {
@@ -351,16 +413,29 @@ describe('<EncounterScreen> — état active (MJ)', () => {
 });
 
 describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
-  it('le MJ voit « PV / États » sur la carte monstre, PAS sur la carte joueur', () => {
+  it('le MJ voit « PV / États » sur la carte monstre', () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
     renderScreen();
-    // Un seul bouton de contrôle (le monstre), pas deux.
     expect(
       screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }),
     ).toBeInTheDocument();
+    // La modale de monstre ne s'ouvre jamais sur un PJ : ses PV vivent sur sa
+    // fiche, et c'est un autre contrôle (M5).
     expect(
       screen.queryByRole('button', { name: /PV \/ États — Lyralei/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('un PJ dont la fiche n’est pas joignable n’offre aucun contrôle', () => {
+    campaignHolder.campaign = mkCampaign();
+    // Aucun membre lié : `characterId` du participant ne résout sur aucun
+    // propriétaire, donc il n'y a nulle part où écrire.
+    campaignHolder.members = [];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: /Points de vie — Lyralei/ }),
     ).not.toBeInTheDocument();
   });
 
@@ -436,7 +511,187 @@ describe('<EncounterScreen> — contrôle MJ des monstres (step 7)', () => {
   });
 });
 
-describe('<EncounterScreen> — hand-off dégâts physiques (step 7b)', () => {
+describe('<EncounterScreen> — dégâts sur un PJ depuis le tracker (M5)', () => {
+  it('un PJ dont la fiche est liée ouvre le contrôle de PV', () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership({ characterId: 'char-a' })];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Points de vie — Lyralei/ }));
+    expect(screen.getByTestId('player-control')).toHaveTextContent('char-a@uid-player');
+  });
+
+  it('les PV appliqués sur la fiche se reflètent sur la carte du tracker', async () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership({ characterId: 'char-a' })];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    updateParticipantMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Points de vie — Lyralei/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'STUB_APPLY' }));
+
+    // Les PV du participant joueur étaient un instantané figé à la création :
+    // la carte affichait 20/20 pendant que le PJ agonisait.
+    await waitFor(() =>
+      expect(updateParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-a', {
+        currentHp: 9,
+        maxHp: 20,
+      }),
+    );
+  });
+
+  it('le joueur ne voit aucun contrôle de PV, même sur sa propre carte', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    campaignHolder.members = [mkMembership({ characterId: 'char-a' })];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: /Points de vie — Lyralei/ }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe('<EncounterScreen> — cycle de vie réparable (M7)', () => {
+  it('« Tour précédent » recule d’un tour sans réémettre `turn-start`', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 3, turnIndex: 1 });
+    rewindTurnMock.mockResolvedValueOnce({ round: 3, turnIndex: 0 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tour précédent' }));
+    await waitFor(() => expect(rewindTurnMock).toHaveBeenCalledWith('c-1', 'e-1'));
+    // Revenir en arrière corrige la feuille de suivi ; le récit ne rejoue pas
+    // le tour (sinon le journal l'inscrirait deux fois).
+    expect(logTurnStartMock).not.toHaveBeenCalled();
+  });
+
+  it('« Tour précédent » est inerte au tout premier tour du combat', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(screen.getByRole('button', { name: 'Tour précédent' })).toBeDisabled();
+  });
+
+  it('« Abandonner » écrit le statut `aborted` et NE journalise aucune issue', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2, turnIndex: 0 });
+    endEncounterMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clôturer le combat' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Abandonner le combat' }));
+
+    await waitFor(() => expect(endEncounterMock).toHaveBeenCalledWith('c-1', 'e-1', 'aborted'));
+    // Un combat abandonné n'a pas d'issue : victoire / défaite / fuite
+    // mentiraient toutes les trois.
+    expect(logEncounterEndMock).not.toHaveBeenCalled();
+  });
+
+  it('une rencontre close propose « Rouvrir » au MJ, et rien d’autre', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'completed', round: 4, turnIndex: 2 });
+    reopenEncounterMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    expect(screen.queryByRole('button', { name: 'Fin du tour' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir le combat' }));
+    await waitFor(() => expect(reopenEncounterMock).toHaveBeenCalledWith('c-1', 'e-1'));
+    // Le tracker redevient la scène en cours.
+    expect(useActiveCampaignStore.getState().activeEncounterId).toBe('e-1');
+  });
+
+  it('le joueur ne voit pas « Rouvrir » sur une rencontre close', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({ status: 'completed', round: 4, turnIndex: 0 });
+    renderScreen();
+    expect(screen.queryByRole('button', { name: 'Rouvrir le combat' })).not.toBeInTheDocument();
+  });
+
+  it('une réouverture refusée (autre combat actif) affiche le message dédié', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'completed', round: 2, turnIndex: 0 });
+    reopenEncounterMock.mockRejectedValueOnce(
+      new EncounterServiceError('another-encounter-active', 'busy'),
+    );
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rouvrir le combat' }));
+    await waitFor(() =>
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        t('encounters.action.error.anotherActive'),
+      ),
+    );
+  });
+});
+
+describe('<EncounterScreen> — tracker éditable (M2 / M3)', () => {
+  it('le MJ peut faire entrer un renfort EN PLEIN combat', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 3, turnIndex: 0 });
+    addParticipantMock.mockResolvedValueOnce({ instanceId: 'inst-new' });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter un combattant' }));
+    fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef gobelin' } });
+    fireEvent.change(screen.getByLabelText('PV'), { target: { value: '21' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter au combat' }));
+
+    await waitFor(() =>
+      expect(addParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', {
+        type: 'monster',
+        name: 'Chef gobelin',
+        maxHp: 21,
+        monsterContentId: null,
+      }),
+    );
+  });
+
+  it('le joueur ne voit aucun bouton d’ajout (écriture MJ-only)', () => {
+    campaignHolder.campaign = mkCampaign({ gmIds: ['uid-other'] });
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    renderScreen();
+    expect(
+      screen.queryByRole('button', { name: 'Ajouter un combattant' }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('renomme un combattant depuis la modale de contrôle', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    updateParticipantMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
+
+    await waitFor(() =>
+      expect(updateParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob', {
+        name: 'Chef',
+      }),
+    );
+  });
+
+  it('retirer un combattant ferme la modale — elle pointerait dans le vide', async () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
+    removeParticipantMock.mockResolvedValueOnce(undefined);
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /PV \/ États — Gobelin 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer du combat' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer le retrait' }));
+
+    await waitFor(() =>
+      expect(removeParticipantMock).toHaveBeenCalledWith('c-1', 'e-1', 'inst-gob'),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+});
+
+describe('<EncounterScreen> — hand-off dégâts (step 7b)', () => {
   it('le MJ voit le panneau de hand-off d’un jet physique récent, acteur résolu', () => {
     campaignHolder.campaign = mkCampaign();
     encounterHolder.encounter = mkEncounter({ status: 'active', round: 1, turnIndex: 0 });
@@ -444,7 +699,7 @@ describe('<EncounterScreen> — hand-off dégâts physiques (step 7b)', () => {
     renderScreen();
     expect(screen.getByText('Dégâts à appliquer')).toBeInTheDocument();
     // Acteur résolu via la fiche liée (characterId char-a → participant Lyralei).
-    const panel = screen.getByRole('region', { name: 'Dégâts physiques à appliquer' });
+    const panel = screen.getByRole('region', { name: 'Dégâts à appliquer' });
     expect(within(panel).getByText('Lyralei')).toBeInTheDocument();
     expect(within(panel).getByText('6 dégâts')).toBeInTheDocument();
   });
@@ -587,5 +842,134 @@ describe('<EncounterScreen> — erreurs', () => {
     encounterHolder.error = new Error('encounter-not-found');
     renderScreen();
     expect(screen.getByText(/Rencontre introuvable/i)).toBeInTheDocument();
+  });
+});
+
+/**
+ * Audit UX E6 / scénario M6 — consulter la règle d'un monstre ou d'un état en
+ * plein combat. Avant, le Codex n'avait qu'un point d'entrée (le hub de
+ * l'accueil) : il fallait QUITTER le tracker, donc perdre la position de
+ * défilement, et le Retour du Codex ramenait à la bibliothèque, pas au combat.
+ */
+describe('<EncounterScreen> — Codex en superposition (E6)', () => {
+  it('le bouton Codex ouvre le Codex par-dessus le tracker, sur les États', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter();
+    renderScreen();
+
+    expect(screen.queryByRole('dialog', { name: 'Le Codex' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Codex' }));
+
+    expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+    // Les États, et NON le bestiaire : `monsters.json` est vide à ce jour, un
+    // Codex ouvert sur le bestiaire afficherait « 0 résultat » à chaque combat.
+    expect(screen.getByRole('tab', { name: /États/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    // Le tracker est toujours monté DERRIÈRE : on consulte sans quitter le combat.
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
+  });
+
+  it('le joueur y a droit aussi (contenu SRD, aucune permission requise)', () => {
+    authHolder.user = { uid: 'uid-player' };
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 1 });
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Codex' }));
+    expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+  });
+});
+
+/**
+ * Audit UX E7 / scénario M5 — la fiche d'un joueur en plein combat.
+ *
+ * Avant : rencontre → retour aux rencontres → retour à la campagne → La
+ * compagnie → Voir la fiche. Quatre gestes en plein tour de jeu, et le tracker
+ * perdu en chemin. Le besoin fréquent (« où en est son personnage ? ») se règle
+ * désormais sans quitter l'écran.
+ */
+describe('<EncounterScreen> — la compagnie en superposition (E7)', () => {
+  it('le bouton ouvre la compagnie par-dessus le tracker, sans le démonter', () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership()];
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2 });
+    renderScreen();
+
+    expect(screen.queryByRole('dialog', { name: 'La compagnie' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'La compagnie' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'La compagnie' });
+    expect(within(dialog).getByText('Lyralei')).toBeInTheDocument();
+    // Le MJ figure aussi dans la compagnie (il vient de `gmIds`).
+    expect(within(dialog).getByText('Meneur')).toBeInTheDocument();
+    expect(within(dialog).getByText('Joueur')).toBeInTheDocument();
+    // Le combat est toujours là derrière.
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
+  });
+
+  it('« Promouvoir MJ » n’est pas proposé en pleine partie (administration)', () => {
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [mkMembership()];
+    encounterHolder.encounter = mkEncounter();
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'La compagnie' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'La compagnie' });
+    expect(within(dialog).queryByRole('button', { name: /Promouvoir/ })).not.toBeInTheDocument();
+  });
+
+  it('un joueur voit la compagnie, sans les cartes live des autres (rule A2)', () => {
+    authHolder.user = { uid: 'uid-player' };
+    campaignHolder.campaign = mkCampaign();
+    campaignHolder.members = [
+      mkMembership(),
+      mkMembership({ userId: 'uid-other', displayName: 'Brann', characterId: 'char-b' }),
+    ];
+    encounterHolder.encounter = mkEncounter();
+    renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: 'La compagnie' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'La compagnie' });
+    expect(within(dialog).getByText('Brann')).toBeInTheDocument();
+    // Lecture cross-owner réservée au MJ : pas d'ouverture de fiche pour un joueur.
+    expect(within(dialog).queryByRole('button', { name: /Voir la fiche/ })).not.toBeInTheDocument();
+  });
+});
+
+/**
+ * Audit UX E12 / scénario M8 — jet secret et bloc-notes en plein combat.
+ *
+ * Avant : ils n'existaient qu'en BAS du détail de campagne. Les atteindre
+ * pendant un tour de jeu coûtait de quitter le tracker, de faire défiler un
+ * écran long, puis de refaire le chemin en sens inverse.
+ */
+describe('<EncounterScreen> — outils du meneur en superposition (E12)', () => {
+  it('le MJ ouvre jet secret + bloc-notes sans démonter le tracker', () => {
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2 });
+    renderScreen();
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Outils du meneur' }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Outils' }));
+
+    const dialog = screen.getByRole('dialog', { name: 'Outils du meneur' });
+    // Identité du contenu : ce sont bien les deux outils du détail de campagne.
+    expect(within(dialog).getByRole('button', { name: 'Lancer en secret' })).toBeInTheDocument();
+    expect(within(dialog).getByText('Notes de séance')).toBeInTheDocument();
+    // Le combat est toujours là derrière.
+    expect(screen.getAllByText('Gobelin 1').length).toBeGreaterThan(0);
+  });
+
+  it("un joueur n'a aucun accès aux outils (le jet secret ne doit pas fuiter)", () => {
+    authHolder.user = { uid: 'uid-player' };
+    campaignHolder.campaign = mkCampaign();
+    encounterHolder.encounter = mkEncounter({ status: 'active', round: 2 });
+    renderScreen();
+
+    expect(screen.queryByRole('button', { name: 'Outils' })).not.toBeInTheDocument();
   });
 });

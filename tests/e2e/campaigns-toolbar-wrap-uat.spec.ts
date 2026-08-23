@@ -6,12 +6,14 @@ import { expect, test, type Page } from '@playwright/test';
 import { isEmulatorReachable, waitForAppReady } from './fixtures';
 
 /**
- * UAT — la barre d'outils MJ du détail de campagne enveloppe proprement sur
- * mobile. Un MJ voit 7 boutons (Journal, Documents, PNJ, Réglages, Sessions,
- * Rencontres, Cartes) ; sans `flex-wrap` ils débordaient / s'écrasaient à
- * 375 px. On capture le même écran en mobile (doit envelopper sur plusieurs
- * lignes, aucun débordement horizontal) et en desktop (doit rester sur une
- * ligne, inchangé).
+ * UAT — les espaces de la campagne tiennent sur mobile sans déborder.
+ *
+ * Historique : cet écran affichait 7 boutons identiques sur UNE barre, AU-DESSUS
+ * du titre ; la spec vérifiait alors qu'ils enveloppaient sans déborder à 375 px.
+ * Ils sont désormais regroupés sous le titre en deux sections nommées, « Jouer »
+ * et « Mémoire de la table » (cf. `docs/plans/UX-AUDIT-2026-08.md > M2`). L'invariant
+ * qui compte reste le même — **aucun débordement horizontal** — et il vaut
+ * maintenant pour la nouvelle structure.
  *
  * Skip propre si l'émulateur Firestore n'est pas joignable (création de
  * campagne → besoin de l'émulateur).
@@ -36,12 +38,14 @@ async function createGmCampaign(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: /^Créer$/ }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
   await expect(page.getByRole('heading', { name: new RegExp(name, 'i') })).toBeVisible();
-  // Les 7 boutons MJ doivent être présents (Cartes = dernier, MJ-only).
+  // Les deux groupes d'espaces sont rendus, et « Cartes » (MJ-only) s'y trouve.
+  await expect(page.getByRole('heading', { name: /^Jouer$/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Mémoire de la table/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Cartes/i })).toBeVisible();
 }
 
 test.describe('UAT — barre d’outils MJ enveloppée', () => {
-  test('mobile 375 — la barre enveloppe sans déborder', async ({ page }) => {
+  test('mobile 375 — les espaces tiennent sans débordement horizontal', async ({ page }) => {
     const reachable = await isEmulatorReachable();
     test.skip(!reachable, 'Émulateur Firestore non joignable — capture skippée.');
 
@@ -52,15 +56,15 @@ test.describe('UAT — barre d’outils MJ enveloppée', () => {
     const scrollW = await page.evaluate(() => document.documentElement.scrollWidth);
     expect(scrollW).toBeLessThanOrEqual(375);
 
-    await captureFull(page, '01-barre-outils-mj-mobile-375.png');
+    await captureFull(page, '16-espaces-campagne-mobile-375.png');
   });
 
-  test('desktop — la barre reste sur une seule ligne', async ({ page }) => {
+  test('desktop — les deux groupes d’espaces sont lisibles', async ({ page }) => {
     const reachable = await isEmulatorReachable();
     test.skip(!reachable, 'Émulateur Firestore non joignable — capture skippée.');
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await createGmCampaign(page, 'Les Cendres de Valmont');
-    await captureFull(page, '02-barre-outils-mj-desktop.png');
+    await captureFull(page, '17-espaces-campagne-desktop-1440.png');
   });
 });

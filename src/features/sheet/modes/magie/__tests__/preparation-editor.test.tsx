@@ -145,7 +145,7 @@ describe('<PreparationEditor>', () => {
     });
   });
 
-  it('au plafond (4/4) : compteur à jour, ligne décochée désactivée, pas d’écriture', async () => {
+  it('au plafond (4/4) : le dépassement est permis et signalé, pas refusé (M26)', async () => {
     const user = userEvent.setup();
     const fourIds = clericCandidatesL1.slice(0, 4).map((s) => s.id);
     renderEditor(buildCleric(fourIds));
@@ -153,9 +153,18 @@ describe('<PreparationEditor>', () => {
     await user.click(screen.getByRole('button', { name: 'Modifier' }));
     const fifth = clericCandidatesL1[4]!;
     const fifthRow = screen.getByRole('button', { name: new RegExp(fifth.name.fr) });
-    expect(fifthRow).toBeDisabled();
+    expect(fifthRow).toBeEnabled();
     await user.click(fifthRow);
-    expect(updateCharacterMock).not.toHaveBeenCalled();
+    expect(updateCharacterMock).toHaveBeenCalledWith({
+      preparedSpells: { cleric: [...fourIds, fifth.id] },
+    });
+  });
+
+  it('au-delà du plafond : un avertissement est rendu', () => {
+    const fiveIds = clericCandidatesL1.slice(0, 5).map((s) => s.id);
+    renderEditor(buildCleric(fiveIds));
+    expect(screen.getByText('5 / 4 préparés')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(/dépasses le plafond de 4/);
   });
 
   it('retrait possible même au plafond', async () => {
@@ -167,6 +176,23 @@ describe('<PreparationEditor>', () => {
     await user.click(screen.getByRole('button', { name: new RegExp(first.name.fr) }));
     expect(updateCharacterMock).toHaveBeenCalledWith({
       preparedSpells: { cleric: fourIds.slice(1) },
+    });
+  });
+
+  it('un sort appris HORS liste de classe devient préparable (M26)', async () => {
+    const user = userEvent.setup();
+    // « Armure du mage » est un sort d'Ensorceleur/Magicien : un Clerc ne
+    // pouvait pas le préparer, même une fois recopié d'un parchemin. Il était
+    // ajouté, visible, et mort.
+    const cleric = buildCleric([]);
+    renderEditor({ ...cleric, knownSpells: { cleric: ['armure-du-mage'] } });
+
+    await user.click(screen.getByRole('button', { name: 'Modifier' }));
+    const row = screen.getByRole('button', { name: /Armure du mage/ });
+    await user.click(row);
+
+    expect(updateCharacterMock).toHaveBeenCalledWith({
+      preparedSpells: { cleric: ['armure-du-mage'] },
     });
   });
 

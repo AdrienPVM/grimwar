@@ -1,4 +1,5 @@
 import type { ClassEntity } from '@/shared/types/content';
+import { isAlignmentCode } from '@/shared/lib/rules/alignment';
 import {
   isRolled4d6Valid,
   isValidPointBuy,
@@ -29,12 +30,10 @@ export interface ValidationContext {
   classes: ClassEntity[];
 }
 
-const ALIGNMENTS = new Set(['LB', 'NB', 'CB', 'LN', 'N', 'CN', 'LM', 'NM', 'CM']);
-
 export function isIdentityValid({ draft }: ValidationContext): boolean {
   if (draft.name.trim().length < 1) return false;
   if (draft.level < 1 || draft.level > 20) return false;
-  if (!ALIGNMENTS.has(draft.alignment)) return false;
+  if (!isAlignmentCode(draft.alignment)) return false;
   return true;
 }
 

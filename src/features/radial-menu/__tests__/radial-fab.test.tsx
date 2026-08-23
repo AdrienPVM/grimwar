@@ -155,10 +155,47 @@ describe('<RadialFab> — menu docké', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: "Ouvrir le menu d'action" }));
     expect(screen.getByRole('dialog', { name: "Menu d'action" })).toBeInTheDocument();
-    // 5 wedges racine.
-    for (const label of ['Aller à', 'Sorts', 'Repos', 'Lancer', 'Outils']) {
+    // 6 wedges racine.
+    for (const label of ['Aller à', 'Sorts', 'Repos', 'Lancer', 'Codex', 'Outils']) {
       expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
     }
+  });
+
+  /**
+   * Audit UX E6 / scénario J9 — chercher la règle d'un état en plein combat
+   * coûtait 4 à 5 gestes et faisait QUITTER la fiche. Le Codex s'ouvre
+   * désormais par-dessus, et repart sur les États : c'est la question qu'on se
+   * pose une fiche en main.
+   */
+  it('« Codex » ouvre le Codex par-dessus la fiche, sur les États', async () => {
+    const user = userEvent.setup();
+    renderFab();
+    await user.click(screen.getByRole('button', { name: "Ouvrir le menu d'action" }));
+    await user.click(screen.getByRole('button', { name: 'Codex' }));
+
+    expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /États/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('« Codex » reste atteignable en lecture seule (contenu SRD, sans permission)', async () => {
+    const user = userEvent.setup();
+    renderFab({ canEdit: false, showHistory: false });
+    await user.click(screen.getByRole('button', { name: "Ouvrir le menu d'action" }));
+    expect(screen.queryByRole('button', { name: 'Repos' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Outils' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Codex' }));
+    expect(screen.getByRole('dialog', { name: 'Le Codex' })).toBeInTheDocument();
+  });
+
+  it('le Codex se referme et rend la fiche', async () => {
+    const user = userEvent.setup();
+    renderFab();
+    await user.click(screen.getByRole('button', { name: "Ouvrir le menu d'action" }));
+    await user.click(screen.getByRole('button', { name: 'Codex' }));
+    await user.click(screen.getByRole('button', { name: 'Fermer le Codex' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Le Codex' })).not.toBeInTheDocument();
   });
 
   it('« Aller à › Magie » bascule le mode et ferme le menu', async () => {

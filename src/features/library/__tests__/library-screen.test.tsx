@@ -46,6 +46,26 @@ vi.mock('@/shared/lib/firebase', () => ({
   getDb: () => ({}),
 }));
 
+// useMyCampaigns (E8) : on capture l'argument `enabled` pour prouver que
+// l'accueil ne sonde les campagnes que si une fiche est liée.
+const campaignsHolder: { campaigns: { id: string; name: string }[] } = {
+  campaigns: [],
+};
+const myCampaignsEnabledSpy = vi.fn();
+vi.mock('@/features/campaigns/use-my-campaigns', () => ({
+  useMyCampaigns: (enabled?: boolean) => {
+    myCampaignsEnabledSpy(enabled);
+    return {
+      campaigns: campaignsHolder.campaigns,
+      isLoading: false,
+      error: null,
+      refresh: () => {},
+    };
+  },
+}));
+
+import { useWizardStore } from '@/shared/lib/slices/wizard-slice';
+
 import { LibraryScreen } from '../library-screen';
 
 function mkCharacter(overrides: Partial<Character> = {}): Character {
@@ -119,7 +139,10 @@ function mkCharacter(overrides: Partial<Character> = {}): Character {
 }
 
 afterEach(() => {
+  useWizardStore.getState().reset();
   navigateMock.mockClear();
+  myCampaignsEnabledSpy.mockClear();
+  campaignsHolder.campaigns = [];
   stateHolder.characters = [];
   stateHolder.isLoading = false;
   stateHolder.error = null;
@@ -194,6 +217,111 @@ describe('<LibraryScreen>', () => {
     renderLibrary();
     expect(screen.getByText(/Lecture impossible/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Réessayer/i })).toBeInTheDocument();
+  });
+
+  // ── E8 — campagne d'attache sur la carte de personnage ───────────────────
+  it("affiche le nom de la campagne d'attache sur la carte liée", () => {
+    campaignsHolder.campaigns = [{ id: 'camp-1', name: 'Les Cendres de Phlan' }];
+    stateHolder.characters = [
+      mkCharacter({ id: 'c-1', name: 'Aëlys', homeCampaignId: 'camp-1' }),
+    ];
+    renderLibrary();
+    expect(screen.getByText('Les Cendres de Phlan')).toBeInTheDocument();
+  });
+
+  it("n'affiche aucune campagne sur une fiche non liée", () => {
+    campaignsHolder.campaigns = [{ id: 'camp-1', name: 'Les Cendres de Phlan' }];
+    stateHolder.characters = [
+      mkCharacter({ id: 'c-1', name: 'Aëlys', homeCampaignId: null }),
+    ];
+    renderLibrary();
+    expect(screen.queryByText('Les Cendres de Phlan')).not.toBeInTheDocument();
+  });
+
+  it('distingue deux personnages attachés à deux tables différentes', () => {
+    campaignsHolder.campaigns = [
+      { id: 'camp-1', name: 'Les Cendres de Phlan' },
+      { id: 'camp-2', name: 'La Malédiction de Strahd' },
+    ];
+    stateHolder.characters = [
+      mkCharacter({ id: 'c-1', name: 'Aëlys', homeCampaignId: 'camp-1' }),
+      mkCharacter({ id: 'c-2', name: 'Bren', homeCampaignId: 'camp-2' }),
+    ];
+    renderLibrary();
+    expect(screen.getByText('Les Cendres de Phlan')).toBeInTheDocument();
+    expect(screen.getByText('La Malédiction de Strahd')).toBeInTheDocument();
+  });
+
+  it("reste muet quand la campagne d'attache n'est pas résolue", () => {
+    // Fiche liée à une campagne qu'on ne trouve plus (quittée, supprimée) :
+    // la pastille disparaît plutôt que d'afficher un identifiant technique.
+    campaignsHolder.campaigns = [];
+    stateHolder.characters = [
+      mkCharacter({ id: 'c-1', name: 'Aëlys', homeCampaignId: 'camp-disparue' }),
+    ];
+    renderLibrary();
+    expect(screen.queryByText('camp-disparue')).not.toBeInTheDocument();
+  });
+
+  it('ne sonde les campagnes que si au moins une fiche est liée', () => {
+    stateHolder.characters = [
+      mkCharacter({ id: 'c-1', name: 'Aëlys', homeCampaignId: null }),
+    ];
+    renderLibrary();
+    expect(myCampaignsEnabledSpy).toHaveBeenCalledWith(false);
+    expect(myCampaignsEnabledSpy).not.toHaveBeenCalledWith(true);
+  });
+
+  it("sonde les campagnes dès qu'une fiche est liée", () => {
+    stateHolder.characters = [
+      mkCharacter({ id: 'c-1', name: 'Aëlys', homeCampaignId: 'camp-1' }),
+    ];
+    renderLibrary();
+    expect(myCampaignsEnabledSpy).toHaveBeenCalledWith(true);
+  });
+
+  // ── E10 — brouillon de création signalé sur l'accueil ────────────────────
+  it("n'affiche aucun bandeau de brouillon quand le wizard est vierge", () => {
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    expect(screen.queryByText(/Création commencée/i)).not.toBeInTheDocument();
+  });
+
+  it('signale un brouillon en cours avec son nom et son étape', () => {
+    useWizardStore.getState().setField('name', 'Ombrelame');
+    useWizardStore.getState().goToStep('skills');
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    expect(screen.getByText(/Création commencée/i)).toBeInTheDocument();
+    expect(screen.getByText('Ombrelame')).toBeInTheDocument();
+    expect(screen.getByText(/Étape 6 sur 9 · Compétences/)).toBeInTheDocument();
+  });
+
+  it('signale le brouillon aussi sur un accueil sans aucun personnage', () => {
+    // Cas le plus fréquent : on abandonne sa toute première création. L'accueil
+    // vide donnait alors l'impression qu'aucun travail n'existait.
+    useWizardStore.getState().setField('ancestryId', 'human');
+    stateHolder.characters = [];
+    renderLibrary();
+    expect(screen.getByText(/Création commencée/i)).toBeInTheDocument();
+    expect(screen.getByText(/Héros sans nom/i)).toBeInTheDocument();
+  });
+
+  it('« Abandonner » vide le brouillon et retire le bandeau', () => {
+    useWizardStore.getState().setField('name', 'Ombrelame');
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    fireEvent.click(screen.getByRole('button', { name: /Abandonner le brouillon de Ombrelame/i }));
+    expect(useWizardStore.getState().draft.name).toBe('');
+    expect(screen.queryByText(/Création commencée/i)).not.toBeInTheDocument();
+  });
+
+  it('« Continuer » mène au wizard', () => {
+    useWizardStore.getState().setField('name', 'Ombrelame');
+    stateHolder.characters = [mkCharacter({ id: 'c-1', name: 'Aëlys' })];
+    renderLibrary();
+    const resume = screen.getByRole('link', { name: /Continuer la création de Ombrelame/i });
+    expect(resume).toHaveAttribute('href', '/create');
   });
 
   it('CTA Créer est aussi disponible quand la liste contient des persos', () => {

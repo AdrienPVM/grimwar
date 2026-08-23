@@ -4,13 +4,17 @@
  * Capacité titre du plan 29, jamais implémentée jusqu'ici. Le `.dd2vtt` est un
  * fichier JSON exporté par Dungeon Alchemist (et compatibles) contenant :
  *   - `resolution.map_size` : dimensions de la carte EN CASES (peut être
- *     fractionnaire), `pixels_per_grid` : taille d'une case dans l'image.
+ *     fractionnaire), `pixels_per_grid` : taille d'une case dans l'image,
+ *     `map_origin` : décalage du cadre exporté (non nul sur un export partiel).
  *   - `line_of_sight` : tableau de polylignes (coords EN CASES) = les murs qui
  *     bloquent la vue. C'est exactement ce dont le moteur LOS a besoin.
  *   - `portals` : portes ; une porte `closed:true` bloque aussi la vue.
  *   - `lights` : sources lumineuses statiques (position EN CASES, `range` EN
  *     CASES, couleur hex).
- *   - `image` : l'image de fond encodée en base64 (PNG le plus souvent).
+ *   - `environment.baked_lighting` : l'image porte déjà son éclairage.
+ *   - `image` : l'image de fond encodée en base64 (PNG ou WEBP). Sur un export
+ *     réel elle pèse plusieurs dizaines de Mo — l'appelant DOIT la réduire
+ *     avant de l'afficher ou de l'entreposer.
  *
  * --- Espace de coordonnées ---
  * Tout le reste du mode carte travaille dans le viewBox logique
@@ -37,6 +41,7 @@ interface Dd2vttPoint {
 /** Forme brute (partielle) d'un `.dd2vtt` — on ne lit que ce qu'on consomme. */
 interface Dd2vttRaw {
   readonly resolution?: {
+    readonly map_origin?: Dd2vttPoint;
     readonly map_size?: Dd2vttPoint;
     readonly pixels_per_grid?: number;
   };
@@ -51,6 +56,9 @@ interface Dd2vttRaw {
     readonly range?: number;
     readonly color?: string;
   }[];
+  readonly environment?: {
+    readonly baked_lighting?: boolean;
+  };
   readonly image?: string;
 }
 
@@ -66,10 +74,17 @@ export interface ParsedDd2vtt {
   readonly walls: readonly WallPolyline[];
   /** Lumières statiques converties en coords viewBox. */
   readonly lights: readonly LightSource[];
-  /** Data URL `data:image/png;base64,…` ou `null` si le fichier n'embarque pas d'image. */
+  /** Data URL `data:image/<png|webp|jpeg>;base64,…`, ou `null` sans image. */
   readonly imageDataUrl: string | null;
   /** Nombre total de sommets de murs (résumé UI). */
   readonly wallVertexCount: number;
+  /**
+   * `environment.baked_lighting` : l'image de fond porte DÉJÀ son éclairage.
+   * Vrai sur tous les exports Dungeondraft observés. Superposer notre couche
+   * de lumière par-dessus assombrirait une carte déjà éclairée — l'appelant
+   * importe donc les sources sans allumer la couche.
+   */
+  readonly bakedLighting: boolean;
 }
 
 /** Erreur de parsing avec message lisible (surface UI). */
@@ -99,8 +114,32 @@ function round1(n: number): number {
 }
 
 /**
+ * Devine le type MIME d'une image base64 à ses octets de tête. La spec Universal
+ * VTT dit « base64 encoded PNG or WEBP » : préfixer aveuglément `image/png`
+ * mentait sur un export WEBP. Les navigateurs renifflent souvent le contenu et
+ * affichent quand même, mais un data URL honnête coûte trois comparaisons.
+ *
+ * Les préfixes base64 sont stables : les 3 premiers octets d'un flux occupent
+ * toujours les 4 premiers caractères base64, sans dépendre de l'alignement.
+ */
+export function sniffImageMime(base64: string): string {
+  if (base64.startsWith('iVBORw0KGgo')) return 'image/png';
+  if (base64.startsWith('UklGR')) return 'image/webp';
+  if (base64.startsWith('/9j/')) return 'image/jpeg';
+  // Inconnu → on garde le défaut historique du format ; le navigateur reniflera.
+  return 'image/png';
+}
+
+/**
  * Normalise une couleur `.dd2vtt` (souvent `RRGGBBAA` ou `RRGGBB`, avec ou sans
  * `#`) en `#rrggbb`. Renvoie `null` si invalide (l'appelant prend un défaut).
+ *
+ * ORDRE DES COMPOSANTES — la spec Universal VTT dit seulement « colour code
+ * hex » sans trancher RGBA / ARGB. On lit **RRGGBBAA** (les 6 premiers
+ * caractères sont la couleur, le dernier octet l'alpha), établi sur les exports
+ * réels : les 14 lampes de `FelderHouse.dd2vtt` valent toutes `ffce0af7`, soit
+ * `#ffce0a` — l'ambre chaud d'une lampe — en RGBA, contre `#ce0af7` — un magenta
+ * vif — en ARGB. Personne n'éclaire une ferme au néon rose.
  */
 export function normalizeDd2vttColor(raw: string | undefined): string | null {
   if (!raw) return null;
@@ -138,11 +177,20 @@ export function parseDd2vtt(jsonText: string): ParsedDd2vtt {
     );
   }
 
+  // `resolution.map_origin` : coin haut-gauche de la carte dans le repère du
+  // fichier. Nul sur un export plein cadre, NON NUL sur un export partiel — et
+  // les coords de murs/lumières restent alors absolues. Sans cette soustraction,
+  // toute la géométrie d'un export recadré se décale silencieusement (même
+  // correction que `uvtt2fgu`, l'implémentation Fantasy Grounds de référence).
+  const origin = isPoint(raw.resolution?.map_origin)
+    ? raw.resolution.map_origin
+    : { x: 0, y: 0 };
+
   const sx = MAP_VIEWBOX_W / mapSize.x;
   const sy = MAP_VIEWBOX_H / mapSize.y;
   const toViewbox = (p: Dd2vttPoint): MapPosition => ({
-    x: round1(p.x * sx),
-    y: round1(p.y * sy),
+    x: round1((p.x - origin.x) * sx),
+    y: round1((p.y - origin.y) * sy),
   });
 
   // Murs = line_of_sight + objects_line_of_sight (mobilier occultant) + portes
@@ -175,19 +223,25 @@ export function parseDd2vtt(jsonText: string): ParsedDd2vtt {
   });
 
   // Lumières statiques. `range` en cases → rayon viewBox via l'échelle moyenne.
+  //
+  // RAYONS — `range` est la portée de lumière VIVE ; la lumière FAIBLE porte au
+  // double, comme toute source du SRD (une torche éclaire vivement à 20 pieds et
+  // faiblement à 40). C'est aussi la convention de `uvtt2fgu`, qui écrit
+  // `range,0.75,range*2,0.5`. On lisait auparavant `range` comme un diamètre,
+  // ce qui rendait chaque lampe importée deux fois trop petite.
   const avgScale = (sx + sy) / 2;
   const lights: LightSource[] = [];
   (raw.lights ?? []).forEach((light, i) => {
     if (!isPoint(light.position)) return;
-    const rangePx = isFiniteNumber(light.range) ? light.range * avgScale : 0;
-    if (rangePx <= 0) return;
-    const half = Math.max(1, Math.round(rangePx / 2));
+    const brightPx = isFiniteNumber(light.range) ? light.range * avgScale : 0;
+    if (brightPx <= 0) return;
+    const bright = Math.max(1, Math.round(brightPx));
     const color = normalizeDd2vttColor(light.color) ?? '#fbbf24';
     lights.push({
       id: `dd2vtt-light-${i}`,
       position: toViewbox(light.position),
-      brightRadius: half,
-      dimRadius: half,
+      brightRadius: bright,
+      dimRadius: bright * 2,
       color,
       preset: null,
     });
@@ -195,7 +249,7 @@ export function parseDd2vtt(jsonText: string): ParsedDd2vtt {
 
   const imageDataUrl =
     typeof raw.image === 'string' && raw.image.length > 0
-      ? `data:image/png;base64,${raw.image}`
+      ? `data:${sniffImageMime(raw.image)};base64,${raw.image}`
       : null;
 
   return {
@@ -206,5 +260,6 @@ export function parseDd2vtt(jsonText: string): ParsedDd2vtt {
     lights,
     imageDataUrl,
     wallVertexCount: vertexCount,
+    bakedLighting: raw.environment?.baked_lighting === true,
   };
 }

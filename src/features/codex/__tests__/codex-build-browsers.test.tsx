@@ -71,10 +71,10 @@ const FIGHTER: ClassEntity = {
 
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'ancestries') return { data: [ELF], loading: false, error: null };
-    if (type === 'backgrounds') return { data: [ACOLYTE], loading: false, error: null };
-    if (type === 'classes') return { data: [FIGHTER], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+    if (type === 'ancestries') return { data: [ELF], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'backgrounds') return { data: [ACOLYTE], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    if (type === 'classes') return { data: [FIGHTER], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

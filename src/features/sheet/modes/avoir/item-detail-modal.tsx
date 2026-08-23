@@ -21,7 +21,15 @@ interface ItemDetailModalProps {
   onClose: () => void;
 }
 
-/** Cap d'attunement SRD : 3 objets liés maximum. */
+/**
+ * Plafond d'harmonisation du SRD : 3 objets liés. Le dépassement AVERTIT au lieu
+ * de refuser — « chez moi un artificier en harmonise 4 » est une variante de
+ * table courante, et l'app n'a pas à arbitrer les règles maison à la place du MJ.
+ *
+ * Le rendre réglable PAR CAMPAGNE demanderait un champ `settings.attunementCap`,
+ * donc un changement de schéma Firestore : hors périmètre client, à trancher
+ * avec Adrien.
+ */
 const ATTUNEMENT_CAP = 3;
 
 /**
@@ -57,9 +65,11 @@ export function ItemDetailModal({
   // Une armure ou une arme est « équipable ». Magic items équipables ssi catégorie compatible.
   const canEquip =
     content !== null && ['weapon', 'armor', 'shield'].includes(content.category);
-  // Attunement : seulement pour magic items qui le requièrent.
-  const requiresAttunement =
-    isMagic && (content as MagicItem).attunement !== false;
+  // L'harmonisation est proposée sur TOUT objet magique, pas seulement ceux
+  // dont le SRD l'exige : « ce caillou banal est lié au personnage » est une
+  // décision de table, et `inventory.attuned` est un booléen libre. Le libellé
+  // du SRD reste affiché sur les objets qui la requièrent vraiment.
+  const requiresAttunement = isMagic;
 
   async function patchInventoryItem(updates: Partial<InventoryItem>): Promise<void> {
     if (readOnly || busy) return;
@@ -106,15 +116,18 @@ export function ItemDetailModal({
   }
 
   async function toggleAttuned(): Promise<void> {
-    if (!inventory.attuned && attunedCount >= ATTUNEMENT_CAP) {
+    // Au-delà du plafond SRD : on PRÉVIENT, on ne bloque pas. Un refus dur
+    // rendait la variante « 4 objets » injouable sans que rien ne l'indique.
+    const exceedsCap = !inventory.attuned && attunedCount >= ATTUNEMENT_CAP;
+    if (exceedsCap) {
       showToast({
         kind: 'fumble',
         title: t('sheet.avoir.detail.attuneLimitTitle'),
         sub: t('sheet.avoir.detail.attuneLimitSub').replace('{n}', String(ATTUNEMENT_CAP)),
       });
-      return;
     }
     await patchInventoryItem({ attuned: !inventory.attuned });
+    if (exceedsCap) return;
     showToast({
       kind: inventory.attuned ? 'info' : 'crit',
       title: inventory.attuned

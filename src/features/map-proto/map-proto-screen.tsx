@@ -67,7 +67,7 @@ import {
 /**
  * Plan « mode carte » — prototype-skeleton (PAS production).
  *
- * Cf. `plans/MAP-MODE-PROPOSAL.md` pour la justification stack + roadmap.
+ * Cf. `docs/plans/MAP-MODE-PROPOSAL.md` pour la justification stack + roadmap.
  *
  * Implémenté en SVG natif React (zéro dépendance) pour :
  *   - 0 install (Pixi.js réservé S4 par CLAUDE.md, Konva ~120kb non

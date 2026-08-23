@@ -17,8 +17,9 @@ import { FieldString } from './fields/field-string';
  * structurés dans cette première itération — ils ont leur propre UX
  * (discriminated union) et arriveront en passe ultérieure.
  *
- * `source` est fixé à `aidedd-homebrew` — c'est le tag "non-SRD" déjà utilisé
- * par `custom-item-form.tsx` (cf. modes/avoir/) ; on garde la convention.
+ * `source` est figé à `custom` — le tag « créé dans l'app », partagé par les 11
+ * formulaires depuis M53. La provenance lisible (« Xanathar ») se déclare au
+ * niveau du pack (`meta.sourceLabel`), pas ici : un enum ne peut pas la porter.
  *
  * Le formulaire est piloté par sa valeur (`feat` + `onChange`) pour rester
  * récursif-friendly : un parent peut le rendre dans une liste éditable. La
@@ -71,7 +72,7 @@ export function buildFeatFromDraft(draft: FeatFormDraft): Feat {
           ...(draft.prerequisiteEn.trim() ? { en: draft.prerequisiteEn.trim() } : {}),
         }
       : null,
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

@@ -40,8 +40,8 @@ const WIZARD_FIXTURE = {
 
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
-    if (type === 'classes') return { data: [WIZARD_FIXTURE], loading: false, error: null };
-    return { data: [], loading: false, error: null };
+    if (type === 'classes') return { data: [WIZARD_FIXTURE], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
+    return { data: [], loading: false, error: null , scopeOf: () => ({ scope: 'public' as const }) };
   },
 }));
 

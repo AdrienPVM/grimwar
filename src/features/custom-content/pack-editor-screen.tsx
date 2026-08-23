@@ -93,6 +93,8 @@ import {
   draftFromSubclass,
   type SubclassFormDraft,
 } from './forms/subclass-form';
+import { CataloguePickerModal, type DuplicateMode } from './catalogue-picker-modal';
+import { prepareDuplicateDraft } from './duplicate-draft';
 import { packFromBuilderState, usePackBuilder } from './use-pack-builder';
 import { useExistingPack } from './use-existing-pack';
 
@@ -159,6 +161,9 @@ export function PackEditorScreen(): JSX.Element {
   const [isAddingAncestry, setIsAddingAncestry] = useState<boolean>(false);
   const [classDraft, setClassDraft] = useState<ClassFormDraft>(EMPTY_CLASS_DRAFT);
   const [isAddingClass, setIsAddingClass] = useState<boolean>(false);
+  // M50 — catégorie dont le sélecteur « Dupliquer » est ouvert (une seule à la
+  // fois). `null` = aucun sélecteur.
+  const [duplicating, setDuplicating] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -559,6 +564,13 @@ export function PackEditorScreen(): JSX.Element {
                 testId="pack-meta-version"
               />
             </div>
+            <FieldString
+              label={t('customContent.editor.meta.sourceLabel')}
+              value={builder.state.meta.sourceLabel}
+              onChange={(value) => builder.setMetaField('sourceLabel', value)}
+              helper={t('customContent.editor.meta.sourceLabelHelper')}
+              testId="pack-meta-source-label"
+            />
             <FieldI18n
               labelFr={t('customContent.editor.meta.descriptionFr')}
               labelEn={t('customContent.editor.meta.descriptionEn')}
@@ -590,7 +602,7 @@ export function PackEditorScreen(): JSX.Element {
 
         {/* Feats */}
         <div className="mt-6" data-testid="pack-editor-feats">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.feats')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -598,14 +610,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingFeat ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openFeatForm}
-                data-testid="pack-editor-add-feat"
-              >
-                {t('customContent.editor.feats.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('feats')}
+                  data-testid="pack-editor-duplicate-feat"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openFeatForm}
+                  data-testid="pack-editor-add-feat"
+                >
+                  {t('customContent.editor.feats.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -668,11 +690,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'feats' ? (
+            <CataloguePickerModal
+              type="feats"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setFeatDraft(prepareDuplicateDraft(draftFromFeat(entity), mode));
+                setIsAddingFeat(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Invocations occultistes */}
         <div className="mt-10" data-testid="pack-editor-invocations">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.invocations')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -680,14 +714,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingInvocation ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openInvocationForm}
-                data-testid="pack-editor-add-invocation"
-              >
-                {t('customContent.editor.invocations.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('invocations')}
+                  data-testid="pack-editor-duplicate-invocation"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openInvocationForm}
+                  data-testid="pack-editor-add-invocation"
+                >
+                  {t('customContent.editor.invocations.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -750,11 +794,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'invocations' ? (
+            <CataloguePickerModal
+              type="invocations"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setInvocationDraft(prepareDuplicateDraft(draftFromInvocation(entity), mode));
+                setIsAddingInvocation(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Sous-ascendances */}
         <div className="mt-10" data-testid="pack-editor-subancestries">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.subancestries')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -762,14 +818,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingSubancestry ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openSubancestryForm}
-                data-testid="pack-editor-add-subancestry"
-              >
-                {t('customContent.editor.subancestries.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('subancestries')}
+                  data-testid="pack-editor-duplicate-subancestry"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openSubancestryForm}
+                  data-testid="pack-editor-add-subancestry"
+                >
+                  {t('customContent.editor.subancestries.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -832,11 +898,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'subancestries' ? (
+            <CataloguePickerModal
+              type="subancestries"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setSubancestryDraft(prepareDuplicateDraft(draftFromSubancestry(entity), mode));
+                setIsAddingSubancestry(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Historiques */}
         <div className="mt-10" data-testid="pack-editor-backgrounds">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.backgrounds')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -844,14 +922,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingBackground ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openBackgroundForm}
-                data-testid="pack-editor-add-background"
-              >
-                {t('customContent.editor.backgrounds.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('backgrounds')}
+                  data-testid="pack-editor-duplicate-background"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openBackgroundForm}
+                  data-testid="pack-editor-add-background"
+                >
+                  {t('customContent.editor.backgrounds.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -914,11 +1002,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'backgrounds' ? (
+            <CataloguePickerModal
+              type="backgrounds"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setBackgroundDraft(prepareDuplicateDraft(draftFromBackground(entity), mode));
+                setIsAddingBackground(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Sous-classes */}
         <div className="mt-10" data-testid="pack-editor-subclasses">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.subclasses')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -926,14 +1026,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingSubclass ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openSubclassForm}
-                data-testid="pack-editor-add-subclass"
-              >
-                {t('customContent.editor.subclasses.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('subclasses')}
+                  data-testid="pack-editor-duplicate-subclass"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openSubclassForm}
+                  data-testid="pack-editor-add-subclass"
+                >
+                  {t('customContent.editor.subclasses.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -996,11 +1106,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'subclasses' ? (
+            <CataloguePickerModal
+              type="subclasses"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setSubclassDraft(prepareDuplicateDraft(draftFromSubclass(entity), mode));
+                setIsAddingSubclass(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Sorts */}
         <div className="mt-10" data-testid="pack-editor-spells">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.spells')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -1008,14 +1130,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingSpell ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openSpellForm}
-                data-testid="pack-editor-add-spell"
-              >
-                {t('customContent.editor.spells.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('spells')}
+                  data-testid="pack-editor-duplicate-spell"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openSpellForm}
+                  data-testid="pack-editor-add-spell"
+                >
+                  {t('customContent.editor.spells.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -1079,11 +1211,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'spells' ? (
+            <CataloguePickerModal
+              type="spells"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setSpellDraft(prepareDuplicateDraft(draftFromSpell(entity), mode));
+                setIsAddingSpell(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Objets */}
         <div className="mt-10" data-testid="pack-editor-items">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.items')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -1091,14 +1235,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingItem ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openItemForm}
-                data-testid="pack-editor-add-item"
-              >
-                {t('customContent.editor.items.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('items')}
+                  data-testid="pack-editor-duplicate-item"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openItemForm}
+                  data-testid="pack-editor-add-item"
+                >
+                  {t('customContent.editor.items.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -1161,11 +1315,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'items' ? (
+            <CataloguePickerModal
+              type="items"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setItemDraft(prepareDuplicateDraft(draftFromItem(entity), mode));
+                setIsAddingItem(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Objets magiques */}
         <div className="mt-10" data-testid="pack-editor-magic-items">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.magic-items')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -1173,14 +1339,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingMagicItem ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openMagicItemForm}
-                data-testid="pack-editor-add-magic-item"
-              >
-                {t('customContent.editor.magicItems.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('magic-items')}
+                  data-testid="pack-editor-duplicate-magic-item"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openMagicItemForm}
+                  data-testid="pack-editor-add-magic-item"
+                >
+                  {t('customContent.editor.magicItems.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -1243,11 +1419,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'magic-items' ? (
+            <CataloguePickerModal
+              type="magic-items"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setMagicItemDraft(prepareDuplicateDraft(draftFromMagicItem(entity), mode));
+                setIsAddingMagicItem(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Monstres */}
         <div className="mt-10" data-testid="pack-editor-monsters">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.monsters')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -1255,14 +1443,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingMonster ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openMonsterForm}
-                data-testid="pack-editor-add-monster"
-              >
-                {t('customContent.editor.monsters.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('monsters')}
+                  data-testid="pack-editor-duplicate-monster"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openMonsterForm}
+                  data-testid="pack-editor-add-monster"
+                >
+                  {t('customContent.editor.monsters.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -1325,11 +1523,23 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'monsters' ? (
+            <CataloguePickerModal
+              type="monsters"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setMonsterDraft(prepareDuplicateDraft(draftFromMonster(entity), mode));
+                setIsAddingMonster(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Ascendances */}
         <div className="mt-10" data-testid="pack-editor-ancestries">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.ancestries')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -1337,14 +1547,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingAncestry ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openAncestryForm}
-                data-testid="pack-editor-add-ancestry"
-              >
-                {t('customContent.editor.ancestries.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('ancestries')}
+                  data-testid="pack-editor-duplicate-ancestry"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openAncestryForm}
+                  data-testid="pack-editor-add-ancestry"
+                >
+                  {t('customContent.editor.ancestries.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -1407,13 +1627,25 @@ export function PackEditorScreen(): JSX.Element {
               />
             </div>
           ) : null}
+
+          {duplicating === 'ancestries' ? (
+            <CataloguePickerModal
+              type="ancestries"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setAncestryDraft(prepareDuplicateDraft(draftFromAncestry(entity), mode));
+                setIsAddingAncestry(true);
+                setDuplicating(null);
+              }}
+            />
+          ) : null}
         </div>
 
         {/* Classes (JALON 3C.9) — dernière catégorie utilisateur-facing du
             JALON 3C. À ce stade, toutes les 9 catégories du pack custom sont
             éditables in-app. */}
         <div className="mt-10" data-testid="pack-editor-classes">
-          <header className="flex items-center justify-between gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <h3 className="font-title text-body uppercase tracking-[0.18em] text-text">
               {t('customContent.category.classes')}
               <span className="ml-2 font-meta text-meta text-text-secondary">
@@ -1421,14 +1653,24 @@ export function PackEditorScreen(): JSX.Element {
               </span>
             </h3>
             {!isAddingClass ? (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={openClassForm}
-                data-testid="pack-editor-add-class"
-              >
-                {t('customContent.editor.classes.add')}
-              </Button>
+              <div className="flex shrink-0 items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDuplicating('classes')}
+                  data-testid="pack-editor-duplicate-class"
+                >
+                  {t('customContent.duplicate.open')}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openClassForm}
+                  data-testid="pack-editor-add-class"
+                >
+                  {t('customContent.editor.classes.add')}
+                </Button>
+              </div>
             ) : null}
           </header>
 
@@ -1490,6 +1732,18 @@ export function PackEditorScreen(): JSX.Element {
                 onCancel={closeClassForm}
               />
             </div>
+          ) : null}
+
+          {duplicating === 'classes' ? (
+            <CataloguePickerModal
+              type="classes"
+              onClose={() => setDuplicating(null)}
+              onPick={(entity, mode: DuplicateMode) => {
+                setClassDraft(prepareDuplicateDraft(draftFromClass(entity), mode));
+                setIsAddingClass(true);
+                setDuplicating(null);
+              }}
+            />
           ) : null}
         </div>
       </section>

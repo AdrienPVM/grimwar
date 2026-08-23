@@ -49,14 +49,16 @@ export function parseDiceExpression(expr: string): DiceAst {
   for (const tok of tokens) {
     const diceMatch = tok.match(DICE_TOKEN_RE);
     if (diceMatch) {
-      if (diceMatch[1] === '-') {
-        throw new Error(`[dice/parser] terme de dés négatif non supporté: "${tok}"`);
-      }
       const count = Number(diceMatch[2]);
       const sides = Number(diceMatch[3]);
       if (count < 1) throw new Error(`[dice/parser] count doit être >= 1 dans "${tok}"`);
       if (sides < 2) throw new Error(`[dice/parser] sides doit être >= 2 dans "${tok}"`);
-      const term: DiceTerm = { count, sides };
+      // Un terme soustractif est une mécanique 5e ordinaire (Fardeau : 1d20-1d4),
+      // pas une faute de frappe. On ne pose `sign` que s'il vaut -1 : un terme
+      // positif garde exactement la forme qu'il avait avant, donc l'égalité
+      // structurelle des tests et des payloads Firestore existants tient.
+      const term: DiceTerm =
+        diceMatch[1] === '-' ? { count, sides, sign: -1 } : { count, sides };
       if (diceMatch[4] === 'h' && diceMatch[5]) {
         const k = Number(diceMatch[5]);
         if (k > count) throw new Error(`[dice/parser] kh${k} > count ${count} dans "${tok}"`);
@@ -91,12 +93,13 @@ export function stringifyDiceAst(ast: DiceAst): string {
   const parts: string[] = [];
   for (const t of ast.terms) {
     const k = t.kh ? `kh${t.kh}` : t.kl ? `kl${t.kl}` : '';
-    parts.push(`${t.count}d${t.sides}${k}`);
+    parts.push(`${t.sign === -1 ? '-' : '+'}${t.count}d${t.sides}${k}`);
   }
   if (parts.length === 0) {
     return ast.modifier >= 0 ? `+${ast.modifier}` : `${ast.modifier}`;
   }
-  let str = parts.join('+');
+  // Le premier terme perd son `+` implicite : `1d20-1d4`, pas `+1d20-1d4`.
+  let str = parts.join('').replace(/^\+/, '');
   if (ast.modifier > 0) str += `+${ast.modifier}`;
   else if (ast.modifier < 0) str += `${ast.modifier}`;
   return str;

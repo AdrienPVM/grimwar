@@ -20,7 +20,7 @@ import { createContext, useContext, useMemo, type ReactNode } from 'react';
  * État JALON 2A.2 : Context posé, Provider exposé, hook `useCampaignContent`
  * disponible. Les call sites consommateurs sont migrés en 2A.3+. Le merge
  * réel SRD + custom est posé en stub en 2A et opérationnalisé en JALON 3
- * (cf. plans/2A-AGNOSTIC-SOURCE-INVENTORY.md).
+ * (cf. docs/plans/2A-AGNOSTIC-SOURCE-INVENTORY.md).
  */
 
 export interface CampaignContentContextValue {

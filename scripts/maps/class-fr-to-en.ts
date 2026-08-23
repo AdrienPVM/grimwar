@@ -5,7 +5,7 @@
  * que `public/data/classes.json[*].id` soit en EN canonique (extrait du SRD).
  * AideDD écrit les références de classe en FR dans les sorts (`spell.classes[]`).
  * Sans ce mapping, le filtre `spell.classes.includes(class.id)` ne match plus
- * rien (cf. plans/DEBT.md > D3 bug #2 — fix livré 2026-05-16).
+ * rien (cf. docs/plans/DEBT.md > D3 bug #2 — fix livré 2026-05-16).
  *
  * Fichier isolé sans top-level execution pour pouvoir être importé depuis
  * parse-aidedd.ts ET build-public-content.ts sans déclencher d'effets de bord.

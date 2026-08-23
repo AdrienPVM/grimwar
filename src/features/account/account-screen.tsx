@@ -10,6 +10,7 @@ import { Icon } from '@/shared/components/icon';
 import { PageContainer } from '@/shared/components/page-container';
 import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
+import { useDevicePrefsStore } from '@/shared/lib/slices/device-prefs-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { DiceMode } from '@/shared/lib/rules/dice-mode';
 import { useLocaleStore, type Locale } from '@/shared/lib/slices/locale-slice';
@@ -32,7 +33,7 @@ import {
  * Switch de langue FR/Anglais : livré (les bundles SRD portent `name.en` +
  * `description.en` à 100 %, les strings UI sont 100 % FR+EN). Seul gap connu —
  * 180 magic-items du bundle grandfathered AideDD sans `name.en` retombent en FR
- * via `localize()` (fallback gracieux, jamais de clé brute). Cf. plans/DEBT.md.
+ * via `localize()` (fallback gracieux, jamais de clé brute). Cf. docs/plans/DEBT.md.
  */
 export function AccountScreen(): JSX.Element {
   const { user, isAnonymous } = useAuth();
@@ -157,6 +158,12 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
   const diceMode = useUserSettingsStore((s) => s.diceMode);
   const followCampaign = useUserSettingsStore((s) => s.followCampaignDiceMode);
   const locale = useLocaleStore((s) => s.locale);
+  const haptics = useDevicePrefsStore((s) => s.haptics);
+  const setHaptics = useDevicePrefsStore((s) => s.setHaptics);
+  const dice3d = useDevicePrefsStore((s) => s.dice3d);
+  const gameNotifications = useDevicePrefsStore((s) => s.gameNotifications);
+  const setGameNotifications = useDevicePrefsStore((s) => s.setGameNotifications);
+  const setDice3d = useDevicePrefsStore((s) => s.setDice3d);
 
   return (
     <Card>
@@ -277,6 +284,72 @@ function PreferencesCard({ uid }: { uid: string }): JSX.Element {
             checked={followCampaign}
             onChange={(e) => void setFollowCampaignDiceMode(uid, e.target.checked)}
             aria-label={t('account.dice.followCampaign')}
+            className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
+          />
+        </label>
+
+        {/*
+          Réglage d'APPAREIL et non de compte : il vit dans `localStorage`, pas
+          dans `users/{uid}` (cf. `slices/device-prefs-slice.ts`). Un joueur qui
+          coupe la vibration de son téléphone à la table ne veut pas couper
+          quoi que ce soit sur son portable — et l'un des deux n'a de toute
+          façon pas de moteur de vibration.
+        */}
+        <label className="mt-3 flex items-start justify-between gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] p-3">
+          <span className="min-w-0">
+            <span className="block font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              {t('account.haptics.title')}
+            </span>
+            <span className="mt-0.5 block font-serif text-[12px] text-text-tertiary">
+              {t('account.haptics.hint')}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={haptics}
+            onChange={(e) => setHaptics(e.target.checked)}
+            aria-label={t('account.haptics.title')}
+            className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
+          />
+        </label>
+
+        {/* Ne coupe que les ANNONCES, pas le bandeau « à toi de jouer » de la
+            fiche : celui-ci n'interrompt rien, et le taire rendrait le joueur
+            aveugle à son tour au lieu de le laisser tranquille. */}
+        <label className="mt-3 flex items-start justify-between gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] p-3">
+          <span className="min-w-0">
+            <span className="block font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              {t('account.notifications.title')}
+            </span>
+            <span className="mt-0.5 block font-serif text-[12px] text-text-tertiary">
+              {t('account.notifications.hint')}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={gameNotifications}
+            onChange={(e) => setGameNotifications(e.target.checked)}
+            aria-label={t('account.notifications.title')}
+            className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
+          />
+        </label>
+
+        {/* Réglage d'appareil au même titre que l'haptique : la culbute 3D se
+            sent sur un vieux téléphone alors qu'elle ne coûte rien ailleurs. */}
+        <label className="mt-3 flex items-start justify-between gap-3 rounded-card-sm border border-white-8 bg-white/[0.02] p-3">
+          <span className="min-w-0">
+            <span className="block font-title text-[11px] font-bold uppercase tracking-[0.16em] text-text-secondary">
+              {t('account.dice3d.title')}
+            </span>
+            <span className="mt-0.5 block font-serif text-[12px] text-text-tertiary">
+              {t('account.dice3d.hint')}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={dice3d}
+            onChange={(e) => setDice3d(e.target.checked)}
+            aria-label={t('account.dice3d.title')}
             className="mt-1 h-5 w-5 flex-shrink-0 accent-gold-bright"
           />
         </label>

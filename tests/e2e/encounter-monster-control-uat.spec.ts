@@ -83,7 +83,8 @@ test.describe('UAT 24.4 — contrôle MJ des PV / états monstres', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
     // ─── Tracker → init → démarrer.
-    await page.getByRole('button', { name: /Patrouille gobeline/i }).click();
+    // Ancré au début : le bouton « Gérer la rencontre — … » porte aussi le nom (M7).
+    await page.getByRole('button', { name: /^Patrouille gobeline/i }).click();
     await expect(page).toHaveURL(/\/encounters\/[^/]+$/);
     await page.getByRole('button', { name: 'Lancer l’initiative' }).click();
     await page.getByRole('button', { name: 'Démarrer le combat' }).click();
@@ -104,7 +105,12 @@ test.describe('UAT 24.4 — contrôle MJ des PV / états monstres', () => {
     await captureViewport(page, '02-controle-modale-viewport.png');
 
     // ─── 03 — 10 dégâts : 7 → 0 (clamp). La modale reflète le live doc.
-    await dialog.getByRole('button', { name: '−10' }).click();
+    // Saisie explicite plutôt qu'un palier rapide : depuis M37 les paliers sont
+    // DÉRIVÉS des PV max de la créature, et un gobelin à 7 PV n'offre plus de
+    // bouton « −10 » (il propose −1/−2/−5). Le montant tapé, lui, ne dépend
+    // d'aucune créature — c'est ce qui rend cette assertion stable.
+    await dialog.getByLabel('Montant').fill('10');
+    await dialog.getByRole('button', { name: /^− Dégâts$/ }).click();
     await expect(dialog.getByText('0/7')).toBeVisible({ timeout: 10_000 });
     await captureFull(page, '03-degats-appliques.png');
 

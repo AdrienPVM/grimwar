@@ -16,7 +16,7 @@ import { cn } from '@/shared/lib/cn';
 import { t } from '@/shared/lib/i18n';
 import { useActiveCampaignStore } from '@/shared/lib/slices/active-campaign-slice';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
 import { useCampaign } from './use-campaign';
 
 /**

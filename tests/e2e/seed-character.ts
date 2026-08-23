@@ -1523,12 +1523,14 @@ export async function seedCampaignMembership(opts: {
   charId: string | null;
   /** Nom d'affichage dénormalisé sur le doc member (déf. absent = repli UID côté UI). */
   displayName?: string | null;
+  /** Nom de la campagne — surchargeable pour éprouver la troncature côté UI. */
+  campaignName?: string;
 }): Promise<void> {
-  const { campaignId, gmUid, playerUid, charId, displayName } = opts;
+  const { campaignId, gmUid, playerUid, charId, displayName, campaignName } = opts;
   const { db } = getAdmin();
   await db.collection('campaigns').doc(campaignId).set({
     id: campaignId,
-    name: 'Camp e2e events',
+    name: campaignName ?? 'Camp e2e events',
     gmIds: [gmUid],
     createdBy: gmUid,
     status: 'active',

@@ -32,6 +32,15 @@ interface UatCase {
   readonly spellNameFr: string;
   readonly statBlockNameFr: string;
   readonly description: string;
+  /**
+   * Où cliquer le sort. Un lanceur PRÉPARATEUR (Clerc / Druide / Paladin) rend
+   * <PreparationEditor> AVANT la liste, avec le même nom de sort et un contenu
+   * qui reste monté même replié (`grid-rows-[0fr]`) : le clic doit être scopé à
+   * la <SpellList>, sinon il tombe dans l'éditeur et est intercepté par son
+   * paragraphe d'aide. Le Magicien mono-classe n'a pas d'éditeur — il rend
+   * <WizardSpellbookSections> et non la SpellList, donc `page`.
+   */
+  readonly scope: 'spell-list' | 'page';
 }
 
 const CASES: readonly UatCase[] = [
@@ -42,6 +51,7 @@ const CASES: readonly UatCase[] = [
     statBlockNameFr: 'Monture d’outre-monde',
     description:
       'Paladin L9 → tap sur « Appel de destrier » → modale ouvre le statblock Monture d’outre-monde (3 actions bonus conditionnelles Céleste/Fée/Fiélon)',
+    scope: 'spell-list',
   },
   {
     slug: '02-animate-objects-animated-object',
@@ -50,6 +60,7 @@ const CASES: readonly UatCase[] = [
     statBlockNameFr: 'Objet animé',
     description:
       'Magicien L9 → tap sur « Animation des objets » → modale ouvre Objet animé (HP variable par taille M/G/TG, action Coup)',
+    scope: 'page',
   },
   {
     slug: '03-summon-dragon-draconic-spirit',
@@ -58,6 +69,7 @@ const CASES: readonly UatCase[] = [
     statBlockNameFr: 'Esprit draconique',
     description:
       'Magicien L9 → tap sur « Convocation de dragon » → modale ouvre Esprit draconique (Résistances partagées + Saignée + Souffle)',
+    scope: 'page',
   },
   {
     slug: '04-giant-insect-giant-insect',
@@ -66,6 +78,7 @@ const CASES: readonly UatCase[] = [
     statBlockNameFr: 'Insecte géant',
     description:
       'Druide L9 → tap sur « Insecte géant » → modale ouvre Insecte géant (3 formes : araignée / guêpe / mille-pattes, actions conditionnelles)',
+    scope: 'spell-list',
   },
 ];
 
@@ -96,9 +109,24 @@ test.describe('UAT visuel D14 — statblocks de créatures invoquées', () => {
       // Bascule mode Magie (onglet a `role="tab"`)
       await page.getByRole('tab', { name: /^Magie$/i }).click();
 
-      // Tap sur le sort cible — ouvre la modale. Le sort apparaît comme item
-      // de la SpellList avec son nom FR localisé.
-      await page.getByText(uat.spellNameFr, { exact: false }).first().click();
+      // Tap sur le sort cible — ouvre la modale (voir `UatCase.scope` pour
+      // POURQUOI le scope est nécessaire chez un lanceur préparateur).
+      //
+      // Le scope est DÉCLARÉ par cas, pas déduit à la volée : une première
+      // version testait `count() > 0 ? liste : page`, mais `count()` n'attend
+      // pas. Tant que la carte n'était pas montée (le contenu des sorts se
+      // charge en async), il renvoyait 0 et le locator retombait
+      // SILENCIEUSEMENT sur `page` — d'où un test rouge seulement sous suite
+      // complète, vert en isolation. On attend donc explicitement le conteneur.
+      const spellList = page.getByTestId('spell-list');
+      if (uat.scope === 'spell-list') {
+        await expect(
+          spellList,
+          'la SpellList doit être montée avant de cliquer un sort',
+        ).toBeVisible({ timeout: 15_000 });
+      }
+      const spellScope = uat.scope === 'spell-list' ? spellList : page;
+      await spellScope.getByText(uat.spellNameFr, { exact: false }).first().click();
 
       // La modale est ouverte + le statblock rendu
       const dialog = page.getByRole('dialog');

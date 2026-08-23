@@ -30,7 +30,7 @@ import { FieldString } from './fields/field-string';
  * langues (chips libres), jets de sauvegarde + compétences (clé→bonus), et
  * traits / actions / réactions / actions légendaires (nom + description i18n).
  *
- * `source` est figé à `aidedd-homebrew` (contenu joueur hors SRD). Les champs
+ * `source` est figé à `custom` (contenu joueur hors SRD). Les champs
  * `reactions` / `legendaryActions` sont `nullable` au schéma : on stocke `null`
  * tant que la liste est vide (jamais `[]` parasite).
  */
@@ -233,7 +233,7 @@ export function buildMonsterFromDraft(draft: MonsterFormDraft): Monster {
     // `nullable` au schéma : null quand vide (pas de `[]` parasite).
     reactions: reactions.length > 0 ? reactions : null,
     legendaryActions: legendaryActions.length > 0 ? legendaryActions : null,
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

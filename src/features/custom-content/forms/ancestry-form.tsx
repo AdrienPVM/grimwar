@@ -56,7 +56,7 @@ import { FieldString } from './fields/field-string';
  * 6 slugs à la validation — un homebrew ne peut pas re-définir une ascendance
  * SRD avec le même id (de toute façon le merger SRD ∪ custom écraserait).
  *
- * `source` est figé à `aidedd-homebrew` — convention partagée 3C.
+ * `source` est figé à `custom` — convention partagée 3C.
  */
 
 const ABILITY_KEYS = ['for', 'dex', 'con', 'int', 'sag', 'cha'] as const;
@@ -208,7 +208,7 @@ export function buildAncestryFromDraft(draft: AncestryFormDraft): Ancestry {
     ...(draft.commonSpellIds.length > 0
       ? { commonSpellIds: [...draft.commonSpellIds] }
       : {}),
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

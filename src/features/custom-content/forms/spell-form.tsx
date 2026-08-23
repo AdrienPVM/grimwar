@@ -36,7 +36,7 @@ import { FieldString } from './fields/field-string';
  *   - description (i18n FR), atHigherLevels (i18n nullable)
  *   - classes[] : multi-select via `useContent('classes')`
  *   - damage[] : répéteur optionnel { formula, type, typeLabel, atHigherLevels? }
- *   - source : figé à `aidedd-homebrew` (convention 3C partagée)
+ *   - source : figé à `custom` (convention 3C partagée)
  *
  * `summonedCreatureIds` (plan D14) est hors scope du form V1 — la quasi-totalité
  * des sorts SRD n'en portent pas (4/339), et la résolution dépend de bundles
@@ -166,7 +166,7 @@ export function buildSpellFromDraft(draft: SpellFormDraft): Spell {
           })),
         }
       : {}),
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

@@ -190,8 +190,12 @@ describe('renderEventLine — cycle de vie séance', () => {
 });
 
 describe('renderEventLine — kind non templaté', () => {
-  it('un kind sans template (level-up, non encore journalisé) → null (pas de crash)', () => {
-    expect(renderEventLine(ev('level-up', { newLevel: 5 }), ctx)).toBeNull();
+  // L'exemple était `level-up` jusqu'à M44, qui lui a donné un template. Ce que
+  // ce test protège n'est pas ce kind-là mais l'invariant : un kind sans
+  // template retourne `null` au lieu de planter. `treasure-drop` est déclaré au
+  // schéma et toujours sans logger — il tient le rôle.
+  it('un kind sans template (treasure-drop, non encore journalisé) → null (pas de crash)', () => {
+    expect(renderEventLine(ev('treasure-drop', { gold: 120 }), ctx)).toBeNull();
   });
 });
 
@@ -220,6 +224,113 @@ describe('renderEventLine — dm-edit (plan 26)', () => {
   it('cible non résolue → repli « Quelqu’un » (jamais l’id brut)', () => {
     expect(renderEventLine(dmEditEvent('inconnu', ['status']), ctx)).toBe(
       'Le meneur ajuste la fiche de **Quelqu’un** (1 champ·s).',
+    );
+  });
+});
+
+/**
+ * M44 — jalons de vie du personnage. Ces quatre kinds étaient déclarés au schéma
+ * et documentés avec leur payload dans EVENT-LOG.md, mais aucun logger ne les
+ * écrivait et aucun template ne les rendait : `renderEventLine` retournait
+ * `null`, donc le journal d'une séance ne mentionnait jamais qu'un personnage
+ * était monté de niveau, mort, ou revenu.
+ *
+ * Vérité du contenu : chaque assertion fige la prose FR mot pour mot, et chaque
+ * branche (nouvelle classe vs progression, 20 naturel vs meneur, repos court vs
+ * long) est distinguée — un template qui les confondrait passerait un test de
+ * simple présence.
+ */
+describe('renderEventLine — jalons de vie (M44)', () => {
+  it('montée de niveau dans une classe déjà possédée', () => {
+    expect(
+      renderEventLine(
+        ev(
+          'level-up',
+          { newLevel: 5, classId: 'rogue', className: 'Roublard', classLevel: 5, isNewClass: false },
+          'lyralei',
+        ),
+        ctx,
+      ),
+    ).toBe('Lyralei passe **niveau 5** (Roublard 5).');
+  });
+
+  it('ouverture d’une nouvelle classe → formulation distincte du simple niveau', () => {
+    expect(
+      renderEventLine(
+        ev(
+          'level-up',
+          { newLevel: 5, classId: 'rogue', className: 'Roublard', classLevel: 1, isNewClass: true },
+          'thorin',
+        ),
+        ctx,
+      ),
+    ).toBe('Thorin embrasse une nouvelle voie : **Roublard** — niveau 5 au total.');
+  });
+
+  it('mort par sauvegardes ratées', () => {
+    expect(renderEventLine(ev('death', { cause: 'death-saves' }, 'lyralei'), ctx)).toBe(
+      '**Lyralei** succombe à ses blessures.',
+    );
+  });
+
+  it('mort décidée par le meneur → formulation neutre', () => {
+    expect(renderEventLine(ev('death', { cause: 'dm' }, 'thorin'), ctx)).toBe('**Thorin** meurt.');
+  });
+
+  it('20 naturel en sauvegarde de mort → on se relève seul', () => {
+    expect(renderEventLine(ev('revival', { source: 'nat20' }, 'lyralei'), ctx)).toBe(
+      '**Lyralei** rouvre les yeux au dernier moment et se relève.',
+    );
+  });
+
+  it('résurrection par le meneur → formulation distincte du 20 naturel', () => {
+    expect(renderEventLine(ev('revival', { source: 'dm' }, 'thorin'), ctx)).toBe(
+      '**Thorin** est ramené à la vie.',
+    );
+  });
+
+  it('repos court → aucun bilan chiffré (il ne soigne pas)', () => {
+    expect(
+      renderEventLine(ev('rest', { type: 'short', hpHealed: 0, resourcesReset: 2 }, 'lyralei'), ctx),
+    ).toBe('Lyralei prend un repos court.');
+  });
+
+  it('repos long qui soigne → le bilan chiffré entre dans la prose', () => {
+    expect(
+      renderEventLine(ev('rest', { type: 'long', hpHealed: 12, resourcesReset: 3 }, 'thorin'), ctx),
+    ).toBe('Thorin prend un repos long et récupère 12 PV.');
+  });
+
+  it('repos long sans PV rendus (slowHealing, ou déjà au max) → pas de « 0 PV »', () => {
+    expect(
+      renderEventLine(ev('rest', { type: 'long', hpHealed: 0, resourcesReset: 3 }, 'thorin'), ctx),
+    ).toBe('Thorin prend un repos long.');
+  });
+
+  it('acteur non résolu → repli générique, jamais l’id brut', () => {
+    expect(renderEventLine(ev('rest', { type: 'short' }, 'inconnu'), ctx)).toBe(
+      'Quelqu’un prend un repos court.',
+    );
+  });
+});
+
+describe('renderEventLine — level-up à payload partiel (M44)', () => {
+  it('sans nom de classe → phrase courte, jamais une parenthèse vide « (— 1) »', () => {
+    const line = renderEventLine(ev('level-up', { newLevel: 2 }, 'lyralei'), ctx);
+    expect(line).toBe('Lyralei passe **niveau 2**.');
+  });
+});
+
+describe('renderEventLine — expérience (M45)', () => {
+  it('gain → montant et total exacts', () => {
+    expect(renderEventLine(ev('xp-gain', { delta: 450, total: 3150 }, 'lyralei'), ctx)).toBe(
+      'Lyralei gagne 450 PX (total : 3150).',
+    );
+  });
+
+  it('delta négatif → raconté comme une PERTE, jamais « gagne −500 PX »', () => {
+    expect(renderEventLine(ev('xp-gain', { delta: -500, total: 2500 }, 'thorin'), ctx)).toBe(
+      'Thorin perd 500 PX (total : 2500).',
     );
   });
 });

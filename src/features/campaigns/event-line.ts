@@ -208,6 +208,43 @@ export function summarizeEvent(
         kindLabel: t('campaigns.detail.eventFeed.kind.npcAttitudeChanged'),
         detail: null,
       };
+    // Jalons de vie (M44). Le détail reste dérivé de valeurs déjà lisibles —
+    // `className` est un nom localisé posé par le logger, pas un slug.
+    case 'level-up': {
+      const level = asNumber(p.newLevel);
+      const className = asString(p.className);
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.levelUp'),
+        detail:
+          level === null
+            ? className
+            : className === null
+              ? t('campaigns.detail.eventFeed.levelDetail').replace('{n}', String(level))
+              : `${t('campaigns.detail.eventFeed.levelDetail').replace('{n}', String(level))} · ${className}`,
+      };
+    }
+    case 'xp-gain': {
+      const delta = asNumber(p.delta);
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.xpGain'),
+        // Le signe est porté explicitement : un retrait du meneur doit se lire
+        // comme tel, pas comme un gain.
+        detail: delta === null ? null : `${delta >= 0 ? '+' : '−'}${Math.abs(delta)} PX`,
+      };
+    }
+    case 'death':
+      return { kindLabel: t('campaigns.detail.eventFeed.kind.death'), detail: null };
+    case 'revival':
+      return { kindLabel: t('campaigns.detail.eventFeed.kind.revival'), detail: null };
+    case 'rest':
+      return {
+        kindLabel: t('campaigns.detail.eventFeed.kind.rest'),
+        detail: t(
+          asString(p.type) === 'long'
+            ? 'campaigns.detail.eventFeed.restLong'
+            : 'campaigns.detail.eventFeed.restShort',
+        ),
+      };
     default:
       return {
         kindLabel: t('campaigns.detail.eventFeed.kind.generic'),

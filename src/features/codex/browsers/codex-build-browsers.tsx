@@ -5,6 +5,7 @@ import { useContent } from '@/shared/hooks/use-content';
 import { formatMetersValue } from '@/shared/lib/rules/distance';
 import { getSkill } from '@/shared/lib/rules/skills';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type {
   Ancestry,
   Background,
@@ -12,7 +13,11 @@ import type {
 } from '@/shared/types/content';
 
 import { CodexField } from '../codex-ui';
-import { TextEntityBrowser, type CodexEntry } from './text-entity-browser';
+import {
+  TextEntityBrowser,
+  withOrigin,
+  type CodexEntry,
+} from './text-entity-browser';
 
 /**
  * Navigateurs « construction de perso » du Codex (plan 19) : espèces,
@@ -21,10 +26,10 @@ import { TextEntityBrowser, type CodexEntry } from './text-entity-browser';
  */
 
 function lower(...parts: Array<string | null | undefined>): string {
-  return parts
-    .filter((p): p is string => Boolean(p))
-    .join(' ')
-    .toLocaleLowerCase('fr');
+  // `normalizeForSearch` et non un simple `toLowerCase` : le `searchText` est
+  // la moitié CONTENU de la comparaison, et une seule des deux moitiés
+  // normalisée ne sert à rien — « epee » ne rencontrerait toujours pas « épée ».
+  return normalizeForSearch(parts.filter((p): p is string => Boolean(p)).join(' '));
 }
 
 /** Traduit une liste de noms de compétences bruités (EN/PDF) → FR, via SKILLS. */
@@ -77,7 +82,7 @@ function NamedList({
 }
 
 // ── Espèces ──────────────────────────────────────────────────────────
-function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntry[] {
+export function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntry[] {
   return ancestries.map((ancestry): CodexEntry => {
     const name = localize(ancestry.name);
     const sizeLabel = t(`size.${ancestry.size}` as StringKey);
@@ -120,10 +125,10 @@ function buildAncestryEntries(ancestries: readonly Ancestry[]): CodexEntry[] {
 }
 
 export function AncestryBrowser(): JSX.Element {
-  const { data, loading } = useContent('ancestries');
+  const { data, loading, scopeOf } = useContent('ancestries');
   return (
     <TextEntityBrowser
-      entries={buildAncestryEntries(data)}
+      entries={withOrigin(buildAncestryEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.ancestries')}
     />
@@ -131,7 +136,7 @@ export function AncestryBrowser(): JSX.Element {
 }
 
 // ── Historiques ──────────────────────────────────────────────────────
-function buildBackgroundEntries(
+export function buildBackgroundEntries(
   backgrounds: readonly Background[],
 ): CodexEntry[] {
   return backgrounds.map((background): CodexEntry => {
@@ -165,10 +170,10 @@ function buildBackgroundEntries(
 }
 
 export function BackgroundBrowser(): JSX.Element {
-  const { data, loading } = useContent('backgrounds');
+  const { data, loading, scopeOf } = useContent('backgrounds');
   return (
     <TextEntityBrowser
-      entries={buildBackgroundEntries(data)}
+      entries={withOrigin(buildBackgroundEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.backgrounds')}
     />
@@ -176,7 +181,7 @@ export function BackgroundBrowser(): JSX.Element {
 }
 
 // ── Classes ──────────────────────────────────────────────────────────
-function buildClassEntries(classes: readonly ClassEntity[]): CodexEntry[] {
+export function buildClassEntries(classes: readonly ClassEntity[]): CodexEntry[] {
   return classes.map((cls): CodexEntry => {
     const name = localize(cls.name);
     const primary = cls.primaryAbility
@@ -227,10 +232,10 @@ function buildClassEntries(classes: readonly ClassEntity[]): CodexEntry[] {
 }
 
 export function ClassBrowser(): JSX.Element {
-  const { data, loading } = useContent('classes');
+  const { data, loading, scopeOf } = useContent('classes');
   return (
     <TextEntityBrowser
-      entries={buildClassEntries(data)}
+      entries={withOrigin(buildClassEntries(data), scopeOf)}
       loading={loading}
       searchPlaceholder={t('codex.search.classes')}
     />

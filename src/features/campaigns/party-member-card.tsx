@@ -8,7 +8,7 @@ import { computeDisplayedAc } from '@/shared/lib/rules/ac';
 import { t } from '@/shared/lib/i18n';
 import type { Character } from '@/shared/types/character';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
 
 interface PartyMemberCardProps {
   /** Fiche liée du joueur (`members/{uid}.characterId`) — non nul (le parent filtre en amont). */

@@ -1,7 +1,14 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { t } from '@/shared/lib/i18n';
 import type { Campaign, Membership } from '@/shared/types/campaign';
 
 // ─────────────────────────────────────────────────────────────────────
@@ -134,7 +141,8 @@ vi.mock('../use-party-aggregate', () => ({
   usePartyAggregate: () => aggregateHolder.aggregate,
 }));
 
-import { CampaignDetailScreen, buildRoster } from '../campaign-detail-screen';
+import { CampaignDetailScreen } from '../campaign-detail-screen';
+import { buildRoster } from '../roster';
 
 // ─────────────────────────────────────────────────────────────────────
 // Fixtures
@@ -243,6 +251,30 @@ describe('buildRoster', () => {
     const roster = buildRoster(camp, members, 'uid-1', null);
     expect(roster).toHaveLength(2);
     expect(roster.map((r) => r.uid)).toEqual(['uid-1', 'uid-2']);
+  });
+
+  it('un MENEUR qui joue un PJ apparaît AVEC sa fiche liée (M67a)', () => {
+    // Le meneur fondateur n'a pas de doc member — son appartenance vient de
+    // `gmIds[]`. Dès qu'il en pose un pour jouer, sa ligne doit porter sa fiche
+    // comme celle de n'importe qui, sans quoi le roster ment sur la table.
+    const camp = mkCampaign({ gmIds: ['uid-1'] });
+    const members = [
+      mkMember({ userId: 'uid-1', role: 'gm', characterId: 'char-mj' }),
+      mkMember({ userId: 'uid-2', role: 'member', characterId: 'char-2' }),
+    ];
+    const roster = buildRoster(camp, members, 'uid-1', null);
+    expect(roster).toHaveLength(2);
+    expect(roster[0]).toMatchObject({
+      uid: 'uid-1',
+      role: 'gm',
+      characterId: 'char-mj',
+    });
+  });
+
+  it('un MENEUR sans doc member n’a toujours aucune fiche liée', () => {
+    const camp = mkCampaign({ gmIds: ['uid-1'] });
+    const roster = buildRoster(camp, [], 'uid-1', null);
+    expect(roster[0]?.characterId).toBeNull();
   });
 
   it("flag isSelf=true sur l'entrée correspondant à myUid", () => {
@@ -391,6 +423,39 @@ describe('<CampaignDetailScreen> — viewer est MJ', () => {
     expect(screen.getByText('Niveau moyen')).toBeInTheDocument();
     expect(screen.getByText('Niveaux')).toBeInTheDocument();
     expect(screen.getByText('3–5')).toBeInTheDocument();
+  });
+
+  it('le MENEUR voit « Mon personnage » alors qu’il n’a aucun doc member (M67a)', () => {
+    // Avant : la section n'était rendue que si `members[]` contenait le
+    // lecteur. Un MJ fondateur n'en fait jamais partie — il ne pouvait donc
+    // pas jouer un PJ à sa propre table, alors qu'un co-MJ promu depuis un
+    // joueur, si. Asymétrie non voulue, corrigée sans toucher aux rules.
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [];
+    renderScreen();
+    expect(
+      screen.getByText(t('campaigns.detail.myCharacter.firstStepTitle')),
+    ).toBeInTheDocument();
+  });
+
+  it('le JOUEUR a sa propre porte vers la carte, le MENEUR garde la sienne', () => {
+    // M34 : les rules autorisent la lecture des cartes et des jetons par tout
+    // membre depuis le plan 29 — seule l'entrée manquait, ce qui obligeait à
+    // s'échanger une URL. Les deux publics n'ont pas le même libellé : le
+    // joueur « voit », le meneur « ouvre » (il édite).
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-gm'] });
+    stateHolder.members = [mkMember({ userId: 'uid-1', role: 'member' })];
+    renderScreen();
+    expect(
+      screen.getByRole('button', { name: /Voir la carte/i }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Cartes$/i })).toBeNull();
+
+    cleanup();
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    renderScreen();
+    expect(screen.getByRole('button', { name: /^Cartes$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Voir la carte/i })).toBeNull();
   });
 
   it("campagne sans joueur → bloc invitation en mode « premier pas »", () => {
@@ -557,6 +622,27 @@ describe('<CampaignDetailScreen> — viewer est joueur', () => {
       screen.queryByRole('region', { name: /Journal de bord de la campagne/i }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText('Activité récente')).not.toBeInTheDocument();
+  });
+
+  it('accède aux espaces Séances et Rencontres (pas seulement le meneur)', () => {
+    // Les deux écrans sont lisibles par tout membre (rules 23.1 / 24.1) et ont
+    // chacun un état vide rédigé pour un joueur — mais leur seul point d'entrée
+    // était enfermé dans le bloc MJ, ce qui rendait le suivi de combat
+    // inaccessible aux joueurs. Cf. `docs/plans/UX-AUDIT-2026-08.md > B-2`.
+    authHolder.user = { uid: 'uid-2' };
+    stateHolder.campaign = mkCampaign({ id: 'c-1', gmIds: ['uid-1'] });
+    stateHolder.members = [mkMember({ userId: 'uid-2', role: 'member' })];
+    renderScreen();
+
+    fireEvent.click(screen.getByRole('button', { name: /Séances/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/c-1/sessions');
+
+    fireEvent.click(screen.getByRole('button', { name: /Rencontres/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/campaigns/c-1/encounters');
+
+    // En revanche, préparation et administration restent au meneur.
+    expect(screen.queryByRole('button', { name: /^Cartes$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Réglages/i })).not.toBeInTheDocument();
   });
 
   it('clic retour navigue vers /campaigns', () => {

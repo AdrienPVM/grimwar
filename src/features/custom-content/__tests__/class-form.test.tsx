@@ -35,7 +35,7 @@ describe('buildClassFromDraft', () => {
   it('produit une Class minimale + source aidedd-homebrew + 1 option starting equipment vide', () => {
     const cls = buildClassFromDraft(minimalDraft());
     expect(cls.id).toBe('cendre-pacte');
-    expect(cls.source).toBe('aidedd-homebrew');
+    expect(cls.source).toBe('custom');
     expect(cls.hitDie).toBe('d8');
     expect(cls.primaryAbility).toEqual(['cha']);
     expect(cls.saveProficiencies).toEqual(['cha', 'sag']);
@@ -78,6 +78,9 @@ describe('buildClassFromDraft', () => {
     expect(cls.spellcasting).toEqual({
       ability: 'cha',
       progression: 'pact',
+      // M51 — le mode de préparation est désormais toujours écrit ; 'known'
+      // est le défaut du formulaire, et c'est le comportement d'avant.
+      preparation: 'known',
     });
   });
 
@@ -244,12 +247,22 @@ describe('validateClassDraft', () => {
     if (!result.ok) expect(result.fieldErrors.id).toBeDefined();
   });
 
-  it('rejette les 12 ids SRD réservés', () => {
-    for (const reserved of [
+  // M50 — le refus ne couvre plus que ce que le schéma impose vraiment. Clerc
+  // et Druide déclenchent un `superRefine` exigeant une liste d'ordres que ce
+  // formulaire ne produit pas ; les accepter donnerait un échec Zod illisible
+  // au save. Les 10 autres n'avaient aucune raison mécanique d'être refusées.
+  it('rejette les 2 ids que le schéma contraint (cleric, druid)', () => {
+    for (const reserved of ['cleric', 'druid']) {
+      const result = validateClassDraft({ ...minimalDraft(), id: reserved });
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.fieldErrors.id).toBeDefined();
+    }
+  });
+
+  it('accepte les 10 autres classes SRD — surcharger est un choix, plus un refus', () => {
+    for (const overridable of [
       'barbarian',
       'bard',
-      'cleric',
-      'druid',
       'fighter',
       'monk',
       'paladin',
@@ -259,9 +272,9 @@ describe('validateClassDraft', () => {
       'warlock',
       'wizard',
     ]) {
-      const result = validateClassDraft({ ...minimalDraft(), id: reserved });
-      expect(result.ok).toBe(false);
-      if (!result.ok) expect(result.fieldErrors.id).toBeDefined();
+      const result = validateClassDraft({ ...minimalDraft(), id: overridable });
+      expect(result.ok).toBe(true);
+      if (result.ok) expect(result.cls.id).toBe(overridable);
     }
   });
 
@@ -405,7 +418,7 @@ describe('validateClassDraft', () => {
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.cls.id).toBe('cendre-pacte');
-      expect(result.cls.source).toBe('aidedd-homebrew');
+      expect(result.cls.source).toBe('custom');
     }
   });
 
@@ -443,6 +456,7 @@ describe('validateClassDraft', () => {
       expect(result.cls.spellcasting).toEqual({
         ability: 'cha',
         progression: 'pact',
+        preparation: 'known',
       });
       expect(result.cls.multiclassPrerequisite).toEqual({
         combinator: 'and',

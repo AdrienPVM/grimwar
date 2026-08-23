@@ -267,6 +267,20 @@ function effectiveDiceMode(
 - En S1, il n'y a pas de campagne → toujours `user.settings.diceMode`.
 - En S2+, le défaut est de suivre la campagne (`followCampaignDiceMode: true`) : le MJ décide pour la table. Un joueur peut décrocher (`followCampaignDiceMode: false`) pour utiliser son propre mode (ex. un joueur en distanciel sans dés physiques).
 
+#### Language resolution
+
+Même forme, pour `campaigns/{cid}.settings.language` — helper `effectiveLocale(userLocale, tableLocale)` dans `src/shared/lib/rules/table-language.ts` :
+
+```ts
+function effectiveLocale(userLocale: Locale | null, tableLocale: Locale | null): Locale {
+  if (userLocale) return userLocale;   // choix explicite du compte → gagne partout
+  if (tableLocale) return tableLocale; // sinon la table décide
+  return 'fr';                         // défaut verrouillé
+}
+```
+
+Aucun champ « suivre la table » n'a été ajouté côté utilisateur : `users/{uid}.locale` n'est écrit que par le sélecteur du compte, jamais spéculativement à la création — **son absence est le marqueur « je n'ai rien choisi »**. Le miroir `settings.language → useLocaleStore.tableLocale` est posé dans `active-campaign-slice.ts` (un seul point, pour que l'invariant tienne sur tous les chemins : réglages chargés, table changée, contexte libéré). Exposé au MJ dans la modale de réglages de campagne depuis l'audit de malléabilité (M54) ; avant ça, le champ n'avait ni UI ni lecteur.
+
 Le mode physique :
 - L'app affiche la formule à lancer (`1d20`, `2d6+3`, etc.).
 - Le joueur saisit la/les face(s) brute(s) (valeur par dé, validation stricte 1..N).
@@ -291,7 +305,7 @@ Private user homebrew + DMG extracts. `type` ∈ `spells | monsters | items | ma
 
 Source de vérité Zod : `src/shared/types/campaign.ts > CampaignSchema`.
 Divergences délibérées vs la première rédaction de ce doc (S2 brouillon)
-sont tracées dans `plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
+sont tracées dans `docs/plans/MVP-V1-DECISIONS-PRISES.md > [JALON-4.0]` :
 `gmIds[]` (array, anticipe co-MJ 4C) au lieu de `dmUserId`, settings
 simplifiés (drop de `permissionMode`/`allowHomebrew`/`startingLevel`/`enableSpectators`),
 `inviteToken` (lien URL) déféré à 4.0.5.

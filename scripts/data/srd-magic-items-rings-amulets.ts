@@ -8,7 +8,7 @@
  *   - FR : `content-sources/extracted/raw/FR_SRD_CC_v5.2.1.txt`
  *     (section "Objets magiques de A à Z", ligne 24359)
  *
- * Cf. plan `plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.3).
+ * Cf. plan `docs/plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.3).
  *
  * Scope C.3 :
  *   - 5 anneaux Uncommon : saut, barrière mentale, nage, chaleur constante,
@@ -17,7 +17,7 @@
  *     cicatrisation, Collier d'adaptation, Médaillon des pensées.
  *
  * **Amulettes de santé (Amulet of Health rare + Periapt of Health uncommon)** :
- * doublet résolu par D24 (cf. `plans/DEBT.md > ## Résolu`). Les 2 entrées
+ * doublet résolu par D24 (cf. `docs/plans/DEBT.md > ## Résolu`). Les 2 entrées
  * vivent directement dans `public/data/magic-items.json` sous leurs slugs SRD-
  * fidèles (`amulette-de-sante` = Amulet of Health rare CON=19 ; `amulette-de-
  * bonne-sante` = Periapt of Health uncommon 2d4+2 PV + advantage Empoisonné).

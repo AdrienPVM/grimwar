@@ -132,6 +132,26 @@ export function deriveClassResourcePools(
  */
 export function currentResourceValue(character: Character, pool: ClassResourcePool): number {
   const stored = character.classResources[pool.storageKey];
-  if (!stored) return pool.max;
-  return Math.min(stored.current, pool.max);
+  const max = effectiveResourceMax(character, pool);
+  if (!stored) return max;
+  return Math.min(stored.current, max);
+}
+
+/**
+ * Maximum RÉELLEMENT applicable : le plus grand entre la valeur dérivée de la
+ * progression de classe et celle enregistrée sur la fiche.
+ *
+ * Pourquoi le max, et pas la valeur dérivée seule : « le pacte lui donne une
+ * Rage de plus », « ce collier ajoute un usage ». Le max stocké était jusqu'ici
+ * clampé à la lecture ET réimposé à chaque écriture — un maximum accordé par le
+ * MJ disparaissait au premier « − ». On ne prend jamais MOINS que la
+ * progression : une montée de niveau doit continuer d'élargir la réserve, même
+ * si un ancien document porte un max plus petit.
+ */
+export function effectiveResourceMax(
+  character: Character,
+  pool: ClassResourcePool,
+): number {
+  const stored = character.classResources[pool.storageKey];
+  return Math.max(pool.max, stored?.max ?? 0);
 }

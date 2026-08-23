@@ -1,4 +1,4 @@
-import { Card, CardHeader } from '@/shared/components/card';
+import { Card, CardAction, CardHeader } from '@/shared/components/card';
 import { Tooltip } from '@/shared/components/tooltip';
 import { useLongPress } from '@/shared/hooks/use-long-press';
 import { cn } from '@/shared/lib/cn';
@@ -9,7 +9,11 @@ import type { AbilityCode, Character } from '@/shared/types/character';
 import { useState } from 'react';
 
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
-import type { Advantage } from '@/shared/lib/dice/types';
+import {
+  NORMAL_ROLL,
+  RollOptionsMenu,
+  type RollOptions,
+} from '@/features/dice/roll-options-menu';
 
 import { useUpdateCharacter } from '../../use-update-character';
 
@@ -45,10 +49,21 @@ export function SavesRow({
   extraSaveBonus = 0,
 }: SavesRowProps): JSX.Element {
   const [menuFor, setMenuFor] = useState<AbilityCode | null>(null);
+  const [editing, setEditing] = useState<boolean>(false);
   const { updateCharacter } = useUpdateCharacter(character);
   const pb = proficiencyBonus(totalLevel(character.classes));
 
-  async function performSave(ability: AbilityCode, advantage: Advantage): Promise<void> {
+  /** Bascule la maîtrise d'une sauvegarde (don Résilient, aptitude accordée). */
+  async function toggleProficiency(ability: AbilityCode): Promise<void> {
+    await updateCharacter({
+      saves: { ...character.saves, [ability]: !character.saves[ability] },
+    });
+  }
+
+  async function performSave(
+    ability: AbilityCode,
+    options: RollOptions,
+  ): Promise<void> {
     if (readOnly) return;
     const proficient = character.saves[ability];
     const mod =
@@ -60,7 +75,10 @@ export function SavesRow({
       character,
       baseMod: mod,
       label: t('sheet.essence.saves.rollLabel').replace('{ability}', t(ABILITY_SHORT_KEYS[ability])),
-      advantage,
+      advantage: options.advantage,
+      discreet: options.discreet,
+      useInspiration: options.useInspiration,
+      bonus: options.bonus,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
@@ -72,7 +90,23 @@ export function SavesRow({
     <Card>
       <CardHeader>
         <h3>{t('sheet.essence.saves.title')}</h3>
+        {readOnly ? null : (
+          <CardAction
+            aria-pressed={editing}
+            aria-label={t('sheet.essence.prof.editSavesAria')}
+            onClick={() => setEditing((v) => !v)}
+          >
+            {t(editing ? 'sheet.essence.prof.done' : 'sheet.essence.prof.edit')}
+          </CardAction>
+        )}
       </CardHeader>
+
+      {editing ? (
+        <p className="mb-4 font-serif text-body-sm italic text-text-tertiary">
+          {t('sheet.essence.saves.editHint')}
+        </p>
+      ) : null}
+
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {ABILITY_ORDER.map((ability) => (
           <SaveChip
@@ -83,19 +117,34 @@ export function SavesRow({
             profBonus={pb}
             extraBonus={extraSaveBonus}
             disabled={readOnly}
-            onTap={() => void performSave(ability, 'normal')}
-            onLongPress={() => setMenuFor(ability)}
+            editing={editing}
+            onTap={() =>
+              editing
+                ? void toggleProficiency(ability)
+                : void performSave(ability, NORMAL_ROLL)
+            }
+            onLongPress={() => {
+              if (!editing) setMenuFor(ability);
+            }}
           />
         ))}
       </div>
 
       {menuFor && (
-        <SaveMenuOverlay
-          ability={menuFor}
-          onPick={(adv) => {
+        <RollOptionsMenu
+          title={t('sheet.essence.saves.menuTitle').replace(
+            '{ability}',
+            t(`ability.${menuFor}`),
+          )}
+          ariaLabel={t('sheet.essence.saves.menuAria').replace(
+            '{ability}',
+            t(`ability.${menuFor}`),
+          )}
+          hasInspiration={character.inspiration}
+          onPick={(options) => {
             const target = menuFor;
             setMenuFor(null);
-            void performSave(target, adv);
+            void performSave(target, options);
           }}
           onClose={() => setMenuFor(null)}
         />
@@ -111,6 +160,7 @@ interface SaveChipProps {
   profBonus: number;
   extraBonus: number;
   disabled: boolean;
+  editing: boolean;
   onTap: () => void;
   onLongPress: () => void;
 }
@@ -122,6 +172,7 @@ function SaveChip({
   profBonus,
   extraBonus,
   disabled,
+  editing,
   onTap,
   onLongPress,
 }: SaveChipProps): JSX.Element {
@@ -130,13 +181,23 @@ function SaveChip({
     abilityModifier(score) + (proficient ? profBonus : 0) + extraBonus;
   const signed = mod >= 0 ? `+${mod}` : `${mod}`;
   return (
-    <Tooltip label={t('sheet.tip.rollSave')} decorative className="w-full">
+    <Tooltip
+      label={t(editing ? 'sheet.essence.saves.editHint' : 'sheet.tip.rollSave')}
+      decorative
+      className="w-full"
+    >
       <button
         type="button"
         disabled={disabled}
+        aria-pressed={editing ? proficient : undefined}
         aria-label={
-          t('sheet.essence.saves.chipAria').replace('{ability}', t(`ability.${ability}`)) +
-          (proficient ? t('sheet.essence.saves.proficientSuffix') : '')
+          editing
+            ? t('sheet.essence.saves.toggleAria').replace(
+                '{ability}',
+                t(`ability.${ability}`),
+              )
+            : t('sheet.essence.saves.chipAria').replace('{ability}', t(`ability.${ability}`)) +
+              (proficient ? t('sheet.essence.saves.proficientSuffix') : '')
         }
         className={cn(
           'relative flex w-full flex-col items-center justify-center gap-0.5 rounded-card-sm border bg-bg-2/40 px-2 py-2.5 transition-all',
@@ -167,56 +228,5 @@ function SaveChip({
         </span>
       </button>
     </Tooltip>
-  );
-}
-
-function SaveMenuOverlay({
-  ability,
-  onPick,
-  onClose,
-}: {
-  ability: AbilityCode;
-  onPick: (advantage: Advantage) => void;
-  onClose: () => void;
-}): JSX.Element {
-  return (
-    <div
-      role="dialog"
-      aria-label={t('sheet.essence.saves.menuAria').replace('{ability}', t(`ability.${ability}`))}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6 backdrop-blur-sm"
-    >
-      <button
-        type="button"
-        aria-label={t('sheet.essence.close')}
-        className="absolute inset-0 cursor-default"
-        onClick={onClose}
-      />
-      <div className="relative flex flex-col gap-2 rounded-card border border-soft bg-bg-2/95 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-md">
-        <p className="mb-2 text-center font-title text-[10px] font-bold uppercase tracking-[0.2em] text-text-tertiary">
-          {t('sheet.essence.saves.menuTitle').replace('{ability}', t(`ability.${ability}`))}
-        </p>
-        <button
-          type="button"
-          onClick={() => onPick('advantage')}
-          className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
-        >
-          {t('sheet.essence.advantage')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onPick('normal')}
-          className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
-        >
-          {t('sheet.essence.normal')}
-        </button>
-        <button
-          type="button"
-          onClick={() => onPick('disadvantage')}
-          className="rounded-pill border border-white-8 bg-white/[0.04] px-5 py-2 font-title text-[11px] font-bold uppercase tracking-[0.18em] text-text-secondary transition-colors hover:border-gold-bright hover:text-gold-bright"
-        >
-          {t('sheet.essence.disadvantage')}
-        </button>
-      </div>
-    </div>
   );
 }

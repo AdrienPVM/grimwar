@@ -1,9 +1,20 @@
-import { render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Character } from '@/shared/types/character';
 
 import { StatusStrip } from '../status-strip';
+
+const { updateCharacterMock } = vi.hoisted(() => ({
+  updateCharacterMock: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/features/sheet/use-update-character', () => ({
+  useUpdateCharacter: () => ({
+    updateCharacter: updateCharacterMock,
+    isUpdating: false,
+  }),
+}));
 
 /**
  * Plan 13.14b — D19/D20, gate de wiring de prop.
@@ -190,5 +201,98 @@ describe('<StatusStrip>', () => {
     // Mais plus de cellule PV (label « PV » + le « / 23 » du sub).
     expect(screen.queryByText('PV')).toBeNull();
     expect(screen.queryByText('/ 23')).toBeNull();
+  });
+});
+
+/**
+ * M16 — l'initiative et la vitesse étaient posées au wizard et plus jamais
+ * réécrites. Une table les change tout le temps (« +2 avec Alerte »,
+ * « 12 m sous Hâte »).
+ */
+describe('<StatusStrip> — initiative et vitesse éditables', () => {
+  beforeEach(() => {
+    updateCharacterMock.mockClear();
+  });
+
+  it('écrit l’initiative saisie', () => {
+    render(
+      <StatusStrip character={buildCharacter({ initiative: 2 })} displayedAc={15} />,
+    );
+    fireEvent.click(screen.getByTestId('status-init'));
+    const input = screen.getByTestId('status-init-input');
+    fireEvent.change(input, { target: { value: '4' } });
+    fireEvent.blur(input);
+    expect(updateCharacterMock).toHaveBeenCalledWith({ initiative: 4 });
+  });
+
+  it('accepte une initiative négative', () => {
+    render(
+      <StatusStrip character={buildCharacter({ initiative: 0 })} displayedAc={15} />,
+    );
+    fireEvent.click(screen.getByTestId('status-init'));
+    const input = screen.getByTestId('status-init-input');
+    fireEvent.change(input, { target: { value: '-2' } });
+    fireEvent.blur(input);
+    expect(updateCharacterMock).toHaveBeenCalledWith({ initiative: -2 });
+  });
+
+  it('SAISIT des mètres et STOCKE des pieds', () => {
+    // C'est l'invariant qui compte : l'utilisateur voit des mètres, le contenu
+    // SRD et la carte continuent de raisonner en pieds.
+    render(
+      <StatusStrip character={buildCharacter({ speed: 30 })} displayedAc={15} />,
+    );
+    fireEvent.click(screen.getByTestId('status-speed'));
+    const input = screen.getByTestId('status-speed-input');
+    fireEvent.change(input, { target: { value: '12' } });
+    fireEvent.blur(input);
+    expect(updateCharacterMock).toHaveBeenCalledWith({ speed: 40 });
+  });
+
+  it('pré-remplit la saisie avec la vitesse courante EN MÈTRES', () => {
+    render(
+      <StatusStrip character={buildCharacter({ speed: 30 })} displayedAc={15} />,
+    );
+    fireEvent.click(screen.getByTestId('status-speed'));
+    expect(screen.getByTestId('status-speed-input')).toHaveValue(9);
+  });
+
+  it('borne une faute de frappe au lieu de l’enregistrer', () => {
+    render(
+      <StatusStrip character={buildCharacter({ initiative: 0 })} displayedAc={15} />,
+    );
+    fireEvent.click(screen.getByTestId('status-init'));
+    const input = screen.getByTestId('status-init-input');
+    fireEvent.change(input, { target: { value: '900' } });
+    fireEvent.blur(input);
+    expect(updateCharacterMock).toHaveBeenCalledWith({ initiative: 20 });
+  });
+
+  it('Échap referme sans rien écrire', () => {
+    render(
+      <StatusStrip character={buildCharacter({ initiative: 2 })} displayedAc={15} />,
+    );
+    fireEvent.click(screen.getByTestId('status-init'));
+    fireEvent.keyDown(screen.getByTestId('status-init-input'), { key: 'Escape' });
+    expect(screen.queryByTestId('status-init-input')).toBeNull();
+    expect(updateCharacterMock).not.toHaveBeenCalled();
+  });
+
+  it('en lecture seule, aucune cellule n’est cliquable', () => {
+    render(
+      <StatusStrip
+        character={buildCharacter({ initiative: 2 })}
+        displayedAc={15}
+        readOnly
+      />,
+    );
+    expect(screen.queryByTestId('status-init')).toBeNull();
+    expect(screen.queryByTestId('status-speed')).toBeNull();
+  });
+
+  it('la CA reste dérivée — pas d’édition promise sans terme de surcharge', () => {
+    render(<StatusStrip character={buildCharacter()} displayedAc={17} />);
+    const label = screen.getByText('CA');
+    expect(label.closest('button')).toBeNull();
   });
 });

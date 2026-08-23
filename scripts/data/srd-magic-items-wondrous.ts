@@ -7,7 +7,7 @@
  *   - FR : `content-sources/extracted/raw/FR_SRD_CC_v5.2.1.txt`
  *     (section "Objets magiques de A à Z", ligne 24359)
  *
- * Cf. plan `plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.2).
+ * Cf. plan `docs/plans/C-magic-items-srd-common-uncommon.md` (tracer-bullet C.2).
  *
  * Scope C.2 : wondrous items portés sur le corps (bottes, gants, gantelets,
  * heaumes, capes, chapeaux, broches, bracelets, bandeaux, robes, lunettes,

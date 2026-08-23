@@ -1,6 +1,6 @@
 # Design System
 
-The canonical reference is `prototype/grimwar.html`. This document codifies its tokens and patterns for React/Tailwind use.
+The canonical reference is `docs/prototype/grimwar.html`. This document codifies its tokens and patterns for React/Tailwind use.
 
 ## Brand voice (visual)
 
@@ -195,7 +195,7 @@ Reference icons (must exist):
 - Actions: `i-sword`, `i-bow`, `i-dagger`, `i-staff`
 - UI: `i-search`, `i-dice`, `i-book`, `i-heart`, `i-plus`, `i-feather`, `i-potion`, `i-bag`, `i-init`, `i-ac`, `i-speed`
 
-Definitions copied from `prototype/grimwar.html`.
+Definitions copied from `docs/prototype/grimwar.html`.
 
 ### `<Aurora>`
 
@@ -211,7 +211,7 @@ Disable on `prefers-reduced-motion`.
 
 ### `<Flourish>`
 
-A decorative SVG ornament. Four placement variants for hero card corners: `tl`, `tr`, `bl`, `br`. The paths are reproduced from `prototype/grimwar.html`.
+A decorative SVG ornament. Four placement variants for hero card corners: `tl`, `tr`, `bl`, `br`. The paths are reproduced from `docs/prototype/grimwar.html`.
 
 ### `<Divider>`
 

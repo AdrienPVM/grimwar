@@ -19,7 +19,7 @@
  * (« il faut FOR 13 OU DEX 13 »).
  *
  * Type dédié plutôt que réutilisation de `FeatPrerequisite` — cf. audit
- * `plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED` + commit 2D.2 message.
+ * `docs/plans/2D-MULTICLASS-AUDIT.md > Décisions LOCKED` + commit 2D.2 message.
  */
 
 import type { AbilityCode, Character } from '@/shared/types/character';

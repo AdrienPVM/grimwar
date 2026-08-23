@@ -9,6 +9,7 @@ import { addItemToInventory } from '@/shared/lib/inventory';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Character } from '@/shared/types/character';
 import type { Item, MagicItem } from '@/shared/types/content';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 
 import { useUpdateCharacter } from '../../use-update-character';
 import { CustomItemForm } from './custom-item-form';
@@ -36,8 +37,8 @@ export function AddItemModal({
   onUserItemCreated,
 }: AddItemModalProps): JSX.Element {
   const { updateCharacter } = useUpdateCharacter(character);
-  const { data: items } = useContent('items');
-  const { data: magicItems } = useContent('magic-items');
+  const { data: items, scopeOf: scopeOfItem } = useContent('items');
+  const { data: magicItems, scopeOf: scopeOfMagic } = useContent('magic-items');
 
   const [view, setView] = useState<View>('browse');
   const [query, setQuery] = useState<string>('');
@@ -46,7 +47,7 @@ export function AddItemModal({
   const [qty, setQty] = useState<number>(1);
   const [busy, setBusy] = useState<boolean>(false);
 
-  const normalizedQuery = useMemo(() => normalize(query), [query]);
+  const normalizedQuery = useMemo(() => normalizeForSearch(query), [query]);
 
   const filtered = useMemo(() => {
     const combined: { item: Item | MagicItem; isMagic: boolean }[] = [
@@ -55,7 +56,7 @@ export function AddItemModal({
     ];
     if (!normalizedQuery) return combined.slice(0, 50);
     return combined
-      .filter((entry) => normalize(localize(entry.item.name)).includes(normalizedQuery))
+      .filter((entry) => normalizeForSearch(localize(entry.item.name)).includes(normalizedQuery))
       .slice(0, 50);
   }, [items, magicItems, normalizedQuery]);
 
@@ -72,7 +73,20 @@ export function AddItemModal({
           coins: { ...character.inventory.coins },
         },
       };
-      await addItemToInventory(inventoryClone, selectedId, 'public', { qty });
+      // La liste affichée est FUSIONNÉE (SRD ∪ packs maison) ; l'inventaire,
+      // lui, persiste la provenance. Écrire `'public'` sur un objet venu d'un
+      // pack le rendait « introuvable » à la relecture — la modale montrait ce
+      // qu'elle ne savait pas enregistrer.
+      const { scope, scopeId } = selectedIsMagic
+        ? scopeOfMagic(selectedId)
+        : scopeOfItem(selectedId);
+      await addItemToInventory(
+        inventoryClone,
+        selectedId,
+        scope,
+        { qty },
+        scopeId,
+      );
       await updateCharacter({ inventory: inventoryClone.inventory });
       const added = filtered.find((f) => f.item.id === selectedId);
       const addedName = added ? localize(added.item.name) : selectedId;
@@ -242,9 +256,3 @@ export function AddItemModal({
   );
 }
 
-function normalize(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}

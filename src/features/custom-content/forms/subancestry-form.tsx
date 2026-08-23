@@ -30,7 +30,7 @@ import { FieldString } from './fields/field-string';
  * d'édition n'est PAS résolue ici — ce raffinement attendra une passe edit
  * mode (3C.10).
  *
- * `source` est figé à `aidedd-homebrew`.
+ * `source` est figé à `custom`.
  */
 
 const ABILITY_KEYS = ['for', 'dex', 'con', 'int', 'sag', 'cha'] as const;
@@ -114,7 +114,7 @@ export function buildSubancestryFromDraft(
         ability: asi.ability as AbilityKey,
         bonus: asi.bonus,
       })),
-    source: 'aidedd-homebrew',
+    source: 'custom',
   };
 }
 

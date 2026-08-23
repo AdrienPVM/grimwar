@@ -21,7 +21,7 @@ function fakeItem(id: string, label: string): Item {
 }
 
 /**
- * Le hook délègue à `loadContentMulti` avec le campaignId du Context et l'uid
+ * Le hook délègue à `loadContentMultiScoped` avec le campaignId du Context et l'uid
  * lu du store auth. On vérifie le passage des paramètres + la réactivité aux
  * changements d'auth/Provider — symétrique à `useContentResolver`.
  */
@@ -31,10 +31,12 @@ describe('useContent', () => {
     vi.restoreAllMocks();
   });
 
-  it('appelle loadContentMulti avec userId=null et campaignId=null hors Provider et hors auth', async () => {
+  it('appelle loadContentMultiScoped avec userId=null et campaignId=null hors Provider et hors auth', async () => {
     const spy = vi
-      .spyOn(LoadContentMulti, 'loadContentMulti')
-      .mockResolvedValue([fakeItem('sword', 'épée')] as never);
+      .spyOn(LoadContentMulti, 'loadContentMultiScoped')
+      .mockResolvedValue([
+        { entity: fakeItem('sword', 'épée'), scope: 'public' },
+      ] as never);
 
     const { result } = renderHook(() => useContent('items'));
 
@@ -59,7 +61,7 @@ describe('useContent', () => {
       isReady: true,
     });
     const spy = vi
-      .spyOn(LoadContentMulti, 'loadContentMulti')
+      .spyOn(LoadContentMulti, 'loadContentMultiScoped')
       .mockResolvedValue([] as never);
 
     const { result } = renderHook(() => useContent('items'));
@@ -74,7 +76,7 @@ describe('useContent', () => {
 
   it('propage campaignId du Provider', async () => {
     const spy = vi
-      .spyOn(LoadContentMulti, 'loadContentMulti')
+      .spyOn(LoadContentMulti, 'loadContentMultiScoped')
       .mockResolvedValue([] as never);
 
     const { result } = renderHook(() => useContent('items'), {
@@ -93,7 +95,7 @@ describe('useContent', () => {
 
   it('reload sur changement de userId', async () => {
     const spy = vi
-      .spyOn(LoadContentMulti, 'loadContentMulti')
+      .spyOn(LoadContentMulti, 'loadContentMultiScoped')
       .mockResolvedValue([] as never);
 
     const { result } = renderHook(() => useContent('items'));
@@ -122,8 +124,8 @@ describe('useContent', () => {
     });
   });
 
-  it('propage error si loadContentMulti rejette', async () => {
-    vi.spyOn(LoadContentMulti, 'loadContentMulti').mockRejectedValue(
+  it('propage error si loadContentMultiScoped rejette', async () => {
+    vi.spyOn(LoadContentMulti, 'loadContentMultiScoped').mockRejectedValue(
       new Error('boom'),
     );
 
@@ -132,5 +134,43 @@ describe('useContent', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error?.message).toBe('boom');
     expect(result.current.data).toEqual([]);
+  });
+});
+
+/**
+ * `scopeOf` est ce qui manquait pour qu'un écran puisse ÉCRIRE une référence
+ * correcte : sans lui, un objet de pack partait en inventaire marqué SRD.
+ */
+describe('useContent — scopeOf', () => {
+  beforeEach(() => {
+    useAuthStore.setState({ user: null, isAnonymous: false, isReady: false });
+    vi.restoreAllMocks();
+  });
+
+  it('rend la provenance de chaque entrée', async () => {
+    vi.spyOn(LoadContentMulti, 'loadContentMultiScoped').mockResolvedValue([
+      { entity: fakeItem('sword', 'épée'), scope: 'public' },
+      { entity: fakeItem('bow', 'arc maison'), scope: 'user', scopeId: 'u-1' },
+    ] as never);
+
+    const { result } = renderHook(() => useContent('items'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.scopeOf('sword')).toEqual({ scope: 'public' });
+    expect(result.current.scopeOf('bow')).toEqual({
+      scope: 'user',
+      scopeId: 'u-1',
+    });
+  });
+
+  it('retombe sur « public » pour un id inconnu — jamais undefined', async () => {
+    vi.spyOn(LoadContentMulti, 'loadContentMultiScoped').mockResolvedValue(
+      [] as never,
+    );
+
+    const { result } = renderHook(() => useContent('items'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.scopeOf('inexistant')).toEqual({ scope: 'public' });
   });
 });

@@ -52,9 +52,12 @@ test.describe('UAT infobulles — fiche (Magie / Essence / Avoir)', () => {
     //    (`role="tab"`), pas des boutons. Le bouton de jet porte son nom propre
     //    → l'infobulle le DÉCRIT (describedby), exposée au survol.
     await page.getByRole('tab', { name: /Essence/i }).click();
-    const saveBtn = page
-      .getByRole('button', { name: /Sauvegarde|jet de sauvegarde/i })
-      .first();
+    // Cibler la PUCE DE JET par son libellé exact (« Jet de sauvegarde
+    // {caractéristique} »), et non par un `/Sauvegarde/i` lâche : depuis que la
+    // carte porte un bouton « Modifier les maîtrises de sauvegarde », ce
+    // dernier arrive premier dans le DOM et matchait à la place de la puce —
+    // le survol ouvrait donc la mauvaise infobulle (ou aucune).
+    const saveBtn = page.getByRole('button', { name: /^Jet de sauvegarde / }).first();
     if (await saveBtn.count()) {
       await saveBtn.scrollIntoViewIfNeeded();
       await saveBtn.hover();

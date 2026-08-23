@@ -159,8 +159,8 @@ build.
 - **Conflit d'upcast** `Domination de personne` (commit 2) : progression 6e/7e/8e+
   reconstruite, vérifiée page 138 du PDF FR via les sorts voisins intacts
   (`Domination de bête` / `Domination de monstre`).
-- **Marqueur D14** : trims de statblocks parasites signalés inline (cf. `plans/DEBT.md > D14`).
-- **Letter-spacing résiduel** : `normalizeSpacedTitle` (cf. `plans/DEBT.md > D15`).
+- **Marqueur D14** : trims de statblocks parasites signalés inline (cf. `docs/plans/DEBT.md > D14`).
+- **Letter-spacing résiduel** : `normalizeSpacedTitle` (cf. `docs/plans/DEBT.md > D15`).
 
 **Migration des persos** : les IDs 2014 (AideDD) → SRD 2024 sont remappés au
 load par `src/shared/lib/rules/spell-aliases.ts` (table canonique + `migrateSpellIds`).
@@ -172,7 +172,7 @@ pnpm tsx scripts/bootstrap-srd-spells.ts   # .txt SRD → scripts/data/srd-spell
 pnpm tsx scripts/extract-srd-spells.ts     # scripts/data/srd-spells.ts → public/data/spells.json
 pnpm tsx scripts/update-content-index.ts   # recalcule index.json (contentHash)
 ```
-⚠️ **NE PAS** utiliser `pnpm content:build` (interdit, cf. CLAUDE.md + `plans/DEBT.md > D17`).
+⚠️ **NE PAS** utiliser `pnpm content:build` (interdit, cf. CLAUDE.md + `docs/plans/DEBT.md > D17`).
 
 ## Items DB strict (réouverture plan 04 post-MVP-classes)
 

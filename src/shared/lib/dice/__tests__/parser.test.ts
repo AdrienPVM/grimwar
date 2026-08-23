@@ -120,8 +120,45 @@ describe('parseDiceExpression', () => {
     expect(() => parseDiceExpression('1d')).toThrow();
   });
 
-  it('throw sur terme de dés négatif', () => {
-    expect(() => parseDiceExpression('1d20-1d4')).toThrow(/négatif/);
+  /**
+   * Le 5e retire des dés autant qu'il en ajoute : Fardeau (`1d20-1d4`),
+   * pénalités maison. Le parseur refusait catégoriquement le signe moins devant
+   * un terme de dés — ces mécaniques étaient inexprimables.
+   */
+  describe('termes soustractifs', () => {
+    it('accepte 1d20-1d4 (Fardeau) et marque le second terme', () => {
+      const ast = parseDiceExpression('1d20-1d4');
+      expect(ast.terms).toEqual([
+        { count: 1, sides: 20 },
+        { count: 1, sides: 4, sign: -1 },
+      ]);
+      expect(ast.modifier).toBe(0);
+    });
+
+    it('ne pose aucun `sign` sur un terme ajouté', () => {
+      expect(parseDiceExpression('2d6+3').terms[0]).toEqual({
+        count: 2,
+        sides: 6,
+      });
+    });
+
+    it('combine soustraction de dés et modificateur plat', () => {
+      const ast = parseDiceExpression('1d20+5-1d4-2');
+      expect(ast.terms).toEqual([
+        { count: 1, sides: 20 },
+        { count: 1, sides: 4, sign: -1 },
+      ]);
+      expect(ast.modifier).toBe(3);
+    });
+
+    it('garde kh/kl sur un terme retranché', () => {
+      expect(parseDiceExpression('1d20-2d4kh1').terms[1]).toEqual({
+        count: 2,
+        sides: 4,
+        kh: 1,
+        sign: -1,
+      });
+    });
   });
 });
 
@@ -149,5 +186,21 @@ describe('stringifyDiceAst', () => {
   it('sérialise modificateur seul `+3`', () => {
     const ast = parseDiceExpression('+3');
     expect(stringifyDiceAst(ast)).toBe('+3');
+  });
+});
+
+describe('stringifyDiceAst — termes soustractifs', () => {
+  it('round-trip `1d20-1d4`', () => {
+    expect(stringifyDiceAst(parseDiceExpression('1d20-1d4'))).toBe('1d20-1d4');
+  });
+
+  it('n’ajoute pas de `+` en tête', () => {
+    expect(stringifyDiceAst(parseDiceExpression('2d6'))).toBe('2d6');
+  });
+
+  it('rend la formule complète d’un Fardeau modifié', () => {
+    expect(stringifyDiceAst(parseDiceExpression('1d20+5-1d4'))).toBe(
+      '1d20-1d4+5',
+    );
   });
 });

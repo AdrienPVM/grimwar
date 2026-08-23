@@ -113,7 +113,7 @@ test.describe('UAT — fiche de créature dans le tracker', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
     // ─── 4. Tracker → init → démarrer.
-    await page.getByRole('button', { name: /Embuscade dans la clairière/i }).click();
+    await page.getByRole('button', { name: /^Embuscade dans la clairière/i }).click();
     await expect(page).toHaveURL(/\/encounters\/[^/]+$/);
     await page.getByRole('button', { name: 'Lancer l’initiative' }).click();
     await page.getByRole('button', { name: 'Démarrer le combat' }).click();

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+import { vibrateForOutcome } from '../haptics';
+
 /**
  * Toast minimaliste utilisé par les actions de combat (rolls, damage/heal,
  * death saves). Une seule pile FIFO globale ; chaque toast vit sa durée propre
@@ -42,6 +44,12 @@ export const useToastStore = create<ToastState>((set) => ({
     const id = nextId();
     const durationMs = entry.durationMs ?? 2300;
     set((state) => ({ toasts: [...state.toasts, { ...entry, id, durationMs }] }));
+    // Retour haptique branché ICI et non sur chaque appelant : le `kind` du
+    // toast porte déjà exactement la distinction voulue (issue de jeu vs
+    // message d'application), et tous les chemins de jet — d20, dégâts, chaîne
+    // attaque, mode physique — passent par cette pile. Un seul point de vérité,
+    // zéro churn dans le moteur de dés. Muet pour `info` / `grim`.
+    vibrateForOutcome(entry.kind);
     if (typeof window !== 'undefined') {
       window.setTimeout(() => {
         set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));

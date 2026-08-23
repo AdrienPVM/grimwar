@@ -33,10 +33,16 @@ Le pack se présente comme un seul document JSON ; le contenu y vit côté MJ po
 | Auteur | texte libre | ton nom, ton pseudo, ce que tu veux |
 | Version | `MAJOR.MINOR.PATCH` | semver simple, défaut `1.0.0` |
 | Description (FR / EN) | texte libre | optionnel |
+| Provenance | texte libre, 60 car. max | optionnel. D'où vient ce contenu, en clair (« Xanathar », « Ma campagne »). Affiché à côté des entrées du pack dans le Codex — c'est ce qui distingue à l'écran ta Boule de feu de celle du livre |
 
 ### Étape 2 — Ajouter des entités
 
 Chaque catégorie a son bouton **Ajouter…**. Tu ouvres le formulaire dédié, tu remplis les champs, tu cliques **Ajouter**. L'entité apparaît dans la liste de la catégorie.
+
+À côté, **Dupliquer** ouvre le catalogue complet (SRD ∪ tes packs) et pré-remplit le formulaire depuis l'entrée choisie. Deux modes, à choisir avant de cliquer :
+
+- **Nouvelle entrée** — l'identifiant est décalé (`boule-de-feu-maison`), l'originale reste servie à ta table.
+- **Remplacer l'originale** — l'identifiant est conservé, **ta version écrase l'originale partout à ta table**. C'est la façon de dire « chez moi la Boule de feu fait 6d6 ».
 
 Quelques points spécifiques par catégorie :
 
@@ -45,7 +51,7 @@ Quelques points spécifiques par catégorie :
 - **Sorts** : les composants V/S/M, l'école, le niveau, la durée et la portée sont normalisés ; les dés de dégâts sont optionnels et formatés sous forme de répéteur.
 - **Objets** : la catégorie (arme/armure/équipement/outil) détermine les champs visibles (dés de dégâts pour les armes, AC base pour les armures, etc.).
 - **Ascendances** : V1 couvre header + ASI + traits + options Dragon/Géant. Les sous-races qui nécessitent des slugs de sorts cross-bundle (Tieffelin, Elfe, Gnome) sont à éditer manuellement après export.
-- **Classes** : V1 cible une classe homebrew simple (fondations + features L1). La table de progression L2-L20, les sous-choix L1 type Ordre divin, et les Weapon Mastery se font en JSON après export — un avertissement dédié rappelle ce périmètre dans le form.
+- **Classes** : fondations + features L1 + **table de progression des sorts** (colonne « sorts préparés ou connus », 20 valeurs à coller, plus la colonne des sorts mineurs si la classe en a) et **mode de préparation** (préparés / connus). Sans la table, une classe magique maison lance des sorts sans jamais rien préparer. Les sous-choix L1 type Ordre divin et les Weapon Mastery se font toujours en JSON après export. `cleric` et `druid` restent les deux seuls identifiants refusés — leur schéma exige une liste d'ordres que le formulaire ne produit pas ; les 10 autres classes SRD sont dupliquables.
 
 > Tous les ids d'entité sont des **slugs kebab-case uniques au sein de leur catégorie dans le pack**. Réutiliser un id écrase l'entité précédente du pack (utile pour réimporter une version mise à jour).
 
@@ -82,6 +88,7 @@ Sous la zone de drop, la liste des packs existants pour ton compte (live via `on
 
 - **Pas d'export in-app** : pour récupérer le JSON brut, passe par la Firestore console.
 - **Pas de partage public** : le pack reste sur ton compte. Partager = donner le JSON à un ami qui l'importe sur le sien.
+- **Packs volumineux** : au-delà de la limite Firestore d'un document (1 Mio), le pack est découpé automatiquement en tranches `{id}--00`, `--01`… Rien à faire : il reste UNE ligne dans la liste, il se recolle à l'édition, et le supprimer emporte toutes ses tranches. Seule limite dure restante : une entité SEULE plus lourde qu'un document est indécoupable (message explicite au save).
 - **Pas de validation cross-pack** : si un sort d'ascendance référence un slug qui n'existe pas dans le pack, l'erreur sort au moment où le wizard essaie de résoudre le slug (pas au save).
 - **Sorts d'ascendance Tieffelin/Elfe/Gnome** : il faut éditer le JSON manuellement après export. La V1 du form d'ascendance bloque ces sous-races pour éviter une UX cassée.
 

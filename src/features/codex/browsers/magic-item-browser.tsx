@@ -3,50 +3,27 @@ import { useId } from 'react';
 
 import { Chip } from '@/shared/components/chip';
 import { DetailModal } from '@/shared/components/detail-modal';
+import { ScrollRow } from '@/shared/components/scroll-row';
 import { cn } from '@/shared/lib/cn';
 import { useContent } from '@/shared/hooks/use-content';
 import { localize, t } from '@/shared/lib/i18n';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 import type { MagicItem, Rarity } from '@/shared/types/content';
 
 import {
   CodexEmpty,
-  CodexField,
   CodexLoading,
-  CodexModalShell,
   CodexResultCount,
   CodexRow,
   CodexSearchField,
 } from '../codex-ui';
+import {
+  MagicItemCodexDetail,
+  RARITY_COLOR,
+  RARITY_ORDER,
+} from './magic-item-codex-detail';
 
 type RarityFilter = Rarity | 'all';
-
-/** Ordre canonique des raretés (SRD). */
-const RARITY_ORDER: readonly Rarity[] = [
-  'common',
-  'uncommon',
-  'rare',
-  'very rare',
-  'legendary',
-  'artifact',
-];
-
-/** Couleur de rareté (tokens existants), du plus commun au plus rare. */
-const RARITY_COLOR: Record<Rarity, string> = {
-  common: 'text-text-secondary',
-  uncommon: 'text-teal',
-  rare: 'text-gold',
-  'very rare': 'text-amethyst',
-  legendary: 'text-crimson',
-  artifact: 'text-gold-bright',
-};
-
-function attunementText(item: MagicItem): string | null {
-  if (item.attunement === true) return t('codex.item.attunementRequired');
-  if (item.attunement && typeof item.attunement === 'object') {
-    return localize(item.attunement);
-  }
-  return null;
-}
 
 /**
  * Navigateur d'objets magiques du Codex (plan 19). Recherche par nom + filtre
@@ -55,7 +32,7 @@ function attunementText(item: MagicItem): string | null {
  * `magic-items.json`.
  */
 export function MagicItemBrowser(): JSX.Element {
-  const { data: items, loading } = useContent('magic-items');
+  const { data: items, loading, scopeOf } = useContent('magic-items');
   const [query, setQuery] = useState<string>('');
   const [rarity, setRarity] = useState<RarityFilter>('all');
   const [active, setActive] = useState<MagicItem | null>(null);
@@ -68,11 +45,11 @@ export function MagicItemBrowser(): JSX.Element {
   }, [items]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLocaleLowerCase('fr');
+    const q = normalizeForSearch(query);
     return items
       .filter((item) => {
         if (rarity !== 'all' && item.rarity !== rarity) return false;
-        if (q && !localize(item.name).toLocaleLowerCase('fr').includes(q))
+        if (q && !normalizeForSearch(localize(item.name)).includes(q))
           return false;
         return true;
       })
@@ -89,7 +66,7 @@ export function MagicItemBrowser(): JSX.Element {
         placeholder={t('codex.search.magicItems')}
       />
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+      <ScrollRow>
         <Chip active={rarity === 'all'} onToggle={() => setRarity('all')}>
           {t('codex.item.allRarities')}
         </Chip>
@@ -103,7 +80,7 @@ export function MagicItemBrowser(): JSX.Element {
             {t(`rarity.${r}`)}
           </Chip>
         ))}
-      </div>
+      </ScrollRow>
 
       <CodexResultCount count={filtered.length} />
 
@@ -115,6 +92,7 @@ export function MagicItemBrowser(): JSX.Element {
             <li key={item.id}>
               <CodexRow
                 title={localize(item.name)}
+                origin={scopeOf(item.id)}
                 onClick={() => setActive(item)}
                 meta={
                   <>
@@ -137,25 +115,7 @@ export function MagicItemBrowser(): JSX.Element {
         size="lg"
       >
         {active ? (
-          <CodexModalShell
-            titleId={titleId}
-            title={localize(active.name)}
-            eyebrow={`${t(`item.category.${active.category}`)} · ${t(
-              `rarity.${active.rarity}`,
-            )}`}
-          >
-            {attunementText(active) ? (
-              <CodexField label={t('codex.item.attunement')}>
-                {attunementText(active)}
-              </CodexField>
-            ) : null}
-            <p className="whitespace-pre-line text-amethyst">
-              {localize(active.magicDescription)}
-            </p>
-            {active.description ? (
-              <p className="whitespace-pre-line">{localize(active.description)}</p>
-            ) : null}
-          </CodexModalShell>
+          <MagicItemCodexDetail item={active} titleId={titleId} />
         ) : null}
       </DetailModal>
     </div>

@@ -1,11 +1,17 @@
 import { useMemo, useState } from 'react';
 
+import {
+  NORMAL_ROLL,
+  RollOptionsMenu,
+  type RollOptions,
+} from '@/features/dice/roll-options-menu';
 import { rollWithFlags } from '@/features/dice/roll-with-flags';
 import { useDice } from '@/features/dice/use-dice';
 import { Button } from '@/shared/components/button';
 import { DetailModal } from '@/shared/components/detail-modal';
 import { Tooltip } from '@/shared/components/tooltip';
 import { useContent } from '@/shared/hooks/use-content';
+import { useLongPress } from '@/shared/hooks/use-long-press';
 import { logSpellCast } from '@/shared/lib/event-logger';
 import { localize, t } from '@/shared/lib/i18n';
 import { triggerCastSigil } from '@/shared/lib/slices/cast-fx-slice';
@@ -129,6 +135,7 @@ export function SpellDetailModal({
   const { updateCharacter } = useUpdateCharacter(character);
   const dice = useDice();
   const [busy, setBusy] = useState<boolean>(false);
+  const [attackMenu, setAttackMenu] = useState<boolean>(false);
 
   // Plan D14 — chargement des statblocks d'invocations référencés par le sort
   // (Find Steed / Animate Objects / Giant Insect / Summon Dragon). Le hook ne
@@ -290,7 +297,16 @@ export function SpellDetailModal({
     }
   }
 
-  async function handleAttackRoll(): Promise<void> {
+  // Une attaque de sort se fait avec avantage aussi souvent qu'une attaque
+  // d'arme — elle n'avait pourtant aucun menu.
+  const attackHandlers = useLongPress(
+    () => void handleAttackRoll(),
+    () => setAttackMenu(true),
+  );
+
+  async function handleAttackRoll(
+    options: RollOptions = NORMAL_ROLL,
+  ): Promise<void> {
     if (readOnly || !activeClass) return;
     const mod = abilityModifier(character.abilities[activeClass.ability]);
     const pb = proficiencyBonus(character.totalLevel);
@@ -300,6 +316,10 @@ export function SpellDetailModal({
       character,
       baseMod: pb + mod,
       label: t('sheet.magie.detail.attackLabel').replace('{spell}', localize(spell.name)),
+      advantage: options.advantage,
+      discreet: options.discreet,
+      useInspiration: options.useInspiration,
+      bonus: options.bonus,
       consumeInspiration: async () => {
         await updateCharacter({ inspiration: false });
       },
@@ -467,13 +487,28 @@ export function SpellDetailModal({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => void handleAttackRoll()}
+                {...attackHandlers}
                 disabled={readOnly}
                 className="flex-1"
                 tooltip={t('sheet.tip.spellAttackRoll')}
               >
                 {t('sheet.magie.detail.attackShort')}
               </Button>
+            )}
+            {attackMenu && (
+              <RollOptionsMenu
+                title={localize(spell.name)}
+                ariaLabel={t('dice.options.aria').replace(
+                  '{label}',
+                  localize(spell.name),
+                )}
+                hasInspiration={character.inspiration}
+                onPick={(options) => {
+                  setAttackMenu(false);
+                  void handleAttackRoll(options);
+                }}
+                onClose={() => setAttackMenu(false)}
+              />
             )}
             <Button
               variant="primary"

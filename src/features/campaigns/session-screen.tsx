@@ -2,6 +2,7 @@ import { useMemo, useState, type JSX } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/features/auth/use-auth';
+import { DmToolsOverlay } from '@/features/dm-view/dm-tools-overlay';
 import { Button } from '@/shared/components/button';
 import { PageContainer } from '@/shared/components/page-container';
 import { Chip } from '@/shared/components/chip';
@@ -12,7 +13,9 @@ import { cn } from '@/shared/lib/cn';
 import { logSessionEnd, logSessionStart } from '@/shared/lib/event-logger';
 import { t, type StringKey } from '@/shared/lib/i18n';
 import {
+  cancelSession,
   endSession,
+  reopenSession,
   SessionServiceError,
   startSession,
 } from '@/shared/lib/services/sessions';
@@ -23,9 +26,10 @@ import { compileSessionJournal } from '@/features/journal/compile-session-journa
 import { SessionJournalTab } from '@/features/journal/session-journal-tab';
 import { useContent } from '@/shared/hooks/use-content';
 
-import { buildRoster } from './campaign-detail-screen';
+import { buildRoster } from './roster';
 import { SessionAttendanceTab } from './session-attendance-tab';
 import { SessionEventsTab } from './session-events-tab';
+import { SessionMetaModal } from './session-meta-modal';
 import { SessionNotesTab } from './session-notes-tab';
 import type { LinkedMember } from './use-encounter-party-draft';
 import { useCampaign } from './use-campaign';
@@ -77,8 +81,13 @@ export function SessionScreen(): JSX.Element {
   } = useSession(cid, sid);
 
   const [tab, setTab] = useState<SessionTab>('notes');
+  const [dmToolsOpen, setDmToolsOpen] = useState<boolean>(false);
   const [actionPending, setActionPending] = useState<boolean>(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [metaOpen, setMetaOpen] = useState<boolean>(false);
+  // Annulation confirmée en deux temps — même patron que les autres gestes
+  // destructifs de l'app (retrait d'objet, suppression de document).
+  const [confirmingCancel, setConfirmingCancel] = useState<boolean>(false);
   const setActiveCampaign = useActiveCampaignStore((s) => s.setActiveCampaign);
 
   // Contenu chargé au niveau écran (caché Dexie) : sert au journal (libellés de
@@ -184,6 +193,52 @@ export function SessionScreen(): JSX.Element {
     }
   }
 
+  /**
+   * Annule la séance (M13) : elle n'a pas eu lieu. On libère le pointeur de
+   * session active si c'était elle — sinon les événements de jeu suivants
+   * seraient tagués d'une séance annulée.
+   */
+  async function handleCancel(): Promise<void> {
+    if (!session || !cid || !sid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    try {
+      await cancelSession(cid, sid);
+      if (session.status === 'active') setActiveCampaign(cid, null);
+      setConfirmingCancel(false);
+      refresh();
+    } catch {
+      setActionError(t('sessions.action.error.generic'));
+    } finally {
+      setActionPending(false);
+    }
+  }
+
+  /**
+   * Rouvre une séance close ou annulée par erreur (M13). Le service décide de la
+   * cible (`completed` → `active`, `cancelled` → `planned`) ; on ne repose le
+   * pointeur de campagne active que si la séance redevient réellement active.
+   */
+  async function handleReopen(): Promise<void> {
+    if (!session || !cid || !sid || actionPending) return;
+    setActionPending(true);
+    setActionError(null);
+    const wasCompleted = session.status === 'completed';
+    try {
+      await reopenSession(cid, sid);
+      if (wasCompleted) setActiveCampaign(cid, sid);
+      refresh();
+    } catch (err) {
+      setActionError(
+        err instanceof SessionServiceError && err.kind === 'another-session-active'
+          ? t('sessions.action.error.anotherActive')
+          : t('sessions.action.error.generic'),
+      );
+    } finally {
+      setActionPending(false);
+    }
+  }
+
   if (campaignLoading || sessionLoading) return <Splash />;
 
   if (sessionError || !session || !cid || !sid) {
@@ -223,7 +278,7 @@ export function SessionScreen(): JSX.Element {
 
   return (
     <PageContainer width="content">
-      <nav className="flex">
+      <nav className="flex items-center justify-between gap-2">
         <Button
           type="button"
           variant="ghost"
@@ -233,6 +288,21 @@ export function SessionScreen(): JSX.Element {
         >
           ← {t('sessions.detail.back')}
         </Button>
+
+        {/* E12 / scénario M8 — c'est en séance qu'on lance un dé sous le
+            paravent et qu'on griffonne une note, pas sur le hub de campagne où
+            ces outils vivaient seuls, tout en bas d'un écran long. */}
+        {isGm && campaign ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setDmToolsOpen(true)}
+            tooltip={t('campaigns.dmTools.openTip')}
+          >
+            {t('campaigns.dmTools.open')}
+          </Button>
+        ) : null}
       </nav>
 
       <header className="mt-4 text-center">
@@ -248,7 +318,12 @@ export function SessionScreen(): JSX.Element {
           <Chip variant={statusChip.variant}>{t(statusChip.labelKey)}</Chip>
         </div>
 
-        {isGm && (session.status === 'planned' || session.status === 'active') ? (
+        {/* Barre d'actions du meneur. Avant M13, elle disparaissait dès que la
+            séance quittait `planned`/`active` : une clôture erronée ou un titre
+            mal tapé étaient définitifs. Elle est désormais rendue dans les
+            quatre états — la transition principale d'abord, les corrections
+            ensuite, en `ghost`. */}
+        {isGm ? (
           <div className="mt-5 flex flex-col items-center gap-3">
             {session.status === 'planned' ? (
               <Button
@@ -260,7 +335,7 @@ export function SessionScreen(): JSX.Element {
               >
                 {actionPending ? t('sessions.action.starting') : t('sessions.action.start')}
               </Button>
-            ) : (
+            ) : session.status === 'active' ? (
               <Button
                 variant="secondary"
                 size="md"
@@ -270,7 +345,58 @@ export function SessionScreen(): JSX.Element {
               >
                 {actionPending ? t('sessions.action.ending') : t('sessions.action.end')}
               </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={handleReopen}
+                disabled={actionPending}
+                tooltip={t('campaigns.tip.reopenSession')}
+              >
+                {actionPending
+                  ? t('sessions.action.reopening')
+                  : t('sessions.action.reopen')}
+              </Button>
             )}
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMetaOpen(true)}
+                tooltip={t('campaigns.tip.editSession')}
+              >
+                {t('sessions.edit.cta')}
+              </Button>
+              {session.status === 'planned' || session.status === 'active' ? (
+                confirmingCancel ? (
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={actionPending}
+                  >
+                    {t('sessions.action.cancelConfirm')}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirmingCancel(true)}
+                    tooltip={t('campaigns.tip.cancelSession')}
+                  >
+                    {t('sessions.action.cancel')}
+                  </Button>
+                )
+              ) : null}
+            </div>
+
+            {confirmingCancel ? (
+              <p className="mx-auto max-w-[40ch] font-serif text-body-sm text-crimson">
+                {t('sessions.action.cancelNotice')}
+              </p>
+            ) : null}
+
             {actionError ? (
               <p
                 role="alert"
@@ -370,6 +496,24 @@ export function SessionScreen(): JSX.Element {
           />
         ) : null}
       </section>
+
+      {isGm && campaign ? (
+        <DmToolsOverlay
+          open={dmToolsOpen}
+          onClose={() => setDmToolsOpen(false)}
+          campaignId={campaign.id}
+        />
+      ) : null}
+
+      {isGm ? (
+        <SessionMetaModal
+          campaignId={cid}
+          session={session}
+          open={metaOpen}
+          onClose={() => setMetaOpen(false)}
+          onSaved={refresh}
+        />
+      ) : null}
     </PageContainer>
   );
 }

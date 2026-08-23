@@ -50,7 +50,10 @@ async function killGoblin(page: import('@playwright/test').Page, label: string):
   await page.getByRole('button', { name: new RegExp(`PV / États — ${label}`) }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: label })).toBeVisible();
-  await dialog.getByRole('button', { name: '−10' }).click();
+  // Montant SAISI, pas un palier rapide : depuis M37 les paliers sont dérivés
+  // des PV max, et un gobelin à 7 PV n'offre plus de bouton « −10 ».
+  await dialog.getByLabel('Montant').fill('10');
+  await dialog.getByRole('button', { name: /^− Dégâts$/ }).click();
   await expect(dialog.getByText('0/7')).toBeVisible({ timeout: 10_000 });
   await page.getByRole('button', { name: 'Fermer le contrôle' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -90,7 +93,9 @@ test.describe('UAT 24 (step 12) — combat complet bout en bout', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0, { timeout: 10_000 });
 
     // ─── 01 — Rencontre préparée (3 gobelins).
-    await page.getByRole('button', { name: /guet-apens du tunnel/i }).click();
+    // Ancré au début : la ligne s'appelle « Le guet-apens du tunnel … », le bouton
+    // de gestion « Gérer la rencontre — Le guet-apens du tunnel » (M7).
+    await page.getByRole('button', { name: /^Le guet-apens du tunnel/i }).click();
     await expect(page).toHaveURL(/\/encounters\/[^/]+$/);
     await expect(page.getByRole('button', { name: 'Lancer l’initiative' })).toBeVisible();
     await captureFull(page, '01-rencontre-creee.png');

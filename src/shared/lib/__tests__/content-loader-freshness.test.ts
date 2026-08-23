@@ -8,7 +8,7 @@ import { db as dexie } from '../dexie-db';
 
 /**
  * Tests du mécanisme d'invalidation de cache (durcissement F, plan 13.7 UAT
- * post-13.7 — cf. plans/DEBT.md > D7 réouverte).
+ * post-13.7 — cf. docs/plans/DEBT.md > D7 réouverte).
  *
  * Couvre Bug 2 (mémoïsation absorbant les échecs) et Bug 1 (SW SWR sur
  * index.json) — voir bug report du 2026-05-17.

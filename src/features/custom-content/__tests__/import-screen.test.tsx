@@ -191,6 +191,7 @@ describe('ImportScreen — liste des packs + delete', () => {
       packId: 'pack-test',
       meta: validPack.meta,
       importedAt: 1_700_000_000_000,
+      chunkCount: 1,
     };
     mockUsePacks.mockReturnValue({
       packs: [packEntry],
@@ -214,6 +215,7 @@ describe('ImportScreen — liste des packs + delete', () => {
       packId: 'pack-test',
       meta: validPack.meta,
       importedAt: null,
+      chunkCount: 1,
     };
     mockUsePacks.mockReturnValue({
       packs: [packEntry],

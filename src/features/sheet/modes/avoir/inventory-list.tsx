@@ -6,6 +6,7 @@ import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
 import { localize, t, type StringKey } from '@/shared/lib/i18n';
 import type { Item, MagicItem, ItemCategory } from '@/shared/types/content';
+import { normalizeForSearch } from '@/shared/lib/search-normalize';
 
 import type { ResolvedInventoryRow } from './use-inventory-derived';
 
@@ -36,13 +37,13 @@ export function InventoryList({
   readOnly,
 }: InventoryListProps): JSX.Element {
   const [query, setQuery] = useState<string>('');
-  const normalizedQuery = normalize(query);
+  const normalizedQuery = normalizeForSearch(query);
 
   const filteredItems = useMemo(() => {
     if (!normalizedQuery) return resolvedItems;
     return resolvedItems.filter((row) => {
       if (!row.content) return row.inventory.contentId.includes(normalizedQuery);
-      const name = normalize(localize(row.content.name));
+      const name = normalizeForSearch(localize(row.content.name));
       return name.includes(normalizedQuery);
     });
   }, [resolvedItems, normalizedQuery]);
@@ -105,7 +106,18 @@ function GroupBlock({ label, rows, onItemSelect }: GroupBlockProps): JSX.Element
       <p className="mb-2 font-title text-[9px] font-bold uppercase tracking-[0.24em] text-text-tertiary">
         {label}
       </p>
-      <ul className="flex flex-col gap-1.5">
+      {/*
+        xl: 2 colonnes de lignes (DEBT D6) — la carte inventaire occupe toute la
+        largeur de la fiche desktop, une seule colonne de lignes y laissait un
+        vide de plusieurs centaines de pixels.
+      */}
+      {/*
+        La tuile inventaire occupe une rangée pleine du bento : 2 colonnes dès
+        la tablette, 3 en desktop. Une ligne d'objet est dense (nom + quantité +
+        poids) — à 500 px elle laissait un long couloir vide entre le nom et ses
+        méta.
+      */}
+      <ul className="grid grid-cols-1 gap-1.5 lg:grid-cols-2 xl:grid-cols-3">
         {rows.map((row) => (
           <ItemRow key={row.inventory.contentId + ':' + row.inventory.contentScope} row={row} onSelect={onItemSelect} />
         ))}
@@ -227,9 +239,3 @@ function groupItems(rows: readonly ResolvedInventoryRow[]): readonly CategoryGro
     .sort((a, b) => a.order - b.order);
 }
 
-function normalize(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '');
-}

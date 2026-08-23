@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ParticipantPatch } from '@/shared/lib/services/encounters';
 import type { Condition, Monster } from '@/shared/types/content';
 import type { EncounterParticipant } from '@/shared/types/encounter';
 
@@ -87,16 +88,28 @@ function renderModal(
     monster?: Monster | null;
     pending?: boolean;
     onApplyHp?: (delta: number) => void;
+    onGrantTempHp?: (amount: number) => void;
     onToggleCondition?: (condition: string, action: 'add' | 'remove') => void;
+    onSaveNote?: (note: string) => void;
+    onUpdate?: (patch: ParticipantPatch) => void;
+    onRemove?: () => void;
     onClose?: () => void;
   } = {},
 ): {
   onApplyHp: ReturnType<typeof vi.fn>;
+  onGrantTempHp: ReturnType<typeof vi.fn>;
   onToggleCondition: ReturnType<typeof vi.fn>;
+  onSaveNote: ReturnType<typeof vi.fn>;
+  onUpdate: ReturnType<typeof vi.fn>;
+  onRemove: ReturnType<typeof vi.fn>;
   onClose: ReturnType<typeof vi.fn>;
 } {
   const onApplyHp = vi.fn(over.onApplyHp);
+  const onGrantTempHp = vi.fn(over.onGrantTempHp);
   const onToggleCondition = vi.fn(over.onToggleCondition);
+  const onSaveNote = vi.fn(over.onSaveNote);
+  const onUpdate = vi.fn(over.onUpdate);
+  const onRemove = vi.fn(over.onRemove);
   const onClose = vi.fn(over.onClose);
   render(
     <ParticipantControlModal
@@ -105,11 +118,23 @@ function renderModal(
       monster={over.monster ?? null}
       pending={over.pending ?? false}
       onApplyHp={onApplyHp}
+      onGrantTempHp={onGrantTempHp}
       onToggleCondition={onToggleCondition}
+      onSaveNote={onSaveNote}
+      onUpdate={onUpdate}
+      onRemove={onRemove}
       onClose={onClose}
     />,
   );
-  return { onApplyHp, onToggleCondition, onClose };
+  return {
+    onApplyHp,
+    onGrantTempHp,
+    onToggleCondition,
+    onSaveNote,
+    onUpdate,
+    onRemove,
+    onClose,
+  };
 }
 
 afterEach(() => {
@@ -168,6 +193,74 @@ describe('<ParticipantControlModal>', () => {
     expect(onToggleCondition).toHaveBeenCalledWith('poisoned', 'remove');
   });
 
+  // ─── M6 — PV temporaires accordables ───────────────────────────────────
+  it('« + PV temp. » accorde le montant saisi', () => {
+    const { onGrantTempHp, onApplyHp } = renderModal();
+    fireEvent.change(screen.getByLabelText('Montant'), { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('button', { name: /PV temp/ }));
+    expect(onGrantTempHp).toHaveBeenCalledWith(8);
+    // Les PV RÉELS ne bougent pas : ce n'est pas un soin.
+    expect(onApplyHp).not.toHaveBeenCalled();
+  });
+
+  it('affiche les PV temporaires actifs à côté des PV réels', () => {
+    renderModal({ participant: { currentHp: 4, maxHp: 7, tempHp: 5 } });
+    // Le bouclier se lit SUR la ligne de PV — pas ailleurs dans la modale
+    // (« +5 » existe aussi comme palier de soin rapide).
+    expect(
+      screen.getByText((_, el) => el?.tagName === 'SPAN' && el.textContent === '4/7+5'),
+    ).toBeInTheDocument();
+  });
+
+  // ─── M6 — note libre du combattant ─────────────────────────────────────
+  it('la note se saisit et s’enregistre', () => {
+    const { onSaveNote } = renderModal();
+    fireEvent.change(screen.getByLabelText('Note du combattant'), {
+      target: { value: 'Celui-ci porte la clé.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la note' }));
+    expect(onSaveNote).toHaveBeenCalledWith('Celui-ci porte la clé.');
+  });
+
+  it('« Enregistrer la note » reste désactivé tant que rien n’a changé', () => {
+    renderModal({ participant: { notes: 'Déjà écrit' } });
+    expect(screen.getByRole('button', { name: 'Enregistrer la note' })).toBeDisabled();
+  });
+
+  // ─── M8 — états maison ─────────────────────────────────────────────────
+  it('pose un état maison, libellé préservé verbatim (accents et casse)', () => {
+    const { onToggleCondition } = renderModal();
+    fireEvent.change(screen.getByLabelText('Autre état'), {
+      target: { value: 'Marqué par le Chasseur' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Poser' }));
+    expect(onToggleCondition).toHaveBeenCalledWith('custom:Marqué par le Chasseur', 'add');
+  });
+
+  it('un état maison déjà posé s’affiche en clair et se retire d’un tap', () => {
+    const { onToggleCondition } = renderModal({
+      participant: { conditions: ['custom:Corrompu'] },
+    });
+    const chip = screen.getByRole('button', { name: 'Corrompu', pressed: true });
+    fireEvent.click(chip);
+    expect(onToggleCondition).toHaveBeenCalledWith('custom:Corrompu', 'remove');
+  });
+
+  it('« Poser » reste désactivé sur une saisie vide', () => {
+    const { onToggleCondition } = renderModal();
+    expect(screen.getByRole('button', { name: 'Poser' })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Autre état'), { target: { value: '   ' } });
+    expect(screen.getByRole('button', { name: 'Poser' })).toBeDisabled();
+    expect(onToggleCondition).not.toHaveBeenCalled();
+  });
+
+  // ─── M37 — paliers rapides à l'échelle de la créature ───────────────────
+  it('un dragon à 250 PV propose des paliers utiles, pas −1/−5/−10', () => {
+    renderModal({ participant: { name: 'Dragon', currentHp: 250, maxHp: 250 } });
+    expect(screen.getByRole('button', { name: '−80' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '−1' })).not.toBeInTheDocument();
+  });
+
   it('pending désactive tous les contrôles', () => {
     renderModal({ pending: true });
     expect(screen.getByRole('button', { name: '−5' })).toBeDisabled();
@@ -199,5 +292,71 @@ describe('<ParticipantControlModal>', () => {
     expect(within(statDialog).getByText(/7 \(2d6\)/)).toBeInTheDocument();
     expect(within(statDialog).getByText(/Fuite agile/)).toBeInTheDocument();
     expect(within(statDialog).getByText(/Cimeterre/)).toBeInTheDocument();
+  });
+
+  // ── Édition du combattant (M2 / M3) ──────────────────────────────────
+  //
+  // Le mur d'origine : une rencontre créée était figée. Ces gestes changent
+  // la feuille de suivi, pas l'état de jeu — d'où l'absence d'event.
+
+  it('les champs d’édition partent des valeurs LIVE du combattant', () => {
+    renderModal({ participant: { name: 'Gobelin 2', initiative: 14, currentHp: 3, maxHp: 7 } });
+    expect(screen.getByLabelText('Nom')).toHaveValue('Gobelin 2');
+    expect(screen.getByLabelText('Initiative')).toHaveValue(14);
+    expect(screen.getByLabelText('PV actuels')).toHaveValue(3);
+    expect(screen.getByLabelText('PV maximum')).toHaveValue(7);
+  });
+
+  it('« Enregistrer » n’envoie QUE les champs réellement modifiés', () => {
+    const { onUpdate } = renderModal({
+      participant: { name: 'Gobelin 2', initiative: 14, currentHp: 3, maxHp: 7 },
+    });
+    fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Chef' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
+    expect(onUpdate).toHaveBeenCalledWith({ name: 'Chef' });
+  });
+
+  it('corrige des PV mal tapés (7 → 17) sans toucher au reste', () => {
+    const { onUpdate } = renderModal({ participant: { currentHp: 7, maxHp: 7 } });
+    fireEvent.change(screen.getByLabelText('PV maximum'), { target: { value: '17' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
+    expect(onUpdate).toHaveBeenCalledWith({ maxHp: 17 });
+  });
+
+  it('saisit l’initiative annoncée à voix haute', () => {
+    const { onUpdate } = renderModal({ participant: { initiative: 0 } });
+    fireEvent.change(screen.getByLabelText('Initiative'), { target: { value: '19' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
+    expect(onUpdate).toHaveBeenCalledWith({ initiative: 19 });
+  });
+
+  it('« Enregistrer » reste désactivé tant que rien n’a changé', () => {
+    renderModal();
+    expect(screen.getByRole('button', { name: 'Enregistrer les corrections' })).toBeDisabled();
+  });
+
+  it('un champ vidé puis restauré ne produit aucun patch', () => {
+    const { onUpdate } = renderModal({ participant: { maxHp: 7 } });
+    const field = screen.getByLabelText('PV maximum');
+    fireEvent.change(field, { target: { value: '' } });
+    fireEvent.change(field, { target: { value: '7' } });
+    expect(screen.getByRole('button', { name: 'Enregistrer les corrections' })).toBeDisabled();
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('un champ vidé et laissé vide est ignoré plutôt que rejeté', () => {
+    const { onUpdate } = renderModal({ participant: { name: 'Gobelin', maxHp: 7 } });
+    fireEvent.change(screen.getByLabelText('PV maximum'), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer les corrections' }));
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
+  it('le retrait se fait en deux temps (un geste irréversible ne part pas au premier tap)', () => {
+    const { onRemove } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer du combat' }));
+    expect(onRemove).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer le retrait' }));
+    expect(onRemove).toHaveBeenCalledTimes(1);
   });
 });

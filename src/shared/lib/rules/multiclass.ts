@@ -47,6 +47,40 @@ export function casterLevel(classes: CasterClassEntry[]): number {
   return total;
 }
 
+/**
+ * Niveau à indexer dans la table d'emplacements pour DÉRIVER les emplacements
+ * réels d'un personnage (`docs/plans/DEBT.md > D30`).
+ *
+ * `casterLevel` ci-dessus encode la règle d'ADDITION multiclasse — elle ne vaut
+ * QUE quand on combine ≥ 2 classes lanceuses. Un demi-lanceur MONO-CLASSE suit
+ * sa propre table de classe, qui n'est pas `floor(niveau / 2)` : le SRD 5.2.1
+ * donne l'Incantation au niveau 1 aux deux demi-lanceurs.
+ *
+ *   Paladin (SRD_CC_v5.2.1.txt L5145-5166) : N1 → 2 empl. niv.1, N5 → 4/2…
+ *   Rôdeur  (SRD_CC_v5.2.1.txt L5593-5614) : table identique.
+ *
+ * Ces deux tables coïncident EXACTEMENT, sur les 20 niveaux, avec la table
+ * unifiée indexée à `ceil(niveau / 2)` — vérifié niveau par niveau contre le
+ * SRD (N1→1, N5→3, N9→5, N13→7, N17→9, N20→10). D'où la formule ci-dessous,
+ * plutôt qu'une 2ᵉ table dupliquée à maintenir.
+ *
+ * ⚠ Corrige la note de D28 (« demi-lanceurs L1 → {} »), qui appliquait la règle
+ * **2014** (Incantation au niveau 2). En 5.2.1 c'est le niveau 1.
+ *
+ * Multiclasse (≥ 2 classes lanceuses) ⇒ on retombe sur `casterLevel`, la règle
+ * d'addition, qui est alors la bonne.
+ */
+export function slotCasterLevel(classes: CasterClassEntry[]): number {
+  const casters = classes.filter((c) => c.progression && c.progression !== 'pact');
+  if (casters.length === 1) {
+    const only = casters[0]!;
+    if (only.progression === 'half') return Math.ceil(only.level / 2);
+    if (only.progression === 'third') return Math.ceil(only.level / 3);
+    return only.level; // 'full' : la table unifiée EST la table de classe
+  }
+  return casterLevel(classes);
+}
+
 /** Map niveau de sort → emplacements maxi (0 si non débloqué). Niveaux 1-9. */
 export type SpellSlotsByLevel = Readonly<Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9, number>>;
 

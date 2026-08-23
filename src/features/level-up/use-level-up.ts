@@ -1,7 +1,10 @@
 import { useCallback } from 'react';
 
+import { usePermissionContext } from '@/features/sheet/permissions-context';
 import { useUpdateCharacter } from '@/features/sheet/use-update-character';
 import { useContent } from '@/shared/hooks/use-content';
+import { logLevelUp } from '@/shared/lib/event-logger';
+import { localize } from '@/shared/lib/i18n';
 import { applyLevelUp } from '@/shared/lib/level-up/apply-level-up';
 import type { LevelUpDraft } from '@/shared/lib/level-up/level-up-types';
 import type { Character } from '@/shared/types/character';
@@ -54,6 +57,9 @@ const PATCHED_KEYS = [
 export function useLevelUp(character: Character): UseLevelUpResult {
   const { data: classes } = useContent('classes');
   const { updateCharacter, isUpdating, error } = useUpdateCharacter(character);
+  // M25 — le meneur peut accorder une classe dont les prérequis ne sont pas
+  // atteints. Le défaut (édition propriétaire) reste le refus SRD.
+  const { isDMEdit } = usePermissionContext();
 
   const applyAndPersist = useCallback(
     async (draft: LevelUpDraft): Promise<void> => {
@@ -69,18 +75,38 @@ export function useLevelUp(character: Character): UseLevelUpResult {
         const def = classes.find((cd) => cd.id === draft.classId);
         if (def) classDefinitions[draft.classId] = def;
       }
-      const updated = applyLevelUp({ character, draft, classDefinitions });
+      const updated = applyLevelUp({
+        character,
+        draft,
+        classDefinitions,
+        allowUnmetPrerequisites: isDMEdit,
+      });
       const patch: Partial<Character> = {};
       for (const key of PATCHED_KEYS) {
         (patch as Record<string, unknown>)[key] = updated[key];
       }
       // `log: 'manual'` (plan 22.2) : une montée de niveau patche hp / slots /
       // ressources en masse — l'auto-diff produirait un flot de slot-restored /
-      // hp-change parasites. L'événement `level-up` dédié sera journalisé par le
-      // wizard de montée de niveau au plan 18 (cf. plan 22 step 5, différé).
+      // hp-change parasites. On écrit à la place le seul événement qui compte.
       await updateCharacter(patch, { log: 'manual' });
+
+      // M44 — jalon narratif, journalisé APRÈS l'écriture pour ne rien annoncer
+      // qui n'ait été persisté. Best-effort : `writeEvent` avale ses erreurs,
+      // une montée de niveau ne doit pas échouer parce que le journal échoue.
+      const levelled = updated.classes.find((c) => c.classId === draft.classId);
+      await logLevelUp(character.id, {
+        newTotalLevel: updated.totalLevel,
+        classId: draft.classId,
+        className:
+          classDefinitions[draft.classId] !== undefined
+            ? localize(classDefinitions[draft.classId]!.name)
+            : draft.classId,
+        classLevel: levelled?.level ?? 1,
+        // Le multiclassage se lit sur l'AVANT : la classe n'était pas là.
+        isNewClass: !character.classes.some((c) => c.classId === draft.classId),
+      });
     },
-    [character, classes, updateCharacter],
+    [character, classes, updateCharacter, isDMEdit],
   );
 
   return { applyAndPersist, isUpdating, error };

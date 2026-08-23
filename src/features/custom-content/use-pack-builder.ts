@@ -36,6 +36,8 @@ export interface PackBuilderState {
     version: string;
     descriptionFr: string;
     descriptionEn: string;
+    /** Provenance lisible du pack (M53) — vide = pas déclarée. */
+    sourceLabel: string;
   };
   feats: Feat[];
   invocations: Invocation[];
@@ -60,6 +62,7 @@ export const EMPTY_PACK_BUILDER_STATE: PackBuilderState = {
     version: '1.0.0',
     descriptionFr: '',
     descriptionEn: '',
+    sourceLabel: '',
   },
   feats: [],
   invocations: [],
@@ -102,6 +105,9 @@ export function packFromBuilderState(
               : {}),
           },
         }
+      : {}),
+    ...(state.meta.sourceLabel.trim()
+      ? { sourceLabel: state.meta.sourceLabel.trim() }
       : {}),
   };
   return {
@@ -182,6 +188,7 @@ export function builderStateFromPack(
       version: pack.meta.version,
       descriptionFr: pack.meta.description?.fr ?? '',
       descriptionEn: pack.meta.description?.en ?? '',
+      sourceLabel: pack.meta.sourceLabel ?? '',
     },
     feats: pack.entities.feats ? [...pack.entities.feats] : [],
     invocations: pack.entities.invocations

@@ -10,6 +10,8 @@ import type {
 } from '@/shared/lib/dice/types';
 import { logRollIfCampaign } from '@/shared/lib/event-logger';
 import { effectiveDiceMode } from '@/shared/lib/rules/dice-mode';
+import { activeCampaignDiceSettings } from '@/shared/lib/slices/active-campaign-slice';
+import { presentRollOnTray } from '@/shared/lib/slices/dice-tray-slice';
 import { showToast } from '@/shared/lib/slices/toast-slice';
 import {
   requestHitMissGate,
@@ -48,6 +50,12 @@ export interface RollD20Opts extends CharacterCtx {
   label: string;
   kind?: RollKind;
   advantage?: Advantage;
+  /** Dépenser l'inspiration héroïque sur ce jet (défaut `false`). */
+  useInspiration?: boolean;
+  /** Bonus ponctuel du moment (Bénédiction, faveur du MJ). */
+  bonus?: number;
+  /** Jet discret (M43) : journalisé en visibilité `self`. */
+  discreet?: boolean;
   silent?: boolean;
 }
 
@@ -95,6 +103,9 @@ async function rollD20Plus(modifier: number, opts: RollD20Opts): Promise<RollRes
     label: opts.label,
     kind: opts.kind ?? 'check',
     advantage: opts.advantage,
+    useInspiration: opts.useInspiration,
+    bonus: opts.bonus,
+    discreet: opts.discreet,
     consumeInspiration: opts.consumeInspiration,
     silent: opts.silent,
   };
@@ -115,13 +126,19 @@ async function rollWithDisadvantage(
   return rollD20Plus(modifier, { ...opts, advantage: 'disadvantage' });
 }
 
-async function rollExpression(expr: string, opts: RollDamageOpts): Promise<RollResult | null> {
+// Exporté depuis M49 : le panneau d'historique rejoue un jet hors d'un
+// composant qui consomme `useDice()` (la ligne n'est pas un point d'appel de
+// hook). La fonction est déjà sans état — l'exposer ne change rien au pivot.
+export async function rollExpression(
+  expr: string,
+  opts: RollDamageOpts,
+): Promise<RollResult | null> {
   return rollDamageWithMode(expr, opts);
 }
 
 function resolveMode(): 'digital' | 'physical' {
   const { diceMode, followCampaignDiceMode } = useUserSettingsStore.getState();
-  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, null);
+  return effectiveDiceMode({ diceMode, followCampaignDiceMode }, activeCampaignDiceSettings());
 }
 
 /**
@@ -150,6 +167,10 @@ async function rollDamageWithMode(
       characterId: opts.characterId,
     });
     const result: RollResult = { ...raw, total: Math.max(0, raw.total) };
+    // Idem `rollWithFlags` : les dés de dégâts tombent même en sous-jet
+    // silencieux, sinon les 8d6 d'une boule de feu n'existeraient jamais à
+    // l'écran — seul leur total apparaîtrait.
+    presentRollOnTray(result);
     if (!opts.silent) emitDamageToast(result, opts.crit === true);
     await logRollIfCampaign(result);
     void persistRollHistory(result);

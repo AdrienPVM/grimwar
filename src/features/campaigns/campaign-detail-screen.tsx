@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type JSX } from 'react';
+import { useEffect, useMemo, useState, type JSX, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { AnonymousNudge } from '@/features/auth/anonymous-nudge';
@@ -11,9 +11,9 @@ import { Chip } from '@/shared/components/chip';
 import { Divider } from '@/shared/components/divider';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Splash } from '@/shared/components/splash';
-import { t } from '@/shared/lib/i18n';
+import { t, type StringKey } from '@/shared/lib/i18n';
 import { healOwnMemberIdentity } from '@/shared/lib/services/campaigns';
-import type { Campaign, Membership } from '@/shared/types/campaign';
+import type { Membership } from '@/shared/types/campaign';
 
 import { CampaignEventFeed } from './campaign-event-feed';
 import { CampaignMemberItem } from './campaign-member-item';
@@ -21,16 +21,22 @@ import { CampaignSettingsModal } from './campaign-settings-modal';
 import { CampaignStatusChip } from './campaign-status-chip';
 import { InviteCodeReveal } from './invite-code-reveal';
 import { LeaveCampaignModal } from './leave-campaign-modal';
+import { MemberActionModal, type MemberAction } from './member-action-modal';
 import { MyCharacterLink } from './my-character-link';
 import { PartyAggregateStrip } from './party-aggregate-strip';
 import { PromoteToGmModal } from './promote-to-gm-modal';
+import { buildRoster, type RosterEntry } from './roster';
 import { useCampaign } from './use-campaign';
 import { usePartyAggregate, type PartyMemberRef } from './use-party-aggregate';
-import { useHandoutNotifications } from './use-handout-notifications';
 
 interface PromoteTarget {
   uid: string;
   label: string;
+}
+
+/** Cible d'un geste d'autorité destructif — rétrogradation ou exclusion (M11). */
+interface MemberActionTarget extends PromoteTarget {
+  action: MemberAction;
 }
 
 /**
@@ -54,9 +60,13 @@ interface PromoteTarget {
  *    Auth au join ; le propriétaire auto-soigne son propre doc au chargement
  *    (`healOwnMemberIdentity`). Repli UID tronqué tant qu'aucun nom n'est posé
  *    (compte anonyme, doc legacy). Avatar (`photoURL`) stocké mais non rendu V1.
- *  - Pas de bouton « Kick » V1 — le service expose `kickMember` (4.0.3) mais
- *    aucun consommateur UI n'est mappé. Réservé à 4.0.6+ avec un flux de
- *    confirmation dédié (le kick est destructif et asymétrique de la promotion).
+ *  - Trois gestes d'autorité sur le roster (M11, audit de malléabilité) :
+ *    promouvoir (4.0.3), rétrograder et exclure. Les deux derniers passent par
+ *    `MemberActionModal` — ils sont destructifs et asymétriques de la promotion,
+ *    donc confirmés et rendus en `danger`. `kickMember` existait depuis 4.0.3
+ *    sans aucun appelant ; `demoteGm` manquait alors que la modale de promotion
+ *    promettait la révocation. La rule `allow delete: if isDMOf` (members) et
+ *    l'invariant `gmIds.size() >= 1` (campaign) couvraient déjà les deux.
  *  - Section « Mon personnage » (JALON 4A.2) : visible pour le joueur (user qui
  *    possède un doc `members/{uid}`). Il y lie/délie sa fiche via le picker
  *    `MyCharacterLink` → `linkCharacterToMembership` (write owner-only). C'est la
@@ -80,16 +90,16 @@ export function CampaignDetailScreen(): JSX.Element {
   const [leaveOpen, setLeaveOpen] = useState<boolean>(false);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
   const [promoteTarget, setPromoteTarget] = useState<PromoteTarget | null>(null);
+  const [actionTarget, setActionTarget] = useState<MemberActionTarget | null>(null);
 
   const isGm = useMemo<boolean>(() => {
     if (!campaign || !user) return false;
     return campaign.gmIds.includes(user.uid);
   }, [campaign, user]);
 
-  // Toast « le MJ vous a transmis un document » sur tout nouveau handout reçu
-  // (plan 27 step 7-8). Désactivé pour le MJ (cf. `useHandoutNotifications`).
-  // Appelé avant les early-returns pour respecter les règles des hooks.
-  useHandoutNotifications(cid, user?.uid, !isGm);
+  // Les toasts « le MJ vous a transmis un document » ne sont plus montés ici :
+  // `CampaignNotifications` (E13/1) les écoute au-dessus des routes, donc aussi
+  // depuis la fiche du joueur. Les monter des deux côtés doublerait le toast.
 
   const roster = useMemo<RosterEntry[]>(() => {
     if (!campaign) return [];
@@ -206,82 +216,20 @@ export function CampaignDetailScreen(): JSX.Element {
           >
             ← {t('campaigns.detail.back')}
           </Button>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {/* Journal de campagne — lisible par tout membre (mémoire partagée). */}
+          {/* Réglages seuls restent dans la barre du haut : c'est de
+              l'administration, pas du jeu. Le reste descend sous le titre, en
+              groupes (cf. `docs/plans/UX-AUDIT-2026-08.md > M2`). */}
+          {isGm ? (
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
-              tooltip={t('campaigns.tip.openJournal')}
+              onClick={() => setSettingsOpen(true)}
+              tooltip={t('campaigns.tip.openSettings')}
             >
-              {t('campaigns.detail.journalCta')}
+              {t('campaigns.detail.settingsCta')}
             </Button>
-            {/* Documents — accessible à tout membre (le MJ crée, le joueur
-                consulte ceux qui lui sont destinés). */}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/handouts`)}
-              tooltip={t('campaigns.tip.openHandouts')}
-            >
-              {t('campaigns.detail.handoutsCta')}
-            </Button>
-            {/* PNJ — annuaire accessible à tout membre (le MJ gère, le joueur
-                consulte les PNJ publics). */}
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
-              tooltip={t('campaigns.tip.openNpcs')}
-            >
-              {t('campaigns.detail.npcsCta')}
-            </Button>
-            {isGm ? (
-              <>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setSettingsOpen(true)}
-                  tooltip={t('campaigns.tip.openSettings')}
-                >
-                  {t('campaigns.detail.settingsCta')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
-                  tooltip={t('campaigns.tip.openSessions')}
-                >
-                  {t('campaigns.detail.sessionsCta')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
-                  tooltip={t('campaigns.tip.openEncounters')}
-                >
-                  {t('campaigns.detail.encountersCta')}
-                </Button>
-                {/* Cartes — prototype mode carte (import .dd2vtt, fog, LOS, TV).
-                    Réutilise le cid de la campagne réelle. MJ-only. */}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
-                  tooltip={t('campaigns.tip.openMaps')}
-                >
-                  {t('campaigns.detail.mapsCta')}
-                </Button>
-              </>
-            ) : null}
-          </div>
+          ) : null}
         </nav>
 
         <header className="mt-4 text-center">
@@ -303,6 +251,99 @@ export function CampaignDetailScreen(): JSX.Element {
             </p>
           ) : null}
         </header>
+
+        {/*
+          Espaces de la campagne — remplace la barre de 7 boutons identiques qui
+          régnait AU-DESSUS du titre (cf. `docs/plans/UX-AUDIT-2026-08.md > M2`).
+          Trois défauts corrigés d'un coup :
+          (a) les actions passent SOUS le titre — on lit d'abord où on est ;
+          (b) elles sont groupées par nature — « jouer ce soir » d'un côté, la
+              mémoire de la table de l'autre — au lieu de sept puces de même
+              poids qui se replient en pavé illisible sur mobile ;
+          (c) Séances et Rencontres ne sont PLUS réservées au meneur. Les deux
+              écrans étaient déjà écrits pour les joueurs (états vides dédiés
+              `sessions.empty.member` / `encounters.empty.member`) et les rules
+              Firestore les autorisent depuis 23.1 / 24.1 — seul le point
+              d'entrée manquait, ce qui rendait le suivi de combat inaccessible
+              aux joueurs autrement qu'en s'échangeant une URL.
+          « Cartes » reste MJ : c'est un outil de préparation et de projection.
+        */}
+        <nav
+          aria-label={t('campaigns.detail.spaces.aria')}
+          className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2"
+        >
+          <SpaceGroup titleKey="campaigns.detail.spaces.play">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/sessions`)}
+              tooltip={t('campaigns.tip.openSessions')}
+            >
+              {t('campaigns.detail.sessionsCta')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/encounters`)}
+              tooltip={t('campaigns.tip.openEncounters')}
+            >
+              {t('campaigns.detail.encountersCta')}
+            </Button>
+            {/*
+              « Cartes » n'est plus réservé au meneur (M34). Les rules
+              autorisent la LECTURE des cartes et des jetons par tout membre
+              depuis le plan 29 (`firestore.rules:348,366`) et la vue
+              présentation est 100 % en lecture seule — seule la porte
+              d'entrée manquait, ce qui obligeait à s'échanger une URL. Le
+              joueur atterrit sur la liste, qui l'envoie en vue présentation ;
+              l'écran d'édition reste MJ.
+            */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/map-proto/cloud/${campaign.id}`)}
+              tooltip={t(isGm ? 'campaigns.tip.openMaps' : 'campaigns.tip.viewMaps')}
+            >
+              {t(
+                isGm
+                  ? 'campaigns.detail.mapsCta'
+                  : 'campaigns.detail.mapsPlayerCta',
+              )}
+            </Button>
+          </SpaceGroup>
+          <SpaceGroup titleKey="campaigns.detail.spaces.memory">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/journal`)}
+              tooltip={t('campaigns.tip.openJournal')}
+            >
+              {t('campaigns.detail.journalCta')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/handouts`)}
+              tooltip={t('campaigns.tip.openHandouts')}
+            >
+              {t('campaigns.detail.handoutsCta')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => navigate(`/campaigns/${campaign.id}/npcs`)}
+              tooltip={t('campaigns.tip.openNpcs')}
+            >
+              {t('campaigns.detail.npcsCta')}
+            </Button>
+          </SpaceGroup>
+        </nav>
 
         {/* Bannière d'état — donne un sens fonctionnel au statut (au-delà de la
             puce) : une campagne en pause / archivée n'est plus « en cours ». Rôle-
@@ -344,25 +385,49 @@ export function CampaignDetailScreen(): JSX.Element {
                 <p className="mx-auto mt-3 max-w-[44ch] font-serif text-body-sm italic text-text-secondary">
                   {t('campaigns.detail.invite.firstStepBody')}
                 </p>
-                <InviteCodeReveal code={campaign.inviteCode} className="mt-5" />
+                <InviteCodeReveal
+                  code={campaign.inviteCode}
+                  campaignId={campaign.id}
+                  uid={user?.uid}
+                  onRotated={refresh}
+                  className="mt-5"
+                />
               </div>
             ) : (
               <>
                 <h2 className="text-center font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
                   {t('campaigns.detail.invite.title')}
                 </h2>
-                <InviteCodeReveal code={campaign.inviteCode} className="mt-4" />
+                <InviteCodeReveal
+                  code={campaign.inviteCode}
+                  campaignId={campaign.id}
+                  uid={user?.uid}
+                  onRotated={refresh}
+                  className="mt-4"
+                />
               </>
             )}
           </section>
         ) : null}
 
-        {myMembership ? (
+        {/*
+          « Mon personnage » s'affiche aussi pour le MENEUR (M67a). Son doc
+          `members/{uid}` n'existe pas — son appartenance vient de `gmIds[]` —
+          ce qui le privait de la section, alors qu'un co-MJ promu depuis un
+          joueur y avait droit. Asymétrie non intentionnelle : rien n'interdit
+          au meneur de jouer un PJ à sa propre table, et la rule `create`
+          l'autorise déjà (`isOwner(userId)`). Le doc se pose au moment du lien,
+          pas à l'affichage — aucune écriture silencieuse au simple passage.
+        */}
+        {myMembership || (isGm && user) ? (
           <MyCharacterLink
             campaignId={campaign.id}
-            uid={myMembership.userId}
-            currentCharacterId={myMembership.characterId}
+            uid={myMembership?.userId ?? (user?.uid as string)}
+            currentCharacterId={myMembership?.characterId ?? null}
             onChanged={refresh}
+            createRole={myMembership ? undefined : 'gm'}
+            displayName={user?.displayName ?? null}
+            photoURL={user?.photoURL ?? null}
           />
         ) : null}
 
@@ -387,6 +452,20 @@ export function CampaignDetailScreen(): JSX.Element {
                   onPromote={() =>
                     setPromoteTarget({ uid: entry.uid, label: entry.label })
                   }
+                  onDemote={() =>
+                    setActionTarget({
+                      uid: entry.uid,
+                      label: entry.label,
+                      action: 'demote',
+                    })
+                  }
+                  onKick={() =>
+                    setActionTarget({
+                      uid: entry.uid,
+                      label: entry.label,
+                      action: 'kick',
+                    })
+                  }
                   onViewSheet={() =>
                     navigate(`/campaigns/${campaign.id}/members/${entry.uid}/sheet`)
                   }
@@ -409,7 +488,7 @@ export function CampaignDetailScreen(): JSX.Element {
               {t('campaigns.detail.dmTools.title')}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <SecretRollButton />
+              <SecretRollButton campaignId={campaign.id} />
               <QuickNotes scopeKey={campaign.id} />
             </div>
           </section>
@@ -458,6 +537,17 @@ export function CampaignDetailScreen(): JSX.Element {
         }}
       />
 
+      <MemberActionModal
+        action={actionTarget?.action ?? null}
+        campaignId={campaign.id}
+        targetUid={actionTarget?.uid ?? null}
+        targetLabel={actionTarget?.label ?? null}
+        onClose={() => setActionTarget(null)}
+        onDone={() => {
+          refresh();
+        }}
+      />
+
       {settingsOpen && isGm ? (
         <CampaignSettingsModal
           campaign={campaign}
@@ -469,92 +559,27 @@ export function CampaignDetailScreen(): JSX.Element {
   );
 }
 
-export interface RosterEntry {
-  uid: string;
-  label: string;
-  /**
-   * `true` quand `label` est un vrai nom d'affichage (displayName dénormalisé),
-   * `false` quand c'est le repli UID tronqué. Pilote la typographie (serif pour
-   * un nom, mono pour un identifiant technique).
-   */
-  hasName: boolean;
-  role: 'gm' | 'member';
-  /** L'entrée correspond à l'utilisateur connecté. */
-  isSelf: boolean;
-  /**
-   * Fiche liée du joueur (`members/{uid}.characterId`), ou `null`. Sert au MJ à
-   * ouvrir la fiche en lecture seule (4A.3). Les entrées MJ (issues de `gmIds`)
-   * n'ont jamais de fiche liée par cette UI → toujours `null`.
-   */
-  characterId: string | null;
-}
-
 /**
- * Construit la liste affichée du roster :
- *  - tous les UIDs de `gmIds` (rôle 'gm'),
- *  - puis tous les `members[]` qui ne sont PAS dans `gmIds` (rôle 'member').
+ * Groupe d'espaces de la campagne — un intitulé discret suivi de ses entrées.
  *
- * Le dédoublonnage est nécessaire : `promoteToGm` (4.0.3) garde le doc member
- * et lui passe `role: 'gm'`, donc un MJ peut apparaître DOUBLE (dans `gmIds`
- * ET dans `members`). On garde la priorité gmIds (source de vérité côté rules).
- *
- * Libellé : displayName dénormalisé du doc member → repli UID tronqué. Pour LA
- * ligne de l'utilisateur courant, le nom LIVE de son profil Auth (`myDisplayName`)
- * prime sur la valeur stockée — ainsi son propre nom s'affiche instantanément,
- * sans attendre l'écriture de self-heal (qui, elle, sert aux AUTRES membres).
+ * L'intitulé porte la hiérarchie que sept boutons identiques ne pouvaient pas
+ * porter : il dit à quoi sert la rangée. Il reste volontairement en méta
+ * (petite capitale, texte tertiaire) pour ne pas rivaliser avec le nom de la
+ * campagne juste au-dessus.
  */
-export function buildRoster(
-  campaign: Campaign,
-  members: Membership[],
-  myUid: string | null,
-  myDisplayName: string | null,
-): RosterEntry[] {
-  const byUid = new Map<string, Membership>(members.map((m) => [m.userId, m]));
-  const seen = new Set<string>();
-  const result: RosterEntry[] = [];
-
-  function makeEntry(
-    uid: string,
-    role: 'gm' | 'member',
-    characterId: string | null,
-    storedName: string | null,
-  ): RosterEntry {
-    const isSelf = myUid !== null && uid === myUid;
-    const name = (isSelf ? myDisplayName : null) ?? storedName;
-    const trimmed = name?.trim() ?? '';
-    const hasName = trimmed !== '';
-    return {
-      uid,
-      label: hasName ? trimmed : formatUid(uid),
-      hasName,
-      role,
-      isSelf,
-      characterId,
-    };
-  }
-
-  for (const uid of campaign.gmIds) {
-    if (seen.has(uid)) continue;
-    seen.add(uid);
-    // Un MJ promu depuis un doc member porte un displayName → on le récupère.
-    result.push(makeEntry(uid, 'gm', null, byUid.get(uid)?.displayName ?? null));
-  }
-  for (const m of members) {
-    if (seen.has(m.userId)) continue;
-    seen.add(m.userId);
-    result.push(makeEntry(m.userId, m.role, m.characterId, m.displayName ?? null));
-  }
-  return result;
-}
-
-/**
- * Tronquage UID — repli quand un membre n'a pas (encore) de displayName
- * dénormalisé (compte anonyme, ou doc antérieur au champ pas encore auto-soigné).
- * On affiche un préfixe lisible suivi d'une ellipsis pour rappeler que c'est un
- * identifiant technique. Tronqué à 8 chars (assez pour distinguer 99 % des
- * paires d'UIDs Firebase).
- */
-export function formatUid(uid: string): string {
-  if (uid.length <= 10) return uid;
-  return `${uid.slice(0, 8)}…`;
+function SpaceGroup({
+  titleKey,
+  children,
+}: {
+  titleKey: StringKey;
+  children: ReactNode;
+}): JSX.Element {
+  return (
+    <section className="rounded-card-sm border border-white-8 bg-white/[0.02] px-4 py-3">
+      <h2 className="font-title text-meta uppercase tracking-[0.18em] text-text-tertiary">
+        {t(titleKey)}
+      </h2>
+      <div className="mt-2.5 flex flex-wrap items-center gap-2">{children}</div>
+    </section>
+  );
 }

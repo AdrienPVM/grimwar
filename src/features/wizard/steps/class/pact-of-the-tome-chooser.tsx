@@ -245,14 +245,19 @@ export function PactOfTheTomeChooser(): JSX.Element {
           onClose={() => setModalSpellId(null)}
           titleId="pact-of-the-tome-modal-title"
         >
-          <h2
-            id="pact-of-the-tome-modal-title"
-            className="mb-2 font-display text-[18px] text-gold-bright"
-          >
-            {localize(modalSpell.name)}
-          </h2>
-          <div className="font-serif text-[14px] text-text-secondary whitespace-pre-line">
-            {localize(modalSpell.description)}
+          {/* Enveloppe padante : le panneau de `DetailModal` est une coquille
+              sans padding, donc un enfant direct est collé à ses bordures. */}
+          <div className="p-6">
+            <h2
+              id="pact-of-the-tome-modal-title"
+              // `pr-10` : dégagement du ✕ posé en absolu par la primitive.
+              className="mb-2 pr-10 font-display text-[18px] text-gold-bright"
+            >
+              {localize(modalSpell.name)}
+            </h2>
+            <div className="font-serif text-[14px] text-text-secondary whitespace-pre-line">
+              {localize(modalSpell.description)}
+            </div>
           </div>
         </DetailModal>
       ) : null}

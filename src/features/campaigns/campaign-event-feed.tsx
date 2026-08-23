@@ -1,12 +1,14 @@
 import { useMemo, useState, type JSX } from 'react';
 
 import { cn } from '@/shared/lib/cn';
+import { deleteEvent } from '@/shared/lib/event-logger';
 import { t } from '@/shared/lib/i18n';
 import { canViewEvent } from '@/shared/lib/permissions';
+import { showToast } from '@/shared/lib/slices/toast-slice';
 import type { Membership } from '@/shared/types/campaign';
 import type { GameEvent } from '@/shared/types/event';
 
-import { formatUid } from './campaign-detail-screen';
+import { formatUid } from './roster';
 import { EventDetailModal } from './event-detail-modal';
 import { formatEventTime, summarizeEvent } from './event-line';
 import { useCampaignEvents } from './use-campaign-events';
@@ -61,6 +63,24 @@ export function CampaignEventFeed({
     null,
   );
   const [detailEvent, setDetailEvent] = useState<GameEvent | null>(null);
+
+  /**
+   * Retire un événement du journal (M9). Le feed est en `onSnapshot` : la ligne
+   * disparaît d'elle-même, on n'a qu'à refermer la modale. Un échec est
+   * remonté à l'écran — contrairement aux `log*`, ce n'est pas de l'arrière-plan
+   * best-effort mais un geste explicite du MJ.
+   */
+  async function handleDeleteEvent(event: GameEvent): Promise<void> {
+    try {
+      await deleteEvent(campaignId, event.id);
+      setDetailEvent(null);
+    } catch {
+      showToast({
+        kind: 'grim',
+        title: t('campaigns.detail.eventFeed.detail.deleteError'),
+      });
+    }
+  }
 
   // Options du filtre : un personnage lié par joueur. Libellé en cascade :
   // nom du PJ résolu → displayName dénormalisé du membre → UID tronqué (repli).
@@ -164,6 +184,9 @@ export function CampaignEventFeed({
       <EventDetailModal
         event={detailEvent}
         characterNames={characterNames}
+        // Retrait MJ-only (M9) — un joueur n'efface jamais le journal. La rule
+        // `allow delete: if isDMOf` reste la défense de fond.
+        onDelete={isDM ? (ev) => void handleDeleteEvent(ev) : undefined}
         onClose={() => setDetailEvent(null)}
       />
     </section>

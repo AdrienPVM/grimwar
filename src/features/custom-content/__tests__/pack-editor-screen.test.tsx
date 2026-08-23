@@ -53,6 +53,20 @@ vi.mock('@/shared/lib/firebase', () => ({
 // dépend de useContent('items') — on stub un item minimal (corde) pour
 // pouvoir ajouter un équipement. Pour 3C.1/3C.2 (FeatForm/InvocationForm) ces
 // mocks ne changent rien — ils n'appellent jamais useContent.
+// Le catalogue vu par l'éditeur : les référentiels croisés (ascendances, items,
+// classes) + un don SRD complet, qui sert de source à la duplication (M50).
+const SRD_FEAT = {
+  id: 'alerte',
+  name: { fr: 'Alerte', en: 'Alert' },
+  prerequisite: null,
+  summary: { fr: 'Toujours prêt.', en: 'Always ready.' },
+  description: { fr: 'Toujours prêt.', en: 'Always ready.' },
+  category: 'origin',
+  source: 'srd-5.2.1',
+};
+
+const scopeOf = (): { scope: 'public' } => ({ scope: 'public' });
+
 vi.mock('@/shared/hooks/use-content', () => ({
   useContent: (type: string) => {
     if (type === 'ancestries') {
@@ -65,6 +79,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
         ],
         loading: false,
         error: null,
+        scopeOf,
       };
     }
     if (type === 'items') {
@@ -77,6 +92,7 @@ vi.mock('@/shared/hooks/use-content', () => ({
         ],
         loading: false,
         error: null,
+        scopeOf,
       };
     }
     if (type === 'classes') {
@@ -89,9 +105,13 @@ vi.mock('@/shared/hooks/use-content', () => ({
         ],
         loading: false,
         error: null,
+        scopeOf,
       };
     }
-    return { data: [], loading: false, error: null };
+    if (type === 'feats') {
+      return { data: [SRD_FEAT], loading: false, error: null, scopeOf };
+    }
+    return { data: [], loading: false, error: null, scopeOf };
   },
 }));
 
@@ -188,7 +208,7 @@ describe('PackEditorScreen — création d\'un pack valide', () => {
     expect(calledPack.entities.feats).toHaveLength(1);
     expect(calledPack.entities.feats[0].id).toBe('don-tracer');
     expect(calledPack.entities.feats[0].name.fr).toBe('Don tracer');
-    expect(calledPack.entities.feats[0].source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.feats[0].source).toBe('custom');
 
     // 5. Toast succès + redirection
     await waitFor(() =>
@@ -278,7 +298,7 @@ describe('PackEditorScreen — création d\'une invocation (JALON 3C.2)', () => 
     expect(calledPack.entities.invocations[0].name.fr).toBe('Invocation tracer');
     expect(calledPack.entities.invocations[0].summary.fr).toBe('Effet de test');
     expect(calledPack.entities.invocations[0].prerequisiteWarlockLevel).toBeNull();
-    expect(calledPack.entities.invocations[0].source).toBe('aidedd-homebrew');
+    expect(calledPack.entities.invocations[0].source).toBe('custom');
     // Pas de feats — invocations seules suffisent à passer parsePack.
     expect(calledPack.entities.feats).toBeUndefined();
   });
@@ -371,7 +391,7 @@ describe("PackEditorScreen — création d'une sous-ascendance (JALON 3C.3)", ()
     expect(sub.ancestryId).toBe('humain');
     expect(sub.name.fr).toBe('Humain vigilant');
     expect(sub.abilityScoreIncrease).toEqual([{ ability: 'for', bonus: 1 }]);
-    expect(sub.source).toBe('aidedd-homebrew');
+    expect(sub.source).toBe('custom');
     expect(calledPack.entities.feats).toBeUndefined();
     expect(calledPack.entities.invocations).toBeUndefined();
   });
@@ -475,7 +495,7 @@ describe("PackEditorScreen — création d'un background (JALON 3C.4)", () => {
     expect(bg.equipment).toEqual([{ itemId: 'rope', qty: 1 }]);
     expect(bg.startingCoins).toEqual({ qty: 0, unit: 'gp' });
     expect(bg.feature.name.fr).toBe('Bénédiction');
-    expect(bg.source).toBe('aidedd-homebrew');
+    expect(bg.source).toBe('custom');
     expect(calledPack.entities.feats).toBeUndefined();
   });
 
@@ -563,7 +583,7 @@ describe("PackEditorScreen — création d'une sous-classe (JALON 3C.5)", () => 
     expect(sc.features).toHaveLength(1);
     expect(sc.features[0].level).toBe(3);
     expect(sc.features[0].name.fr).toBe('Coup précis');
-    expect(sc.source).toBe('aidedd-homebrew');
+    expect(sc.source).toBe('custom');
     expect(calledPack.entities.feats).toBeUndefined();
   });
 
@@ -660,7 +680,7 @@ describe("PackEditorScreen — création d'un sort (JALON 3C.6)", () => {
     expect(sp.atHigherLevels).toBeNull();
     expect(sp.classes).toEqual([]);
     expect(sp).not.toHaveProperty('damage');
-    expect(sp.source).toBe('aidedd-homebrew');
+    expect(sp.source).toBe('custom');
     // Pas d'autres catégories
     expect(calledPack.entities.feats).toBeUndefined();
   });
@@ -831,7 +851,7 @@ describe("PackEditorScreen — création d'un objet (JALON 3C.7)", () => {
     expect(it.cost).toBeNull();
     expect(it.weight).toBe(0);
     expect(it.description).toBeNull();
-    expect(it.source).toBe('aidedd-homebrew');
+    expect(it.source).toBe('custom');
     expect(it).not.toHaveProperty('damage');
     expect(it).not.toHaveProperty('acBase');
     expect(calledPack.entities.feats).toBeUndefined();
@@ -967,7 +987,7 @@ describe('PackEditorScreen — création d’un objet magique (directive 2026-06
       'Sur commande, la lame s’embrase (+2d6 feu).',
     );
     expect(mi.description).toBeNull();
-    expect(mi.source).toBe('aidedd-homebrew');
+    expect(mi.source).toBe('custom');
     // Catégorie distincte des objets « mondains » : items reste vide.
     expect(calledPack.entities.items).toBeUndefined();
   });
@@ -1037,7 +1057,7 @@ describe('PackEditorScreen — création d’un monstre (directive 2026-06-27)',
     expect(mo.hp.formula).toBe('2d6');
     expect(mo.speed).toEqual({ walk: 30 });
     expect(mo.reactions).toBeNull();
-    expect(mo.source).toBe('aidedd-homebrew');
+    expect(mo.source).toBe('custom');
   });
 
   it('refuse confirm sans formule de PV (erreur visible, pas d’ajout)', async () => {
@@ -1106,7 +1126,7 @@ describe("PackEditorScreen — création d'une ascendance (JALON 3C.8)", () => {
     expect(a.description.fr).toBe('Ascendance brumeuse.');
     expect(a.size).toBe('medium');
     expect(a.speed).toBe(9);
-    expect(a.source).toBe('aidedd-homebrew');
+    expect(a.source).toBe('custom');
     expect(a.options).toEqual({});
     expect(calledPack.entities.feats).toBeUndefined();
   });
@@ -1230,18 +1250,21 @@ describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
     expect(c.primaryAbility).toEqual(['cha']);
     expect(c.saveProficiencies).toEqual(['cha', 'sag']);
     expect(c.spellcasting).toBeNull();
-    expect(c.source).toBe('aidedd-homebrew');
+    expect(c.source).toBe('custom');
     expect(c.weaponMasteryCount).toBe(0);
     expect(c.multiclassPrerequisite).toBeNull();
   });
 
-  it("rejette un id réservé (« wizard ») — pas d'ajout, form reste ouvert", async () => {
+  // M50 — le refus ne vaut plus que pour les 2 ids que le schéma contraint
+  // (`cleric`/`druid` exigent une liste d'ordres que ce formulaire ne produit
+  // pas). Les 10 autres classes SRD sont désormais surchargeables.
+  it("rejette un id que le schéma contraint (« cleric ») — pas d'ajout, form reste ouvert", async () => {
     const user = userEvent.setup();
     renderScreen();
 
     await user.click(screen.getByTestId('pack-editor-add-class'));
-    await user.type(screen.getByTestId('class-form-id'), 'wizard');
-    await user.type(screen.getByTestId('class-form-name-fr'), 'Magicien');
+    await user.type(screen.getByTestId('class-form-id'), 'cleric');
+    await user.type(screen.getByTestId('class-form-name-fr'), 'Clerc');
     await user.type(
       screen.getByTestId('class-form-description-fr'),
       'Tentative homebrew.',
@@ -1254,6 +1277,28 @@ describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
     expect(
       screen.queryByTestId('pack-editor-class-row'),
     ).not.toBeInTheDocument();
+  });
+
+  it('accepte désormais « wizard » — surcharger une classe SRD est un choix, plus un refus', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-add-class'));
+    await user.type(screen.getByTestId('class-form-id'), 'wizard');
+    await user.type(screen.getByTestId('class-form-name-fr'), 'Magicien');
+    await user.type(
+      screen.getByTestId('class-form-description-fr'),
+      'Le magicien de ma table.',
+    );
+    await user.click(screen.getByTestId('class-form-primary-int'));
+    await user.click(screen.getByTestId('class-form-save-int'));
+    await user.click(screen.getByTestId('class-form-confirm'));
+
+    expect(screen.queryByTestId('class-form')).not.toBeInTheDocument();
+    expect(screen.getByTestId('pack-editor-class-row')).toHaveAttribute(
+      'data-class-id',
+      'wizard',
+    );
   });
 
   it('propage spellcasting (toggle ON) avec ability + progression dans le pack', async () => {
@@ -1293,7 +1338,48 @@ describe("PackEditorScreen — création d'une classe (JALON 3C.9)", () => {
     expect(c.spellcasting).toEqual({
       ability: 'int',
       progression: 'full',
+      preparation: 'known',
     });
+    // M51 — aucune colonne saisie ⇒ pas de table. La classe lance des sorts
+    // sans progression : c'est le comportement d'avant, on ne le change pas.
+    expect(c.spellProgression).toBeUndefined();
+  });
+
+  // M51 — sans table, `preparationCap` rendait 0 à tous les niveaux : une
+  // classe maison lançait des sorts sur le papier et n'en préparait aucun.
+  it('propage la table de progression saisie et le mode « préparés »', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.type(screen.getByTestId('pack-meta-id'), 'pack-thaum');
+    await user.type(screen.getByTestId('pack-meta-name-fr'), 'Pack thaumaturge');
+    await user.type(screen.getByTestId('pack-meta-author'), 'Adrien');
+
+    await user.click(screen.getByTestId('pack-editor-add-class'));
+    await user.type(screen.getByTestId('class-form-id'), 'thaumaturge');
+    await user.type(screen.getByTestId('class-form-name-fr'), 'Thaumaturge');
+    await user.type(
+      screen.getByTestId('class-form-description-fr'),
+      'La classe de ma table.',
+    );
+    await user.click(screen.getByTestId('class-form-primary-sag'));
+    await user.click(screen.getByTestId('class-form-save-sag'));
+
+    await user.click(screen.getByTestId('class-form-spellcasting-toggle'));
+    await user.type(
+      screen.getByTestId('class-form-spells-known'),
+      '2 3 4 5 6 6 7 7 9 9 10 10 11 11 12 12 14 14 15 15',
+    );
+
+    await user.click(screen.getByTestId('class-form-confirm'));
+    await user.click(screen.getByTestId('pack-editor-save'));
+
+    await waitFor(() => expect(mockWritePack).toHaveBeenCalledOnce());
+    const [, calledPack] = mockWritePack.mock.calls[0]!;
+    const c = calledPack.entities.classes[0];
+    expect(c.spellProgression.spellsKnownOrPrepared).toHaveLength(20);
+    // Niveau 5 → 5e valeur : 6 sorts préparés.
+    expect(c.spellProgression.spellsKnownOrPrepared[4]).toBe(6);
   });
 });
 
@@ -1316,7 +1402,7 @@ describe('PackEditorScreen — édition d\'un pack existant (JALON 3C.10)', () =
             prerequisite: null,
             summary: { fr: 'Résumé.' },
             description: { fr: 'Description.' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -1377,7 +1463,7 @@ describe('PackEditorScreen — édition d\'un pack existant (JALON 3C.10)', () =
             prerequisite: null,
             summary: { fr: 'S1' },
             description: { fr: 'D1' },
-            source: 'aidedd-homebrew',
+            source: 'custom',
           },
         ],
       },
@@ -1414,7 +1500,7 @@ describe('PackEditorScreen — mode édition (JALON 3C.10)', () => {
         {
           id: 'don-existant',
           name: { fr: 'Don existant', en: 'Existing feat' },
-          source: 'aidedd-homebrew',
+          source: 'custom',
         },
       ],
     },
@@ -1498,5 +1584,30 @@ describe('PackEditorScreen — mode édition (JALON 3C.10)', () => {
     expect(screen.getByTestId('pack-editor-load-error')).toHaveTextContent(
       /Permission denied/i,
     );
+  });
+
+  // M50 — « chez moi la Boule de feu fait 6d6 » : l'éditeur ne savait partir
+  // que d'une page blanche. Rouge avant vert : sans le bouton, le testid
+  // « pack-editor-duplicate-feat » n'existe pas.
+  it('duplique un don du catalogue en copie → formulaire pré-rempli, id décalé', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-duplicate-feat'));
+    await user.click(screen.getByTestId('catalogue-pick-alerte'));
+
+    expect(screen.getByTestId('feat-form-id')).toHaveValue('alerte-maison');
+    expect(screen.getByTestId('feat-form-name-fr')).toHaveValue('Alerte (maison)');
+  });
+
+  it('duplique en mode « remplacer » → l’identifiant SRD est conservé', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByTestId('pack-editor-duplicate-feat'));
+    await user.click(screen.getByTestId('catalogue-picker-mode-replace'));
+    await user.click(screen.getByTestId('catalogue-pick-alerte'));
+
+    expect(screen.getByTestId('feat-form-id')).toHaveValue('alerte');
   });
 });

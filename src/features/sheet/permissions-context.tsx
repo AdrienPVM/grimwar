@@ -57,13 +57,24 @@ const PermissionContext = createContext<PermissionContextValue>({
  * `canEdit` se réduit à "utilisateur connecté + personnage existant", jamais en
  * omni-edit. L'omni-edit MJ (plan 26) ne passe PAS par ce hook : il est porté
  * explicitement par `CampaignMemberSheetScreen` via `PermissionProvider`.
+ *
+ * `isDM` n'est plus `false` en dur (M19 de l'audit de malléabilité). Une fiche
+ * SANS campagne d'attache n'a aucun meneur pour l'arbitrer : son propriétaire
+ * est son propre arbitre. Sans ça, un personnage mort hors campagne était figé
+ * pour l'éternité — fiche en lecture seule totale, et le seul bouton
+ * « Ressusciter » gaté sur un `isDM` que cette route retournait toujours faux.
+ *
+ * Une fiche LIÉE garde le comportement d'origine : c'est le meneur de sa
+ * campagne qui ressuscite, via `CampaignMemberSheetScreen`. La mort reste un
+ * fait de table, pas une case que le joueur décoche.
  */
 export function usePermissions(character: Character | null): PermissionContextValue {
   const { user } = useAuth();
   if (!user || !character) {
     return { canEdit: false, isDM: false, isDMEdit: false, lockedFields: [] };
   }
-  return { canEdit: true, isDM: false, isDMEdit: false, lockedFields: [] };
+  const isOwnArbiter = character.homeCampaignId === null;
+  return { canEdit: true, isDM: isOwnArbiter, isDMEdit: false, lockedFields: [] };
 }
 
 /**

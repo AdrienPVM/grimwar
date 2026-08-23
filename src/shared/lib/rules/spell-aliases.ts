@@ -16,7 +16,7 @@
  * les 3 cas non triviaux (`contrat` = Planar Binding, `terraformage` = Move
  * Earth, `prevoyance` = Contingency) ont été identifiés par leur description FR.
  *
- * Trié par `newId` (déterminisme). Voir `plans/DEBT.md > D16` pour les
+ * Trié par `newId` (déterminisme). Voir `docs/plans/DEBT.md > D16` pour les
  * divergences vis-à-vis de l'estimation D.3 de l'audit (renames 50 vs ~44).
  */
 export interface SpellRename {

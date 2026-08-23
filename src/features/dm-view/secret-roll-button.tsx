@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { GlassPanel } from '@/shared/components/glass-panel';
 import { Tooltip } from '@/shared/components/tooltip';
 import { cn } from '@/shared/lib/cn';
+import { logSecretRoll } from '@/shared/lib/event-logger';
 import { t, type StringKey } from '@/shared/lib/i18n';
 
 interface SecretRollState {
@@ -12,7 +13,23 @@ interface SecretRollState {
   face: number;
   /** Modificateur appliqué (signé). */
   modifier: number;
+  /** Ce sur quoi portait le jet (« Perception du garde »), ou `null`. */
+  label: string | null;
+  /** `true` une fois le jet re-journalisé en visibilité `all`. */
+  revealed: boolean;
 }
+
+interface SecretRollButtonProps {
+  /**
+   * Campagne où journaliser le jet (kind `dm-secret-roll`, visibilité `dm`).
+   * Absente ⇒ le jet reste purement local, comme avant : le composant est aussi
+   * monté sur `/dm`, hors de toute campagne.
+   */
+  campaignId?: string;
+}
+
+/** Longueur max du champ libre « à propos de quoi ? ». */
+const LABEL_MAX = 80;
 
 const ADV_LABEL: Record<'normal' | 'advantage' | 'disadvantage', StringKey> = {
   normal: 'dm.secretRoll.normal',
@@ -27,13 +44,19 @@ const ADV_TIP: Record<'normal' | 'advantage' | 'disadvantage', StringKey> = {
 };
 
 /**
- * Outil DM — jet de d20 secret (sans toast, sans log).
+ * Outil DM — jet de d20 secret.
  *
- * Pour S1 : pas de système d'événements visibility:'dm' (plan 22). Le jet
- * reste local au composant — l'historique récente s'affiche en bas et est
- * tronquée aux 5 derniers. Quand plan 22 (event-log) livrera, ce composant
- * basculera vers `logEvent({ type: 'dm-secret-roll', visibility: 'dm' })`
- * et purgera son state local.
+ * Journalisé en `dm-secret-roll` (visibilité `dm`) quand une `campaignId` est
+ * fournie — M10 de l'audit de malléabilité. Le kind, sa doc et TOUT le côté
+ * lecteur (`event-line.ts`) existaient déjà ; seul l'écrivain manquait, et le
+ * jet vivait dans un `useState` plafonné à cinq entrées, perdu au démontage :
+ * un MJ ne pouvait pas retrouver dix minutes plus tard ce qu'il avait lancé
+ * derrière son paravent.
+ *
+ * « Révéler » RE-JOURNALISE le même jet en visibilité `all` plutôt que de
+ * modifier l'event d'origine : les events sont immuables côté rules (`allow
+ * update: if false`), et le récit garde ainsi trace des deux temps — le MJ a
+ * lancé en secret, puis a montré.
  *
  * Mécanique : d20 + modificateur signé. Toggle Avantage / Désavantage qui
  * tire 2 d20 et prend max/min. Le 20 nat ou 1 nat est signalé visuellement
@@ -44,8 +67,9 @@ const ADV_TIP: Record<'normal' | 'advantage' | 'disadvantage', StringKey> = {
  * Roll inline d20 = quelques lignes ; pas de duplication problématique avec
  * le moteur principal (qui couvre les jets liés à un perso).
  */
-export function SecretRollButton(): JSX.Element {
+export function SecretRollButton({ campaignId }: SecretRollButtonProps = {}): JSX.Element {
   const [modifier, setModifier] = useState<number>(0);
+  const [label, setLabel] = useState<string>('');
   const [advantage, setAdvantage] = useState<'normal' | 'advantage' | 'disadvantage'>('normal');
   const [history, setHistory] = useState<SecretRollState[]>([]);
 
@@ -59,10 +83,37 @@ export function SecretRollButton(): JSX.Element {
           ? Math.min(d1, d2)
           : d1;
     const total = face + modifier;
-    setHistory((prev) => [{ total, face, modifier }, ...prev].slice(0, 5));
-  }, [advantage, modifier]);
+    const rollLabel = label.trim() === '' ? null : label.trim();
+    setHistory((prev) =>
+      [{ total, face, modifier, label: rollLabel, revealed: false }, ...prev].slice(0, 5),
+    );
+    // Best-effort : un échec de journalisation ne doit pas gâcher le jet, qui
+    // reste affiché à l'écran du MJ.
+    if (campaignId) {
+      void logSecretRoll(campaignId, {
+        label: rollLabel,
+        face,
+        modifier,
+        total,
+        advantage,
+      });
+    }
+  }, [advantage, campaignId, label, modifier]);
 
   const last = history[0] ?? null;
+
+  const handleReveal = useCallback(() => {
+    if (!campaignId || !last || last.revealed) return;
+    void logSecretRoll(campaignId, {
+      label: last.label,
+      face: last.face,
+      modifier: last.modifier,
+      total: last.total,
+      advantage,
+      visibility: 'all',
+    });
+    setHistory((prev) => prev.map((r, i) => (i === 0 ? { ...r, revealed: true } : r)));
+  }, [advantage, campaignId, last]);
 
   return (
     <GlassPanel className="flex flex-col gap-3 p-5">
@@ -74,6 +125,25 @@ export function SecretRollButton(): JSX.Element {
           {t('dm.secretRoll.subtitle')}
         </span>
       </header>
+
+      {/* Sujet du jet — ce qui rend l'entrée de journal relisible plus tard. */}
+      <div className="flex flex-col gap-1">
+        <label
+          htmlFor="dm-secret-label"
+          className="font-title text-[10px] font-bold uppercase tracking-[0.16em] text-text-tertiary"
+        >
+          {t('dm.secretRoll.aboutLabel')}
+        </label>
+        <input
+          id="dm-secret-label"
+          type="text"
+          value={label}
+          maxLength={LABEL_MAX}
+          placeholder={t('dm.secretRoll.aboutPlaceholder')}
+          onChange={(e) => setLabel(e.target.value)}
+          className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-1.5 font-serif text-body-sm text-text outline-none transition-colors duration-200 ease-base focus:border-gold"
+        />
+      </div>
 
       {/* Modificateur */}
       <div className="flex items-center gap-3">
@@ -168,6 +238,24 @@ export function SecretRollButton(): JSX.Element {
             {last.face === 20 && <> · {t('dm.secretRoll.nat20')}</>}
             {last.face === 1 && <> · {t('dm.secretRoll.nat1')}</>}
           </p>
+          {/* Révéler : re-log en visibilité `all`. Hors campagne, rien à
+              révéler — le jet n'a jamais été journalisé. */}
+          {campaignId ? (
+            <div className="mt-3 flex justify-end">
+              <Tooltip label={t('dm.tip.revealSecretRoll')} decorative>
+                <button
+                  type="button"
+                  onClick={handleReveal}
+                  disabled={last.revealed}
+                  className="rounded-pill border border-white-8 bg-white/[0.03] px-3 py-1 font-title text-[9px] font-bold uppercase tracking-[0.14em] text-text-secondary transition-colors duration-200 ease-base hover:border-gold-bright hover:text-gold-bright disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {last.revealed
+                    ? t('dm.secretRoll.revealed')
+                    : t('dm.secretRoll.reveal')}
+                </button>
+              </Tooltip>
+            </div>
+          ) : null}
         </div>
       )}
 

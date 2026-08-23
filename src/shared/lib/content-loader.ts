@@ -2,6 +2,7 @@ import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 
 import { db as dexie } from './dexie-db';
 import { getDb } from './firebase';
+import { loadUserPacksEntries } from './load-user-packs-entries';
 import {
   ContentTypeSchemas,
   type ContentEntityByKey,
@@ -30,7 +31,7 @@ const PUBLIC_CACHE_ID = '__public__';
  * Invalidation du cache public par hash de contenu.
  *
  * Pourquoi : le TTL 7 jours ne détecte pas les changements de bundle. Adrien
- * a vécu le bug plusieurs fois (plans/DEBT.md > D7 — "Page Sorts vide pour
+ * a vécu le bug plusieurs fois (docs/plans/DEBT.md > D7 — "Page Sorts vide pour
  * les lanceurs") : le bundle disque avait changé mais le cache Dexie servait
  * toujours l'ancienne version pendant 7j → SpellsStep filtrait dans le vide.
  *
@@ -217,7 +218,7 @@ export async function loadPublicContent<K extends ContentTypeKey>(
 ): Promise<ContentEntityByKey[K][]> {
   // Première étape de chaque session : vérifier qu'un build récent ne nous a
   // pas laissés sur un cache obsolète. Si le hash a changé, on vide tout le
-  // scope public avant de servir la moindre requête (cf. plans/DEBT.md > D7).
+  // scope public avant de servir la moindre requête (cf. docs/plans/DEBT.md > D7).
   await ensurePublicCacheFreshness();
 
   const cached = await readCache('public', type);
@@ -356,13 +357,15 @@ export async function resolveContent<K extends ContentTypeKey>(
   }
   if (options.scope === 'user') {
     if (!options.scopeId) throw new Error('resolveContent: scopeId required for user scope');
-    // Fast-path : si l'entrée existe, on la retourne sans charger toute la collection.
-    const firestore = getDb();
-    const docRef = doc(firestore, `users/${options.scopeId}/customContent/${type}/${contentId}`);
-    const snap = await getDoc(docRef);
-    if (!snap.exists()) return null;
-    const parsed = ContentTypeSchemas[type].safeParse(snap.data());
-    return parsed.success ? (parsed.data as ContentEntityByKey[K]) : null;
+    // Le contenu personnel de l'utilisateur vit dans ses PACKS
+    // (`users/{uid}/customContentPacks/{packId}.entities[type]`), pas dans un
+    // document par entrée. L'ancien chemin `users/{uid}/customContent/{type}/{id}`
+    // compte CINQ segments : `doc()` le refuse, donc cette branche ne renvoyait
+    // jamais `null` — elle LEVAIT. Aucun écran ne s'en apercevait, faute
+    // d'appelant ; le premier à en brancher un (l'ajout d'objet en scope réel)
+    // aurait hérité d'un « introuvable » incompréhensible.
+    const entries = await loadUserPacksEntries(type, options.scopeId);
+    return entries.find((e) => (e as { id: string }).id === contentId) ?? null;
   }
   // campaign
   if (!options.scopeId) throw new Error('resolveContent: scopeId required for campaign scope');

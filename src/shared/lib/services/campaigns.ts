@@ -106,13 +106,15 @@ export class CampaignServiceError extends Error {
     | 'invite-code-collision-exhausted'
     | 'invite-code-not-found'
     | 'campaign-not-found'
-    | 'last-gm-cannot-leave';
+    | 'last-gm-cannot-leave'
+    | 'last-gm-cannot-demote';
   constructor(
     kind:
       | 'invite-code-collision-exhausted'
       | 'invite-code-not-found'
       | 'campaign-not-found'
-      | 'last-gm-cannot-leave',
+      | 'last-gm-cannot-leave'
+      | 'last-gm-cannot-demote',
     message: string,
   ) {
     super(message);
@@ -572,6 +574,157 @@ export async function promoteToGm(
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Public API — demoteGm
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Rétrograde un co-MJ en joueur — symétrique exact de `promoteToGm`. La modale
+ * de promotion PROMET cette réversibilité depuis l'origine (« ce droit pourra
+ * lui être retiré ») sans qu'aucun code ne la tienne.
+ *
+ * Invariant ≥ 1 MJ : refuse la rétrogradation du dernier meneur avec
+ * `last-gm-cannot-demote`. Sans ce garde-fou la rule `gmIds.size() >= 1`
+ * rejetterait l'écriture avec un `permission-denied` opaque — mieux vaut une
+ * erreur typée que l'UI sait traduire.
+ *
+ * Le rétrogradé redevient JOUEUR, pas exclu : si son doc member manque (MJ
+ * fondateur, jamais passé par un code d'invitation), on le crée en `role:
+ * 'member'`. Sans ça, retirer l'uid de `gmIds` l'éjecterait entièrement de la
+ * campagne — une rétrogradation silencieusement transformée en exclusion.
+ * `displayName`/`photoURL` restent `null` (le MJ n'a pas le profil Auth de la
+ * cible, et les rules lui interdisent de le forger) : la cible auto-soignera
+ * son doc à son prochain passage, comme après une promotion.
+ */
+export async function demoteGm(
+  campaignId: string,
+  targetUid: string,
+): Promise<void> {
+  const firestore = getDb();
+  const campaignRef = doc(firestore, 'campaigns', campaignId);
+  const campaignSnap = await getDoc(campaignRef);
+  if (!campaignSnap.exists()) {
+    throw new CampaignServiceError(
+      'campaign-not-found',
+      `Campaign ${campaignId} not found`,
+    );
+  }
+  const campaign = campaignSnap.data() as Campaign;
+
+  if (!campaign.gmIds.includes(targetUid)) {
+    // No-op idempotent — la cible n'est déjà plus meneur.
+    return;
+  }
+  if (campaign.gmIds.length === 1) {
+    throw new CampaignServiceError(
+      'last-gm-cannot-demote',
+      `User ${targetUid} is the last GM of campaign ${campaignId}`,
+    );
+  }
+
+  const batch = writeBatch(firestore);
+  batch.update(campaignRef, {
+    gmIds: campaign.gmIds.filter((id) => id !== targetUid),
+    updatedAt: serverTimestamp(),
+  });
+
+  const memberRef = doc(firestore, 'campaigns', campaignId, 'members', targetUid);
+  const memberSnap = await getDoc(memberRef);
+  if (memberSnap.exists()) {
+    batch.update(memberRef, { role: 'member' });
+  } else {
+    batch.set(memberRef, {
+      userId: targetUid,
+      role: 'member',
+      characterId: null,
+      displayName: null,
+      photoURL: null,
+      joinedAt: serverTimestamp(),
+      schemaVersion: 1,
+    });
+  }
+
+  await trackPendingWrite(firestore, batch.commit());
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Public API — rotateInviteCode
+// ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Régénère le code d'invitation d'une campagne et RÉVOQUE l'ancien. Cas d'usage
+ * réel : le code a fuité sur un Discord public, ou la table est au complet et
+ * le meneur veut fermer la porte.
+ *
+ * Atomicité : un seul `writeBatch` pose le nouveau doc `inviteCodes/{code}`,
+ * supprime l'ancien et met à jour `campaigns/{id}.inviteCode`. Si l'un des trois
+ * échoue (rules), rien n'est écrit — pas d'état intermédiaire où la campagne
+ * pointerait un code inexistant, ni deux codes valides en parallèle.
+ *
+ * La rule `inviteCodes` prépare ce geste depuis l'origine (`allow update` et
+ * `allow delete: if isDMOf(resource.data.campaignId)`) sans aucun consommateur.
+ * Rien à déployer.
+ *
+ * Retourne le nouveau code, pour que l'appelant l'affiche sans attendre le
+ * listener temps-réel.
+ *
+ * `uid` est l'utilisateur qui régénère, PAS le fondateur : la rule de create
+ * exige `createdBy == auth.uid`, donc reprendre `campaign.createdBy` ferait
+ * échouer tout co-MJ qui n'a pas créé la campagne.
+ */
+export async function rotateInviteCode(
+  campaignId: string,
+  uid: string,
+): Promise<string> {
+  const firestore = getDb();
+  const campaignRef = doc(firestore, 'campaigns', campaignId);
+  const campaignSnap = await getDoc(campaignRef);
+  if (!campaignSnap.exists()) {
+    throw new CampaignServiceError(
+      'campaign-not-found',
+      `Campaign ${campaignId} not found`,
+    );
+  }
+  const campaign = campaignSnap.data() as Campaign;
+  const previousCode = campaign.inviteCode;
+
+  // Même retry anti-collision que `createCampaign` : 32^6 codes, la collision
+  // est infinitésimale mais un hard-fail sur une régénération serait absurde.
+  let nextCode = '';
+  for (let tries = 0; tries < MAX_INVITE_CODE_TRIES; tries++) {
+    const candidate = generateInviteCode();
+    if (candidate === previousCode) continue;
+    const snap = await getDoc(doc(firestore, 'inviteCodes', candidate));
+    if (snap.exists()) continue;
+    nextCode = candidate;
+    break;
+  }
+  if (!nextCode) {
+    throw new CampaignServiceError(
+      'invite-code-collision-exhausted',
+      `Failed to find a free invite code after ${MAX_INVITE_CODE_TRIES} tries`,
+    );
+  }
+
+  const batch = writeBatch(firestore);
+  batch.set(doc(firestore, 'inviteCodes', nextCode), {
+    code: nextCode,
+    campaignId,
+    createdBy: uid,
+    createdAt: serverTimestamp(),
+  });
+  if (previousCode) {
+    batch.delete(doc(firestore, 'inviteCodes', previousCode));
+  }
+  batch.update(campaignRef, {
+    inviteCode: nextCode,
+    updatedAt: serverTimestamp(),
+  });
+
+  await trackPendingWrite(firestore, batch.commit());
+  return nextCode;
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Public API — healOwnMemberIdentity (self-heal du displayName dénormalisé)
 // ─────────────────────────────────────────────────────────────────────
 
@@ -739,15 +892,40 @@ export async function updateCampaign(
  *
  * Appelé par l'UI campaign-detail (picker « lier un personnage », à venir).
  */
+export interface LinkCharacterOptions {
+  /**
+   * Rôle à poser si le doc `members/{uid}` n'existe pas encore. Sert au MENEUR
+   * FONDATEUR : son appartenance est portée par `gmIds[]`, donc il n'a JAMAIS
+   * de doc member — alors qu'un co-MJ promu depuis un joueur, si. Cette
+   * asymétrie n'était pas voulue : elle privait le seul MJ fondateur de
+   * « Mon personnage », donc de la possibilité de jouer un PJ à sa propre
+   * table. La rule `create` l'autorise déjà (`isOwner(userId)`), il ne
+   * manquait qu'un appelant. Absent → comportement d'origine (update strict).
+   */
+  readonly createRole?: 'gm' | 'member';
+  /** Nom/photo dénormalisés du profil Auth, posés à la création du doc. */
+  readonly displayName?: string | null;
+  readonly photoURL?: string | null;
+}
+
 export async function linkCharacterToMembership(
   campaignId: string,
   uid: string,
   characterId: string | null,
+  options: LinkCharacterOptions = {},
 ): Promise<void> {
   const firestore = getDb();
   const memberRef = doc(firestore, 'campaigns', campaignId, 'members', uid);
 
+  // Le doc peut manquer (meneur fondateur). On ne le lit QUE si l'appelant
+  // nous a donné de quoi le créer — sinon on garde le chemin d'origine, sans
+  // lecture supplémentaire.
+  const needsCreate =
+    options.createRole !== undefined && !(await getDoc(memberRef)).exists();
+
   if (characterId === null) {
+    // Délier sans doc member = rien à faire : il n'y a aucun lien à retirer.
+    if (needsCreate) return;
     await trackPendingWrite(
       firestore,
       updateDoc(memberRef, { characterId: null }),
@@ -757,7 +935,19 @@ export async function linkCharacterToMembership(
 
   const characterRef = doc(firestore, 'users', uid, 'characters', characterId);
   const batch = writeBatch(firestore);
-  batch.update(memberRef, { characterId });
+  if (needsCreate) {
+    batch.set(memberRef, {
+      userId: uid,
+      role: options.createRole,
+      characterId,
+      displayName: options.displayName ?? null,
+      photoURL: options.photoURL ?? null,
+      joinedAt: serverTimestamp(),
+      schemaVersion: 1,
+    });
+  } else {
+    batch.update(memberRef, { characterId });
+  }
   batch.update(characterRef, {
     homeCampaignId: campaignId,
     updatedAt: serverTimestamp(),

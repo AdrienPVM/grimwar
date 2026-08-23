@@ -46,13 +46,16 @@ import { cn } from '../lib/cn';
  *  - `md` (défaut) : formulaires et modales standard — élargissement doux.
  *  - `lg` : contenu dense (détail de sort, montée de niveau, création de
  *    rencontre) — profite franchement de la largeur sur desktop/TV.
+ *  - `xl` : écran entier emprunté (Codex en superposition) — une liste
+ *    filtrable de 300 sorts a besoin de plus qu'une colonne de lecture.
  */
-type ModalSize = 'sm' | 'md' | 'lg';
+type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZE_CLASS: Record<ModalSize, string> = {
   sm: 'max-w-[440px]',
   md: 'max-w-[480px] sm:max-w-[560px]',
   lg: 'max-w-[480px] sm:max-w-[600px] lg:max-w-[760px]',
+  xl: 'max-w-none sm:max-w-[720px] lg:max-w-[1000px]',
 };
 
 interface Props {
@@ -71,6 +74,40 @@ interface Props {
   size?: ModalSize;
   children: ReactNode;
   className?: string;
+}
+
+/**
+ * Marqueur porté par le fond de chaque modale ouverte. Sert à désigner « celle
+ * du dessus » au moment d'Échap (cf. `isTopmostModal`).
+ */
+const MODAL_ROOT_ATTR = 'data-detail-modal';
+
+/**
+ * La modale `el` est-elle celle du dessus ?
+ *
+ * POURQUOI cette question se pose : le Codex consultable en pleine partie est
+ * une modale QUI CONTIENT les navigateurs du Codex, lesquels ouvrent leur
+ * propre modale de détail. Or les deux posent leur écouteur `keydown` sur
+ * `window`, et `stopPropagation` empêche la propagation vers d'autres CIBLES,
+ * pas vers les autres écouteurs de la MÊME cible : les deux se déclenchaient
+ * donc quoi qu'il arrive. On relisait la portée d'un sort, on appuyait sur
+ * Échap, et on se retrouvait éjecté du Codex.
+ *
+ * POURQUOI l'ordre du DOM plutôt qu'une pile d'ordre de montage : React
+ * commite les effets ENFANT D'ABORD, donc une modale rendue à l'intérieur
+ * d'une autre s'empilerait avant sa parente — l'inverse de l'empilement voulu.
+ * L'ordre du document, lui, est exactement l'ordre de peinture à `z-index`
+ * égal (toutes les modales partagent `z-[80]`), et toutes sont portalées au
+ * même `body`. Le dernier nœud marqué est donc, littéralement, celui que
+ * l'utilisateur voit au-dessus.
+ *
+ * Le clic sur le fond, lui, n'a jamais eu besoin de ça : le fond du dessus
+ * recouvre celui du dessous et reçoit seul le clic.
+ */
+function isTopmostModal(el: HTMLElement | null): boolean {
+  if (!el) return false;
+  const roots = document.querySelectorAll<HTMLElement>(`[${MODAL_ROOT_ATTR}]`);
+  return roots.length === 0 || roots[roots.length - 1] === el;
 }
 
 /** Sélecteur des éléments potentiellement focusables à l'intérieur du panneau. */
@@ -95,6 +132,8 @@ export function DetailModal({
   const generatedId = useId();
   const titleId = providedTitleId ?? `detail-modal-${generatedId}`;
   const panelRef = useRef<HTMLDivElement | null>(null);
+  // Le fond de CETTE modale — comparé aux autres pour savoir qui est au-dessus.
+  const rootRef = useRef<HTMLDivElement | null>(null);
   // L'élément qui avait le focus juste avant l'ouverture (typiquement le
   // bouton « ? » déclencheur). On lui rend le focus à la fermeture.
   const triggerRef = useRef<Element | null>(null);
@@ -134,6 +173,9 @@ export function DetailModal({
     if (!open) return;
     function onKey(e: KeyboardEvent): void {
       if (e.key === 'Escape') {
+        // Seule la modale du dessus se ferme : sinon relire le détail d'un sort
+        // depuis le Codex en superposition éjecterait aussi du Codex.
+        if (!isTopmostModal(rootRef.current)) return;
         e.stopPropagation();
         onClose();
         return;
@@ -180,9 +222,11 @@ export function DetailModal({
 
   return createPortal(
     <div
+      ref={rootRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
+      {...{ [MODAL_ROOT_ATTR]: '' }}
       onClick={handleBackdropClick}
       className={cn(
         // Ancrage bottom-sheet sur mobile (`items-end` → atteignable au pouce),

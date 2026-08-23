@@ -21,11 +21,11 @@ const SIZE_CLASSES: Record<'sm' | 'lg', string> = {
  * centré). Distinct du losange HP des PJ (`HeroEmblem`, qui porte la barre de
  * vie) : un PNJ n'a pas de PV affiché ici, juste une identité visuelle.
  *
- * En V1 (plan 28) on rend la VALEUR comme un glyphe (lettre/emoji), exactement
- * comme les cartes de PJ (`character-card.tsx`) — le système de portrait n'a pas
- * de pipeline SVG/image rendu. L'upload d'image (`type:'image'`) est différé en
- * sous-plan 28b (Firebase Storage). On évite `dangerouslySetInnerHTML` pour le
- * `type:'svg'` (interdit sans sanitisation) : la valeur retombe sur le glyphe.
+ * Deux rendus, un seul médaillon : une PHOTO quand le MJ en a posé une (M39,
+ * data URL base64 optimisée ~32 Ko stockée inline sur le doc — pas de Firebase
+ * Storage), sinon le GLYPHE (lettre/emoji), exactement comme les cartes de PJ.
+ * On évite `dangerouslySetInnerHTML` pour le `type:'svg'` (interdit sans
+ * sanitisation) : la valeur retombe sur le glyphe.
  */
 export function NpcPortrait({
   portrait,
@@ -33,6 +33,22 @@ export function NpcPortrait({
   size = 'sm',
   className,
 }: NpcPortraitProps): JSX.Element {
+  if (portrait.type === 'image' && portrait.value !== '') {
+    return (
+      <img
+        src={portrait.value}
+        alt=""
+        aria-hidden="true"
+        data-testid="npc-portrait-image"
+        className={cn(
+          'inline-block shrink-0 rounded-full border border-gold/60 object-cover',
+          'shadow-[0_4px_16px_rgba(0,0,0,0.5),0_0_18px_rgba(220,184,108,0.12)]',
+          SIZE_CLASSES[size],
+          className,
+        )}
+      />
+    );
+  }
   const glyph = (portrait.value || name[0] || '?').slice(0, 2).toUpperCase();
   return (
     <span

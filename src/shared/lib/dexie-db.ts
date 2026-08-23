@@ -1,5 +1,7 @@
 import Dexie, { type Table } from 'dexie';
 
+import type { DiceTerm } from './dice/types';
+
 /**
  * Base IndexedDB locale (Dexie). Schéma figé dans docs/DATA-MODEL.md.
  *
@@ -34,6 +36,15 @@ export type DiceHistoryRow = {
   fumble: boolean;
   kind: string;
   timestamp: number;
+  /**
+   * Formule du jet, telle que rejouable (M49). Optionnelle : les lignes
+   * écrites avant l'ajout du champ n'en ont pas, et l'historique local n'est
+   * pas migré — un jet d'hier n'a pas à disparaître pour gagner un bouton.
+   * Non indexée ⇒ aucun bump de version Dexie.
+   */
+  dice?: DiceTerm[];
+  /** Modificateur effectif appliqué (post-maîtrise, épuisement, bonus). */
+  modifier?: number;
 };
 
 export type SettingsRow = {

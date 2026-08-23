@@ -1,21 +1,19 @@
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { useState } from 'react';
+import { useState, type JSX } from 'react';
 
 import { useAuth } from '@/features/auth/use-auth';
-import { Button } from '@/shared/components/button';
-import { invalidateUserContent } from '@/shared/lib/content-loader';
-import { getDb } from '@/shared/lib/firebase';
+import {
+  EMPTY_ITEM_DRAFT,
+  ItemForm,
+  type ItemFormDraft,
+} from '@/features/custom-content/forms/item-form';
 import { t } from '@/shared/lib/i18n';
 import { addItemToInventory } from '@/shared/lib/inventory';
-import { trackPendingWrite } from '@/shared/lib/track-pending-write';
 import { showToast } from '@/shared/lib/slices/toast-slice';
-import {
-  ItemSchema,
-  type ItemCategory,
-} from '@/shared/types/content';
+import type { Item } from '@/shared/types/content';
 import type { Character } from '@/shared/types/character';
 
 import { useUpdateCharacter } from '../../use-update-character';
+import { addItemToPersonalPack } from './personal-item-pack';
 
 interface CustomItemFormProps {
   character: Character;
@@ -23,42 +21,21 @@ interface CustomItemFormProps {
   onCreated: () => Promise<void>;
 }
 
-// Libellés résolus via les clés partagées `item.category.*` (source unique).
-const CATEGORY_OPTIONS: readonly ItemCategory[] = [
-  'weapon',
-  'armor',
-  'shield',
-  'tool',
-  'pack',
-  'gear',
-  'mount',
-  'vehicle',
-];
-
-/** Slugify simple : minuscules, ASCII, kebab-case, suffixe court random. */
-function slugify(name: string): string {
-  const slug = name
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40) || 'objet';
-  const suffix = Math.random().toString(36).slice(2, 8);
-  return `${slug}-${suffix}`;
-}
-
 /**
- * Formulaire de création d'objet maison (user scope). Écrit dans
- * `users/{uid}/customContent/items/{id}` puis ajoute à l'inventaire via
- * `addItemToInventory` qui repassera par `ensureContentExists` pour valider
- * la lecture Firestore — garantie stricte que l'item est bien en DB avant
- * l'ajout.
+ * Création d'un objet maison depuis l'inventaire, puis ajout immédiat.
  *
- * Champs minimaux : nom (FR), catégorie, poids (kg, défaut 0), description.
- * Le coût et les propriétés détaillées sont éditables plus tard dans la fiche
- * (plan 19 polira les forms maison). Pas de magic item maison ici — l'item
- * créé suit le schéma Item standard.
+ * Deux défauts réparés d'un coup (M27) :
+ *
+ * 1. **Le formulaire ne collectait que nom / catégorie / poids / description.**
+ *    Une « arme » sans `damage` est rejetée en silence par la liste d'attaques
+ *    — elle apparaissait dans le sac et restait injouable. On réutilise donc
+ *    le formulaire des packs, qui couvre dégâts, propriétés, portée, maîtrise
+ *    et CA de base. Une implémentation, deux points d'entrée.
+ * 2. **L'écriture visait un chemin invalide.**
+ *    `users/{uid}/customContent/items/{id}` compte CINQ segments : `doc()` le
+ *    refuse. La création LEVAIT, et l'objet n'existait nulle part. Elle passe
+ *    désormais par le pack personnel, la seule source que
+ *    `resolveContent(scope:'user')` interroge réellement.
  */
 export function CustomItemForm({
   character,
@@ -67,59 +44,15 @@ export function CustomItemForm({
 }: CustomItemFormProps): JSX.Element {
   const { user } = useAuth();
   const { updateCharacter } = useUpdateCharacter(character);
-
-  const [name, setName] = useState<string>('');
-  const [category, setCategory] = useState<ItemCategory>('gear');
-  const [weight, setWeight] = useState<string>('0');
-  const [description, setDescription] = useState<string>('');
+  const [draft, setDraft] = useState<ItemFormDraft>(EMPTY_ITEM_DRAFT);
   const [busy, setBusy] = useState<boolean>(false);
 
-  const canSubmit = name.trim().length > 0 && !busy && user !== null;
-
-  async function handleSubmit(): Promise<void> {
-    if (!canSubmit || !user) return;
+  async function handleConfirm(item: Item): Promise<void> {
+    if (!user || busy) return;
     setBusy(true);
     try {
-      const id = slugify(name);
-      const item = {
-        id,
-        name: { fr: name.trim() },
-        category,
-        cost: null,
-        weight: Math.max(0, Number(weight) || 0),
-        description: description.trim() ? { fr: description.trim() } : null,
-        source: 'aidedd-homebrew',
-      };
-      // Validation Zod locale avant écriture — défense en profondeur.
-      const parsed = ItemSchema.safeParse(item);
-      if (!parsed.success) {
-        throw new Error(
-          t('sheet.avoir.customForm.invalidSchema').replace(
-            '{errors}',
-            parsed.error.errors.map((e) => e.message).join(', '),
-          ),
-        );
-      }
-      const firestore = getDb();
-      const itemRef = doc(
-        firestore,
-        'users',
-        user.uid,
-        'customContent',
-        'items',
-        id,
-      );
-      // trackPendingWrite : la création d'item custom doit signaler la
-      // bannière offline (JALON 1D.3) tant que l'ack backend n'est pas reçu.
-      await trackPendingWrite(
-        firestore,
-        setDoc(itemRef, { ...parsed.data, createdAt: serverTimestamp() }),
-      );
-      // Invalidation du cache user pour que refreshUserItems voie l'objet.
-      await invalidateUserContent('items', user.uid);
+      await addItemToPersonalPack(user.uid, item, new Date().toISOString());
 
-      // Ajout immédiat à l'inventaire (resolveContent fera un round-trip
-      // Firestore pour vérifier — strict comme tout autre item).
       const inventoryClone = {
         inventory: {
           ...character.inventory,
@@ -127,14 +60,17 @@ export function CustomItemForm({
           coins: { ...character.inventory.coins },
         },
       };
-      await addItemToInventory(inventoryClone, id, 'user', { qty: 1 }, user.uid);
+      // Scope `user` : l'objet vient du pack personnel, pas du SRD. Poser
+      // « public » ici le rendrait introuvable à la relecture.
+      await addItemToInventory(inventoryClone, item.id, 'user', { qty: 1 }, user.uid);
       await updateCharacter({ inventory: inventoryClone.inventory });
 
       showToast({
         kind: 'crit',
         title: t('sheet.avoir.customForm.created'),
-        sub: name.trim(),
+        sub: item.name.fr,
       });
+      setDraft(EMPTY_ITEM_DRAFT);
       await onCreated();
     } catch (err) {
       showToast({
@@ -149,81 +85,13 @@ export function CustomItemForm({
   }
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <label className="mb-3 block">
-          <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            {t('sheet.avoir.customForm.name')}
-          </span>
-          <input
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={60}
-            placeholder={t('avoir.customItem.placeholder')}
-            className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2 font-serif text-body text-text placeholder:text-text-tertiary focus:border-gold-dim focus:outline-none"
-          />
-        </label>
-
-        <label className="mb-3 block">
-          <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            {t('sheet.avoir.customForm.category')}
-          </span>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as ItemCategory)}
-            className="w-full rounded-card-sm border border-white-8 bg-bg-2/60 px-3 py-2 font-serif text-body text-text focus:border-gold-dim focus:outline-none"
-          >
-            {CATEGORY_OPTIONS.map((value) => (
-              <option key={value} value={value}>
-                {t(`item.category.${value}`)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="mb-3 block">
-          <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            {t('sheet.avoir.customForm.weight')}
-          </span>
-          <input
-            type="number"
-            min={0}
-            step={0.1}
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2 font-display text-body text-text focus:border-gold-dim focus:outline-none"
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-1 block font-title text-[9px] font-bold uppercase tracking-[0.22em] text-text-tertiary">
-            {t('sheet.avoir.customForm.description')}
-          </span>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t('sheet.avoir.customForm.descPlaceholder')}
-            rows={3}
-            className="w-full rounded-card-sm border border-white-8 bg-ink/40 px-3 py-2 font-serif text-body-sm text-text placeholder:text-text-tertiary focus:border-gold-dim focus:outline-none"
-          />
-        </label>
-      </div>
-
-      <footer className="flex gap-2 border-t border-white-8 px-6 py-4">
-        <Button variant="secondary" size="sm" onClick={onCancel} className="flex-1">
-          {t('sheet.avoir.cancel')}
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => void handleSubmit()}
-          disabled={!canSubmit}
-          className="flex-1"
-        >
-          {busy ? '…' : t('sheet.avoir.customForm.submit')}
-        </Button>
-      </footer>
+    <div className="flex flex-1 flex-col overflow-y-auto px-6 py-4">
+      <ItemForm
+        draft={draft}
+        onChange={setDraft}
+        onConfirm={(item) => void handleConfirm(item)}
+        onCancel={onCancel}
+      />
     </div>
   );
 }

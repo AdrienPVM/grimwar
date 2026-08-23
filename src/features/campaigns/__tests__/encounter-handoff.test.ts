@@ -77,8 +77,28 @@ describe('deriveHandoffRows — filtrage', () => {
     expect(rows[0]?.total).toBe(17);
   });
 
-  it('exclut les jets DIGITAUX (mode ≠ physical)', () => {
-    const ev = mkEvent({ payload: { rollKind: 'damage', mode: 'digital', total: 11, label: 'x' } });
+  // M4 — le mode de dés n'est plus un critère. Une table en dés numériques
+  // devait auparavant lire le total dans le journal puis le retaper à la main
+  // dans la modale de contrôle, alors que le payload est identique.
+  it('garde AUSSI les jets numériques — même payload, même geste du MJ', () => {
+    const ev = mkEvent({
+      payload: { rollKind: 'damage', mode: 'digital', total: 11, label: 'Épée longue' },
+    });
+    const rows = deriveHandoffRows([ev], [mkParticipant()], EMPTY, NOW);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.total).toBe(11);
+    expect(rows[0]?.weaponLabel).toBe('Épée longue');
+  });
+
+  it('garde un jet d’attaque numérique (informatif)', () => {
+    const ev = mkEvent({ payload: { rollKind: 'attack', mode: 'digital', total: 19, label: 'Arc' } });
+    const rows = deriveHandoffRows([ev], [mkParticipant()], EMPTY, NOW);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.rollKind).toBe('attack');
+  });
+
+  it('exclut un jet numérique hors combat (le mode n’ouvre pas la vanne)', () => {
+    const ev = mkEvent({ payload: { rollKind: 'check', mode: 'digital', total: 14, label: 'x' } });
     expect(deriveHandoffRows([ev], [mkParticipant()], EMPTY, NOW)).toHaveLength(0);
   });
 

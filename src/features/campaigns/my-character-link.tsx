@@ -15,6 +15,14 @@ interface Props {
   currentCharacterId: string | null;
   /** Rafraîchit le détail campagne après un link/unlink (re-fetch members). */
   onChanged: () => void;
+  /**
+   * Rôle à poser si le doc `members/{uid}` n'existe pas encore. Le meneur
+   * fondateur n'en a pas : sans ça, la section « Mon personnage » ne se rendait
+   * jamais pour lui, alors qu'un co-MJ promu depuis un joueur y avait droit.
+   */
+  createRole?: 'gm' | 'member';
+  displayName?: string | null;
+  photoURL?: string | null;
 }
 
 /**
@@ -32,6 +40,9 @@ export function MyCharacterLink({
   uid,
   currentCharacterId,
   onChanged,
+  createRole,
+  displayName = null,
+  photoURL = null,
 }: Props): JSX.Element {
   const navigate = useNavigate();
   const { characters, isLoading } = useCharactersList();
@@ -140,6 +151,9 @@ export function MyCharacterLink({
           currentCharacterId={currentCharacterId}
           characters={characters}
           charactersLoading={isLoading}
+          createRole={createRole}
+          displayName={displayName}
+          photoURL={photoURL}
           onClose={() => setOpen(false)}
           onLinked={() => {
             setOpen(false);

@@ -36,8 +36,12 @@ interface UseMyCampaignsResult {
  *
  * Contract : { campaigns, isLoading, error, refresh } — mirror de
  * `useCharactersList` (plan 13.6) sauf `refresh` au lieu de `remountKey`.
+ *
+ * `enabled` (défaut `true`) coupe les deux requêtes sans casser l'ordre des
+ * hooks : l'accueil n'a besoin des campagnes que si au moins un personnage
+ * porte un `homeCampaignId`, et c'est l'écran le plus visité de l'app.
  */
-export function useMyCampaigns(): UseMyCampaignsResult {
+export function useMyCampaigns(enabled: boolean = true): UseMyCampaignsResult {
   const { user } = useAuth();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -48,7 +52,7 @@ export function useMyCampaigns(): UseMyCampaignsResult {
   const [refreshCounter, setRefreshCounter] = useState<number>(0);
 
   useEffect(() => {
-    if (!user) {
+    if (!user || !enabled) {
       setCampaigns([]);
       setIsLoading(false);
       setError(null);
@@ -71,7 +75,7 @@ export function useMyCampaigns(): UseMyCampaignsResult {
     return () => {
       cancelled = true;
     };
-  }, [user, refreshCounter]);
+  }, [user, enabled, refreshCounter]);
 
   const refresh = useCallback(() => {
     setRefreshCounter((n) => n + 1);

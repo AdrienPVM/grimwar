@@ -13,9 +13,13 @@ import { getLanguage, type LanguageEntry } from './languages';
  *
  * Dérivée, non dénormalisée : seule la langue d'ascendance « common » est
  * garantie ; le reste vient des champs persistés. On déduplique par id et on
- * place « Commun » en tête (langue universelle), puis l'ordre canonique du
- * registre `LANGUAGES` pour un rendu stable. Les ids inconnus sont ignorés
- * (résolution silencieuse — l'intégrité référentielle est gardée ailleurs).
+ * place « Commun » en tête (langue universelle), puis un tri FR pour un rendu
+ * stable.
+ *
+ * Un id HORS registre est rendu tel quel plutôt que jeté (M17). Le registre ne
+ * contient que les 16 langues SRD, et une table joue des langues de son monde
+ * (« thayen ») : les faire disparaître en silence de la fiche après les avoir
+ * saisies serait pire qu'un libellé approximatif.
  *
  * Pas d'effet de bord, pas de Math.random — testable en isolation.
  */
@@ -31,8 +35,15 @@ export function resolveCharacterLanguages(input: {
   ]);
   const entries: LanguageEntry[] = [];
   for (const id of ids) {
-    const entry = getLanguage(id);
-    if (entry) entries.push(entry);
+    if (id.trim().length === 0) continue;
+    entries.push(
+      getLanguage(id) ?? {
+        id,
+        name: { fr: id, en: id },
+        tier: 'rare',
+        script: '—',
+      },
+    );
   }
   // Tri : Commun en tête, puis alphabétique FR (rendu stable, lisible).
   return entries.sort((a, b) => {

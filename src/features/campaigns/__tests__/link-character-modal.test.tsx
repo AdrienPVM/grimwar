@@ -9,8 +9,12 @@ import type { Character } from '@/shared/types/character';
 
 const linkMock = vi.fn();
 vi.mock('@/shared/lib/services/campaigns', () => ({
-  linkCharacterToMembership: (cid: string, uid: string, charId: string | null) =>
-    linkMock(cid, uid, charId),
+  linkCharacterToMembership: (
+    cid: string,
+    uid: string,
+    charId: string | null,
+    options?: unknown,
+  ) => linkMock(cid, uid, charId, options),
 }));
 
 // useNavigate — spy (l'empty state propose « Créer un personnage »).
@@ -162,7 +166,11 @@ describe('<LinkCharacterModal>', () => {
     fireEvent.click(confirm);
 
     await waitFor(() => {
-      expect(linkMock).toHaveBeenCalledWith('c-1', 'uid-2', 'char-a');
+      expect(linkMock).toHaveBeenCalledWith('c-1', 'uid-2', 'char-a', {
+        createRole: undefined,
+        displayName: null,
+        photoURL: null,
+      });
     });
     expect(onLinked).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
@@ -179,7 +187,11 @@ describe('<LinkCharacterModal>', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Lier$/i }));
 
     await waitFor(() => {
-      expect(linkMock).toHaveBeenCalledWith('c-1', 'uid-2', null);
+      expect(linkMock).toHaveBeenCalledWith('c-1', 'uid-2', null, {
+        createRole: undefined,
+        displayName: null,
+        photoURL: null,
+      });
     });
   });
 

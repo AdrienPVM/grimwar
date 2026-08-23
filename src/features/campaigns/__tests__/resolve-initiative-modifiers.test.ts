@@ -87,6 +87,42 @@ describe('resolveInitiativeModifiers', () => {
     expect(map.get('inst-gob')).toBe(0);
   });
 
+  // M3 — jusqu'ici tout non-joueur lançait à +0, quelle que soit sa DEX.
+  it('monstre lié au bestiaire → mod de DEX de sa fiche de créature', async () => {
+    const gobelin = mkParticipant({
+      type: 'monster',
+      characterId: null,
+      monsterContentId: 'goblin',
+      instanceId: 'inst-gob',
+      name: 'Gobelin 1',
+    });
+    const map = await resolveInitiativeModifiers([gobelin], [], new Map([['goblin', 2]]));
+    expect(map.get('inst-gob')).toBe(2);
+  });
+
+  it('PNJ lié au bestiaire → même dérivation que les monstres', async () => {
+    const npc = mkParticipant({
+      type: 'npc',
+      characterId: null,
+      monsterContentId: 'bandit-captain',
+      instanceId: 'inst-npc',
+      name: 'Aldric',
+    });
+    const map = await resolveInitiativeModifiers([npc], [], new Map([['bandit-captain', 3]]));
+    expect(map.get('inst-npc')).toBe(3);
+  });
+
+  it('slug absent du bestiaire chargé → 0 (le MJ ajuste l’initiative en place)', async () => {
+    const gobelin = mkParticipant({
+      type: 'monster',
+      characterId: null,
+      monsterContentId: 'goblin',
+      instanceId: 'inst-gob',
+    });
+    const map = await resolveInitiativeModifiers([gobelin], [], new Map([['ogre', 1]]));
+    expect(map.get('inst-gob')).toBe(0);
+  });
+
   it('joueur absent du roster lié → 0 (pas de jointure possible)', async () => {
     registry.set('p-a/char-a', { initiative: 5 });
     // members vide : characterId non joignable à un ownerUid.
