@@ -190,6 +190,35 @@ jobs:
   # Échoue si un commit direct non-merge sur main touche un path protégé. Ne
   # tourne que sur push:main — sur une PR, toucher un path protégé est légitime.
   # Léger : git seul, ni Node ni émulateur. fetch-depth:0 pour résoudre BEFORE..AFTER.
+  # LES DEUX GARDES DE STRUCTURE.
+  #
+  # Ils etaient branches dans package.json - donc vivants au sens de
+  # l'invariant 2 - mais aucune CI ne les rejouait, et `lint` (= eslint .) ne
+  # les appelle pas. Ils ne mesuraient que quand un agent travaillait
+  # localement et pensait a les lancer.
+  #
+  # Job separe, leger : ils n'ont aucune dependance (du `node:` pur), donc ni
+  # `pnpm install` ni emulateur. Et ils doivent rendre leur verdict MEME quand
+  # un job voisin casse - un garde rendu muet par la panne d'un voisin ne garde
+  # plus rien. Verifie sur ghostterm le 2026-08-23 : le job des gardes est
+  # ressorti vert d'un run dont la CI voisine etait rouge depuis dix jours.
+  gardes:
+    name: gardes de structure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Garde de structure (la racine ne se defait pas)
+        run: node scripts/guard-structure.mjs
+
+      - name: Garde des scripts branches
+        run: node scripts/guard-scripts-branches.mjs
+
   guard:
     name: protected-paths-guard
     runs-on: ubuntu-latest
