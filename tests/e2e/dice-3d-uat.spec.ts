@@ -57,6 +57,38 @@ async function freezeTray(page: Page): Promise<void> {
     await expect(die).toHaveAttribute('data-settled', 'true');
   }
   await expect(page.getByTestId('toast-total')).not.toHaveClass(/opacity-70/);
+
+  // ET ON ARRÊTE L'HORLOGE, parce qu'attendre le bon signal ne suffisait pas.
+  //
+  // Le correctif précédent — des signaux au lieu d'une durée — visait juste et
+  // n'allait pas assez loin : il rendait l'ATTENTE exacte, mais le plateau
+  // continuait de se retirer tout seul 2 200 ms après le jet
+  // (`TRAY_LIFETIME_MS`, `dice-tray-overlay.tsx`). Tout ce qui suit — la
+  // capture d'écran, la lecture de `data-face` — courait donc contre un
+  // minuteur, et la CI a fini par perdre la course : `locator.getAttribute:
+  // Test timeout of 60000ms exceeded`, un run sur deux depuis le 2026-07-07.
+  //
+  // Le CSS ci-dessous ne pouvait rien y faire : il fige des ANIMATIONS, et ce
+  // qui retire le plateau est un `setTimeout` qui démonte le composant. Geler
+  // la peinture d'un élément que React va retirer ne le retient pas.
+  //
+  // L'horloge virtuelle de Playwright suspend ce minuteur sans qu'une seule
+  // ligne du produit change. Elle est arrêtée ICI et pas plus tôt : les dés ont
+  // besoin du temps qui passe pour tomber et se poser.
+  //
+  // LA MARGE N'EST PAS UNE PRÉCAUTION, ELLE ÉVITE UNE COURSE. `pauseAt` refuse
+  // un instant déjà passé (« Cannot fast-forward to the past ») : viser
+  // l'instant qu'on vient de lire, c'est viser une cible que l'aller-retour
+  // avec le navigateur a déjà dépassée. Mesuré ici même — la spec voisine est
+  // tombée là-dessus au premier essai. On vise donc un point court DEVANT.
+  //
+  // Pourquoi cette valeur : elle doit dépasser un aller-retour CDP sur coureur
+  // chargé, et rester très en deçà des 2 200 ms de vie du plateau, dont une
+  // bonne part est déjà consommée quand les dés se posent. Un demi-quart de ce
+  // budget tient les deux bouts.
+  const MARGE_MS = 300;
+  await page.clock.pauseAt(await page.evaluate((m) => Date.now() + m, MARGE_MS));
+
   await page.addStyleTag({
     content: `
       .dice-tray-life { animation: none !important; opacity: 1 !important; transform: none !important; }
@@ -91,6 +123,15 @@ test.describe('UAT — dés en relief', () => {
       !ok,
       'Firestore emulator unreachable on 127.0.0.1:8080 — start it with `pnpm e2e:emulators` (requires Java/JRE 11+).',
     );
+  });
+
+  // L'horloge virtuelle s'installe AVANT toute navigation — après, la page a
+  // déjà capturé les vrais `setTimeout` et il est trop tard. On la remet
+  // aussitôt à l'heure réelle : l'application doit vivre normalement, seul
+  // `freezeTray` l'arrête, et seulement une fois les dés posés.
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+    await page.clock.resume();
   });
 
   test('un jet numérique fait tomber des dés, posés sur la face tirée', async ({
