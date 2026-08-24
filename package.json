@@ -47,7 +47,9 @@
     "//srd:inspecter-source": "Compte les entites d'un fichier HTML AideDD et releve ses valeurs de source. Sert a calibrer les selecteurs avant une extraction.",
     "srd:inspecter-source": "tsx scripts/inspect-aidedd.ts",
     "//srd:inspecter-bloc": "Vide les N premiers blocs d'un fichier AideDD avec leur innerHTML complet. Le compagnon du precedent, un cran plus fin.",
-    "srd:inspecter-bloc": "tsx scripts/inspect-bloc.ts"
+    "srd:inspecter-bloc": "tsx scripts/inspect-bloc.ts",
+    "//guard:trois-refus": "LA DERNIERE LIGNE DE DEFENSE SE MESURE, ELLE AUSSI. Le hook des trois refus (commit sur garde bloquant rouge, DDL vers la production, restauration sur du travail non indexe) est le dernier obstacle avant une perte irreversible. Il vit desormais dans le plugin `doctrine`, en SOURCE UNIQUE : il en existait cinq copies, et ce garde a chiffre leur derive a SEPT ecarts identiques dans les quatre copies autres qu'interligne, dont `psql \"$DATABASE_URL\" -c 'DROP TABLE clients;'` qui PASSAIT. Le garde tient les DEUX moities : il refuse ce qu'il doit refuser, et il laisse passer ce qu'il doit laisser passer — un garde-fou qu'on contourne tous les jours finit desarme, c'est son vrai mode de mort. Il mesure sa POPULATION avant son objet : un quatrieme refus ajoute sans cas le fait rougir. Il n'est PAS dans la chaine de CI : le plugin n'existe pas dans le conteneur, et un garde qui ne peut pas mesurer ne doit pas rendre un vert. C'est le hook lui-meme qui le joue a chaque commit, via `.claude/defauts/GARDES-BLOQUANTS.txt` — plus fort qu'une CI, qui ne passe qu'apres. `DOCTRINE_ROOT` deplace la source si besoin.",
+    "guard:trois-refus": "python3 \"${DOCTRINE_ROOT:-$HOME/Projects/personal/socle}/plugins/doctrine/hooks/guard-trois-refus.py\""
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
