@@ -157,15 +157,42 @@ function estEpreuveLancee(f, textes) {
   return estEpreuve && LANCEURS.test(textes);
 }
 
+/* UN NOM DE FICHIER SEUL, MAIS PAS CELUI D'UN AUTRE DOSSIER.
+ *
+ * Mesure le 2026-08-24 sur interligne : une copie morte de `scripts/` comptait
+ * comme referencee parce qu'un `package.json` citait un AUTRE fichier au meme
+ * nom, dans un autre dossier. Le garde des orphelins ne voyait pas l'orphelin
+ * qu'il existe pour voir.
+ *
+ * LE TROU N'EST PAS OU ON LE CROIT : `scriptsDuDossier` rend des chemins
+ * relatifs a `scripts/`, donc pour un fichier de premier niveau `f` EST deja le
+ * nom nu. C'est le `includes(f)` principal qui l'attrapait n'importe ou, pas le
+ * repli sur le basename — deux plants poses sur le repli sont restes verts avant
+ * que la mesure ne designe la vraie clause.
+ *
+ * Le nom seul ne vaut que s'il est LIBRE : non precede d'un separateur de
+ * chemin. Precede d'un `/`, seul le chemin complet depuis la racine compte.
+ */
+function nommeSeulLibre(f, textes) {
+  const base = f.split('/').pop();
+  const echappe = base.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&');
+  return new RegExp(`(^|[^\\w./\\\\-])${echappe}(?![\\w-])`).test(textes);
+}
+
 function mesurer() {
   if (!existsSync(DOSSIER)) {
     console.log('guard:scripts-branches  aucun dossier scripts/, rien à tenir.');
     return [];
   }
   const fichiers = scriptsDuDossier(DOSSIER);
+  // `f` est relatif a `scripts/` : pour un fichier de premier niveau c'est le
+  // NOM NU. La citation vaut par le chemin COMPLET depuis la racine, ou par le
+  // nom laisse libre.
+  const prefixe = relative(RACINE, DOSSIER).split(sep).join('/');
   const textes = manifestes(RACINE).flatMap(commandes)
     .concat(lanceursExternes(RACINE)).join('\n');
-  const cites = fichiers.filter((f) => textes.includes(f) || textes.includes(f.split('/').pop())
+  const cites = fichiers.filter((f) => textes.includes(`${prefixe}/${f}`)
+                                       || nommeSeulLibre(f, textes)
                                        || estEpreuveLancee(f, textes));
   const retenus = propager(cites, fichiers);
   return fichiers.filter((f) => !retenus.has(f));
