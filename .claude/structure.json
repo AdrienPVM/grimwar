@@ -117,5 +117,12 @@
     "**/*.spec.*",
     "**/*.test.*"
   ],
-  "exceptionsDeNomMotif": "Les épreuves et les écrits déjà en place portent des noms de tranche par héritage. Le renommage des instruments est fait, celui des épreuves est un chantier à part."
+  "exceptionsDeNomMotif": "Les épreuves et les écrits déjà en place portent des noms de tranche par héritage. Le renommage des instruments est fait, celui des épreuves est un chantier à part.",
+  "dossiersDeCode": [
+    "src",
+    "content-sources",
+    "tests",
+    "scripts"
+  ],
+  "dossiersDeCodeMotif": "Les dossiers que le verrou « spec avant code » garde DANS CE PROJET. Declare, jamais devine — meme regle que le gestionnaire de paquets des gardes bloquants, et nee de la meme erreur : un depot ne se laisse pas deviner par la forme d'un autre. Mesure du 2026-08-25. `src/` n'etait garde par rien. `content-sources/` entre : c'est de la donnee que le site rend, une erreur y est visible en ligne."
 }
