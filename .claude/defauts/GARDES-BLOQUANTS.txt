@@ -1,5 +1,5 @@
 # gestionnaire: pnpm
-# Declare, jamais devine : ghostterm porte les DEUX fichiers de
+# Declare, jamais devine : konsole porte les DEUX fichiers de
 # verrouillage, et deviner y choisirait le mauvais outil.
 #
 # Les gardes qui bloquent un commit.
